@@ -1,0 +1,179 @@
+/*
+ * Copyright 2010 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.springframework.data.gemfire;
+
+import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.Resource;
+import org.springframework.util.StringUtils;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+
+/**
+ * Factory used for configuring a Gemfire Cache manager. Allows either retrieval of an existing, opened cache 
+ * or the creation of a new one.
+ * 
+ * @author Costin Leau
+ */
+public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
+		InitializingBean, FactoryBean<Cache> {
+
+	private static final Log log = LogFactory.getLog(CacheFactoryBean.class);
+
+	private Cache cache;
+	private String name;
+	private Resource cacheXml;
+	private Properties properties;
+	private DistributedSystem system;
+	private ClassLoader beanClassLoader;
+	private GemfireBeanFactoryLocator factoryLocator = new GemfireBeanFactoryLocator();
+
+	private BeanFactory beanFactory;
+	private String beanName;
+
+	public void afterPropertiesSet() throws Exception {
+		// initialize locator
+		factoryLocator.setBeanFactory(beanFactory);
+		factoryLocator.setBeanName(beanName);
+		factoryLocator.afterPropertiesSet();
+
+		Properties cfgProps = mergeProperties();
+		system = DistributedSystem.connect(cfgProps);
+
+		DistributedMember member = system.getDistributedMember();
+		log.info("Connected to Distributed System ['" + system.getName() + "'=" + member.getId() + "@"
+				+ member.getHost() + "]");
+
+		// use the bean class loader to load Declarable classes
+		Thread th = Thread.currentThread();
+		ClassLoader oldTCCL = th.getContextClassLoader();
+
+		try {
+			th.setContextClassLoader(beanClassLoader);
+			// first look for open caches
+			String msg = null;
+			try {
+				cache = CacheFactory.getInstance(system);
+				msg = "Retrieved existing";
+			} catch (CacheClosedException ex) {
+				// fall back to cache creation
+				cache = CacheFactory.create(system);
+				msg = "Created";
+			}
+
+			log.info(msg + " Gemfire Cache ['" + cache.getName() + "'] v. " + CacheFactory.getVersion());
+
+			// load/init cache.xml
+			if (cacheXml != null) {
+				cache.loadCacheXml(cacheXml.getInputStream());
+			}
+
+			if (log.isDebugEnabled())
+				log.debug("Initialized cache from " + cacheXml);
+		} finally {
+			th.setContextClassLoader(oldTCCL);
+		}
+	}
+
+	private Properties mergeProperties() {
+		Properties cfgProps = new Properties(properties);
+		if (StringUtils.hasText(name)) {
+			cfgProps.setProperty("name", name.trim());
+		}
+		return cfgProps;
+	}
+
+	public void destroy() throws Exception {
+		if (cache != null && !cache.isClosed()) {
+			cache.close();
+		}
+		cache = null;
+
+		if (system != null && system.isConnected()) {
+			system.releaseThreadsSockets();
+			system.disconnect();
+		}
+		system = null;
+
+		factoryLocator.destroy();
+	}
+
+	public Cache getObject() throws Exception {
+		return cache;
+	}
+
+	public Class<? extends Cache> getObjectType() {
+		return (cache != null ? cache.getClass() : Cache.class);
+	}
+
+	public boolean isSingleton() {
+		return true;
+	}
+
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
+	}
+
+	public void setBeanName(String name) {
+		this.beanName = name;
+	}
+
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
+	/**
+	 * Sets the cache properties.
+	 * 
+	 * @param properties the properties to set
+	 */
+	public void setProperties(Properties properties) {
+		this.properties = properties;
+	}
+
+	/**
+	 * Sets the name of the cache.
+	 * 
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * Sets the cache configuration.
+	 * 
+	 * @param cacheXml the cacheXml to set
+	 */
+	public void setCacheXml(Resource cacheXml) {
+		this.cacheXml = cacheXml;
+	}
+}

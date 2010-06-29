@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd" default-lazy-init="true">
+
+	<bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
+	
+	<bean id="transactionManager" class="org.springframework.data.gemfire.GemfireTransactionManager" p:cache-ref="cache"/>
+	
+	<bean id="rollback-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:name="r-region" p:cache-ref="cache"/>
+	<bean id="commit-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:name="c-region" p:cache-ref="cache"/>
+	
+</beans>

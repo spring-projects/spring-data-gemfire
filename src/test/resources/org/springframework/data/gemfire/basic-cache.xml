@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd" default-lazy-init="true">
+
+	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
+	<!-- as there can be only one cache per VM -->
+	<bean id="default-cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
+	
+	<bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="name">cache-with-props</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="named-cache" class="org.springframework.data.gemfire.CacheFactoryBean" p:name="named-cache">
+		<property name="properties">
+			<props>
+				<prop key="name">cache-with-props</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="cache-with-xml" class="org.springframework.data.gemfire.CacheFactoryBean">
+		<property name="cacheXml" value="classpath:cache.xml"/>
+	</bean>
+	
+</beans>

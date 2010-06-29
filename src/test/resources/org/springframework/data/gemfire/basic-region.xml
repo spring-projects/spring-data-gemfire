@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd" default-lazy-init="true">
+
+	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
+	<!-- as there can be only one cache per VM -->
+	<bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
+	
+	<bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="basic"/>
+	
+	<!-- find existing region -->
+	<bean id="root" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="root"/>
+	
+	<bean id="listeners" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="listeners">
+		<property name="cacheListeners">
+			<array>
+				<bean class="org.springframework.data.gemfire.RegionIntegrationTest$CacheList"/>
+				<bean class="org.springframework.data.gemfire.RegionIntegrationTest$CacheList"/>
+			</array>
+		</property>
+		<property name="cacheLoader"><bean class="org.springframework.data.gemfire.RegionIntegrationTest$CacheLoad"/></property>
+		<property name="cacheWriter"><bean class="org.springframework.data.gemfire.RegionIntegrationTest$CacheWrite"/></property>
+	</bean>
+	
+	<!--  client configurations -->
+	<bean id="basic-client" class="org.springframework.data.gemfire.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region" lazy-init="true">
+		<property name="interests">
+			<array>
+				<bean class="org.springframework.data.gemfire.Interest" p:key="Vlaicu" p:policy="NONE"/>
+				<bean class="org.springframework.data.gemfire.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/>
+			</array>
+		</property>
+	</bean>
+	
+	
+</beans>
