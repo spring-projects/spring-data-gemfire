@@ -29,8 +29,11 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -40,11 +43,18 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 /**
  * Factory used for configuring a Gemfire Cache manager. Allows either retrieval of an existing, opened cache 
  * or the creation of a new one.
+
+ * <p>This class implements the {@link org.springframework.dao.support.PersistenceExceptionTranslator}
+ * interface, as autodetected by Spring's
+ * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor},
+ * for AOP-based translation of native exceptions to Spring DataAccessExceptions.
+ * Hence, the presence of this class automatically enables
+ * a PersistenceExceptionTranslationPostProcessor to translate GemFire exceptions.
  * 
  * @author Costin Leau
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
-		InitializingBean, FactoryBean<Cache> {
+		InitializingBean, FactoryBean<Cache>, PersistenceExceptionTranslator {
 
 	private static final Log log = LogFactory.getLog(CacheFactoryBean.class);
 
@@ -124,6 +134,14 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		system = null;
 
 		factoryLocator.destroy();
+	}
+
+	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
+		if (ex instanceof GemFireException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) ex);
+		}
+
+		return null;
 	}
 
 	public Cache getObject() throws Exception {

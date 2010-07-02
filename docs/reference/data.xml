@@ -1,17 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
                  "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
-<chapter id="bootstrap">
-  <title>Bootstrapping GemFire through the Spring container</title>
+<chapter id="apis">
+  <title>Working with the GemFire APIs</title>
 
 	<para>
+	Once the GemFire cache and regions have been configured, these can injected and used inside application objects. This chapter describes the integration with the
+	Spring transaction management, <classname>DaoException</classname> hierarchy and wiring of GemFire managed objects.
 	</para>
 
-	<section id="bootstrap:requirements">
-		<title>Requirements</title>
-		<para></para>
-		<note>
-		</note>
+	<section id="apis:exception-translation">
+		<title>Exception translation</title>
+
+		<para>Using a new API requires not just accommodating to the new semantics but also handling its particular exception set. To accommodate this case, Spring Framework provides a
+		generic, consistent exception <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/dao.html#dao-exceptions">hierarchy</ulink> that
+		abstracts one from proprietary (and usually checked) exceptions to a set of focused runtime exceptions. As mentioned in the Spring Framework documentation, by using annotations
+		(<literal>@Repository</literal>) or AOP, exception translations happens automatically without any code changes. The same holds true for GemFire as long as at least a  
+		<classname>CacheFactoryBean</classname> is declared. The <interfacename>Cache</interfacename> factory acts as an exception translator which is automatically detected by the
+		Spring infrastructure and used accordingly.
+		</para>
+	</section>
+
+	<section id="apis:tx-mgmt">
+		<title>Transaction Management</title>
+
+		<para>One of the most popular features of Spring Framework is <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html">transaction</ulink>
+		management. If you are not familiar with it, we strongly recommend 
+		<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html#transaction-motivation">looking</ulink> into it as it offers a consistent programming
+		model that works transparently across multiple API that can be configured either programmatically or declaratively (the most popular choice).</para>
+		
+		<para>For Gemfire, SGI provides a dedicated, per-cache, transaction manager that once declared, allows actions on the <interfacename>Region</interfacename>s to be grouped and executed atomically through
+		Spring:</para>
+		
+		<programlisting><![CDATA[<bean id="transaction-manager" class="org.springframework.data.gemfire.GemfireTransactionManager" p:cache-ref="cache"/>]]></programlisting>
+		
+		<para>Note that currently GemFire supports optimistic transactions with <emphasis>read committed</emphasis> isolation. Further more to guarantee this isolation, developers should
+		avoid making <emphasis>in-place</emphasis> changes, that is manually modifying the values present in the cache. To prevent this from happening, the transaction manager configured the cache
+		to use <emphasis>copy on read</emphasis> semantics, meaning a clone of the actual value is created, each time a read is performed. This behaviour can be disabled if needed through the
+		<literal>copyOnRead</literal> property. For more information on the semantics of the underlying GemFire transaction manager, see the GemFire 
+		<ulink url="http://www.gemstone.com/docs/6.0.1/product/docs/japi/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
 	</section>
 	
 </chapter>
