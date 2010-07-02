@@ -18,12 +18,14 @@ package org.springframework.data.gemfire;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -34,14 +36,17 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
- * FactoryBean for creating generic Gemfire {@link Region}s.
+ * FactoryBean for creating generic Gemfire {@link Region}s. Will try to first locate the region (by name)
+ * and, in case none if found, proceed to creating one using the given settings.
  * 
  * @author Costin Leau
  */
-public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Region<K, V>>, InitializingBean {
+public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Region<K, V>>, InitializingBean,
+		BeanNameAware {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
+	private String beanName;
 	private Cache cache;
 	private String name;
 	private boolean destroy = false;
@@ -50,14 +55,15 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 	private CacheListener<K, V> cacheListeners[];
 	private CacheLoader<K, V> cacheLoader;
 	private CacheWriter<K, V> cacheWriter;
-
 	private RegionAttributes<K, V> attributes;
 
 	private Region<K, V> region;
 
+
 	public void afterPropertiesSet() throws Exception {
 		Assert.notNull(cache, "Cache property must be set");
-		Assert.hasText(name, "Name property must be set");
+		name = (!StringUtils.hasText(name) ? beanName : name);
+		Assert.hasText(name, "Name (or beanName) property must be set");
 		
 		// first get cache
 		region = cache.getRegion(name);
@@ -125,6 +131,10 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 		return true;
 	}
 
+	public void setBeanName(String beanName) {
+		this.beanName = name;
+	}
+
 	/**
 	 * Sets the cache used for creating the region.
 	 * 
@@ -137,9 +147,11 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 
 	/**
 	 * Sets the name of the cache region. If no cache is found under
-	 * the given name, a new one will be created. 
+	 * the given name, a new one will be created.
+	 * If no name is given, the beanName will be used. 
 	 * 
 	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
+	 * @see #setBeanName(String)
 	 * 
 	 * @param name the region name
 	 */
