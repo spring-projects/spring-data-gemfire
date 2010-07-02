@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<preface id="preface">
+	<title>Preface</title>
+	<para>
+	Spring GemFire Integration focuses on integrating Spring Framework powerful, non-invasive programming model
+	and concepts with GemFire Enterprise Fabric, providing easier configuration and use. This document assumes the
+	reader is already familiar with the Spring Framework and GemFire concepts (at least at basic level) and APIs.
+	</para>
+	
+	<para>
+	While every effort has been made to ensure that this documentation is comprehensive and there are no errors, 
+	nevertheless some topics might require more explanation and some typos might have crept in. If you do spot any 
+	mistakes or even more serious errors and you can spare a few cycles during lunch, please do bring the error 
+	to the attention of the Spring GemFire Integration team by raising an 
+	<ulink url="http://jira.springframework.org">issue</ulink>. Thank you.
+	</para>
+    
+</preface>
