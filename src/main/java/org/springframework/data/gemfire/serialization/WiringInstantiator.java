@@ -35,7 +35,11 @@ import com.gemstone.gemfire.Instantiator;
  * 
  * <p/>
  * Can reuse existing instantiators to optimize instance creation. If one is not provided, it will fallback
- * to reflection invocation. 
+ * to reflection invocation.
+ * 
+ * <p/>
+ * By default, on initialization, the class will register itself as an {@link Instantiator} through 
+ * {@link #register(Instantiator)}. This behaviour can be disabled through {@link #setAutoRegister(boolean)}. 
  * 
  * @see org.springframework.beans.factory.wiring.BeanConfigurerSupport
  * @see org.springframework.beans.factory.wiring.BeanWiringInfoResolver
@@ -45,13 +49,13 @@ import com.gemstone.gemfire.Instantiator;
  * 
  * @author Costin Leau
  */
-public class WiringInstantiator extends Instantiator implements BeanFactoryAware, InitializingBean,
-		DisposableBean {
+public class WiringInstantiator extends Instantiator implements BeanFactoryAware, InitializingBean, DisposableBean {
 
 	private final Instantiator instantiator;
 	private final Class<? extends DataSerializable> clazz;
 	private BeanConfigurerSupport configurer;
 	private BeanFactory beanFactory;
+	private boolean autoRegister = true;
 
 	public WiringInstantiator(Instantiator instantiator) {
 		super(instantiator.getInstantiatedClass(), instantiator.getId());
@@ -71,6 +75,10 @@ public class WiringInstantiator extends Instantiator implements BeanFactoryAware
 			configurer = new BeanConfigurerSupport();
 			configurer.setBeanFactory(beanFactory);
 			configurer.afterPropertiesSet();
+		}
+
+		if (autoRegister) {
+			Instantiator.register(this);
 		}
 	}
 
@@ -106,5 +114,16 @@ public class WiringInstantiator extends Instantiator implements BeanFactoryAware
 	 */
 	public void setConfigurer(BeanConfigurerSupport configurer) {
 		this.configurer = configurer;
+	}
+
+	/**
+	 * Sets the auto-registration of this {@link Instantiator} during the container startup.
+	 * Default is true, meaning the registration will occur once this factory is initialized.
+	 * 
+	 * @see #register(Instantiator)
+	 * @param autoRegister the autoRegister to set
+	 */
+	public void setAutoRegister(boolean autoRegister) {
+		this.autoRegister = autoRegister;
 	}
 }
