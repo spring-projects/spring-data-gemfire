@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.serialization;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -26,17 +27,17 @@ import java.beans.Beans;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.serialization.AsmInstantiatorGenerator;
-import org.springframework.data.gemfire.serialization.WiringInstantiator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.Instantiator;
 
 /**
  * @author Costin Leau
@@ -83,6 +84,24 @@ public class WiringInstantiatorTest {
 		}
 	}
 
+	public static class TypeA implements DataSerializable {
+
+		public void fromData(DataInput arg0) throws IOException, ClassNotFoundException {
+		}
+
+		public void toData(DataOutput arg0) throws IOException {
+		}
+	}
+
+	public static class TypeB implements DataSerializable {
+
+		public void fromData(DataInput arg0) throws IOException, ClassNotFoundException {
+		}
+
+		public void toData(DataOutput arg0) throws IOException {
+		}
+	}
+
 	@Test
 	public void testAutowiredBean() throws Exception {
 		Object instance = instantiator.newInstance();
@@ -114,5 +133,11 @@ public class WiringInstantiatorTest {
 		assertNotNull(bean.beans);
 
 		assertSame(bean.beans, ctx.getBean("beans"));
+	}
+
+	public void testInstantiatorFactoryBean() throws Exception {
+		List<Instantiator> list = (List<Instantiator>) ctx.getBean("instantiator-factory");
+		assertNotNull(list);
+		assertEquals(2, list.size());
 	}
 }

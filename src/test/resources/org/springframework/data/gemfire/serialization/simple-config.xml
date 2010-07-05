@@ -25,4 +25,13 @@
 	</bean>
 	
 	<bean class="org.springframework.data.gemfire.serialization.WiringInstantiatorTest$TemplateWiringBean" abstract="true" p:beans-ref="beans"/>
+	
+	<bean id="instantiator-factory" class="org.springframework.data.gemfire.serialization.InstantiatorFactoryBean">
+		<property name="customTypes">
+			<map>
+				<entry key="org.springframework.data.gemfire.serialization.WiringInstantiatorTest$TypeA" value="1025"/>
+				<entry key="org.springframework.data.gemfire.serialization.WiringInstantiatorTest$TypeB" value="1026"/>
+			</map>
+		</property>
+	</bean>
 </beans>

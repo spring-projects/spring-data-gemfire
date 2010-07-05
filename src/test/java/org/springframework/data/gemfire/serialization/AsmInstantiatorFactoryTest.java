@@ -27,7 +27,6 @@ import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.gemfire.serialization.AsmInstantiatorGenerator;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.Instantiator;
