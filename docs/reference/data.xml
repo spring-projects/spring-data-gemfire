@@ -41,4 +41,130 @@
 		<ulink url="http://www.gemstone.com/docs/6.0.1/product/docs/japi/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
 	</section>
 	
+	<section id="apis:declarable">
+		<title>Wiring <interfacename>Declarable</interfacename> components</title>
+		
+		<para>GemFire XML configuration (usually named <literal>cache.xml</literal> allows <emphasis>user</emphasis> objects to be declared as part of the fabric config. Usually these objects
+		are <interfacename>CacheLoader</interfacename>s or other pluggable components into GemFire. Out of the box, each such type declared through XML must implement the <interfacename>Declarable</interfacename> 
+		interface which allows arbitrary parameters to be passed to the declared class through a <classname>Properties</classname> instance.</para>
+		
+		<sidebar>
+			<title>Eliminate <interfacename>Declarable</interfacename> components</title>
+			<para>One can configure custom types entirely inside through Spring as mentioned in <xref linkend="bootstrap:region"/>. That way, one does not have to implement the
+			<interfacename>Declarable</interfacename> interface and gets access to all the features of the Spring IoC container (including not just dependency injection but also
+			life-cycle and instance management).</para>
+		</sidebar>
+		
+		<para>Consider the following declaration (taken from the <interfacename>Declarable</interfacename> javadoc):</para>
+		
+		<programlisting language="xml"><![CDATA[<cache-loader>
+   <class-name>com.company.app.DBLoader</class-name>
+   <parameter name="URL">
+     <string>jdbc://12.34.56.78/mydb</string>
+   </parameter>
+</cache-loader>]]></programlisting>
+
+		<para>To simplify the task of parsing, converting the parameters and initializing the object, SGI offers a base class (<classname>WiringDeclarableSupport</classname>) that allows GemFire 
+		user objects to be wired through autowiring or based on declarations available inside the Spring container. To take advantage of this feature, the user objects need to extends 
+		<classname>WiringDeclarableSupport</classname> which automatically locates the declaring <interfacename>BeanFactory</interfacename> and performs wiring as part of the initialization process.
+		</para>
+		
+		<sidebar>
+		<title>Why is a base class needed?</title>
+		<para>Unfortunately, in the current GemFire release there is no concept of an <emphasis>object factory</emphasis> and the types declared are instantiated and used as is - that is
+		there are no other ways in which third parties can take care of the object creation outside GemFire. This feature is planned for the up-coming GemFire release (6.5)</para>
+		</sidebar>
+		
+		<section id="apis:declarable:autowiring">
+			<title>Using Auto/Annotation-wiring</title>
+			
+			<para>If no parameters are given, <classname>WiringDeclarableSupport</classname> will <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factory-autowire">autowire</ulink>
+			the declaring instance. In short, this means that unless any <emphasis>metadata</emphasis> is offered by the instance, the container will find the object setters and try to automatically satisfy
+			these dependencies. However, one can also use JDK 5 annotations to provide additional information to the auto-wiring process. We strongly recommend reading the dedicated
+			<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-annotation-config">chapter</ulink> in the Spring documentation for more information
+			on the supported annotations and enabling factors.
+			</para>
+			
+			<para>For example, the hypothetical <literal>DBLoader</literal> declaration above can be injected with a Spring-configured <interface>DataSource</interface> in the following way:</para>
+			
+			<programlisting language="java" ><![CDATA[public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
+	// use annotations to 'mark' the needed dependencies 
+	@javax.inject.Inject
+	private DataSource dataSource;
+	
+	public Object load(LoaderHelper helper) { ... }
+}]]></programlisting>
+
+			<programlisting language="xml"><![CDATA[<cache-loader>
+   <class-name>com.company.app.DBLoader</class-name>
+   <!-- no need to declare any parameters anymore
+        since the class is auto-wired -->
+</cache-loader>]]>
+			</programlisting>
+			
+			<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd">
+            
+     <!-- enable annotation processing -->   
+     <context:annotation-config/>
+     
+</beans>]]>
+			</programlisting>
+			
+			<para>By using the JSR-330 annotations, the cache loader code has been simplified since the location and creation of the DataSource has been externalized and the user code is concerned
+			only with the loading process. The <interfacename>DataSource</interfacename> might be transactional, created lazily, shared between multiple objects or retrieved from JNDI - these aspects
+			can be easily configured and changed through the Spring container without touching the <classname>DBLoader</classname> code.</para>
+		</section>
+		
+		<section id="apis:declarable:template-wiring">
+			<title>Using <emphasis>template</emphasis> definitions</title>
+			
+			<para>For cases where auto/annotation-wiring is not enough (or not an option), one can instruct SGI class to use an existing bean definition as a template for wiring. Let's see how our
+			<classname>DBLoader</classname> declaration would look in that case:</para>
+			
+			<programlisting language="java" ><![CDATA[public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
+	private DataSource dataSource;
+	
+	public void setDataSource(DataSource ds){
+		this.dataSource = ds;
+	}
+	
+	public Object load(LoaderHelper helper) { ... }
+}]]></programlisting>
+					
+			<programlisting language="xml"><![CDATA[<cache-loader>
+   <class-name>com.company.app.DBLoader</class-name>
+   <!-- pass the bean definition template name
+        as parameter -->
+   <parameter name="bean-name">
+     <string>template-bean</string>
+   </parameter>
+</cache-loader>]]>
+			</programlisting>
+			
+			<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	 <bean id="dataSource" ... />
+	             
+     <!-- template bean definition -->   
+     <bean id="template-bean" abstract="true" p:dataSource-ref="dataSource"/>
+     
+</beans>]]>
+			</programlisting>
+			
+			<note><para>The <emphasis>template</emphasis> bean definitions do not have to be declared in XML - any format is allowed (Groovy, annotations, etc..).</para></note>		
+		</section>
+		
+	</section>
 </chapter>
