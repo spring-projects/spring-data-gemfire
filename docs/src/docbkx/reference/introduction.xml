@@ -4,14 +4,14 @@
    <para>This part of the reference documentation explains the core functionality
    offered by Spring GemFire integration.</para>
 
-   <para><xref linkend="bootstrapping"/> describes the configuration support provided for
+   <para><xref linkend="bootstrap"/> describes the configuration support provided for
    bootstrapping, initializing and accessing a GemFire cache or region.</para>
    
    <para><xref linkend="serialization"/> describes the enhancements for GemFire 
-   (de)serialization process and managment of associated objects.
+   (de)serialization process and management of associated objects.
    </para>
 
-   <para><xref linkend="data"/> explains the integration between GemFire API and
+   <para><xref linkend="apis"/> explains the integration between GemFire API and
    the various "data" features available in Spring, such as transaction management
    and exception translation.
    </para>

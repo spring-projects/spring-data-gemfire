@@ -30,7 +30,7 @@
 		the user can pass in a GemFire configuration:</para>
 		
 		<programlisting language="xml"><![CDATA[<bean id="cache-with-xml" class="org.springframework.data.gemfire.CacheFactoryBean">
-	<property name="cacheXml" value="classpath:cache.xml"/>
+    <property name="cacheXml" value="classpath:cache.xml"/>
 </bean>]]></programlisting>
 		
 		<para>In this example, if the cache needs to be created, it will use the file named <literal>cache.xml</literal> located in the classpath root. Note that
@@ -42,11 +42,11 @@
 		</para>
 
 		<programlisting language="xml"><![CDATA[<bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean">
-	<property name="properties">
-		<props>
-			<prop key="bind-address">127.0.0.1</prop>
-		</props>
-	</property>
+    <property name="properties">
+        <props>
+           <prop key="bind-address">127.0.0.1</prop>
+        </props>
+    </property>
 </bean>]]></programlisting>
 		 
 		<para>So far our examples relied on the primary Spring names (<literal>beans</literal>). However one is free to add other namespaces to simplify or enhance the configuration.
@@ -60,9 +60,9 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 	
 	<bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean">
-		<property name="properties">
-			<util:properties location="classpath:/deployment/env.properties"/>
-		</property>
+	    <property name="properties">
+	        <util:properties location="classpath:/deployment/env.properties"/>
+	    </property>
 	</bean>	
 </beans>]]></programlisting>
 		
@@ -84,7 +84,7 @@
 
 		<programlisting language="xml"><![CDATA[<bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean">
 	<property name="cache">
-		<bean class="org.springframework.data.gemfire.CacheFactoryBean"/>
+	    <bean class="org.springframework.data.gemfire.CacheFactoryBean"/>
 	</property>
 	<property name="name" value="basic"/>
 </bean>]]></programlisting>
@@ -99,14 +99,14 @@
 	xmlns:p="http://www.springframework.org/schema/p"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 	
-	<!-- shared cache across regions -->
-	<bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
+    <!-- shared cache across regions -->
+    <bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
 	
-	<!-- region named 'basic' -->
-	<bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"/>
+    <!-- region named 'basic' -->
+    <bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"/>
 
-	<!-- region with a name different then the bean definition -->
-	<bean id="root-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="default-region"/>
+    <!-- region with a name different then the bean definition -->
+    <bean id="root-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="default-region"/>
 </beans>]]></programlisting>
 		
 		<para>It is worth pointing out, that for the vast majority of cases configuring the cache loader, listener and writer through the Spring container is preferred since the same instances
