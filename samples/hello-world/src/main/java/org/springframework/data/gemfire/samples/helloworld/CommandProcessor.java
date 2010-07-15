@@ -77,12 +77,18 @@ public class CommandProcessor {
 			System.out.println(help);
 			System.out.print("-> ");
 			System.out.flush();
-			try {
-				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+			try {
 				while (threadActive) {
 					if (br.ready()) {
-						System.out.println(process(br.readLine()));
+						try {
+							System.out.println(process(br.readLine()));
+						} catch (Exception ex) {
+							System.out.println("Error executing last command " + ex.getMessage());
+						}
+
 						System.out.print("-> ");
 						System.out.flush();
 					}
@@ -107,7 +113,7 @@ public class CommandProcessor {
 		}
 	}
 
-	String process(String line) {
+	String process(final String line) {
 		final Scanner sc = new Scanner(line);
 
 		return template.execute(new GemfireCallback<String>() {
@@ -154,9 +160,6 @@ public class CommandProcessor {
 				if ("containsValue".equalsIgnoreCase(command)) {
 					return EMPTY + region.containsValue(arg);
 				}
-				if ("query".equalsIgnoreCase(command)) {
-					return region.query(command).toString();
-				}
 				if ("get".equalsIgnoreCase(command)) {
 					return region.get(arg);
 				}
@@ -174,6 +177,12 @@ public class CommandProcessor {
 
 				if ("put".equalsIgnoreCase(command)) {
 					return region.put(arg, arg2);
+				}
+
+				// pass the entire string w/o the command
+				if ("query".equalsIgnoreCase(command)) {
+					String query = line.trim().substring(command.length());
+					return region.query(query).toString();
 				}
 
 				sc.close();

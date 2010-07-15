@@ -2,14 +2,20 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:p="http://www.springframework.org/schema/p"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
 	<!-- GemFire cache bean -->
-	<bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
+	<bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean">
+		<property name="properties">
+			<util:properties location="cache.properties"/>
+		</property>
+	</bean>
 	
 	<!-- hello world region -->
 	<!-- since no name is given, the region will be named after the bean -->
-	<bean id="hw-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:dataPolicy="REPLICATE">
+	<bean id="hw-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:dataPolicy="REPLICATE" p:scope="DISTRIBUTED_ACK">
 		<property name="cacheListeners">
 			<bean class="org.springframework.data.gemfire.samples.helloworld.CacheLogger"/>
 		</property>
