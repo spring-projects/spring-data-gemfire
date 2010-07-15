@@ -23,14 +23,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.data.gemfire.GemfireCallback;
+import org.springframework.data.gemfire.GemfireTemplate;
+import org.springframework.stereotype.Component;
 
+import com.gemstone.gemfire.GemFireCheckedException;
+import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
 
 /**
  * @author Costin Leau
  */
+@Component
 public class CommandProcessor {
 
 	private static final Log log = LogFactory.getLog(CommandProcessor.class);
@@ -41,11 +49,8 @@ public class CommandProcessor {
 	boolean threadActive;
 	private Thread thread;
 
-	private Region<String, String> region;
-
-	public CommandProcessor(Region<String, String> region) {
-		this.region = region;
-	}
+	@Resource
+	private GemfireTemplate template;
 
 	void start() {
 		if (thread == null) {
@@ -57,7 +62,7 @@ public class CommandProcessor {
 
 	void stop() throws Exception {
 		threadActive = false;
-		thread.join();
+		thread.join(3 * 100);
 	}
 
 	void awaitCommands() throws Exception {
@@ -70,12 +75,16 @@ public class CommandProcessor {
 			System.out.println("Hello World!");
 			System.out.println("Want to interact with the world ? ...");
 			System.out.println(help);
+			System.out.print("-> ");
+			System.out.flush();
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
 				while (threadActive) {
 					if (br.ready()) {
-						process(br.readLine());
+						System.out.println(process(br.readLine()));
+						System.out.print("-> ");
+						System.out.flush();
 					}
 				}
 			} catch (IOException ioe) {
@@ -98,60 +107,78 @@ public class CommandProcessor {
 		}
 	}
 
-	String process(String line) throws Exception {
-		Scanner sc = new Scanner(line);
-		String command = sc.next();
+	String process(String line) {
+		final Scanner sc = new Scanner(line);
 
-		// parse commands w/o arguments
-		if ("exit".equalsIgnoreCase(command)) {
-			threadActive = false;
-			return EMPTY;
-		}
-		if ("help".equalsIgnoreCase(command)) {
-			return help;
-		}
-		if ("size".equalsIgnoreCase(command)) {
-			return EMPTY + region.size();
-		}
-		if ("clear".equalsIgnoreCase(command)) {
-			region.clear();
-			return EMPTY;
-		}
-		if ("keys".equalsIgnoreCase(command)) {
-			return region.keySet().toString();
-		}
-		if ("values".equalsIgnoreCase(command)) {
-			return region.values().toString();
-		}
+		return template.execute(new GemfireCallback<String>() {
+			public String doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
+				Region<String, String> region = reg;
 
-		String arg = sc.next();
+				if (!sc.hasNext()) {
+					return "Invalid command";
+				}
+				String command = sc.next();
 
-		// commands w/ 1 arg
-		if ("containsKey".equalsIgnoreCase(command)) {
-			return EMPTY + region.containsKey(arg);
-		}
-		if ("containsValue".equalsIgnoreCase(command)) {
-			return EMPTY + region.containsValue(arg);
-		}
-		if ("query".equalsIgnoreCase(command)) {
-			return region.query(command).toString();
-		}
-		if ("get".equalsIgnoreCase(command)) {
-			return region.get(arg);
-		}
-		if ("remove".equalsIgnoreCase(command)) {
-			return region.remove(arg);
-		}
+				// parse commands w/o arguments
+				if ("exit".equalsIgnoreCase(command)) {
+					threadActive = false;
+					return EMPTY;
+				}
+				if ("help".equalsIgnoreCase(command)) {
+					return help;
+				}
+				if ("size".equalsIgnoreCase(command)) {
+					return EMPTY + region.size();
+				}
+				if ("clear".equalsIgnoreCase(command)) {
+					region.clear();
+					return EMPTY;
+				}
+				if ("keys".equalsIgnoreCase(command)) {
+					return region.keySet().toString();
+				}
+				if ("values".equalsIgnoreCase(command)) {
+					return region.values().toString();
+				}
 
-		// commands w/ 2 args
+				if (!sc.hasNext()) {
+					return "Argument(s) needed";
+				}
 
-		String arg2 = sc.next();
+				String arg = sc.next();
 
-		if ("put".equalsIgnoreCase(command)) {
-			return region.put(arg, arg2);
-		}
+				// commands w/ 1 arg
+				if ("containsKey".equalsIgnoreCase(command)) {
+					return EMPTY + region.containsKey(arg);
+				}
+				if ("containsValue".equalsIgnoreCase(command)) {
+					return EMPTY + region.containsValue(arg);
+				}
+				if ("query".equalsIgnoreCase(command)) {
+					return region.query(command).toString();
+				}
+				if ("get".equalsIgnoreCase(command)) {
+					return region.get(arg);
+				}
+				if ("remove".equalsIgnoreCase(command)) {
+					return region.remove(arg);
+				}
 
-		sc.close();
-		return "unknown command - run 'help' for available commands";
+				// commands w/ 2 args
+
+				if (!sc.hasNext()) {
+					return "2 Argument needed";
+				}
+
+				String arg2 = sc.next();
+
+				if ("put".equalsIgnoreCase(command)) {
+					return region.put(arg, arg2);
+				}
+
+				sc.close();
+				return "unknown command - run 'help' for available commands";
+			}
+		});
 	}
 }

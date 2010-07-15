@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.samples.helloworld;
 
-import java.util.Map;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -42,19 +40,13 @@ public class HelloWorld {
 	@Resource(name = "hw-region")
 	private Region<String, String> region;
 
-	// re-inject the region (as a Map)
-	// the name is required since by default Spring
-	// injects the beans
-	@Resource(name = "hw-region")
-	private Map<String, String> map;
-
+	@Resource
 	private CommandProcessor processor;
 
 	@PostConstruct
 	void start() {
 		log.info("Member " + region.getCache().getDistributedSystem().getDistributedMember().getId()
 				+ " connecting to region [" + region.getName() + "]");
-		processor = new CommandProcessor(region);
 		processor.start();
 	}
 

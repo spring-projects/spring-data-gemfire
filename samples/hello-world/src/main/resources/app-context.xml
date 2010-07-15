@@ -9,5 +9,7 @@
 	<import resource="cache-context.xml"/>
 	
 	<!-- find beans by scanning the classpath -->
-	<context:component-scan base-package="org.springframework.data.gemfire.samples.helloworld"/>	
+	<context:component-scan base-package="org.springframework.data.gemfire.samples.helloworld"/>
+	
+	<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="hw-region"/>
 </beans>
