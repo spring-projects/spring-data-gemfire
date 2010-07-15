@@ -132,7 +132,7 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 	}
 
 	public void setBeanName(String beanName) {
-		this.beanName = name;
+		this.beanName = beanName;
 	}
 
 	/**

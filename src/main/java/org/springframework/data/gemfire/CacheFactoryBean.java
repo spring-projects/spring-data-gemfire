@@ -114,7 +114,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	private Properties mergeProperties() {
-		Properties cfgProps = new Properties(properties);
+		Properties cfgProps = (properties != null ? (Properties) properties.clone() : new Properties());
 		if (StringUtils.hasText(name)) {
 			cfgProps.setProperty("name", name.trim());
 		}
