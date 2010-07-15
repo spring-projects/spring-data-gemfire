@@ -39,7 +39,7 @@ public class HelloWorld {
 	private static final Log log = LogFactory.getLog(HelloWorld.class);
 
 	// inject the region
-	@Resource
+	@Resource(name = "hw-region")
 	private Region<String, String> region;
 
 	// re-inject the region (as a Map)
@@ -54,7 +54,7 @@ public class HelloWorld {
 	void start() {
 		log.info("Member " + region.getCache().getDistributedSystem().getDistributedMember().getId()
 				+ " connecting to region [" + region.getName() + "]");
-		processor = new CommandProcessor();
+		processor = new CommandProcessor(region);
 		processor.start();
 	}
 
@@ -63,5 +63,13 @@ public class HelloWorld {
 		log.info("Member " + region.getCache().getDistributedSystem().getDistributedMember().getId()
 				+ " disconnecting from region [" + region.getName() + "]");
 		processor.stop();
+	}
+
+	public void greetWorld() {
+		try {
+			processor.awaitCommands();
+		} catch (Exception ex) {
+			throw new IllegalStateException("Cannot greet world", ex);
+		}
 	}
 }

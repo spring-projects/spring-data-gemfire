@@ -45,5 +45,9 @@ public class Main {
 		AbstractApplicationContext ctx = new ClassPathXmlApplicationContext(res);
 		// shutdown the context along with the VM
 		ctx.registerShutdownHook();
+
+		// call greet world to prevent the thread from ending
+		HelloWorld bean = ctx.getBean(HelloWorld.class);
+		bean.greetWorld();
 	}
 }
