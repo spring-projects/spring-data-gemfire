@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.springframework.data.gemfire</groupId>
   <artifactId>spring-gemfire</artifactId>
   <version>1.0.0.M1-SNAPSHOT</version>
-  <name>Gemfire - Spring Framework Integration</name>
+  <name>Spring GemFire Project</name>
   
   <properties>
     <spring.version>3.0.3.RELEASE</spring.version>
@@ -53,25 +54,30 @@
       <version>${spring.version}</version>
       <scope>test</scope>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>3.2</version>
-      <scope>compile</scope>
-    </dependency>
-    -->
+
     <!-- gemfire dependency -->
     <dependency>
-      <groupId>gemstone</groupId>
+      <groupId>com.gemstone.gemfire</groupId>
       <artifactId>gemfire</artifactId>
-      <version>6.0.1</version>
+      <version>6.0.1.A</version>
       <scope>compile</scope>
     </dependency>
     
   </dependencies>
   
-	<build>
+  <description>Spring GemFire Integration for Java</description>
+  <issueManagement>
+  	<system>Issue Tracker</system>
+  	<url>http://jira.springframework.org/browse/SGF</url>
+  </issueManagement>
+  <scm>
+  	<url>http://git.springsource.org/spring-gemfire</url>
+  </scm>
+  <organization>
+  	<name>SpringSource, a division of VMware</name>
+  	<url>www.SpringSource.org</url>
+  </organization>
+  <build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -83,4 +89,12 @@
 			</plugin>
 		</plugins>
 	</build>
+   
+  <repositories>
+     <repository>
+     	<id>gemfire-release-repo</id>
+     	<name>GemFire Release Repository</name>
+      <url>http://dist.gemstone.com/maven/release/</url>
+     </repository>
+  </repositories>	
 </project>
