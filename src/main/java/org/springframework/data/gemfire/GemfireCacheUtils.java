@@ -72,9 +72,12 @@ import com.gemstone.gemfire.cache.VersionException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.query.CqClosedException;
+import com.gemstone.gemfire.cache.query.CqInvalidException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryExecutionTimeoutException;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.distributed.LeaseExpiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
@@ -257,6 +260,23 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof AdminException) {
 			return new GemfireSystemException(ex);
 		}
+		// fall back
+		return new GemfireSystemException(ex);
+	}
+
+	public static DataAccessException convertGemfireAccessException(IllegalArgumentException ex) {
+		if (ex instanceof IndexInvalidException) {
+			return new GemfireIndexException((IndexInvalidException) ex);
+		}
+
+		if (ex instanceof CqInvalidException) {
+			return new GemfireQueryException((CqInvalidException) ex);
+		}
+
+		if (ex instanceof QueryInvalidException) {
+			return new GemfireQueryException((QueryInvalidException) ex);
+		}
+
 		// fall back
 		return new GemfireSystemException(ex);
 	}

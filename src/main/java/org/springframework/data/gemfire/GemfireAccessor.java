@@ -68,6 +68,20 @@ public class GemfireAccessor implements InitializingBean {
 	}
 
 	/**
+	 * Converts the given GemFire exception to an appropriate exception from the
+	 * <code>org.springframework.dao</code> hierarchy. Note that this particular implementation
+	 * is called only for GemFire exception that extend {@link IllegalArgumentException}.
+	 * May be overridden in subclasses.
+	 * 
+	 * @see com.gemstone.gemfire.cache.query.CqInvalidException
+	 * @param ex GemFireException that occurred
+	 * @return the corresponding DataAccessException instance
+	 */
+	public DataAccessException convertGemFireAccessException(IllegalArgumentException ex) {
+		return GemfireCacheUtils.convertGemfireAccessException(ex);
+	}
+
+	/**
 	 * Returns the template region.
 	 * 
 	 * @return the region

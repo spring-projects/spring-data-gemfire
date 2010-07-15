@@ -20,6 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import com.gemstone.gemfire.cache.query.IndexCreationException;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 
@@ -43,6 +44,10 @@ public class GemfireIndexException extends DataIntegrityViolationException {
 	}
 
 	public GemfireIndexException(IndexMaintenanceException ex) {
+		super(ex.getMessage(), ex);
+	}
+
+	public GemfireIndexException(IndexInvalidException ex) {
 		super(ex.getMessage(), ex);
 	}
 }

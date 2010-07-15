@@ -18,8 +18,10 @@ package org.springframework.data.gemfire;
 
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 
+import com.gemstone.gemfire.cache.query.CqInvalidException;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryExecutionTimeoutException;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
 
 /**
  * GemFire-specific subclass of {@link InvalidDataAccessResourceUsageException} thrown on invalid
@@ -34,6 +36,14 @@ public class GemfireQueryException extends InvalidDataAccessResourceUsageExcepti
 	}
 
 	public GemfireQueryException(QueryExecutionTimeoutException ex) {
+		super(ex.getMessage(), ex);
+	}
+
+	public GemfireQueryException(QueryInvalidException ex) {
+		super(ex.getMessage(), ex);
+	}
+
+	public GemfireQueryException(CqInvalidException ex) {
 		super(ex.getMessage(), ex);
 	}
 }

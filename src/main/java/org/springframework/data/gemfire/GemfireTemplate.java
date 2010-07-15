@@ -28,6 +28,9 @@ import org.springframework.util.ClassUtils;
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.CqInvalidException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
@@ -117,6 +120,12 @@ public class GemfireTemplate extends GemfireAccessor {
 		} catch (GemFireCheckedException ex) {
 			throw convertGemFireAccessException(ex);
 		} catch (GemFireException ex) {
+			throw convertGemFireAccessException(ex);
+		} catch (IndexInvalidException ex) {
+			throw convertGemFireAccessException(ex);
+		} catch (CqInvalidException ex) {
+			throw convertGemFireAccessException(ex);
+		} catch (QueryInvalidException ex) {
 			throw convertGemFireAccessException(ex);
 		} catch (RuntimeException ex) {
 			// callback code threw application exception
