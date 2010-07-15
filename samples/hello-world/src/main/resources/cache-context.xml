@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- GemFire cache bean -->
+	<bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
+	
+	<!-- hello world region -->
+	<!-- since no name is given, the region will be named after the bean -->
+	<bean id="hw-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache">
+		<property name="cacheListeners">
+			<bean class="org.springframework.data.gemfire.samples.helloworld.CacheLogger"/>
+		</property>
+		<property name="cacheWriter">
+			<bean class="org.springframework.data.gemfire.samples.helloworld.GridToWorldWriter"/>
+		</property>
+	</bean>
+	
+</beans>
