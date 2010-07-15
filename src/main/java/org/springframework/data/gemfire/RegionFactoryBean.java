@@ -32,8 +32,10 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 
 /**
  * FactoryBean for creating generic Gemfire {@link Region}s. Will try to first locate the region (by name)
@@ -56,6 +58,8 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 	private CacheLoader<K, V> cacheLoader;
 	private CacheWriter<K, V> cacheWriter;
 	private RegionAttributes<K, V> attributes;
+	private Scope scope;
+	private DataPolicy dataPolicy;
 
 	private Region<K, V> region;
 
@@ -64,7 +68,7 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 		Assert.notNull(cache, "Cache property must be set");
 		name = (!StringUtils.hasText(name) ? beanName : name);
 		Assert.hasText(name, "Name (or beanName) property must be set");
-		
+
 		// first get cache
 		region = cache.getRegion(name);
 		if (region != null) {
@@ -89,6 +93,14 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 
 			if (cacheWriter != null) {
 				attrFactory.setCacheWriter(cacheWriter);
+			}
+
+			if (dataPolicy != null) {
+				attrFactory.setDataPolicy(dataPolicy);
+			}
+
+			if (scope != null) {
+				attrFactory.setScope(scope);
 			}
 
 			region = cache.createRegion(name, attrFactory.create());
@@ -204,7 +216,7 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 	}
 
 	/**
-	 * Sets the cache loader used for the region used by this factory.
+	 * Sets the cache writer used for the region used by this factory.
 	 * Used only when a new region is created. Overrides the settings
 	 * specified through {@link #setAttributes(RegionAttributes)}.
 	 * 
@@ -215,7 +227,29 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 	}
 
 	/**
-	 * Sets the cache loader used for the region used by this factory.
+	 * Sets the data policy. Used only when a new region is created.
+	 * Overrides the settings specified through {@link #setAttributes(RegionAttributes)}.
+	 * 
+	 * @param scope
+	 */
+	public void setDataPolicy(DataPolicy dataPolicy) {
+		this.dataPolicy = dataPolicy;
+	}
+
+	/**
+	 * Sets the region scope. Used only when a new region is created.
+	 * Overrides the settings specified through {@link #setAttributes(RegionAttributes)}.
+	 * 
+	 * @see Scope
+	 * @param scope the region scope
+	 */
+	public void setScope(Scope scope) {
+		this.scope = scope;
+	}
+
+	/**
+	 * Sets the region attributes used for the region used by this factory.
+	 * Allows maximum control in specifying the region settings.
 	 * Used only when a new region is created.
 	 * 
 	 * @param attributes the attributes to set on a newly created region

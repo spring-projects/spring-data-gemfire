@@ -9,7 +9,7 @@
 	
 	<!-- hello world region -->
 	<!-- since no name is given, the region will be named after the bean -->
-	<bean id="hw-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache">
+	<bean id="hw-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:dataPolicy="REPLICATE">
 		<property name="cacheListeners">
 			<bean class="org.springframework.data.gemfire.samples.helloworld.CacheLogger"/>
 		</property>
