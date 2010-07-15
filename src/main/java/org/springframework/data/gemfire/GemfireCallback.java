@@ -40,5 +40,6 @@ public interface GemfireCallback<T> {
 	 * @param region GemFire Region
 	 * @return a result object, or <tt>null</tt> if none
 	 */
-	<K, V> T doInGemfire(Region<K, V> region) throws GemFireCheckedException, GemFireException;
+	@SuppressWarnings("unchecked")
+	T doInGemfire(Region region) throws GemFireCheckedException, GemFireException;
 }

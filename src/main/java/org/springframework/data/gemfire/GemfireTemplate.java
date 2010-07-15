@@ -28,6 +28,7 @@ import org.springframework.util.ClassUtils;
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * Helper class that simplifies GemFire data access code and converts {@link GemFireCheckedException} and
@@ -85,6 +86,14 @@ public class GemfireTemplate extends GemfireAccessor {
 		return this.exposeNativeRegion;
 	}
 
+	public <E> SelectResults<E> query(final String query) {
+		return execute(new GemfireCallback<SelectResults<E>>() {
+			@SuppressWarnings("unchecked")
+			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+				return region.query(query);
+			}
+		});
+	}
 
 	public <T> T execute(GemfireCallback<T> action) throws DataAccessException {
 		return execute(action, isExposeNativeRegion());
@@ -152,7 +161,7 @@ public class GemfireTemplate extends GemfireAccessor {
 				return (proxy == args[0]);
 			}
 			else if (method.getName().equals("hashCode")) {
-				// Use hashCode of PersistenceManager proxy.
+				// Use hashCode of region proxy.
 				return System.identityHashCode(proxy);
 			}
 			else if (method.getName().equals("close")) {
