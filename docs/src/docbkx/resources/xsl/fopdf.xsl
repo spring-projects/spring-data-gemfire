@@ -66,7 +66,7 @@
                                 </xsl:for-each>
                             </fo:block>
                             <fo:block font-family="Helvetica" font-size="12pt" padding="10mm">
-								<xsl:text>Copyright &#xA9; 2006-2009</xsl:text>
+								<xsl:text>Copyright &#xA9; 2010</xsl:text>
 							</fo:block>
 
                             <fo:block font-family="Helvetica" font-size="10pt" padding="1mm">
@@ -110,7 +110,7 @@
         <xsl:param name="gentext-key" select="''"/>
 		<xsl:variable name="Version">
 			<xsl:if test="//releaseinfo">
-				<xsl:text>Spring Dynamic Modules(</xsl:text><xsl:value-of select="//releaseinfo" /><xsl:text>)</xsl:text>
+				<xsl:text>Spring GemFire(</xsl:text><xsl:value-of select="//releaseinfo" /><xsl:text>)</xsl:text>
 			</xsl:if>
 		</xsl:variable>
         <xsl:choose>
