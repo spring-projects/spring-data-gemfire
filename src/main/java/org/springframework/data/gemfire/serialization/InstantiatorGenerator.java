@@ -29,8 +29,10 @@ public interface InstantiatorGenerator {
 
 	/**
 	 * Returns a (potentially new) Instantiator that optimizes the instantiation of the given types.
-	 *  
-	 * @return
+	 *
+	 * @param clazz class produced by the instantiator 
+	 * @param classId instantiator class id
+	 * @return an instantiator optimized for the given type.
 	 */
 	Instantiator getInstantiator(Class<? extends DataSerializable> clazz, int classId);
 }

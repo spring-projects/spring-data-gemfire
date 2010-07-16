@@ -230,7 +230,7 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 	 * Sets the data policy. Used only when a new region is created.
 	 * Overrides the settings specified through {@link #setAttributes(RegionAttributes)}.
 	 * 
-	 * @param scope
+	 * @param dataPolicy the region data policy
 	 */
 	public void setDataPolicy(DataPolicy dataPolicy) {
 		this.dataPolicy = dataPolicy;

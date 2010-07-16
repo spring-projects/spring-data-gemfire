@@ -6,12 +6,19 @@
 
 	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
 	<!-- as there can be only one cache per VM -->
-	<bean id="default-cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
+	<bean id="default-cache" class="org.springframework.data.gemfire.CacheFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="log-level">warning</prop>
+			</props>
+		</property>
+	</bean>
 	
 	<bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean">
 		<property name="properties">
 			<props>
 				<prop key="name">cache-with-props</prop>
+				<prop key="log-level">warning</prop>
 			</props>
 		</property>
 	</bean>
@@ -20,6 +27,7 @@
 		<property name="properties">
 			<props>
 				<prop key="name">cache-with-props</prop>
+				<prop key="log-level">warning</prop>
 			</props>
 		</property>
 	</bean>

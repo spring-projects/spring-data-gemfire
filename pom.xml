@@ -16,7 +16,7 @@
   </scm>
   <organization>
   	<name>SpringSource, a division of VMware</name>
-  	<url>www.SpringSource.org</url>
+  	<url>http://www.SpringSource.org</url>
   </organization>
   <inceptionYear>2010</inceptionYear>
   
@@ -255,7 +255,7 @@ limitations under the License.
           <groups>
             <group>
                <title>Spring GemFire Core</title>
-               <packages>org.springframework.data.gemfire.*</packages>
+               <packages>org.springframework.data.gemfire*</packages>
             </group>
             <group>
                <title>Spring GemFire Samples</title>
@@ -270,7 +270,7 @@ limitations under the License.
           <show>protected</show>
           <source>1.5</source>
           <links>
-            <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+            <link>http://java.sun.com/j2se/1.6.0/docs/api/</link>
             <link>
               http://static.springsource.org/spring/docs/3.0.x/javadoc-api/
             </link>
@@ -280,6 +280,7 @@ limitations under the License.
             <link>http://logging.apache.org/log4j/docs/api/</link>
             <link>http://jakarta.apache.org/commons/logging/apidocs/</link>
             <link>http://junit.sourceforge.net/javadoc/</link>
+            <link>http://atinject.googlecode.com/svn/trunk/javadoc/</link>
           </links>
         </configuration>
       </plugin>

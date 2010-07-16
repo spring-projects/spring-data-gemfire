@@ -137,7 +137,7 @@ public class GemfireTemplate extends GemfireAccessor {
 	 * Create a close-suppressing proxy for the given GemFire {@link Region}.
 	 * Called by the <code>execute</code> method.
 	 * 
-	 * @param pm the GemFire Region to create a proxy for
+	 * @param region the GemFire Region to create a proxy for
 	 * @return the Region proxy, implementing all interfaces
 	 * implemented by the passed-in Region object 
 	 * @see Region#close()

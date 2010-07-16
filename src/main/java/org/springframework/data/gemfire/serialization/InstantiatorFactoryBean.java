@@ -110,7 +110,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 	 * Sets the auto-registration of this {@link Instantiator} during the container startup.
 	 * Default is true, meaning the registration will occur once this factory is initialized.
 	 * 
-	 * @see #register(Instantiator)
+	 * @see Instantiator#register(Instantiator)
 	 * @param autoRegister the autoRegister to set
 	 */
 	public void setAutoRegister(boolean autoRegister) {

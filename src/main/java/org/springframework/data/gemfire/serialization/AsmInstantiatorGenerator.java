@@ -35,7 +35,7 @@ import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.Instantiator;
 
 /**
- * ASM based {@link InstantiatorFactory} implementation. This class relies on ASM 2.x package
+ * ASM based {@link InstantiatorGenerator} implementation. This class relies on ASM 2.x package
  * repacked by Spring framework to minimize the number of dependencies and avoid any versioning
  * confusion.
  * 
