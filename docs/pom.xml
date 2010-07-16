@@ -4,7 +4,7 @@
   <groupId>org.springframework.data.gemfire</groupId>
   <artifactId>spring-gemfire</artifactId>
   <version>1.0.0.M1-SNAPSHOT</version>
-  <name>Gemfire - Spring Framework Integration</name>
+  <name>Spring GemFire Documentation</name>
    
   <build>
     <plugins>
@@ -107,10 +107,13 @@
    </plugins>            
   </build>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>agilejava</id>
-      <url>http://agilejava.com/maven/</url>
-    </pluginRepository>
-  </pluginRepositories>
+  <distributionManagement>
+      <downloadUrl>http://www.springframework.org/spring-gemfire/</downloadUrl>
+      <site>
+          <id>static.springframework.org</id>
+          <name>SpringFramework.org</name>
+          <url>scp://static.springframework.org/var/www/domains/springframework.org/static/htdocs/spring-gemfire/snapshot-site/</url>
+      </site>
+  </distributionManagement>
+  
 </project>
