@@ -5,6 +5,19 @@
   <artifactId>spring-gemfire</artifactId>
   <version>1.0.0.M1-SNAPSHOT</version>
   <name>Spring GemFire Project</name>
+
+  <description>Spring GemFire Integration for Java</description>
+  <issueManagement>
+  	<system>Issue Tracker</system>
+  	<url>http://jira.springframework.org/browse/SGF</url>
+  </issueManagement>
+  <scm>
+  	<url>http://git.springsource.org/spring-gemfire</url>
+  </scm>
+  <organization>
+  	<name>SpringSource, a division of VMware</name>
+  	<url>www.SpringSource.org</url>
+  </organization>
   
   <properties>
     <spring.version>3.0.3.RELEASE</spring.version>
@@ -34,7 +47,7 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
       <version>${spring.version}</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
@@ -65,18 +78,6 @@
     
   </dependencies>
   
-  <description>Spring GemFire Integration for Java</description>
-  <issueManagement>
-  	<system>Issue Tracker</system>
-  	<url>http://jira.springframework.org/browse/SGF</url>
-  </issueManagement>
-  <scm>
-  	<url>http://git.springsource.org/spring-gemfire</url>
-  </scm>
-  <organization>
-  	<name>SpringSource, a division of VMware</name>
-  	<url>www.SpringSource.org</url>
-  </organization>
   <build>
 		<plugins>
 			<plugin>
