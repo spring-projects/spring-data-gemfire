@@ -91,23 +91,23 @@
 				</configuration>
 			</plugin>
 			<plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.1</version>
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <Main-Class>org.springframework.data.gemfire.samples.helloworld.Main</Main-Class>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-jar-plugin</artifactId>
+		        <version>2.1</version>
+		        <configuration>
+		          <archive>
+		            <manifestEntries>
+		              <Main-Class>org.springframework.data.gemfire.samples.helloworld.Main</Main-Class>
+		            </manifestEntries>
+		          </archive>
+		        </configuration>
+	      	</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.1</version>
 				<configuration>
-          <mainClass>org.springframework.data.gemfire.samples.helloworld.Main</mainClass>
+        			<mainClass>org.springframework.data.gemfire.samples.helloworld.Main</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>
