@@ -17,6 +17,8 @@
 package org.springframework.data.gemfire;
 
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +52,7 @@ public class CacheIntegrationTest {
 	public void testCacheWithProps() throws Exception {
 		Cache cache = ctx.getBean("cache-with-props", Cache.class);
 		// the name property seems to be ignored
-		// Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
+		Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
 	}
 
 	@Test
@@ -61,6 +63,5 @@ public class CacheIntegrationTest {
 	@Test
 	public void testCacheWithXml() throws Exception {
 		Cache cache = ctx.getBean("cache-with-xml", Cache.class);
-		//Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
 	}
 }

@@ -136,7 +136,8 @@ public class GemfireBeanFactoryLocator implements BeanFactoryLocator, BeanFactor
 		if (!StringUtils.hasText(factoryKey)) {
 			if (!canUseDefaultBeanFactory)
 				throw new IllegalArgumentException(
-						"a non-null factoryKey needs to be specified as there are more then one factoryKeys available ");
+						"a non-null factoryKey needs to be specified as there are more then one factoryKeys available; "
+								+ beanFactories.keySet());
 			factory = defaultFactory;
 		}
 		else {
