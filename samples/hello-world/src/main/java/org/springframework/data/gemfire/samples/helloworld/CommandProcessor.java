@@ -36,6 +36,8 @@ import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
 
 /**
+ * Entity processing and interpreting shell commands.
+ * 
  * @author Costin Leau
  */
 @Component
@@ -87,6 +89,7 @@ public class CommandProcessor {
 							System.out.println(process(br.readLine()));
 						} catch (Exception ex) {
 							System.out.println("Error executing last command " + ex.getMessage());
+							ex.printStackTrace();
 						}
 
 						System.out.print("-> ");
@@ -125,10 +128,18 @@ public class CommandProcessor {
 				}
 				String command = sc.next();
 
+
+
+				// query shortcut
+				if ("query".equalsIgnoreCase(command)) {
+					String query = line.trim().substring(command.length());
+					return region.query(query).toString();
+				}
+
 				// parse commands w/o arguments
 				if ("exit".equalsIgnoreCase(command)) {
 					threadActive = false;
-					return EMPTY;
+					return "Node exiting...";
 				}
 				if ("help".equalsIgnoreCase(command)) {
 					return help;
@@ -138,7 +149,7 @@ public class CommandProcessor {
 				}
 				if ("clear".equalsIgnoreCase(command)) {
 					region.clear();
-					return EMPTY;
+					return "Clearing grid";
 				}
 				if ("keys".equalsIgnoreCase(command)) {
 					return region.keySet().toString();
@@ -177,12 +188,6 @@ public class CommandProcessor {
 
 				if ("put".equalsIgnoreCase(command)) {
 					return region.put(arg, arg2);
-				}
-
-				// pass the entire string w/o the command
-				if ("query".equalsIgnoreCase(command)) {
-					String query = line.trim().substring(command.length());
-					return region.query(query).toString();
 				}
 
 				sc.close();
