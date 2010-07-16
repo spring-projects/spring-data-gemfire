@@ -77,7 +77,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 	}
 
 	public Class<?> getObjectType() {
-		return (list == null ? list.getClass() : Collection.class);
+		return (list != null ? list.getClass() : Collection.class);
 	}
 
 	public boolean isSingleton() {

@@ -19,6 +19,8 @@ package org.springframework.data.gemfire.serialization;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -81,9 +83,13 @@ public class AsmInstantiatorGenerator implements InstantiatorGenerator, Opcodes 
 		this(AsmInstantiatorGenerator.class.getClassLoader());
 	}
 
-	public AsmInstantiatorGenerator(ClassLoader classLoader) {
+	public AsmInstantiatorGenerator(final ClassLoader classLoader) {
 		Assert.notNull(classLoader);
-		this.classLoader = new BytecodeClassLoader(classLoader);
+		this.classLoader = AccessController.doPrivileged(new PrivilegedAction<BytecodeClassLoader>() {
+			public BytecodeClassLoader run() {
+				return new BytecodeClassLoader(classLoader);
+			}
+		});
 	}
 
 	public Instantiator getInstantiator(Class<? extends DataSerializable> clazz, int classId) {

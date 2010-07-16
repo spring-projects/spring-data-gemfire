@@ -154,7 +154,7 @@ public class GemfireTemplate extends GemfireAccessor {
 	 * Invocation handler that suppresses close calls on GemFire Regions.
 	 * @see Region#close()
 	 */
-	private class CloseSuppressingInvocationHandler implements InvocationHandler {
+	private static class CloseSuppressingInvocationHandler implements InvocationHandler {
 
 		private final Region<?, ?> target;
 

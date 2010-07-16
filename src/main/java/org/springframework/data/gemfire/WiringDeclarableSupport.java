@@ -37,7 +37,7 @@ import com.gemstone.gemfire.cache.Declarable;
  */
 public class WiringDeclarableSupport extends DeclarableSupport {
 
-	private final String BEAN_NAME_PROP = "bean-name";
+	private static final String BEAN_NAME_PROP = "bean-name";
 
 	@Override
 	protected void initInstance(Properties props) {

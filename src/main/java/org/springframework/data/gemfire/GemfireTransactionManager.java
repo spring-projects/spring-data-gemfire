@@ -128,7 +128,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	@Override
 	protected void doCommit(DefaultTransactionStatus status) throws TransactionException {
-		CacheTransactionObject txObject = (CacheTransactionObject) status.getTransaction();
+		//CacheTransactionObject txObject = (CacheTransactionObject) status.getTransaction();
 		if (status.isDebug()) {
 			logger.debug("Committing Gemfire local transaction on Cache [" + cache + "]");
 		}
@@ -145,7 +145,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	@Override
 	protected void doRollback(DefaultTransactionStatus status) throws TransactionException {
-		CacheTransactionObject txObject = (CacheTransactionObject) status.getTransaction();
+		//CacheTransactionObject txObject = (CacheTransactionObject) status.getTransaction();
 		if (status.isDebug()) {
 			logger.debug("Rolling back Cache local transaction for [" + cache + "]");
 		}
