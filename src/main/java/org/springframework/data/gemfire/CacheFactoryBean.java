@@ -37,6 +37,9 @@ import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.query.CqInvalidException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 
@@ -99,7 +102,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 				msg = "Created";
 			}
 
-			log.info(msg + " Gemfire Cache ['" + cache.getName() + "'] v. " + CacheFactory.getVersion());
+			log.info(msg + " GemFire Cache ['" + cache.getName() + "'] v. " + CacheFactory.getVersion());
 
 			// load/init cache.xml
 			if (cacheXml != null) {
@@ -139,6 +142,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 		if (ex instanceof GemFireException) {
 			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) ex);
+		}
+		if (ex instanceof IllegalArgumentException) {
+			if (ex instanceof IndexInvalidException || ex instanceof CqInvalidException
+					|| ex instanceof QueryInvalidException) {
+				return GemfireCacheUtils.convertGemfireAccessException((IllegalArgumentException) ex);
+			}
 		}
 
 		return null;
