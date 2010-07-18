@@ -21,6 +21,35 @@
 		</para>
 	</section>
 
+	<section id="apis:template">
+		<title><classname>GemfireTemplate</classname></title>
+		
+		<para>As with many other high-level abstractions provided by the Spring Framework and related projects, Spring GemFire provides a <emphasis>template</emphasis> that plays a central role
+		when working with the GemFire API. The class provides several <emphasis>one-liner</emphasis> methods, for popular operations but also the ability to <emphasis>execute</emphasis> code
+		against the native GemFire API without having to deal with exceptions for example through the <interfacename>GemfireCallback</interfacename>.</para>
+		
+		<para>The template class requires a GemFire <interfacename>Region</interfacename> instance and once configured is thread-safe and should be reused across multiple classes:</para>
+
+		<programlisting language="xml"><![CDATA[<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/>]]></programlisting>
+		
+		<para>Once the template is configured, one can use it alongside <interfacename>GemfireCallback</interfacename> to work directly with the GemFire <interfacename>Region</interfacename>,
+		without having to deal with exceptions, threading or resource management:
+		</para>
+		
+		<programlisting language="java"><![CDATA[template.execute(new GemfireCallback<Iterable<String>>() {
+	public Iterable<String> doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
+		// working against a Region of String
+		Region<String, String> region = reg;
+		
+		region.put("1", "one");
+		region.put("3", "three");
+		
+		// should return 1
+		return region.query("length < 5).size();
+	}
+});]]></programlisting>
+
+	</section>
 	<section id="apis:tx-mgmt">
 		<title>Transaction Management</title>
 
