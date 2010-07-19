@@ -37,7 +37,7 @@ public class HelloWorld {
 	private static final Log log = LogFactory.getLog(HelloWorld.class);
 
 	// inject the region
-	@Resource(name = "hw-region")
+	@Resource(name = "myWorld")
 	private Region<String, String> region;
 
 	@Resource

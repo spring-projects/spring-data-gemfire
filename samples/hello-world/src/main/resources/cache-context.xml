@@ -15,13 +15,11 @@
 	
 	<!-- hello world region -->
 	<!-- since no name is given, the region will be named after the bean -->
-	<bean id="hw-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:dataPolicy="REPLICATE" p:scope="DISTRIBUTED_ACK">
+	<bean id="myWorld" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:dataPolicy="REPLICATE" p:scope="DISTRIBUTED_ACK">
 		<property name="cacheListeners">
 			<bean class="org.springframework.data.gemfire.samples.helloworld.CacheLogger"/>
 		</property>
-		<property name="cacheWriter">
-			<bean class="org.springframework.data.gemfire.samples.helloworld.GridToWorldWriter"/>
-		</property>
 	</bean>
-	
+
+	<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="myWorld"/>
 </beans>

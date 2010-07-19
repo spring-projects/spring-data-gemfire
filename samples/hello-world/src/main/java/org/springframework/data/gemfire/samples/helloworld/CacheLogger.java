@@ -51,7 +51,7 @@ public class CacheLogger extends CacheListenerAdapter<Object, Object> {
 		Object value = event.getNewValue();
 
 		if (event.getOperation().isUpdate()) {
-			return "[" + key + "=" + event.getOldValue() + " to " + event.getNewValue() + "]";
+			return "[" + key + "] from [" + event.getOldValue() + "] to [" + event.getNewValue() + "]";
 		}
 		return "[" + key + "=" + value + "]";
 	}

@@ -150,6 +150,10 @@ public class GemfireTemplate extends GemfireAccessor {
 				new CloseSuppressingInvocationHandler(region));
 	}
 
+	//-------------------------------------------------------------------------
+	// Convenience methods for load, save, delete
+	//-------------------------------------------------------------------------
+
 	/**
 	 * Invocation handler that suppresses close calls on GemFire Regions.
 	 * @see Region#close()

@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
 
@@ -42,6 +45,8 @@ import com.gemstone.gemfire.cache.Region;
  */
 @Component
 public class CommandProcessor {
+
+	private static final Pattern COM = Pattern.compile("query|exit|help|size|clear|keys|values|map|containsKey|containsValue|get|remove|put");
 
 	private static final Log log = LogFactory.getLog(CommandProcessor.class);
 
@@ -120,15 +125,16 @@ public class CommandProcessor {
 		final Scanner sc = new Scanner(line);
 
 		return template.execute(new GemfireCallback<String>() {
+
 			public String doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
 				Region<String, String> region = reg;
 
-				if (!sc.hasNext()) {
-					return "Invalid command";
+				if (!sc.hasNext(COM)) {
+					return "Invalid command - type 'help' for supported operations";
 				}
 				String command = sc.next();
-
-
+				String arg1 = (sc.hasNext() ? sc.next() : null);
+				String arg2 = (sc.hasNext() ? sc.next() : null);
 
 				// query shortcut
 				if ("query".equalsIgnoreCase(command)) {
@@ -149,7 +155,7 @@ public class CommandProcessor {
 				}
 				if ("clear".equalsIgnoreCase(command)) {
 					region.clear();
-					return "Clearing grid";
+					return "Clearing grid..";
 				}
 				if ("keys".equalsIgnoreCase(command)) {
 					return region.keySet().toString();
@@ -158,36 +164,40 @@ public class CommandProcessor {
 					return region.values().toString();
 				}
 
-				if (!sc.hasNext()) {
-					return "Argument(s) needed";
-				}
+				if ("map".equalsIgnoreCase(command)) {
+					Set<Entry<String, String>> entrySet = region.entrySet();
+					if (entrySet.size() == 0)
+						return "[]";
 
-				String arg = sc.next();
+					StringBuilder sb = new StringBuilder();
+					for (Entry<String, String> entry : entrySet) {
+						sb.append("[");
+						sb.append(entry.getKey());
+						sb.append("=");
+						sb.append(entry.getValue());
+						sb.append("] ");
+					}
+					return sb.toString();
+				}
 
 				// commands w/ 1 arg
 				if ("containsKey".equalsIgnoreCase(command)) {
-					return EMPTY + region.containsKey(arg);
+					return EMPTY + region.containsKey(arg1);
 				}
 				if ("containsValue".equalsIgnoreCase(command)) {
-					return EMPTY + region.containsValue(arg);
+					return EMPTY + region.containsValue(arg1);
 				}
 				if ("get".equalsIgnoreCase(command)) {
-					return region.get(arg);
+					return region.get(arg1);
 				}
 				if ("remove".equalsIgnoreCase(command)) {
-					return region.remove(arg);
+					return region.remove(arg1);
 				}
 
 				// commands w/ 2 args
 
-				if (!sc.hasNext()) {
-					return "2 Argument needed";
-				}
-
-				String arg2 = sc.next();
-
 				if ("put".equalsIgnoreCase(command)) {
-					return region.put(arg, arg2);
+					return region.put(arg1, arg2);
 				}
 
 				sc.close();
