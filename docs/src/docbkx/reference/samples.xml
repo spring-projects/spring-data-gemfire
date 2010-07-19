@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<chapter id="samples">
+  <title>Sample Applications</title>
+
+	<para>
+	The Spring GemFire project includes one sample application. Named "Hello World", the sample demonstrates how to configure and use GemFire inside a 
+	Spring application. At runtime, the sample offers a <emphasis>shell</emphasis> to the user allowing him to run various commands against the grid.  
+	It provides an excellent starting point for users unfamiliar with the essential components or the Spring and GemFire concepts. 
+	</para>
+	<para>THe samples are available with the distribution and are both Maven-based. One can easily import them into any Maven-aware IDE (such as SpringSource
+	<ulink url="http://www.springsource.com/products/sts">Tool Suite</ulink>) or run them from the command-line.</para>
+
+	<section id="samples:hello-world">
+		<title>Hello World</title>
+		
+		<para>The Hello World sample demonstrates the core functionality of the Spring GemFire project. It bootstraps GemFire, configures it, executes arbitrary
+		commands against it and shuts it down with the application. Multiple instances can be started at the same time - they will seemingly work with each other
+		sharing data without any user intervention.
+		</para>
+		
+		<section id="samples:hello-world:start-stop">
+			<title>Starting and stopping the sample</title>
+		
+			<para>Hello World is designed as a stand-alone java application. It features a <classname>Main</classname> class which can be started either from your
+			IDE of choice (in Eclipse/STS through <literal>Run As/Java Application</literal>) or from the command line through Maven using <literal>mvn exec:java</literal>.
+			One can also use <literal>java</literal> directly on the resulting artifact if the classpath is properly set.  
+			</para>
+			
+			<para>To stop the sample, simply type <literal>exit</literal> at the command line or press <literal>Ctrl+C</literal> to stop the VM and shutdown the Spring container.</para>
+		</section>
+
+		<section id="samples:hello-world:run">
+			<title>Using the sample</title>
+		
+			<para>Once started, the sample will create a shared data grid and allow the user to issue commands against it. The output will likely look as follows:</para>
+			
+			<programlisting><![CDATA[INFO: Created GemFire Cache [Spring GemFire World] v. X.Y.Z
+INFO: Created new cache region [myWorld]
+INFO: Member xxxxxx:50694/51611 connecting to region [myWorld]
+Hello World!
+Want to interact with the world ? ...
+Supported commands are:
+
+get <key> - retrieves an entry (by key) from the grid
+put <key> <value> - puts a new entry into the grid
+remove <key> - removes an entry (by key) from the grid
+...]]></programlisting>
+			
+			<para>For example to add new items to the grid one can use:</para>
+			<programlisting>-> <emphasis role="bold">put 1 unu</emphasis>
+INFO: Added [1=unu] to the cache
+null
+-> <emphasis role="bold">put 1 one</emphasis>
+INFO: Updated [1] from [unu] to [one]
+unu
+-> <emphasis role="bold">size</emphasis>
+1
+-> <emphasis role="bold">put 2 two</emphasis>
+INFO: Added [2=two] to the cache
+null
+-> <emphasis role="bold">size</emphasis>
+2</programlisting>
+			
+			<para>Multiple instances can be created at the same time. Once started, the new VMs automatically see the existing region and its information:</para>
+
+			<programlisting>INFO: Connected to Distributed System ['Spring GemFire World'=xxxx:56218/49320@yyyyy]
+Hello World!
+...
+
+-> <emphasis role="bold">size</emphasis>
+2
+-> <emphasis role="bold">map</emphasis>
+[2=two] [1=one]
+-> <emphasis role="bold">query length = 3</emphasis>
+[one, two]
+</programlisting>
+			
+			<para>Experiment with the example, start (and stop) as many instances as you want, run various commands in one instance and see how the others react.
+			To preserve data, at least one instance needs to be alive all times - if all instances are shutdown, the grid data is completely destroyed (in this example
+			- to preserve data between runs, see the GemFire documentations).</para>
+		</section>
+		
+		<section id="samples:hello-world:explained">
+			<title>Hello World Sample Explained</title>
+			
+			<para>Hello World uses both Spring XML and annotations for its configuration. The initial boostrapping configuration is <literal>app-context.xml</literal> which 
+			includes the cache configuration, defined under <literal>cache-context.xml</literal> file and performs classpath 
+			<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-classpath-scanning">scanning</ulink> for Spring 
+			<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factorybeans-annotations">components</ulink>.
+			The cache configuration defines the GemFire cache, region and for illustrative purposes a simple cache listener that acts as a logger.
+			</para>
+			
+			<para>The main <emphasis>beans</emphasis> are <literal>HelloWorld</literal> and <literal>CommandProcessor</literal> which rely on the <classname>GemfireTemplate</classname>
+			to interact with the distributed fabric. Both classes use annotations to define their dependency and life-cycle callbacks.
+			</para>
+		</section>
+	</section>
+	
+</chapter>

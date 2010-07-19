@@ -40,6 +40,7 @@
       <xi:include href="reference/bootstrap.xml"/>
       <xi:include href="reference/data.xml"/>
       <xi:include href="reference/serialization.xml"/>
+      <xi:include href="reference/samples.xml"/>
       <!--
       <xi:include href="reference/test.xml"/>
       -->

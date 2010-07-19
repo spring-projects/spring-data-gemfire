@@ -5,8 +5,9 @@
 	<title>Preface</title>
 	<para>
 	Spring GemFire Integration focuses on integrating Spring Framework powerful, non-invasive programming model
-	and concepts with GemFire Enterprise Fabric, providing easier configuration and use. This document assumes the
-	reader is already familiar with the Spring Framework and GemFire concepts (at least at basic level) and APIs.
+	and concepts with GemFire Enterprise Fabric, providing easier configuration, use and high-level abstractions.
+	This document assumes the reader is already familiar with the Spring Framework and GemFire concepts 
+	(at least at basic level) and APIs.
 	</para>
 	
 	<para>
