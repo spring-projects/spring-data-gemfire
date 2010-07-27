@@ -59,8 +59,8 @@ public class CacheIntegrationTest {
 	@Test
 	public void testNamedCache() throws Exception {
 		Cache cache = ctx.getBean("named-cache", Cache.class);
-		Assert.assertEquals("named-cache", cache.getDistributedSystem().getName());
-		Assert.assertEquals("named-cache", cache.getName());
+		Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
+		Assert.assertEquals("cache-with-props", cache.getName());
 	}
 
 	@Test

@@ -26,7 +26,6 @@
 	<bean id="named-cache" class="org.springframework.data.gemfire.CacheFactoryBean">
 		<property name="properties">
 			<props>
-				<!-- cache-with-props is not being picked up or used. -->
 				<prop key="name">cache-with-props</prop>
 				<prop key="log-level">warning</prop>
 			</props>
