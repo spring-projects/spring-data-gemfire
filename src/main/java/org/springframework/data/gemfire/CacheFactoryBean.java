@@ -31,7 +31,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
@@ -48,7 +47,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  * or the creation of a new one.
 
  * <p>This class implements the {@link org.springframework.dao.support.PersistenceExceptionTranslator}
- * interface, as autodetected by Spring's
+ * interface, as auto-detected by Spring's
  * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor},
  * for AOP-based translation of native exceptions to Spring DataAccessExceptions.
  * Hence, the presence of this class automatically enables
@@ -62,7 +61,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	private static final Log log = LogFactory.getLog(CacheFactoryBean.class);
 
 	private Cache cache;
-	private String name;
 	private Resource cacheXml;
 	private Properties properties;
 	private DistributedSystem system;
@@ -82,7 +80,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		system = DistributedSystem.connect(cfgProps);
 
 		DistributedMember member = system.getDistributedMember();
-		log.info("Connected to Distributed System ['" + system.getName() + "'=" + member.getId() + "@"
+		log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@"
 				+ member.getHost() + "]");
 
 		// use the bean class loader to load Declarable classes
@@ -102,7 +100,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 				msg = "Created";
 			}
 
-			log.info(msg + " GemFire Cache ['" + cache.getName() + "'] v. " + CacheFactory.getVersion());
+			log.info(msg + " GemFire v." + CacheFactory.getVersion() + " Cache [" + cache.getName() + "]");
 
 			// load/init cache.xml
 			if (cacheXml != null) {
@@ -118,9 +116,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	private Properties mergeProperties() {
 		Properties cfgProps = (properties != null ? (Properties) properties.clone() : new Properties());
-		if (StringUtils.hasText(name)) {
-			cfgProps.setProperty("name", name.trim());
-		}
 		return cfgProps;
 	}
 
@@ -131,7 +126,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		cache = null;
 
 		if (system != null && system.isConnected()) {
-			system.releaseThreadsSockets();
+			DistributedSystem.releaseThreadsSockets();
 			system.disconnect();
 		}
 		system = null;
@@ -169,12 +164,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		this.beanClassLoader = classLoader;
 	}
 
-	public void setBeanName(String name) {
-		this.beanName = name;
-	}
-
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+	}
+
+	public void setBeanName(String name) {
+		this.beanName = name;
 	}
 
 	/**
@@ -184,15 +179,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setProperties(Properties properties) {
 		this.properties = properties;
-	}
-
-	/**
-	 * Sets the name of the cache.
-	 * 
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	/**

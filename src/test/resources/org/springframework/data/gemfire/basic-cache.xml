@@ -23,7 +23,7 @@
 		</property>
 	</bean>
 
-	<bean id="named-cache" class="org.springframework.data.gemfire.CacheFactoryBean" p:name="named-cache">
+	<bean id="named-cache" class="org.springframework.data.gemfire.CacheFactoryBean">
 		<property name="properties">
 			<props>
 				<!-- cache-with-props is not being picked up or used. -->
