@@ -37,8 +37,8 @@
     The <classname>WiringInstantiator</classname> works just like
     <classname>WiringDeclarableSupport</classname>, trying to first locate a
     bean definition as a wiring template and following to autowiring
-    otherwise. Please refer to the previous section (<link
-    linkend="apis:declarable"></link>) for more details on wiring
+    otherwise. Please refer to the previous section (<xref
+    linkend="apis:declarable"/>) for more details on wiring
     functionality.</para>
 
     <para>To use this <classname>Instantiator</classname>, simply declare it
