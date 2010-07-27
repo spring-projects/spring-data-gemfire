@@ -53,11 +53,14 @@ public class CacheIntegrationTest {
 		Cache cache = ctx.getBean("cache-with-props", Cache.class);
 		// the name property seems to be ignored
 		Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
+		Assert.assertEquals("cache-with-props", cache.getName());
 	}
 
 	@Test
 	public void testNamedCache() throws Exception {
-		ctx.getBean("named-cache");
+		Cache cache = ctx.getBean("named-cache", Cache.class);
+		Assert.assertEquals("named-cache", cache.getDistributedSystem().getName());
+		Assert.assertEquals("named-cache", cache.getName());
 	}
 
 	@Test
