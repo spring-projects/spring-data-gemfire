@@ -1,152 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-                 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <chapter id="bootstrap">
   <title>Bootstrapping GemFire through the Spring container</title>
 
-	<para>
-	One of the earlier tasks when using GemFire ad Spring framework is configuring the data grid through the IoC container. While this is 
-	<ulink url="http://community.gemstone.com/display/gemfire/Integrating+GemFire+with+the+Spring+IoC+Container">possible</ulink>
-	out of the box, the configuration tends to be verbose and address only the basic cases. To address this problem, the Spring/GemFire project
-	provides several classes that allow configuration of distributed caches or regions in a variaty of scenarios with minimal effort.
-	</para>
+  <para>One of the first tasks when using GemFire and Spring is to configure
+  the data grid through the IoC container. While this is <ulink
+  url="http://community.gemstone.com/display/gemfire/Integrating+GemFire+with+the+Spring+IoC+Container">possible</ulink>
+  out of the box, the configuration tends to be verbose and only address basic
+  cases. To address this problem, the Spring GemFire project provides several
+  classes that enable the configuration of distributed caches or regions to
+  support a variety of scenarios with minimal effort.</para>
 
-	<section id="bootstrap:cache">
-		<title>Configuring the GemFire <interfacename>Cache</interfacename></title>
-		
-		<para>In order to use the GemFire Fabric, one needs to either create a new <interfacename>Cache</interfacename> or connect to an existing one.
-		As in the current version of GemFire, there can be only one opened cache per VM (or classloader to be technically correct), in most cases the
-		cache is created once and then all other consumers connect to it.
-		</para>
-		
-		<para>In its simplest form, a cache can be defined in one line:</para>
-		
-		<programlisting language="xml"><![CDATA[<bean id="default-cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>]]></programlisting>
-		
-		<para>Here, the <emphasis>default-cache</emphasis>, using the defaults, will try to connect to an existing cache and, in case one does not exist,
-		create it.</para>
-		
-		<para>Especially in environments with opened caches, this basic configuration can go a long way. For scenarios where the cache needs to be configured,
-		the user can pass in a GemFire configuration:</para>
-		
-		<programlisting language="xml"><![CDATA[<bean id="cache-with-xml" class="org.springframework.data.gemfire.CacheFactoryBean">
-    <property name="cacheXml" value="classpath:cache.xml"/>
-</bean>]]></programlisting>
-		
-		<para>In this example, if the cache needs to be created, it will use the file named <literal>cache.xml</literal> located in the classpath root. Note that
-		the configuration makes use of Spring's 
-		<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/resources.html"><interfacename>Resource</interfacename></ulink>
-		abstraction to locate the file. This allows various search patterns to be used, depending on the running environment or the prefix specified (if any) by the value.
-		Additionally to an external configuration, one can specify GemFire settings directly through Java <classname>Properties</classname>. This can be quite handy when
-		just a certain setting or default needs to be changed:
-		</para>
+  <section id="bootstrap:cache">
+    <title>Configuring the GemFire
+    <interfacename>Cache</interfacename></title>
 
-		<programlisting language="xml"><![CDATA[<bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean">
-    <property name="properties">
-        <props>
-           <prop key="bind-address">127.0.0.1</prop>
-        </props>
-    </property>
-</bean>]]></programlisting>
-		 
-		<para>So far our examples relied on the primary Spring names (<literal>beans</literal>). However one is free to add other namespaces to simplify or enhance the configuration.
-		Let's do the same thing to the configuration above by using the <literal>util</literal> namespace and externalize the properties from the configuration (a best practice).</para>
-		
-		<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+    <para>In order to use the GemFire Fabric, one needs to either create a new
+    <interfacename>Cache</interfacename> or connect to an existing one. As in
+    the current version of GemFire, there can be only one opened cache per VM
+    (or classloader to be technically correct). In most cases the cache is
+    created once and then all other consumers connect to it.</para>
+
+    <para>In its simplest form, a cache can be defined in one line:</para>
+
+    <programlisting language="xml">&lt;bean id="default-cache" class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;</programlisting>
+
+    <para>Here, the <emphasis>default-cache</emphasis> will try to connect to
+    an existing cache and, in case one does not exist, create it. Since no
+    additional properties were specified the created cache uses the default
+    cache configuration.</para>
+
+    <para>Especially in environments with opened caches, this basic
+    configuration can go a long way. For scenarios where the cache needs to be
+    configured, the user can pass in a reference the GemFire configuration
+    file:</para>
+
+    <programlisting language="xml">&lt;bean id="cache-with-xml" class="org.springframework.data.gemfire.CacheFactoryBean"&gt;
+    &lt;property name="cacheXml" value="classpath:cache.xml"/&gt;
+&lt;/bean&gt;</programlisting>
+
+    <para>In this example, if the cache needs to be created, it will use the
+    file named <literal>cache.xml</literal> located in the classpath root.
+    Only if the cache is created will the configuration file be used. <note>
+        <para>Note that the configuration makes use of Spring's <ulink
+        url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/resources.html"><interfacename>Resource</interfacename></ulink>
+        abstraction to locate the file. This allows various search patterns to
+        be used, depending on the running environment or the prefix specified
+        (if any) by the value.</para>
+      </note>In addition to referencing an external configuration file one can
+    specify GemFire settings directly through Java
+    <classname>Properties</classname>. This can be quite handy when just a few
+    settings need to be changed:</para>
+
+    <programlisting language="xml">&lt;bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean"&gt;
+    &lt;property name="properties"&gt;
+        &lt;props&gt;
+           &lt;prop key="bind-address"&gt;127.0.0.1&lt;/prop&gt;
+        &lt;/props&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;</programlisting>
+
+    <para>So far our examples relied on the primary Spring namespace
+    (<literal>beans</literal>). However one is free to add other namespaces to
+    simplify or enhance the configuration. Let's do the same thing to the
+    configuration above by using the <literal>util</literal> namespace and
+    externalize the properties from the configuration which is a best
+    practice.</para>
+
+    <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"&gt;
 	
-	<bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean">
-	    <property name="properties">
-	        <util:properties location="classpath:/deployment/env.properties"/>
-	    </property>
-	</bean>	
-</beans>]]></programlisting>
-		
-		<para>It is worth pointing out again, that the cache settings apply only if the cache needs to be created, there is no opened cache in existence otherwise the existing cache
-		will be used (and the configuration will simply be discarded).</para> 
-	</section>
-	
-	<section id="bootstrap:region">
-		<title>Configuring a GemFire <interfacename>Region</interfacename></title>
-		
-		<para>Once the <interfacename>Cache</interfacename> is configured, one needs to configure one or more <interfacename>Region</interfacename>s for interacting with the data 
-		fabric. In a similar manner to the <classname>CacheFactoryBean</classname>, the <classname>RegionFactoryBean</classname> allows existing <interfacename>Region</interfacename>s
-		to retrieved or, in case they don't exist, created using various settings. One can specify the <interfacename>Region</interfacename> name, whether it will be destroyed on shutdown
-		(acting as a temporary cache), the associated <interfacename>CacheLoader</interfacename>s, <interfacename>CacheListener</interfacename>s and <interfacename>CacheWriter</interfacename>s
-		and if needed, the <interfacename>RegionAttributes</interfacename> for full customization.
-		</para>
-		
-		<para>Let us start with a simple region declaration, named <emphasis>basic</emphasis> using a nested cache declaration:</para>
+	&lt;bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean"&gt;
+	    &lt;property name="properties"&gt;
+	        &lt;util:properties location="classpath:/deployment/env.properties"/&gt;
+	    &lt;/property&gt;
+	&lt;/bean&gt;	
+&lt;/beans&gt;</programlisting>
 
-		<programlisting language="xml"><![CDATA[<bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean">
-	<property name="cache">
-	    <bean class="org.springframework.data.gemfire.CacheFactoryBean"/>
-	</property>
-	<property name="name" value="basic"/>
-</bean>]]></programlisting>
+    <para>It is worth pointing out again, that the cache settings apply only
+    if the cache needs to be created, there is no opened cache in existence
+    otherwise the existing cache will be used and the configuration will
+    simply be discarded.</para>
+  </section>
 
-		<para>Since the region bean definition name is usually the same with that of the cache, the <literal>name</literal> property can be omitted (the bean name will be used automatically).
-		Additionally by using the name the <literal><ulink url="http://static.springsource.org/spring/docs/2.5.x/reference/beans.html#beans-p-namespace">p</ulink></literal> namespace, 
-		the configuration can be simplified even more:</para>
+  <section id="bootstrap:region">
+    <title>Configuring a GemFire <interfacename>Region</interfacename></title>
 
-		<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+    <para>Once the <interfacename>Cache</interfacename> is configured, one
+    needs to configure one or more <interfacename>Region</interfacename>s to
+    interact with the data fabric. In a similar manner to the
+    <classname>CacheFactoryBean</classname>, the
+    <classname>RegionFactoryBean</classname> allows existing
+    <interfacename>Region</interfacename>s to retrieved or, in case they don't
+    exist, created using various settings. One can specify the
+    <interfacename>Region</interfacename> name, whether it will be destroyed
+    on shutdown (thereby acting as a temporary cache), the associated
+    <interfacename>CacheLoader</interfacename>s,
+    <interfacename>CacheListener</interfacename>s and
+    <interfacename>CacheWriter</interfacename>s and if needed, the
+    <interfacename>RegionAttributes</interfacename> for full
+    customization.</para>
+
+    <para>Let us start with a simple region declaration, named
+    <emphasis>basic</emphasis> using a nested cache declaration:</para>
+
+    <programlisting language="xml">&lt;bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean"&gt;
+	&lt;property name="cache"&gt;
+	    &lt;bean class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;
+	&lt;/property&gt;
+	&lt;property name="name" value="basic"/&gt;
+&lt;/bean&gt;</programlisting>
+
+    <para>Since the region bean definition name is usually the same with that
+    of the cache, the <literal>name</literal> property can be omitted (the
+    bean name will be used automatically). Additionally by using the name the
+    <literal><ulink
+    url="http://static.springsource.org/spring/docs/2.5.x/reference/beans.html#beans-p-namespace">p</ulink></literal>
+    namespace, the configuration can be simplified even more:</para>
+
+    <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:p="http://www.springframework.org/schema/p"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"&gt;
 	
-    <!-- shared cache across regions -->
-    <bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/>
+    &lt;!-- shared cache across regions --&gt;
+    &lt;bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;
 	
-    <!-- region named 'basic' -->
-    <bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"/>
+    &lt;!-- region named 'basic' --&gt;
+    &lt;bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"/&gt;
 
-    <!-- region with a name different then the bean definition -->
-    <bean id="root-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="default-region"/>
-</beans>]]></programlisting>
-		
-		<para>It is worth pointing out, that for the vast majority of cases configuring the cache loader, listener and writer through the Spring container is preferred since the same instances
-		can be reused across multiple regions and additionally, the instances themselves can benefit from the container rich feature set:</para>
-		
-		<programlisting language="xml"><![CDATA[<bean id="cacheLogger" class="org.some.pkg.CacheLogger"/>
-<bean id="customized-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache">
-	<property name="cacheListeners">
-		<array>
-			<ref name="cacheLogger"/>
-			<bean class="org.some.other.pkg.SysoutLogger"/>
-		</array>
-	</property>
-	<property name="cacheLoader"><bean class="org.some.pkg.CacheLoad"/></property>
-	<property name="cacheWriter"><bean class="org.some.pkg.CacheWrite"/></property>
-</bean>
-	
-<bean id="local-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache">
-	<property name="cacheListeners" ref="cacheLogger"/>	
-</bean>]]></programlisting>
+    &lt;!-- region with a name different then the bean definition --&gt;
+    &lt;bean id="root-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="default-region"/&gt;
+&lt;/beans&gt;</programlisting>
 
-		<section id="bootstrap:region:client">
-			<title>Configuring a <emphasis>client</emphasis> <interfacename>Region</interfacename> </title>
-			
-			<para>For scenarios where a <emphasis>CacheServer</emphasis> is used and <emphasis>clients</emphasis> need to be configured, SGI offers a dedicated configuration class named:
-			<classname>ClientRegionFactoryBean</classname>. This allows client <emphasis>interests</emphasis> to be registered in both key and regex form through <classname>Interest</classname>
-			and <classname>RegexInterest</classname> classes in the <literal>org.springframework.data.gemfire</literal> package:</para>
-			
-			<programlisting language="xml"><![CDATA[<bean id="interested-client" class="org.springframework.data.gemfire.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region">
-	<property name="interests">
-		<array>
-			<!-- key-based interest -->
-			<bean class="org.springframework.data.gemfire.Interest" p:key="Vlaicu" p:policy="NONE"/>
-			<!-- regex-based interest -->
-			<bean class="org.springframework.data.gemfire.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/>
-		</array>
-	</property>
-</bean>]]></programlisting>
-		</section>
-		
-	</section>
+    <para>It is worth pointing out, that for the vast majority of cases
+    configuring the cache loader, listener and writer through the Spring
+    container is preferred since the same instances can be reused across
+    multiple regions and additionally, the instances themselves can benefit
+    from the container's rich feature set:</para>
+
+    <programlisting language="xml">&lt;bean id="cacheLogger" class="org.some.pkg.CacheLogger"/&gt;
+&lt;bean id="customized-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"&gt;
+	&lt;property name="cacheListeners"&gt;
+		&lt;array&gt;
+			&lt;ref name="cacheLogger"/&gt;
+			&lt;bean class="org.some.other.pkg.SysoutLogger"/&gt;
+		&lt;/array&gt;
+	&lt;/property&gt;
+	&lt;property name="cacheLoader"&gt;&lt;bean class="org.some.pkg.CacheLoad"/&gt;&lt;/property&gt;
+	&lt;property name="cacheWriter"&gt;&lt;bean class="org.some.pkg.CacheWrite"/&gt;&lt;/property&gt;
+&lt;/bean&gt;
 	
+&lt;bean id="local-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"&gt;
+	&lt;property name="cacheListeners" ref="cacheLogger"/&gt;	
+&lt;/bean&gt;</programlisting>
+
+    <section id="bootstrap:region:client">
+      <title>Configuring a <emphasis>client</emphasis>
+      <interfacename>Region</interfacename></title>
+
+      <para>For scenarios where a <emphasis>CacheServer</emphasis> is used and
+      <emphasis>clients</emphasis> need to be configured, SGI offers a
+      dedicated configuration class named:
+      <classname>ClientRegionFactoryBean</classname>. This allows client
+      <emphasis>interests</emphasis> to be registered in both key and regex
+      form through <classname>Interest</classname> and
+      <classname>RegexInterest</classname> classes in the
+      <literal>org.springframework.data.gemfire</literal> package:</para>
+
+      <programlisting language="xml">&lt;bean id="interested-client" class="org.springframework.data.gemfire.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region"&gt;
+	&lt;property name="interests"&gt;
+		&lt;array&gt;
+			&lt;!-- key-based interest --&gt;
+			&lt;bean class="org.springframework.data.gemfire.Interest" p:key="Vlaicu" p:policy="NONE"/&gt;
+			&lt;!-- regex-based interest --&gt;
+			&lt;bean class="org.springframework.data.gemfire.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/&gt;
+		&lt;/array&gt;
+	&lt;/property&gt;
+&lt;/bean&gt;</programlisting>
+    </section>
+  </section>
 </chapter>

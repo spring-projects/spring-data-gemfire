@@ -1,119 +1,190 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-                 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <chapter id="apis">
   <title>Working with the GemFire APIs</title>
 
-	<para>
-	Once the GemFire cache and regions have been configured, these can injected and used inside application objects. This chapter describes the integration with the
-	Spring transaction management, <classname>DaoException</classname> hierarchy and wiring of GemFire managed objects.
-	</para>
+  <para>Once the GemFire cache and regions have been configured they can
+  injected and used inside application objects. This chapter describes the
+  integration with Spring's transaction management functionality and
+  <classname>DaoException</classname> hierarchy. It also covers support for
+  dependency injection of GemFire managed objects.</para>
 
-	<section id="apis:exception-translation">
-		<title>Exception translation</title>
+  <section id="apis:exception-translation">
+    <title>Exception translation</title>
 
-		<para>Using a new API requires not just accommodating to the new semantics but also handling its particular exception set. To accommodate this case, Spring Framework provides a
-		generic, consistent exception <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/dao.html#dao-exceptions">hierarchy</ulink> that
-		abstracts one from proprietary (and usually checked) exceptions to a set of focused runtime exceptions. As mentioned in the Spring Framework documentation, by using annotations
-		(<literal>@Repository</literal>) or AOP, exception translations happens automatically without any code changes. The same holds true for GemFire as long as at least a  
-		<classname>CacheFactoryBean</classname> is declared. The <interfacename>Cache</interfacename> factory acts as an exception translator which is automatically detected by the
-		Spring infrastructure and used accordingly.
-		</para>
-	</section>
+    <para>Using a new data access technology requires not just accommodating
+    to a new API but also handling exceptions specific to that technology. To
+    accommodate this case, Spring Framework provides a technology agnostic,
+    consistent exception <ulink
+    url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/dao.html#dao-exceptions">hierarchy</ulink>
+    that abstracts one from proprietary (and usually checked) exceptions to a
+    set of focused runtime exceptions. As mentioned in the Spring Framework
+    documentation, <ulink
+    url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/orm.html#orm-exception-translation">exception
+    translation</ulink> can be applied transparently to your data access
+    objects through the use of the <literal>@Repository</literal> annotation
+    and AOP by defining a PersistenceExceptionTranslationPostProcessor bean.
+    The same exception translation functionality is enabled when using Gemfire
+    as long as at least a <classname>CacheFactoryBean</classname> is declared.
+    The <interfacename>Cache</interfacename> factory acts as an exception
+    translator which is automatically detected by the Spring infrastructure
+    and used accordingly.</para>
+  </section>
 
-	<section id="apis:template">
-		<title><classname>GemfireTemplate</classname></title>
-		
-		<para>As with many other high-level abstractions provided by the Spring Framework and related projects, Spring GemFire provides a <emphasis>template</emphasis> that plays a central role
-		when working with the GemFire API. The class provides several <emphasis>one-liner</emphasis> methods, for popular operations but also the ability to <emphasis>execute</emphasis> code
-		against the native GemFire API without having to deal with exceptions for example through the <interfacename>GemfireCallback</interfacename>.</para>
-		
-		<para>The template class requires a GemFire <interfacename>Region</interfacename> instance and once configured is thread-safe and should be reused across multiple classes:</para>
+  <section id="apis:template">
+    <title><classname>GemfireTemplate</classname></title>
 
-		<programlisting language="xml"><![CDATA[<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/>]]></programlisting>
-		
-		<para>Once the template is configured, one can use it alongside <interfacename>GemfireCallback</interfacename> to work directly with the GemFire <interfacename>Region</interfacename>,
-		without having to deal with exceptions, threading or resource management:
-		</para>
-		
-		<programlisting language="java"><![CDATA[template.execute(new GemfireCallback<Iterable<String>>() {
-	public Iterable<String> doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
+    <para>As with many other high-level abstractions provided by the Spring
+    Framework and related projects, Spring GemFire provides a
+    <emphasis>template</emphasis> that plays a central role when working with
+    the GemFire API. The class provides several <emphasis>one-liner</emphasis>
+    methods, for popular operations but also the ability to
+    <emphasis>execute</emphasis> code against the native GemFire API without
+    having to deal with exceptions for example through the
+    <interfacename>GemfireCallback</interfacename>.</para>
+
+    <para>The template class requires a GemFire
+    <interfacename>Region</interfacename> instance and once configured is
+    thread-safe and should be reused across multiple classes:</para>
+
+    <programlisting language="xml">&lt;bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/&gt;</programlisting>
+
+    <para>Once the template is configured, one can use it alongside
+    <interfacename>GemfireCallback</interfacename> to work directly with the
+    GemFire <interfacename>Region</interfacename>, without having to deal with
+    checked exceptions, threading or resource management concerns:</para>
+
+    <programlisting language="java">template.execute(new GemfireCallback&lt;Iterable&lt;String&gt;&gt;() {
+	public Iterable&lt;String&gt; doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
 		// working against a Region of String
-		Region<String, String> region = reg;
+		Region&lt;String, String&gt; region = reg;
 		
 		region.put("1", "one");
 		region.put("3", "three");
 		
 		// should return 1
-		return region.query("length < 5).size();
+		return region.query("length &lt; 5).size();
 	}
-});]]></programlisting>
+});</programlisting>
+  </section>
 
-	</section>
-	<section id="apis:tx-mgmt">
-		<title>Transaction Management</title>
+  <section id="apis:tx-mgmt">
+    <title>Transaction Management</title>
 
-		<para>One of the most popular features of Spring Framework is <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html">transaction</ulink>
-		management. If you are not familiar with it, we strongly recommend 
-		<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html#transaction-motivation">looking</ulink> into it as it offers a consistent programming
-		model that works transparently across multiple API that can be configured either programmatically or declaratively (the most popular choice).</para>
-		
-		<para>For Gemfire, SGI provides a dedicated, per-cache, transaction manager that once declared, allows actions on the <interfacename>Region</interfacename>s to be grouped and executed atomically through
-		Spring:</para>
-		
-		<programlisting language="xml"><![CDATA[<bean id="transaction-manager" class="org.springframework.data.gemfire.GemfireTransactionManager" p:cache-ref="cache"/>]]></programlisting>
-		
-		<para>Note that currently GemFire supports optimistic transactions with <emphasis>read committed</emphasis> isolation. Further more to guarantee this isolation, developers should
-		avoid making <emphasis>in-place</emphasis> changes, that is manually modifying the values present in the cache. To prevent this from happening, the transaction manager configured the cache
-		to use <emphasis>copy on read</emphasis> semantics, meaning a clone of the actual value is created, each time a read is performed. This behaviour can be disabled if needed through the
-		<literal>copyOnRead</literal> property. For more information on the semantics of the underlying GemFire transaction manager, see the GemFire 
-		<ulink url="http://www.gemstone.com/docs/6.0.1/product/docs/japi/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
-	</section>
-	
-	<section id="apis:declarable">
-		<title>Wiring <interfacename>Declarable</interfacename> components</title>
-		
-		<sidebar>
-			<title>Eliminate <interfacename>Declarable</interfacename> components</title>
-			<para>One can configure custom types entirely inside through Spring as mentioned in <xref linkend="bootstrap:region"/>. That way, one does not have to implement the
-			<interfacename>Declarable</interfacename> interface and gets access to all the features of the Spring IoC container (including not just dependency injection but also
-			life-cycle and instance management).</para>
-		</sidebar>
+    <para>One of the most popular features of Spring Framework is <ulink
+    url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html">transaction</ulink>
+    management. If you are not familiar with it, we strongly recommend <ulink
+    url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html#transaction-motivation">looking</ulink>
+    into it as it offers a consistent programming model that works
+    transparently across multiple APIs that can be configured either
+    programmatically or declaratively (the most popular choice).</para>
 
-		<para>GemFire XML configuration (usually named <literal>cache.xml</literal> allows <emphasis>user</emphasis> objects to be declared as part of the fabric config. Usually these objects
-		are <interfacename>CacheLoader</interfacename>s or other pluggable components into GemFire. Out of the box, each such type declared through XML must implement the <interfacename>Declarable</interfacename> 
-		interface which allows arbitrary parameters to be passed to the declared class through a <classname>Properties</classname> instance.</para>
-		
-		<para>Consider the following declaration (taken from the <interfacename>Declarable</interfacename> javadoc):</para>
-		
-		<programlisting language="xml"><![CDATA[<cache-loader>
-   <class-name>com.company.app.DBLoader</class-name>
-   <parameter name="URL">
-     <string>jdbc://12.34.56.78/mydb</string>
-   </parameter>
-</cache-loader>]]></programlisting>
+    <para>For Gemfire, SGI provides a dedicated, per-cache, transaction
+    manager that once declared, allows actions on the
+    <interfacename>Region</interfacename>s to be grouped and executed
+    atomically through Spring:</para>
 
-		<para>To simplify the task of parsing, converting the parameters and initializing the object, SGI offers a base class (<classname>WiringDeclarableSupport</classname>) that allows GemFire 
-		user objects to be wired through a <emphasis>template</emphasis> bean definition or, in case that is missing perform autowiring through the Spring container. To take advantage of this feature,
-		the user objects need to extends <classname>WiringDeclarableSupport</classname> which automatically locates the declaring <interfacename>BeanFactory</interfacename> and performs wiring as
-		part of the initialization process.
-		</para>
-		
-		<sidebar>
-		<title>Why is a base class needed?</title>
-		<para>Unfortunately, in the current GemFire release there is no concept of an <emphasis>object factory</emphasis> and the types declared are instantiated and used as is - that is
-		there are no other ways in which third parties can take care of the object creation outside GemFire. This feature is planned for the up-coming GemFire release (6.5)</para>
-		</sidebar>
-		
-		<section id="apis:declarable:template-wiring">
-			<title>Using <emphasis>template</emphasis> definitions</title>
-			
-			<para>When used <classname>WiringDeclarableSupport</classname> tries to first locate an existing bean definition and use that as wiring template. Unless specified, the component
-			class name will be used as an implicit bean definition name.
-			
-			Let's see how our <classname>DBLoader</classname> declaration would look in that case:</para>
-			
-			<programlisting language="java" ><![CDATA[public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
+    <programlisting language="xml">&lt;bean id="transaction-manager" class="org.springframework.data.gemfire.GemfireTransactionManager" p:cache-ref="cache"/&gt;</programlisting>
+
+    <para>Note that currently GemFire supports optimistic transactions with
+    <emphasis>read committed</emphasis> isolation. Furthermore, to guarantee
+    this isolation, developers should avoid making
+    <emphasis>in-place</emphasis> changes, that is manually modifying the
+    values present in the cache. To prevent this from happening, the
+    transaction manager configured the cache to use <emphasis>copy on
+    read</emphasis> semantics, meaning a clone of the actual value is created,
+    each time a read is performed. This behaviour can be disabled if needed
+    through the <literal>copyOnRead</literal> property. For more information
+    on the semantics of the underlying GemFire transaction manager, see the
+    GemFire <ulink
+    url="http://www.gemstone.com/docs/6.0.1/product/docs/japi/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
+  </section>
+
+  <section id="apis:declarable">
+    <title>Wiring <interfacename>Declarable</interfacename> components</title>
+
+    <para>GemFire XML configuration (usually named
+    <literal>cache.xml</literal> allows <emphasis>user</emphasis> objects to
+    be declared as part of the fabric configuration. Usually these objects are
+    <interfacename>CacheLoader</interfacename>s or other pluggable components
+    into GemFire. Out of the box in GemFire, each such type declared through
+    XML must implement the <interfacename>Declarable</interfacename> interface
+    which allows arbitrary parameters to be passed to the declared class
+    through a <classname>Properties</classname> instance.</para>
+
+    <para>In this section we describe how you can configure the pluggable
+    components defined in <literal>cache.xml</literal> using Spring while
+    keeping your Cache/Region configuration defined in
+    <literal>cache.xml</literal> This allows your pluggable components to
+    focus on the application logic and not the location or creation of
+    DataSources or other collaboration object.</para>
+
+    <para>However, if you are starting on a green-field project, it is
+    recommended that you configure Cache, Region, and other pluggable
+    components directly in Spring. This avoids inheriting from the
+    <interfacename>Declarable</interfacename> interface or the base class
+    presented in this section. See the following sidebar for more information
+    on this approach.</para>
+
+    <sidebar>
+      <title>Eliminate <interfacename>Declarable</interfacename>
+      components</title>
+
+      <para>One can configure custom types entirely inside through Spring as
+      mentioned in <xref linkend="bootstrap:region" />. That way, one does not
+      have to implement the <interfacename>Declarable</interfacename>
+      interface and gets access to all the features of the Spring IoC
+      container (including not just dependency injection but also life-cycle
+      and instance management).</para>
+    </sidebar>
+
+    <para>As an example of configuring a
+    <interfacename>Declarable</interfacename> component using Spring, consider
+    the following declaration (taken from the
+    <interfacename>Declarable</interfacename> javadoc):</para>
+
+    <programlisting language="xml">&lt;cache-loader&gt;
+   &lt;class-name&gt;com.company.app.DBLoader&lt;/class-name&gt;
+   &lt;parameter name="URL"&gt;
+     &lt;string&gt;jdbc://12.34.56.78/mydb&lt;/string&gt;
+   &lt;/parameter&gt;
+&lt;/cache-loader&gt;</programlisting>
+
+    <para>To simplify the task of parsing, converting the parameters and
+    initializing the object, SGI offers a base class
+    (<classname>WiringDeclarableSupport</classname>) that allows GemFire user
+    objects to be wired through a <emphasis>template</emphasis> bean
+    definition or, in case that is missing perform autowiring through the
+    Spring container. To take advantage of this feature, the user objects need
+    to extend <classname>WiringDeclarableSupport</classname> which
+    automatically locates the declaring
+    <interfacename>BeanFactory</interfacename> and performs wiring as part of
+    the initialization process.</para>
+
+    <sidebar>
+      <title>Why is a base class needed?</title>
+
+      <para>In the current GemFire release there is no concept of an
+      <emphasis>object factory</emphasis> and the types declared are
+      instantiated and used as is - that is there are no other ways in which
+      third parties can take care of the object creation outside GemFire.
+      Support for this feature is planned for the up-coming GemFire release
+      (6.5)</para>
+    </sidebar>
+
+    <section id="apis:declarable:template-wiring">
+      <title>Configuration using <emphasis>template</emphasis>
+      definitions</title>
+
+      <para>When used <classname>WiringDeclarableSupport</classname> tries to
+      first locate an existing bean definition and use that as wiring
+      template. Unless specified, the component class name will be used as an
+      implicit bean definition name. Let's see how our
+      <classname>DBLoader</classname> declaration would look in that
+      case:</para>
+
+      <programlisting language="java">public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 	private DataSource dataSource;
 	
 	public void setDataSource(DataSource ds){
@@ -121,103 +192,120 @@
 	}
 	
 	public Object load(LoaderHelper helper) { ... }
-}]]></programlisting>
-			
-			<programlisting language="xml"><![CDATA[<cache-loader>
-   <class-name>com.company.app.DBLoader</class-name>
-   <!-- no parameter is passed (use the bean implicit name
-   		that is the class name) -->
-</cache-loader>]]></programlisting>
-			
-			<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+}</programlisting>
+
+      <programlisting language="xml">&lt;cache-loader&gt;
+   &lt;class-name&gt;com.company.app.DBLoader&lt;/class-name&gt;
+   &lt;!-- no parameter is passed (use the bean implicit name
+   		that is the class name) --&gt;
+&lt;/cache-loader&gt;</programlisting>
+
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
        xsi:schemaLocation="http://www.springframework.org/schema/beans 
-           http://www.springframework.org/schema/beans/spring-beans.xsd">
+           http://www.springframework.org/schema/beans/spring-beans.xsd"&gt;
 
-	 <bean id="dataSource" ... />
+	 &lt;bean id="dataSource" ... /&gt;
 	             
-     <!-- template bean definition -->
-     <bean id="com.company.app.DBLoader" abstract="true" p:dataSource-ref="dataSource"/>
-</beans>]]></programlisting>
-					
-			<para>In the scenario above, as no parameter was specified, a bean with id/name <literal>com.company.app.DBLoader</literal> was searched for. The found bean definition is used
-			as a template for wiring the instance created by GemFire. For cases where the bean name uses a different convention, one can pass in the <literal>bean-name</literal> parameter
-			in the GemFire configuration:</para>
-			
-					<programlisting language="xml"><![CDATA[<cache-loader>
-   <class-name>com.company.app.DBLoader</class-name>
-   <!-- pass the bean definition template name
-        as parameter -->
-   <parameter name="bean-name">
-     <string>template-bean</string>
-   </parameter>
-</cache-loader>]]></programlisting>
-			
-			<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+     &lt;!-- template bean definition --&gt;
+     &lt;bean id="com.company.app.DBLoader" abstract="true" p:dataSource-ref="dataSource"/&gt;
+&lt;/beans&gt;</programlisting>
+
+      <para>In the scenario above, as no parameter was specified, a bean with
+      id/name <literal>com.company.app.DBLoader</literal> was searched for.
+      The found bean definition is used as a template for wiring the instance
+      created by GemFire. For cases where the bean name uses a different
+      convention, one can pass in the <literal>bean-name</literal> parameter
+      in the GemFire configuration:</para>
+
+      <programlisting language="xml">&lt;cache-loader&gt;
+   &lt;class-name&gt;com.company.app.DBLoader&lt;/class-name&gt;
+   &lt;!-- pass the bean definition template name
+        as parameter --&gt;
+   &lt;parameter name="bean-name"&gt;
+     &lt;string&gt;template-bean&lt;/string&gt;
+   &lt;/parameter&gt;
+&lt;/cache-loader&gt;</programlisting>
+
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
        xsi:schemaLocation="http://www.springframework.org/schema/beans 
-           http://www.springframework.org/schema/beans/spring-beans.xsd">
+           http://www.springframework.org/schema/beans/spring-beans.xsd"&gt;
 
-	 <bean id="dataSource" ... />
+	 &lt;bean id="dataSource" ... /&gt;
 	             
-     <!-- template bean definition -->   
-     <bean id="template-bean" abstract="true" p:dataSource-ref="dataSource"/>
+     &lt;!-- template bean definition --&gt;   
+     &lt;bean id="template-bean" abstract="true" p:dataSource-ref="dataSource"/&gt;
      
-</beans>]]></programlisting>
+&lt;/beans&gt;</programlisting>
 
-			<note><para>The <emphasis>template</emphasis> bean definitions do not have to be declared in XML - any format is allowed (Groovy, annotations, etc..).</para></note>
+      <note>
+        <para>The <emphasis>template</emphasis> bean definitions do not have
+        to be declared in XML - any format is allowed (Groovy, annotations,
+        etc..).</para>
+      </note>
+    </section>
 
-		</section>
+    <section id="apis:declarable:autowiring">
+      <title>Configuration using auto-wiring and annotations</title>
 
-		<section id="apis:declarable:autowiring">
-			<title>Using Auto/Annotation-wiring</title>
-			
-			<para>If no bean definition is found, by default, <classname>WiringDeclarableSupport</classname> will 
-			<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factory-autowire">autowire</ulink>
-			the declaring instance. In short, this means that unless any <emphasis>metadata</emphasis> is offered by the instance, the container will find the object setters and try to automatically
-			satisfy	these dependencies. However, one can also use JDK 5 annotations to provide additional information to the auto-wiring process. We strongly recommend reading the dedicated
-			<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-annotation-config">chapter</ulink> in the Spring documentation for more information
-			on the supported annotations and enabling factors.
-			</para>
-			
-			<para>For example, the hypothetical <literal>DBLoader</literal> declaration above can be injected with a Spring-configured <interface>DataSource</interface> in the following way:</para>
-			
-			<programlisting language="java" ><![CDATA[public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
+      <para>If no bean definition is found, by default,
+      <classname>WiringDeclarableSupport</classname> will <ulink
+      url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factory-autowire">autowire</ulink>
+      the declaring instance. This means that unless any dependency injection
+      <emphasis>metadata</emphasis> is offered by the instance, the container
+      will find the object setters and try to automatically satisfy these
+      dependencies. However, one can also use JDK 5 annotations to provide
+      additional information to the auto-wiring process. We strongly recommend
+      reading the dedicated <ulink
+      url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-annotation-config">chapter</ulink>
+      in the Spring documentation for more information on the supported
+      annotations and enabling factors.</para>
+
+      <para>For example, the hypothetical <literal>DBLoader</literal>
+      declaration above can be injected with a Spring-configured
+      <interface>DataSource</interface> in the following way:</para>
+
+      <programlisting language="java">public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 	// use annotations to 'mark' the needed dependencies 
 	@javax.inject.Inject
 	private DataSource dataSource;
 	
 	public Object load(LoaderHelper helper) { ... }
-}]]></programlisting>
+}</programlisting>
 
-			<programlisting language="xml"><![CDATA[<cache-loader>
-   <class-name>com.company.app.DBLoader</class-name>
-   <!-- no need to declare any parameters anymore
-        since the class is auto-wired -->
-</cache-loader>]]></programlisting>
-			
-			<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+      <programlisting language="xml">&lt;cache-loader&gt;
+   &lt;class-name&gt;com.company.app.DBLoader&lt;/class-name&gt;
+   &lt;!-- no need to declare any parameters anymore
+        since the class is auto-wired --&gt;
+&lt;/cache-loader&gt;</programlisting>
+
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans 
            http://www.springframework.org/schema/beans/spring-beans.xsd
            http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context.xsd">
+           http://www.springframework.org/schema/context/spring-context.xsd"&gt;
             
-     <!-- enable annotation processing -->   
-     <context:annotation-config/>
+     &lt;!-- enable annotation processing --&gt;   
+     &lt;context:annotation-config/&gt;
      
-</beans>]]></programlisting>
-			
-			<para>By using the JSR-330 annotations, the cache loader code has been simplified since the location and creation of the DataSource has been externalized and the user code is concerned
-			only with the loading process. The <interfacename>DataSource</interfacename> might be transactional, created lazily, shared between multiple objects or retrieved from JNDI - these aspects
-			can be easily configured and changed through the Spring container without touching the <classname>DBLoader</classname> code.</para>
-		</section>
-		
-	</section>
+&lt;/beans&gt;</programlisting>
+
+      <para>By using the JSR-330 annotations, the cache loader code has been
+      simplified since the location and creation of the DataSource has been
+      externalized and the user code is concerned only with the loading
+      process. The <interfacename>DataSource</interfacename> might be
+      transactional, created lazily, shared between multiple objects or
+      retrieved from JNDI - these aspects can be easily configured and changed
+      through the Spring container without touching the
+      <classname>DBLoader</classname> code.</para>
+    </section>
+  </section>
 </chapter>
