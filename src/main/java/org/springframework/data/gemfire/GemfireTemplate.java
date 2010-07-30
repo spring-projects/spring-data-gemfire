@@ -117,15 +117,15 @@ public class GemfireTemplate extends GemfireAccessor {
 			Region<?, ?> regionToExpose = (exposeNativeRegion ? getRegion() : regionProxy);
 			T result = action.doInGemfire(regionToExpose);
 			return result;
+		} catch (IndexInvalidException ex) {
+			throw convertGemFireQueryException(ex);
+		} catch (CqInvalidException ex) {
+			throw convertGemFireQueryException(ex);
+		} catch (QueryInvalidException ex) {
+			throw convertGemFireQueryException(ex);
 		} catch (GemFireCheckedException ex) {
 			throw convertGemFireAccessException(ex);
 		} catch (GemFireException ex) {
-			throw convertGemFireAccessException(ex);
-		} catch (IndexInvalidException ex) {
-			throw convertGemFireAccessException(ex);
-		} catch (CqInvalidException ex) {
-			throw convertGemFireAccessException(ex);
-		} catch (QueryInvalidException ex) {
 			throw convertGemFireAccessException(ex);
 		} catch (RuntimeException ex) {
 			// callback code threw application exception

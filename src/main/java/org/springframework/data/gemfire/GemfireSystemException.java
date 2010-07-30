@@ -36,7 +36,7 @@ public class GemfireSystemException extends UncategorizedDataAccessException {
 		super(ex.getMessage(), ex);
 	}
 
-	public GemfireSystemException(IllegalArgumentException ex) {
+	public GemfireSystemException(RuntimeException ex) {
 		super(ex.getMessage(), ex);
 	}
 }

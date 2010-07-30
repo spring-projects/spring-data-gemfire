@@ -24,6 +24,9 @@ import org.springframework.dao.DataAccessException;
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.CqInvalidException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
 
 /**
  * Base class for GemfireTemplate and GemfireInterceptor, defining common properties such as {@link Region}. 
@@ -70,15 +73,27 @@ public class GemfireAccessor implements InitializingBean {
 	/**
 	 * Converts the given GemFire exception to an appropriate exception from the
 	 * <code>org.springframework.dao</code> hierarchy. Note that this particular implementation
-	 * is called only for GemFire exception that extend {@link IllegalArgumentException}.
+	 * is called only for GemFire querying exception that do <b>NOT</b> extend from GemFire exception.
 	 * May be overridden in subclasses.
 	 * 
 	 * @see com.gemstone.gemfire.cache.query.CqInvalidException
 	 * @param ex GemFireException that occurred
 	 * @return the corresponding DataAccessException instance
 	 */
-	public DataAccessException convertGemFireAccessException(IllegalArgumentException ex) {
-		return GemfireCacheUtils.convertGemfireAccessException(ex);
+	public DataAccessException convertGemFireQueryException(RuntimeException ex) {
+		if (ex instanceof CqInvalidException) {
+			return GemfireCacheUtils.convertGemfireAccessException((CqInvalidException) ex);
+		}
+
+		if (ex instanceof IndexInvalidException) {
+			return GemfireCacheUtils.convertGemfireAccessException((IndexInvalidException) ex);
+		}
+
+		if (ex instanceof QueryInvalidException) {
+			return GemfireCacheUtils.convertGemfireAccessException((QueryInvalidException) ex);
+		}
+
+		return new GemfireSystemException(ex);
 	}
 
 	/**

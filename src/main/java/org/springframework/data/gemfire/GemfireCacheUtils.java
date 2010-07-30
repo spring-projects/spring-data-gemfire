@@ -232,8 +232,37 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof UnmodifiableException) {
 			return new GemfireSystemException(ex);
 		}
+
+		// for exceptions that had their parent changed in 6.5
+		DataAccessException dae = convertQueryExceptions(ex);
+		if (dae != null)
+			return dae;
+
 		// fall back
 		return new GemfireSystemException(ex);
+	}
+
+	/**
+	 * Dedicated method for converting exceptions changed in 6.5 that had their
+	 * parent changed. This method exists to 'fool' the compiler type checks
+	 * by loosening the type so the code compiles on both 6.5 (pre and current) branches.
+	 * 
+	 * @param ex
+	 * @return
+	 */
+	private static DataAccessException convertQueryExceptions(RuntimeException ex) {
+		if (ex instanceof IndexInvalidException) {
+			return convertGemfireAccessException((IndexInvalidException) ex);
+		}
+		if (ex instanceof QueryInvalidException) {
+			return convertGemfireAccessException((QueryInvalidException) ex);
+		}
+
+		if (ex instanceof CqInvalidException) {
+			return convertGemfireAccessException((CqInvalidException) ex);
+		}
+
+		return null;
 	}
 
 	/**
@@ -264,20 +293,39 @@ public abstract class GemfireCacheUtils {
 		return new GemfireSystemException(ex);
 	}
 
-	public static DataAccessException convertGemfireAccessException(IllegalArgumentException ex) {
-		if (ex instanceof IndexInvalidException) {
-			return new GemfireIndexException((IndexInvalidException) ex);
-		}
+	/**
+	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
+	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
+	 * for exceptions that had their parents changed in GemFire 6.5.
+	 *
+	 * @param ex Gemfire unchecked exception
+	 * @return new the corresponding DataAccessException instance
+	 */
+	public static DataAccessException convertGemfireAccessException(IndexInvalidException ex) {
+		return new GemfireIndexException(ex);
+	}
 
-		if (ex instanceof CqInvalidException) {
-			return new GemfireQueryException((CqInvalidException) ex);
-		}
+	/**
+	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
+	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
+	 * for exceptions that had their parents changed in GemFire 6.5.
+	 *
+	 * @param ex Gemfire unchecked exception
+	 * @return new the corresponding DataAccessException instance
+	 */
+	public static DataAccessException convertGemfireAccessException(QueryInvalidException ex) {
+		return new GemfireQueryException(ex);
+	}
 
-		if (ex instanceof QueryInvalidException) {
-			return new GemfireQueryException((QueryInvalidException) ex);
-		}
-
-		// fall back
-		return new GemfireSystemException(ex);
+	/**
+	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
+	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
+	 * for exceptions that had their parents changed in GemFire 6.5.
+	 *
+	 * @param ex Gemfire unchecked exception
+	 * @return new the corresponding DataAccessException instance
+	 */
+	public static DataAccessException convertGemfireAccessException(CqInvalidException ex) {
+		return new GemfireQueryException(ex);
 	}
 }
