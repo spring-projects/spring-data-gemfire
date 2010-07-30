@@ -22,7 +22,8 @@ import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
- * Spring-friendly bean for creating {@link RegionAttributes}. 
+ * Spring-friendly bean for creating {@link RegionAttributes}. Eliminates the need of using
+ * a XML 'factory-method' tag. 
  * 
  * @author Costin Leau
  */
