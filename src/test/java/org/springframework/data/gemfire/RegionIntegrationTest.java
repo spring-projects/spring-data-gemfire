@@ -106,7 +106,7 @@ public class RegionIntegrationTest {
 		Region region = ctx.getBean("attr-region", Region.class);
 		assertEquals("attr-region", region.getName());
 		RegionAttributes attr = region.getAttributes();
-		assertEquals(true, attr.getEarlyAck());
+		assertEquals(1024, attr.getInitialCapacity());
 
 		PartitionAttributes pa = attr.getPartitionAttributes();
 		assertEquals(512, pa.getLocalMaxMemory());

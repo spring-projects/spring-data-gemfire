@@ -43,12 +43,12 @@
 	<!-- region with various attributes -->
 	<bean id="attr-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" lazy-init="true">
 		<property name="attributes">
-			<bean class="org.springframework.data.gemfire.RegionAttributesFactory" p:early-ack="true">
+			<bean class="org.springframework.data.gemfire.RegionAttributesFactory" p:initial-capacity="1024">
 				<property name="partitionAttributes">
 					<bean class="org.springframework.data.gemfire.PartitionAttributesFactory" p:redundant-copies="1" p:local-max-memory="512"/>
 				</property>
 			</bean>
-	</property>
+		</property>
 	</bean>
 	
 </beans>
