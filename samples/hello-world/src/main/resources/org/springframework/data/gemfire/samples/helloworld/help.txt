@@ -5,6 +5,7 @@ put <key> <value> - puts a new entry into the grid
 remove <key> - removes an entry (by key) from the grid
 size - returns the size of the grid
 clear - removes all mapping in the grid
+map - returns the keys and associated values contained by the grid
 keys - returns the keys contained by the grid
 values - returns the values contained by the grid
 containsKey <key> - indicates if the given key is contained by the grid
