@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.ClientRegionFactoryBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
@@ -35,7 +34,9 @@ import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheLoaderException;
 import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 
@@ -98,5 +99,17 @@ public class RegionIntegrationTest {
 		System.out.println("**** interests are " + Arrays.toString(regionFB.getInterests()));
 		//BeanDefinition bd = ((BeanDefinitionRegistry) ctx.getAutowireCapableBeanFactory()).getBeanDefinition("basic-client");
 		// System.out.println(bd.getPropertyValues().getPropertyValue("interests").getValue());
+	}
+
+	@Test
+	public void testRegionAttributes() throws Exception {
+		Region region = ctx.getBean("attr-region", Region.class);
+		assertEquals("attr-region", region.getName());
+		RegionAttributes attr = region.getAttributes();
+		assertEquals(true, attr.getEarlyAck());
+
+		PartitionAttributes pa = attr.getPartitionAttributes();
+		assertEquals(512, pa.getLocalMaxMemory());
+		assertEquals(1, pa.getRedundantCopies());
 	}
 }
