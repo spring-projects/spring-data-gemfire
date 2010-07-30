@@ -56,16 +56,16 @@
     checked exceptions, threading or resource management concerns:</para>
 
     <programlisting language="java">template.execute(new GemfireCallback&lt;Iterable&lt;String&gt;&gt;() {
-	public Iterable&lt;String&gt; doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
-		// working against a Region of String
-		Region&lt;String, String&gt; region = reg;
-		
-		region.put("1", "one");
-		region.put("3", "three");
-		
-		// should return 1
-		return region.query("length &lt; 5).size();
-	}
+  public Iterable&lt;String&gt; doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
+    // working against a Region of String
+    Region&lt;String, String&gt; region = reg;
+
+    region.put("1", "one");
+    region.put("3", "three");
+
+    // should return 1
+    return region.query("length &lt; 5).size();
+  }
 });</programlisting>
   </section>
 
@@ -185,19 +185,19 @@
       case:</para>
 
       <programlisting language="java">public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
-	private DataSource dataSource;
-	
-	public void setDataSource(DataSource ds){
-		this.dataSource = ds;
-	}
-	
-	public Object load(LoaderHelper helper) { ... }
+  private DataSource dataSource;
+
+  public void setDataSource(DataSource ds){
+    this.dataSource = ds;
+  }
+
+  public Object load(LoaderHelper helper) { ... }
 }</programlisting>
 
       <programlisting language="xml">&lt;cache-loader&gt;
    &lt;class-name&gt;com.company.app.DBLoader&lt;/class-name&gt;
    &lt;!-- no parameter is passed (use the bean implicit name
-   		that is the class name) --&gt;
+   that is the class name) --&gt;
 &lt;/cache-loader&gt;</programlisting>
 
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -207,8 +207,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans 
            http://www.springframework.org/schema/beans/spring-beans.xsd"&gt;
 
-	 &lt;bean id="dataSource" ... /&gt;
-	             
+  &lt;bean id="dataSource" ... /&gt;
+
      &lt;!-- template bean definition --&gt;
      &lt;bean id="com.company.app.DBLoader" abstract="true" p:dataSource-ref="dataSource"/&gt;
 &lt;/beans&gt;</programlisting>
@@ -236,8 +236,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans 
            http://www.springframework.org/schema/beans/spring-beans.xsd"&gt;
 
-	 &lt;bean id="dataSource" ... /&gt;
-	             
+  &lt;bean id="dataSource" ... /&gt;
+
      &lt;!-- template bean definition --&gt;   
      &lt;bean id="template-bean" abstract="true" p:dataSource-ref="dataSource"/&gt;
      
@@ -271,11 +271,11 @@
       <interface>DataSource</interface> in the following way:</para>
 
       <programlisting language="java">public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
-	// use annotations to 'mark' the needed dependencies 
-	@javax.inject.Inject
-	private DataSource dataSource;
-	
-	public Object load(LoaderHelper helper) { ... }
+  // use annotations to 'mark' the needed dependencies 
+  @javax.inject.Inject
+  private DataSource dataSource;
+
+  public Object load(LoaderHelper helper) { ... }
 }</programlisting>
 
       <programlisting language="xml">&lt;cache-loader&gt;

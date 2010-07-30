@@ -45,10 +45,10 @@
     as a usual bean:</para>
 
     <programlisting language="xml">&lt;bean id="instantiator" class="org.springframework.data.gemfire.serialization.WiringInstantiator"&gt;
-	&lt;!-- DataSerializable type --&gt;
-	&lt;constructor-arg&gt;org.pkg.SomeDataSerializableClass&lt;/constructor-arg&gt;
-	&lt;!-- type id --&gt;
-	&lt;constructor-arg&gt;95&lt;/constructor-arg&gt;
+  &lt;!-- DataSerializable type --&gt;
+  &lt;constructor-arg&gt;org.pkg.SomeDataSerializableClass&lt;/constructor-arg&gt;
+  &lt;!-- type id --&gt;
+  &lt;constructor-arg&gt;95&lt;/constructor-arg&gt;
 &lt;/bean&gt;</programlisting>
 
     <para>During the container startup, once it is being initialized, the
@@ -71,12 +71,12 @@
     reflection:</para>
 
     <programlisting language="xml">&lt;bean id="instantiator-factory" class="org.springframework.data.gemfire.serialization.InstantiatorFactoryBean"&gt;
-	&lt;property name="customTypes"&gt;
-		&lt;map&gt;
-			&lt;entry key="org.pkg.CustomTypeA" value="1025"/&gt;
-			&lt;entry key="org.pkg.CustomTypeB" value="1026"/&gt;
-		&lt;/map&gt;
-	&lt;/property&gt;
+  &lt;property name="customTypes"&gt;
+    &lt;map&gt;
+      &lt;entry key="org.pkg.CustomTypeA" value="1025"/&gt;
+      &lt;entry key="org.pkg.CustomTypeB" value="1026"/&gt;
+    &lt;/map&gt;
+  &lt;/property&gt;
 &lt;/bean&gt;</programlisting>
 
     <para>The definition above, automatically generated two
