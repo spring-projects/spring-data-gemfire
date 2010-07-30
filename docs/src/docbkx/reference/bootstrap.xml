@@ -70,16 +70,16 @@
 
     <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"&gt;
-	
-	&lt;bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean"&gt;
-	    &lt;property name="properties"&gt;
-	        &lt;util:properties location="classpath:/deployment/env.properties"/&gt;
-	    &lt;/property&gt;
-	&lt;/bean&gt;	
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"&gt;
+
+  &lt;bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean"&gt;
+    &lt;property name="properties"&gt;
+      &lt;util:properties location="classpath:/deployment/env.properties"/&gt;
+    &lt;/property&gt;
+  &lt;/bean&gt;	
 &lt;/beans&gt;</programlisting>
 
     <para>It is worth pointing out again, that the cache settings apply only
@@ -110,10 +110,10 @@
     <emphasis>basic</emphasis> using a nested cache declaration:</para>
 
     <programlisting language="xml">&lt;bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean"&gt;
-	&lt;property name="cache"&gt;
-	    &lt;bean class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;
-	&lt;/property&gt;
-	&lt;property name="name" value="basic"/&gt;
+  &lt;property name="cache"&gt;
+      &lt;bean class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;
+  &lt;/property&gt;
+  &lt;property name="name" value="basic"/&gt;
 &lt;/bean&gt;</programlisting>
 
     <para>Since the region bean definition name is usually the same with that
@@ -125,13 +125,13 @@
 
     <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:p="http://www.springframework.org/schema/p"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"&gt;
-	
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:p="http://www.springframework.org/schema/p"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"&gt;
+  
     &lt;!-- shared cache across regions --&gt;
     &lt;bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;
-	
+
     &lt;!-- region named 'basic' --&gt;
     &lt;bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"/&gt;
 
@@ -147,18 +147,18 @@
 
     <programlisting language="xml">&lt;bean id="cacheLogger" class="org.some.pkg.CacheLogger"/&gt;
 &lt;bean id="customized-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"&gt;
-	&lt;property name="cacheListeners"&gt;
-		&lt;array&gt;
-			&lt;ref name="cacheLogger"/&gt;
-			&lt;bean class="org.some.other.pkg.SysoutLogger"/&gt;
-		&lt;/array&gt;
-	&lt;/property&gt;
-	&lt;property name="cacheLoader"&gt;&lt;bean class="org.some.pkg.CacheLoad"/&gt;&lt;/property&gt;
-	&lt;property name="cacheWriter"&gt;&lt;bean class="org.some.pkg.CacheWrite"/&gt;&lt;/property&gt;
+  &lt;property name="cacheListeners"&gt;
+    &lt;array&gt;
+      &lt;ref name="cacheLogger"/&gt;
+    &lt;bean class="org.some.other.pkg.SysoutLogger"/&gt;
+    &lt;/array&gt;
+  &lt;/property&gt;
+  &lt;property name="cacheLoader"&gt;&lt;bean class="org.some.pkg.CacheLoad"/&gt;&lt;/property&gt;
+  &lt;property name="cacheWriter"&gt;&lt;bean class="org.some.pkg.CacheWrite"/&gt;&lt;/property&gt;
 &lt;/bean&gt;
-	
+
 &lt;bean id="local-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"&gt;
-	&lt;property name="cacheListeners" ref="cacheLogger"/&gt;	
+  &lt;property name="cacheListeners" ref="cacheLogger"/&gt;	
 &lt;/bean&gt;</programlisting>
 
     <section id="bootstrap:region:client">
@@ -175,15 +175,37 @@
       <literal>org.springframework.data.gemfire</literal> package:</para>
 
       <programlisting language="xml">&lt;bean id="interested-client" class="org.springframework.data.gemfire.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region"&gt;
-	&lt;property name="interests"&gt;
-		&lt;array&gt;
-			&lt;!-- key-based interest --&gt;
-			&lt;bean class="org.springframework.data.gemfire.Interest" p:key="Vlaicu" p:policy="NONE"/&gt;
-			&lt;!-- regex-based interest --&gt;
-			&lt;bean class="org.springframework.data.gemfire.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/&gt;
-		&lt;/array&gt;
-	&lt;/property&gt;
+  &lt;property name="interests"&gt;
+    &lt;array&gt;
+      &lt;!-- key-based interest --&gt;
+      &lt;bean class="org.springframework.data.gemfire.Interest" p:key="Vlaicu" p:policy="NONE"/&gt;
+      &lt;!-- regex-based interest --&gt;
+      &lt;bean class="org.springframework.data.gemfire.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/&gt;
+    &lt;/array&gt;
+  &lt;/property&gt;
 &lt;/bean&gt;</programlisting>
+    </section>
+    
+    <section id="bootstrap:region:attributes">
+      <title>Advanced configuration through a <interfacename>Region</interfacename>'s <emphasis>attributes</emphasis></title>
+      
+      <para>Users that need fine control over a region, can configure it in Spring by using the <literal>attributes</literal> property. To ease declarative configuration in Spring,
+      SGI provides two <interfacename>FactoryBean</interfacename>s for creating <interfacename>RegionAttributes</interfacename> and <interfacename>PartitionAttributes</interfacename>,
+      namely <classname>RegionAttributesFactory</classname> and <classname>PartitionAttributesFactory</classname>. See below an example of configuring a partitioned region through Spring
+      XML:</para>
+ 
+    <programlisting language="xml"><![CDATA[<bean id="partitioned-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache">
+  <property name="attributes">
+    <bean class="org.springframework.data.gemfire.RegionAttributesFactory" p:initial-capacity="1024">
+      <property name="partitionAttributes">
+        <bean class="org.springframework.data.gemfire.PartitionAttributesFactory" p:redundant-copies="2" p:local-max-memory="512"/>
+      </property>
+    </bean>
+  </property>
+</bean>]]>
+      </programlisting>
+      
+      <para>By using the attribute factories above, one can reduce the size of the <literal>cache.xml</literal> or even eliminate it all together.</para>  
     </section>
   </section>
 </chapter>
