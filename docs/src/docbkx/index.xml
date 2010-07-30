@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book xmlns:xi="http://www.w3.org/2001/XInclude">
   <bookinfo>
-    <title>Spring Gemini Integration Reference Guide</title>
+    <title>Spring Gemfire Integration Reference Guide</title>
 	  <releaseinfo>&version;</releaseinfo>
     
     <authorgroup>
