@@ -80,8 +80,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		system = DistributedSystem.connect(cfgProps);
 
 		DistributedMember member = system.getDistributedMember();
-		log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@"
-				+ member.getHost() + "]");
+		log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@" + member.getHost()
+				+ "]");
 
 		// use the bean class loader to load Declarable classes
 		Thread th = Thread.currentThread();
@@ -139,9 +139,14 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) ex);
 		}
 		if (ex instanceof IllegalArgumentException) {
-			if (ex instanceof IndexInvalidException || ex instanceof CqInvalidException
-					|| ex instanceof QueryInvalidException) {
-				return GemfireCacheUtils.convertGemfireAccessException((IllegalArgumentException) ex);
+			if (ex instanceof IndexInvalidException) {
+				return GemfireCacheUtils.convertGemfireAccessException((IndexInvalidException) ex);
+			}
+			if (ex instanceof CqInvalidException) {
+				return GemfireCacheUtils.convertGemfireAccessException((CqInvalidException) ex);
+			}
+			if (ex instanceof QueryInvalidException) {
+				return GemfireCacheUtils.convertGemfireAccessException((QueryInvalidException) ex);
 			}
 		}
 
