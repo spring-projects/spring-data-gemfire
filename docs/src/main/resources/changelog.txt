@@ -1,0 +1,13 @@
+SPRING GEMFIRE INTEGRATION CHANGELOG
+====================================
+http://www.springsource.org/spring-gemfire
+
+
+Changes in version 1.0.0.M1 (2010-08-03)
+----------------------------------------
+General
+* Configuration support for GemFire Cache, Region
+* Exception translation
+* GemFire Template for exception translation
+* Declarative transaction management
+* Auto-generation of non-reflection based GemFire instantiators
