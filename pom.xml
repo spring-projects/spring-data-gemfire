@@ -40,7 +40,7 @@
       <name>Apache License, Version 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0</url>
       <comments>
-Copyright 2006-2008 the original author or authors.
+Copyright 2010 the original author or authors.
  
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -64,8 +64,7 @@ limitations under the License.
     
     <!-- javadoc configuration -->
     <javadoc.loc>${basedir}/docs/src/javadoc</javadoc.loc>
-
-    <license.loc>./</license.loc>
+    <license.loc>${basedir}/docs/src/main/resources</license.loc>
   </properties>
   
   <dependencies>
