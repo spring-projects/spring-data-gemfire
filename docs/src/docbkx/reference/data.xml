@@ -63,8 +63,7 @@
     region.put("1", "one");
     region.put("3", "three");
 
-    // should return 1
-    return region.query("length &lt; 5).size();
+    return region.query("length &lt; 5");
   }
 });</programlisting>
   </section>
