@@ -1,0 +1,4 @@
+# Tooling related information for the gemfire namespace
+http\://www.springframework.org/schema/gemfire@name=gemfire Namespace
+http\://www.springframework.org/schema/gemfire@prefix=gfe
+http\://www.springframework.org/schema/gemfire@icon=org/springframework/data/gemfire/config/spring-gemfire.gif
