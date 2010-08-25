@@ -29,10 +29,26 @@ Defines a GemFire Cache instance used for creating or retrieving 'regions'.
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:attribute name="name" type="xsd:string" default="cache" use="optional">
+			<xsd:attribute name="id" type="xsd:ID" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The name of the cache (by default "cache").]]></xsd:documentation>
+The name of the cache definition (by default "cache").]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="cache-xml-location" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation source="org.springframework.core.io.Resource"><![CDATA[
+The location of the GemFire cache xml file, as a Spring resource location: a URL, a "classpath:" pseudo URL,
+or a relative file path.
+							]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="properties-ref" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation source="java.util.Properties"><![CDATA[
+The bean name of a Java Properties object that will be used for property substitution. For loading properties
+consider using a dedicated utility such as the <util:*/> namespace and its 'properties' element.
+							]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 		</xsd:complexType>
@@ -61,7 +77,7 @@ The name of the cache loader bean referred by this declaration. If no reference 
 	
 	<xsd:complexType name="regionType">
 		<xsd:sequence>
-			<xsd:element name="cache-loader" minOccurs="0" type="beanDeclarationType">
+			<xsd:element name="cache-listener" minOccurs="0" type="beanDeclarationType">
 				<xsd:annotation>
 					<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
 A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
@@ -73,7 +89,7 @@ other thread for accessing the region and not waiting for it to complete its tas
 					]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.CacheWriter"/>
+							<tool:exports type="com.gemstone.gemfire.cache.CacheListener"/>
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -85,7 +101,7 @@ The cache loader definition for this region. A cache loader allows data to be pl
 					]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.CacheWriter"/>
+							<tool:exports type="com.gemstone.gemfire.cache.CacheLoader"/>
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -101,7 +117,7 @@ arbitrarily pick one.
 					]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.CacheLoader"/>
+							<tool:exports type="com.gemstone.gemfire.cache.CacheWriter"/>
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -167,10 +183,12 @@ in different members, for high availability in case of an application failure.
 			<xsd:complexContent>
 				<xsd:extension base="regionType">
 					<xsd:attribute name="copies" default="0" use="optional">
-						<xsd:annotation><![CDATA[
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
 The number of copies for each partition for high-availability. By default, no copies are created meaning there is no
-redundancy. Each copy provides extra backup at the expense of extra storages. 						
-						]]></xsd:annotation>
+redundancy. Each copy provides extra backup at the expense of extra storages.
+						]]></xsd:documentation>
+						</xsd:annotation>
 						<xsd:simpleType>
 							<xsd:restriction base="xsd:byte">
 								<xsd:minInclusive value="0"/>
