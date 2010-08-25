@@ -117,7 +117,7 @@ The name of the region.
 		</xsd:attribute>
 	</xsd:complexType>
 	
-	<xsd:element name="replicated-region" type="regionType">
+	<xsd:element name="replicated-region">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
 Defines a GemFire replicated region instance. Each replicated region contains a complete copy of the data.
@@ -130,6 +130,23 @@ up to date copy of the data.
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="regionType">
+					<xsd:attribute name="publisher" type="xsd:boolean" default="false" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Indicates whether the defined replica region is a 'publisher' or not (the default). When other replicas are creates,
+if there is a publisher replca, it will be always be the preferred (but not guaranteed) data source.
+
+Note: this is a performance optimization for environments with large amounts of data for selecting a particular host.
+For best performance, only designate one region as publisher.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
 	</xsd:element>
 	
 	<xsd:element name="partitioned-region" type="regionType">
