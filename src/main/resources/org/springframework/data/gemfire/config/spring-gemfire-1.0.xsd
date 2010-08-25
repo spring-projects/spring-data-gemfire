@@ -149,7 +149,7 @@ For best performance, only designate one region as publisher.
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:element name="partitioned-region" type="regionType">
+	<xsd:element name="partitioned-region">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
 Defines a GemFire partitioned region instance. Through partitioning, the data is split across regions.
@@ -163,5 +163,23 @@ in different members, for high availability in case of an application failure.
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="regionType">
+					<xsd:attribute name="copies" default="0" use="optional">
+						<xsd:annotation><![CDATA[
+The number of copies for each partition for high-availability. By default, no copies are created meaning there is no
+redundancy. Each copy provides extra backup at the expense of extra storages. 						
+						]]></xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:byte">
+								<xsd:minInclusive value="0"/>
+								<xsd:maxInclusive value="3"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>
