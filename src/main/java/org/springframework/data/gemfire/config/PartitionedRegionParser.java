@@ -16,18 +16,18 @@
 
 package org.springframework.data.gemfire.config;
 
-import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.xml.BeanDefinitionParser;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.w3c.dom.Element;
 
 /**
- * Namespace handler for GemFire definitions.
- * 
  * @author Costin Leau
  */
-class GemfireNamespaceHandler extends NamespaceHandlerSupport {
+class PartitionedRegionParser implements BeanDefinitionParser {
 
-	public void init() {
-		registerBeanDefinitionParser("cache", new CacheParser());
-		registerBeanDefinitionParser("replicated-region", new ReplicatedRegionParser());
-		registerBeanDefinitionParser("partitioned-region", new PartitionedRegionParser());
+	public BeanDefinition parse(Element element, ParserContext parserContext) {
+		return null;
 	}
+
 }
