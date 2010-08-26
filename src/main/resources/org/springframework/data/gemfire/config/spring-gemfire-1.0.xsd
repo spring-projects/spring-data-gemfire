@@ -124,7 +124,7 @@ arbitrarily pick one.
 			</xsd:element>
 			
 		</xsd:sequence>
-		<xsd:attribute name="name" type="xsd:string" use="required">
+		<xsd:attribute name="id" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The name of the region.
