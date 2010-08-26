@@ -51,12 +51,15 @@ class ReplicatedRegionParser extends AbstractSingleBeanDefinitionParser {
 		builder.addPropertyValue("scope", Scope.DISTRIBUTED_ACK);
 
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
-		ParsingUtils.setPropertyValue(element, builder, "cache-ref", "cache");
+
+		String attr = element.getAttribute("cache-ref");
+		// add cache reference (fallback to default if nothing is specified)
+		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "cache"));
 
 		// add attributes
 		AttributesFactory af = new AttributesFactory();
 
-		String attr = element.getAttribute("publisher");
+		attr = element.getAttribute("publisher");
 		if (StringUtils.hasText(attr)) {
 			af.setPublisher(Boolean.valueOf(attr));
 		}
