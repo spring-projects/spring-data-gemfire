@@ -20,14 +20,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Field;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.TestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -47,30 +46,24 @@ public class CacheNamespaceTest {
 	public void testBasicCache() throws Exception {
 		assertTrue(context.containsBean("cache"));
 		CacheFactoryBean cfb = (CacheFactoryBean) context.getBean("&cache");
-		assertNull(readField("cacheXml", cfb));
-		assertNull(readField("properties", cfb));
+		assertNull(TestUtils.readField("cacheXml", cfb));
+		assertNull(TestUtils.readField("properties", cfb));
 	}
 
 	@Test
 	public void testNamedCache() throws Exception {
 		assertTrue(context.containsBean("cache-with-name"));
 		CacheFactoryBean cfb = (CacheFactoryBean) context.getBean("&cache-with-name");
-		assertNull(readField("cacheXml", cfb));
-		assertNull(readField("properties", cfb));
+		assertNull(TestUtils.readField("cacheXml", cfb));
+		assertNull(TestUtils.readField("properties", cfb));
 	}
 
 	@Test
 	public void testCacheWithXml() throws Exception {
 		assertTrue(context.containsBean("cache-with-xml"));
 		CacheFactoryBean cfb = (CacheFactoryBean) context.getBean("&cache-with-xml");
-		Resource res = (Resource) readField("cacheXml", cfb);
+		Resource res = TestUtils.readField("cacheXml", cfb);
 		assertEquals("cache.xml", res.getFilename());
-		assertEquals(context.getBean("props"), readField("properties", cfb));
-	}
-
-	private Object readField(String name, Object target) throws Exception {
-		Field field = target.getClass().getDeclaredField(name);
-		field.setAccessible(true);
-		return field.get(target);
+		assertEquals(context.getBean("props"), TestUtils.readField("properties", cfb));
 	}
 }
