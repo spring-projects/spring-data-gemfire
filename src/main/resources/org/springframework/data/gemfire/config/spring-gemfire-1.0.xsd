@@ -124,13 +124,20 @@ arbitrarily pick one.
 			</xsd:element>
 			
 		</xsd:sequence>
-		<xsd:attribute name="name" type="xsd:string">
+		<xsd:attribute name="name" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The name of the region.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="cache-ref" type="xsd:string" default="cache" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the bean defining the GemFire cache (by default 'cache').
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute> 
 	</xsd:complexType>
 	
 	<xsd:element name="replicated-region">
