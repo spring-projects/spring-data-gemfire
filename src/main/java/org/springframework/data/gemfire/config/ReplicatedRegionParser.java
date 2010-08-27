@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.config;
 import java.util.List;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionFactoryBean;
@@ -67,14 +66,13 @@ class ReplicatedRegionParser extends AbstractSingleBeanDefinitionParser {
 		builder.addPropertyValue("attributes", af.create());
 
 		List<Element> subElements = DomUtils.getChildElements(element);
-		ManagedList<Object> listeners = new ManagedList<Object>();
 
 		// parse nested cache-listener elements
 		for (Element subElement : subElements) {
 			String name = subElement.getLocalName();
 
 			if ("cache-listener".equals(name)) {
-				listeners.add(parseCacheListener(parserContext, subElement, builder));
+				builder.addPropertyValue("cacheListeners", parseCacheListener(parserContext, subElement, builder));
 			}
 
 			else if ("cache-loader".equals(name)) {
@@ -84,11 +82,6 @@ class ReplicatedRegionParser extends AbstractSingleBeanDefinitionParser {
 			else if ("cache-writer".equals(name)) {
 				builder.addPropertyValue("cacheWriter", parseCacheWriter(parserContext, subElement, builder));
 			}
-		}
-
-		// add the listeners, after all the elements have been parsed
-		if (!listeners.isEmpty()) {
-			builder.addPropertyValue("cacheListeners", listeners);
 		}
 	}
 
