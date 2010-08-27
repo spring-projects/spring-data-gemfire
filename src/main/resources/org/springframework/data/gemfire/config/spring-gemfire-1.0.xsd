@@ -237,22 +237,6 @@ of available heap is used.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="recovery-delay" type="xsd:long" default="-1" use="optional">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-The delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes.
--1 (the default) indicates that redundancy will not be recovered after a failure.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
-					<xsd:attribute name="startup-recovery-delay" type="xsd:long" default="-1" use="optional">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-The delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members
- will not trigger redundancy recovery. The default is to recover redundancy immediately when a new member is added.
- 							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
 					<xsd:attribute name="total-max-memory" type="xsd:positiveInteger" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
@@ -277,7 +261,22 @@ Note: This setting must be the same in all processes using the region.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					
+					<xsd:attribute name="recovery-delay" type="xsd:long" default="-1" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes.
+-1 (the default) indicates that redundancy will not be recovered after a failure.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="startup-recovery-delay" type="xsd:long" default="-1" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members
+ will not trigger redundancy recovery. The default is to recover redundancy immediately when a new member is added.
+ 							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
