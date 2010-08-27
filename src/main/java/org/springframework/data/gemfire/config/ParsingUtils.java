@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -63,20 +64,38 @@ abstract class ParsingUtils {
 	 */
 	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element, BeanDefinitionBuilder builder) {
 		String attr = element.getAttribute("ref");
-		if (StringUtils.hasText(attr)) {
-			// check if there's a nested declaration as well
-			List<Element> childElements = DomUtils.getChildElements(element);
+		boolean hasRef = StringUtils.hasText(attr);
+
+		// check nested declarations
+		List<Element> childElements = DomUtils.getChildElements(element);
+
+		if (hasRef) {
 			if (!childElements.isEmpty()) {
 				parserContext.getReaderContext().error(
 						"either use the 'ref' attribute or a nested bean declaration for '" + element.getLocalName()
 								+ "' element, but not both", element);
-
 			}
 			return new RuntimeBeanReference(attr);
 		}
-		// nested bean definition
-		else {
-			return parserContext.getDelegate().parsePropertySubElement(element, builder.getRawBeanDefinition());
+
+		if (childElements.isEmpty()) {
+			parserContext.getReaderContext().error(
+					"specify either 'ref' attribute or a nested bean declaration for '" + element.getLocalName()
+							+ "' element", element);
 		}
+
+		// nested parse nested bean definition
+		if (childElements.size() == 1) {
+			return parserContext.getDelegate().parsePropertySubElement(childElements.get(0),
+					builder.getRawBeanDefinition());
+		}
+
+		ManagedList<Object> list = new ManagedList<Object>();
+
+		for (Element el : childElements) {
+			list.add(parserContext.getDelegate().parsePropertySubElement(el, builder.getRawBeanDefinition()));
+		}
+
+		return list;
 	}
 }
