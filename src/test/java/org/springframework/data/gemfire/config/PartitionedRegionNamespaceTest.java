@@ -58,6 +58,7 @@ public class PartitionedRegionNamespaceTest {
 		RegionFactoryBean fb = context.getBean("&options", RegionFactoryBean.class);
 		assertEquals(DataPolicy.PARTITION, TestUtils.readField("dataPolicy", fb));
 		assertEquals(null, TestUtils.readField("scope", fb));
+		assertEquals("redundant", TestUtils.readField("name", fb));
 
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		PartitionAttributes pAttr = attrs.getPartitionAttributes();

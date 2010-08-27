@@ -12,7 +12,7 @@
 	
 	<gfe:replicated-region id="simple" />
 	
-	<gfe:replicated-region id="pub" publisher="true"/>
+	<gfe:replicated-region id="pub" publisher="true" name="publisher"/>
 	
 	<gfe:replicated-region id="complex">
 		<gfe:cache-listener>

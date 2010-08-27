@@ -57,7 +57,7 @@ public class ReplicatedRegionNamespaceTest {
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);
 		assertEquals(DataPolicy.REPLICATE, TestUtils.readField("dataPolicy", fb));
 		assertEquals(Scope.DISTRIBUTED_ACK, TestUtils.readField("scope", fb));
-
+		assertEquals("publisher", TestUtils.readField("name", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		assertTrue(attrs.getPublisher());
 	}

@@ -36,6 +36,7 @@ public abstract class RecreatingContextTest {
 	@Before
 	public void createCtx() {
 		ctx = new GenericXmlApplicationContext(location());
+		ctx.registerShutdownHook();
 	}
 
 	@After
