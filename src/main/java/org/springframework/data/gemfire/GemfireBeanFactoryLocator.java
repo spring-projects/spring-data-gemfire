@@ -125,7 +125,10 @@ public class GemfireBeanFactoryLocator implements BeanFactoryLocator, BeanFactor
 		}
 
 		if (beanFactory == defaultFactory) {
-			defaultFactory = null;
+			synchronized (GemfireBeanFactoryLocator.class) {
+				defaultFactory = null;
+				canUseDefaultBeanFactory = beanFactories.isEmpty();
+			}
 		}
 	}
 
