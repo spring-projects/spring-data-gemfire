@@ -141,7 +141,6 @@ arbitrarily pick one.
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:element>
-			
 		</xsd:sequence>
 		<xsd:attribute name="id" type="xsd:string" use="required">
 			<xsd:annotation>
@@ -208,6 +207,21 @@ in different members, for high availability in case of an application failure.
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="regionType">
+					<xsd:sequence>
+						<xsd:element name="resolver" minOccurs="0" maxOccurs="1" type="beanDeclarationType" use="optional">
+							<xsd:annotation>
+								<xsd:documentation source="com.gemstone.gemfire.cache.PartitionResolver"><![CDATA[
+The partition resolver definition for this region, allowing for custom partitioning. GemFire uses the resolver to
+colocate data based on custom criterias (such as colocating trades by month and year).
+								]]></xsd:documentation>
+								<xsd:appinfo>
+									<tool:annotation>
+										<tool:exports type="com.gemstone.gemfire.cache.PartitionResolver"/>
+									</tool:annotation>
+								</xsd:appinfo>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
 					<xsd:attribute name="copies" default="0" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
