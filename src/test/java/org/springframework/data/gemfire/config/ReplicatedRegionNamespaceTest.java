@@ -16,14 +16,25 @@
 
 package org.springframework.data.gemfire.config;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.TestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.ObjectUtils;
+
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 
 /**
  * @author Costin Leau
@@ -36,7 +47,31 @@ public class ReplicatedRegionNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
-	public void testBasicCache() throws Exception {
+	public void testBasicReplica() throws Exception {
 		assertTrue(context.containsBean("simple"));
+	}
+
+	@Test
+	public void testPublishingReplica() throws Exception {
+		assertTrue(context.containsBean("pub"));
+		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);
+		assertEquals(DataPolicy.REPLICATE, TestUtils.readField("dataPolicy", fb));
+		assertEquals(Scope.DISTRIBUTED_ACK, TestUtils.readField("scope", fb));
+
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		assertTrue(attrs.getPublisher());
+	}
+
+	@Test
+	public void testComplexReplica() throws Exception {
+		assertTrue(context.containsBean("complex"));
+		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
+		CacheListener[] listeners = TestUtils.readField("cacheListeners", fb);
+		assertFalse(ObjectUtils.isEmpty(listeners));
+		assertEquals(2, listeners.length);
+		assertSame(listeners[0], context.getBean("c-listener"));
+
+		assertSame(context.getBean("c-loader"), TestUtils.readField("cacheLoader", fb));
+		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
 	}
 }
