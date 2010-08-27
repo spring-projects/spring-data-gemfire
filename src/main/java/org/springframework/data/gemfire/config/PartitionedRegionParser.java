@@ -16,18 +16,122 @@
 
 package org.springframework.data.gemfire.config;
 
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.xml.BeanDefinitionParser;
+import java.util.List;
+
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.util.StringUtils;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+
 /**
+ * Parser for &lt;partitioned-region;gt; definitions.
+ * 
  * @author Costin Leau
  */
-class PartitionedRegionParser implements BeanDefinitionParser {
+class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 
-	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		return null;
+	protected Class<?> getBeanClass(Element element) {
+		return RegionFactoryBean.class;
 	}
 
+	@Override
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		super.doParse(element, builder);
+
+		// set the data policy
+		builder.addPropertyValue("dataPolicy", DataPolicy.PARTITION);
+
+		ParsingUtils.setPropertyValue(element, builder, "name", "name");
+
+		String attr = element.getAttribute("cache-ref");
+		// add cache reference (fallback to default if nothing is specified)
+		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "cache"));
+
+		// add attributes
+		AttributesFactory af = new AttributesFactory();
+
+		// partition attributes
+		PartitionAttributesFactory paf = new PartitionAttributesFactory();
+
+		attr = element.getAttribute("colocated-with");
+
+		if (StringUtils.hasText(attr)) {
+			paf.setColocatedWith(attr);
+		}
+
+		attr = element.getAttribute("local-max-memory");
+		if (StringUtils.hasText(attr)) {
+			paf.setLocalMaxMemory(Integer.valueOf(attr));
+		}
+
+		attr = element.getAttribute("recovery-delay");
+		if (StringUtils.hasText(attr)) {
+			paf.setRecoveryDelay(Long.valueOf(attr));
+		}
+
+		attr = element.getAttribute("copies");
+		if (StringUtils.hasText(attr)) {
+			paf.setRedundantCopies(Integer.valueOf(attr));
+		}
+
+		attr = element.getAttribute("startup-recovery-delay");
+
+		if (StringUtils.hasText(attr)) {
+			paf.setStartupRecoveryDelay(Long.valueOf(attr));
+		}
+
+		if (StringUtils.hasText(attr)) {
+			paf.setRedundantCopies(Integer.valueOf(attr));
+		}
+
+		attr = element.getAttribute("total-max-memory");
+		if (StringUtils.hasText(attr)) {
+			paf.setTotalMaxMemory(Long.valueOf(attr));
+		}
+
+		attr = element.getAttribute("total-buckets");
+		if (StringUtils.hasText(attr)) {
+			paf.setTotalNumBuckets(Integer.valueOf(attr));
+		}
+
+		builder.addPropertyValue("attributes", af.create());
+
+		List<Element> subElements = DomUtils.getChildElements(element);
+
+		// parse nested cache-listener elements
+		for (Element subElement : subElements) {
+			String name = subElement.getLocalName();
+
+			if ("cache-listener".equals(name)) {
+				builder.addPropertyValue("cacheListeners", parseCacheListener(parserContext, subElement, builder));
+			}
+
+			else if ("cache-loader".equals(name)) {
+				builder.addPropertyValue("cacheLoader", parseCacheLoader(parserContext, subElement, builder));
+			}
+
+			else if ("cache-writer".equals(name)) {
+				builder.addPropertyValue("cacheWriter", parseCacheWriter(parserContext, subElement, builder));
+			}
+		}
+	}
+
+	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
+	}
+
+	private Object parseCacheLoader(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
+	}
+
+	private Object parseCacheWriter(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
+	}
 }
