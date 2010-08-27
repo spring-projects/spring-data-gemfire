@@ -77,11 +77,11 @@ The name of the cache loader bean referred by this declaration. If no reference 
 	
 	<xsd:complexType name="regionType">
 		<xsd:sequence>
-			<xsd:element name="cache-listener" minOccurs="0" type="beanDeclarationType">
+			<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
 A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
-various operations on the region).
+various operations on the region). Multiple listener can be declared in a nested manner.
 
 Note: Avoid the risk of deadlock. Since the listener is invoked while holding a lock on the entry generating the event,
 it is easy to generate a deadlock by interacting with the region. For this reason, it is highly recommended to use some
@@ -93,6 +93,25 @@ other thread for accessing the region and not waiting for it to complete its tas
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:any namespace="##other" minOccurs="0" processContents="skip">
+			    			<xsd:annotation>
+			         			<xsd:documentation><![CDATA[
+Inner bean definition of the cache loader.
+								]]></xsd:documentation>
+							</xsd:annotation>
+			         	</xsd:any>						
+					</xsd:sequence>
+					<xsd:attribute name="ref" type="xsd:string" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The name of the cache loader bean referred by this declaration. Used as a convenience method. If no reference exists, 
+use inner bean declarations.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="cache-loader" minOccurs="0"  maxOccurs="1" type="beanDeclarationType">
 				<xsd:annotation>
