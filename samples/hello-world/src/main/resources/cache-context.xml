@@ -3,23 +3,22 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
 
 	<!-- GemFire cache bean -->
-	<bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean">
-		<property name="properties">
-			<util:properties location="cache.properties"/>
-		</property>
-	</bean>
+	<gfe:cache properties-ref="props" />
+	<util:properties id="props" location="cache.properties"/>
 	
 	<!-- hello world region -->
 	<!-- since no name is given, the region will be named after the bean -->
-	<bean id="myWorld" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:dataPolicy="REPLICATE" p:scope="DISTRIBUTED_ACK">
-		<property name="cacheListeners">
+	<gfe:replicated-region id="myWorld">
+		<gfe:cache-listener>
 			<bean class="org.springframework.data.gemfire.samples.helloworld.CacheLogger"/>
-		</property>
-	</bean>
-
+		</gfe:cache-listener>
+	</gfe:replicated-region>
+	
 	<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="myWorld"/>
 </beans>
