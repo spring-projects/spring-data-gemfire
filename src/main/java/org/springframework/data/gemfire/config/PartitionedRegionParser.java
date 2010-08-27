@@ -21,17 +21,19 @@ import java.util.List;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.PartitionAttributesFactory;
+import org.springframework.data.gemfire.RegionAttributesFactory;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 
 /**
  * Parser for &lt;partitioned-region;gt; definitions.
+ * 
+ * To avoid eager evaluations, the region attributes are declared as a nested definition.
  * 
  * @author Costin Leau
  */
@@ -54,54 +56,48 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 		// add cache reference (fallback to default if nothing is specified)
 		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "cache"));
 
-		// add attributes
-		AttributesFactory af = new AttributesFactory();
 
 		// partition attributes
-		PartitionAttributesFactory paf = new PartitionAttributesFactory();
+		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder.genericBeanDefinition(PartitionAttributesFactory.class);
+
 
 		attr = element.getAttribute("colocated-with");
 
 		if (StringUtils.hasText(attr)) {
-			paf.setColocatedWith(attr);
+			parAttrBuilder.addPropertyValue("colocatedWith", attr);
 		}
 
 		attr = element.getAttribute("local-max-memory");
 		if (StringUtils.hasText(attr)) {
-			paf.setLocalMaxMemory(Integer.valueOf(attr));
-		}
-
-		attr = element.getAttribute("recovery-delay");
-		if (StringUtils.hasText(attr)) {
-			paf.setRecoveryDelay(Long.valueOf(attr));
+			parAttrBuilder.addPropertyValue("localMaxMemory", Integer.valueOf(attr));
 		}
 
 		attr = element.getAttribute("copies");
 		if (StringUtils.hasText(attr)) {
-			paf.setRedundantCopies(Integer.valueOf(attr));
+			parAttrBuilder.addPropertyValue("redundantCopies", Integer.valueOf(attr));
+		}
+
+		attr = element.getAttribute("recovery-delay");
+		if (StringUtils.hasText(attr)) {
+			parAttrBuilder.addPropertyValue("recoveryDelay", Long.valueOf(attr));
 		}
 
 		attr = element.getAttribute("startup-recovery-delay");
 
 		if (StringUtils.hasText(attr)) {
-			paf.setStartupRecoveryDelay(Long.valueOf(attr));
-		}
-
-		if (StringUtils.hasText(attr)) {
-			paf.setRedundantCopies(Integer.valueOf(attr));
+			parAttrBuilder.addPropertyValue("startupRecoveryDelay", Long.valueOf(attr));
 		}
 
 		attr = element.getAttribute("total-max-memory");
 		if (StringUtils.hasText(attr)) {
-			paf.setTotalMaxMemory(Long.valueOf(attr));
+			parAttrBuilder.addPropertyValue("totalMaxMemory", Long.valueOf(attr));
 		}
 
 		attr = element.getAttribute("total-buckets");
 		if (StringUtils.hasText(attr)) {
-			paf.setTotalNumBuckets(Integer.valueOf(attr));
+			parAttrBuilder.addPropertyValue("totalNumBuckets", Integer.valueOf(attr));
 		}
 
-		builder.addPropertyValue("attributes", af.create());
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
@@ -120,7 +116,18 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 			else if ("cache-writer".equals(name)) {
 				builder.addPropertyValue("cacheWriter", parseCacheWriter(parserContext, subElement, builder));
 			}
+
+			else if ("partition-resolver".equals(name)) {
+				parAttrBuilder.addPropertyValue("partitionResolver", parsePartitionResolver(parserContext, subElement,
+						builder));
+			}
 		}
+
+		// add attributes
+		BeanDefinitionBuilder nestedBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactory.class);
+		nestedBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
+
+		builder.addPropertyValue("attributes", nestedBuilder.getBeanDefinition());
 	}
 
 	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
@@ -132,6 +139,10 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	private Object parseCacheWriter(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
+	}
+
+	private Object parsePartitionResolver(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
 		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 }
