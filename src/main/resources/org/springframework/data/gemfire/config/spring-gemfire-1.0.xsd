@@ -95,7 +95,7 @@ other thread for accessing the region and not waiting for it to complete its tas
 				</xsd:annotation>
 				<xsd:complexType>
 					<xsd:sequence>
-						<xsd:any namespace="##other" minOccurs="0" processContents="skip">
+						<xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="skip">
 			    			<xsd:annotation>
 			         			<xsd:documentation><![CDATA[
 Inner bean definition of the cache loader.
