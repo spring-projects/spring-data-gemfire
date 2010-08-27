@@ -41,7 +41,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		super.doParse(element, builder);
 
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
-		ParsingUtils.setPropertyValue(element, builder, "properties-ref", "properties");
+		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
 	}
 
 	@Override
