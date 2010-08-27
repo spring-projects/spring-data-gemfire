@@ -145,7 +145,14 @@ arbitrarily pick one.
 		<xsd:attribute name="id" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the region.
+The id of the region bean definition.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
