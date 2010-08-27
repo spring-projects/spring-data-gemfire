@@ -16,31 +16,31 @@
 
 package org.springframework.data.gemfire;
 
-import java.lang.reflect.Field;
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
 
 /**
+ * Simple testing class that creates the app context after each method.
+ * Used to properly destroy the beans defined inside Spring.
+ * 
  * @author Costin Leau
  */
-public abstract class TestUtils {
+public abstract class RecreatingContextTest {
 
-	@SuppressWarnings("unchecked")
-	public static <T> T readField(String name, Object target) throws Exception {
-		Field field = target.getClass().getDeclaredField(name);
-		field.setAccessible(true);
-		return (T) field.get(target);
+	protected GenericApplicationContext ctx;
+
+	protected abstract String location();
+
+	@Before
+	public void createCtx() {
+		ctx = new GenericXmlApplicationContext(location());
 	}
 
-	public static void cleanBeanFactoryStaticReference() {
-		try {
-			Field field = GemfireBeanFactoryLocator.class.getDeclaredField("canUseDefaultBeanFactory");
-			field.setAccessible(true);
-			field.set(null, true);
-
-			field = GemfireBeanFactoryLocator.class.getDeclaredField("defaultFactory");
-			field.setAccessible(true);
-			field.set(null, null);
-
-		} catch (Exception ex) {
-		}
+	@After
+	public void destroyCtx() {
+		if (ctx != null)
+			ctx.destroy();
 	}
 }

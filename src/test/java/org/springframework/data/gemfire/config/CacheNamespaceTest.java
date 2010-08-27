@@ -21,49 +21,44 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Costin Leau
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("cache-ns.xml")
-@DirtiesContext
-public class CacheNamespaceTest {
+public class CacheNamespaceTest extends RecreatingContextTest {
 
-	@Autowired
-	private ApplicationContext context;
+	@Override
+	protected String location() {
+		return "org/springframework/data/gemfire/config/cache-ns.xml";
+	}
 
 	@Test
 	public void testBasicCache() throws Exception {
-		assertTrue(context.containsBean("cache"));
-		CacheFactoryBean cfb = (CacheFactoryBean) context.getBean("&cache");
+		assertTrue(ctx.containsBean("cache"));
+		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache");
 		assertNull(TestUtils.readField("cacheXml", cfb));
 		assertNull(TestUtils.readField("properties", cfb));
 	}
 
 	@Test
 	public void testNamedCache() throws Exception {
-		assertTrue(context.containsBean("cache-with-name"));
-		CacheFactoryBean cfb = (CacheFactoryBean) context.getBean("&cache-with-name");
+		assertTrue(ctx.containsBean("cache-with-name"));
+		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache-with-name");
 		assertNull(TestUtils.readField("cacheXml", cfb));
 		assertNull(TestUtils.readField("properties", cfb));
 	}
 
 	@Test
 	public void testCacheWithXml() throws Exception {
-		assertTrue(context.containsBean("cache-with-xml"));
-		CacheFactoryBean cfb = (CacheFactoryBean) context.getBean("&cache-with-xml");
+		assertTrue(ctx.containsBean("cache-with-xml"));
+		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache-with-xml");
 		Resource res = TestUtils.readField("cacheXml", cfb);
 		assertEquals("cache.xml", res.getFilename());
-		assertEquals(context.getBean("props"), TestUtils.readField("properties", cfb));
+		assertEquals(ctx.getBean("props"), TestUtils.readField("properties", cfb));
 	}
+
 }

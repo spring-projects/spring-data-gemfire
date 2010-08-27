@@ -20,28 +20,22 @@ package org.springframework.data.gemfire;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 
 /**
- * Integration test trying various basic configurations of Gemfire through Spring.
+ * Integration test trying various basic configurations of GemFire through Spring.
+ * 
+ * Made abstract to avoid multiple caches running at the same time. 
  * 
  * @author Costin Leau
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "basic-cache.xml" })
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-public class CacheIntegrationTest {
+public class CacheIntegrationTest extends RecreatingContextTest{
 
-	@Autowired
-	private ApplicationContext ctx;
+	@Override
+	protected String location() {
+		return "org/springframework/data/gemfire/basic-cache.xml";
+	}
 
 	@Test
 	public void testBasicCache() throws Exception {
