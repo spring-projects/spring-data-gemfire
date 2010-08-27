@@ -208,7 +208,7 @@ in different members, for high availability in case of an application failure.
 			<xsd:complexContent>
 				<xsd:extension base="regionType">
 					<xsd:sequence>
-						<xsd:element name="resolver" minOccurs="0" maxOccurs="1" type="beanDeclarationType" use="optional">
+						<xsd:element name="partition-resolver" minOccurs="0" maxOccurs="1" type="beanDeclarationType">
 							<xsd:annotation>
 								<xsd:documentation source="com.gemstone.gemfire.cache.PartitionResolver"><![CDATA[
 The partition resolver definition for this region, allowing for custom partitioning. GemFire uses the resolver to
