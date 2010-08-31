@@ -20,12 +20,14 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.gemfire.client.PoolConnection;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
@@ -44,7 +46,7 @@ import com.gemstone.gemfire.cache.client.PoolManager;
  * 
  * @author Costin Leau
  */
-public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean {
+public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean, BeanNameAware {
 
 	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
 
@@ -54,6 +56,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private Pool pool;
 
 	// pool settings
+	private String beanName;
 	private String name;
 	private Collection<PoolConnection> locators;
 	private Collection<PoolConnection> servers;
@@ -76,7 +79,6 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private int subscriptionRedundancy = PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
 	private boolean threadLocalConnections = PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
 
-
 	public Class<?> getObjectType() {
 		return Pool.class;
 	}
@@ -90,7 +92,11 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	public void afterPropertiesSet() throws Exception {
-		Assert.hasText(name, "the pool name is required");
+		if (!StringUtils.hasText(name)) {
+			Assert.hasText(beanName, "the pool name is required");
+			name = beanName;
+		}
+
 		// first check the configured pools
 		Pool existingPool = PoolManager.find(name);
 		if (existingPool != null) {
@@ -155,26 +161,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		}
 	}
 
-
-	/**
-	 * @return the internalPool
-	 */
-	public boolean isInternalPool() {
-		return internalPool;
-	}
-
-	/**
-	 * @param internalPool the internalPool to set
-	 */
-	public void setInternalPool(boolean internalPool) {
-		this.internalPool = internalPool;
-	}
-
-	/**
-	 * @return the pool
-	 */
-	public Pool getPool() {
-		return pool;
+	public void setBeanName(String name) {
+		this.beanName = name;
 	}
 
 	/**
@@ -185,24 +173,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	/**
-	 * @return the locators
-	 */
-	public Collection<PoolConnection> getLocators() {
-		return locators;
 	}
 
 	/**
@@ -213,24 +187,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the servers
-	 */
-	public Collection<PoolConnection> getServers() {
-		return servers;
-	}
-
-	/**
 	 * @param servers the servers to set
 	 */
 	public void setServers(Collection<PoolConnection> servers) {
 		this.servers = servers;
-	}
-
-	/**
-	 * @return the keepAlive
-	 */
-	public boolean isKeepAlive() {
-		return keepAlive;
 	}
 
 	/**
@@ -241,24 +201,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the freeConnectionTimeout
-	 */
-	public int getFreeConnectionTimeout() {
-		return freeConnectionTimeout;
-	}
-
-	/**
 	 * @param freeConnectionTimeout the freeConnectionTimeout to set
 	 */
 	public void setFreeConnectionTimeout(int freeConnectionTimeout) {
 		this.freeConnectionTimeout = freeConnectionTimeout;
-	}
-
-	/**
-	 * @return the idleTimeout
-	 */
-	public long getIdleTimeout() {
-		return idleTimeout;
 	}
 
 	/**
@@ -269,24 +215,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the loadConditioningInterval
-	 */
-	public int getLoadConditioningInterval() {
-		return loadConditioningInterval;
-	}
-
-	/**
 	 * @param loadConditioningInterval the loadConditioningInterval to set
 	 */
 	public void setLoadConditioningInterval(int loadConditioningInterval) {
 		this.loadConditioningInterval = loadConditioningInterval;
-	}
-
-	/**
-	 * @return the maxConnections
-	 */
-	public int getMaxConnections() {
-		return maxConnections;
 	}
 
 	/**
@@ -297,24 +229,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the minConnections
-	 */
-	public int getMinConnections() {
-		return minConnections;
-	}
-
-	/**
 	 * @param minConnections the minConnections to set
 	 */
 	public void setMinConnections(int minConnections) {
 		this.minConnections = minConnections;
-	}
-
-	/**
-	 * @return the pingInterval
-	 */
-	public long getPingInterval() {
-		return pingInterval;
 	}
 
 	/**
@@ -325,24 +243,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the readTimeout
-	 */
-	public int getReadTimeout() {
-		return readTimeout;
-	}
-
-	/**
 	 * @param readTimeout the readTimeout to set
 	 */
 	public void setReadTimeout(int readTimeout) {
 		this.readTimeout = readTimeout;
-	}
-
-	/**
-	 * @return the retryAttempts
-	 */
-	public int getRetryAttempts() {
-		return retryAttempts;
 	}
 
 	/**
@@ -353,24 +257,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the serverGroup
-	 */
-	public String getServerGroup() {
-		return serverGroup;
-	}
-
-	/**
 	 * @param serverGroup the serverGroup to set
 	 */
 	public void setServerGroup(String serverGroup) {
 		this.serverGroup = serverGroup;
-	}
-
-	/**
-	 * @return the socketBufferSize
-	 */
-	public int getSocketBufferSize() {
-		return socketBufferSize;
 	}
 
 	/**
@@ -381,24 +271,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the statisticInterval
-	 */
-	public int getStatisticInterval() {
-		return statisticInterval;
-	}
-
-	/**
 	 * @param statisticInterval the statisticInterval to set
 	 */
 	public void setStatisticInterval(int statisticInterval) {
 		this.statisticInterval = statisticInterval;
-	}
-
-	/**
-	 * @return the subscriptionAckInterval
-	 */
-	public int getSubscriptionAckInterval() {
-		return subscriptionAckInterval;
 	}
 
 	/**
@@ -409,24 +285,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the enableSubscription
-	 */
-	public boolean isEnableSubscription() {
-		return enableSubscription;
-	}
-
-	/**
 	 * @param enableSubscription the enableSubscription to set
 	 */
 	public void setEnableSubscription(boolean enableSubscription) {
 		this.enableSubscription = enableSubscription;
-	}
-
-	/**
-	 * @return the subscriptionMessageTrackingTimeout
-	 */
-	public int getSubscriptionMessageTrackingTimeout() {
-		return subscriptionMessageTrackingTimeout;
 	}
 
 	/**
@@ -437,24 +299,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @return the subscriptionRedundancy
-	 */
-	public int getSubscriptionRedundancy() {
-		return subscriptionRedundancy;
-	}
-
-	/**
 	 * @param subscriptionRedundancy the subscriptionRedundancy to set
 	 */
 	public void setSubscriptionRedundancy(int subscriptionRedundancy) {
 		this.subscriptionRedundancy = subscriptionRedundancy;
-	}
-
-	/**
-	 * @return the threadLocalConnections
-	 */
-	public boolean isThreadLocalConnections() {
-		return threadLocalConnections;
 	}
 
 	/**
