@@ -98,7 +98,7 @@ other thread for accessing the region and not waiting for it to complete its tas
 						<xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="skip">
 			    			<xsd:annotation>
 			         			<xsd:documentation><![CDATA[
-Inner bean definition of the cache loader.
+Inner bean definition of the cache listener.
 								]]></xsd:documentation>
 							</xsd:annotation>
 			         	</xsd:any>						
@@ -301,6 +301,34 @@ The delay in milliseconds that new members will wait before satisfying redundanc
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:complexType name="interestType" abstract="true">
+		<xsd:attribute name="durable"  type="xsd:boolean" default="false" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Indicates whether or not the registered interest is durable or not. Default is false.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="result-policy" default="KEYS-VALUES" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The result policy for this interest. Can be one of 'KEYS' or 'KEYS-VALUES' (the default) or 'NONE'. 
+
+KEYS - Initializes the local cache with the keys satisfying the request.
+KEYS-VALUES - initializes the local cache with the keys and current values satisfying the request.
+NONE -  Does not initialize the local cache.
+					]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction>
+					<xsd:enumeration value="KEYS"/>
+					<xsd:enumeration value="KEYS-VALUES"/>
+					<xsd:enumeration value="NONE"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+	
 	<xsd:element name="client-region">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.ClientRegionFactoryBean"><![CDATA[
@@ -316,22 +344,42 @@ which it receives its data. The client can hold some data locally or forward all
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="readOnlyRegionType">
+					<xsd:sequence minOccurs="0" maxOccurs="unbounded">
+						<xsd:choice>
+							<xsd:element name="regex-interest">
+								<xsd:complexType>
+									<xsd:complexContent>
+										<xsd:extension base="interestType">
+											<xsd:attribute name="key" type="xsd:string">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[
+The regular expression matching the keys of interest. If the pattern is '.*' then all keys of any type will be pushed 
+to the client. 
+													]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:attribute>
+										</xsd:extension>
+									</xsd:complexContent>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:choice>
+					</xsd:sequence>
 					<xsd:attribute name="data-policy" use="optional" default="normal">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The data policy for this client. Can be either 'empty' or 'normal' (the default). 
+The data policy for this client. Can be either 'EMPTY' or 'NORMAL' (the default). 
 
-empty - causes data to never be stored in local memory. The region will always appear empty. It can be used to for zero
+EMPTY - causes data to never be stored in local memory. The region will always appear empty. It can be used to for zero
  footprint producers that only want to distribute their data to others and for zero footprint consumers that only want 
  to see events.
-normal - causes data that this region is interested in to be stored in local memory. It allows the contents in this 
+NORMAL - causes data that this region is interested in to be stored in local memory. It allows the contents in this 
 cache to differ from other caches.  
  							]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:simpleType>
 							<xsd:restriction base="xsd:string">
-								<xsd:enumeration value="normal"/>
-								<xsd:enumeration value="empty"/>
+								<xsd:enumeration value="EMPTY"/>
+								<xsd:enumeration value="NORMAL"/>
 							</xsd:restriction>
 						</xsd:simpleType>
 					</xsd:attribute>
