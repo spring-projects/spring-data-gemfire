@@ -63,7 +63,11 @@ abstract class ParsingUtils {
 	 * @return
 	 */
 	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element, BeanDefinitionBuilder builder) {
-		String attr = element.getAttribute("ref");
+		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, "ref");
+	}
+
+	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element, BeanDefinitionBuilder builder, String refAttrName) {
+		String attr = element.getAttribute(refAttrName);
 		boolean hasRef = StringUtils.hasText(attr);
 
 		// check nested declarations
@@ -72,16 +76,16 @@ abstract class ParsingUtils {
 		if (hasRef) {
 			if (!childElements.isEmpty()) {
 				parserContext.getReaderContext().error(
-						"either use the 'ref' attribute or a nested bean declaration for '" + element.getLocalName()
-								+ "' element, but not both", element);
+						"either use the '" + refAttrName + "' attribute or a nested bean declaration for '"
+								+ element.getLocalName() + "' element, but not both", element);
 			}
 			return new RuntimeBeanReference(attr);
 		}
 
 		if (childElements.isEmpty()) {
 			parserContext.getReaderContext().error(
-					"specify either 'ref' attribute or a nested bean declaration for '" + element.getLocalName()
-							+ "' element", element);
+					"specify either '" + refAttrName + "' attribute or a nested bean declaration for '"
+							+ element.getLocalName() + "' element", element);
 		}
 
 		// nested parse nested bean definition
