@@ -114,6 +114,27 @@ use inner bean declarations.
 				</xsd:complexType>
 			</xsd:element>
 		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The id of the region bean definition.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cache-ref" type="xsd:string" default="cache" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the bean defining the GemFire cache (by default 'cache').
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute> 
 	</xsd:complexType>
 	
 	<xsd:complexType name="regionType">
@@ -149,27 +170,6 @@ arbitrarily pick one.
 						</xsd:annotation>
 					</xsd:element>
 				</xsd:sequence>
-				<xsd:attribute name="id" type="xsd:string" use="required">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-The id of the region bean definition.
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="name" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="cache-ref" type="xsd:string" default="cache" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-The name of the bean defining the GemFire cache (by default 'cache').
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute> 
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -320,7 +320,7 @@ NONE -  Does not initialize the local cache.
 					]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
-				<xsd:restriction>
+				<xsd:restriction base="xsd:string">
 					<xsd:enumeration value="KEYS"/>
 					<xsd:enumeration value="KEYS-VALUES"/>
 					<xsd:enumeration value="NONE"/>
@@ -394,7 +394,7 @@ Regular expression based interest. If the pattern is '.*' then all keys of any t
 							</xsd:element>
 						</xsd:choice>
 					</xsd:sequence>
-					<xsd:attribute name="data-policy" use="optional" default="normal">
+					<xsd:attribute name="data-policy" use="optional" default="NORMAL">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The data policy for this client. Can be either 'EMPTY' or 'NORMAL' (the default). 
