@@ -25,7 +25,17 @@ public abstract class TestUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T readField(String name, Object target) throws Exception {
-		Field field = target.getClass().getDeclaredField(name);
+		Field field = null;
+		Class<?> clazz = target.getClass();
+		do {
+			try {
+				field = clazz.getDeclaredField(name);
+			} catch (Exception ex) {
+			}
+
+			clazz = clazz.getSuperclass();
+		} while (field == null && !clazz.equals(Object.class));
+
 		field.setAccessible(true);
 		return (T) field.get(target);
 	}

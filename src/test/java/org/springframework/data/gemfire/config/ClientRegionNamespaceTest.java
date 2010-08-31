@@ -36,7 +36,6 @@ import org.springframework.util.ObjectUtils;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
@@ -56,15 +55,13 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testPublishingClient() throws Exception {
-		assertTrue(context.containsBean("pub"));
-		ClientRegionFactoryBean fb = context.getBean("&pub", ClientRegionFactoryBean.class);
+		assertTrue(context.containsBean("empty"));
+		ClientRegionFactoryBean fb = context.getBean("&empty", ClientRegionFactoryBean.class);
 		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", fb));
 		assertEquals(Scope.LOCAL, TestUtils.readField("scope", fb));
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		assertFalse(attrs.getPublisher());
 	}
 
-	@Test
+
 	public void testComplexClient() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		ClientRegionFactoryBean fb = context.getBean("&complex", ClientRegionFactoryBean.class);
