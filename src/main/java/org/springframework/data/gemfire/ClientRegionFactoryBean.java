@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire;
 
-import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.Region;
 
@@ -31,15 +31,15 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	@Override
 	protected void postProcess(Region<K, V> region) {
-		Assert.notEmpty(interests);
-
-		for (Interest<K> interest : interests) {
-			if (interest instanceof RegexInterest) {
-				// do the cast since it's safe
-				region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(), interest.isDurable());
-			}
-			else {
-				region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable());
+		if (!ObjectUtils.isEmpty(interests)) {
+			for (Interest<K> interest : interests) {
+				if (interest instanceof RegexInterest) {
+					// do the cast since it's safe
+					region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(), interest.isDurable());
+				}
+				else {
+					region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable());
+				}
 			}
 		}
 	}
@@ -49,7 +49,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 		Region<K, V> region = getObject();
 		// unregister interests
 		try {
-			if (region != null) {
+			if (region != null && !ObjectUtils.isEmpty(interests)) {
 				for (Interest<K> interest : interests) {
 					if (interest instanceof RegexInterest) {
 						region.unregisterInterestRegex((String) interest.getKey());
