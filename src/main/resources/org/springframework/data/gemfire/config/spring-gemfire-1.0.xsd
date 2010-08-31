@@ -106,7 +106,7 @@ Inner bean definition of the cache listener.
 					<xsd:attribute name="ref" type="xsd:string" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The name of the cache loader bean referred by this declaration. Used as a convenience method. If no reference exists, 
+The name of the cache listener bean referred by this declaration. Used as a convenience method. If no reference exists, 
 use inner bean declarations.
 							]]></xsd:documentation>
 						</xsd:annotation>
@@ -346,18 +346,48 @@ which it receives its data. The client can hold some data locally or forward all
 				<xsd:extension base="readOnlyRegionType">
 					<xsd:sequence minOccurs="0" maxOccurs="unbounded">
 						<xsd:choice>
-							<xsd:element name="regex-interest">
+							<xsd:element name="key-interest">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+Key based interest. If the key is a List, then all the keys in the List will be registered. The key can also be the 
+special token 'ALL_KEYS', which will register interest in all keys in the region. In effect, this will cause an update 
+to any key in this region in the CacheServer to be pushed to the client. 
+									]]></xsd:documentation>
+								</xsd:annotation>
 								<xsd:complexType>
 									<xsd:complexContent>
 										<xsd:extension base="interestType">
-											<xsd:attribute name="key" type="xsd:string">
+											<xsd:sequence minOccurs="0" maxOccurs="1">
+												<xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="skip">
+			    									<xsd:annotation>
+			         									<xsd:documentation><![CDATA[
+Inner bean definition of the client key interest.
+														]]></xsd:documentation>
+													</xsd:annotation>
+			         							</xsd:any>						
+											</xsd:sequence>
+											<xsd:attribute name="key-ref" type="xsd:string" use="optional">
 												<xsd:annotation>
 													<xsd:documentation><![CDATA[
-The regular expression matching the keys of interest. If the pattern is '.*' then all keys of any type will be pushed 
-to the client. 
+The name of the client key interest bean referred by this declaration. Used as a convenience method. If no reference exists, 
+use the inner bean declaration.
 													]]></xsd:documentation>
 												</xsd:annotation>
 											</xsd:attribute>
+										</xsd:extension>
+									</xsd:complexContent>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="regex-interest">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+Regular expression based interest. If the pattern is '.*' then all keys of any type will be pushed to the client. 
+									]]></xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:complexContent>
+										<xsd:extension base="interestType">
+											<xsd:attribute name="pattern" type="xsd:string"/>
 										</xsd:extension>
 									</xsd:complexContent>
 								</xsd:complexType>
