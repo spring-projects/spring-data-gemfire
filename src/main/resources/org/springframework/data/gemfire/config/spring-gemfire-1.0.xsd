@@ -413,8 +413,52 @@ cache to differ from other caches.
 							</xsd:restriction>
 						</xsd:simpleType>
 					</xsd:attribute>
+					<xsd:attribute name="pool-name" use="optional" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The name of the pool used by this client. 
+ 							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
 				</xsd:extension>
 			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="pool">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.client.PoolFactoryBean"><![CDATA[
+Defines a pool for connections from a client to a set of GemFire Cache Servers.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.client.Pool" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="id" type="xsd:ID" use="optional" default="gemfire-pool">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the pool definition (by default "gemfire-pool").]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+
+			<xsd:attribute name="free-connection-timeout" use="optional" type="xsd:int"/>
+			<xsd:attribute name="idle-timeout" use="optional" type="xsd:long"/>
+			<xsd:attribute name="load-conditioning-interval" use="optional" type="xsd:int"/>
+			<xsd:attribute name="max-connections" use="optional" type="xsd:int"/>
+			<xsd:attribute name="min-connections" use="optional" type="xsd:int"/>
+			<xsd:attribute name="ping-interval" use="optional" type="xsd:long"/>
+			<xsd:attribute name="read-timeout" use="optional" type="xsd:int"/>
+			<xsd:attribute name="retry-attempts" use="optional" type="xsd:int"/>
+			<xsd:attribute name="server-group" use="optional" type="xsd:string"/>
+			<xsd:attribute name="socket-buffer-size" use="optional" type="xsd:int"/>
+			<xsd:attribute name="statistic-interval" use="optional" type="xsd:int"/>
+			<xsd:attribute name="subscription-enabled" use="optional" type="xsd:boolean"/>
+			<xsd:attribute name="subscription-message-tracking-timeout" use="optional" type="xsd:int"/>
+			<xsd:attribute name="subscription-redundancy" use="optional" type="xsd:int"/>
+			<xsd:attribute name="thread-local-connections" use="optional" type="xsd:boolean"/>
 		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>
