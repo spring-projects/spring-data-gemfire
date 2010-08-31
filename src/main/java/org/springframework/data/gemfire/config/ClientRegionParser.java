@@ -107,7 +107,7 @@ class ClientRegionParser extends AbstractSingleBeanDefinitionParser {
 		BeanDefinitionBuilder regexInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegexInterest.class);
 
 		parseCommonInterestAttr(subElement, regexInterestBuilder);
-		ParsingUtils.setPropertyValue(subElement, builder, "key", "key");
+		ParsingUtils.setPropertyValue(subElement, builder, "pattern", "key");
 
 		return regexInterestBuilder.getBeanDefinition();
 	}

@@ -81,7 +81,7 @@ The name of the cache loader bean referred by this declaration. If no reference 
 				<xsd:annotation>
 					<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
 A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
-various operations on the region). Multiple listener can be declared in a nested manner.
+various operations on the region). Multiple listeners can be declared in a nested manner.
 
 Note: Avoid the risk of deadlock. Since the listener is invoked while holding a lock on the entry generating the event,
 it is easy to generate a deadlock by interacting with the region. For this reason, it is highly recommended to use some
