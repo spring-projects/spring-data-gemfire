@@ -76,16 +76,16 @@ class ClientRegionParser extends AbstractSingleBeanDefinitionParser {
 			}
 
 			else if ("key-interest".equals(name)) {
-				interests.add(parseKeyInterest(parserContext, subElement, builder));
+				interests.add(parseKeyInterest(parserContext, subElement));
 			}
 
 			else if ("regex-interest".equals(name)) {
-				interests.add(parseRegexInterest(parserContext, subElement, builder));
+				interests.add(parseRegexInterest(parserContext, subElement));
 			}
 		}
 
 		if (!subElements.isEmpty()) {
-			builder.addPropertyValue("interests", subElements);
+			builder.addPropertyValue("interests", interests);
 		}
 	}
 
@@ -93,7 +93,7 @@ class ClientRegionParser extends AbstractSingleBeanDefinitionParser {
 		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 
-	private Object parseKeyInterest(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+	private Object parseKeyInterest(ParserContext parserContext, Element subElement) {
 		BeanDefinitionBuilder keyInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(Interest.class);
 		parseCommonInterestAttr(subElement, keyInterestBuilder);
 
@@ -103,11 +103,11 @@ class ClientRegionParser extends AbstractSingleBeanDefinitionParser {
 		return keyInterestBuilder.getBeanDefinition();
 	}
 
-	private Object parseRegexInterest(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+	private Object parseRegexInterest(ParserContext parserContext, Element subElement) {
 		BeanDefinitionBuilder regexInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegexInterest.class);
 
 		parseCommonInterestAttr(subElement, regexInterestBuilder);
-		ParsingUtils.setPropertyValue(subElement, builder, "pattern", "key");
+		ParsingUtils.setPropertyValue(subElement, regexInterestBuilder, "pattern", "key");
 
 		return regexInterestBuilder.getBeanDefinition();
 	}
