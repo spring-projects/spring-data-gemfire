@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.client;
 
 import java.util.Collection;
 
@@ -24,7 +24,6 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.gemfire.client.PoolConnection;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;

@@ -22,20 +22,20 @@
 	<bean id="listeners" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="listeners">
 		<property name="cacheListeners">
 			<array>
-				<bean class="org.springframework.data.gemfire.RegionIntegrationTest$CacheList"/>
-				<bean class="org.springframework.data.gemfire.RegionIntegrationTest$CacheList"/>
+				<bean class="org.springframework.data.gemfire.client.RegionIntegrationTest$CacheList"/>
+				<bean class="org.springframework.data.gemfire.client.RegionIntegrationTest$CacheList"/>
 			</array>
 		</property>
-		<property name="cacheLoader"><bean class="org.springframework.data.gemfire.RegionIntegrationTest$CacheLoad"/></property>
-		<property name="cacheWriter"><bean class="org.springframework.data.gemfire.RegionIntegrationTest$CacheWrite"/></property>
+		<property name="cacheLoader"><bean class="org.springframework.data.gemfire.client.RegionIntegrationTest$CacheLoad"/></property>
+		<property name="cacheWriter"><bean class="org.springframework.data.gemfire.client.RegionIntegrationTest$CacheWrite"/></property>
 	</bean>
 	
 	<!--  client configurations -->
-	<bean id="basic-client" class="org.springframework.data.gemfire.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region" lazy-init="true">
+	<bean id="basic-client" class="org.springframework.data.gemfire.client.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region" lazy-init="true">
 		<property name="interests">
 			<array>
-				<bean class="org.springframework.data.gemfire.Interest" p:key="Vlaicu" p:policy="NONE"/>
-				<bean class="org.springframework.data.gemfire.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/>
+				<bean class="org.springframework.data.gemfire.client.Interest" p:key="Vlaicu" p:policy="NONE"/>
+				<bean class="org.springframework.data.gemfire.client.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/>
 			</array>
 		</property>
 	</bean>

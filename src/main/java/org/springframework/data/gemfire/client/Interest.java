@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.client;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.Constants;

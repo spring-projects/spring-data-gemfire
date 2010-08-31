@@ -331,7 +331,7 @@ NONE -  Does not initialize the local cache.
 	
 	<xsd:element name="client-region">
 		<xsd:annotation>
-			<xsd:documentation source="org.springframework.data.gemfire.ClientRegionFactoryBean"><![CDATA[
+			<xsd:documentation source="org.springframework.data.gemfire.client.ClientRegionFactoryBean"><![CDATA[
 Defines a GemFire client region instance. A client region is connected to a (long-lived) farm of GemFire servers from
 which it receives its data. The client can hold some data locally or forward all requests to the server.
 			]]></xsd:documentation>
@@ -437,7 +437,7 @@ Defines a pool for connections from a client to a set of GemFire Cache Servers.
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:attribute name="id" type="xsd:ID" use="optional" default="gemfire-pool">
+			<xsd:attribute name="id" type="xsd:ID" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The name of the pool definition (by default "gemfire-pool").]]></xsd:documentation>

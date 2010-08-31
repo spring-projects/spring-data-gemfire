@@ -174,13 +174,13 @@
       <classname>RegexInterest</classname> classes in the
       <literal>org.springframework.data.gemfire</literal> package:</para>
 
-      <programlisting language="xml">&lt;bean id="interested-client" class="org.springframework.data.gemfire.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region"&gt;
+      <programlisting language="xml">&lt;bean id="interested-client" class="org.springframework.data.gemfire.client.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region"&gt;
   &lt;property name="interests"&gt;
     &lt;array&gt;
       &lt;!-- key-based interest --&gt;
-      &lt;bean class="org.springframework.data.gemfire.Interest" p:key="Vlaicu" p:policy="NONE"/&gt;
+      &lt;bean class="org.springframework.data.gemfire.client.Interest" p:key="Vlaicu" p:policy="NONE"/&gt;
       &lt;!-- regex-based interest --&gt;
-      &lt;bean class="org.springframework.data.gemfire.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/&gt;
+      &lt;bean class="org.springframework.data.gemfire.client.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/&gt;
     &lt;/array&gt;
   &lt;/property&gt;
 &lt;/bean&gt;</programlisting>
