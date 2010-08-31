@@ -309,10 +309,10 @@ Indicates whether or not the registered interest is durable or not. Default is f
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="result-policy" default="KEYS-VALUES" use="optional">
+		<xsd:attribute name="result-policy" default="KEYS_VALUES" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The result policy for this interest. Can be one of 'KEYS' or 'KEYS-VALUES' (the default) or 'NONE'. 
+The result policy for this interest. Can be one of 'KEYS' or 'KEYS_VALUES' (the default) or 'NONE'. 
 
 KEYS - Initializes the local cache with the keys satisfying the request.
 KEYS-VALUES - initializes the local cache with the keys and current values satisfying the request.
@@ -322,7 +322,7 @@ NONE -  Does not initialize the local cache.
 			<xsd:simpleType>
 				<xsd:restriction base="xsd:string">
 					<xsd:enumeration value="KEYS"/>
-					<xsd:enumeration value="KEYS-VALUES"/>
+					<xsd:enumeration value="KEYS_VALUES"/>
 					<xsd:enumeration value="NONE"/>
 				</xsd:restriction>
 			</xsd:simpleType>
