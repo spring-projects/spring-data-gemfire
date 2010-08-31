@@ -103,6 +103,8 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 				attrFactory.setScope(scope);
 			}
 
+			postProcess(attrFactory);
+
 			region = cache.createRegion(name, attrFactory.create());
 			log.info("Created new cache region [" + name + "]");
 			if (snapshot != null) {
@@ -112,6 +114,17 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 
 		postProcess(region);
 	}
+
+	/**
+	 * Post-process the attribute factory object used for configuring the region of this factory bean during the initialization process.
+	 * The object is already initialized and configured by the factory bean before this method
+	 * is invoked.
+	 * 
+	 * @param attrFactory attribute factory
+	 */
+	protected void postProcess(AttributesFactory<K, V> attrFactory) {
+	}
+
 
 	/**
 	 * Post-process the region object for this factory bean during the initialization process.

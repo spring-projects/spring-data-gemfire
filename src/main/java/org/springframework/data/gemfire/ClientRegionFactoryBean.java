@@ -16,9 +16,12 @@
 
 package org.springframework.data.gemfire;
 
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.Pool;
 
 /**
  * Client extension for Gemfire regions.
@@ -28,6 +31,7 @@ import com.gemstone.gemfire.cache.Region;
 public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	private Interest<K>[] interests;
+	private String poolName;
 
 	@Override
 	protected void postProcess(Region<K, V> region) {
@@ -42,6 +46,11 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 				}
 			}
 		}
+	}
+
+	@Override
+	protected void postProcess(AttributesFactory<K, V> attrFactory) {
+		attrFactory.setPoolName(poolName);
 	}
 
 	@Override
@@ -82,5 +91,24 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	 */
 	Interest<K>[] getInterests() {
 		return interests;
+	}
+
+	/**
+	 * Sets the pool name used by this client.
+	 * 
+	 * @param poolName
+	 */
+	public void setPoolName(String poolName) {
+		this.poolName = poolName;
+	}
+
+	/**
+	 * Sets the pool used by this client.
+	 * 
+	 * @param poolName
+	 */
+	public void setPool(Pool pool) {
+		Assert.notNull(pool, "pool cannot be null");
+		setPoolName(pool.getName());
 	}
 }
