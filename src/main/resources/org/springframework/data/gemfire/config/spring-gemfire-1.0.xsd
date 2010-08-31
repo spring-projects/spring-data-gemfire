@@ -75,7 +75,7 @@ The name of the cache loader bean referred by this declaration. If no reference 
 		</xsd:attribute>
 	</xsd:complexType>
 	
-	<xsd:complexType name="regionType">
+	<xsd:complexType name="readOnlyRegionType">
 		<xsd:sequence>
 			<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -113,56 +113,65 @@ use inner bean declarations.
 					</xsd:attribute>
 				</xsd:complexType>
 			</xsd:element>
-			<xsd:element name="cache-loader" minOccurs="0"  maxOccurs="1" type="beanDeclarationType">
-				<xsd:annotation>
-					<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="regionType">
+		<xsd:complexContent>
+			<xsd:extension base="readOnlyRegionType">
+				<xsd:sequence>
+					<xsd:element name="cache-loader" minOccurs="0"  maxOccurs="1" type="beanDeclarationType">
+						<xsd:annotation>
+							<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
 The cache loader definition for this region. A cache loader allows data to be placed into a region.
-					]]></xsd:documentation>
-					<xsd:appinfo>
-						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.CacheLoader"/>
-						</tool:annotation>
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="cache-writer" minOccurs="0" maxOccurs="1" type="beanDeclarationType">
-				<xsd:annotation>
-					<xsd:documentation source="com.gemstone.gemfire.cache.CacheWriter"><![CDATA[
+							]]></xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation>
+									<tool:exports type="com.gemstone.gemfire.cache.CacheLoader"/>
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="cache-writer" minOccurs="0" maxOccurs="1" type="beanDeclarationType">
+						<xsd:annotation>
+							<xsd:documentation source="com.gemstone.gemfire.cache.CacheWriter"><![CDATA[
 The cache writer definition for this region. A cache writer acts as a dedicated synchronous listener that is notified
 before a region or an entry is modified. A typical example would be a writer that updates the database.
 
 Note: Only one CacheWriter is invoked. GemFire will always prefer the local one (if it exists) otherwise it will
 arbitrarily pick one.
-					]]></xsd:documentation>
-					<xsd:appinfo>
-						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.CacheWriter"/>
-						</tool:annotation>
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-		<xsd:attribute name="id" type="xsd:string" use="required">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
+							]]></xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation>
+									<tool:exports type="com.gemstone.gemfire.cache.CacheWriter"/>
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+				<xsd:attribute name="id" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
 The id of the region bean definition.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="name" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="name" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
 The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="cache-ref" type="xsd:string" default="cache" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="cache-ref" type="xsd:string" default="cache" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
 The name of the bean defining the GemFire cache (by default 'cache').
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute> 
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute> 
+			</xsd:extension>
+		</xsd:complexContent>
 	</xsd:complexType>
 	
 	<xsd:element name="replicated-region">
@@ -181,17 +190,6 @@ up to date copy of the data.
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="regionType">
-					<xsd:attribute name="publisher" type="xsd:boolean" default="false" use="optional">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Indicates whether the defined replica region is a 'publisher' or not (the default). When other replicas are creates,
-if there is a publisher replca, it will be always be the preferred (but not guaranteed) data source.
-
-Note: this is a performance optimization for environments with large amounts of data for selecting a particular host.
-For best performance, only designate one region as publisher.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -297,6 +295,45 @@ The delay in milliseconds that new members will wait before satisfying redundanc
  will not trigger redundancy recovery. The default is to recover redundancy immediately when a new member is added.
  							]]></xsd:documentation>
 						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="client-region">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.ClientRegionFactoryBean"><![CDATA[
+Defines a GemFire client region instance. A client region is connected to a (long-lived) farm of GemFire servers from
+which it receives its data. The client can hold some data locally or forward all requests to the server.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="readOnlyRegionType">
+					<xsd:attribute name="data-policy" use="optional" default="normal">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The data policy for this client. Can be either 'empty' or 'normal' (the default). 
+
+empty - causes data to never be stored in local memory. The region will always appear empty. It can be used to for zero
+ footprint producers that only want to distribute their data to others and for zero footprint consumers that only want 
+ to see events.
+normal - causes data that this region is interested in to be stored in local memory. It allows the contents in this 
+cache to differ from other caches.  
+ 							]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="normal"/>
+								<xsd:enumeration value="empty"/>
+							</xsd:restriction>
+						</xsd:simpleType>
 					</xsd:attribute>
 				</xsd:extension>
 			</xsd:complexContent>
