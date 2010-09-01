@@ -73,7 +73,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private int socketBufferSize = PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE;
 	private int statisticInterval = PoolFactory.DEFAULT_STATISTIC_INTERVAL;
 	private int subscriptionAckInterval = PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
-	private boolean enableSubscription = PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED;
+	private boolean subscriptionEnabled = PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED;
 	private int subscriptionMessageTrackingTimeout = PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT;
 	private int subscriptionRedundancy = PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
 	private boolean threadLocalConnections = PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
@@ -139,7 +139,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			poolFactory.setServerGroup(serverGroup);
 			poolFactory.setSocketBufferSize(socketBufferSize);
 			poolFactory.setStatisticInterval(statisticInterval);
-			poolFactory.setSubscriptionEnabled(enableSubscription);
+			poolFactory.setSubscriptionEnabled(subscriptionEnabled);
 			poolFactory.setSubscriptionAckInterval(subscriptionAckInterval);
 			poolFactory.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
 			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
@@ -284,10 +284,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @param enableSubscription the enableSubscription to set
+	 * @param subscriptionEnabled the subscriptionEnabled to set
 	 */
-	public void setEnableSubscription(boolean enableSubscription) {
-		this.enableSubscription = enableSubscription;
+	public void setSubscriptionEnabled(boolean subscriptionEnabled) {
+		this.subscriptionEnabled = subscriptionEnabled;
 	}
 
 	/**

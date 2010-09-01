@@ -36,6 +36,9 @@ public abstract class TestUtils {
 			clazz = clazz.getSuperclass();
 		} while (field == null && !clazz.equals(Object.class));
 
+		if (field == null)
+			throw new IllegalArgumentException("Cannot find field '" + name + "' in the class hierarchy of "
+					+ target.getClass());
 		field.setAccessible(true);
 		return (T) field.get(target);
 	}

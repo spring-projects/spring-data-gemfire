@@ -19,11 +19,15 @@ package org.springframework.data.gemfire.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.client.PoolConnection;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -44,14 +48,32 @@ public class PoolNamespaceTest {
 	public void testBasicClient() throws Exception {
 		assertTrue(context.containsBean("gemfire-pool"));
 		assertEquals(context.getBean("gemfire-pool"), PoolManager.find("gemfire-pool"));
+		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&gemfire-pool");
+		Collection<PoolConnection> locators = TestUtils.readField("locators", pfb);
+		assertEquals(1, locators.size());
+		PoolConnection locator = locators.iterator().next();
+		assertEquals("localhost", locator.getHost());
+		assertEquals(40403, locator.getPort());
 	}
 
 	@Test
 	public void testComplexPool() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&complex");
-		assertEquals(30, TestUtils.readField("retry-attempts", pfb));
-		assertEquals(6000, TestUtils.readField("free-connection-timeout", pfb));
-		assertEquals(5000, TestUtils.readField("ping-interval", pfb));
+		assertEquals(30, TestUtils.readField("retryAttempts", pfb));
+		assertEquals(6000, TestUtils.readField("freeConnectionTimeout", pfb));
+		assertEquals(5000l, TestUtils.readField("pingInterval", pfb));
+		assertTrue((Boolean) TestUtils.readField("subscriptionEnabled", pfb));
+
+		Collection<PoolConnection> servers = TestUtils.readField("servers", pfb);
+		assertEquals(2, servers.size());
+		Iterator<PoolConnection> iterator = servers.iterator();
+		PoolConnection server = iterator.next();
+		assertEquals("localhost", server.getHost());
+		assertEquals(40404, server.getPort());
+
+		server = iterator.next();
+		assertEquals("localhost", server.getHost());
+		assertEquals(40405, server.getPort());
 	}
 }

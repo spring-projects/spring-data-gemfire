@@ -425,7 +425,7 @@ The name of the pool used by this client.
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:complexType name="connectionType" abstract="true">
+	<xsd:complexType name="connectionType">
 		<xsd:attribute name="host" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -460,12 +460,10 @@ Defines a pool for connections from a client to a set of GemFire Cache Servers.
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:sequence minOccurs="1" maxOccurs="1">
-				<xsd:choice minOccurs="1" maxOccurs="unbounded">
-					<xsd:element name="locator" type="connectionType"/>
-					<xsd:element name="server" type="connectionType"/>
-				</xsd:choice>
-			</xsd:sequence>
+			<xsd:choice minOccurs="1" maxOccurs="1">
+				<xsd:element name="locator" type="connectionType" minOccurs="1" maxOccurs="unbounded"/>
+				<xsd:element name="server" type="connectionType" minOccurs="1" maxOccurs="unbounded"/>
+			</xsd:choice>
 			<xsd:attribute name="id" type="xsd:ID" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
