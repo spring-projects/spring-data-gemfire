@@ -32,7 +32,7 @@ Defines a GemFire Cache instance used for creating or retrieving 'regions'.
 			<xsd:attribute name="id" type="xsd:ID" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The name of the cache definition (by default "cache").]]></xsd:documentation>
+The name of the cache definition (by default "gemfire-cache").]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="cache-xml-location" type="xsd:string" use="optional">
@@ -128,10 +128,10 @@ The name of the region definition. If no specified, it will have the value of th
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="cache-ref" type="xsd:string" default="cache" use="optional">
+		<xsd:attribute name="cache-ref" type="xsd:string" default="gemfire-cache" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the bean defining the GemFire cache (by default 'cache').
+The name of the bean defining the GemFire cache (by default 'gemfire-cache').
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute> 

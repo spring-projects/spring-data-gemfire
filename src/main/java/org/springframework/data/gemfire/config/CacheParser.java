@@ -49,7 +49,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
 		if (!StringUtils.hasText(name)) {
-			name = "cache";
+			name = "gemfire-cache";
 		}
 		return name;
 	}

@@ -38,8 +38,8 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 
 	@Test
 	public void testBasicCache() throws Exception {
-		assertTrue(ctx.containsBean("cache"));
-		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache");
+		assertTrue(ctx.containsBean("gemfire-cache"));
+		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&gemfire-cache");
 		assertNull(TestUtils.readField("cacheXml", cfb));
 		assertNull(TestUtils.readField("properties", cfb));
 	}

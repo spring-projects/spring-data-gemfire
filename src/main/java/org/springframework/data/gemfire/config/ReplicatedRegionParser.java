@@ -53,7 +53,7 @@ class ReplicatedRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		String attr = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "cache"));
+		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
 
 		// add attributes
 		AttributesFactory af = new AttributesFactory();
