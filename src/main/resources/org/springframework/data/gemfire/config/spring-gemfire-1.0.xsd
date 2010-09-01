@@ -75,7 +75,7 @@ The name of the cache loader bean referred by this declaration. If no reference 
 		</xsd:attribute>
 	</xsd:complexType>
 	
-	<xsd:complexType name="readOnlyRegionType">
+	<xsd:complexType name="readOnlyRegionType" abstract="true">
 		<xsd:sequence>
 			<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -425,6 +425,29 @@ The name of the pool used by this client.
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:complexType name="connectionType" abstract="true">
+		<xsd:attribute name="host" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The host name or ip address of the connection.				
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="port">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The port number of the connection (between 1 and 65535 inclusive).				
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:positiveInteger">
+					<xsd:minInclusive value="1"/>
+					<xsd:maxInclusive value="65535"/>
+				</xsd:restriction>
+			</xsd:simpleType>			
+		</xsd:attribute>
+	</xsd:complexType>
+	
 	<xsd:element name="pool">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.client.PoolFactoryBean"><![CDATA[
@@ -437,13 +460,18 @@ Defines a pool for connections from a client to a set of GemFire Cache Servers.
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:choice minOccurs="1" maxOccurs="unbounded">
+					<xsd:element name="locator" type="connectionType"/>
+					<xsd:element name="server" type="connectionType"/>
+				</xsd:choice>
+			</xsd:sequence>
 			<xsd:attribute name="id" type="xsd:ID" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The name of the pool definition (by default "gemfire-pool").]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-
 			<xsd:attribute name="free-connection-timeout" use="optional" type="xsd:int"/>
 			<xsd:attribute name="idle-timeout" use="optional" type="xsd:long"/>
 			<xsd:attribute name="load-conditioning-interval" use="optional" type="xsd:int"/>
