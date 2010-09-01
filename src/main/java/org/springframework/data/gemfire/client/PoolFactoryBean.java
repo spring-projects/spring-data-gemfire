@@ -79,7 +79,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private boolean threadLocalConnections = PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
 
 	public Class<?> getObjectType() {
-		return Pool.class;
+		return (pool != null ? pool.getClass() : Pool.class);
 	}
 
 	public boolean isSingleton() {

@@ -61,7 +61,7 @@ public class ClientRegionNamespaceTest {
 		assertEquals(Scope.LOCAL, TestUtils.readField("scope", fb));
 	}
 
-
+	//@Test
 	public void testComplexClient() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		ClientRegionFactoryBean fb = context.getBean("&complex", ClientRegionFactoryBean.class);

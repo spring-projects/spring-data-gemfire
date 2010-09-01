@@ -57,6 +57,7 @@ class ClientRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicy");
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
+		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
 
 		String attr = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)

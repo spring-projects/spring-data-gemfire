@@ -413,7 +413,7 @@ cache to differ from other caches.
 							</xsd:restriction>
 						</xsd:simpleType>
 					</xsd:attribute>
-					<xsd:attribute name="pool-name" use="optional" type="xsd:string">
+					<xsd:attribute name="pool-name" use="required" type="xsd:string">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The name of the pool used by this client. 
@@ -452,6 +452,8 @@ The port number of the connection (between 1 and 65535 inclusive).
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.client.PoolFactoryBean"><![CDATA[
 Defines a pool for connections from a client to a set of GemFire Cache Servers.
+
+Note that in order to instantiate a pool, a GemFire cache needs to be already started.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>

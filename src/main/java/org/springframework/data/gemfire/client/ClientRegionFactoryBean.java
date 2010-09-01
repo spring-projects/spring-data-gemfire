@@ -16,6 +16,9 @@
 
 package org.springframework.data.gemfire.client;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -29,10 +32,11 @@ import com.gemstone.gemfire.cache.client.Pool;
  * 
  * @author Costin Leau
  */
-public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
+public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> implements BeanFactoryAware {
 
 	private Interest<K>[] interests;
 	private String poolName;
+	private BeanFactory beanFactory;
 
 	@Override
 	protected void postProcess(Region<K, V> region) {
@@ -51,6 +55,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	@Override
 	protected void postProcess(AttributesFactory<K, V> attrFactory) {
+		// try to eagerly initialize the pool name, if defined as a bean
+		if (beanFactory.isTypeMatch(poolName, Pool.class)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Found bean definition for pool '" + poolName + "'. Eagerly initializing it...");
+			}
+			beanFactory.getBean(poolName, Pool.class);
+		}
+
 		attrFactory.setPoolName(poolName);
 	}
 
@@ -77,7 +89,11 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 		super.destroy();
 	}
 
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
 
+	
 	/**
 	 * Set the interests for this client region. Both key and regex interest are supported.
 	 * 
