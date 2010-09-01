@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xmlns:p="http://www.springframework.org/schema/p"
+	default-lazy-init="true"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
+	<!-- as there can be only one cache per VM -->
+	
+	<gfe:cache />
+	
+	<gfe:pool/>
+	
+		<!--
+		<gfe:locator host="localhost" port="0"/>
+		 -->
+	
+	<gfe:pool id="complex" free-connection-timeout="6000" retry-attempts="30" ping-interval="5000"/>
+			<!--
+		<gfe:server host="localhost" port="0"/>
+		<gfe:locator host="localhost" port="0"/>
+		  -->
+	
+</beans>
