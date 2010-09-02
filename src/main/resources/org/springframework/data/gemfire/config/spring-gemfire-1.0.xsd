@@ -394,7 +394,7 @@ reclaim memory.
 		<xsd:sequence>
 			<xsd:element name="disk-dir">
 				<xsd:complexType>
-					<xsd:attribute name="location" type="xsd:string">
+					<xsd:attribute name="location" type="xsd:string" use="required">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Directory on the file system for storing data.
@@ -429,6 +429,7 @@ Indicates whether or not the operation logs are automatically compacted or not. 
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<!-- 
 		<xsd:attribute name="compaction-threshold" default="50">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -446,6 +447,7 @@ by entry destroys, entry updates, and region destroys.
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:attribute>
+		 -->
 		<xsd:attribute name="max-oplog-size" type="xsd:long" default="1024">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

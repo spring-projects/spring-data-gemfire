@@ -26,6 +26,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
+
 /**
  * Various minor utility used by the parser.
  * 
@@ -101,5 +103,44 @@ abstract class ParsingUtils {
 		}
 
 		return list;
+	}
+
+	/**
+	 * Parses disk store sub-element. Populates the given attribute factory with the proper attributes.
+	 * 
+	 * @param beanBuilder - beanbuilder for a RegionAttributesFactory instance
+	 */
+	static void parseDiskStorage(Element element, BeanDefinitionBuilder beanBuilder) {
+		Element diskStoreElement = DomUtils.getChildElementByTagName(element, "disk-store");
+
+		if (diskStoreElement == null)
+			return;
+
+		BeanDefinitionBuilder diskDefBuilder = BeanDefinitionBuilder.genericBeanDefinition(DiskWriteAttributesFactory.class);
+		setPropertyValue(diskStoreElement, diskDefBuilder, "synchronous-write", "synchronous");
+		setPropertyValue(diskStoreElement, diskDefBuilder, "auto-compact", "rollOplogs");
+		setPropertyValue(diskStoreElement, diskDefBuilder, "max-oplog-size", "maxOplogSize");
+		setPropertyValue(diskStoreElement, diskDefBuilder, "time-interval", "timeInterval");
+		setPropertyValue(diskStoreElement, diskDefBuilder, "queue-size", "bytesThreshold");
+
+
+		// parse nested disk-dir
+		List<Element> list = DomUtils.getChildElementsByTagName(diskStoreElement, "disk-dir");
+		ManagedList<Object> locations = new ManagedList<Object>(list.size());
+		ManagedList<Object> sizes = new ManagedList<Object>(list.size());
+
+		for (Element diskDirElement : list) {
+			locations.add(diskDirElement.getAttribute("location"));
+
+			String attr = diskStoreElement.getAttribute("max-size");
+			sizes.add(StringUtils.hasText(attr) ? attr : "10240");
+		}
+
+		beanBuilder.addPropertyValue("diskWriteAttributes", diskDefBuilder.getBeanDefinition());
+		beanBuilder.addPropertyValue("diskDirs", locations);
+		beanBuilder.addPropertyValue("diskSizes", sizes);
+	}
+
+	static void parseEviction(Element element, BeanDefinitionBuilder attrBuilder) {
 	}
 }
