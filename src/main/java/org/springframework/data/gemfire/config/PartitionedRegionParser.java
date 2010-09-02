@@ -56,6 +56,12 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 		// add cache reference (fallback to default if nothing is specified)
 		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
 
+		// region attributes
+		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactory.class);
+
+		ParsingUtils.parseEviction(element, attrBuilder);
+		ParsingUtils.parseDiskStorage(element, attrBuilder);
+
 
 		// partition attributes
 		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder.genericBeanDefinition(PartitionAttributesFactory.class);
@@ -123,11 +129,10 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 			}
 		}
 
-		// add attributes
-		BeanDefinitionBuilder nestedBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactory.class);
-		nestedBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
+		// add partition attributes attributes
+		attrBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
 
-		builder.addPropertyValue("attributes", nestedBuilder.getBeanDefinition());
+		builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
 	}
 
 	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {

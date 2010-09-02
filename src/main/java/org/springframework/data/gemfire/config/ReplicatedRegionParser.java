@@ -21,12 +21,12 @@ import java.util.List;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.RegionAttributesFactory;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
 
@@ -46,24 +46,34 @@ class ReplicatedRegionParser extends AbstractSingleBeanDefinitionParser {
 		super.doParse(element, builder);
 
 		// set the data policy
-		builder.addPropertyValue("dataPolicy", DataPolicy.REPLICATE);
+		String attr = element.getAttribute("persistent");
+		if (Boolean.parseBoolean(attr)) {
+			builder.addPropertyValue("dataPolicy", DataPolicy.PERSISTENT_REPLICATE);
+		}
+		else {
+			builder.addPropertyValue("dataPolicy", DataPolicy.REPLICATE);
+		}
+
 		builder.addPropertyValue("scope", Scope.DISTRIBUTED_ACK);
 
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 
-		String attr = element.getAttribute("cache-ref");
+		attr = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)
 		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
 
 		// add attributes
-		AttributesFactory af = new AttributesFactory();
+		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactory.class);
 
 		attr = element.getAttribute("publisher");
 		if (StringUtils.hasText(attr)) {
-			af.setPublisher(Boolean.valueOf(attr));
+			attrBuilder.addPropertyValue("publisher", Boolean.valueOf(attr));
 		}
 
-		builder.addPropertyValue("attributes", af.create());
+		ParsingUtils.parseEviction(element, attrBuilder);
+		ParsingUtils.parseDiskStorage(element, attrBuilder);
+
+		builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
