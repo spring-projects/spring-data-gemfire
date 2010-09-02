@@ -169,7 +169,28 @@ arbitrarily pick one.
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
+					<xsd:element name="diskStore" type="diskStoreType minOccurs="0" maxOccurs="1" >
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Disk storage configuration for the defined region.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
 				</xsd:sequence>
+				<xsd:attribute name="persistent" type="xsd:boolean" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the defined region is persistent or not. GemFire ensures that all the data you put into a region that
+ is configured for persistence will be written to disk in a way that it can be recovered the next time you create the 
+ region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart 
+ of GemFire.
+
+Default is false, meaning the regions are not persisted.
+
+Note: Persistence for partitioned regions is supported only from GemFire 6.5 onwards.						
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -224,6 +245,13 @@ colocate data based on custom criterias (such as colocating trades by month and 
 										<tool:exports type="com.gemstone.gemfire.cache.PartitionResolver"/>
 									</tool:annotation>
 								</xsd:appinfo>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[
+Eviction policy for the partitioned region.
+								]]></xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
 					</xsd:sequence>
@@ -301,34 +329,153 @@ The delay in milliseconds that new members will wait before satisfying redundanc
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:complexType name="interestType" abstract="true">
-		<xsd:attribute name="durable"  type="xsd:boolean" default="false" use="optional">
+	<xsd:complexType name="evictionType">
+		<xsd:attribute name="type" default="entry-count">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="entry-count">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Considers the number of entries in the region before performing an eviction.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="memory-size">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Considers the amount of memory consumed by the region before performing an eviction.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="heap-percentage">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Considers the amount of heap used (through the GemFire resource manager) before performing an eviction.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="threshold" type="xsd:long">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Indicates whether or not the registered interest is durable or not. Default is false.
+The threshold (or limit) against which the eviction algorithm runs. Once the threashold is reached, eviction is
+performed.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="result-policy" default="KEYS_VALUES" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The result policy for this interest. Can be one of 'KEYS' or 'KEYS_VALUES' (the default) or 'NONE'. 
-
-KEYS - Initializes the local cache with the keys satisfying the request.
-KEYS-VALUES - initializes the local cache with the keys and current values satisfying the request.
-NONE -  Does not initialize the local cache.
-					]]></xsd:documentation>
-			</xsd:annotation>
+		<xsd:attribute name="action" default="local-destroy">
 			<xsd:simpleType>
 				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="KEYS"/>
-					<xsd:enumeration value="KEYS_VALUES"/>
-					<xsd:enumeration value="NONE"/>
+					<xsd:enumeration value="local-destroy">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The LRU (least-recently-used) region entries is locally destroyed.
+
+Note: this option is not compatible with replicated regions (as it render the replica region incomplete).  
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="overflow-to-disk">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to 
+reclaim memory.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:attribute>
 	</xsd:complexType>
 	
+	<xsd:complexType name="diskStoreType">
+		<xsd:sequence>
+			<xsd:element name="disk-dir">
+				<xsd:complexType>
+					<xsd:attribute name="location" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Directory on the file system for storing data.
+
+Note: the directory must already exist.						
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="max-size" type="xsd:int" default="10240">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The maximum size (in megabytes) of data stored in each directory. Default is 10240 MB (10 gigabytes). 
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="synchronous-write" type="xsd:boolean" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Indicates whether the writing to the disk si synchronous or not. Default is false, meaning asynchronous writing.
+				]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>		
+		<xsd:attribute name="auto-compact" type="xsd:boolean" default="true">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Indicates whether or not the operation logs are automatically compacted or not. Default is true.
+				]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="compaction-threshold" default="50">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the threshold at which an oplog will become compactable. Until it reaches this threshold the oplog will not be 
+compacted. The threshold is a percentage in the range 0..100. When the amount of garbage in an oplog exceeds this 
+percentage then when a compaction is done this garbage will be cleaned up freeing up disk space. Garbage is created 
+by entry destroys, entry updates, and region destroys. 
+				]]>
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:short">
+					<xsd:minExclusive value="0"/>
+					<xsd:maxExclusive value="100"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="max-oplog-size" type="xsd:long" default="1024">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this 
+amount of file space will be immediately reserved. 
+				]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="time-interval" type="xsd:long" default="1">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the number of milliseconds that can elapse before unwritten data is written to disk. 
+It is considered only for asynchronous writing. 
+				]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="queue-size" type="xsd:long" default="0">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been 
+queued async ops will begin blocking until some of the queued ops have been flushed to disk.
+Considered only for asynchronous writing.
+				]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
 	<xsd:element name="client-region">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.client.ClientRegionFactoryBean"><![CDATA[
@@ -447,6 +594,34 @@ The port number of the connection (between 1 and 65535 inclusive).
 			</xsd:simpleType>			
 		</xsd:attribute>
 	</xsd:complexType>
+
+	<xsd:complexType name="interestType" abstract="true">
+		<xsd:attribute name="durable"  type="xsd:boolean" default="false" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Indicates whether or not the registered interest is durable or not. Default is false.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="result-policy" default="KEYS_VALUES" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The result policy for this interest. Can be one of 'KEYS' or 'KEYS_VALUES' (the default) or 'NONE'. 
+
+KEYS - Initializes the local cache with the keys satisfying the request.
+KEYS-VALUES - initializes the local cache with the keys and current values satisfying the request.
+NONE -  Does not initialize the local cache.
+					]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="KEYS"/>
+					<xsd:enumeration value="KEYS_VALUES"/>
+					<xsd:enumeration value="NONE"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
 	
 	<xsd:element name="pool">
 		<xsd:annotation>
@@ -489,151 +664,4 @@ The name of the pool definition (by default "gemfire-pool").]]></xsd:documentati
 			<xsd:attribute name="thread-local-connections" use="optional" type="xsd:boolean"/>
 		</xsd:complexType>
 	</xsd:element>
-
-	<xsd:complexType name="evictionType">
-		<xsd:attribute name="type" default="entry-count">
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="entry-count">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Considers the number of entries in the region before performing an eviction.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="memory-size">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Considers the amount of memory consumed by the region before performing an eviction.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="heap-percentage">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Considers the amount of heap used (through the GemFire resource manager) before performing an eviction.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
-		</xsd:attribute>
-		<xsd:attribute name="threshold" type="xsd:long">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The threshold (or limit) against which the eviction algorithm runs. Once the threashold is reached, eviction is
-performed.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="action" default="local-destroy">
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string>
-					<xsd:enumeration value="local-destroy">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-The LRU (least-recently-used) region entries is locally destroyed.
-
-Note: this option is not compatible with replicated regions (as it render the replica region incomplete).  
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="overflow-to-disk">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to 
-reclaim memory.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
-		</xsd:attribute>
-	</xsd:complexType>
-	
-	<xsd:complexType name="diskStoreType">
-		<xsd:sequence>
-			<xsd:element name="disk-dir">
-				<xsd:complexType>
-					<xsd:attribute name="location" type="xsd:string">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Directory on the file system for storing data.
-
-Note: the directory must already exist.						
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
-					<xsd:attribute name="max-size" type="xsd:int" default="10240">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-The maximum size (in megabytes) of data stored in each directory. Default is 10240 MB (10 gigabytes). 
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
-				</xsd:complexType>
-			</xsd:element>
-		</xsd:sequence>
-		<xsd:attribute name="synchronous-write" type="xsd:boolean" default="false">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Indicates whether the writing to the disk si synchronous or not. Default is false, meaning asynchronous writing.
-				]]>
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>		
-		<xsd:attribute name="auto-compact" type="xsd:boolean" default="true">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Indicates whether or not the operation logs are automatically compacted or not. Default is true.
-				]]>
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="compaction-threshold" default="50">
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:short">
-					<xsd:minExclusive value="0"/>
-					<xsd:minExclusive value="100"/>
-				</xsd:restriction>
-			</xsd:simpleType>
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Sets the threshold at which an oplog will become compactable. Until it reaches this threshold the oplog will not be 
-compacted. The threshold is a percentage in the range 0..100. When the amount of garbage in an oplog exceeds this 
-percentage then when a compaction is done this garbage will be cleaned up freeing up disk space. Garbage is created 
-by entry destroys, entry updates, and region destroys. 
-				]]>
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="max-oplog-size" type="xsd:long" default="1024">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this 
-amount of file space will be immediately reserved. 
-				]]>
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="time-interval" type="xsd:long" default="1">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Sets the number of milliseconds that can elapse before unwritten data is written to disk. 
-It is considered only for asynchronous writing. 
-				]]>
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="queue-size" type="xsd:long" default="0">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been 
-queued async ops will begin blocking until some of the queued ops have been flushed to disk.
-Considered only for asynchronous writing.
-				]]>
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
 </xsd:schema>
