@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		
+	<gfe:cache />
+	
+	<gfe:replicated-region id="replicated-data" persistent="true">
+		<!-- 
+		<gfe:eviction type="entry-count" threshold="50" action="overflow-to-disk"/>
+ 		-->
+		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
+			<gfe:disk-dir location="./" max-size="1"/>
+		</gfe:disk-store> 
+	</gfe:replicated-region>
+
+	<gfe:partitioned-region id="partition-data" persistent="false">
+		<gfe:eviction type="memory" threshold="50" action="local-destroy"/>
+	</gfe:partitioned-region>
+	
+</beans>
