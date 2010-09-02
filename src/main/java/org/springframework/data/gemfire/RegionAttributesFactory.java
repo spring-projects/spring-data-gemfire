@@ -16,7 +16,11 @@
 
 package org.springframework.data.gemfire;
 
+import java.io.File;
+
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -27,17 +31,52 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * 
  * @author Costin Leau
  */
-public class RegionAttributesFactory extends AttributesFactory implements FactoryBean<RegionAttributes> {
+public class RegionAttributesFactory extends AttributesFactory implements FactoryBean<RegionAttributes>,
+		InitializingBean {
+
+	private int[] diskSizes;
+	private File[] diskDirs;
+
+	private RegionAttributes attributes;
+
+	public void afterPropertiesSet() throws Exception {
+		if (diskSizes!= null){
+			super.setDiskDirsAndSizes(diskDirs, diskSizes);
+		}
+		else{
+			if (ObjectUtils.isEmpty(diskDirs)) {
+				super.setDiskDirs(diskDirs);
+			}
+		}
+
+		attributes = super.create();
+	}
 
 	public RegionAttributes getObject() throws Exception {
-		return create();
+		return attributes;
 	}
 
 	public Class<?> getObjectType() {
-		return RegionAttributes.class;
+		return (attributes != null ? attributes.getClass() : RegionAttributes.class);
 	}
 
 	public boolean isSingleton() {
-		return false;
+		return true;
+	}
+
+
+	@Override
+	public void setDiskDirs(File[] diskDirs) {
+		this.diskDirs = diskDirs;
+	}
+
+	/**
+	 * Sets the sizes (in megabytes) for each disk directory.
+	 * Used only disk directories are specified.
+	 * 
+	 * @param sizes
+	 */
+	public void setDiskSizes(int[] sizes) {
+		this.diskSizes = sizes;
 	}
 }
