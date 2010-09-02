@@ -132,11 +132,15 @@ abstract class ParsingUtils {
 		for (Element diskDirElement : list) {
 			locations.add(diskDirElement.getAttribute("location"));
 
-			String attr = diskStoreElement.getAttribute("max-size");
+			String attr = diskDirElement.getAttribute("max-size");
 			sizes.add(StringUtils.hasText(attr) ? attr : "10240");
 		}
 
-		beanBuilder.addPropertyValue("diskWriteAttributes", diskDefBuilder.getBeanDefinition());
+		// wrap up the disk attributes factory to call 'create'
+
+		BeanDefinitionBuilder factoryWrapper = BeanDefinitionBuilder.genericBeanDefinition(DiskWriteAttributesFactoryBean.class);
+		factoryWrapper.addPropertyValue("diskAttributesFactory", diskDefBuilder.getBeanDefinition());
+		beanBuilder.addPropertyValue("diskWriteAttributes", factoryWrapper.getBeanDefinition());
 		beanBuilder.addPropertyValue("diskDirs", locations);
 		beanBuilder.addPropertyValue("diskSizes", sizes);
 	}

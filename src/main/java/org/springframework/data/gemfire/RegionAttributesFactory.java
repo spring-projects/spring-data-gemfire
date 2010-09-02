@@ -44,7 +44,7 @@ public class RegionAttributesFactory extends AttributesFactory implements Factor
 			super.setDiskDirsAndSizes(diskDirs, diskSizes);
 		}
 		else{
-			if (ObjectUtils.isEmpty(diskDirs)) {
+			if (!ObjectUtils.isEmpty(diskDirs)) {
 				super.setDiskDirs(diskDirs);
 			}
 		}
