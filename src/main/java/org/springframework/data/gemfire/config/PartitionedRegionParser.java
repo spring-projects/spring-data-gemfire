@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
@@ -28,7 +29,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
 
 /**
  * Parser for &lt;partitioned-region;gt; definitions.
@@ -48,11 +51,26 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 		super.doParse(element, builder);
 
 		// set the data policy
-		builder.addPropertyValue("dataPolicy", DataPolicy.PARTITION);
+		String attr = element.getAttribute("persistent");
+
+		if (Boolean.parseBoolean(attr)) {
+			// check first for GemFire 6.5
+			if (ConcurrentMap.class.isAssignableFrom(Region.class)) {
+				builder.addPropertyValue("dataPolicy", "PERSISTENT_PARTITION");
+			}
+			else {
+				parserContext.getReaderContext().error(
+						"Can define persistent partitions only from GemFire 6.5 onwards - current version is ["
+								+ CacheFactory.getVersion() + "]", element);
+			}
+		}
+		else {
+			builder.addPropertyValue("dataPolicy", DataPolicy.PARTITION);
+		}
 
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 
-		String attr = element.getAttribute("cache-ref");
+		attr = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)
 		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
 
@@ -61,7 +79,6 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		ParsingUtils.parseEviction(element, attrBuilder);
 		ParsingUtils.parseDiskStorage(element, attrBuilder);
-
 
 		// partition attributes
 		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder.genericBeanDefinition(PartitionAttributesFactory.class);
