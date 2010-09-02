@@ -169,7 +169,7 @@ arbitrarily pick one.
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element name="diskStore" type="diskStoreType minOccurs="0" maxOccurs="1" >
+					<xsd:element name="disk-store" type="diskStoreType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Disk storage configuration for the defined region.
@@ -392,7 +392,7 @@ reclaim memory.
 	
 	<xsd:complexType name="diskStoreType">
 		<xsd:sequence>
-			<xsd:element name="disk-dir">
+			<xsd:element name="disk-dir" minOccurs="0" maxOccurs="unbounded">
 				<xsd:complexType>
 					<xsd:attribute name="location" type="xsd:string" use="required">
 						<xsd:annotation>
