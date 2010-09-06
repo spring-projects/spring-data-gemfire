@@ -166,7 +166,7 @@
       <interfacename>Region</interfacename></title>
 
       <para>For scenarios where a <emphasis>CacheServer</emphasis> is used and
-      <emphasis>clients</emphasis> need to be configured, SGI offers a
+      <emphasis>clients</emphasis> need to be configured, SGF offers a
       dedicated configuration class named:
       <classname>ClientRegionFactoryBean</classname>. This allows client
       <emphasis>interests</emphasis> to be registered in both key and regex
@@ -190,7 +190,7 @@
       <title>Advanced configuration through a <interfacename>Region</interfacename>'s <emphasis>attributes</emphasis></title>
       
       <para>Users that need fine control over a region, can configure it in Spring by using the <literal>attributes</literal> property. To ease declarative configuration in Spring,
-      SGI provides two <interfacename>FactoryBean</interfacename>s for creating <interfacename>RegionAttributes</interfacename> and <interfacename>PartitionAttributes</interfacename>,
+      SGF provides two <interfacename>FactoryBean</interfacename>s for creating <interfacename>RegionAttributes</interfacename> and <interfacename>PartitionAttributes</interfacename>,
       namely <classname>RegionAttributesFactory</classname> and <classname>PartitionAttributesFactory</classname>. See below an example of configuring a partitioned region through Spring
       XML:</para>
  

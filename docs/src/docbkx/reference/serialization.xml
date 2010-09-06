@@ -13,7 +13,7 @@
   url="http://community.gemstone.com/display/gemfire/Serialization+in+Java">Java</ulink>,
   <ulink
   url="http://community.gemstone.com/display/gemfire/Serialization+in+.NET">.NET</ulink>
-  and C++). This chapter discusses the various ways in which SGI simplifies
+  and C++). This chapter discusses the various ways in which SGF simplifies
   and improves GemFire custom serialization in Java.</para>
 
   <section id="serialization:wiring">
@@ -23,7 +23,7 @@
     Transient data is often dependent on the node or environment where it
     lives at a certain point in time, for example a DataSource. Serializing
     such information is useless (and potentially even dangerous) since it is
-    local to a certain VM/machine. For such cases, SGI offers a special <ulink
+    local to a certain VM/machine. For such cases, SGF offers a special <ulink
     url="http://www.gemstone.com/docs/6.0.1/product/docs/japi/com/gemstone/gemfire/Instantiator.html"><classname>Instantiator</classname></ulink>
     that performs wiring for each new instance created by GemFire during
     deserialization.</para>
@@ -65,7 +65,7 @@
     be created on each machine as data flows in. Out of the box, GemFire uses
     reflection to create new types but for some scenarios, this might prove to
     be expensive. As always, it is good to perform profiling to quantify
-    whether this is the case or not. For such cases, SGI allows the automatic
+    whether this is the case or not. For such cases, SGF allows the automatic
     generation of <classname>Instatiator</classname> classes which instantiate
     a new type (using the default constructor) without the use of
     reflection:</para>

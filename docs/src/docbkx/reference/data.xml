@@ -79,7 +79,7 @@
     transparently across multiple APIs that can be configured either
     programmatically or declaratively (the most popular choice).</para>
 
-    <para>For Gemfire, SGI provides a dedicated, per-cache, transaction
+    <para>For Gemfire, SGF provides a dedicated, per-cache, transaction
     manager that once declared, allows actions on the
     <interfacename>Region</interfacename>s to be grouped and executed
     atomically through Spring:</para>
@@ -151,7 +151,7 @@
 &lt;/cache-loader&gt;</programlisting>
 
     <para>To simplify the task of parsing, converting the parameters and
-    initializing the object, SGI offers a base class
+    initializing the object, SGF offers a base class
     (<classname>WiringDeclarableSupport</classname>) that allows GemFire user
     objects to be wired through a <emphasis>template</emphasis> bean
     definition or, in case that is missing perform autowiring through the

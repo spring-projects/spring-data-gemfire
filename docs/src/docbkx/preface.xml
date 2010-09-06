@@ -6,7 +6,7 @@
 	<para>
 	Spring GemFire Integration focuses on integrating Spring Framework's powerful, non-invasive programming model
 	and concepts with Gemstone's GemFire Enterprise Fabric, providing easier configuration, use and high-level abstractions.
-	This document assumes the reader is already has a basic familiarity with the Spring Framework and GemFire concepts 
+	This document assumes the reader already has a basic familiarity with the Spring Framework and GemFire concepts 
 	and APIs.  
 	</para>
 	
