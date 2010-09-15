@@ -140,7 +140,7 @@ The name of the bean defining the GemFire cache (by default 'gemfire-cache').
 	<xsd:complexType name="regionType">
 		<xsd:complexContent>
 			<xsd:extension base="readOnlyRegionType">
-				<xsd:sequence>
+				<xsd:sequence minOccurs="0" maxOccurs="1">
 					<xsd:element name="cache-loader" minOccurs="0"  maxOccurs="1" type="beanDeclarationType">
 						<xsd:annotation>
 							<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
@@ -211,7 +211,7 @@ up to date copy of the data.
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="regionType">
-					<xsd:sequence minOccurs="0" maxOccurs="1">
+					<xsd:sequence minOccurs="1" maxOccurs="1">
 						<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[
@@ -221,15 +221,13 @@ Eviction policy for the partitioned region.
 							<xsd:complexType>
 								<xsd:complexContent>
 									<xsd:extension base="evictionType">
-										<xsd:sequence minOccurs="0" maxOccurs="1">
-											<xsd:element name="action" type="evictionActionType" fixed="overflow-to-disk">
-												<xsd:annotation>
-													<xsd:documentation><![CDATA[
-The action to take when performing eviction.													
-													]]></xsd:documentation>
-												</xsd:annotation>
-											</xsd:element>
-										</xsd:sequence>
+										<xsd:attribute name="action" type="evictionActionType" fixed="OVERFLOW_TO_DISK">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[
+The action to take when performing eviction.
+												]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:attribute>
 									</xsd:extension>
 								</xsd:complexContent>
 							</xsd:complexType>
@@ -280,15 +278,13 @@ Eviction policy for the partitioned region.
 							<xsd:complexType>
 								<xsd:complexContent>
 									<xsd:extension base="evictionType">
-										<xsd:sequence minOccurs="0" maxOccurs="1">
-											<xsd:element name="action" type="evictionActionType" default="local-destroy">
-												<xsd:annotation>
-													<xsd:documentation><![CDATA[
-The action to take when performing eviction.													
-													]]></xsd:documentation>
-												</xsd:annotation>
-											</xsd:element>
-										</xsd:sequence>
+										<xsd:attribute name="action" type="evictionActionType" default="LOCAL_DESTROY">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[
+The action to take when performing eviction.
+												]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:attribute>
 									</xsd:extension>
 								</xsd:complexContent>
 							</xsd:complexType>
@@ -369,24 +365,24 @@ The delay in milliseconds that new members will wait before satisfying redundanc
 	</xsd:element>
 	
 	<xsd:complexType name="evictionType">
-		<xsd:attribute name="type" default="entry-count">
+		<xsd:attribute name="type" default="ENTRY_COUNT">
 			<xsd:simpleType>
 				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="entry-count">
+					<xsd:enumeration value="ENTRY_COUNT">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Considers the number of entries in the region before performing an eviction.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:enumeration>
-					<xsd:enumeration value="memory-size">
+					<xsd:enumeration value="MEMORY_SIZE">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Considers the amount of memory consumed by the region before performing an eviction.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:enumeration>
-					<xsd:enumeration value="heap-percentage">
+					<xsd:enumeration value="HEAP_PERCENTAGE">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Considers the amount of heap used (through the GemFire resource manager) before performing an eviction.
@@ -396,7 +392,7 @@ Considers the amount of heap used (through the GemFire resource manager) before 
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="threshold" type="xsd:long">
+		<xsd:attribute name="threshold" type="xsd:long" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The threshold (or limit) against which the eviction algorithm runs. Once the threashold is reached, eviction is
@@ -408,7 +404,7 @@ performed.
 	
 	<xsd:simpleType name="evictionActionType">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="local-destroy">
+			<xsd:enumeration value="LOCAL_DESTROY">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The LRU (least-recently-used) region entries is locally destroyed.
@@ -417,7 +413,7 @@ Note: this option is not compatible with replicated regions (as it render the re
 							]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
-			<xsd:enumeration value="overflow-to-disk">
+			<xsd:enumeration value="OVERFLOW_TO_DISK">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to 
