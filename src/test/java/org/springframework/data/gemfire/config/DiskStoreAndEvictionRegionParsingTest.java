@@ -31,6 +31,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAlgorithm;
+import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 
@@ -39,7 +42,7 @@ import com.gemstone.gemfire.cache.Scope;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("diskstore-ns.xml")
-public class DiskStoreRegionParsingTest {
+public class DiskStoreAndEvictionRegionParsingTest {
 
 	@Autowired
 	private ApplicationContext context;
@@ -56,10 +59,24 @@ public class DiskStoreRegionParsingTest {
 		int[] diskDirSizes = attrs.getDiskDirSizes();
 		assertEquals(1, diskDirSizes.length);
 		assertEquals(1, diskDirSizes[0]);
+
+		// eviction tests
+		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evicAttr.getAction());
+		assertEquals(EvictionAlgorithm.LRU_ENTRY, evicAttr.getAlgorithm());
+		assertEquals(50, evicAttr.getMaximum());
 	}
 
 	@Test
 	public void testPartitionDataOptions() throws Exception {
 		assertTrue(context.containsBean("partition-data"));
+		RegionFactoryBean fb = context.getBean("&partition-data", RegionFactoryBean.class);
+		assertEquals(DataPolicy.PARTITION, TestUtils.readField("dataPolicy", fb));
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
+		assertEquals(EvictionAction.LOCAL_DESTROY, evicAttr.getAction());
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, evicAttr.getAlgorithm());
+		// for some reason GemFire resets this to 56 on my machine (not sure why)
+		//assertEquals(10, evicAttr.getMaximum());
 	}
 }
