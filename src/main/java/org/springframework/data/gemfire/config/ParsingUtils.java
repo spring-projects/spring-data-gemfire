@@ -108,6 +108,7 @@ abstract class ParsingUtils {
 	/**
 	 * Parses disk store sub-element. Populates the given attribute factory with the proper attributes.
 	 * 
+	 * @param element - element enclosing the disk-store definition
 	 * @param beanBuilder - beanbuilder for a RegionAttributesFactory instance
 	 */
 	static void parseDiskStorage(Element element, BeanDefinitionBuilder beanBuilder) {
@@ -145,6 +146,29 @@ abstract class ParsingUtils {
 		beanBuilder.addPropertyValue("diskSizes", sizes);
 	}
 
+	/**
+	 * Parses the eviction sub-element. Populates the given attribute factory with the proper attributes.
+	 * 
+	 * @param element
+	 * @param attrBuilder
+	 */
 	static void parseEviction(Element element, BeanDefinitionBuilder attrBuilder) {
+		Element evictionElement = DomUtils.getChildElementByTagName(element, "eviction");
+
+		if (evictionElement == null)
+			return;
+
+		BeanDefinitionBuilder evictionDefBuilder = BeanDefinitionBuilder.genericBeanDefinition(EvictionAttributesFactoryBean.class);
+
+		// do manual conversion since the enum is not public
+		String attr = evictionElement.getAttribute("type");
+		if (StringUtils.hasText(attr)) {
+			evictionDefBuilder.addPropertyValue("type", EvictionType.valueOf(attr.toUpperCase()));
+		}
+
+		setPropertyValue(evictionElement, evictionDefBuilder, "threshold", "threshold");
+		setPropertyValue(evictionElement, evictionDefBuilder, "action", "action");
+
+		attrBuilder.addPropertyValue("evictionAttributes", evictionDefBuilder.getBeanDefinition());
 	}
 }
