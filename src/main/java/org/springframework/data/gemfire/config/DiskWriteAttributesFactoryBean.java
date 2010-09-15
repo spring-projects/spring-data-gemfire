@@ -41,14 +41,14 @@ class DiskWriteAttributesFactoryBean implements FactoryBean<DiskWriteAttributes>
 	}
 
 	public Class<?> getObjectType() {
-		return DiskWriteAttributes.class;
+		return (attributes != null ? attributes.getClass() : DiskWriteAttributes.class);
 	}
 
 	public boolean isSingleton() {
 		return true;
 	}
-	
-	public void setDiskAttributesFactory(DiskWriteAttributesFactory dwaf){
+
+	public void setDiskAttributesFactory(DiskWriteAttributesFactory dwaf) {
 		this.attrFactory = dwaf;
 	}
 }
