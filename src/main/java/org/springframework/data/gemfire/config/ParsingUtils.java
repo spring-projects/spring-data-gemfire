@@ -152,7 +152,7 @@ abstract class ParsingUtils {
 	 * @param element
 	 * @param attrBuilder
 	 */
-	static void parseEviction(Element element, BeanDefinitionBuilder attrBuilder) {
+	static void parseEviction(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
 		Element evictionElement = DomUtils.getChildElementByTagName(element, "eviction");
 
 		if (evictionElement == null)
@@ -168,6 +168,15 @@ abstract class ParsingUtils {
 
 		setPropertyValue(evictionElement, evictionDefBuilder, "threshold", "threshold");
 		setPropertyValue(evictionElement, evictionDefBuilder, "action", "action");
+
+
+		// get object sizer (if declared)
+		Element objectSizerElement = DomUtils.getChildElementByTagName(evictionElement, "object-sizer");
+
+		if (objectSizerElement != null) {
+			Object sizer = parseRefOrNestedBeanDeclaration(parserContext, objectSizerElement, evictionDefBuilder);
+			evictionDefBuilder.addPropertyValue("ObjectSizer", sizer);
+		}
 
 		attrBuilder.addPropertyValue("evictionAttributes", evictionDefBuilder.getBeanDefinition());
 	}

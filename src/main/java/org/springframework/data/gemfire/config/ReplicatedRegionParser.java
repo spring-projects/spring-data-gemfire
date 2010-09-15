@@ -70,7 +70,7 @@ class ReplicatedRegionParser extends AbstractSingleBeanDefinitionParser {
 			attrBuilder.addPropertyValue("publisher", Boolean.valueOf(attr));
 		}
 
-		ParsingUtils.parseEviction(element, attrBuilder);
+		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
 		ParsingUtils.parseDiskStorage(element, attrBuilder);
 
 		builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());

@@ -77,7 +77,7 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 		// region attributes
 		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactory.class);
 
-		ParsingUtils.parseEviction(element, attrBuilder);
+		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
 		ParsingUtils.parseDiskStorage(element, attrBuilder);
 
 		// partition attributes
