@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -36,6 +38,7 @@ import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 /**
  * @author Costin Leau
@@ -65,6 +68,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evicAttr.getAction());
 		assertEquals(EvictionAlgorithm.LRU_ENTRY, evicAttr.getAlgorithm());
 		assertEquals(50, evicAttr.getMaximum());
+		assertNull(evicAttr.getObjectSizer());
 	}
 
 	@Test
@@ -78,5 +82,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, evicAttr.getAlgorithm());
 		// for some reason GemFire resets this to 56 on my machine (not sure why)
 		//assertEquals(10, evicAttr.getMaximum());
+		ObjectSizer sizer = evicAttr.getObjectSizer();
+		assertEquals(SimpleObjectSizer.class, sizer.getClass());
 	}
 }

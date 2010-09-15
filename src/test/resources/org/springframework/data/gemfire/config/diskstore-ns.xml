@@ -24,7 +24,11 @@
 			<gfe:disk-dir location="./" max-size="1"/>
 		</gfe:disk-store> 
 
-		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="LOCAL_DESTROY"/>
+		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="LOCAL_DESTROY">
+			<gfe:object-sizer>
+				<bean class="org.springframework.data.gemfire.SimpleObjectSizer"/>
+			</gfe:object-sizer>
+		</gfe:eviction>
 	</gfe:partitioned-region>
 	
 </beans>
