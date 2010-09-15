@@ -40,8 +40,7 @@
 	
     <gfe:cache ...>
 		
-</beans>]]>
- 		</programlisting>
+</beans>]]></programlisting>
  		
  		<calloutlist>
  			<callout arearefs="gfe#ns#prefix">
@@ -83,8 +82,7 @@
 	
     <cache ...>
 	
-</beans>]]>
- 		</programlisting>
+</beans>]]></programlisting>
  		
  		<calloutlist>
  			<callout arearefs="gfe#default-ns#prefix">
@@ -193,8 +191,32 @@
 
     <para>Once the <interfacename>Cache</interfacename> is configured, one
     needs to configure one or more <interfacename>Region</interfacename>s to
-    interact with the data fabric. In a similar manner to the
-    <classname>CacheFactoryBean</classname>, the
+    interact with the data fabric. SGF allows various region types to be configured and created directly from Spring or 
+    in case they are created directly in GemFire, retrieved as such.</para> 
+
+	<section id="bootstrap:region:lookup">
+		<title>Using an externaly configured <interfacename>Region</interfacename></title>
+		
+		<para>For consuming but not creating <interfacename>Region</interfacename>s, one can use the 
+		<literal>lookup</literal> element. Simply declare the target region name the <literal>
+		name</literal> attribute, for example to declare a bean definition, named <literal>region-bean</literal>
+		for an existing region named <literal>orders</literal> one can use the following definition:</para>
+		
+		<programlisting language="xml"><![CDATA[<gfe:lookup-region id="region-bean" name="orders"/>]]></programlisting>
+		
+		<para>If the <literal>name</literal> is not specified, the bean name will be used automatically. The example above
+		becomes:</para>
+		
+		<programlisting language="xml"><![CDATA[<!-- region lookup for a region called 'orders' -->
+<gfe:lookup-region id="orders"/>]]></programlisting>
+
+		<para>CONTINUE DOC HERE</para>
+	</section>
+	
+	<para>    
+    In a similar manner to the
+    <literal>cache</literal> element, SGF  
+    
     <classname>RegionFactoryBean</classname> allows existing
     <interfacename>Region</interfacename>s to retrieved or, in case they don't
     exist, created using various settings. One can specify the
