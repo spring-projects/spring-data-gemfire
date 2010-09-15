@@ -18,14 +18,9 @@ package org.springframework.data.gemfire;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
-import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -38,19 +33,15 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
- * FactoryBean for creating generic Gemfire {@link Region}s. Will try to first locate the region (by name)
+ * FactoryBean for creating generic GemFire {@link Region}s. Will try to first locate the region (by name)
  * and, in case none if found, proceed to creating one using the given settings.
  * 
  * @author Costin Leau
  */
-public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Region<K, V>>, InitializingBean,
-		BeanNameAware {
+public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	private String beanName;
-	private Cache cache;
-	private String name;
 	private boolean destroy = false;
 	private Resource snapshot;
 
@@ -61,58 +52,53 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 	private Scope scope;
 	private DataPolicy dataPolicy;
 
-	private Region<K, V> region;
 
-
+	@Override
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(cache, "Cache property must be set");
-		name = (!StringUtils.hasText(name) ? beanName : name);
-		Assert.hasText(name, "Name (or beanName) property must be set");
-
-		// first get cache
-		region = cache.getRegion(name);
-		if (region != null) {
-			log.info("Retrieved region [" + name + "] from cache");
-		}
-		// fall back to cache creation if one is not found
-		else {
-			if (attributes != null)
-				AttributesFactory.validateAttributes(attributes);
-
-			AttributesFactory<K, V> attrFactory = (attributes != null ? new AttributesFactory<K, V>(attributes)
-					: new AttributesFactory<K, V>());
-			if (!ObjectUtils.isEmpty(cacheListeners)) {
-				for (CacheListener<K, V> listener : cacheListeners) {
-					attrFactory.addCacheListener(listener);
-				}
-			}
-
-			if (cacheLoader != null) {
-				attrFactory.setCacheLoader(cacheLoader);
-			}
-
-			if (cacheWriter != null) {
-				attrFactory.setCacheWriter(cacheWriter);
-			}
-
-			if (dataPolicy != null) {
-				attrFactory.setDataPolicy(dataPolicy);
-			}
-
-			if (scope != null) {
-				attrFactory.setScope(scope);
-			}
-
-			postProcess(attrFactory);
-
-			region = cache.createRegion(name, attrFactory.create());
-			log.info("Created new cache region [" + name + "]");
-			if (snapshot != null) {
-				region.loadSnapshot(snapshot.getInputStream());
-			}
-		}
-
+		super.afterPropertiesSet();
+		
 		postProcess(region);
+	}
+
+	
+	@Override
+	protected Region<K, V> lookupFallback(Cache cache, String regionName) throws Exception {
+		if (attributes != null)
+			AttributesFactory.validateAttributes(attributes);
+
+		AttributesFactory<K, V> attrFactory = (attributes != null ? new AttributesFactory<K, V>(attributes)
+				: new AttributesFactory<K, V>());
+		if (!ObjectUtils.isEmpty(cacheListeners)) {
+			for (CacheListener<K, V> listener : cacheListeners) {
+				attrFactory.addCacheListener(listener);
+			}
+		}
+
+		if (cacheLoader != null) {
+			attrFactory.setCacheLoader(cacheLoader);
+		}
+
+		if (cacheWriter != null) {
+			attrFactory.setCacheWriter(cacheWriter);
+		}
+
+		if (dataPolicy != null) {
+			attrFactory.setDataPolicy(dataPolicy);
+		}
+
+		if (scope != null) {
+			attrFactory.setScope(scope);
+		}
+
+		postProcess(attrFactory);
+
+		Region<K, V> reg = cache.createRegion(regionName, attrFactory.create());
+		log.info("Created new cache region [" + regionName + "]");
+		if (snapshot != null) {
+			reg.loadSnapshot(snapshot.getInputStream());
+		}
+		
+		return reg;
 	}
 
 	/**
@@ -142,46 +128,6 @@ public class RegionFactoryBean<K, V> implements DisposableBean, FactoryBean<Regi
 			region.destroyRegion();
 		}
 		region = null;
-	}
-
-	public Region<K, V> getObject() throws Exception {
-		return region;
-	}
-
-	public Class<?> getObjectType() {
-		return (region != null ? region.getClass() : Region.class);
-	}
-
-	public boolean isSingleton() {
-		return true;
-	}
-
-	public void setBeanName(String beanName) {
-		this.beanName = beanName;
-	}
-
-	/**
-	 * Sets the cache used for creating the region.
-	 * 
-	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 * @param cache the cache to set
-	 */
-	public void setCache(Cache cache) {
-		this.cache = cache;
-	}
-
-	/**
-	 * Sets the name of the cache region. If no cache is found under
-	 * the given name, a new one will be created.
-	 * If no name is given, the beanName will be used. 
-	 * 
-	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
-	 * @see #setBeanName(String)
-	 * 
-	 * @param name the region name
-	 */
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	/**

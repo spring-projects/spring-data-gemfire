@@ -75,45 +75,14 @@ The name of the bean referred by this declaration. If no reference exists, use a
 		</xsd:attribute>
 	</xsd:complexType>
 	
-	<xsd:complexType name="readOnlyRegionType" abstract="true">
-		<xsd:sequence>
-			<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
-A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
-various operations on the region). Multiple listeners can be declared in a nested manner.
-
-Note: Avoid the risk of deadlock. Since the listener is invoked while holding a lock on the entry generating the event,
-it is easy to generate a deadlock by interacting with the region. For this reason, it is highly recommended to use some
-other thread for accessing the region and not waiting for it to complete its task.
-					]]></xsd:documentation>
-					<xsd:appinfo>
-						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.CacheListener"/>
-						</tool:annotation>
-					</xsd:appinfo>
-				</xsd:annotation>
-				<xsd:complexType>
-					<xsd:sequence>
-						<xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="skip">
-			    			<xsd:annotation>
-			         			<xsd:documentation><![CDATA[
-Inner bean definition of the cache listener.
-								]]></xsd:documentation>
-							</xsd:annotation>
-			         	</xsd:any>						
-					</xsd:sequence>
-					<xsd:attribute name="ref" type="xsd:string" use="optional">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-The name of the cache listener bean referred by this declaration. Used as a convenience method. If no reference exists, 
-use inner bean declarations.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
-				</xsd:complexType>
-			</xsd:element>
-		</xsd:sequence>
+	<xsd:complexType name="basicRegionType">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:attribute name="id" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -135,6 +104,52 @@ The name of the bean defining the GemFire cache (by default 'gemfire-cache').
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute> 
+	</xsd:complexType> 
+	
+	
+	<xsd:complexType name="readOnlyRegionType" abstract="true">
+		<xsd:complexContent>
+			<xsd:extension base="basicRegionType">
+				<xsd:sequence>
+					<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
+A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
+various operations on the region). Multiple listeners can be declared in a nested manner.
+
+Note: Avoid the risk of deadlock. Since the listener is invoked while holding a lock on the entry generating the event,
+it is easy to generate a deadlock by interacting with the region. For this reason, it is highly recommended to use some
+other thread for accessing the region and not waiting for it to complete its task.
+							]]></xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation>
+									<tool:exports type="com.gemstone.gemfire.cache.CacheListener"/>
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="skip">
+					    			<xsd:annotation>
+					         			<xsd:documentation><![CDATA[
+Inner bean definition of the cache listener.
+										]]></xsd:documentation>
+									</xsd:annotation>
+					         	</xsd:any>						
+							</xsd:sequence>
+							<xsd:attribute name="ref" type="xsd:string" use="optional">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+The name of the cache listener bean referred by this declaration. Used as a convenience method. If no reference exists, 
+use inner bean declarations.
+									]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:attribute>
+						</xsd:complexType>
+					</xsd:element>					
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
 	</xsd:complexType>
 	
 	<xsd:complexType name="regionType">
@@ -194,6 +209,17 @@ Note: Persistence for partitioned regions is supported only from GemFire 6.5 onw
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
+	
+	<xsd:element name="lookup-region" type="basicRegionType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[[
+Looks up an existing, working, GemFire region. Typically regions are defined through GemFire own configuration, the 
+cache.xml. If the region does not exist, an exception will be thrown.
+
+For defining regions, consider the region elements.
+			]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
 	
 	<xsd:element name="replicated-region">
 		<xsd:annotation>

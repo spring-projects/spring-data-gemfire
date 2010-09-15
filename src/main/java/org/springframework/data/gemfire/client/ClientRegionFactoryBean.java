@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.Pool;
 
 /**
- * Client extension for Gemfire regions.
+ * Client extension for GemFire regions.
  * 
  * @author Costin Leau
  */

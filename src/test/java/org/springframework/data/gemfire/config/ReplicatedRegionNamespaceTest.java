@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -73,5 +74,13 @@ public class ReplicatedRegionNamespaceTest {
 
 		assertSame(context.getBean("c-loader"), TestUtils.readField("cacheLoader", fb));
 		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
+	}
+
+	@Test
+	public void testRegionLookup() throws Exception {
+		assertTrue(context.containsBean("lookup"));
+		RegionLookupFactoryBean lfb = context.getBean("&lookup", RegionLookupFactoryBean.class);
+		assertEquals("simple", TestUtils.readField("name", lfb));
+		assertEquals(context.getBean("simple"), context.getBean("lookup"));
 	}
 }
