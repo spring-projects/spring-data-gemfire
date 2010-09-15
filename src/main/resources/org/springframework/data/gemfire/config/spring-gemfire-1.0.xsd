@@ -60,7 +60,7 @@ consider using a dedicated utility such as the <util:*/> namespace and its 'prop
 			<xsd:any namespace="##other" minOccurs="0" maxOccurs="1" processContents="skip">
     			<xsd:annotation>
          			<xsd:documentation><![CDATA[
-Inner bean definition of the cache loader. The nested declaration serves as an alternative to bean references (using 
+Inner bean definition. The nested declaration serves as an alternative to bean references (using 
 both in the same definition) is illegal.
 					]]></xsd:documentation>
 				</xsd:annotation>
@@ -69,7 +69,7 @@ both in the same definition) is illegal.
 		<xsd:attribute name="ref" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the cache loader bean referred by this declaration. If no reference exists, use an inner bean declaration.
+The name of the bean referred by this declaration. If no reference exists, use an inner bean declaration.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -365,6 +365,20 @@ The delay in milliseconds that new members will wait before satisfying redundanc
 	</xsd:element>
 	
 	<xsd:complexType name="evictionType">
+		<xsd:sequence minOccurs="0" maxOccurs="1">
+			<xsd:element name="object-sizer" type="beanDeclarationType">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Entity computing sizes for objects stored into the grid.
+					]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation>
+							<tool:exports type="com.gemstone.gemfire.cache.util.ObjectSizer" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
 		<xsd:attribute name="type" default="ENTRY_COUNT">
 			<xsd:simpleType>
 				<xsd:restriction base="xsd:string">
