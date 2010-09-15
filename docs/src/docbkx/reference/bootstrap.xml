@@ -118,59 +118,59 @@
 
     <para>In its simplest form, a cache can be defined in one line:</para>
 
-	<!-- 
-    <programlisting language="xml">&lt;bean id="default-cache" class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;</programlisting>
- 	-->
- 	<programlistingco>
- 		<areaspec>
- 			<area id="cache#ns" coords="3 137"/>
- 		</areaspec>
- 		<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-	<gfe:cache />
-</beans>]]>
- 		</programlisting>
- 		
- 		<calloutlist>
- 			<callout arearefs="cache#ns">
- 				<para>Spring GemFire namespace</para>
- 			</callout>
- 		</calloutlist>
- 		
- 	</programlistingco>
+	<programlisting language="xml"><![CDATA[<gfe:cache />]]></programlisting>
  	
-    <para>Here, the <emphasis>default-cache</emphasis> will try to connect to
+ 	<para>The declaration above declares a bean(<literal>CacheFactoryBean</literal>) 
+ 	for the GemFire Cache, named <literal>gemfire-cache</literal>. All the other SGF components use this
+ 	naming convention if no name is specified, allowing for very concise configurations. The definition above will try to connect to
     an existing cache and, in case one does not exist, create it. Since no
     additional properties were specified the created cache uses the default
-    cache configuration.</para>
-
-    <para>Especially in environments with opened caches, this basic
-    configuration can go a long way. For scenarios where the cache needs to be
+    cache configuration.Especially in environments with opened caches, this basic
+    configuration can go a long way.</para>
+ 	
+    <para>For scenarios where the cache needs to be
     configured, the user can pass in a reference the GemFire configuration
     file:</para>
 
-    <programlisting language="xml">&lt;bean id="cache-with-xml" class="org.springframework.data.gemfire.CacheFactoryBean"&gt;
-    &lt;property name="cacheXml" value="classpath:cache.xml"/&gt;
-&lt;/bean&gt;</programlisting>
-
+    <programlisting language="xml"><![CDATA[<gfe:cache id="cache-with-xml" cache-xml-location="classpath:cache.xml"/>]]></programlisting>
+    
     <para>In this example, if the cache needs to be created, it will use the
     file named <literal>cache.xml</literal> located in the classpath root.
-    Only if the cache is created will the configuration file be used. <note>
+    Only if the cache is created will the configuration file be used.</para> 
+    
+    <note>
         <para>Note that the configuration makes use of Spring's <ulink
         url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/resources.html"><interfacename>Resource</interfacename></ulink>
         abstraction to locate the file. This allows various search patterns to
         be used, depending on the running environment or the prefix specified
         (if any) by the value.</para>
-      </note>In addition to referencing an external configuration file one can
+      </note>
+    <para>  
+    In addition to referencing an external configuration file one can
     specify GemFire settings directly through Java
     <classname>Properties</classname>. This can be quite handy when just a few
-    settings need to be changed:</para>
+    settings need to be changed.</para>
+    
+    <para>To setup properties one can either use the <literal>properties</literal> element inside the <literal>util</literal> namespace
+    to declare or load properties files (the latter is recommended for externalizing environment specific settings outside the application
+    configuration):</para>
 
+    <programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gfe="http://www.springframework.org/schema/gemfire"
+    xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+        
+     <gfe:cache id="cache-with-xml" cache-xml-location="classpath:cache.xml" properties-ref="props"/>
+	 
+     <util:properties id="props" location="classpath:/deployment/env.properties"/>
+</beans>]]></programlisting>
+    
+    <para>Or can use fallback to a <emphasis>raw</emphasis> <literal>&lt;beans&gt;</literal> declaration:</para>
+    
     <programlisting language="xml">&lt;bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean"&gt;
     &lt;property name="properties"&gt;
         &lt;props&gt;
@@ -179,27 +179,9 @@
     &lt;/property&gt;
 &lt;/bean&gt;</programlisting>
 
-    <para>So far our examples relied on the primary Spring namespace
-    (<literal>beans</literal>). However one is free to add other namespaces to
-    simplify or enhance the configuration. Let's do the same thing to the
-    configuration above by using the <literal>util</literal> namespace and
-    externalize the properties from the configuration which is a best
-    practice.</para>
-
-    <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:util="http://www.springframework.org/schema/util"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"&gt;
-
-  &lt;bean id="cache-with-props" class="org.springframework.data.gemfire.CacheFactoryBean"&gt;
-    &lt;property name="properties"&gt;
-      &lt;util:properties location="classpath:/deployment/env.properties"/&gt;
-    &lt;/property&gt;
-  &lt;/bean&gt;	
-&lt;/beans&gt;</programlisting>
-
+	<para>In this last example, the SGF classes are declared and configured directly without relying on the namespace. As one can tell,
+	this approach is a generic one, exposing more of the backing infrastructure.</para>
+	
     <para>It is worth pointing out again, that the cache settings apply only
     if the cache needs to be created, there is no opened cache in existence
     otherwise the existing cache will be used and the configuration will
