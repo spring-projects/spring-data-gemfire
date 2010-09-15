@@ -182,8 +182,8 @@ Disk storage configuration for the defined region.
 						<xsd:documentation><![CDATA[
 Indicates whether the defined region is persistent or not. GemFire ensures that all the data you put into a region that
  is configured for persistence will be written to disk in a way that it can be recovered the next time you create the 
- region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart 
- of GemFire.
+region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart 
+of GemFire.
 
 Default is false, meaning the regions are not persisted.
 
@@ -211,6 +211,30 @@ up to date copy of the data.
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="regionType">
+					<xsd:sequence minOccurs="0" maxOccurs="1">
+						<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[
+Eviction policy for the partitioned region.
+								]]></xsd:documentation>
+							</xsd:annotation>
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="evictionType">
+										<xsd:sequence minOccurs="0" maxOccurs="1">
+											<xsd:element name="action" type="evictionActionType" fixed="overflow-to-disk">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[
+The action to take when performing eviction.													
+													]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:element>
+										</xsd:sequence>
+									</xsd:extension>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -253,6 +277,21 @@ colocate data based on custom criterias (such as colocating trades by month and 
 Eviction policy for the partitioned region.
 								]]></xsd:documentation>
 							</xsd:annotation>
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="evictionType">
+										<xsd:sequence minOccurs="0" maxOccurs="1">
+											<xsd:element name="action" type="evictionActionType" default="local-destroy">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[
+The action to take when performing eviction.													
+													]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:element>
+										</xsd:sequence>
+									</xsd:extension>
+								</xsd:complexContent>
+							</xsd:complexType>
 						</xsd:element>
 					</xsd:sequence>
 					<xsd:attribute name="copies" default="0" use="optional">
@@ -365,30 +404,29 @@ performed.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="action" default="local-destroy">
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="local-destroy">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
+	</xsd:complexType>
+	
+	<xsd:simpleType name="evictionActionType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="local-destroy">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
 The LRU (least-recently-used) region entries is locally destroyed.
 
 Note: this option is not compatible with replicated regions (as it render the replica region incomplete).  
 							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="overflow-to-disk">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="overflow-to-disk">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
 The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to 
 reclaim memory.
 							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
-		</xsd:attribute>
-	</xsd:complexType>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
 	
 	<xsd:complexType name="diskStoreType">
 		<xsd:sequence>
