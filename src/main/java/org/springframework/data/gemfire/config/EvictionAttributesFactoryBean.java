@@ -62,7 +62,7 @@ class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, 
 			if (threshold != null) {
 				return EvictionAttributes.createLRUEntryAttributes(threshold, action);
 			}
-			return EvictionAttributes.createLRUMemoryAttributes(threshold);
+			return EvictionAttributes.createLRUEntryAttributes();
 		}
 	}
 
@@ -81,14 +81,14 @@ class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, 
 	/**
 	 * @return the threshold
 	 */
-	public int getThreshold() {
+	public Integer getThreshold() {
 		return threshold;
 	}
 
 	/**
 	 * @param threshold the threshold to set
 	 */
-	public void setThreshold(int threshold) {
+	public void setThreshold(Integer threshold) {
 		this.threshold = threshold;
 	}
 

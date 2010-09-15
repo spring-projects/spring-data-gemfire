@@ -11,16 +11,20 @@
 	<gfe:cache />
 	
 	<gfe:replicated-region id="replicated-data" persistent="true">
-		<!-- 
-		<gfe:eviction type="entry-count" threshold="50" action="overflow-to-disk"/>
- 		-->
+		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
+			<gfe:disk-dir location="./" max-size="1"/>
+		</gfe:disk-store>
+
+		<gfe:eviction type="ENTRY_COUNT" threshold="50" />
+	</gfe:replicated-region>
+ 	
+ 	
+	<gfe:partitioned-region id="partition-data" persistent="false">
 		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
 			<gfe:disk-dir location="./" max-size="1"/>
 		</gfe:disk-store> 
-	</gfe:replicated-region>
 
-	<gfe:partitioned-region id="partition-data" persistent="false">
-		<gfe:eviction type="memory" threshold="50" action="local-destroy"/>
+		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="LOCAL_DESTROY"/>
 	</gfe:partitioned-region>
 	
 </beans>
