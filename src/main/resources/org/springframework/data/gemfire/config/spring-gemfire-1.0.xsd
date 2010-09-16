@@ -54,6 +54,39 @@ consider using a dedicated utility such as the <util:*/> namespace and its 'prop
 		</xsd:complexType>
 	</xsd:element>
 
+	<xsd:element name="transaction-manager">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.TransactionManager"><![CDATA[
+Defines a GemFire Transaction Manager instance for a single GemFire cache.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="id" type="xsd:ID" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the transaction manager definition (by default "gemfire-transaction-manager").]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="cache-ref" type="xsd:string" default="gemfire-cache" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the bean defining the GemFire cache (by default 'gemfire-cache').
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="copy-on-read" type="xsd:boolean" default="true" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates whether the cache returns direct references or copies of the objects (default) it manages.
+While copies imply additional work for every fetch operation, direct references can cause dirty reads
+across concurrent threads in the same VM, whether or not transactions are used.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute> 
+			 
+		</xsd:complexType>
+	</xsd:element>
+	
 	<!-- nested bean definition -->
 	<xsd:complexType name="beanDeclarationType">
 		<xsd:sequence>
