@@ -534,14 +534,14 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
 		
 		<programlisting language="xml"><![CDATA[<!-- client region declaration -->
 <gfe:client-region id="complex" pool-name="gemfire-pool">
-	<gfe:cache-listener ref="c-listener"/>
+    <gfe:cache-listener ref="c-listener"/>
 </gfe:client-region>
 	
 <bean id="c-listener" class="some.pkg.SimpleCacheListener"/>
 
 <!-- pool declaration -->	
 <gfe:pool id="gemfire-pool" subscription-enabled="false">
-	<gfe:locator host="localhost" port="40403"/>
+    <gfe:locator host="localhost" port="40403"/>
 </gfe:pool>]]></programlisting>
 
 		<para>Just as the other region types, <literal>client-region</literal> allows defining <interfacename>CacheListener</interfacename>s. It also relies on the same naming conventions
@@ -557,10 +557,10 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
 			key-based and regular-expression-based types being supported; for example:</para>
 			
 			<programlisting language="xml"><![CDATA[<gfe:client-region id="complex" pool-name="gemfire-pool">
-	<gfe:key-interest durable="true" result-policy="KEYS">
-	    <bean id="key" class="java.lang.String"/>
-	</gfe:key-interest>
-	<gfe:regex-interest pattern=".*"/>
+    <gfe:key-interest durable="true" result-policy="KEYS">
+        <bean id="key" class="java.lang.String"/>
+    </gfe:key-interest>
+    <gfe:regex-interest pattern=".*"/>
 </gfe:client-region>]]></programlisting>
 		</section>
 	</section>
@@ -663,8 +663,7 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
       </property>
     </bean>
   </property>
-</bean>]]>
-      </programlisting>
+</bean>]]></programlisting>
       
       <para>By using the attribute factories above, one can reduce the size of the <literal>cache.xml</literal> or even eliminate it all together.</para>  
     </section>
@@ -672,7 +671,14 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
   
   <section id="bootstrap:region:spring:config">
 	<title>Advantages of using Spring over GemFire <literal>cache.xml</literal></title>
-	<para></para>
+	
+	<para>With SGF, GemFire regions, pools and cache can be configured either through Spring or directly inside GemFire, native, <literal>cache.xml</literal> file. While both are valid
+	approaches, it's worth pointing out that Spring's powerful DI container and AOP functionality makes it very easy to wire GemFire into an application. For example configuring a region
+	cache loader, listener and writer through the Spring container is preferred since the same instances can be reused across  multiple regions and additionally are either to configure
+	due to the presence of the DI and eliminates the need of implementing GemFire's <interfacename>Declarable</interfacename> interface (see <xref linkend="apis:declarable"/> on chapter
+	on how you can still use them yet benefit from Spring's DI container).</para>
+	
+	<para>Whatever route one chooses to go, SGF supports both approaches allowing for easy migrate between them without forcing an upfront decision.</para>
   </section>
   
 </chapter>
