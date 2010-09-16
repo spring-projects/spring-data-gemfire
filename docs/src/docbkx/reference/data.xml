@@ -79,12 +79,18 @@
     transparently across multiple APIs that can be configured either
     programmatically or declaratively (the most popular choice).</para>
 
-    <para>For Gemfire, SGF provides a dedicated, per-cache, transaction
+    <para>For GemFire, SGF provides a dedicated, per-cache, transaction
     manager that once declared, allows actions on the
     <interfacename>Region</interfacename>s to be grouped and executed
     atomically through Spring:</para>
 
-    <programlisting language="xml">&lt;bean id="transaction-manager" class="org.springframework.data.gemfire.GemfireTransactionManager" p:cache-ref="cache"/&gt;</programlisting>
+	<programlisting language="xml">&lt;gfe:transaction-manager id="tx-manager" cache-ref="cache"/&gt;</programlisting>
+	<note>The example above can be simplified even more by eliminating the <literal>cache-ref</literal> attribute if the GemFire cache is defined under the default 
+	name <literal>gemfire-cache</literal>. As with the other SGF namespace elements, if the cache name is not configured, the aforementioned naming convention will used.
+	Additionally, the transaction manager name, if not specified is <literal>gemfire-transaction-manager</literal>.</note>
+	
+	<para>or if you prefer <literal>bean</literal> declarations:</para>
+    <programlisting language="xml">&lt;bean id="tx-manager" class="org.springframework.data.gemfire.GemfireTransactionManager" p:cache-ref="cache"/&gt;</programlisting>
 
     <para>Note that currently GemFire supports optimistic transactions with
     <emphasis>read committed</emphasis> isolation. Furthermore, to guarantee
