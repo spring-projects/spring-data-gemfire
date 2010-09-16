@@ -451,8 +451,73 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
           </tgroup>
          </table>        
 		</section>
-				
+	</section>
+	
+	<section id="bootstrap:region:disk-storage">
+		<title>Configurating Disk Storage</title>
+		
+		<para>GemFire can use disk as a secondary storage for persisting regions or/and overflow (known as data pagination or eviction to disk). SGF allows such options to be configured
+		directly from Spring through <literal>disk-store</literal> element available on both <literal>replicated-region</literal> and <literal>partitioned-region</literal>.
+		A disk store defines how that particular region can use the disk and how much space it has available. Multiple directories can be defined in a disk store such as in our example below: 
+		</para>
+		
+		<programlisting language="xml"><![CDATA[<gfe:partitioned-region id="partition-data">
+    <gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
+        <gfe:disk-dir location="/mainbackup/partition" max-size="999"/>
+        <gfe:disk-dir location="/backup2/partition" max-size="999"/>
+    </gfe:disk-store> 
+</gfe:replicated-region>]]></programlisting>
+		
+		<para>In general, for maximum efficiency, it is recommended that each region that accesses the disk uses a disk store configuration.</para>
+		
+		<para>
+		For the full set of options and their meaning please refer to the <xref linkend="appendix-schema"/>	and GemFire documentation.   
+		</para>
+		
 	</section>	
+	
+	<section id="bootstrap:region:persistence">
+		<title>Data Persistence</title>
+		
+		<para>Both partitioned and replicated regions can be made persistent. That is:</para>
+		
+		<note><title>What is region persistence?</title>
+		<para>GemFire ensures that all the data you put into a region that is configured for persistence will be written to disk in a way that it can be 
+		recovered the next time you create the region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and 
+		restart of GemFire.</para>
+		</note>
+		
+		<para>With SGF, to enable persistence, simply set to true the <literal>persistent</literal> attribute on <literal>replicated-region</literal> or 
+		<literal>partitioned-region</literal>:</para>
+		
+		<programlisting language="xml"><![CDATA[<gfe:partitioned-region id="persitent-partition" persistent="true"/>]]></programlisting>
+
+		<important><para>Persistence for partitioned regions is supported from GemFire 6.5 onwards - configuring this option on a previous release will trigger
+		an initialization exception.</para></important>
+		
+		<para>When persisting regions, it is recommended to configure the storage through the <literal>disk-store</literal> element for maximum efficiency.</para>
+	</section>
+	
+	<section id="bootstrap:region:eviction">
+		<title>Data Eviction and Overflowing</title>
+		
+		<para>Based on various constraints, each region can have an eviction policy in place for <literal>evicting</literal> data from memory. Currently, in GemFire
+		eviction applies on the least recently used entry (also known as <ulink url="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used">LRU</ulink>).
+		Evicted entries are either destroyed or paged to disk (also known as <emphasis>overflow</emphasis>).</para>
+		
+		<para>SGF supports all eviction policies (entry count, memory and heap usage) for both <literal>partitioned-region</literal> and <literal>replicated-region</literal>
+		through the nested <literal>eviction</literal> element. For example, to configure a partition to overflow to disk if its size is more then 512 MB, one could use
+		the following configuration:</para>
+		
+		<programlisting language="xml"><![CDATA[<gfe:partitioned-region id="overflow-partition">
+     <gfe:eviction type="MEMORY_SIZE" threshold="512" action="OVERFLOW_TO_DISK"/>
+</gfe:partitioned-region>]]></programlisting>
+		
+		<para>When configuring regions for oveflow, it is recommended to configure the storage through the <literal>disk-store</literal> element for maximum efficiency.</para>
+		
+		<para>For a detailed description of eviction policies, see the GemFire documentation (such as <ulink url="http://community.gemstone.com/display/gemfire/Data+Eviction">this</ulink>
+		page).</para>
+	</section>
 	
 	<para>    
     In a similar manner to the
