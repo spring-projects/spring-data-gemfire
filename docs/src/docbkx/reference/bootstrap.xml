@@ -192,14 +192,19 @@
     <para>Once the <interfacename>Cache</interfacename> is configured, one
     needs to configure one or more <interfacename>Region</interfacename>s to
     interact with the data fabric. SGF allows various region types to be configured and created directly from Spring or 
-    in case they are created directly in GemFire, retrieved as such.</para> 
+    in case they are created directly in GemFire, retrieved as such.</para>
+    
+    <para>For more information about the various region types and their capabilities as well as configuration options, please
+    refer to the GemFire Developer's <ulink url="http://www.gemstone.com/documentation">Guide</ulink> and community 
+    <ulink url="http://community.gemstone.com/display/gemfire/GemFire+Enterprise">site</ulink>.</para> 
 
 	<section id="bootstrap:region:lookup">
 		<title>Using an externaly configured <interfacename>Region</interfacename></title>
 		
-		<para>For consuming but not creating <interfacename>Region</interfacename>s, one can use the 
-		<literal>lookup</literal> element. Simply declare the target region name the <literal>
-		name</literal> attribute, for example to declare a bean definition, named <literal>region-bean</literal>
+		<para>For consuming but not creating <interfacename>Region</interfacename>s (for example in case,
+		the regions are already configured through GemFire native configuration, the <literal>cache.xml</literal>),
+		one can use the <literal>lookup-region</literal> element. Simply declare the target region name the <literal>
+		name</literal> attribute; for example to declare a bean definition, named <literal>region-bean</literal>
 		for an existing region named <literal>orders</literal> one can use the following definition:</para>
 		
 		<programlisting language="xml"><![CDATA[<gfe:lookup-region id="region-bean" name="orders"/>]]></programlisting>
@@ -207,11 +212,247 @@
 		<para>If the <literal>name</literal> is not specified, the bean name will be used automatically. The example above
 		becomes:</para>
 		
-		<programlisting language="xml"><![CDATA[<!-- region lookup for a region called 'orders' -->
+		<programlisting language="xml"><![CDATA[<!-- lookup for a region called 'orders' -->
 <gfe:lookup-region id="orders"/>]]></programlisting>
 
-		<para>CONTINUE DOC HERE</para>
+		<note><para>If the region does not exist, an initialization exception will be thrown. See the section below
+		on how to configure GemFire regions.</para></note>
+
+		<para>Note that in the previous examples, since no cache name was defined, the default SGF naming convention (<literal>gemfire-cache</literal>)
+		was used. If that is not an option, one can point to the cache bean through the <literal>cache-ref</literal> attribute:
+		</para>
+		
+		<programlisting language="xml"><![CDATA[<gfe:cache id="cache"/>
+		
+<gfe:lookup-region id="region-bean" name="orders" cache-ref="cache"/>]]></programlisting>
+				
+		<para>The <literal>lookup-region</literal> provides a simple way of retrieving existing, pre-configured regions without exposing
+		the region semantics or setup infrastructure.</para>
 	</section>
+
+	<section id="bootstrap:region:replicate">
+		<title>Configuring a GemFire replicated region</title>
+		
+		<para>One of the common region types supported by GemFire is <emphasis>replicated region</emphasis> or <emphasis>replica</emphasis>. In short:</para>
+		
+		<note><title>What is a replica?</title>
+		When a region is configured to be a replicated region, every member that hosts that region stores a copy of the contents of the region locally. 
+		Any update to a replicated region is distributed to all copies of the region. [...] When a replica is created, it goes through an initialization stage 
+		in which it discovers other replicas and automatically copies all the entries. While one replica is initializing you can still continue to use the other replicas.
+		</note>
+		
+		<para>SGF offers a dedicated element for creating replicas in the form of <literal>replicated-region</literal> element. A minimal declaration looks as follows
+		(again, the example will not setup the cache wiring, relying on the SGF namespace naming conventions):</para>
+
+		<programlisting language="xml"><![CDATA[<gfe:replicated-region id="simple-replica" />]]></programlisting>
+		
+		<para>Here, a replicated region is created (if one doesn't exist already). The name of the region is the same as the bean name (<literal>simple-replica</literal>) and 
+		the bean assumes the existence of a GemFire cache named <literal>gemfire-cache</literal>.</para>
+		
+		<para>When setting a region, it's fairly common to associate various <interfacename>CacheLoader</interfacename>s, <interfacename>CacheListener</interfacename>s and
+        <interfacename>CacheWriter</interfacename>s with it. These components can be either referrenced or declared inlined by the region declaration.</para> 
+        
+        <note><para>
+        Following the GemFire recommandations, the namespace allows for each region created multiple listeners but only one
+        cache writer and cache loader. This restriction can be relaxed, for advanced usages by using the <literal>beans</literal> declaration (see the next section).
+        </para></note>
+        
+		<para>Below is an example, showing both styles:</para>
+        
+		<programlisting language="xml"><![CDATA[<gfe:replicated-region id="mixed">
+    <gfe:cache-listener>
+    	<!-- nested cache listener reference -->
+        <ref bean="c-listener"/>
+        <!-- nested cache listener declaration -->
+        <bean class="some.pkg.SimpleCacheListener"/>
+    </gfe:cache-listener>
+    <!-- loader reference -->
+    <gfe:cache-loader ref="c-loader"/>
+    <!-- writer reference -->
+    <gfe:cache-writer ref="c-writer"/>
+</gfe:replicated-region>]]></programlisting>
+
+		<warning><para>Using <literal>ref</literal> and a nested declaration on <literal>cache-listener</literal>, <literal>cache-loader</literal> or <literal>cache-writer</literal>
+		is illegal. The two options are mutually exclusive and using them at the same time, on the same element will throw an exception.</para></warning>
+		
+		<section id="bootstrap:region:replicate:options">
+			<title><literal>replicated-region</literal> Options</title>
+			
+			<para>The following table offers a quick overview of the most important configuration options names, possible values and short descriptions for each of settings supported by the
+			<literal>replicated-region</literal> element. Please see the storage and eviction section for the relevant configuration.</para>
+			
+        <table id="bootstrap:region:replicate:attrs:table" pgwide="1" align="center">
+          <title><![CDATA[replicated-region]]> options</title>
+          <tgroup cols="3">
+          	<colspec colname="c1"/>
+          	<colspec colname="c2"/>
+          	<colspec colname="c3"/>
+            <thead>
+              <row>
+                <entry>Name</entry>
+                <entry spanname="values">Values</entry>
+                <entry align="center">Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>id</entry>
+                <entry spanname="values"><emphasis>any valid bean name</emphasis></entry>
+                <entry>The id of the region bean definition.</entry>
+              </row>
+              <row>
+                <entry>name</entry>
+                <entry spanname="values"><emphasis>any valid region name</emphasis></entry>
+                <entry>The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).</entry>
+              </row>
+              <row>
+                <entry>cache-ref</entry>
+                <entry spanname="values"><emphasis>GemFire cache bean name</emphasis></entry>
+                <entry>The name of the bean defining the GemFire cache (by default 'gemfire-cache').</entry>
+              </row>
+              <row>
+                <entry>cache-listener</entry>
+                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
+                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheListener</interfacename>.</entry>
+              </row>
+              <row>
+                <entry>cache-loader</entry>
+                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
+                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheLoader</interfacename>.</entry>
+              </row>
+              <row>
+                <entry>cache-writer</entry>
+                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
+                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheWriter</interfacename>.</entry>
+              </row>
+             </tbody>
+            </tgroup>
+	       </table>        
+		</section>		
+		
+	</section>
+	
+	<section id="bootstrap:region:partition">
+		<title>Configuring a GemFire partition(ed) region</title>
+		
+		<para>Another region type supported out of the box by the SGF namespace, is the partitioned region. To quote again the GemFire docs:</para>
+		
+		<note><title>What is a partition?</title>
+		<para>A partitioned region is a region where data is divided between peer servers hosting the region so that each peer stores a subset of the data. 
+		When using a partitioned region, applications are presented with a logical view of the region that looks like a single map containing all of the data in the region. 
+		Reads or writes to this map are transparently routed to the peer that hosts the entry that is the target of the operation. [...]
+		GemFire divides the domain of hashcodes into buckets. Each bucket is assigned to a specific peer, but may be relocated at any time to another peer in 
+		order to improve the utilization of resources across the cluster.</para></note>
+		
+		<para>A partition can be created by SGF through the <literal>partitioned-region</literal> element. Its configuration options are similar to that of the 
+		<literal>replicated-region</literal> plus the partion specific features such as the number of redundant copies, total maximum memory, number of buckets, partition
+		resolver and so on.
+		Below is a quick example on setting up a partition region with 2 redundant copies:</para>
+		
+		<programlisting language="xml"><![CDATA[<!-- bean definition named 'distributed-partition' backed by a region named 'redundant' with 2 copies 
+and a nested resolver declaration  -->
+<gfe:partitioned-region id="distributed-partition" copies="2" total-buckets="4" name="redundant">
+    <gfe:partition-resolver>
+        <bean class="some.pkg.SimplePartitionResolver"/>
+    </gfe:partition-resolver>
+</gfe:partitioned-region>]]></programlisting>
+
+		<section id="bootstrap:region:partition:options">
+			<title><literal>partitioned-region</literal> Options</title>
+			
+			<para>The following table offers a quick overview of the most important configuration options names, possible values and short descriptions for each of settings supported by the
+			partition element. Please see the storage and eviction section for the relevant configuration.</para>
+			
+        <table id="bootstrap:region:partition:attrs:table" pgwide="1" align="center">
+          <title><![CDATA[partitioned-region]]> options</title>
+          <tgroup cols="3">
+          	<colspec colname="c1"/>
+          	<colspec colname="c2"/>
+          	<colspec colname="c3"/>
+            <thead>
+              <row>
+                <entry>Name</entry>
+                <entry spanname="values">Values</entry>
+                <entry align="center">Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>id</entry>
+                <entry spanname="values"><emphasis>any valid bean name</emphasis></entry>
+                <entry>The id of the region bean definition.</entry>
+              </row>
+              <row>
+                <entry>name</entry>
+                <entry spanname="values"><emphasis>any valid region name</emphasis></entry>
+                <entry>The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).</entry>
+              </row>
+              <row>
+                <entry>cache-ref</entry>
+                <entry spanname="values"><emphasis>GemFire cache bean name</emphasis></entry>
+                <entry>The name of the bean defining the GemFire cache (by default 'gemfire-cache').</entry>
+              </row>
+
+              <row>
+                <entry>cache-listener</entry>
+                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
+                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheListener</interfacename>.</entry>
+              </row>
+              <row>
+                <entry>cache-loader</entry>
+                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
+                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheLoader</interfacename>.</entry>
+              </row>
+              <row>
+                <entry>cache-writer</entry>
+                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
+                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheWriter</interfacename>.</entry>
+              </row>
+              
+              <row>
+                <entry>partition-resolver</entry>
+                <entry spanname="values"><emphasis>bean name</emphasis></entry>
+                <entry>The name of the partitioned resolver used by this region, for custom partitioning.</entry>
+              </row>
+              <row>
+                <entry>copies</entry>
+                <entry spanname="values">0..4</entry>
+                <entry>The number of copies for each partition for high-availability. By default, no copies are created meaning there is no
+redundancy. Each copy provides extra backup at the expense of extra storages.</entry>
+              </row>
+              <row>
+                <entry>colocated-with</entry>
+                <entry spanname="values"><emphasis>valid region name</emphasis></entry>
+                <entry>The name of the partitioned region with which this newly created partitioned region is colocated.</entry>
+              </row>
+              <row>
+                <entry>local-max-memory</entry>
+                <entry spanname="values"><emphasis>positive integer</emphasis></entry>
+                <entry>The maximum amount of memory, in megabytes, to be used by the region in <emphasis>this</emphasis> process.</entry>
+              </row>
+              <row>
+                <entry>total-max-memory</entry>
+                <entry spanname="values"><emphasis>any integer value</emphasis></entry>
+                <entry>The maximum amount of memory, in megabytes, to be used by the region in <emphasis>all</emphasis> processes.</entry>
+              </row>
+              <row>
+                <entry>recovery-delay</entry>
+                <entry spanname="values"><emphasis>any long value</emphasis></entry>
+                <entry>The delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes.
+-1 (the default) indicates that redundancy will not be recovered after a failure.</entry>
+              </row>
+              <row>
+                <entry>startup-recovery-delay</entry>
+                <entry spanname="values"><emphasis>any long value</emphasis></entry>
+                <entry>The delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members
+ will not trigger redundancy recovery. The default is to recover redundancy immediately when a new member is added.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+         </table>        
+		</section>
+				
+	</section>	
 	
 	<para>    
     In a similar manner to the
