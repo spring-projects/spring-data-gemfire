@@ -11,6 +11,9 @@
 	<!-- GemFire cache bean -->
 	<gfe:cache properties-ref="props" />
 	<util:properties id="props" location="cache.properties"/>
+
+	<!-- GemFire transaction manager -->
+	<gfe:transaction-manager />
 	
 	<!-- hello world region -->
 	<!-- since no name is given, the region will be named after the bean -->
@@ -21,4 +24,5 @@
 	</gfe:replicated-region>
 	
 	<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="myWorld"/>
+	
 </beans>
