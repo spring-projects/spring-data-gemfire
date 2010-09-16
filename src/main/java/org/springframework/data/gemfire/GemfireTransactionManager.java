@@ -35,15 +35,15 @@ import com.gemstone.gemfire.cache.CommitConflictException;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * Local transaction manager for Gemfire Enterprise Fabric (GEF). Provides a {@link PlatformTransactionManager}
- * implementation for a single Gemfire {@link CacheTransactionManager}.
+ * Local transaction manager for GemFire Enterprise Fabric (GEF). Provides a {@link PlatformTransactionManager}
+ * implementation for a single GemFire {@link CacheTransactionManager}.
  * 
- * Binds one or multiple Gemfire regions for the specified {@link Cache} to the thread, potentially allowing for one
+ * Binds one or multiple GemFire regions for the specified {@link Cache} to the thread, potentially allowing for one
  * region per cache model.
  * 
  * <p>
  * This local strategy is an alternative to executing cache operations within JTA transactions. Its advantage is that
- * is able to work in any environment, for example a standalone application or a test suite. It is <i>not</i> able to
+ * is able to work in any environment, for example a stand-alone application or a test suite. It is <i>not</i> able to
  * provide XA transactions, for example to share transactions with data access.
  * 
  * <p>
@@ -223,6 +223,18 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	public void setCopyOnRead(boolean copyOnRead) {
 		this.copyOnRead = copyOnRead;
 	}
+
+
+	/**
+	 * Indicates whether copy on read is set or not on the transaction manager.
+	 * 
+	 * @see #setCopyOnRead(boolean)
+	 * @return the copyOnRead
+	 */
+	public boolean isCopyOnRead() {
+		return copyOnRead;
+	}
+
 
 	/**
 	 * GemfireTM local transaction object.
