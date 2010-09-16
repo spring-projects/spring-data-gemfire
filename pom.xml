@@ -269,7 +269,7 @@ limitations under the License.
                <packages>org.springframework.data.gemfire.sample*</packages>
             </group>
           </groups>
-          <excludePackageNames></excludePackageNames>
+          <excludePackageNames>org.springframework.data.gemfire.config</excludePackageNames>
 
           <breakiterator>true</breakiterator>
           <quiet>true</quiet>
