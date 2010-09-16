@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+
+<appendix id="appendix-schema">
+    <title>Spring GemFire Integration Schema</title>
+
+	<para>Spring GemFire Schema</para>	
+    <programlisting><xi:include href="../../../../src/main/resources/org/springframework/data/gemfire/config/spring-gemfire-1.0.xsd" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude">
+       <xi:fallback>
+    	<para><emphasis>FIXME: SGF SCHEMA LOCATION/NAME CHANGED</emphasis></para>
+  	   </xi:fallback>
+  	 </xi:include>
+    </programlisting>
+
+</appendix>

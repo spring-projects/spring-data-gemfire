@@ -59,13 +59,8 @@
       <xi:include href="bibliography.xml"/>
        -->
   </part>
-  <!--
-  <part id="appendixes">
-      <title>Appendixes</title>
-      <xi:include href="appendix/introduction.xml"/>
-      <xi:include href="appendix/appendix-tips.xml"/>
-      <xi:include href="appendix/appendix-roadmap.xml"/>
+  <part id="appendices">
+      <title>Appendices</title>
       <xi:include href="appendix/appendix-schema.xml"/>
   </part>
-  -->
 </book>
