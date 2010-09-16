@@ -231,7 +231,7 @@
 	</section>
 
 	<section id="bootstrap:region:replicate">
-		<title>Configuring a GemFire replicated region</title>
+		<title>Replicated Region</title>
 		
 		<para>One of the common region types supported by GemFire is <emphasis>replicated region</emphasis> or <emphasis>replica</emphasis>. In short:</para>
 		
@@ -333,7 +333,7 @@
 	</section>
 	
 	<section id="bootstrap:region:partition">
-		<title>Configuring a GemFire partition(ed) region</title>
+		<title>Partition(ed) Region</title>
 		
 		<para>Another region type supported out of the box by the SGF namespace, is the partitioned region. To quote again the GemFire docs:</para>
 		
@@ -513,38 +513,79 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
      <gfe:eviction type="MEMORY_SIZE" threshold="512" action="OVERFLOW_TO_DISK"/>
 </gfe:partitioned-region>]]></programlisting>
 		
+		<important><para>Replicas cannot use a <literal>local destroy</literal> eviction since that would invalidate them. See the GemFire docs for more information.</para></important>
+		
 		<para>When configuring regions for oveflow, it is recommended to configure the storage through the <literal>disk-store</literal> element for maximum efficiency.</para>
 		
 		<para>For a detailed description of eviction policies, see the GemFire documentation (such as <ulink url="http://community.gemstone.com/display/gemfire/Data+Eviction">this</ulink>
 		page).</para>
 	</section>
 	
-	<para>    
-    In a similar manner to the
-    <literal>cache</literal> element, SGF  
-    
-    <classname>RegionFactoryBean</classname> allows existing
-    <interfacename>Region</interfacename>s to retrieved or, in case they don't
-    exist, created using various settings. One can specify the
-    <interfacename>Region</interfacename> name, whether it will be destroyed
-    on shutdown (thereby acting as a temporary cache), the associated
-    <interfacename>CacheLoader</interfacename>s,
-    <interfacename>CacheListener</interfacename>s and
-    <interfacename>CacheWriter</interfacename>s and if needed, the
-    <interfacename>RegionAttributes</interfacename> for full
-    customization.</para>
+	<section id="bootstrap:region:client">
+		<title>Client Region</title>
+		
+		<para>GemFire supports various deployment topologies for managing and distributing data. The topic is outside the scope of this documentation however to quickly recap, they
+		can be categoried in short in: peer-to-peer (p2p), client-server (or super-peer cache network) and wide area cache network (or WAN). In the last two scenarios, it is common
+		to declare <emphasis>client</emphasis> regions which connect to a backing cache server (or super peer). SGF offers dedicated support for such configuration through the
+		<literal>client-region</literal> and <literal>pool</literal> elements.
+		As the name imply, the former defines a client region while the latter connection pools to be used/shared by the various client regions.</para>
+		
+		<para>Below is a usual configuration for a client region:</para>
+		
+		<programlisting language="xml"><![CDATA[<!-- client region declaration -->
+<gfe:client-region id="complex" pool-name="gemfire-pool">
+	<gfe:cache-listener ref="c-listener"/>
+</gfe:client-region>
+	
+<bean id="c-listener" class="some.pkg.SimpleCacheListener"/>
 
-    <para>Let us start with a simple region declaration, named
-    <emphasis>basic</emphasis> using a nested cache declaration:</para>
+<!-- pool declaration -->	
+<gfe:pool id="gemfire-pool" subscription-enabled="false">
+	<gfe:locator host="localhost" port="40403"/>
+</gfe:pool>]]></programlisting>
 
-    <programlisting language="xml">&lt;bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean"&gt;
+		<para>Just as the other region types, <literal>client-region</literal> allows defining <interfacename>CacheListener</interfacename>s. It also relies on the same naming conventions
+		in case the region name or the cache are not set explicitely. However, it also requires a connection <literal>pool</literal> to be specified for connecting to the server. Each client
+		can have its own pool or they can share the same one.</para>
+		
+		<para>For a full list of options to set on the client and especially on the pool, please refer to the SGF schema (<xref linkend="appendix-schema"/>) and the GemFire documentation.</para>
+		
+		<section id="bootstrap:region:client:interests">
+			<title>Client Interests</title>
+			
+			<para>To minimize network traffic, each client can define its own 'interest', pointing out to GemFire, the data it actually needs. In SGF, interests can be defined for each client, both
+			key-based and regular-expression-based types being supported; for example:</para>
+			
+			<programlisting language="xml"><![CDATA[<gfe:client-region id="complex" pool-name="gemfire-pool">
+	<gfe:key-interest durable="true" result-policy="KEYS">
+	    <bean id="key" class="java.lang.String"/>
+	</gfe:key-interest>
+	<gfe:regex-interest pattern=".*"/>
+</gfe:client-region>]]></programlisting>
+		</section>
+	</section>
+	
+	<section id="bootstrap:region:beans:config">
+		<title>Advanced Region Configuration</title>
+	
+		<para>SGF namespaces allow short and easy configuration of the major GemFire regions and associated entities. However, there might be corner cases where the namespaces are not enough, where
+		a certain combination or set of attributes needs to be used. For such situations, using directly the SGF <interfacename>FactoryBean</interfacename>s is a possible alternative as it gives
+		access to the full set of options at the expense of conciseness.</para>
+		
+		<para>As a warm up, below are some common configurations, declared through raw <literal>beans</literal> definitions.</para>
+		
+		<para>A basic configuration looks as follows:</para>
+		
+		<programlisting language="xml">&lt;bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean"&gt;
   &lt;property name="cache"&gt;
       &lt;bean class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;
   &lt;/property&gt;
   &lt;property name="name" value="basic"/&gt;
 &lt;/bean&gt;</programlisting>
 
-    <para>Since the region bean definition name is usually the same with that
+		<para>Notice how the GemFire cache definition has been nested into the declaring region definition. Let's add more regions
+		and make the cache a top level bean.</para>
+    	<para>Since the region bean definition name is usually the same with that
     of the cache, the <literal>name</literal> property can be omitted (the
     bean name will be used automatically). Additionally by using the name the
     <literal><ulink
@@ -589,18 +630,14 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
   &lt;property name="cacheListeners" ref="cacheLogger"/&gt;	
 &lt;/bean&gt;</programlisting>
 
-    <section id="bootstrap:region:client">
-      <title>Configuring a <emphasis>client</emphasis>
-      <interfacename>Region</interfacename></title>
-
       <para>For scenarios where a <emphasis>CacheServer</emphasis> is used and
-      <emphasis>clients</emphasis> need to be configured, SGF offers a
+      <emphasis>clients</emphasis> need to be configured and the namespace is not an option, SGF offers a
       dedicated configuration class named:
       <classname>ClientRegionFactoryBean</classname>. This allows client
       <emphasis>interests</emphasis> to be registered in both key and regex
       form through <classname>Interest</classname> and
       <classname>RegexInterest</classname> classes in the
-      <literal>org.springframework.data.gemfire</literal> package:</para>
+      <literal>org.springframework.data.gemfire.client</literal> package:</para>
 
       <programlisting language="xml">&lt;bean id="interested-client" class="org.springframework.data.gemfire.client.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region"&gt;
   &lt;property name="interests"&gt;
@@ -612,10 +649,6 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
     &lt;/array&gt;
   &lt;/property&gt;
 &lt;/bean&gt;</programlisting>
-    </section>
-    
-    <section id="bootstrap:region:attributes">
-      <title>Advanced configuration through a <interfacename>Region</interfacename>'s <emphasis>attributes</emphasis></title>
       
       <para>Users that need fine control over a region, can configure it in Spring by using the <literal>attributes</literal> property. To ease declarative configuration in Spring,
       SGF provides two <interfacename>FactoryBean</interfacename>s for creating <interfacename>RegionAttributes</interfacename> and <interfacename>PartitionAttributes</interfacename>,
@@ -636,4 +669,10 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
       <para>By using the attribute factories above, one can reduce the size of the <literal>cache.xml</literal> or even eliminate it all together.</para>  
     </section>
   </section>
+  
+  <section id="bootstrap:region:spring:config">
+	<title>Advantages of using Spring over GemFire <literal>cache.xml</literal></title>
+	<para></para>
+  </section>
+  
 </chapter>
