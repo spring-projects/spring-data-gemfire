@@ -3,6 +3,20 @@ SPRING GEMFIRE INTEGRATION CHANGELOG
 http://www.springsource.org/spring-gemfire
 
 
+Changes in version 1.0.0.M2 (2010-XX-XX)
+----------------------------------------
+General
+* Introduced namespace for all the major SGF components
+* Improved documentation to accomodate the SGF namespace
+
+Package org.springframework.data.gemfire
+* Introduced RegionLookupFactoryBean for retrieving (but not creating) regions
+
+Package org.springframework.data.gemfire.client
+* Refactored client-specific classes into a dedicated package
+* Introduced support for configuring GemFire Pools
+
+
 Changes in version 1.0.0.M1 (2010-08-03)
 ----------------------------------------
 General
