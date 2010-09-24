@@ -367,7 +367,7 @@ limitations under the License.
      <repository>
      	<id>gemfire-release-repo</id>
      	<name>GemFire Release Repository</name>
-      <url>http://dist.gemstone.com/maven/release/</url>
+      <url>http://dist.gemstone.com/maven/release</url>
      </repository>
      <repository>
      	<id>repository.springframework.maven.milestone</id>
