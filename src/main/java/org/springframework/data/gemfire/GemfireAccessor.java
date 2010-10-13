@@ -24,7 +24,7 @@ import org.springframework.dao.DataAccessException;
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CqInvalidException;
+// TODO Check 6.0 and 6.5 compatibility import com.gemstone.gemfire.cache.query.CqInvalidException;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 
@@ -81,9 +81,10 @@ public class GemfireAccessor implements InitializingBean {
 	 * @return the corresponding DataAccessException instance
 	 */
 	public DataAccessException convertGemFireQueryException(RuntimeException ex) {
+		/* TODO Check 6.0 and 6.5 compatibility
 		if (ex instanceof CqInvalidException) {
 			return GemfireCacheUtils.convertGemfireAccessException((CqInvalidException) ex);
-		}
+		}*/
 
 		if (ex instanceof IndexInvalidException) {
 			return GemfireCacheUtils.convertGemfireAccessException((IndexInvalidException) ex);

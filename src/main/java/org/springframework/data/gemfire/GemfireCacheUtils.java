@@ -72,7 +72,7 @@ import com.gemstone.gemfire.cache.VersionException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.query.CqClosedException;
-import com.gemstone.gemfire.cache.query.CqInvalidException;
+// TODO Check 6.0 and 6.5 compatibility import com.gemstone.gemfire.cache.query.CqInvalidException;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.QueryException;
@@ -257,11 +257,11 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof QueryInvalidException) {
 			return convertGemfireAccessException((QueryInvalidException) ex);
 		}
-
+		/* TODO Check 6.0 and 6.5 compatibility
 		if (ex instanceof CqInvalidException) {
 			return convertGemfireAccessException((CqInvalidException) ex);
 		}
-
+		*/
 		return null;
 	}
 
@@ -325,7 +325,8 @@ public abstract class GemfireCacheUtils {
 	 * @param ex Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
 	 */
+	/* TODO Check 6.0 and 6.5 compatibility
 	public static DataAccessException convertGemfireAccessException(CqInvalidException ex) {
 		return new GemfireQueryException(ex);
-	}
+	}*/
 }
