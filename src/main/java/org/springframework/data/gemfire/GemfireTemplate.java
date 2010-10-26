@@ -56,7 +56,7 @@ public class GemfireTemplate extends GemfireAccessor {
 	public GemfireTemplate() {
 	}
 
-	public GemfireTemplate(Region<?, ?> region) {
+	public <K,V> GemfireTemplate(Region<K, V> region) {
 		setRegion(region);
 		afterPropertiesSet();
 	}
@@ -86,6 +86,33 @@ public class GemfireTemplate extends GemfireAccessor {
 	 */
 	public boolean isExposeNativeRegion() {
 		return this.exposeNativeRegion;
+	}
+
+	public <K, V> V get(final K key) {
+		return execute(new GemfireCallback<V>() {
+			@SuppressWarnings("unchecked")
+			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+				return (V) region.get(key);
+			}
+		});
+	}
+	
+	public <K, V> V put(final K key, final V value) {
+		return execute(new GemfireCallback<V>() {
+			@SuppressWarnings("unchecked")
+			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+				return (V) region.put(key, value);
+			}
+		});
+	}
+
+	public <K, V> V remove(final K key) {
+		return execute(new GemfireCallback<V>() {
+			@SuppressWarnings("unchecked")
+			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+				return (V) region.remove(key);
+			}
+		});
 	}
 
 	public <E> SelectResults<E> query(final String query) {
