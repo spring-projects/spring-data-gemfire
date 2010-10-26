@@ -26,6 +26,7 @@ import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.dao.TypeMismatchDataAccessException;
+import org.springframework.util.ClassUtils;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.CopyException;
@@ -72,7 +73,6 @@ import com.gemstone.gemfire.cache.VersionException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.query.CqClosedException;
-// TODO Check 6.0 and 6.5 compatibility import com.gemstone.gemfire.cache.query.CqInvalidException;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.QueryException;
@@ -87,6 +87,23 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * @author Costin Leau
  */
 public abstract class GemfireCacheUtils {
+
+	private static Class<?> CQ_EXCEPTION_CLASS;
+
+	{
+		Class<?> clz = null;
+
+		try {
+
+			clz = ClassUtils.resolveClassName("com.gemstone.gemfire.cache.query.CqInvalidException",
+					GemfireCacheUtils.class.getClassLoader());
+
+		} catch (IllegalArgumentException iae) {
+		}
+
+		CQ_EXCEPTION_CLASS = clz;
+	}
+
 
 	/**
 	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
@@ -250,19 +267,20 @@ public abstract class GemfireCacheUtils {
 	 * @param ex
 	 * @return
 	 */
-	private static DataAccessException convertQueryExceptions(RuntimeException ex) {
+	static DataAccessException convertQueryExceptions(RuntimeException ex) {
 		if (ex instanceof IndexInvalidException) {
 			return convertGemfireAccessException((IndexInvalidException) ex);
 		}
 		if (ex instanceof QueryInvalidException) {
 			return convertGemfireAccessException((QueryInvalidException) ex);
 		}
-		/* TODO Check 6.0 and 6.5 compatibility
-		if (ex instanceof CqInvalidException) {
-			return convertGemfireAccessException((CqInvalidException) ex);
+
+		if (isCqInvalidException(ex)) {
+			return convertCqInvalidException(ex);
 		}
-		*/
-		return null;
+
+		// fall back
+		return new GemfireSystemException(ex);
 	}
 
 	/**
@@ -318,15 +336,24 @@ public abstract class GemfireCacheUtils {
 	}
 
 	/**
+	 * Package protected method for detecting CqInvalidException which has been removed in GemFire 6.5 GA.
+	 * 
+	 * @param ex
+	 * @return
+	 */
+	static boolean isCqInvalidException(RuntimeException ex) {
+		return (CQ_EXCEPTION_CLASS != null && CQ_EXCEPTION_CLASS.isAssignableFrom(ex.getClass()));
+	}
+
+	/**
 	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
 	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
-	 * for exceptions that had their parents changed in GemFire 6.5.
+	 * for exceptions that have been removed in 6.5.
 	 *
 	 * @param ex Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
 	 */
-	/* TODO Check 6.0 and 6.5 compatibility
-	public static DataAccessException convertGemfireAccessException(CqInvalidException ex) {
+	static DataAccessException convertCqInvalidException(RuntimeException ex) {
 		return new GemfireQueryException(ex);
-	}*/
+	}
 }

@@ -18,7 +18,6 @@ package org.springframework.data.gemfire;
 
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 
-//TODO Check 6.0 and 6.5 compatibility import com.gemstone.gemfire.cache.query.CqInvalidException;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryExecutionTimeoutException;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
@@ -43,8 +42,13 @@ public class GemfireQueryException extends InvalidDataAccessResourceUsageExcepti
 		super(ex.getMessage(), ex);
 	}
 
-	/* TODO Check 6.0 and 6.5 compatibility
-	public GemfireQueryException(CqInvalidException ex) {
+	/**
+	 * Dedicated constructor for CqInvalidException. Since the class has been removed in 6.5,
+	 * the constructor is protected to prevent illegal access.
+	 * 
+	 * @param ex
+	 */
+	GemfireQueryException(RuntimeException ex) {
 		super(ex.getMessage(), ex);
-	}*/
+	}
 }

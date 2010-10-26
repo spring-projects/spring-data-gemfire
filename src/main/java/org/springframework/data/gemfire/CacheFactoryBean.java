@@ -36,9 +36,6 @@ import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
-//	/* TODO Check 6.0 and 6.5 compatibility import com.gemstone.gemfire.cache.query.CqInvalidException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 
@@ -139,15 +136,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) ex);
 		}
 		if (ex instanceof IllegalArgumentException) {
-			if (ex instanceof IndexInvalidException) {
-				return GemfireCacheUtils.convertGemfireAccessException((IndexInvalidException) ex);
-			}
-			/* TODO Add back some mapping to be compatible with 6.0 and 6.0
-			if (ex instanceof CqInvalidException) {
-				return GemfireCacheUtils.convertGemfireAccessException((CqInvalidException) ex);
-			}*/
-			if (ex instanceof QueryInvalidException) {
-				return GemfireCacheUtils.convertGemfireAccessException((QueryInvalidException) ex);
+			DataAccessException wrapped = GemfireCacheUtils.convertQueryExceptions(ex);
+			// ignore conversion if the generic exception is returned
+			if (!(wrapped instanceof GemfireSystemException)) {
+				return wrapped;
 			}
 		}
 
