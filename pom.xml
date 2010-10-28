@@ -8,15 +8,15 @@
 
   <description>Spring GemFire Integration for Java</description>
   <issueManagement>
-  	<system>Issue Tracker</system>
-  	<url>http://jira.springframework.org/browse/SGF</url>
+    <system>Issue Tracker</system>
+    <url>http://jira.springframework.org/browse/SGF</url>
   </issueManagement>
   <scm>
-  	<url>http://git.springsource.org/spring-gemfire</url>
+    <url>http://git.springsource.org/spring-gemfire</url>
   </scm>
   <organization>
-  	<name>SpringSource, a division of VMware</name>
-  	<url>http://www.SpringSource.org</url>
+    <name>SpringSource, a division of VMware</name>
+    <url>http://www.SpringSource.org</url>
   </organization>
   <inceptionYear>2010</inceptionYear>
   
@@ -98,12 +98,12 @@ limitations under the License.
       <version>1</version>
       <scope>test</scope>
     </dependency>
-		<dependency>
-			<groupId>javax.annotation</groupId>
-			<artifactId>jsr250-api</artifactId>
-			<version>1.0</version>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>jsr250-api</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
@@ -137,7 +137,7 @@ limitations under the License.
         <directory>src/main/resources</directory>
       </resource>
       <resource>
-      	<targetPath>META-INF</targetPath>
+        <targetPath>META-INF</targetPath>
         <filtering>false</filtering>
         <directory>${license.loc}</directory>
         <includes>
@@ -212,25 +212,28 @@ limitations under the License.
       </plugins>
     </pluginManagement>
     
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<forkMode>always</forkMode>
-				</configuration>
-			</plugin>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>always</forkMode>
+          <systemPropertyVariables>
+            <gemfire.disableShutdownHook>true</gemfire.disableShutdownHook>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
 
-		</plugins>
-	</build>
+    </plugins>
+  </build>
 
   <reporting>
     <plugins>
@@ -365,14 +368,14 @@ limitations under the License.
     
   <repositories>
      <repository>
-     	<id>gemfire-release-repo</id>
-     	<name>GemFire Release Repository</name>
+      <id>gemfire-release-repo</id>
+      <name>GemFire Release Repository</name>
       <url>http://dist.gemstone.com/maven/release</url>
      </repository>
      <repository>
-     	<id>repository.springframework.maven.milestone</id>
-     	<name>Spring Framework Maven Milestone Repository</name>
+      <id>repository.springframework.maven.milestone</id>
+      <name>Spring Framework Maven Milestone Repository</name>
       <url>http://maven.springframework.org/milestone</url>
      </repository>
-  </repositories>	
+  </repositories>
 </project>
