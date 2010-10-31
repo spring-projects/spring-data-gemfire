@@ -90,10 +90,12 @@ class ClientRegionParser extends AbstractSingleBeanDefinitionParser {
 		// client attributes
 		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactory.class);
 
-		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
-		ParsingUtils.parseDiskStorage(element, attrBuilder);
+		boolean overwriteDataPolicy = false;
 
-		if (!frozenDataPolicy) {
+		overwriteDataPolicy |= ParsingUtils.parseEviction(parserContext, element, attrBuilder);
+		overwriteDataPolicy |= ParsingUtils.parseDiskStorage(element, attrBuilder);
+
+		if (!frozenDataPolicy && overwriteDataPolicy) {
 			builder.addPropertyValue("dataPolicy", DataPolicy.NORMAL);
 		}
 

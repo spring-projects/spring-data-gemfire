@@ -110,12 +110,13 @@ abstract class ParsingUtils {
 	 * 
 	 * @param element - element enclosing the disk-store definition
 	 * @param beanBuilder - beanbuilder for a RegionAttributesFactory instance
+	 * @return true if parsing actually occured, false otherwise
 	 */
-	static void parseDiskStorage(Element element, BeanDefinitionBuilder beanBuilder) {
+	static boolean parseDiskStorage(Element element, BeanDefinitionBuilder beanBuilder) {
 		Element diskStoreElement = DomUtils.getChildElementByTagName(element, "disk-store");
 
 		if (diskStoreElement == null)
-			return;
+			return false;
 
 		BeanDefinitionBuilder diskDefBuilder = BeanDefinitionBuilder.genericBeanDefinition(DiskWriteAttributesFactory.class);
 		setPropertyValue(diskStoreElement, diskDefBuilder, "synchronous-write", "synchronous");
@@ -144,6 +145,8 @@ abstract class ParsingUtils {
 		beanBuilder.addPropertyValue("diskWriteAttributes", factoryWrapper.getBeanDefinition());
 		beanBuilder.addPropertyValue("diskDirs", locations);
 		beanBuilder.addPropertyValue("diskSizes", sizes);
+
+		return true;
 	}
 
 	/**
@@ -151,12 +154,13 @@ abstract class ParsingUtils {
 	 * 
 	 * @param element
 	 * @param attrBuilder
+	 * @return true if parsing actually occured, false otherwise
 	 */
-	static void parseEviction(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
+	static boolean parseEviction(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
 		Element evictionElement = DomUtils.getChildElementByTagName(element, "eviction");
 
 		if (evictionElement == null)
-			return;
+			return false;
 
 		BeanDefinitionBuilder evictionDefBuilder = BeanDefinitionBuilder.genericBeanDefinition(EvictionAttributesFactoryBean.class);
 
@@ -179,5 +183,6 @@ abstract class ParsingUtils {
 		}
 
 		attrBuilder.addPropertyValue("evictionAttributes", evictionDefBuilder.getBeanDefinition());
+		return true;
 	}
 }
