@@ -17,11 +17,13 @@
 package org.springframework.data.gemfire.config;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.RegionAttributesFactory;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.Interest;
 import org.springframework.data.gemfire.client.RegexInterest;
@@ -29,6 +31,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
@@ -59,9 +64,41 @@ class ClientRegionParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
 
-		String attr = element.getAttribute("cache-ref");
+		// set the persistent policy
+		String attr = element.getAttribute("persistent");
+
+		boolean frozenDataPolicy = false;
+
+		if (Boolean.parseBoolean(attr)) {
+			// check first for GemFire 6.5
+			if (ConcurrentMap.class.isAssignableFrom(Region.class)) {
+				builder.addPropertyValue("dataPolicy", DataPolicy.PERSISTENT_REPLICATE);
+				frozenDataPolicy = true;
+			}
+			else {
+				parserContext.getReaderContext().error(
+						"Can define persistent partitions only from GemFire 6.5 onwards - current version is ["
+								+ CacheFactory.getVersion() + "]", element);
+			}
+		}
+
+		attr = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)
 		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
+
+		// eviction + overflow attributes
+		// client attributes
+		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactory.class);
+
+		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
+		ParsingUtils.parseDiskStorage(element, attrBuilder);
+
+		if (!frozenDataPolicy) {
+			builder.addPropertyValue("dataPolicy", DataPolicy.NORMAL);
+		}
+
+		// add partition/overflow settings as attributes
+		builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
 
 		ManagedList<Object> interests = new ManagedList<Object>();
 

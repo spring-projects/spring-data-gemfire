@@ -148,7 +148,7 @@ class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		// add partition attributes attributes
 		attrBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
-
+		// add partition/overflow settings as attributes
 		builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
 	}
 

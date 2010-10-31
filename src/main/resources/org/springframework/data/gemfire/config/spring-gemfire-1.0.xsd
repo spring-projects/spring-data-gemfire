@@ -179,8 +179,29 @@ use inner bean declarations.
 								</xsd:annotation>
 							</xsd:attribute>
 						</xsd:complexType>
-					</xsd:element>					
+					</xsd:element>
+					<xsd:element name="disk-store" type="diskStoreType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Disk storage configuration for the defined region.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>							
 				</xsd:sequence>
+				<xsd:attribute name="persistent" type="xsd:boolean" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the defined region is persistent or not. GemFire ensures that all the data you put into a region that
+ is configured for persistence will be written to disk in a way that it can be recovered the next time you create the 
+region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart 
+of GemFire.
+
+Default is false, meaning the regions are not persisted.
+
+Note: Persistence for partitioned regions is supported only from GemFire 6.5 onwards.						
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -217,28 +238,7 @@ arbitrarily pick one.
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element name="disk-store" type="diskStoreType" minOccurs="0" maxOccurs="1">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Disk storage configuration for the defined region.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:element>
 				</xsd:sequence>
-				<xsd:attribute name="persistent" type="xsd:boolean" default="false">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates whether the defined region is persistent or not. GemFire ensures that all the data you put into a region that
- is configured for persistence will be written to disk in a way that it can be recovered the next time you create the 
-region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart 
-of GemFire.
-
-Default is false, meaning the regions are not persisted.
-
-Note: Persistence for partitioned regions is supported only from GemFire 6.5 onwards.						
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -600,8 +600,8 @@ which it receives its data. The client can hold some data locally or forward all
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="readOnlyRegionType">
-					<xsd:sequence minOccurs="0" maxOccurs="unbounded">
-						<xsd:choice>
+					<xsd:sequence>
+						<xsd:choice minOccurs="0" maxOccurs="unbounded">
 							<xsd:element name="key-interest">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
@@ -649,11 +649,32 @@ Regular expression based interest. If the pattern is '.*' then all keys of any t
 								</xsd:complexType>
 							</xsd:element>
 						</xsd:choice>
+						<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[
+Eviction policy for the partitioned region.
+								]]></xsd:documentation>
+							</xsd:annotation>
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="evictionType">
+										<xsd:attribute name="action" type="evictionActionType" default="LOCAL_DESTROY">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[
+The action to take when performing eviction.
+												]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:attribute>
+									</xsd:extension>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>						
 					</xsd:sequence>
 					<xsd:attribute name="data-policy" use="optional" default="NORMAL">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The data policy for this client. Can be either 'EMPTY' or 'NORMAL' (the default). 
+The data policy for this client. Can be either 'EMPTY' or 'NORMAL' (the default). In case persistence or overflow are
+configured for this region, this parameter will be ignored.
 
 EMPTY - causes data to never be stored in local memory. The region will always appear empty. It can be used to for zero
  footprint producers that only want to distribute their data to others and for zero footprint consumers that only want 

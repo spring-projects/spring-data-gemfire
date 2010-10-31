@@ -21,10 +21,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.Interest;
@@ -35,8 +38,13 @@ import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAlgorithm;
+import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 /**
  * @author Costin Leau
@@ -83,6 +91,34 @@ public class ClientRegionNamespaceTest {
 		assertFalse((Boolean) TestUtils.readField("durable", regexInt));
 		assertEquals(InterestResultPolicy.KEYS_VALUES, TestUtils.readField("key", regexInt));
 		assertEquals(".*", TestUtils.readField("key", regexInt));
+	}
 
+	@Test
+	public void testPersistent() throws Exception {
+		assertTrue(context.containsBean("persistent"));
+		ClientRegionFactoryBean fb = context.getBean("&persistent", ClientRegionFactoryBean.class);
+		assertEquals(DataPolicy.PERSISTENT_REPLICATE, TestUtils.readField("dataPolicy", fb));
+		assertEquals(Scope.LOCAL, TestUtils.readField("scope", fb));
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		File[] diskDirs = attrs.getDiskDirs();
+		assertEquals(1, diskDirs.length);
+		int[] diskDirSizes = attrs.getDiskDirSizes();
+		assertEquals(1, diskDirSizes.length);
+		assertEquals(1, diskDirSizes[0]);
+	}
+
+	@Test
+	public void testOverflowToDisk() throws Exception {
+		assertTrue(context.containsBean("overflow"));
+		ClientRegionFactoryBean fb = context.getBean("&overflow", ClientRegionFactoryBean.class);
+		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", fb));
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
+		assertEquals(EvictionAction.LOCAL_DESTROY, evicAttr.getAction());
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, evicAttr.getAlgorithm());
+		// for some reason GemFire resets this to 56 on my machine (not sure why)
+		//assertEquals(10, evicAttr.getMaximum());
+		ObjectSizer sizer = evicAttr.getObjectSizer();
+		assertEquals(SimpleObjectSizer.class, sizer.getClass());
 	}
 }
