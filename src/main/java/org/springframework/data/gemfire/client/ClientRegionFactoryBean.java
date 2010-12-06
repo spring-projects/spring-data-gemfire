@@ -116,6 +116,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> imple
 	 * @param poolName
 	 */
 	public void setPoolName(String poolName) {
+		Assert.hasText(poolName, "pool name is required");
 		this.poolName = poolName;
 	}
 
