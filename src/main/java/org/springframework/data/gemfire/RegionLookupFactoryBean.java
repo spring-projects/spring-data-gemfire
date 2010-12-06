@@ -69,7 +69,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	 * @throws Exception
 	 */
 	protected Region<K, V> lookupFallback(Cache cache, String regionName) throws Exception {
-		throw new BeanInitializationException("Cannot find region named " + name + " in cache " + cache);
+		throw new BeanInitializationException("Cannot find region named " + regionName + " in cache " + cache);
 	}
 
 	public Region<K, V> getObject() throws Exception {
