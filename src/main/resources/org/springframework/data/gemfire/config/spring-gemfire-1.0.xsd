@@ -788,6 +788,7 @@ The name of the pool definition (by default "gemfire-pool").]]></xsd:documentati
 			<xsd:attribute name="server-group" use="optional" type="xsd:string"/>
 			<xsd:attribute name="socket-buffer-size" use="optional" type="xsd:int"/>
 			<xsd:attribute name="statistic-interval" use="optional" type="xsd:int"/>
+			<xsd:attribute name="subscription-ack-interval" use="optional" type="xsd:int"/>
 			<xsd:attribute name="subscription-enabled" use="optional" type="xsd:boolean"/>
 			<xsd:attribute name="subscription-message-tracking-timeout" use="optional" type="xsd:int"/>
 			<xsd:attribute name="subscription-redundancy" use="optional" type="xsd:int"/>
