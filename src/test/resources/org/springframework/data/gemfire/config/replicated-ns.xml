@@ -6,7 +6,7 @@
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd" default-lazy-init="true">
 
 	<gfe:cache />
 	
@@ -27,5 +27,5 @@
 	<bean id="c-loader" class="org.springframework.data.gemfire.SimpleCacheLoader"/>
 	<bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>
 	
-	<gfe:lookup-region id="lookup" name="simple"/>
+	<gfe:lookup-region id="lookup" name="existing"/>
 </beans>

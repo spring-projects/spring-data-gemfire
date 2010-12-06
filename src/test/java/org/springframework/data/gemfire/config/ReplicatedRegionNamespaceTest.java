@@ -32,8 +32,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 
@@ -78,9 +80,11 @@ public class ReplicatedRegionNamespaceTest {
 
 	@Test
 	public void testRegionLookup() throws Exception {
+		Cache cache = context.getBean(Cache.class);
+		Region existing = cache.createRegionFactory().create("existing");
 		assertTrue(context.containsBean("lookup"));
 		RegionLookupFactoryBean lfb = context.getBean("&lookup", RegionLookupFactoryBean.class);
-		assertEquals("simple", TestUtils.readField("name", lfb));
-		assertEquals(context.getBean("simple"), context.getBean("lookup"));
+		assertEquals("existing", TestUtils.readField("name", lfb));
+		assertEquals(context.getBean("existing"), context.getBean("lookup"));
 	}
 }
