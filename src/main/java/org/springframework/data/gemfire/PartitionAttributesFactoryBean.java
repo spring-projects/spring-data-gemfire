@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.PartitionResolver;
  * @author Costin Leau
  */
 @SuppressWarnings("unchecked")
-public class PartitionAttributesFactory implements FactoryBean<PartitionAttributes> {
+public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttributes> {
 
 	private com.gemstone.gemfire.cache.PartitionAttributesFactory paf = new com.gemstone.gemfire.cache.PartitionAttributesFactory();
 

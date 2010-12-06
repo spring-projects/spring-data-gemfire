@@ -109,7 +109,7 @@ abstract class ParsingUtils {
 	 * Parses disk store sub-element. Populates the given attribute factory with the proper attributes.
 	 * 
 	 * @param element - element enclosing the disk-store definition
-	 * @param beanBuilder - beanbuilder for a RegionAttributesFactory instance
+	 * @param beanBuilder - beanbuilder for a RegionAttributesFactoryBean instance
 	 * @return true if parsing actually occured, false otherwise
 	 */
 	static boolean parseDiskStorage(Element element, BeanDefinitionBuilder beanBuilder) {

@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * 
  * @author Costin Leau
  */
-public class RegionAttributesFactory extends AttributesFactory implements FactoryBean<RegionAttributes>,
+public class RegionAttributesFactoryBean extends AttributesFactory implements FactoryBean<RegionAttributes>,
 		InitializingBean {
 
 	private int[] diskSizes;
