@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.config;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -31,7 +31,7 @@ import org.w3c.dom.Element;
 class LookupRegionParser extends AbstractSingleBeanDefinitionParser {
 
 	protected Class<?> getBeanClass(Element element) {
-		return RegionFactoryBean.class;
+		return RegionLookupFactoryBean.class;
 	}
 
 	@Override
