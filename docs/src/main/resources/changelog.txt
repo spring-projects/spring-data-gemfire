@@ -3,7 +3,7 @@ SPRING GEMFIRE INTEGRATION CHANGELOG
 http://www.springsource.org/spring-gemfire
 
 
-Changes in version 1.0.0.M2 (2010-XX-XX)
+Changes in version 1.0.0.M2 (2010-12-08)
 ----------------------------------------
 General
 * Introduced namespace for all the major SGF components
