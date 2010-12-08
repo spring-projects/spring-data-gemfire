@@ -3,6 +3,10 @@ SPRING GEMFIRE INTEGRATION CHANGELOG
 http://www.springsource.org/spring-gemfire
 
 
+Changes in version 1.0.0.RC1 (2010-12-yy)
+-----------------------------------------
+
+
 Changes in version 1.0.0.M2 (2010-12-08)
 ----------------------------------------
 General
