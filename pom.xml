@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.springframework.data.gemfire</groupId>
   <artifactId>spring-gemfire</artifactId>
-  <version>1.0.0.RC1-SNAPSHOT</version>
+  <version>1.0.0.RC1</version>
   <name>Spring GemFire Project</name>
 
   <description>Spring GemFire Integration for Java</description>
@@ -59,7 +59,7 @@ limitations under the License.
   </licenses>
 
   <properties>
-    <spring.version>3.0.3.RELEASE</spring.version>
+    <spring.version>3.0.5.RELEASE</spring.version>
     <junit.version>4.7</junit.version>
     
     <!-- javadoc configuration -->
@@ -115,7 +115,7 @@ limitations under the License.
     <dependency>
       <groupId>com.gemstone.gemfire</groupId>
       <artifactId>gemfire</artifactId>
-      <version>6.5</version>
+      <version>6.5.1</version>
       <scope>compile</scope>
     </dependency>
     

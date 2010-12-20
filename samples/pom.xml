@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.springframework.data.gemfire.samples</groupId>
   <artifactId>samples</artifactId>
-  <version>1.0.0.RC1-SNAPSHOT</version>
+  <version>1.0.0.RC1</version>
   <name>Spring GemFire Samples</name>
   <packaging>pom</packaging>
   <url>http://www.springframework.org/spring-gemfire</url>
