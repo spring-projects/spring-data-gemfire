@@ -123,7 +123,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> imple
 	/**
 	 * Sets the pool used by this client.
 	 * 
-	 * @param poolName
+	 * @param pool
 	 */
 	public void setPool(Pool pool) {
 		Assert.notNull(pool, "pool cannot be null");
