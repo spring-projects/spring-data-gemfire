@@ -4,13 +4,13 @@
 	<parent>
 		<artifactId>samples</artifactId>
 		<groupId>org.springframework.data.gemfire.samples</groupId>
-		<version>1.0.0.RC1</version>
+		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
   <groupId>org.springframework.data.gemfire.samples</groupId>
   <artifactId>hello-world</artifactId>
-  <version>1.0.0.RC1</version>
+  <version>1.0.0-SNAPSHOT</version>
   <name>Spring GemFire - Hello World Sample</name>
   
   <description>A simple Hello World example illustrating the basic steps in configuring GemFire with Spring</description>
