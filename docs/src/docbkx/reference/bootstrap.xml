@@ -6,7 +6,7 @@
 
   <para>One of the first tasks when using GemFire and Spring is to configure
   the data grid through the IoC container. While this is <ulink
-  url="http://community.gemstone.com/display/gemfire/Integrating+GemFire+with+the+Spring+IoC+Container">possible</ulink>
+  url="http://community.gemstone.com/display/gemfire60/Integrating+GemFire+with+the+Spring+IoC+Container">possible</ulink>
   out of the box, the configuration tends to be verbose and only address basic
   cases. To address this problem, the Spring GemFire project provides several
   classes that enable the configuration of distributed caches or regions to
