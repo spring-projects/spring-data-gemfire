@@ -202,6 +202,29 @@ Note: Persistence for partitioned regions is supported only from GemFire 6.5 onw
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<xsd:attribute name="destroy" type="xsd:boolean" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the defined region should be destroyed or not at shutdown. Destroy cascades to all entries and subregions.
+After the destroy, this region object can not be used any more and any attempt to use this region object will get 
+RegionDestroyedException.
+
+Default is false, meaning that regions are not destroyed.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="close" type="xsd:boolean" default="true">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the defined region should be closed or not at shutdown. Close performs a local destroy but leaves behind the region
+disk files. Additionally it notifies the listeners and callbacks.
+
+Default is true, meaning the regions are closed.
+
+Note: Regions are automatically closed when cache closes.						
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>

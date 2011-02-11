@@ -14,7 +14,7 @@
 	
 	<gfe:replicated-region id="pub" name="publisher"/>
 	
-	<gfe:replicated-region id="complex">
+	<gfe:replicated-region id="complex" close="true" destroy="false">
 		<gfe:cache-listener>
 			<ref bean="c-listener"/>
 			<bean class="org.springframework.data.gemfire.SimpleCacheListener"/>

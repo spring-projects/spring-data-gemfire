@@ -13,9 +13,9 @@
 	
 	<gfe:client-region id="simple" pool-name="gemfire-pool"/>
 	
-	<gfe:client-region id="empty" pool-name="gemfire-pool" name="publisher" data-policy="EMPTY"/>
+	<gfe:client-region id="empty" pool-name="gemfire-pool" name="publisher" data-policy="EMPTY" close="true" destroy="false"/>
 	
-	<gfe:client-region id="complex" pool-name="gemfire-pool">
+	<gfe:client-region id="complex" pool-name="gemfire-pool" close="true" destroy="false">
 		<gfe:cache-listener>
 			<ref bean="c-listener"/>
 			<bean class="org.springframework.data.gemfire.SimpleCacheListener"/>
