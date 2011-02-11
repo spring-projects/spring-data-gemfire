@@ -24,6 +24,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
@@ -43,6 +44,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	protected final Log log = LogFactory.getLog(getClass());
 
 	private boolean destroy = false;
+	private boolean close = true;
 	private Resource snapshot;
 
 	private CacheListener<K, V> cacheListeners[];
@@ -56,11 +58,11 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
-		
+
 		postProcess(region);
 	}
 
-	
+
 	@Override
 	protected Region<K, V> lookupFallback(Cache cache, String regionName) throws Exception {
 		if (attributes != null)
@@ -97,7 +99,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (snapshot != null) {
 			reg.loadSnapshot(snapshot.getInputStream());
 		}
-		
+
 		return reg;
 	}
 
@@ -124,8 +126,19 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	public void destroy() throws Exception {
-		if (region != null && destroy) {
-			region.destroyRegion();
+		if (region != null) {
+			if (close) {
+				if (!region.getCache().isClosed()) {
+					try {
+						region.close();
+					} catch (CacheClosedException cce) {
+						// nothing to see folks, move on.
+					}
+				}
+			}
+			if (destroy) {
+				region.destroyRegion();
+			}
 		}
 		region = null;
 	}
@@ -134,10 +147,20 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Indicates whether the region referred by this factory bean,
 	 * will be destroyed on shutdown (default false).
 	 * 
-	 * @param destroy the destroy to set
+	 * @param destroy whether or not to destroy the region
 	 */
 	public void setDestroy(boolean destroy) {
 		this.destroy = destroy;
+	}
+
+	/**
+	 * Indicates whether the region referred by this factory bean,
+	 * will be closed on shutdown (default true).
+	 * 
+	 * @param close whether to close or not the region
+	 */
+	public void setClose(boolean close) {
+		this.close = close;
 	}
 
 	/**
