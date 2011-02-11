@@ -6,6 +6,7 @@ Changes in version 1.0.1 (2011-mm-dd)
 -------------------------------------
 General
 * Upgraded to GemFire 6.5.1.2
+* Fix networking issue with the sample on some Linux distributions (Ubuntu)
 
 Package org.springframework.data.gemfire
 * Introduced auto-close (configurable) on RegionFactoryBean

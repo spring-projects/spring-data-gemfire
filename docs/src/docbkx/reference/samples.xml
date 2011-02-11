@@ -26,6 +26,14 @@
     exits. Multiple instances can be started at the same time as they will
     work with each other sharing data without any user intervention.</para>
 
+    <note>
+      <title>Running under Linux</title>
+      <para>If you experience networking problems when starting GemFire or the samples,
+      try adding the following system property <literal>java.net.preferIPv4Stack=true</literal>
+      to the command line (insert <literal>-Djava.net.preferIPv4Stack=true</literal>).
+      For an alternative (global) fix especially on Ubuntu see
+      this <ulink url="https://jira.springsource.org/browse/SGF-28">link</ulink></para>
+    </note>
     <section id="samples:hello-world:start-stop">
       <title>Starting and stopping the sample</title>
 
