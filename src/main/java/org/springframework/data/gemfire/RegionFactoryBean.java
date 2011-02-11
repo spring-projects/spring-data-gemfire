@@ -136,7 +136,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 					}
 				}
 			}
-			if (destroy) {
+			else if (destroy) {
 				region.destroyRegion();
 			}
 		}
@@ -146,21 +146,33 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	/**
 	 * Indicates whether the region referred by this factory bean,
 	 * will be destroyed on shutdown (default false).
+	 * Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
 	 * 
 	 * @param destroy whether or not to destroy the region
+	 * 
+	 * @see #setClose(boolean)
 	 */
 	public void setDestroy(boolean destroy) {
 		this.destroy = destroy;
+
+		if (destroy) {
+			close = false;
+		}
 	}
 
 	/**
 	 * Indicates whether the region referred by this factory bean,
 	 * will be closed on shutdown (default true).
+	 * Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
 	 * 
 	 * @param close whether to close or not the region
+	 * @see #setDestroy(boolean)
 	 */
 	public void setClose(boolean close) {
 		this.close = close;
+		if (close) {
+			destroy = false;
+		}
 	}
 
 	/**

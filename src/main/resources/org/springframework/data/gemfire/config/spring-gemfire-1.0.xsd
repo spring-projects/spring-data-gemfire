@@ -210,6 +210,8 @@ After the destroy, this region object can not be used any more and any attempt t
 RegionDestroyedException.
 
 Default is false, meaning that regions are not destroyed.
+
+Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -221,7 +223,8 @@ disk files. Additionally it notifies the listeners and callbacks.
 
 Default is true, meaning the regions are closed.
 
-Note: Regions are automatically closed when cache closes.						
+Note: Regions are automatically closed when cache closes.
+Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.				
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
