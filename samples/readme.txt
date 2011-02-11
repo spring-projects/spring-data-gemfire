@@ -24,3 +24,9 @@ All demos require Maven 2.0.7+ and JDK 1.5+.
 Each module should be run from its top folder using maven:
 
 # mvn clean install
+
+RUNNING UNDER LINUX
+-------------------
+
+If you experience network problems under Linux, try passing "-Djava.net.preferIPv4Stack=true" to the command.
+See https://jira.springsource.org/browse/SGF-28 for more information.

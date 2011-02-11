@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   
-	<parent>
-		<artifactId>samples</artifactId>
-		<groupId>org.springframework.data.gemfire.samples</groupId>
-		<version>1.0.1.BUILD-SNAPSHOT</version>
-		<relativePath>../</relativePath>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>samples</artifactId>
+    <groupId>org.springframework.data.gemfire.samples</groupId>
+    <version>1.0.1.BUILD-SNAPSHOT</version>
+    <relativePath>../</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
   <groupId>org.springframework.data.gemfire.samples</groupId>
   <artifactId>hello-world</artifactId>
   <version>1.0.1.BUILD-SNAPSHOT</version>
@@ -16,28 +16,34 @@
   <description>A simple Hello World example illustrating the basic steps in configuring GemFire with Spring</description>
 
   <build>
-		<plugins>
-			<plugin>
+    <plugins>
+      <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-jar-plugin</artifactId>
-		        <version>2.1</version>
-		        <configuration>
-		          <archive>
-		            <manifestEntries>
-		              <Main-Class>org.springframework.data.gemfire.samples.helloworld.Main</Main-Class>
-		            </manifestEntries>
-		          </archive>
-		        </configuration>
-	    </plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1</version>
-				<configuration>
-        			<mainClass>org.springframework.data.gemfire.samples.helloworld.Main</mainClass>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.1</version>
+            <configuration>
+              <archive>
+                <manifestEntries>
+                  <Main-Class>org.springframework.data.gemfire.samples.helloworld.Main</Main-Class>
+                </manifestEntries>
+              </archive>
+            </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.1</version>
+        <configuration>
+              <mainClass>org.springframework.data.gemfire.samples.helloworld.Main</mainClass>
+              <systemProperties>
+                <systemProperty>
+                  <key>java.net.preferIPv4Stack</key>
+                  <value>true</value>
+                </systemProperty>
+              </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
    
 </project>
