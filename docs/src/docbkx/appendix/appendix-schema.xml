@@ -6,7 +6,7 @@
     <title>Spring GemFire Integration Schema</title>
 
 	<para>Spring GemFire Schema</para>	
-    <programlisting><xi:include href="../../../../src/main/resources/org/springframework/data/gemfire/config/spring-gemfire-1.0.xsd" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <programlisting language="xml"><xi:include href="../../../../src/main/resources/org/springframework/data/gemfire/config/spring-gemfire-1.0.xsd" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude">
        <xi:fallback>
     	<para><emphasis>FIXME: SGF SCHEMA LOCATION/NAME CHANGED</emphasis></para>
   	   </xi:fallback>
