@@ -215,8 +215,8 @@
 		<programlisting language="xml"><![CDATA[<!-- lookup for a region called 'orders' -->
 <gfe:lookup-region id="orders"/>]]></programlisting>
 
-		<note><para>If the region does not exist, an initialization exception will be thrown. See the section below
-		on how to configure GemFire regions.</para></note>
+		<note><para>If the region does not exist, an initialization exception will be thrown. For configuring new GemFire regions
+		proceed to the sections below for replicated, partitioned, client or advanced region configuration.</para></note>
 
 		<para>Note that in the previous examples, since no cache name was defined, the default SGF naming convention (<literal>gemfire-cache</literal>)
 		was used. If that is not an option, one can point to the cache bean through the <literal>cache-ref</literal> attribute:
