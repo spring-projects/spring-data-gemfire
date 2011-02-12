@@ -56,7 +56,7 @@ consider using a dedicated utility such as the <util:*/> namespace and its 'prop
 
 	<xsd:element name="transaction-manager">
 		<xsd:annotation>
-			<xsd:documentation source="org.springframework.data.gemfire.TransactionManager"><![CDATA[
+			<xsd:documentation source="org.springframework.data.gemfire.GemfireTransactionManager"><![CDATA[
 Defines a GemFire Transaction Manager instance for a single GemFire cache.
 			]]></xsd:documentation>
 		</xsd:annotation>
