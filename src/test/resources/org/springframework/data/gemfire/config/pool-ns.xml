@@ -4,8 +4,10 @@
 	xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
@@ -14,12 +16,13 @@
 	<gfe:cache />
 	
 	<gfe:pool>
-		<gfe:locator host="localhost" port="40403"/>
+		<gfe:locator host="localhost" port="${gfe.port}"/>
 	</gfe:pool>
 	
 	<gfe:pool id="complex" free-connection-timeout="6000" retry-attempts="30" ping-interval="5000" subscription-enabled="true">
-		<gfe:server host="localhost" port="40404"/>
+		<gfe:server host="localhost" port="${gfe.port.4}"/>
 		<gfe:server host="localhost" port="40405"/>
 	</gfe:pool>
 	
+	<context:property-placeholder location="classpath:port.properties"/>
 </beans>

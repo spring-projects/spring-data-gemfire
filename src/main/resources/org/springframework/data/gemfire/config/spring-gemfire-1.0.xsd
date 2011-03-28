@@ -743,10 +743,7 @@ The port number of the connection (between 1 and 65535 inclusive).
 				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
-				<xsd:restriction base="xsd:positiveInteger">
-					<xsd:minInclusive value="1"/>
-					<xsd:maxInclusive value="65535"/>
-				</xsd:restriction>
+				<xsd:restriction base="xsd:string"/>
 			</xsd:simpleType>			
 		</xsd:attribute>
 	</xsd:complexType>
