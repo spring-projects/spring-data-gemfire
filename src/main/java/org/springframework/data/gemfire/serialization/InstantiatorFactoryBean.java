@@ -45,6 +45,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 	private Collection<Instantiator> list;
 	private ClassLoader classLoader;
 	private boolean autoRegister = true;
+	private boolean distribute = false;
 
 	private Map<Class<? extends DataSerializable>, Integer> types;
 
@@ -67,7 +68,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 
 		if (autoRegister) {
 			for (Instantiator instantiator : list) {
-				Instantiator.register(instantiator);
+				Instantiator.register(instantiator, distribute);
 			}
 		}
 	}
@@ -115,5 +116,17 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 	 */
 	public void setAutoRegister(boolean autoRegister) {
 		this.autoRegister = autoRegister;
+	}
+
+
+	/**
+	 * Sets the distribution of the region of this {@link Instantiator} during the container startup.
+	 * Default is false, meaning the registration will not be distributed to other clients.
+	 * 
+	 * @see #register(Instantiator, boolean)
+	 * @param distribute whether the registration is distributable or not
+	 */
+	public void setDistribute(boolean distribute) {
+		this.distribute = distribute;
 	}
 }
