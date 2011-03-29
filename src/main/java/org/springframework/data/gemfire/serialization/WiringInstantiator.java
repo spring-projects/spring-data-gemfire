@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 the original author or authors.
+ * Copyright 2010-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ import com.gemstone.gemfire.Instantiator;
  * <p/>
  * By default, on initialization, the class will register itself as an {@link Instantiator} through 
  * {@link #register(Instantiator)}. This behaviour can be disabled through {@link #setAutoRegister(boolean)}. 
+ * Additionally, the instantiator registration is not distributed by default, to allow the application context
+ * to be reused. This can be changed through {@link #setDistribute(boolean)}.
  * 
  * @see org.springframework.beans.factory.wiring.BeanConfigurerSupport
  * @see org.springframework.beans.factory.wiring.BeanWiringInfoResolver
@@ -56,6 +58,7 @@ public class WiringInstantiator extends Instantiator implements BeanFactoryAware
 	private BeanConfigurerSupport configurer;
 	private BeanFactory beanFactory;
 	private boolean autoRegister = true;
+	private boolean distribute = false;
 
 	public WiringInstantiator(Instantiator instantiator) {
 		super(instantiator.getInstantiatedClass(), instantiator.getId());
@@ -78,7 +81,7 @@ public class WiringInstantiator extends Instantiator implements BeanFactoryAware
 		}
 
 		if (autoRegister) {
-			Instantiator.register(this);
+			Instantiator.register(this, distribute);
 		}
 	}
 
@@ -125,5 +128,16 @@ public class WiringInstantiator extends Instantiator implements BeanFactoryAware
 	 */
 	public void setAutoRegister(boolean autoRegister) {
 		this.autoRegister = autoRegister;
+	}
+
+	/**
+	 * Sets the distribution of the region of this {@link Instantiator} during the container startup.
+	 * Default is false, meaning the registration will not be distributed to other clients.
+	 * 
+	 * @see #register(Instantiator, boolean)
+	 * @param distribute whether the registration is distributable or not
+	 */
+	public void setDistribute(boolean distribute) {
+		this.distribute = distribute;
 	}
 }
