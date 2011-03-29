@@ -17,7 +17,6 @@
 package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.util.StringUtils;
@@ -28,14 +27,14 @@ import org.w3c.dom.Element;
  * 
  * @author Costin Leau
  */
-class LookupRegionParser extends AbstractSingleBeanDefinitionParser {
+class LookupRegionParser extends AliasReplacingBeanDefinitionParser {
 
 	protected Class<?> getBeanClass(Element element) {
 		return RegionLookupFactoryBean.class;
 	}
 
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");

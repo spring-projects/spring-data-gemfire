@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.config;
 import java.util.List;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.RegionFactoryBean;
@@ -35,14 +34,14 @@ import com.gemstone.gemfire.cache.Scope;
  * 
  * @author Costin Leau
  */
-class ReplicatedRegionParser extends AbstractSingleBeanDefinitionParser {
+class ReplicatedRegionParser extends AliasReplacingBeanDefinitionParser {
 
 	protected Class<?> getBeanClass(Element element) {
 		return RegionFactoryBean.class;
 	}
 
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
 		// set the data policy

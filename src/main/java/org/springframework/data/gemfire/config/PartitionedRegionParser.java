@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.PartitionAttributesFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
@@ -40,14 +39,14 @@ import com.gemstone.gemfire.cache.Region;
  * 
  * @author Costin Leau
  */
-class PartitionedRegionParser extends AbstractSingleBeanDefinitionParser {
+class PartitionedRegionParser extends AliasReplacingBeanDefinitionParser {
 
 	protected Class<?> getBeanClass(Element element) {
 		return RegionFactoryBean.class;
 	}
 
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
 		// set the data policy

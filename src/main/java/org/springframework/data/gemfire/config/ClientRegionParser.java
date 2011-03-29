@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
-import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
@@ -43,14 +42,14 @@ import com.gemstone.gemfire.cache.Scope;
  * 
  * @author Costin Leau
  */
-class ClientRegionParser extends AbstractSingleBeanDefinitionParser {
+class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 
 	protected Class<?> getBeanClass(Element element) {
 		return ClientRegionFactoryBean.class;
 	}
 
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
 		// set scope

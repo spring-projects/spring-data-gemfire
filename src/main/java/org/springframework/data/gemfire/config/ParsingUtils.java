@@ -18,9 +18,14 @@ package org.springframework.data.gemfire.config;
 
 import java.util.List;
 
+import org.springframework.beans.BeanMetadataAttribute;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
+import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
+import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -35,6 +40,8 @@ import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
  */
 abstract class ParsingUtils {
 
+	private static final String ALIASES_KEY = ParsingUtils.class.getName() + ":aliases";
+
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attrName, String propertyName) {
 		String attr = element.getAttribute(attrName);
 		if (StringUtils.hasText(attr)) {
@@ -47,6 +54,31 @@ abstract class ParsingUtils {
 		if (StringUtils.hasText(attr)) {
 			builder.addPropertyReference(propertyName, attr);
 		}
+	}
+
+	/**
+	 * Utility for parsing bean aliases. Normally parsed by AbstractBeanDefinitionParser however due to the attribute clash
+	 * (bean uses 'name' for aliases while region use it to indicate their name), the parser needs to handle this differently by
+	 * storing them as metadata which gets deleted just before registration.
+	 * 
+	 * @param element
+	 * @param builder
+	 */
+	static void addBeanAliasAsMetadata(Element element, BeanDefinitionBuilder builder) {
+		String[] aliases = new String[0];
+		String name = element.getAttributeNS(BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI, AbstractBeanDefinitionParser.NAME_ATTRIBUTE);
+
+		if (StringUtils.hasLength(name)) {
+			aliases = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(name));
+		}
+		BeanMetadataAttribute attr = new BeanMetadataAttribute(ALIASES_KEY, aliases);
+		attr.setSource(element);
+		builder.getRawBeanDefinition().addMetadataAttribute(attr);
+	}
+
+	static BeanDefinitionHolder replaceBeanAliasAsMetadata(BeanDefinitionHolder holder) {
+		BeanDefinition beanDefinition = holder.getBeanDefinition();
+		return new BeanDefinitionHolder(beanDefinition, holder.getBeanName(), (String[]) beanDefinition.removeAttribute(ALIASES_KEY));
 	}
 
 	/**

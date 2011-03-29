@@ -62,6 +62,11 @@ public class ClientRegionNamespaceTest {
 	}
 
 	@Test
+	public void testBeanNames() throws Exception {
+		assertTrue(ObjectUtils.isEmpty(context.getAliases("publisher")));
+	}
+
+	@Test
 	public void testPublishingClient() throws Exception {
 		assertTrue(context.containsBean("empty"));
 		ClientRegionFactoryBean fb = context.getBean("&empty", ClientRegionFactoryBean.class);

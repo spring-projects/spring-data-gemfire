@@ -85,6 +85,6 @@ public class ReplicatedRegionNamespaceTest {
 		assertTrue(context.containsBean("lookup"));
 		RegionLookupFactoryBean lfb = context.getBean("&lookup", RegionLookupFactoryBean.class);
 		assertEquals("existing", TestUtils.readField("name", lfb));
-		assertEquals(context.getBean("existing"), context.getBean("lookup"));
+		assertEquals(existing, context.getBean("lookup"));
 	}
 }
