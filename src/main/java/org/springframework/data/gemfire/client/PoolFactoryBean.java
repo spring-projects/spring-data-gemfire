@@ -20,14 +20,19 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -45,7 +50,8 @@ import com.gemstone.gemfire.cache.client.PoolManager;
  * 
  * @author Costin Leau
  */
-public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean, BeanNameAware {
+public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean, BeanNameAware,
+		BeanClassLoaderAware, BeanFactoryAware {
 
 	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
 
@@ -59,6 +65,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private String name;
 	private Collection<PoolConnection> locators;
 	private Collection<PoolConnection> servers;
+
+	private ClassLoader classLoader = getClass().getClassLoader();
+	private BeanFactory beanFactory;
+
 	private boolean keepAlive = false;
 
 	private int freeConnectionTimeout = PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT;
@@ -94,6 +104,20 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		if (!StringUtils.hasText(name)) {
 			Assert.hasText(beanName, "the pool name is required");
 			name = beanName;
+		}
+
+		// trigger the initialization of the cache
+		Class<?> cacheClass = null;
+		try {
+			// attempt to use the 6.5 interfaces
+			cacheClass = ClassUtils.resolveClassName("com.gemstone.gemfire.cache.GemFireCache", classLoader);
+		} catch (IllegalArgumentException ex) {
+			// still on 6.0
+			cacheClass = Cache.class;
+		}
+
+		if (beanFactory != null) {
+			beanFactory.getBean(cacheClass);
 		}
 
 		// first check the configured pools
@@ -309,5 +333,13 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	 */
 	public void setThreadLocalConnections(boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
+	}
+
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
+
+	public void setBeanFactory(BeanFactory beanFactory) {
+		this.beanFactory = beanFactory;
 	}
 }

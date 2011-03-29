@@ -13,11 +13,12 @@
 	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
 	<!-- as there can be only one cache per VM -->
 	
-	<gfe:cache />
 	
 	<gfe:pool>
 		<gfe:locator host="localhost" port="${gfe.port}"/>
 	</gfe:pool>
+	
+	<gfe:cache />
 	
 	<gfe:pool id="complex" free-connection-timeout="6000" retry-attempts="30" ping-interval="5000" subscription-enabled="true">
 		<gfe:server host="localhost" port="${gfe.port.4}"/>
