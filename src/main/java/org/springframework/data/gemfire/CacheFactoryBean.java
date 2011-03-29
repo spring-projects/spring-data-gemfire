@@ -55,7 +55,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
 		InitializingBean, FactoryBean<Cache>, PersistenceExceptionTranslator {
 
-	private static final Log log = LogFactory.getLog(CacheFactoryBean.class);
+	protected final Log log = LogFactory.getLog(getClass());
 
 	private Cache cache;
 	private Resource cacheXml;
@@ -88,13 +88,13 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			th.setContextClassLoader(beanClassLoader);
 			// first look for open caches
 			String msg = null;
-			try {
-				cache = CacheFactory.getInstance(system);
-				msg = "Retrieved existing";
-			} catch (CacheClosedException ex) {
-				// fall back to cache creation
-				cache = CacheFactory.create(system);
+			cache = fetchExistingCache(system);
+			if (cache == null) {
+				cache = createCache(system);
 				msg = "Created";
+			}
+			else {
+				msg = "Retrieved existing";
 			}
 
 			log.info(msg + " GemFire v." + CacheFactory.getVersion() + " Cache [" + cache.getName() + "]");
@@ -109,6 +109,18 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		} finally {
 			th.setContextClassLoader(oldTCCL);
 		}
+	}
+
+	protected Cache fetchExistingCache(DistributedSystem system) {
+		try {
+			return CacheFactory.getInstance(system);
+		} catch (CacheClosedException ex) {
+			return null;
+		}
+	}
+
+	protected Cache createCache(DistributedSystem system) throws Exception {
+		return CacheFactory.create(system);
 	}
 
 	private Properties mergeProperties() {
@@ -158,8 +170,16 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return true;
 	}
 
+	protected ClassLoader getBeanClassLoader() {
+		return beanClassLoader;
+	}
+
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
+	}
+
+	protected BeanFactory getBeanFactory() {
+		return beanFactory;
 	}
 
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
