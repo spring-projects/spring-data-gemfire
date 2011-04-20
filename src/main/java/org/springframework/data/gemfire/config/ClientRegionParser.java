@@ -89,6 +89,8 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 		// client attributes
 		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
+		ParsingUtils.parseStatistics(element, attrBuilder);
+
 		boolean overwriteDataPolicy = false;
 
 		overwriteDataPolicy |= ParsingUtils.parseEviction(parserContext, element, attrBuilder);

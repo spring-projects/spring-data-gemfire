@@ -12,7 +12,7 @@
 	
 	<gfe:partitioned-region id="simple" />
 	
-	<gfe:partitioned-region id="options" copies="1" total-buckets="4" name="redundant" close="true" destroy="false">
+	<gfe:partitioned-region id="options" copies="1" total-buckets="4" name="redundant" close="true" destroy="false" statistics="true">
 		<gfe:partition-resolver>
 			<bean class="org.springframework.data.gemfire.SimplePartitionResolver"/>
 		</gfe:partition-resolver>

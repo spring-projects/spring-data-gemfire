@@ -6,7 +6,7 @@
             targetNamespace="http://www.springframework.org/schema/gemfire"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="1.0">
+            version="1.0.1">
 
     <xsd:import namespace="http://www.springframework.org/schema/beans"/>
     <xsd:import namespace="http://www.springframework.org/schema/tool"/>
@@ -225,6 +225,14 @@ Default is true, meaning the regions are closed.
 
 Note: Regions are automatically closed when cache closes.
 Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.				
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="statistics" type="xsd:boolean" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether statistics are enabled or disabled for this region and its entries.
+Default is false, meaning statistics are disabled.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
