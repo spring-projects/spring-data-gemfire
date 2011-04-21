@@ -74,7 +74,7 @@ The name of the bean defining the GemFire cache (by default 'gemfire-cache').
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="copy-on-read" type="xsd:boolean" default="true" use="optional">
+			<xsd:attribute name="copy-on-read" type="xsd:string" default="true" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Indicates whether the cache returns direct references or copies of the objects (default) it manages.
@@ -188,7 +188,7 @@ Disk storage configuration for the defined region.
 						</xsd:annotation>
 					</xsd:element>							
 				</xsd:sequence>
-				<xsd:attribute name="persistent" type="xsd:boolean" default="false">
+				<xsd:attribute name="persistent" type="xsd:string" default="false">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether the defined region is persistent or not. GemFire ensures that all the data you put into a region that
@@ -202,7 +202,7 @@ Note: Persistence for partitioned regions is supported only from GemFire 6.5 onw
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="destroy" type="xsd:boolean" default="false">
+				<xsd:attribute name="destroy" type="xsd:string" default="false">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether the defined region should be destroyed or not at shutdown. Destroy cascades to all entries and subregions.
@@ -215,7 +215,7 @@ Note: destroy and close are mutually exclusive. Enabling one will automatically 
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="close" type="xsd:boolean" default="true">
+				<xsd:attribute name="close" type="xsd:string" default="true">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether the defined region should be closed or not at shutdown. Close performs a local destroy but leaves behind the region
@@ -228,7 +228,7 @@ Note: destroy and close are mutually exclusive. Enabling one will automatically 
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="statistics" type="xsd:boolean" default="false">
+				<xsd:attribute name="statistics" type="xsd:string" default="false">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether statistics are enabled or disabled for this region and its entries.
@@ -404,7 +404,7 @@ The name of the partitioned region with which this newly created partitioned reg
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="local-max-memory" type="xsd:positiveInteger" use="optional">
+					<xsd:attribute name="local-max-memory" type="xsd:string" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The maximum amount of memory, in megabytes, to be used by the region in this process. If not set, a default of 90%
@@ -412,7 +412,7 @@ of available heap is used.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="total-max-memory" type="xsd:positiveInteger" use="optional">
+					<xsd:attribute name="total-max-memory" type="xsd:string" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The maximum amount of memory, in megabytes, to be used by the region in all process.
@@ -421,7 +421,7 @@ Note: This setting must be the same in all processes using the region.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="total-buckets" type="xsd:positiveInteger" use="optional">
+					<xsd:attribute name="total-buckets" type="xsd:string" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The total number of hash buckets to be used by the region in all processes. 
@@ -436,7 +436,7 @@ Note: This setting must be the same in all processes using the region.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="recovery-delay" type="xsd:long" default="-1" use="optional">
+					<xsd:attribute name="recovery-delay" type="xsd:string" default="-1" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes.
@@ -444,7 +444,7 @@ The delay in milliseconds that existing members will wait before satisfying redu
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="startup-recovery-delay" type="xsd:long" default="-1" use="optional">
+					<xsd:attribute name="startup-recovery-delay" type="xsd:string" default="-1" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members
@@ -499,7 +499,7 @@ Considers the amount of heap used (through the GemFire resource manager) before 
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="threshold" type="xsd:long" use="required">
+		<xsd:attribute name="threshold" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The threshold (or limit) against which the eviction algorithm runs. Once the threashold is reached, eviction is
@@ -544,7 +544,7 @@ Note: the directory must already exist.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="max-size" type="xsd:int" default="10240">
+					<xsd:attribute name="max-size" type="xsd:string" default="10240">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The maximum size (in megabytes) of data stored in each directory. Default is 10240 MB (10 gigabytes). 
@@ -554,7 +554,7 @@ The maximum size (in megabytes) of data stored in each directory. Default is 102
 				</xsd:complexType>
 			</xsd:element>
 		</xsd:sequence>
-		<xsd:attribute name="synchronous-write" type="xsd:boolean" default="false">
+		<xsd:attribute name="synchronous-write" type="xsd:string" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether the writing to the disk si synchronous or not. Default is false, meaning asynchronous writing.
@@ -562,7 +562,7 @@ Indicates whether the writing to the disk si synchronous or not. Default is fals
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>		
-		<xsd:attribute name="auto-compact" type="xsd:boolean" default="true">
+		<xsd:attribute name="auto-compact" type="xsd:string" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether or not the operation logs are automatically compacted or not. Default is true.
@@ -589,7 +589,7 @@ by entry destroys, entry updates, and region destroys.
 			</xsd:simpleType>
 		</xsd:attribute>
 		 -->
-		<xsd:attribute name="max-oplog-size" type="xsd:long" default="1024">
+		<xsd:attribute name="max-oplog-size" type="xsd:string" default="1024">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this 
@@ -598,7 +598,7 @@ amount of file space will be immediately reserved.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="time-interval" type="xsd:long" default="1">
+		<xsd:attribute name="time-interval" type="xsd:string" default="1">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the number of milliseconds that can elapse before unwritten data is written to disk. 
@@ -607,7 +607,7 @@ It is considered only for asynchronous writing.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="queue-size" type="xsd:long" default="0">
+		<xsd:attribute name="queue-size" type="xsd:string" default="0">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been 
@@ -757,7 +757,7 @@ The port number of the connection (between 1 and 65535 inclusive).
 	</xsd:complexType>
 
 	<xsd:complexType name="interestType" abstract="true">
-		<xsd:attribute name="durable"  type="xsd:boolean" default="false" use="optional">
+		<xsd:attribute name="durable"  type="xsd:string" default="false" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether or not the registered interest is durable or not. Default is false.
@@ -808,22 +808,22 @@ Note that in order to instantiate a pool, a GemFire cache needs to be already st
 The name of the pool definition (by default "gemfire-pool").]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="free-connection-timeout" use="optional" type="xsd:int"/>
-			<xsd:attribute name="idle-timeout" use="optional" type="xsd:long"/>
-			<xsd:attribute name="load-conditioning-interval" use="optional" type="xsd:int"/>
-			<xsd:attribute name="max-connections" use="optional" type="xsd:int"/>
-			<xsd:attribute name="min-connections" use="optional" type="xsd:int"/>
-			<xsd:attribute name="ping-interval" use="optional" type="xsd:long"/>
-			<xsd:attribute name="read-timeout" use="optional" type="xsd:int"/>
-			<xsd:attribute name="retry-attempts" use="optional" type="xsd:int"/>
+			<xsd:attribute name="free-connection-timeout" use="optional" type="xsd:string"/>
+			<xsd:attribute name="idle-timeout" use="optional" type="xsd:string"/>
+			<xsd:attribute name="load-conditioning-interval" use="optional" type="xsd:string"/>
+			<xsd:attribute name="max-connections" use="optional" type="xsd:string"/>
+			<xsd:attribute name="min-connections" use="optional" type="xsd:string"/>
+			<xsd:attribute name="ping-interval" use="optional" type="xsd:string"/>
+			<xsd:attribute name="read-timeout" use="optional" type="xsd:string"/>
+			<xsd:attribute name="retry-attempts" use="optional" type="xsd:string"/>
 			<xsd:attribute name="server-group" use="optional" type="xsd:string"/>
-			<xsd:attribute name="socket-buffer-size" use="optional" type="xsd:int"/>
-			<xsd:attribute name="statistic-interval" use="optional" type="xsd:int"/>
-			<xsd:attribute name="subscription-ack-interval" use="optional" type="xsd:int"/>
-			<xsd:attribute name="subscription-enabled" use="optional" type="xsd:boolean"/>
-			<xsd:attribute name="subscription-message-tracking-timeout" use="optional" type="xsd:int"/>
-			<xsd:attribute name="subscription-redundancy" use="optional" type="xsd:int"/>
-			<xsd:attribute name="thread-local-connections" use="optional" type="xsd:boolean"/>
+			<xsd:attribute name="socket-buffer-size" use="optional" type="xsd:string"/>
+			<xsd:attribute name="statistic-interval" use="optional" type="xsd:string"/>
+			<xsd:attribute name="subscription-ack-interval" use="optional" type="xsd:string"/>
+			<xsd:attribute name="subscription-enabled" use="optional" type="xsd:string"/>
+			<xsd:attribute name="subscription-message-tracking-timeout" use="optional" type="xsd:string"/>
+			<xsd:attribute name="subscription-redundancy" use="optional" type="xsd:string"/>
+			<xsd:attribute name="thread-local-connections" use="optional" type="xsd:string"/>
 		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>
