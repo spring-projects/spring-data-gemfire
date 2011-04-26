@@ -26,14 +26,12 @@ import com.gemstone.gemfire.cache.Region;
  * Convenient super class for GemFire data access objects. Intended for
  * GemfireTemplate usage. 
  * 
- * <p>Requires an EntityManagerFactory or EntityManager to be set,
- * providing a JpaTemplate based on it to subclasses. Can alternatively
- * be initialized directly via a JpaTemplate, to reuse the latter's
- * settings such as the EntityManagerFactory, JpaDialect, flush mode, etc.
+ * <p>Requires a Region to be set, providing a GemfireTemplate based on it to subclasses. 
+ * Can alternatively be initialized directly via a GemfireTemplate, to reuse the latter's
+ * settings.
  *
- * <p>This class will create its own GemfireTemplate if an EntityManagerFactory
- * or EntityManager reference is passed in. A custom JpaTemplate instance
- * can be used through overriding <code>createJpaTemplate</code>.
+ * <p>This class will create its own GemfireTemplate if an Region reference is passed in. 
+ * A custom GemfireTemplate instance can be used through overriding <code>createGemfireTemplate</code>.
  * 
  * @author Costin Leau
  */

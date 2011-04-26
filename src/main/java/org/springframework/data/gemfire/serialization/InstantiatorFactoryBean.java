@@ -123,7 +123,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 	 * Sets the distribution of the region of this {@link Instantiator} during the container startup.
 	 * Default is false, meaning the registration will not be distributed to other clients.
 	 * 
-	 * @see #register(Instantiator, boolean)
+	 * @see Instantiator#register(Instantiator, boolean)
 	 * @param distribute whether the registration is distributable or not
 	 */
 	public void setDistribute(boolean distribute) {
