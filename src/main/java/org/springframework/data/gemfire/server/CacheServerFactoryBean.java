@@ -15,21 +15,49 @@
  */
 package org.springframework.data.gemfire.server;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
+
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.util.Assert;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.InterestRegistrationListener;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
  * @author Costin Leau
  */
 public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
-		InitializingBean, DisposableBean {
+		InitializingBean, DisposableBean, SmartLifecycle {
 
+	private boolean autoStartup = true;
+
+	private int port = CacheServer.DEFAULT_PORT;
+	private int maxConnections = CacheServer.DEFAULT_MAX_CONNECTIONS;
+	private int maxThreads = CacheServer.DEFAULT_MAX_THREADS;
+	private boolean notifyBySubscription = CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION;
+	private int socketBufferSize = CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
+	private int maxTimeBetweenPings = CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
+	private int maxMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
+	private int messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
+	private String[] serverGroups = CacheServer.DEFAULT_GROUPS;
+	private ServerLoadProbe serverLoadProbe = CacheServer.DEFAULT_LOAD_PROBE;
+	private long loadPollInterval = CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
+	private String bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
+	private String hostNameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
+	private Set<InterestRegistrationListener> listeners = Collections.emptySet();
+	
+	private Cache cache;
 	private CacheServer cacheServer;
 
-	public CacheServer getObject(){
+	public CacheServer getObject() {
 		return cacheServer;
 	}
 
@@ -42,9 +70,128 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 	}
 
 	public void afterPropertiesSet() {
-	}
+		Assert.notNull(cache, "cache is required");
+		
+		cacheServer = cache.addCacheServer();
+		cacheServer.setBindAddress(bindAddress);
+		cacheServer.setGroups(serverGroups);
+		cacheServer.setHostnameForClients(hostNameForClients);
+		cacheServer.setLoadPollInterval(loadPollInterval);
+		cacheServer.setLoadProbe(serverLoadProbe);
+		cacheServer.setMaxConnections(maxConnections);
+		cacheServer.setMaximumMessageCount(maxMessageCount);
+		cacheServer.setMaximumTimeBetweenPings(maxTimeBetweenPings);
+		cacheServer.setMaxThreads(maxThreads);
+		cacheServer.setMessageTimeToLive(messageTimeToLive);
+		cacheServer.setNotifyBySubscription(notifyBySubscription);
+		cacheServer.setPort(port);
+		cacheServer.setSocketBufferSize(socketBufferSize);
 	
-	public void destroy() {
+		for (InterestRegistrationListener listener : listeners) {
+			cacheServer.registerInterestRegistrationListener(listener);
+		} 
+		
+		start();
 	}
 
+	public void destroy() {
+		stop();
+		cacheServer = null;
+	}
+
+	public boolean isAutoStartup() {
+		return autoStartup;
+	}
+
+	public void stop(Runnable callback) {
+		stop();
+		callback.run();
+	}
+
+	public int getPhase() {
+		// start the latest
+		return Integer.MAX_VALUE;
+	}
+
+	public boolean isRunning() {
+		return (cacheServer != null ? cacheServer.isRunning() : false);
+	}
+
+	public void start() {
+		try {
+			cacheServer.start();
+		} catch (IOException ex) {
+			throw new BeanInitializationException("Cannot start cache server", ex);
+		}
+	}
+
+	public void stop() {
+		if (cacheServer != null){
+			cacheServer.stop();
+		}
+	}
+
+	public void setAutoStartup(boolean autoStartup) {
+		this.autoStartup = autoStartup;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public void setMaxConnections(int maxConnections) {
+		this.maxConnections = maxConnections;
+	}
+
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
+	}
+
+	public void setNotifyBySubscription(boolean notifyBySubscription) {
+		this.notifyBySubscription = notifyBySubscription;
+	}
+
+	public void setSocketBufferSize(int socketBufferSize) {
+		this.socketBufferSize = socketBufferSize;
+	}
+
+	public void setMaxTimeBetweenPings(int maxTimeBetweenPings) {
+		this.maxTimeBetweenPings = maxTimeBetweenPings;
+	}
+
+	public void setMaxMessageCount(int maxMessageCount) {
+		this.maxMessageCount = maxMessageCount;
+	}
+
+	public void setMessageTimeToLive(int messageTimeToLive) {
+		this.messageTimeToLive = messageTimeToLive;
+	}
+
+	public void setServerGroups(String[] serverGroups) {
+		this.serverGroups = serverGroups;
+	}
+
+	public void setServerLoadProbe(ServerLoadProbe serverLoadProbe) {
+		this.serverLoadProbe = serverLoadProbe;
+	}
+
+	public void setLoadPollInterval(long loadPollInterval) {
+		this.loadPollInterval = loadPollInterval;
+	}
+
+	public void setBindAddress(String bindAddress) {
+		this.bindAddress = bindAddress;
+	}
+
+	public void setHostNameForClients(String hostNameForClients) {
+		this.hostNameForClients = hostNameForClients;
+	}
+
+	public void setListeners(Set<InterestRegistrationListener> listeners) {
+		this.listeners = listeners;
+	}
+
+	public void setCache(Cache cache) {
+		this.cache = cache;
+	}
 }
