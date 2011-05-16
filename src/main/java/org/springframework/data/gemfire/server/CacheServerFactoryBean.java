@@ -24,11 +24,13 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.InterestRegistrationListener;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
@@ -36,8 +38,8 @@ import com.gemstone.gemfire.cache.server.ServerLoadProbe;
  * 
  * @author Costin Leau
  */
-public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
-		InitializingBean, DisposableBean, SmartLifecycle {
+public class CacheServerFactoryBean implements FactoryBean<CacheServer>, InitializingBean, DisposableBean,
+		SmartLifecycle {
 
 	private boolean autoStartup = true;
 
@@ -55,9 +57,14 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 	private String bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
 	private String hostNameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
 	private Set<InterestRegistrationListener> listeners = Collections.emptySet();
-	
+
+	private SubscriptionEvictionPolicy evictionPolicy = SubscriptionEvictionPolicy.valueOf(ClientSubscriptionConfig.DEFAULT_EVICTION_POLICY.toUpperCase());
+	private int subscriptionCapacity = ClientSubscriptionConfig.DEFAULT_CAPACITY;
+	private Resource subscriptionDiskStore;
+
 	private Cache cache;
 	private CacheServer cacheServer;
+
 
 	public CacheServer getObject() {
 		return cacheServer;
@@ -71,9 +78,9 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 		return true;
 	}
 
-	public void afterPropertiesSet() {
+	public void afterPropertiesSet() throws IOException {
 		Assert.notNull(cache, "cache is required");
-		
+
 		cacheServer = cache.addCacheServer();
 		cacheServer.setBindAddress(bindAddress);
 		cacheServer.setGroups(serverGroups);
@@ -88,11 +95,17 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 		cacheServer.setNotifyBySubscription(notifyBySubscription);
 		cacheServer.setPort(port);
 		cacheServer.setSocketBufferSize(socketBufferSize);
-	
+
 		for (InterestRegistrationListener listener : listeners) {
 			cacheServer.registerInterestRegistrationListener(listener);
-		} 
-		
+		}
+
+		// client config
+		ClientSubscriptionConfig config = cacheServer.getClientSubscriptionConfig();
+		config.setCapacity(subscriptionCapacity);
+		config.setEvictionPolicy(evictionPolicy.name().toLowerCase());
+		config.setDiskStoreName(subscriptionDiskStore.getFile().getCanonicalPath());
+
 		start();
 	}
 
@@ -128,7 +141,7 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 	}
 
 	public void stop() {
-		if (cacheServer != null){
+		if (cacheServer != null) {
 			cacheServer.stop();
 		}
 	}
@@ -195,5 +208,23 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 
 	public void setCache(Cache cache) {
 		this.cache = cache;
+	}
+
+	/**
+	 * @param evictionPolicy the evictionPolicy to set
+	 */
+	public void setSubscriptionEvictionPolicy(SubscriptionEvictionPolicy evictionPolicy) {
+		this.evictionPolicy = evictionPolicy;
+	}
+
+	/**
+	 * @param subscriptionCapacity the subscriptionCapacity to set
+	 */
+	public void setSubscriptionCapacity(int subscriptionCapacity) {
+		this.subscriptionCapacity = subscriptionCapacity;
+	}
+
+	public void setSubscriptionDiskStore(Resource resource) {
+		this.subscriptionDiskStore = resource;
 	}
 }

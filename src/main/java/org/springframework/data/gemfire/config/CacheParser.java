@@ -32,6 +32,7 @@ import org.w3c.dom.Element;
  */
 class CacheParser extends AbstractSingleBeanDefinitionParser {
 
+	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return CacheFactoryBean.class;
 	}
