@@ -64,6 +64,8 @@ class ReplicatedRegionParser extends AliasReplacingBeanDefinitionParser {
 		// add attributes
 		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
+		ParsingUtils.parseStatistics(element, attrBuilder);
+
 		attr = element.getAttribute("publisher");
 		if (StringUtils.hasText(attr)) {
 			attrBuilder.addPropertyValue("publisher", Boolean.valueOf(attr));

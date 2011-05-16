@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.springframework.data.gemfire</groupId>
   <artifactId>spring-gemfire</artifactId>
-  <version>1.0.1.BUILD-SNAPSHOT</version>
+  <version>1.0.2.BUILD-SNAPSHOT</version>
   <name>Spring GemFire Documentation</name>
    
   <build>

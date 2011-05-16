@@ -6,7 +6,7 @@
             targetNamespace="http://www.springframework.org/schema/gemfire"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="1.0.1">
+            version="1.1">
 
     <xsd:import namespace="http://www.springframework.org/schema/beans"/>
     <xsd:import namespace="http://www.springframework.org/schema/tool"/>
@@ -824,6 +824,83 @@ The name of the pool definition (by default "gemfire-pool").]]></xsd:documentati
 			<xsd:attribute name="subscription-message-tracking-timeout" use="optional" type="xsd:string"/>
 			<xsd:attribute name="subscription-redundancy" use="optional" type="xsd:string"/>
 			<xsd:attribute name="thread-local-connections" use="optional" type="xsd:string"/>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="cache-server">
+		<xsd:annotation>
+			<xsd:documentation
+				source="org.springframework.data.gemfire.server.CacheServerFactoryBean"><![CDATA[
+Defines a Cache Server for feeding data to remote gemfire clients to a server GemFire Cache Servers.
+Note: In order to instantiate a cacheserver, a GemFire cache needs to be avaialble in the VM.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.server.CacheServer" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="0" maxOccurs="1">
+				<xsd:element name="subscription-config" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The client subscription configuration that is used to control a clients use of server resources towards notification queues.				
+				]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="eviction-type" use="optional" default="NONE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:enumeration value="NONE"/>
+									<xsd:enumeration value="MEM"/>
+									<xsd:enumeration value="ENTRY"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:attribute>
+						<xsd:attribute name="capacity" use="optional" default="1" type="xsd:string"/>
+						<xsd:attribute name="disk-store" use="optional" default="." type="xsd:string"/>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="id" type="xsd:ID" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The name of the cache server definition (by default "gemfire-server").]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="auto-startup" use="optional" type="xsd:string" default="true" />
+			<xsd:attribute name="bind-address" use="optional" type="xsd:string" />
+			<xsd:attribute name="port" use="optional" type="xsd:string" default="40404">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The port number of the server.]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="host-name-for-clients" use="optional" type="xsd:string" />
+			<xsd:attribute name="load-poll-interval" use="optional" type="xsd:string" default="5000" />
+			<xsd:attribute name="max-connections" use="optional" type="xsd:string" default="800" />
+			<xsd:attribute name="max-threads" use="optional" type="xsd:string" default="0" />
+			<xsd:attribute name="max-message-count" use="optional" type="xsd:string" default="230000" />
+			<xsd:attribute name="max-time-between-pings" use="optional"	type="xsd:string" default="60000" />
+			<xsd:attribute name="message-time-to-live" use="optional" type="xsd:string" default="180" />
+			<xsd:attribute name="socket-buffer-size" use="optional"	type="xsd:string" default="32768" />
+			<xsd:attribute name="notify-by-subscription" use="optional"	type="xsd:boolean" default="true" />
+			<xsd:attribute name="groups" use="optional"	type="xsd:string" default="">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The server groups that this server will be a member of given as a comma separated values list.				
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="load-probe-ref" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The name of the bean defining the CacheServer Load Probe.]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="cache-ref" type="xsd:string" default="gemfire-cache" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The name of the bean defining the GemFire cache (by default 'gemfire-cache').]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>

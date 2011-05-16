@@ -217,4 +217,9 @@ abstract class ParsingUtils {
 		attrBuilder.addPropertyValue("evictionAttributes", evictionDefBuilder.getBeanDefinition());
 		return true;
 	}
+
+
+	static void parseStatistics(Element element, BeanDefinitionBuilder attrBuilder) {
+		setPropertyValue(element, attrBuilder, "statistics", "statisticsEnabled");
+	}
 }

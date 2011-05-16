@@ -61,6 +61,8 @@ public class PartitionedRegionNamespaceTest {
 		assertEquals("redundant", TestUtils.readField("name", fb));
 
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		assertTrue(attrs.getStatisticsEnabled());
+
 		PartitionAttributes pAttr = attrs.getPartitionAttributes();
 
 		assertEquals(1, pAttr.getRedundantCopies());
