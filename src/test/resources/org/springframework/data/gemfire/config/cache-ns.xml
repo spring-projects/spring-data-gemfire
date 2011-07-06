@@ -21,4 +21,6 @@
 	<util:properties id="props">
 		<prop key="disable-tcp">false</prop>
 	</util:properties>
+	
+	<gfe:cache id="no-bl" use-bean-factory-locator="false" />
 </beans>

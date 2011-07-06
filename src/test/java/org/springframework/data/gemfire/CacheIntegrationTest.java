@@ -61,4 +61,5 @@ public class CacheIntegrationTest extends RecreatingContextTest{
 	public void testCacheWithXml() throws Exception {
 		Cache cache = ctx.getBean("cache-with-xml", Cache.class);
 	}
+
 }

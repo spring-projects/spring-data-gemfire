@@ -62,17 +62,21 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	private Properties properties;
 	private DistributedSystem system;
 	private ClassLoader beanClassLoader;
-	private GemfireBeanFactoryLocator factoryLocator = new GemfireBeanFactoryLocator();
+	private GemfireBeanFactoryLocator factoryLocator;
 
 	private BeanFactory beanFactory;
 	private String beanName;
+	private boolean useBeanFactoryLocator = true;
+
 
 	public void afterPropertiesSet() throws Exception {
 		// initialize locator
-		factoryLocator.setBeanFactory(beanFactory);
-		factoryLocator.setBeanName(beanName);
-		factoryLocator.afterPropertiesSet();
-
+		if (useBeanFactoryLocator) {
+			factoryLocator = new GemfireBeanFactoryLocator();
+			factoryLocator.setBeanFactory(beanFactory);
+			factoryLocator.setBeanName(beanName);
+			factoryLocator.afterPropertiesSet();
+		}
 		Properties cfgProps = mergeProperties();
 		system = DistributedSystem.connect(cfgProps);
 
@@ -128,7 +132,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 		system = null;
 
-		factoryLocator.destroy();
+		if (factoryLocator != null) {
+			factoryLocator.destroy();
+			factoryLocator = null;
+		}
 	}
 
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
@@ -186,5 +193,16 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setCacheXml(Resource cacheXml) {
 		this.cacheXml = cacheXml;
+	}
+
+	/**
+	 * Indicates whether a bean factory locator is enabled (default) for this cache definition or not. The locator stores
+	 * the enclosing bean factory reference to allow auto-wiring of Spring beans into GemFire managed classes. Usually disabled
+	 * when the same cache is used in multiple application context/bean factories inside the same VM.
+	 * 
+	 * @param usage true if the bean factory locator is used underneath or not
+	 */
+	public void setUseBeanFactoryLocator(boolean usage) {
+		this.useBeanFactoryLocator = usage;
 	}
 }

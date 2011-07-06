@@ -51,6 +51,15 @@ consider using a dedicated utility such as the <util:*/> namespace and its 'prop
 							]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attribute name="use-bean-factory-locator" type="xsd:string" default="true" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates whether a bean factory locator is enabled (default) for this cache definition or not. The locator stores
+the enclosing bean factory reference to allow auto-wiring of Spring beans into GemFire managed classes. Usually disabled
+when the same cache is used in multiple application context/bean factories inside the same VM.
+							]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 

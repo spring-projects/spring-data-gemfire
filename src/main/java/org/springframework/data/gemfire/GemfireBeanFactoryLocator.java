@@ -112,7 +112,8 @@ public class GemfireBeanFactoryLocator implements BeanFactoryLocator, BeanFactor
 				if (log.isDebugEnabled())
 					log.debug("adding key=" + name + " w/ reference=" + beanFactory);
 
-				if (beanFactories.containsKey(name) || beanFactories.putIfAbsent(name, beanFactory) != null) {
+				if (beanFactories.containsKey(name) && !beanFactory.equals(beanFactories.get(name))
+						|| beanFactories.putIfAbsent(name, beanFactory) != null) {
 					throw new IllegalArgumentException("a beanFactoryReference already exists for key " + factoryName);
 				}
 			}
@@ -120,10 +121,11 @@ public class GemfireBeanFactoryLocator implements BeanFactoryLocator, BeanFactor
 	}
 
 	public void destroy() {
-		for (String name : names) {
-			beanFactories.remove(name);
+		if (names != null) {
+			for (String name : names) {
+				beanFactories.remove(name);
+			}
 		}
-
 		if (beanFactory == defaultFactory) {
 			synchronized (GemfireBeanFactoryLocator.class) {
 				defaultFactory = null;
