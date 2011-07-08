@@ -31,6 +31,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
@@ -38,6 +40,8 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.pdx.PdxSerializable;
+import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
  * Factory used for configuring a Gemfire Cache manager. Allows either retrieval of an existing, opened cache 
@@ -55,19 +59,41 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
 		InitializingBean, FactoryBean<Cache>, PersistenceExceptionTranslator {
 
+	private class PdxOptions implements Runnable {
+
+		private CacheFactory factory;
+
+		PdxOptions(CacheFactory factory) {
+			this.factory = factory;
+		}
+
+		public void run() {
+			Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
+			factory.setPdxSerializer((PdxSerializer) pdxSerializer);
+			factory.setPdxDiskStore(pdxDiskStoreName);
+			factory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
+			factory.setPdxPersistent(pdxPersistent);
+			factory.setPdxReadSerialized(pdxReadSerialized);
+		}
+	}
+
 	private static final Log log = LogFactory.getLog(CacheFactoryBean.class);
 
 	private Cache cache;
 	private Resource cacheXml;
 	private Properties properties;
-	private DistributedSystem system;
 	private ClassLoader beanClassLoader;
 	private GemfireBeanFactoryLocator factoryLocator;
 
 	private BeanFactory beanFactory;
 	private String beanName;
 	private boolean useBeanFactoryLocator = true;
-
+	// PDX options
+	private Object pdxSerializer;
+	private Boolean pdxPersistent;
+	private Boolean pdxReadSerialized;
+	private Boolean pdxIgnoreUnreadFields;
+	private String pdxDiskStoreName;
 
 	public void afterPropertiesSet() throws Exception {
 		// initialize locator
@@ -78,11 +104,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			factoryLocator.afterPropertiesSet();
 		}
 		Properties cfgProps = mergeProperties();
-		system = DistributedSystem.connect(cfgProps);
-
-		DistributedMember member = system.getDistributedMember();
-		log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@" + member.getHost()
-				+ "]");
+		CacheFactory factory = new CacheFactory(cfgProps);
 
 		// use the bean class loader to load Declarable classes
 		Thread th = Thread.currentThread();
@@ -93,13 +115,27 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			// first look for open caches
 			String msg = null;
 			try {
-				cache = CacheFactory.getInstance(system);
+				cache = CacheFactory.getAnyInstance();
 				msg = "Retrieved existing";
 			} catch (CacheClosedException ex) {
+				// GemFire 6.6 specific options
+				if (pdxSerializer != null || pdxPersistent != null || pdxReadSerialized != null
+						|| pdxIgnoreUnreadFields != null || pdxDiskStoreName != null) {
+					Assert.isTrue(ClassUtils.isPresent("com.gemstone.gemfire.pdx.PdxSerializer", beanClassLoader),
+							"Cannot set PDX options since GemFire 6.6 not detected");
+					new PdxOptions(factory).run();
+				}
+
 				// fall back to cache creation
-				cache = CacheFactory.create(system);
+				cache = factory.create();
 				msg = "Created";
 			}
+
+			DistributedSystem system = cache.getDistributedSystem();
+			DistributedMember member = system.getDistributedMember();
+			log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@"
+					+ member.getHost() + "]");
+
 
 			log.info(msg + " GemFire v." + CacheFactory.getVersion() + " Cache [" + cache.getName() + "]");
 
@@ -124,13 +160,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		if (cache != null && !cache.isClosed()) {
 			cache.close();
 		}
-		cache = null;
 
-		if (system != null && system.isConnected()) {
-			DistributedSystem.releaseThreadsSockets();
-			system.disconnect();
-		}
-		system = null;
+		cache = null;
 
 		if (factoryLocator != null) {
 			factoryLocator.destroy();
@@ -204,5 +235,51 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setUseBeanFactoryLocator(boolean usage) {
 		this.useBeanFactoryLocator = usage;
+	}
+
+	/**
+	 * Sets the {@link PdxSerializable} for this cache. Applicable on GemFire 6.6 or higher.
+	 * The argument is of type object for compatibility with GemFire 6.5.
+	 * 
+	 * @param serializer pdx serializer configured for this cache.
+	 */
+	public void setPdxSerializer(Object serializer) {
+		this.pdxSerializer = serializer;
+	}
+
+	/**
+	 * Sets the object preference to PdxInstance type. Applicable on GemFire 6.6 or higher.
+	 *  
+	 * @param pdxPersistent the pdxPersistent to set
+	 */
+	public void setPdxPersistent(Boolean pdxPersistent) {
+		this.pdxPersistent = pdxPersistent;
+	}
+
+	/**
+	 * Controls whether the type metadata for PDX objects is persisted to disk. Applicable on GemFire 6.6 or higher.
+	 * 
+	 * @param pdxReadSerialized the pdxReadSerialized to set
+	 */
+	public void setPdxReadSerialized(Boolean pdxReadSerialized) {
+		this.pdxReadSerialized = pdxReadSerialized;
+	}
+
+	/**
+	 * Controls whether pdx ignores fields that were unread during deserialization. Applicable on GemFire 6.6 or higher.
+	 * 
+	 * @param pdxIgnoreUnreadFields the pdxIgnoreUnreadFields to set
+	 */
+	public void setPdxIgnoreUnreadFields(Boolean pdxIgnoreUnreadFields) {
+		this.pdxIgnoreUnreadFields = pdxIgnoreUnreadFields;
+	}
+
+	/**
+	 * Set the disk store that is used for PDX meta data. Applicable on GemFire 6.6 or higher.
+	 *  
+	 * @param pdxDiskStoreName the pdxDiskStoreName to set
+	 */
+	public void setPdxDiskStoreName(String pdxDiskStoreName) {
+		this.pdxDiskStoreName = pdxDiskStoreName;
 	}
 }

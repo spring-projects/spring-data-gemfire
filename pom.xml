@@ -115,7 +115,7 @@ limitations under the License.
     <dependency>
       <groupId>com.gemstone.gemfire</groupId>
       <artifactId>gemfire</artifactId>
-      <version>6.5.1.4</version>
+      <version>6.6.RC</version>
       <scope>compile</scope>
     </dependency>
     
