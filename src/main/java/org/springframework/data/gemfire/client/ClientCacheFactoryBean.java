@@ -16,54 +16,51 @@
 
 package org.springframework.data.gemfire.client;
 
-import java.util.concurrent.Callable;
+import java.util.Properties;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
  * FactoryBean dedicated to creating client caches (caches for client JVMs).
- * Intended mainly for usage with GemFire 6.5 (while preserving 6.0 compatibility).
+ * Acts an utility class (as client caches are a subset with a particular configuration of the generic cache).
  * 
  * @author Costin Leau
  */
 public class ClientCacheFactoryBean extends CacheFactoryBean {
 
 	private String poolName;
-	private boolean GEMFIRE65 = false;
 
 	@Override
-	protected Cache createCache(final DistributedSystem system) throws Exception {
-		initPool();
-
-		if (GEMFIRE65) {
-			Callable<Cache> call = new Callable<Cache>() {
-				public Cache call() throws Exception {
-					return (Cache) new ClientCacheFactory(system.getProperties()).create();
-				}
-			};
-			return call.call();
-		}
-		return super.createCache(system);
+	protected Cache createCache(Object factory) {
+		return (Cache) ((ClientCacheFactory) factory).create();
 	}
 
-	private void initPool() {
-		BeanFactory beanFactory = getBeanFactory();
-
-		// try to eagerly initialize the pool name, if defined as a bean
-		if (beanFactory.isTypeMatch(poolName, Pool.class)) {
-			if (log.isDebugEnabled()) {
-				log.debug("Found bean definition for pool '" + poolName + "'. Eagerly initializing it...");
-			}
-			beanFactory.getBean(poolName, Pool.class);
-		}
+	@Override
+	protected Object createFactory(Properties props) {
+		return new ClientCacheFactory(props);
 	}
+
+	@Override
+	protected Cache fetchCache() {
+		return (Cache) ClientCacheFactory.getAnyInstance();
+	}
+
+	//	private void initPool() {
+	//		BeanFactory beanFactory = getBeanFactory();
+	//
+	//		// try to eagerly initialize the pool name, if defined as a bean
+	//		if (beanFactory.isTypeMatch(poolName, Pool.class)) {
+	//			if (log.isDebugEnabled()) {
+	//				log.debug("Found bean definition for pool '" + poolName + "'. Eagerly initializing it...");
+	//			}
+	//			beanFactory.getBean(poolName, Pool.class);
+	//		}
+	//	}
 
 	/**
 	 * Sets the pool name used by this client.

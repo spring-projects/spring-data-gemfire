@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire-1.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean class="org.springframework.data.gemfire.client.ClientCacheFactoryBean">
+    <bean class="org.springframework.data.gemfire.client.ClientCacheFactoryBean"/>
         <property name="pool" ref="pool"/>
     </bean>
 
