@@ -2,14 +2,41 @@ SPRING GEMFIRE INTEGRATION CHANGELOG
 ====================================
 http://www.springsource.org/spring-gemfire
 
-Changes in version 1.0.1 (2011-mm-dd)
+
+Changes in version 1.0.1 (2011-07-dd)
+-------------------------------------
+
+General
+* Added support for GemFire 6.6
+* Dropped support for GemFire 6.0, GemFire 6.5 or higher required
+* Introduced support for CacheServer
+
+Package org.springframework.data.gemfire
+* Introduced cache option for disabling bean factory locator; useful for multi cache definitions, in the same VM
+
+
+Changes in version 1.0.1 (2011-04-26)
 -------------------------------------
 General
-* Upgraded to GemFire 6.5.1.2
+* Upgraded to GemFire 6.5.1.4
 * Fix networking issue with the sample on some Linux distributions (Ubuntu)
+* Loosen type constraints in the schema to allow placeholders
+* Added 'statistics' attribute to all write regions
 
 Package org.springframework.data.gemfire
 * Introduced auto-close (configurable) on RegionFactoryBean
+
+Package org.springframework.data.gemfire.config
+* Fixed bug causing region names to be used as aliases for region beans
+
+Package org.springframework.data.gemfire.client
+* Improved dependency initialization between cache and pools
+
+Package org.springframework.data.gemfire.serialization
+* Improved cache-wide registration of custom instantiators
+
+Package org.springframework.data.gemfire.support
+* Introduced GemfireDaoSupport
 
 
 Changes in version 1.0.0 (2011-02-02)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 the original author or authors.
+ * Copyright 2010-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 	 * Sets the distribution of the region of this {@link Instantiator} during the container startup.
 	 * Default is false, meaning the registration will not be distributed to other clients.
 	 * 
-	 * @see #register(Instantiator, boolean)
+	 * @see Instantiator#register(Instantiator, boolean)
 	 * @param distribute whether the registration is distributable or not
 	 */
 	public void setDistribute(boolean distribute) {

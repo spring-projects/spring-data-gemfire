@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,28 @@
 
 package org.springframework.data.gemfire;
 
-import java.io.Serializable;
-
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.PartitionResolver;
+import com.gemstone.gemfire.cache.TransactionException;
 
 /**
+ * Gemfire-specific subclass of {@link org.springframework.transaction.TransactionException}, indicating a transaction failure at commit time.
+ * 
  * @author Costin Leau
  */
-public class SimplePartitionResolver implements PartitionResolver {
+public class GemfireTransactionCommitException extends TransactionException {
 
-	public String getName() {
-		return getClass().getName();
+	public GemfireTransactionCommitException() {
+		super();
 	}
 
-	public Serializable getRoutingObject(EntryOperation opDetails) {
-		return getName();
+	public GemfireTransactionCommitException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	public void close() {
+	public GemfireTransactionCommitException(String message) {
+		super(message);
+	}
+
+	public GemfireTransactionCommitException(Throwable cause) {
+		super(cause);
 	}
 }

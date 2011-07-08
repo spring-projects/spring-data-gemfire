@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.server;
 
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.server.CacheServer;
 
 /**
+ * Enumeration of the various client subscription policies for {@link CacheServer}.
+ * 
  * @author Costin Leau
  */
-public class SimpleCacheLoader implements CacheLoader {
-
-	public Object load(LoaderHelper helper) throws CacheLoaderException {
-		return null;
-	}
-
-	public void close() {
-	}
+public enum SubscriptionEvictionPolicy {
+	NONE, MEM, ENTRY
 }

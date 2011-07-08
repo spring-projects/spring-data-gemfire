@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	default-lazy-init="true"
+	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<gfe:cache />
+	
+	<!-- Advanced example depicting various cache server configuration options -->
+	<gfe:cache-server id="advanced-config" auto-startup="true"
+		bind-address="localhost" port="${gfe.port.6}" host-name-for-clients="localhost"
+		load-poll-interval="2000" max-connections="22" max-threads="16"
+		max-message-count="1000" max-time-between-pings="30000"
+		groups="test-server">
+
+		<gfe:subscription-config eviction-type="ENTRY" capacity="1000" disk-store="file://${java.io.tmpdir}"/>
+	</gfe:cache-server>
+
+	<context:property-placeholder location="classpath:port.properties" />
+
+	
+</beans>

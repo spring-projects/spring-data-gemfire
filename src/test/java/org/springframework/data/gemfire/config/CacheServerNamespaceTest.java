@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,32 @@
 
 package org.springframework.data.gemfire.config;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.springframework.data.gemfire.GemfireTransactionManager;
 import org.springframework.data.gemfire.RecreatingContextTest;
 
+import com.gemstone.gemfire.cache.server.CacheServer;
+
 /**
+ * 
  * @author Costin Leau
  */
-public class TxManagerNamespaceTest extends RecreatingContextTest {
+public class CacheServerNamespaceTest extends RecreatingContextTest {
 
 	@Override
 	protected String location() {
-		return "org/springframework/data/gemfire/config/tx-ns.xml";
+		return "org/springframework/data/gemfire/config/server-ns.xml";
 	}
 
 	@Test
-	public void testBasicCache() throws Exception {
-		assertTrue(ctx.containsBean("gemfire-transaction-manager"));
-		GemfireTransactionManager tx = ctx.getBean("gemfire-transaction-manager", GemfireTransactionManager.class);
-		assertFalse(tx.isCopyOnRead());
+	public void testBasicCacheServer() throws Exception {
+		CacheServer cacheServer = ctx.getBean("advanced-config", CacheServer.class);
+		assertTrue(cacheServer.isRunning());
+		assertEquals(1, cacheServer.getGroups().length);
+		assertEquals("test-server", cacheServer.getGroups()[0]);
+		assertEquals(22, cacheServer.getMaxConnections());
+
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 the original author or authors.
+ * Copyright 2010-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
 
@@ -59,6 +61,19 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		Resource res = TestUtils.readField("cacheXml", cfb);
 		assertEquals("cache.xml", res.getFilename());
 		assertEquals(ctx.getBean("props"), TestUtils.readField("properties", cfb));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testNoBeanFactory() throws Exception {
+		assertTrue(ctx.containsBean("no-bl"));
+		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&no-bl");
+		GemfireBeanFactoryLocator locator = new GemfireBeanFactoryLocator();
+		try {
+			assertNotNull(locator.useBeanFactory("cache-with-name"));
+			locator.useBeanFactory("no-bl");
+		} finally {
+			locator.destroy();
+		}
 	}
 
 }

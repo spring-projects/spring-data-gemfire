@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 the original author or authors.
+ * Copyright 2010-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
-import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.ResourceTransactionManager;
@@ -138,8 +137,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 			throw new NoTransactionException(
 					"No transaction associated with the current thread; are there multiple transaction managers ?", ex);
 		} catch (CommitConflictException ex) {
-			// TODO: can this be replaced with HeuristicCompletionException ?
-			throw new TransactionSystemException("Unexpected failure on commit of Cache local transaction", ex);
+			throw new GemfireTransactionCommitException("Unexpected failure on commit of Cache local transaction", ex);
 		}
 	}
 
