@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -29,7 +30,9 @@ import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
+import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
@@ -120,6 +123,39 @@ public class GemfireTemplate extends GemfireAccessor {
 			@SuppressWarnings("unchecked")
 			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return region.query(query);
+			}
+		});
+	}
+
+	public <E> SelectResults<E> find(final String query, final Object... params)
+			throws InvalidDataAccessApiUsageException {
+		return execute(new GemfireCallback<SelectResults<E>>() {
+			@SuppressWarnings("unchecked")
+			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+				QueryService queryService = region.getRegionService().getQueryService();
+				Query q = queryService.newQuery(query);
+				Object result = q.execute(params);
+				if (result instanceof SelectResults) {
+					return (SelectResults<E>) result;
+				}
+				throw new InvalidDataAccessApiUsageException(
+						"Result object returned from GemfireCallback isn't a SelectResult: [" + result + "]");
+			}
+		});
+	}
+
+	public <T> T findUnique(final String query, final Object... params) {
+		return execute(new GemfireCallback<T>() {
+			@SuppressWarnings("unchecked")
+			public T doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+				QueryService queryService = region.getRegionService().getQueryService();
+				Query q = queryService.newQuery(query);
+				Object result = q.execute(params);
+				if (result instanceof SelectResults) {
+					throw new InvalidDataAccessApiUsageException(
+							"Result object returned from GemfireCallback isn't unique: [" + result + "]");
+				}
+				return (T) result;
 			}
 		});
 	}
