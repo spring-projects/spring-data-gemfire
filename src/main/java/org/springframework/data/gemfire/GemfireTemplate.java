@@ -118,6 +118,17 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/**
+	 * Shortcut for {@link Region#query(String)} method. Filters the values of this region using the predicate given as a string with the syntax of the WHERE clause of the query language. 
+	 * The predefined variable this may be used inside the predicate to denote the current element being filtered. 
+	 * This method evaluates the passed in where clause and returns results. It is supported on servers as well as clients. 
+	 * When executed on a client, this method always runs on the server and returns results. 
+	 * When invoking this method from the client, applications can pass in a where clause or a complete query. 
+
+	 * @see Region#query(String)
+	 * @param query A query language boolean query predicate. 
+	 * @return A SelectResults containing the values of this Region that match the predicate. 
+	 */
 	public <E> SelectResults<E> query(final String query) {
 		return execute(new GemfireCallback<SelectResults<E>>() {
 			@SuppressWarnings("unchecked")
@@ -127,6 +138,20 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/**
+	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return multiple results; for queries that return only one
+	 * element use {@link #findUnique(String, Object...)}.
+	 * <p/>
+	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
+	 * 
+	 * @see QueryService#newQuery(String)
+	 * @see Query#execute(Object[])
+	 * @see SelectResults
+	 * @param query GemFire query
+	 * @param params Values that are bound to parameters (such as $1) in this query. 
+	 * @return A {@link SelectResults} instance holding the objects matching the query
+	 * @throws InvalidDataAccessApiUsageException in case the query returns a single result (not a {@link SelectResults}).
+	 */
 	public <E> SelectResults<E> find(final String query, final Object... params)
 			throws InvalidDataAccessApiUsageException {
 		return execute(new GemfireCallback<SelectResults<E>>() {
@@ -144,7 +169,20 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
-	public <T> T findUnique(final String query, final Object... params) {
+	/**
+	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return a single result; for queries that return multiple
+	 * elements use {@link #find(String, Object...)}.
+	 * <p/>
+	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
+	 * 
+	 * @see QueryService#newQuery(String)
+	 * @see Query#execute(Object[])
+	 * @param query GemFire query
+	 * @param params Values that are bound to parameters (such as $1) in this query.
+	 * @return The (single) object that represents the result of the query.
+	 * @throws InvalidDataAccessApiUsageException in case the query returns multiple objects (through {@link SelectResults}). 
+	 */
+	public <T> T findUnique(final String query, final Object... params) throws InvalidDataAccessApiUsageException {
 		return execute(new GemfireCallback<T>() {
 			@SuppressWarnings("unchecked")
 			public T doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
