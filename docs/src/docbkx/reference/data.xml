@@ -31,7 +31,7 @@
     translator which is automatically detected by the Spring infrastructure
     and used accordingly.</para>
   </section>
-
+ 
   <section id="apis:template">
     <title><classname>GemfireTemplate</classname></title>
 
@@ -66,7 +66,39 @@
     return region.query("length &lt; 5");
   }
 });</programlisting>
+
+   <para>For accessing the full power of the GemFire query language, one can use the <methodname>find</methodname> and <methodname>findUnique</methodname> which, as oppose to the 
+   <methodname>query</methodname> method, can execute queries inside across multiple regions, execute projections just to name a few features. <methodname>find</methodname> method should be
+   used when the query selects multiple items (through <literal>SelectResults</literal>) and the latter, <methodname>findUnique</methodname>, as the name suggests when only one object is returned.
+   </para>
   </section>
+
+  <section id="apis:spring-cache-abstraction">
+  	<title>Support for Spring Cache Abstraction</title>
+  	
+  	<para>Since 1.1, Spring GemFire provides an implementation for Spring 3.1 
+  	<ulink url="http://static.springsource.org/spring/docs/3.1.0.M2/spring-framework-reference/html/cache.html">cache abstraction</ulink> through the
+<literal>org.springframework.data.gemfire.support</literal> package. To use GemFire
+  	as a backing implementation, simply add <literal>GemfireCacheManager</literal> to your configuration:</para>
+  	
+  	<programlisting language="xml"><![CDATA[<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cache="http://www.springframework.org/schema/cache"
+  xmlns:gfe="http://www.springframework.org/schema/gemfire"
+  xmlns:p="http://www.springframework.org/schema/p"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  	  http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+      http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+  <!-- turn on declarative caching -->
+  <cache:annotation-driven />
+  
+  <gfe:cache id="gemfire-cache" />
+  <!-- declare GemFire Cache Manager -->
+  <bean id="cacheManager" class="org.springframework.data.gemfire.support.GemfireCacheManager" p:cache-ref="gemfire-cache">
+</beans>]]>
+  	
+  	</programlisting>
+  </section>
+  
 
   <section id="apis:tx-mgmt">
     <title>Transaction Management</title>

@@ -184,6 +184,48 @@
     if the cache needs to be created, there is no opened cache in existence
     otherwise the existing cache will be used and the configuration will
     simply be discarded.</para>
+    
+    <section id="bootstrap:cache:server">
+    	<title>Configuring a GemFire <literal>CacheServer</literal></title>
+    	
+    	<para>In Spring GemFire 1.1 dedicated support for configuring a 
+    	<ulink url="http://www.gemstone.com/docs/6.5.1/product/docs/japi/com/gemstone/gemfire/cache/server/package-summary.html">CacheServer</ulink> was added through 
+    	the <literal>org.springframework.data.gemfire.server</literal> package allowing complete configuration through the Spring container:</para>
+    	
+    	<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<gfe:cache />
+	
+	<!-- Advanced example depicting various cache server configuration options -->
+	<gfe:cache-server id="advanced-config" auto-startup="true"
+		bind-address="localhost" port="${gfe.port.6}" host-name-for-clients="localhost"
+		load-poll-interval="2000" max-connections="22" max-threads="16"
+		max-message-count="1000" max-time-between-pings="30000"
+		groups="test-server">
+
+		<gfe:subscription-config eviction-type="ENTRY" capacity="1000" disk-store="file://${java.io.tmpdir}"/>
+	</gfe:cache-server>
+
+	<context:property-placeholder location="classpath:port.properties" />
+</beans>]]></programlisting>
+
+		<para>The configuration above shows the dedicated namespace support (through the <literal>cache-server</literal> element) and the pleothera of options available. Note that rather
+		then just hard-coding the port, this config uses Spring <literal><ulink url="http://static.springsource.org/spring/docs/3.0.x/reference/xsd-config.html">util</ulink></literal> namespace 
+		to read it from a properties file and then replace it at runtime allowing administrators to change it without having to touch the main application config. Through Spring's property placeholder
+		<ulink url="http://static.springsource.org/spring/docs/3.0.x/reference/beans.html#beans-factory-placeholderconfigurer">support</ulink>, 
+		<ulink url="http://static.springsource.org/spring/docs/3.0.x/reference/expressions.html">SpEL</ulink> and the <ulink url="http://blog.springsource.com/2011/06/09/spring-framework-3-1-m2-released/">environment abstraction</ulink> one
+		can externalize environment specific properties from the main code base easing the deployment across multiple machines.</para>
+    </section>
   </section>
 
   <section id="bootstrap:region">
