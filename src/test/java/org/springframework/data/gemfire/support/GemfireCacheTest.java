@@ -32,7 +32,7 @@ public class GemfireCacheTest extends AbstractNativeCacheTest<Region<Object, Obj
 
 	@Override
 	protected Cache createCache(Region<Object, Object> nativeCache) {
-		return new GemfireCache<Object, Object>(nativeCache);
+		return new GemfireCache(nativeCache);
 	}
 
 	@Override

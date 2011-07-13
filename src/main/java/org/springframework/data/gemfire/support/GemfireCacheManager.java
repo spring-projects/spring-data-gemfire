@@ -33,19 +33,17 @@ import com.gemstone.gemfire.cache.Region;
  * 
  * @author Costin Leau
  */
-@SuppressWarnings("unchecked")
 public class GemfireCacheManager extends AbstractCacheManager {
 
 	private com.gemstone.gemfire.cache.Cache gemfireCache;
 
-
 	@Override
-	protected Collection<Cache<?, ?>> loadCaches() {
+	protected Collection<Cache> loadCaches() {
 		Assert.notNull(gemfireCache, "a backing GemFire cache is required");
 		Assert.isTrue(!gemfireCache.isClosed(), "the GemFire cache is closed; an open instance is required");
 
 		Set<Region<?, ?>> regions = gemfireCache.rootRegions();
-		Collection<Cache<?, ?>> caches = new LinkedHashSet<Cache<?, ?>>(regions.size());
+		Collection<Cache> caches = new LinkedHashSet<Cache>(regions.size());
 		
 		for (Region<?, ?> region : regions) {
 			caches.add(new GemfireCache(region));
@@ -54,13 +52,15 @@ public class GemfireCacheManager extends AbstractCacheManager {
 		return caches;
 	}
 
-	public <K, V> Cache<K, V> getCache(String name) {
-		Cache<K, V> cache = super.getCache(name);
+	@Override
+	public Cache getCache(String name) {
+		Cache cache = super.getCache(name);
+
 		if (cache == null) {
 			// check the gemfire cache again
 			// in case the cache was added at runtime
 
-			Region<K, V> reg = gemfireCache.getRegion(name);
+			Region<?, ?> reg = gemfireCache.getRegion(name);
 			if (reg != null) {
 				cache = new GemfireCache(reg);
 				getCacheMap().put(name, cache);

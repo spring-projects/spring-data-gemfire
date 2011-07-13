@@ -16,165 +16,55 @@
 
 package org.springframework.data.gemfire.support;
 
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
+import org.springframework.cache.Cache;
+import org.springframework.cache.interceptor.DefaultValueWrapper;
 
-import org.springframework.cache.support.AbstractDelegatingCache;
-
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 
 /**
  * Spring Framework {@link Cache} implementation using a GemFire {@link Region} underneath.
- * Supports both Gemfire 6.5 and 6.0.
+ * Supports Gemfire 6.5 or higher.
  * 
  * @author Costin Leau
  */
-public class GemfireCache<K, V> extends AbstractDelegatingCache<K, V> {
+public class GemfireCache implements Cache {
 
-	private static class NoOpLock implements Lock {
-
-		public void lock() {
-		}
-
-		public void lockInterruptibly() throws InterruptedException {
-		}
-
-		public Condition newCondition() {
-			return null;
-		}
-
-		public boolean tryLock() {
-			return false;
-		}
-
-		public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-			return false;
-		}
-
-		public void unlock() {
-		}
-	};
-
-	private static final Lock NO_OP_LOCK = new NoOpLock();
-
-	private static final boolean hasConcurrentMap = ConcurrentMap.class.isAssignableFrom(Region.class);
-	private final Region<K, V> region;
-	private final boolean canUseLock;
-	private final boolean canUseConcurrentMap;
+	@SuppressWarnings("unchecked")
+	private final Region region;
 
 	/**
 	 * Creates a {@link GemFireCache} instance.
 	 * 
 	 * @param region backing GemFire region
 	 */
-	public GemfireCache(Region<K, V> region) {
-		super(region);
+	public GemfireCache(Region<?, ?> region) {
 		this.region = region;
-		this.canUseLock = region.getAttributes().getScope().isGlobal();
-		DataPolicy dataPolicy = region.getAttributes().getDataPolicy();
-		this.canUseConcurrentMap = (hasConcurrentMap && (!dataPolicy.isNormal() && !dataPolicy.isEmpty()));
 	}
 
 	public String getName() {
 		return region.getName();
 	}
 
-	public Region<K, V> getNativeCache() {
+	public Region<?, ?> getNativeCache() {
 		return region;
 	}
 
-	public V putIfAbsent(K key, V value) {
-		if (canUseConcurrentMap) {
-			return region.putIfAbsent(key, value);
-		}
-
-		// fall back to pre 6.5 API
-		Lock lock = (canUseLock ? region.getDistributedLock(key) : NO_OP_LOCK);
-		try {
-			lock.lock();
-			if (!region.containsKey(key)) {
-				return region.put(key, value);
-			}
-			else {
-				return region.get(key);
-			}
-		} finally {
-			lock.unlock();
-		}
+	public void clear() {
+		region.clear();
 	}
 
-	@SuppressWarnings("unchecked")
-	public boolean remove(Object key, Object value) {
-		if (canUseConcurrentMap) {
-			return region.remove(key, value);
-		}
-
-		// fall back to pre 6.5 API
-		if (region.containsKey(key)) {
-			Lock lock = (canUseLock ? region.getDistributedLock((K) key) : NO_OP_LOCK);
-			try {
-				lock.lock();
-
-				if (region.get(key).equals(value)) {
-					region.remove(key);
-					return true;
-				}
-			} finally {
-				lock.unlock();
-			}
-		}
-		return false;
+	public void evict(Object key) {
+		region.destroy(key);
 	}
 
-	public boolean replace(K key, V oldValue, V newValue) {
-		if (canUseConcurrentMap) {
-			return region.replace(key, oldValue, newValue);
-		}
+	public ValueWrapper get(Object key) {
+		Object value = region.get(key);
 
-		if (region.containsKey(key)) {
-			// fall back to pre 6.5 API
-			Lock lock = (canUseLock ? region.getDistributedLock(key) : NO_OP_LOCK);
-
-			try {
-				lock.lock();
-
-				if (region.get(key).equals(oldValue)) {
-					region.put(key, newValue);
-					return true;
-				}
-				else {
-					return false;
-				}
-			} finally {
-				lock.unlock();
-			}
-		}
-		return false;
+		return (value == null ? null : new DefaultValueWrapper(value));
 	}
 
-	public V replace(K key, V value) {
-		if (canUseConcurrentMap) {
-			return region.replace(key, value);
-		}
-
-		// fall back to pre 6.5 API
-		Lock lock = (canUseLock ? region.getDistributedLock(key) : NO_OP_LOCK);
-
-		try {
-			lock.lock();
-
-			if (region.containsKey(key)) {
-				return region.put(key, value);
-			}
-			else {
-				return null;
-			}
-		} finally {
-			lock.unlock();
-		}
+	public void put(Object key, Object value) {
+		region.put(key, value);
 	}
 }
