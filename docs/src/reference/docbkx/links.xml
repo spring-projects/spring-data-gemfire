@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="links">
+	<title>Useful Links</title>
+
+	<itemizedlist>
+
+    <listitem><emphasis>Spring GemFire Integration Home Page</emphasis> - <ulink url="http://www.springframework.org/spring-gemfire/">here</ulink></listitem>
+    <listitem><emphasis>SpringSource blog</emphasis> - <ulink url="http://blog.springsource.com/">here</ulink></listitem>
+    <listitem><emphasis>GemFire Community</emphasis> - <ulink url="http://community.gemstone.com/display/gemfire/GemFire+Enterprise">here</ulink></listitem>
+	
+	</itemizedlist>
+</chapter>

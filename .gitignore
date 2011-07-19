@@ -1,2 +1,16 @@
+.DS_Store
 target
 bin
+build
+.gradle
+.springBeans
+pom.xml
+*.iml
+*.ipr
+*.iws
+*.log
+
+/samples/hello-world/vf.gf.dmn-events.cfg
+/samples/hello-world/vf.gf.dmn-license.cfg
+/vf.gf.dmn-events.cfg
+/vf.gf.dmn-license.cfg

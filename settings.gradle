@@ -1,0 +1,5 @@
+rootProject.name = 'spring-gemfire'
+
+include 'docs'
+       
+docs = findProject(':docs')

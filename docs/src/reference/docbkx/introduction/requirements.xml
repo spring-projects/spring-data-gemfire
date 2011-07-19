@@ -1,0 +1,8 @@
+  <chapter xml:id="requirements" xmlns="http://docbook.org/ns/docbook" version="5.0">
+      <title>Requirements</title>
+
+      <para>Spring GemFire integration requires JDK level 5.0 and above, Spring 
+      <ulink url="http://www.springsource.org/about">Framework</ulink> 3  and 
+      <ulink url="http://www.gemstone.com/products/gemfire">GemFire</ulink> 6 and above.
+      </para>
+  </chapter>
