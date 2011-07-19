@@ -3,16 +3,23 @@ SPRING GEMFIRE INTEGRATION CHANGELOG
 http://www.springsource.org/spring-gemfire
 
 
-Changes in version 1.0.1 (2011-07-dd)
--------------------------------------
+Changes in version 1.1.0.M1 (2011-07-20)
+----------------------------------------
 
 General
+* Changed build system to Gradle
 * Added support for GemFire 6.6
-* Dropped support for GemFire 6.0, GemFire 6.5 or higher required
+* Dropped support for GemFire 6.0 (GemFire 6.5 or higher required)
 * Introduced support for CacheServer
+* Introduced Redis implementation for Spring 3.1 cache abstraction
+* Upgraded to Spring Framework 3.1 M2
+
 
 Package org.springframework.data.gemfire
 * Introduced cache option for disabling bean factory locator; useful for multi cache definitions, in the same VM
+* Added more region methods to GemfireTemplate
+* Introduced support for queries with variable parameters in GemfireTemplate
+* Improved handling of optimistic exception in a transaction scenario
 
 
 Changes in version 1.0.1 (2011-04-26)
