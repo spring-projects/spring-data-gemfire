@@ -25,7 +25,6 @@
   </bookinfo>
 
   <toc />
-
   <xi:include href="preface.xml"/>
   
   <part id="introduction">
@@ -34,18 +33,21 @@
 	    <xi:include href="introduction/introduction.xml"/>
  
   </part>
+
   <part id="reference">
       <title>Reference Documentation</title>
 
       <xi:include href="reference/introduction.xml"/>
       <xi:include href="reference/bootstrap.xml"/>
+      <!--
+
       <xi:include href="reference/data.xml"/>
       <xi:include href="reference/serialization.xml"/>
       <xi:include href="reference/samples.xml"/>
-      <!--
-      <xi:include href="reference/test.xml"/>
       -->
   </part>
+    <!--
+
   <part id="resources">
       <title>Other Resources</title>
       <partintro>
@@ -56,12 +58,10 @@
           </para>
       </partintro>
       <xi:include href="links.xml"/>
-      <!-- 
-      <xi:include href="bibliography.xml"/>
-       -->
   </part>
   <part id="appendices">
       <title>Appendices</title>
       <xi:include href="appendix/appendix-schema.xml"/>
   </part>
+  -->
 </book>

@@ -39,7 +39,6 @@
     <gfe:cache ...>
 		
 </beans>]]></programlisting>
- 		
  		<calloutlist>
  			<callout arearefs="gfe#ns#prefix">
  				<para>Spring GemFire namespace prefix. Any name can do but through out the reference documentation, the <literal>gfe</literal> will be used.</para>
@@ -81,7 +80,6 @@
     <cache ...>
 	
 </beans>]]></programlisting>
- 		
  		<calloutlist>
  			<callout arearefs="gfe#default-ns#prefix">
  				<para>The default namespace declaration for this XML file points to the Spring GemFire namespace.</para>
