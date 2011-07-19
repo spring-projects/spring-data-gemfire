@@ -37,7 +37,7 @@
 	<xsl:param name="highlight.source">1</xsl:param>
 
 <!-- Extensions -->
-	<xsl:param name="use.extensions">1</xsl:param>
+	<xsl:param name="use.extensions">0</xsl:param>
 	<xsl:param name="tablecolumns.extension">0</xsl:param>
 	<xsl:param name="callout.extensions">1</xsl:param>
 

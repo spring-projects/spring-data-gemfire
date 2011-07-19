@@ -24,7 +24,7 @@
                 xmlns:xslthl="http://xslthl.sf.net"
                 exclude-result-prefixes="xslthl"
                 version='1.0'>
-
+    
     <xsl:import href="http://docbook.sourceforge.net/release/xsl/current/fo/docbook.xsl"/>
     <xsl:import href="http://docbook.sourceforge.net/release/xsl/current/fo/highlight.xsl"/>
 
@@ -201,9 +201,10 @@
     ################################################### -->
 
     <!-- These extensions are required for table printing and other stuff -->
-    <xsl:param name="use.extensions">1</xsl:param>
+    <xsl:param name="use.extensions">0</xsl:param>
     <xsl:param name="tablecolumns.extension">0</xsl:param>
-    <xsl:param name="callout.extensions">1</xsl:param>
+    <xsl:param name="callout.extensions">0</xsl:param>
+    <xsl:param name="callouts.extensions">0</xsl:param>
     <xsl:param name="fop1.extensions">1</xsl:param>
 
 <!--###################################################
@@ -486,7 +487,6 @@
 <!--###################################################
         colored and hyphenated links
     ################################################### -->
-<!--
     <xsl:template match="ulink">
         <fo:basic-link external-destination="{@url}"
                 xsl:use-attribute-sets="xref.properties"
@@ -518,5 +518,5 @@
             </xsl:choose>
         </fo:basic-link>
     </xsl:template>
--->
+
 </xsl:stylesheet>

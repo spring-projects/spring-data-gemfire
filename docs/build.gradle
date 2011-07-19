@@ -18,8 +18,8 @@ docbookHtmlSingle.stylesheet = new File(projectDir, 'src/reference/resources/xsl
 docbookFoPdf.stylesheet = new File(projectDir, 'src/reference/resources/xsl/pdf-custom.xsl')
 
 def imagesDir = new File(projectDir, 'src/reference/resources/images');
-docbookFoPdf.admonGraphicsPath = "${imagesDir}/admon"
-docbookFoPdf.imgSrcPath = "${imagesDir}"
+[docbookHtml, docbookFoPdf, docbookHtmlSingle]*.admonGraphicsPath = "./images/admon/"
+[docbookHtml, docbookFoPdf, docbookHtmlSingle]*.imgSrcPath = "${imagesDir}"
 
 refSpec = copySpec {
     into ('reference') {
