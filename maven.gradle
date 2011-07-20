@@ -101,7 +101,7 @@ def customizePom(pom) {
             }
         }*.optional = true
         
-        p.groupId = "org.springframework.data"
+        p.groupId = "org.springframework.data.gemfire"
     }
 
     pom.project {
