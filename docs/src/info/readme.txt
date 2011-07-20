@@ -1,5 +1,5 @@
-SPRING GEMFIRE INTEGRATION 1.0.0 M1 (August 2010)
--------------------------------------------------
+SPRING GEMFIRE INTEGRATION
+--------------------------
 http://www.springsource.org/spring-gemfire
 
 1. INTRODUCTION
