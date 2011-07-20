@@ -58,6 +58,7 @@ public class GemfireCache implements Cache {
 		region.destroy(key);
 	}
 
+	@SuppressWarnings("unchecked")
 	public ValueWrapper get(Object key) {
 		Object value = region.get(key);
 

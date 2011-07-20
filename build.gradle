@@ -3,7 +3,6 @@ description = 'Spring GemFire'
 abbreviation = 'SGF'
 
 apply plugin: 'base'
-apply plugin: 'idea'
 
 buildscript {
     repositories {

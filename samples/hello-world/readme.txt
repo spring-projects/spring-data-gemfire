@@ -14,12 +14,15 @@ Multiple nodes can be started which will share and exchange information transpar
 2. BUILD AND DEPLOYMENT
 
 This directory contains the source files.
-For building, Maven 2 and JDK 1.5+ are required.
+For building, JDK 1.5+ are required
 
 To build the sample, use the following command:
 
-# mvn clean package
+*nix/BSD OS:
+# ../../gradlew -q
 
-To run the sample, use:
+Windows OS:
+# ..\..\gradlew -q
 
-# mvn exec:java
+If you have Gradle installed and available in your classpath, you can simply type:
+# gradle -q
