@@ -11,9 +11,8 @@ General
 * Added support for GemFire 6.6
 * Dropped support for GemFire 6.0 (GemFire 6.5 or higher required)
 * Introduced support for CacheServer
-* Introduced Redis implementation for Spring 3.1 cache abstraction
+* Introduced GemFire implementation for Spring 3.1 cache abstraction
 * Upgraded to Spring Framework 3.1 M2
-
 
 Package org.springframework.data.gemfire
 * Introduced cache option for disabling bean factory locator; useful for multi cache definitions, in the same VM
