@@ -104,7 +104,8 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		ClientSubscriptionConfig config = cacheServer.getClientSubscriptionConfig();
 		config.setCapacity(subscriptionCapacity);
 		config.setEvictionPolicy(evictionPolicy.name().toLowerCase());
-		config.setDiskStoreName(subscriptionDiskStore.getFile().getCanonicalPath());
+		if (subscriptionDiskStore != null)
+			config.setDiskStoreName(subscriptionDiskStore.getFile().getCanonicalPath());
 
 		start();
 	}
