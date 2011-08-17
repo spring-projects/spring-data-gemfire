@@ -92,7 +92,6 @@ across concurrent threads in the same VM, whether or not transactions are used.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute> 
-			 
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -281,6 +280,35 @@ arbitrarily pick one.
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
+					
+					<xsd:element name="region-ttl" minOccurs="0" maxOccurs="1" type="expirationType">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[[
+Time to live configuration for the region itself. Default: no expiration.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="region-tti" minOccurs="0" maxOccurs="1" type="expirationType">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[[
+Time to idle (or idle timeout) configuration for the region itself. Default: no expiration.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="entry-ttl" minOccurs="0" maxOccurs="1" type="expirationType">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[[
+Time to live configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="entry-tti" minOccurs="0" maxOccurs="1" type="expirationType">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[[
+Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
 				</xsd:sequence>
 			</xsd:extension>
 		</xsd:complexContent>
@@ -317,7 +345,7 @@ up to date copy of the data.
 						<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[
-Eviction policy for the partitioned region.
+Eviction policy for the replicated region.
 								]]></xsd:documentation>
 							</xsd:annotation>
 							<xsd:complexType>
@@ -465,6 +493,50 @@ The delay in milliseconds that new members will wait before satisfying redundanc
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:complexType name="expirationType">
+		<xsd:attribute name="timeout" type="xsd:string" default="0">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The amount of time before the expiration action takes place. Defaults to zero (which means never timeout). 
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="action" default="INVALIDATE">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="INVALIDATE">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+When the region or cached object expires, it is invalidated. 
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="DESTROY">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+When the region or cached object expires, it is destroyed.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="LOCAL_INVALIDATE">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+When the region or cached object expires, it is invalidated locally only. Not supported on partitioned regions.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="LOCAL_DESTROY">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+When the region or cached object expires, it is destroyed locally only. Not supported on partitioned regions.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
 	
 	<xsd:complexType name="evictionType">
 		<xsd:sequence minOccurs="0" maxOccurs="1">

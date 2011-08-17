@@ -32,6 +32,8 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
+import com.gemstone.gemfire.cache.ExpirationAction;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
 
 /**
  * Various minor utility used by the parser.
@@ -66,7 +68,8 @@ abstract class ParsingUtils {
 	 */
 	static void addBeanAliasAsMetadata(Element element, BeanDefinitionBuilder builder) {
 		String[] aliases = new String[0];
-		String name = element.getAttributeNS(BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI, AbstractBeanDefinitionParser.NAME_ATTRIBUTE);
+		String name = element.getAttributeNS(BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI,
+				AbstractBeanDefinitionParser.NAME_ATTRIBUTE);
 
 		if (StringUtils.hasLength(name)) {
 			aliases = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(name));
@@ -78,7 +81,8 @@ abstract class ParsingUtils {
 
 	static BeanDefinitionHolder replaceBeanAliasAsMetadata(BeanDefinitionHolder holder) {
 		BeanDefinition beanDefinition = holder.getBeanDefinition();
-		return new BeanDefinitionHolder(beanDefinition, holder.getBeanName(), (String[]) beanDefinition.removeAttribute(ALIASES_KEY));
+		return new BeanDefinitionHolder(beanDefinition, holder.getBeanName(),
+				(String[]) beanDefinition.removeAttribute(ALIASES_KEY));
 	}
 
 	/**
@@ -184,6 +188,7 @@ abstract class ParsingUtils {
 	/**
 	 * Parses the eviction sub-element. Populates the given attribute factory with the proper attributes.
 	 * 
+	 * @param parserContext
 	 * @param element
 	 * @param attrBuilder
 	 * @return true if parsing actually occured, false otherwise
@@ -221,5 +226,65 @@ abstract class ParsingUtils {
 
 	static void parseStatistics(Element element, BeanDefinitionBuilder attrBuilder) {
 		setPropertyValue(element, attrBuilder, "statistics", "statisticsEnabled");
+	}
+
+	/**
+	 * Parses the expiration sub-elements. Populates the given attribute factory with proper attributes. 
+	 * 
+	 * @param parserContext
+	 * @param element
+	 * @param attrBuilder
+	 * @return
+	 */
+	static boolean parseExpiration(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
+		boolean result = false;
+		result |= parseExpiration(element, "region-ttl", "regionTimeToLive", attrBuilder);
+		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", attrBuilder);
+		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", attrBuilder);
+		result |= parseExpiration(element, "entry-tti", "entryIdleTimeout", attrBuilder);
+
+		if (result) {
+			// turn on statistics
+			attrBuilder.addPropertyValue("statisticsEnabled", Boolean.TRUE);
+		}
+		return result;
+	}
+
+	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName, BeanDefinitionBuilder attrBuilder) {
+		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
+
+		if (expirationElement == null)
+			return false;
+
+		int expirationTime = 0;
+		ExpirationAction action = ExpirationAction.INVALIDATE;
+
+
+		// do manual conversion since the enum is not public
+		String attr = expirationElement.getAttribute("timeout");
+		if (StringUtils.hasText(attr)) {
+			expirationTime = Integer.valueOf(attr);
+		}
+
+		attr = expirationElement.getAttribute("action");
+		if (StringUtils.hasText(attr)) {
+			// figure out action based on string length
+			attr = attr.trim();
+
+			if (attr.length() == 10) {
+				action = ExpirationAction.INVALIDATE;
+			}
+			else if (attr.length() == 7) {
+				action = ExpirationAction.DESTROY;
+			}
+			else if (attr.length() == 13) {
+				action = ExpirationAction.LOCAL_DESTROY;
+			}
+			else if (attr.length() == 16) {
+				action = ExpirationAction.LOCAL_INVALIDATE;
+			}
+		}
+		attrBuilder.addPropertyValue(propertyName, new ExpirationAttributes(expirationTime, action));
+		return true;
 	}
 }

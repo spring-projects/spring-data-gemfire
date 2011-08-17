@@ -15,6 +15,12 @@
 			<gfe:disk-dir location="./" max-size="1"/>
 		</gfe:disk-store>
 
+		<gfe:region-ttl timeout="300" action="DESTROY"/>
+		<gfe:region-tti timeout="400" action="INVALIDATE"/>
+
+		<gfe:entry-ttl timeout="100" action="DESTROY"/>
+		<gfe:entry-tti timeout="200" action="INVALIDATE"/>
+		
 		<gfe:eviction type="ENTRY_COUNT" threshold="50" />
 	</gfe:replicated-region>
  	

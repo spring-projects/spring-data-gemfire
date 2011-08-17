@@ -36,6 +36,8 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.ExpirationAction;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
@@ -84,5 +86,29 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		//assertEquals(10, evicAttr.getMaximum());
 		ObjectSizer sizer = evicAttr.getObjectSizer();
 		assertEquals(SimpleObjectSizer.class, sizer.getClass());
+	}
+
+	@Test
+	public void testEntryTtl() throws Exception {
+		assertTrue(context.containsBean("replicated-data"));
+		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+
+		ExpirationAttributes entryTTL = attrs.getEntryTimeToLive();
+		assertEquals(100, entryTTL.getTimeout());
+		assertEquals(ExpirationAction.DESTROY, entryTTL.getAction());
+
+		ExpirationAttributes entryTTI = attrs.getEntryIdleTimeout();
+		assertEquals(200, entryTTI.getTimeout());
+		assertEquals(ExpirationAction.INVALIDATE, entryTTI.getAction());
+
+		ExpirationAttributes regionTTL = attrs.getRegionTimeToLive();
+		assertEquals(300, regionTTL.getTimeout());
+		assertEquals(ExpirationAction.DESTROY, regionTTL.getAction());
+
+		ExpirationAttributes regionTTI = attrs.getRegionIdleTimeout();
+		assertEquals(400, regionTTI.getTimeout());
+		assertEquals(ExpirationAction.INVALIDATE, regionTTI.getAction());
+
 	}
 }

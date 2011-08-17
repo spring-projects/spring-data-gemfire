@@ -71,6 +71,7 @@ class ReplicatedRegionParser extends AliasReplacingBeanDefinitionParser {
 			attrBuilder.addPropertyValue("publisher", Boolean.valueOf(attr));
 		}
 
+		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
 		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
 		ParsingUtils.parseDiskStorage(element, attrBuilder);
 
