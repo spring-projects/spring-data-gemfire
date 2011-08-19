@@ -48,7 +48,7 @@ public class CacheServerProcess {
 		AttributesFactory factory = new AttributesFactory();
 		factory.setDataPolicy(DataPolicy.REPLICATE);
 		factory.setScope(Scope.DISTRIBUTED_ACK);
-		Region testRegion = cache.createRegion("test", factory.create());
+		Region testRegion = cache.createRegion("test-cq", factory.create());
 		System.out.println("Test region, " + testRegion.getFullPath() + ", created in cache.");
 
 		// Start Cache Server.

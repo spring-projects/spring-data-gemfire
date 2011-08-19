@@ -16,7 +16,7 @@
 	
 	<gfe:cache id="cache-with-name"/>
 	
-	<gfe:cache id="cache-with-xml" cache-xml-location="classpath:cache.xml" properties-ref="props"/>
+	<gfe:cache id="cache-with-xml" cache-xml-location="classpath:gemfire-cache.xml" properties-ref="props"/>
 	
 	<util:properties id="props">
 		<prop key="disable-tcp">false</prop>

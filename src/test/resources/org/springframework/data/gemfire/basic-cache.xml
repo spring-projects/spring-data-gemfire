@@ -33,7 +33,7 @@
 	</bean>
 
 	<bean id="cache-with-xml" class="org.springframework.data.gemfire.CacheFactoryBean">
-		<property name="cacheXml" value="classpath:cache.xml"/>
+		<property name="cacheXml" value="classpath:gemfire-cache.xml"/>
 	</bean>
 
 	<bean id="pdx-cache" class="org.springframework.data.gemfire.CacheFactoryBean">

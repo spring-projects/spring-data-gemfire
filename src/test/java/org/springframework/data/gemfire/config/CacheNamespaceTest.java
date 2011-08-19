@@ -59,7 +59,7 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		assertTrue(ctx.containsBean("cache-with-xml"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache-with-xml");
 		Resource res = TestUtils.readField("cacheXml", cfb);
-		assertEquals("cache.xml", res.getFilename());
+		assertEquals("gemfire-cache.xml", res.getFilename());
 		assertEquals(ctx.getBean("props"), TestUtils.readField("properties", cfb));
 	}
 
