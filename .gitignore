@@ -14,3 +14,5 @@ pom.xml
 /samples/hello-world/vf.gf.dmn-license.cfg
 /vf.gf.dmn-events.cfg
 /vf.gf.dmn-license.cfg
+.settings
+.classpath
