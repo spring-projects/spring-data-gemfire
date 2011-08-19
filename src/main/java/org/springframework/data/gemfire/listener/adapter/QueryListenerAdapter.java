@@ -99,45 +99,39 @@ public class QueryListenerAdapter implements QueryListener {
 
 						if (parameterTypes.length > 0) {
 							for (Class<?> paramType : parameterTypes) {
-								boolean typeFound = false;
 
 								if (Object.class.equals(paramType)) {
 									objects++;
 									if (objects > 2) {
 										return false;
 									}
-									typeFound = true;
 								}
 								else if (Operation.class.equals(paramType)) {
 									operations++;
 									if (operations > 2) {
 										return false;
 									}
-									typeFound = true;
 								}
 								else if (CqEvent.class.equals(paramType)) {
-									typeFound = true;
 								}
 								else if (Throwable.class.equals(paramType)) {
-									typeFound = true;
 								}
 								else if (byte[].class.equals(paramType)) {
-									typeFound = true;
 								}
 								else if (CqQuery.class.equals(paramType)) {
-									typeFound = true;
 								}
-								else if (!typeFound) {
+								else {
 									return false;
 								}
 							}
+							return true;
 						}
 					}
 					return false;
 				}
 			});
 
-			Assert.isTrue(methods.isEmpty(), "Cannot find a suitable methods named [" + methodName
+			Assert.isTrue(!methods.isEmpty(), "Cannot find a suitable methods named [" + methodName
 					+ "] - is the method public and has the proper arguments?");
 		}
 
@@ -182,9 +176,9 @@ public class QueryListenerAdapter implements QueryListener {
 
 
 	/**
-	 * Out-of-the-box value for the default listener method: "handleMessage".
+	 * Out-of-the-box value for the default listener method: "handleEvent".
 	 */
-	public static final String ORIGINAL_DEFAULT_LISTENER_METHOD = "handleMessage";
+	public static final String ORIGINAL_DEFAULT_LISTENER_METHOD = "handleEvent";
 
 
 	/** Logger available to subclasses */
@@ -240,7 +234,7 @@ public class QueryListenerAdapter implements QueryListener {
 	/**
 	 * Specify the name of the default listener method to delegate to,
 	 * for the case where no specific listener method has been determined.
-	 * Out-of-the-box value is {@link #ORIGINAL_DEFAULT_LISTENER_METHOD "handleMessage"}.
+	 * Out-of-the-box value is {@link #ORIGINAL_DEFAULT_LISTENER_METHOD "handleEvent}.
 	 * @see #getListenerMethodName
 	 */
 	public void setDefaultListenerMethod(String defaultListenerMethod) {
