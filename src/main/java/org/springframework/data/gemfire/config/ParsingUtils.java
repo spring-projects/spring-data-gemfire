@@ -256,14 +256,14 @@ abstract class ParsingUtils {
 		if (expirationElement == null)
 			return false;
 
-		int expirationTime = 0;
+		String expirationTime = null;
 		ExpirationAction action = ExpirationAction.INVALIDATE;
 
 
 		// do manual conversion since the enum is not public
 		String attr = expirationElement.getAttribute("timeout");
 		if (StringUtils.hasText(attr)) {
-			expirationTime = Integer.valueOf(attr);
+			expirationTime = attr;
 		}
 
 		attr = expirationElement.getAttribute("action");
@@ -284,7 +284,12 @@ abstract class ParsingUtils {
 				action = ExpirationAction.LOCAL_INVALIDATE;
 			}
 		}
-		attrBuilder.addPropertyValue(propertyName, new ExpirationAttributes(expirationTime, action));
+		
+		BeanDefinitionBuilder expirationAttributes = BeanDefinitionBuilder.genericBeanDefinition(ExpirationAttributes.class);
+		expirationAttributes.addConstructorArgValue(expirationTime);
+		expirationAttributes.addConstructorArgValue(action);
+		attrBuilder.addPropertyValue(propertyName, expirationAttributes.getBeanDefinition());
+		
 		return true;
 	}
 }
