@@ -16,7 +16,6 @@
 
 package org.springframework.data.gemfire.listener;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -41,6 +40,7 @@ import com.gemstone.gemfire.cache.query.CqListener;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 
 /**
  * Container providing asynchronous behaviour for GemFire continuous queries.
@@ -87,8 +87,9 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 	private volatile boolean initialized = false;
 	private volatile boolean manageExecutor = false;
 
-	private RegionService cache;
-	private Set<CqQuery> queries;
+	private Set<CqQuery> queries = new ConcurrentHashSet<CqQuery>();
+
+	private QueryService queryService;
 
 
 	public void afterPropertiesSet() {
@@ -101,7 +102,6 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 			subscriptionExecutor = taskExecutor;
 		}
 
-		queries = new LinkedHashSet<CqQuery>();
 		initialized = true;
 
 		start();
@@ -195,19 +195,18 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 	}
 
 	private void closeQueries() {
-		if (queries != null) {
-			for (CqQuery cq : queries) {
-				try {
-					if (!cq.isClosed()) {
-						cq.close();
-					}
-				} catch (QueryException ex) {
-					logger.warn("Cannot close query", ex);
-				} catch (RuntimeException ex) {
-					logger.warn("Cannot close query", ex);
+		for (CqQuery cq : queries) {
+			try {
+				if (!cq.isClosed()) {
+					cq.close();
 				}
+			} catch (QueryException ex) {
+				logger.warn("Cannot close query", ex);
+			} catch (RuntimeException ex) {
+				logger.warn("Cannot close query", ex);
 			}
 		}
+
 		queries.clear();
 	}
 
@@ -296,7 +295,11 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 	 * @param cache cache used for registering queries
 	 */
 	public void setCache(RegionService cache) {
-		this.cache = cache;
+		this.queryService = cache.getQueryService();
+	}
+
+	public void setQueryService(QueryService service) {
+		this.queryService = service;
 	}
 
 	/**
@@ -337,8 +340,6 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 	}
 
 	private void doAddListener(CqQueryDefinition def) {
-		QueryService qService = cache.getQueryService();
-
 		CqQuery cq = null;
 
 		try {
@@ -347,10 +348,10 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 			CqAttributes attr = caf.create();
 
 			if (StringUtils.hasText(def.getName())) {
-				cq = qService.newCq(def.getName(), def.getQuery(), attr, def.isDurable());
+				cq = queryService.newCq(def.getName(), def.getQuery(), attr, def.isDurable());
 			}
 			else {
-				cq = qService.newCq(def.getQuery(), attr, def.isDurable());
+				cq = queryService.newCq(def.getQuery(), attr, def.isDurable());
 			}
 			queries.add(cq);
 		} catch (RuntimeException ex) {

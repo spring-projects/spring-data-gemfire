@@ -85,6 +85,7 @@ public class QueryListenerAdapter implements QueryListener {
 			ReflectionUtils.doWithMethods(c, new MethodCallback() {
 
 				public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+					ReflectionUtils.makeAccessible(method);
 					methods.add(method);
 				}
 
@@ -131,7 +132,7 @@ public class QueryListenerAdapter implements QueryListener {
 				}
 			});
 
-			Assert.isTrue(!methods.isEmpty(), "Cannot find a suitable methods named [" + methodName
+			Assert.isTrue(!methods.isEmpty(), "Cannot find a suitable method named [" + c.getName() + "#" + methodName
 					+ "] - is the method public and has the proper arguments?");
 		}
 

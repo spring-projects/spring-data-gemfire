@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
- * FactoryBean for easy creation and configuration of GemFire {@link CacheServer} instances.
+ * FactoryBean for easy creation and configuration of GemFire {@link CacheServerProcess} instances.
  * 
  * @author Costin Leau
  */
