@@ -30,25 +30,35 @@ import com.gemstone.gemfire.cache.query.QueryInvalidException;
  */
 public class GemfireQueryException extends InvalidDataAccessResourceUsageException {
 
+	public GemfireQueryException(String message, QueryException ex) {
+		super(message, ex);
+	}
+
 	public GemfireQueryException(QueryException ex) {
 		super(ex.getMessage(), ex);
+	}
+
+	public GemfireQueryException(String message, QueryExecutionTimeoutException ex) {
+		super(message, ex);
 	}
 
 	public GemfireQueryException(QueryExecutionTimeoutException ex) {
 		super(ex.getMessage(), ex);
 	}
 
+	public GemfireQueryException(String message, QueryInvalidException ex) {
+		super(message, ex);
+	}
+
 	public GemfireQueryException(QueryInvalidException ex) {
 		super(ex.getMessage(), ex);
 	}
 
-	/**
-	 * Dedicated constructor for CqInvalidException. Since the class has been removed in 6.5,
-	 * the constructor is protected to prevent illegal access.
-	 * 
-	 * @param ex
-	 */
-	GemfireQueryException(RuntimeException ex) {
+	public GemfireQueryException(String message, RuntimeException ex) {
+		super(message, ex);
+	}
+
+	public GemfireQueryException(RuntimeException ex) {
 		super(ex.getMessage(), ex);
 	}
 }
