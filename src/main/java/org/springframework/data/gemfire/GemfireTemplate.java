@@ -27,10 +27,13 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
@@ -61,7 +64,7 @@ public class GemfireTemplate extends GemfireAccessor {
 	public GemfireTemplate() {
 	}
 
-	public <K,V> GemfireTemplate(Region<K, V> region) {
+	public <K, V> GemfireTemplate(Region<K, V> region) {
 		setRegion(region);
 		afterPropertiesSet();
 	}
@@ -147,7 +150,7 @@ public class GemfireTemplate extends GemfireAccessor {
 			}
 		});
 	}
-	
+
 	public <K, V> V put(final K key, final V value) {
 		return execute(new GemfireCallback<V>() {
 			@SuppressWarnings("unchecked")
@@ -251,7 +254,7 @@ public class GemfireTemplate extends GemfireAccessor {
 		return execute(new GemfireCallback<SelectResults<E>>() {
 			@SuppressWarnings("unchecked")
 			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				QueryService queryService = region.getRegionService().getQueryService();
+				QueryService queryService = lookupQueryService(region);
 				Query q = queryService.newQuery(query);
 				Object result = q.execute(params);
 				if (result instanceof SelectResults) {
@@ -280,7 +283,7 @@ public class GemfireTemplate extends GemfireAccessor {
 		return execute(new GemfireCallback<T>() {
 			@SuppressWarnings("unchecked")
 			public T doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				QueryService queryService = region.getRegionService().getQueryService();
+				QueryService queryService = lookupQueryService(region);
 				Query q = queryService.newQuery(query);
 				Object result = q.execute(params);
 				if (result instanceof SelectResults) {
@@ -291,6 +294,24 @@ public class GemfireTemplate extends GemfireAccessor {
 			}
 		});
 	}
+
+
+	/**
+	 * Returns the query service used by the template in its find methods.
+	 * 
+	 * @param region region to find the local query service from
+	 * @return query service to use, local or generic
+	 */
+	protected QueryService lookupQueryService(Region<?, ?> region) {
+		if (region.getRegionService() instanceof ClientCache
+				&& (!StringUtils.hasText(region.getAttributes().getPoolName()))
+				&& Scope.LOCAL.equals(region.getAttributes().getScope())) {
+			return ((ClientCache) region.getRegionService()).getLocalQueryService();
+		}
+
+		return region.getRegionService().getQueryService();
+	}
+
 
 	public <T> T execute(GemfireCallback<T> action) throws DataAccessException {
 		return execute(action, isExposeNativeRegion());
