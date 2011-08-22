@@ -97,7 +97,7 @@ public class ForkUtil {
 	public static OutputStream cacheServer() {
 		OutputStream os = cloneJVM("org.springframework.data.gemfire.fork.CacheServerProcess");
 		try {
-			Thread.sleep(3500);
+			Thread.sleep(5000);
 		} catch (InterruptedException ex) {
 			// ignore and move on
 		}
