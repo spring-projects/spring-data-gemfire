@@ -99,7 +99,7 @@ public class ListenerContainerTests {
 
 	@Before
 	public void setUp() throws Exception {
-		String query = "SELECT * from /test";
+		String query = "SELECT * from /test-cq";
 
 		container = new QueryListenerContainer();
 		container.setQueryService(pool.getQueryService());

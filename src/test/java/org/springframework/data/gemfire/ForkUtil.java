@@ -35,8 +35,9 @@ public class ForkUtil {
 		String home = System.getProperty("java.home");
 
 		Process proc = null;
-		String java = home + "\\bin\\java ";
-		String argCp = "-cp " + cp;
+		String sp = System.getProperty("file.separator");
+		String java = home + sp + "bin" + sp + "java";
+		String argCp = " -cp " + cp;
 		String argClass = argument;
 
 		String cmd = java + argCp + " " + argClass;
@@ -48,7 +49,7 @@ public class ForkUtil {
 			throw new IllegalStateException("Cannot start command " + cmd, ioe);
 		}
 
-		System.out.println("Started fork");
+		System.out.println("Started fork from command\n" + cmd);
 		final Process p = proc;
 
 		final BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -96,7 +97,7 @@ public class ForkUtil {
 	public static OutputStream cacheServer() {
 		OutputStream os = cloneJVM("org.springframework.data.gemfire.fork.CacheServerProcess");
 		try {
-			Thread.sleep(3000);
+			Thread.sleep(3500);
 		} catch (InterruptedException ex) {
 			// ignore and move on
 		}
