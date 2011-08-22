@@ -27,7 +27,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
@@ -39,6 +38,7 @@ import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
 
 /**
  * Helper class that simplifies GemFire data access code and converts {@link GemFireCheckedException} and
@@ -304,7 +304,7 @@ public class GemfireTemplate extends GemfireAccessor {
 	 */
 	protected QueryService lookupQueryService(Region<?, ?> region) {
 		if (region.getRegionService() instanceof ClientCache
-				&& (!StringUtils.hasText(region.getAttributes().getPoolName()))
+				&& (region instanceof LocalRegion && !((LocalRegion) region).hasServerProxy())
 				&& Scope.LOCAL.equals(region.getAttributes().getScope())) {
 			return ((ClientCache) region.getRegionService()).getLocalQueryService();
 		}
