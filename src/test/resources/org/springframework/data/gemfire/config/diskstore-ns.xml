@@ -4,9 +4,18 @@
 	xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	 <util:properties id="props">
+       <prop key="ttl">300</prop>
+     </util:properties>
+
+    <context:property-placeholder properties-ref="props"/>
+    
 		
 	<gfe:cache />
 	
@@ -15,7 +24,7 @@
 			<gfe:disk-dir location="./" max-size="1"/>
 		</gfe:disk-store>
 
-		<gfe:region-ttl timeout="300" action="DESTROY"/>
+		<gfe:region-ttl timeout="${ttl}" action="DESTROY"/>
 		<gfe:region-tti timeout="400" action="INVALIDATE"/>
 
 		<gfe:entry-ttl timeout="100" action="DESTROY"/>

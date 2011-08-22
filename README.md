@@ -1,5 +1,5 @@
-Spring Data Redis
-=======================
+Spring Data GemFire
+===================
 
 The primary goal of the [Spring GemFire](http://www.springsource.org/spring-gemfire) project is to make it easier to build highly scalable Spring-powered applications using 
 [GemFire](http://www.gemstone.com/products/gemfire) as a distributed [data management](http://www.springsource.com/products/data-management) platform.
