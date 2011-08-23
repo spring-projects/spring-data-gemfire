@@ -76,10 +76,10 @@ class PartitionedRegionParser extends AliasReplacingBeanDefinitionParser {
 		// region attributes
 		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
+		ParsingUtils.parseStatistics(element, attrBuilder);
 		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
 		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
 		ParsingUtils.parseDiskStorage(element, attrBuilder);
-		ParsingUtils.parseStatistics(element, attrBuilder);
 
 		// partition attributes
 		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder.genericBeanDefinition(PartitionAttributesFactoryBean.class);
