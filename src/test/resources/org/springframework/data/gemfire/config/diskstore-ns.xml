@@ -18,6 +18,10 @@
     
 		
 	<gfe:cache />
+    
+    <gfe:partitioned-region id="partitioned-data-with-timeout">
+        <gfe:entry-ttl timeout="${ttl}" action="DESTROY"/>
+    </gfe:partitioned-region>
 	
 	<gfe:replicated-region id="replicated-data" persistent="true" close="true" destroy="false">
 		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
