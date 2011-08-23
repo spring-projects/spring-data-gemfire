@@ -241,6 +241,9 @@ public class GemfireTemplate extends GemfireAccessor {
 	 * <p/>
 	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
 	 * 
+	 * <p/>Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
+	 * is being used.
+	 * 
 	 * @see QueryService#newQuery(String)
 	 * @see Query#execute(Object[])
 	 * @see SelectResults
@@ -271,6 +274,9 @@ public class GemfireTemplate extends GemfireAccessor {
 	 * elements use {@link #find(String, Object...)}.
 	 * <p/>
 	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
+	 * 
+	 * <p/>Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
+	 * is being used.
 	 * 
 	 * @see QueryService#newQuery(String)
 	 * @see Query#execute(Object[])
