@@ -36,6 +36,11 @@ public class CacheServerNamespaceTest extends RecreatingContextTest {
 	}
 
 	@Test
+	public void testInitOrder() throws Exception {
+		// the test is actually executed through Init#afterPropertiesSet
+	}
+
+	@Test
 	public void testBasicCacheServer() throws Exception {
 		CacheServer cacheServer = ctx.getBean("advanced-config", CacheServer.class);
 		assertTrue(cacheServer.isRunning());

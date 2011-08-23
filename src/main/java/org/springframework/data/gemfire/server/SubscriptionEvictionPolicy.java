@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.server;
 import com.gemstone.gemfire.cache.server.CacheServer;
 
 /**
- * Enumeration of the various client subscription policies for {@link CacheServerProcess}.
+ * Enumeration of the various client subscription policies for {@link CacheServer}.
  * 
  * @author Costin Leau
  */

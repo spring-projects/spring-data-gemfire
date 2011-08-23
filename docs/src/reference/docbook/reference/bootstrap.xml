@@ -221,6 +221,10 @@
 		<ulink url="http://static.springsource.org/spring/docs/3.0.x/reference/beans.html#beans-factory-placeholderconfigurer">support</ulink>, 
 		<ulink url="http://static.springsource.org/spring/docs/3.0.x/reference/expressions.html">SpEL</ulink> and the <ulink url="http://blog.springsource.com/2011/06/09/spring-framework-3-1-m2-released/">environment abstraction</ulink> one
 		can externalize environment specific properties from the main code base easing the deployment across multiple machines.</para>
+		
+		<note><para>To avoid initialization problems, the <interfacename>CacheServer</interfacename>s started by SGF will start <emphasis>after</emphasis> the container has been fully initialized. This
+		allows potential regions, listener, writers or instantiators defined declaratively to be fully initialized and registered before the server starts accepting connections. Keep this in mind
+		when doing programmatic configuration of the items above as the server might start before your components and thus not be seen by the clients connecting right away.</para></note>
     </section>
   </section>
 

@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
- * FactoryBean for easy creation and configuration of GemFire {@link CacheServerProcess} instances.
+ * FactoryBean for easy creation and configuration of GemFire {@link CacheServer} instances.
  * 
  * @author Costin Leau
  */
@@ -106,8 +106,6 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		config.setEvictionPolicy(evictionPolicy.name().toLowerCase());
 		if (subscriptionDiskStore != null)
 			config.setDiskStoreName(subscriptionDiskStore.getFile().getCanonicalPath());
-
-		start();
 	}
 
 	public void destroy() {
