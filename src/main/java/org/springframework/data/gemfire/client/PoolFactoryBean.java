@@ -23,12 +23,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -108,17 +106,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		}
 
 		if (beanFactory != null) {
-			if (beanFactory instanceof ConfigurableListableBeanFactory) {
-				ConfigurableListableBeanFactory lbf = (ConfigurableListableBeanFactory) beanFactory;
-				String[] caches = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(lbf, GemFireCache.class, false,
-						true);
-
-				for (String bn : caches) {
-					if (!lbf.isCurrentlyInCreation(bn)) {
-						beanFactory.getBean(bn);
-					}
-				}
-			}
+			beanFactory.getBean(GemFireCache.class);
 		}
 
 		// first check the configured pools
