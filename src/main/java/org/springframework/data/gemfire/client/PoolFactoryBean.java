@@ -111,7 +111,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			if (beanFactory instanceof ConfigurableListableBeanFactory) {
 				ConfigurableListableBeanFactory lbf = (ConfigurableListableBeanFactory) beanFactory;
 				String[] caches = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(lbf, GemFireCache.class, false,
-						false);
+						true);
 
 				for (String bn : caches) {
 					if (!lbf.isCurrentlyInCreation(bn)) {
