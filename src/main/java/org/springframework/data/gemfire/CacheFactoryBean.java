@@ -38,6 +38,7 @@ import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.pdx.PdxSerializable;
@@ -57,8 +58,13 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @author Costin Leau
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
-		InitializingBean, FactoryBean<Cache>, PersistenceExceptionTranslator {
+		InitializingBean, FactoryBean<GemFireCache>, PersistenceExceptionTranslator {
 
+	/**
+	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
+	 * 
+	 * @author Costin Leau
+	 */
 	private class PdxOptions implements Runnable {
 
 		private CacheFactory factory;
@@ -69,6 +75,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 		public void run() {
 			Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
+
 			factory.setPdxSerializer((PdxSerializer) pdxSerializer);
 			factory.setPdxDiskStore(pdxDiskStoreName);
 			factory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
@@ -77,9 +84,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 	}
 
-	private static final Log log = LogFactory.getLog(CacheFactoryBean.class);
+	protected final Log log = LogFactory.getLog(getClass());
 
-	private Cache cache;
+	private GemFireCache cache;
 	private Resource cacheXml;
 	private Properties properties;
 	private ClassLoader beanClassLoader;
@@ -89,11 +96,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	private String beanName;
 	private boolean useBeanFactoryLocator = true;
 	// PDX options
-	private Object pdxSerializer;
-	private Boolean pdxPersistent;
-	private Boolean pdxReadSerialized;
-	private Boolean pdxIgnoreUnreadFields;
-	private String pdxDiskStoreName;
+	protected Object pdxSerializer;
+	protected Boolean pdxPersistent;
+	protected Boolean pdxReadSerialized;
+	protected Boolean pdxIgnoreUnreadFields;
+	protected String pdxDiskStoreName;
 
 	public void afterPropertiesSet() throws Exception {
 		// initialize locator
@@ -104,7 +111,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			factoryLocator.afterPropertiesSet();
 		}
 		Properties cfgProps = mergeProperties();
-		CacheFactory factory = new CacheFactory(cfgProps);
 
 		// use the bean class loader to load Declarable classes
 		Thread th = Thread.currentThread();
@@ -115,19 +121,21 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			// first look for open caches
 			String msg = null;
 			try {
-				cache = CacheFactory.getAnyInstance();
+				cache = fetchCache();
 				msg = "Retrieved existing";
 			} catch (CacheClosedException ex) {
+				Object factory = createFactory(cfgProps);
+
 				// GemFire 6.6 specific options
 				if (pdxSerializer != null || pdxPersistent != null || pdxReadSerialized != null
 						|| pdxIgnoreUnreadFields != null || pdxDiskStoreName != null) {
 					Assert.isTrue(ClassUtils.isPresent("com.gemstone.gemfire.pdx.PdxSerializer", beanClassLoader),
 							"Cannot set PDX options since GemFire 6.6 not detected");
-					new PdxOptions(factory).run();
+					applyPdxOptions(factory);
 				}
 
 				// fall back to cache creation
-				cache = factory.create();
+				cache = createCache(factory);
 				msg = "Created";
 			}
 
@@ -135,7 +143,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			DistributedMember member = system.getDistributedMember();
 			log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@"
 					+ member.getHost() + "]");
-
 
 			log.info(msg + " GemFire v." + CacheFactory.getVersion() + " Cache [" + cache.getName() + "]");
 
@@ -146,9 +153,33 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 			if (log.isDebugEnabled())
 				log.debug("Initialized cache from " + cacheXml);
+
 		} finally {
 			th.setContextClassLoader(oldTCCL);
 		}
+	}
+	/**
+	 * Sets the PDX properties for the given object. Note this is implementation specific as it depends on the type
+	 * of the factory passed in.
+	 * 
+	 * @param factory
+	 */
+	protected void applyPdxOptions(Object factory) {
+		if (factory instanceof CacheFactory) {
+			new PdxOptions((CacheFactory) factory).run();
+		}
+	}
+
+	protected Object createFactory(Properties props) {
+		return new CacheFactory(props);
+	}
+
+	protected GemFireCache fetchCache() {
+		return CacheFactory.getAnyInstance();
+	}
+
+	protected GemFireCache createCache(Object factory) {
+		return ((CacheFactory) factory).create();
 	}
 
 	private Properties mergeProperties() {
@@ -184,11 +215,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return null;
 	}
 
-	public Cache getObject() throws Exception {
+	public GemFireCache getObject() throws Exception {
 		return cache;
 	}
 
-	public Class<? extends Cache> getObjectType() {
+	public Class<? extends GemFireCache> getObjectType() {
 		return (cache != null ? cache.getClass() : Cache.class);
 	}
 
@@ -281,5 +312,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setPdxDiskStoreName(String pdxDiskStoreName) {
 		this.pdxDiskStoreName = pdxDiskStoreName;
+	}
+
+	/**
+	 * @return the beanFactory
+	 */
+	protected BeanFactory getBeanFactory() {
+		return beanFactory;
 	}
 }

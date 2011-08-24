@@ -55,7 +55,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
 
-	// whether the pool has been created internaly or not
+	// whether the pool has been created internally or not
 	private boolean internalPool = true;
 
 	private Pool pool;

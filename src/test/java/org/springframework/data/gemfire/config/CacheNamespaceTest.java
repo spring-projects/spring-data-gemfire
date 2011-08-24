@@ -27,6 +27,7 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 
 /**
  * @author Costin Leau
@@ -76,4 +77,19 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		}
 	}
 
+	@Test
+	public void testBasicClientCache() throws Exception {
+		assertTrue(ctx.containsBean("client-cache"));
+		ClientCacheFactoryBean cfb = (ClientCacheFactoryBean) ctx.getBean("&client-cache");
+		assertNull(TestUtils.readField("cacheXml", cfb));
+		assertNull(TestUtils.readField("properties", cfb));
+	}
+
+	@Test
+	public void testBasicClientCacheWithXml() throws Exception {
+		assertTrue(ctx.containsBean("client-cache-with-xml"));
+		ClientCacheFactoryBean cfb = (ClientCacheFactoryBean) ctx.getBean("&client-cache-with-xml");
+		Resource res = TestUtils.readField("cacheXml", cfb);
+		assertEquals("gemfire-client-cache.xml", res.getFilename());
+	}
 }

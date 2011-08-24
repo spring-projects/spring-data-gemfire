@@ -23,4 +23,8 @@
 	</util:properties>
 	
 	<gfe:cache id="no-bl" use-bean-factory-locator="false" />
+	
+	<gfe:client-cache id="client-cache"/>
+	
+	<gfe:client-cache id="client-cache-with-xml" cache-xml-location="classpath:gemfire-client-cache.xml"/>
 </beans>
