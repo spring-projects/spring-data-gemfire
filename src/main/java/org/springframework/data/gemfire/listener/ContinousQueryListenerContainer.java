@@ -47,12 +47,12 @@ import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
  * 
  * @author Costin Leau
  */
-public class QueryListenerContainer implements InitializingBean, DisposableBean, BeanNameAware, SmartLifecycle {
+public class ContinousQueryListenerContainer implements InitializingBean, DisposableBean, BeanNameAware, SmartLifecycle {
 
 	private class EventDispatcherAdapter implements CqListener {
-		private final QueryListener delegate;
+		private final ContinuousQueryListener delegate;
 
-		EventDispatcherAdapter(QueryListener delegate) {
+		EventDispatcherAdapter(ContinuousQueryListener delegate) {
 			this.delegate = delegate;
 		}
 
@@ -72,9 +72,9 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	/**
-	 * Default thread name prefix: "QueryListenerContainer-".
+	 * Default thread name prefix: "ContinousQueryListenerContainer-".
 	 */
-	public static final String DEFAULT_THREAD_NAME_PREFIX = ClassUtils.getShortName(QueryListenerContainer.class) + "-";
+	public static final String DEFAULT_THREAD_NAME_PREFIX = ClassUtils.getShortName(ContinousQueryListenerContainer.class) + "-";
 
 	private Executor subscriptionExecutor;
 	private Executor taskExecutor;
@@ -160,7 +160,7 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 			doStart();
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Started QueryListenerContainer");
+				logger.debug("Started ContinousQueryListenerContainer");
 			}
 		}
 	}
@@ -172,7 +172,7 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Stopped QueryListenerContainer");
+			logger.debug("Stopped ContinousQueryListenerContainer");
 		}
 	}
 
@@ -215,7 +215,7 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 	 * 
 	 * @see #handleListenerException
 	 */
-	protected void executeListener(QueryListener listener, CqEvent event) {
+	protected void executeListener(ContinuousQueryListener listener, CqEvent event) {
 		try {
 			listener.onEvent(event);
 		} catch (Throwable ex) {
@@ -298,6 +298,11 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 		this.queryService = cache.getQueryService();
 	}
 
+	/**
+	 * Set the query service to be used by this container.
+	 * 
+	 * @param service query service used by the container
+	 */
 	public void setQueryService(QueryService service) {
 		this.queryService = service;
 	}
@@ -307,7 +312,7 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 	 * 
 	 * @param queries set of queries
 	 */
-	public void setQueryListeners(Set<CqQueryDefinition> queries) {
+	public void setQueryListeners(Set<ContinousQueryDefinition> queries) {
 		initMapping(queries);
 	}
 
@@ -317,11 +322,11 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 	 * 
 	 * @param listener event cqQuery
 	 */
-	public void addListener(CqQueryDefinition cqQuery) {
+	public void addListener(ContinousQueryDefinition cqQuery) {
 		doAddListener(cqQuery);
 	}
 
-	private void initMapping(Set<CqQueryDefinition> queryDefinitions) {
+	private void initMapping(Set<ContinousQueryDefinition> queryDefinitions) {
 		// stop the listener if currently running
 		if (isRunning()) {
 			stop();
@@ -329,7 +334,7 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 
 		closeQueries();
 
-		for (CqQueryDefinition def : queryDefinitions) {
+		for (ContinousQueryDefinition def : queryDefinitions) {
 			doAddListener(def);
 		}
 
@@ -339,7 +344,7 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 		}
 	}
 
-	private void doAddListener(CqQueryDefinition def) {
+	private void doAddListener(ContinousQueryDefinition def) {
 		CqQuery cq = null;
 
 		try {
@@ -375,7 +380,7 @@ public class QueryListenerContainer implements InitializingBean, DisposableBean,
 		}
 	}
 
-	private void dispatchEvent(final QueryListener listener, final CqEvent event) {
+	private void dispatchEvent(final ContinuousQueryListener listener, final CqEvent event) {
 		taskExecutor.execute(new Runnable() {
 			public void run() {
 				executeListener(listener, event);

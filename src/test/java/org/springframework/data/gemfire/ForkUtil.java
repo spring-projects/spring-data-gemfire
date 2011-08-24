@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Costin Leau
  */
 public class ForkUtil {
+	private static OutputStream os;
 
 	public static OutputStream cloneJVM(String argument) {
 		String cp = System.getProperty("java.class.path");
@@ -79,6 +80,7 @@ public class ForkUtil {
 			public void run() {
 				System.out.println("Stopping fork...");
 				run.set(false);
+				os = null;
 				if (p != null)
 					p.destroy();
 
@@ -91,7 +93,8 @@ public class ForkUtil {
 			}
 		});
 
-		return proc.getOutputStream();
+		os = proc.getOutputStream();
+		return os;
 	}
 
 	public static OutputStream cacheServer() {
@@ -102,5 +105,14 @@ public class ForkUtil {
 			// ignore and move on
 		}
 		return os;
+	}
+
+	public static void sendSignal() {
+		try {
+			os.write("\n".getBytes());
+			os.flush();
+		} catch (IOException ex) {
+			throw new IllegalStateException("Cannot communicate with forked VM", ex);
+		}
 	}
 }

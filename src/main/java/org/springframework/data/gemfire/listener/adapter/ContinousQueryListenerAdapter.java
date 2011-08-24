@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.gemfire.listener.GemfireListenerExecutionFailedException;
-import org.springframework.data.gemfire.listener.QueryListener;
+import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
@@ -69,7 +69,7 @@ import com.gemstone.gemfire.cache.query.CqQuery;
  * @author Costin Leau
  * @see org.springframework.jms.listener.adapter.MessageListenerAdapter
  */
-public class QueryListenerAdapter implements QueryListener {
+public class ContinousQueryListenerAdapter implements ContinuousQueryListener {
 
 	private class MethodInvoker {
 		private final Object delegate;
@@ -192,18 +192,18 @@ public class QueryListenerAdapter implements QueryListener {
 	private MethodInvoker invoker;
 
 	/**
-	 * Create a new {@link QueryListenerAdapter} with default settings.
+	 * Create a new {@link ContinousQueryListenerAdapter} with default settings.
 	 */
-	public QueryListenerAdapter() {
+	public ContinousQueryListenerAdapter() {
 		setDelegate(this);
 	}
 
 	/**
-	 * Create a new {@link QueryListenerAdapter} for the given delegate.
+	 * Create a new {@link ContinousQueryListenerAdapter} for the given delegate.
 	 * 
 	 * @param delegate the delegate object
 	 */
-	public QueryListenerAdapter(Object delegate) {
+	public ContinousQueryListenerAdapter(Object delegate) {
 		setDelegate(delegate);
 	}
 
@@ -251,7 +251,7 @@ public class QueryListenerAdapter implements QueryListener {
 	}
 
 	/**
-	 * Standard {@link QueryListener} entry point.
+	 * Standard {@link ContinuousQueryListener} entry point.
 	 * <p>Delegates the event to the target listener method, with appropriate
 	 * conversion of the event argument. In case of an exception, the
 	 * {@link #handleListenerException(Throwable)} method will be invoked.
@@ -263,11 +263,11 @@ public class QueryListenerAdapter implements QueryListener {
 	public void onEvent(CqEvent event) {
 		try {
 
-			// Check whether the delegate is a QueryListener impl itself.
+			// Check whether the delegate is a ContinuousQueryListener impl itself.
 			// In that case, the adapter will simply act as a pass-through.
 			if (delegate != this) {
-				if (delegate instanceof QueryListener) {
-					((QueryListener) delegate).onEvent(event);
+				if (delegate instanceof ContinuousQueryListener) {
+					((ContinuousQueryListener) delegate).onEvent(event);
 				}
 			}
 

@@ -22,36 +22,36 @@ import org.springframework.util.Assert;
 import com.gemstone.gemfire.cache.query.CqQuery;
 
 /**
- * Basic holder class for defining an CqQuery. Useful for configuring GemFire {@link CqQuery}s through XML
+ * Basic holder class for defining an {@link CqQuery}. Useful for configuring GemFire {@link CqQuery}s through XML
  * and or JavaBeans means.
  * 
  * @author Costin Leau
  */
-public class CqQueryDefinition implements InitializingBean {
+public class ContinousQueryDefinition implements InitializingBean {
 
 	private String name = null, query = null;
-	private QueryListener listener = null;
+	private ContinuousQueryListener listener = null;
 	private boolean durable = false;
 
-	public CqQueryDefinition() {
+	public ContinousQueryDefinition() {
 	}
 
-	public CqQueryDefinition(String query, QueryListener listener) {
+	public ContinousQueryDefinition(String query, ContinuousQueryListener listener) {
 		this(query, listener, false);
 	}
 
-	public CqQueryDefinition(String query, QueryListener listener, boolean durable) {
+	public ContinousQueryDefinition(String query, ContinuousQueryListener listener, boolean durable) {
 		this.query = query;
 		this.listener = listener;
 		this.durable = durable;
 		afterPropertiesSet();
 	}
 
-	public CqQueryDefinition(String name, String query, QueryListener listener) {
+	public ContinousQueryDefinition(String name, String query, ContinuousQueryListener listener) {
 		this(name, query, listener, false);
 	}
 
-	public CqQueryDefinition(String name, String query, QueryListener listener, boolean durable) {
+	public ContinousQueryDefinition(String name, String query, ContinuousQueryListener listener, boolean durable) {
 		this.name = name;
 		this.query = query;
 		this.listener = listener;
@@ -81,7 +81,7 @@ public class CqQueryDefinition implements InitializingBean {
 	/**
 	 * @return the listener
 	 */
-	public QueryListener getListener() {
+	public ContinuousQueryListener getListener() {
 		return listener;
 	}
 

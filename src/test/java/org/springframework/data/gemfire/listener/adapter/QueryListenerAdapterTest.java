@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.gemfire.listener.QueryListener;
+import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.query.CqEvent;
@@ -37,11 +37,11 @@ import com.gemstone.gemfire.cache.query.internal.CqQueryImpl;
  */
 public class QueryListenerAdapterTest {
 
-	private QueryListenerAdapter adapter;
+	private ContinousQueryListenerAdapter adapter;
 
 	@Before
 	public void setUp() {
-		adapter = new QueryListenerAdapter();
+		adapter = new ContinousQueryListenerAdapter();
 	}
 
 	CqEvent event() {
@@ -113,14 +113,14 @@ public class QueryListenerAdapterTest {
 
 	@Test
 	public void testThatTheDefaultHandlingMethodNameIsTheConstantDefault() throws Exception {
-		assertEquals(QueryListenerAdapter.ORIGINAL_DEFAULT_LISTENER_METHOD, adapter.getDefaultListenerMethod());
+		assertEquals(ContinousQueryListenerAdapter.ORIGINAL_DEFAULT_LISTENER_METHOD, adapter.getDefaultListenerMethod());
 	}
 
 	@Test
 	public void testAdapterWithListenerAndDefaultMessage() throws Exception {
-		QueryListener mock = mock(QueryListener.class);
+		ContinuousQueryListener mock = mock(ContinuousQueryListener.class);
 
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		CqEvent event = event();
 		adapter.onEvent(event);
 		verify(mock).onEvent(event);
@@ -129,7 +129,7 @@ public class QueryListenerAdapterTest {
 	@Test
 	public void testHandleEvent() throws Exception {
 		Delegate mock = mock(Delegate.class);
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		CqEvent event = event();
 
 		adapter.onEvent(event);
@@ -139,7 +139,7 @@ public class QueryListenerAdapterTest {
 	@Test
 	public void testHandleArray() throws Exception {
 		Delegate mock = mock(Delegate.class);
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		adapter.setDefaultListenerMethod("handleArray");
 		CqEvent event = event();
 		adapter.onEvent(event);
@@ -149,7 +149,7 @@ public class QueryListenerAdapterTest {
 	@Test
 	public void testHandleKey() throws Exception {
 		Delegate mock = mock(Delegate.class);
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		adapter.setDefaultListenerMethod("handleKey");
 		CqEvent event = event();
 
@@ -160,7 +160,7 @@ public class QueryListenerAdapterTest {
 	@Test
 	public void testHandleKV() throws Exception {
 		Delegate mock = mock(Delegate.class);
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		adapter.setDefaultListenerMethod("handleKV");
 		CqEvent event = event();
 
@@ -171,7 +171,7 @@ public class QueryListenerAdapterTest {
 	@Test
 	public void testHandleEx() throws Exception {
 		Delegate mock = mock(Delegate.class);
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		adapter.setDefaultListenerMethod("handleEx");
 		CqEvent event = event();
 
@@ -182,7 +182,7 @@ public class QueryListenerAdapterTest {
 	@Test
 	public void testHandleOps() throws Exception {
 		Delegate mock = mock(Delegate.class);
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		adapter.setDefaultListenerMethod("handleOps");
 		CqEvent event = event();
 
@@ -193,7 +193,7 @@ public class QueryListenerAdapterTest {
 	@Test
 	public void testHandleAll() throws Exception {
 		Delegate mock = mock(Delegate.class);
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		adapter.setDefaultListenerMethod("handleAll");
 		CqEvent event = event();
 
@@ -205,7 +205,7 @@ public class QueryListenerAdapterTest {
 	@Test
 	public void testInvalid() throws Exception {
 		Delegate mock = mock(Delegate.class);
-		QueryListenerAdapter adapter = new QueryListenerAdapter(mock);
+		ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(mock);
 		adapter.setDefaultListenerMethod("handleInvalid");
 
 		adapter.onEvent(event());
