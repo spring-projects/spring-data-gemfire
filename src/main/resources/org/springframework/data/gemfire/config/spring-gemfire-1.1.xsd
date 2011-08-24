@@ -17,7 +17,42 @@
         ]]></xsd:documentation>
     </xsd:annotation>
     
-    <xsd:element name="cache">
+    
+   	<xsd:complexType name="cacheType">
+		<xsd:attribute name="id" type="xsd:ID" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the cache definition (by default "gemfire-cache").]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cache-xml-location" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation source="org.springframework.core.io.Resource"><![CDATA[
+The location of the GemFire cache xml file, as a Spring resource location: a URL, a "classpath:" pseudo URL,
+or a relative file path.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="properties-ref" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation source="java.util.Properties"><![CDATA[
+The bean name of a Java Properties object that will be used for property substitution. For loading properties
+consider using a dedicated utility such as the <util:*/> namespace and its 'properties' element.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="use-bean-factory-locator" type="xsd:string" default="true" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Indicates whether a bean factory locator is enabled (default) for this cache definition or not. The locator stores
+the enclosing bean factory reference to allow auto-wiring of Spring beans into GemFire managed classes. Usually disabled
+when the same cache is used in multiple application context/bean factories inside the same VM.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+    
+    <xsd:element name="cache" type="cacheType">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.CacheFactoryBean"><![CDATA[
 Defines a GemFire Cache instance used for creating or retrieving 'regions'.
@@ -28,38 +63,31 @@ Defines a GemFire Cache instance used for creating or retrieving 'regions'.
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
+	</xsd:element>
+	
+	<xsd:element name="client-cache">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.client.ClientCacheFactoryBean"><![CDATA[
+Defines a GemFire Client Cache instance used for creating or retrieving 'regions'.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.client.ClientCache" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:attribute name="id" type="xsd:ID" use="optional">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-The name of the cache definition (by default "gemfire-cache").]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="cache-xml-location" type="xsd:string" use="optional">
-				<xsd:annotation>
-					<xsd:documentation source="org.springframework.core.io.Resource"><![CDATA[
-The location of the GemFire cache xml file, as a Spring resource location: a URL, a "classpath:" pseudo URL,
-or a relative file path.
+			<xsd:complexContent>
+				<xsd:extension base="cacheType">
+					<xsd:attribute name="pool-name" use="optional" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The name of the pool used by this client.
 							]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="properties-ref" type="xsd:string" use="optional">
-				<xsd:annotation>
-					<xsd:documentation source="java.util.Properties"><![CDATA[
-The bean name of a Java Properties object that will be used for property substitution. For loading properties
-consider using a dedicated utility such as the <util:*/> namespace and its 'properties' element.
-							]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="use-bean-factory-locator" type="xsd:string" default="true" use="optional">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-Indicates whether a bean factory locator is enabled (default) for this cache definition or not. The locator stores
-the enclosing bean factory reference to allow auto-wiring of Spring beans into GemFire managed classes. Usually disabled
-when the same cache is used in multiple application context/bean factories inside the same VM.
-							]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
 
@@ -733,10 +761,10 @@ cache to differ from other caches.
 							</xsd:restriction>
 						</xsd:simpleType>
 					</xsd:attribute>
-					<xsd:attribute name="pool-name" use="required" type="xsd:string">
+					<xsd:attribute name="pool-name" use="optional" type="xsd:string">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The name of the pool used by this client.
+The name of the pool used by this client. If not set, a default pool (initialized when using client-cache) will be used.
  							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
