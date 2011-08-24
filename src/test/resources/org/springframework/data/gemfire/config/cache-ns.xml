@@ -16,11 +16,15 @@
 	
 	<gfe:cache id="cache-with-name"/>
 	
-	<gfe:cache id="cache-with-xml" cache-xml-location="classpath:cache.xml" properties-ref="props"/>
+	<gfe:cache id="cache-with-xml" cache-xml-location="classpath:gemfire-cache.xml" properties-ref="props"/>
 	
 	<util:properties id="props">
 		<prop key="disable-tcp">false</prop>
 	</util:properties>
 	
 	<gfe:cache id="no-bl" use-bean-factory-locator="false" />
+	
+	<gfe:client-cache id="client-cache"/>
+	
+	<gfe:client-cache id="client-cache-with-xml" cache-xml-location="classpath:gemfire-client-cache.xml"/>
 </beans>

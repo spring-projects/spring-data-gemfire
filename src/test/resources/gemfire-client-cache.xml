@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <!DOCTYPE client-cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+    "http://www.gemstone.com/dtd/cache6_5.dtd">
+
+<client-cache>     
+  <region name="myRegion" refid="PROXY"/>
+   <!-- you can override or add to the PROXY attributes by adding
+         a region-attributes sub element here -->
+</client-cache>
+
