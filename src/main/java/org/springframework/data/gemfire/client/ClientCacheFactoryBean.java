@@ -20,14 +20,13 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Properties;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
@@ -85,18 +84,9 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	private void initializePool(ClientCacheFactory ccf) {
 		Pool p = pool;
 
-		if (p == null && StringUtils.hasText(poolName)) {
-			BeanFactory beanFactory = getBeanFactory();
+		p = PoolManager.find(poolName);
 
-			// try to eagerly initialize the pool name, if defined as a bean
-			if (beanFactory.isTypeMatch(poolName, Pool.class)) {
-				if (log.isDebugEnabled()) {
-					log.debug("Found bean definition for pool '" + poolName + "'. Eagerly initializing it...");
-				}
-				p = beanFactory.getBean(poolName, Pool.class);
-			}
-		}
-
+		System.out.println("*** Pool found " + p);
 		if (p != null) {
 			// copy the pool settings - this way if the pool is not found, at least the cache will have a similar config
 			ccf.setPoolFreeConnectionTimeout(p.getFreeConnectionTimeout());

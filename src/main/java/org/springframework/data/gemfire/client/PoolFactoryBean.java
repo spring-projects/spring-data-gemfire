@@ -23,16 +23,17 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -106,18 +107,18 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			name = beanName;
 		}
 
-		// trigger the initialization of the cache
-		Class<?> cacheClass = null;
-		try {
-			// attempt to use the 6.5 interfaces
-			cacheClass = ClassUtils.resolveClassName("com.gemstone.gemfire.cache.GemFireCache", classLoader);
-		} catch (IllegalArgumentException ex) {
-			// still on 6.0
-			cacheClass = Cache.class;
-		}
-
 		if (beanFactory != null) {
-			beanFactory.getBean(cacheClass);
+			if (beanFactory instanceof ConfigurableListableBeanFactory) {
+				ConfigurableListableBeanFactory lbf = (ConfigurableListableBeanFactory) beanFactory;
+				String[] caches = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(lbf, GemFireCache.class, false,
+						false);
+
+				for (String bn : caches) {
+					if (!lbf.isCurrentlyInCreation(bn)) {
+						beanFactory.getBean(bn);
+					}
+				}
+			}
 		}
 
 		// first check the configured pools
