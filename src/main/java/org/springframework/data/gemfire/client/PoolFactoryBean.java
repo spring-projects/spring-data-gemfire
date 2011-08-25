@@ -31,9 +31,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 
 /**
  * Factory bean for easy declaration and configuration of a GemFire pool.
@@ -102,6 +104,12 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		if (!StringUtils.hasText(name)) {
 			Assert.hasText(beanName, "the pool name is required");
 			name = beanName;
+		}
+
+		// eagerly initialize cache (if needed)
+		if (InternalDistributedSystem.getAnyInstance() == null) {
+			// no cache found, do eager initialization
+			beanFactory.getBean(GemFireCache.class);
 		}
 
 		// first check the configured pools
