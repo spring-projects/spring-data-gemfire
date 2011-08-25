@@ -22,6 +22,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -55,15 +56,17 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> imple
 
 	@Override
 	protected void postProcess(AttributesFactory<K, V> attrFactory) {
-		// try to eagerly initialize the pool name, if defined as a bean
-		if (beanFactory.isTypeMatch(poolName, Pool.class)) {
-			if (log.isDebugEnabled()) {
-				log.debug("Found bean definition for pool '" + poolName + "'. Eagerly initializing it...");
+		if (StringUtils.hasText(poolName)) {
+			// try to eagerly initialize the pool name, if defined as a bean
+			if (beanFactory.isTypeMatch(poolName, Pool.class)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Found bean definition for pool '" + poolName + "'. Eagerly initializing it...");
+				}
+				beanFactory.getBean(poolName, Pool.class);
 			}
-			beanFactory.getBean(poolName, Pool.class);
-		}
 
-		attrFactory.setPoolName(poolName);
+			attrFactory.setPoolName(poolName);
+		}
 	}
 
 	@Override
@@ -93,7 +96,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> imple
 		this.beanFactory = beanFactory;
 	}
 
-	
+
 	/**
 	 * Set the interests for this client region. Both key and regex interest are supported.
 	 * 
