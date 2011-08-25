@@ -149,10 +149,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			// load/init cache.xml
 			if (cacheXml != null) {
 				cache.loadCacheXml(cacheXml.getInputStream());
+
+				if (log.isDebugEnabled())
+					log.debug("Initialized cache from " + cacheXml);
 			}
 
-			if (log.isDebugEnabled())
-				log.debug("Initialized cache from " + cacheXml);
 
 		} finally {
 			th.setContextClassLoader(oldTCCL);

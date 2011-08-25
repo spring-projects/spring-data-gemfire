@@ -5,11 +5,9 @@
     xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire-1.1.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean class="org.springframework.data.gemfire.client.ClientCacheFactoryBean">
-        <property name="poolName" value="pool"/>
-    </bean>
-
-    <gfe:pool id="pool">
-        <gfe:locator host="localhost" port="12345"/>
-    </gfe:pool>
+	<gfe:client-cache use-bean-factory-locator="false" pool-name="gemfire-pool"/>
+	
+	<gfe:pool subscription-enabled="false">
+		<gfe:server host="localhost" port="40404"/>
+	</gfe:pool>
 </beans>
