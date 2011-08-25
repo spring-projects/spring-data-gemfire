@@ -22,11 +22,13 @@ import java.util.Properties;
 
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
@@ -84,9 +86,25 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	private void initializePool(ClientCacheFactory ccf) {
 		Pool p = pool;
 
-		p = PoolManager.find(poolName);
+		if (p == null && StringUtils.hasText(poolName)) {
+			p = PoolManager.find(poolName);
 
-		System.out.println("*** Pool found " + p);
+			// initialize a client-like Distributed System before initializing the pool
+			if (p == null) {
+				Properties prop = mergeProperties();
+				prop.setProperty("mcast-port", "0");
+				prop.setProperty("locators", "");
+
+				DistributedSystem system = DistributedSystem.connect(prop);
+			}
+
+			// trigger pool initialization
+			Assert.isTrue(getBeanFactory().isTypeMatch(poolName, Pool.class), "No bean named " + poolName + " of type "
+					+ Pool.class.getName() + " found");
+
+			p = getBeanFactory().getBean(poolName, Pool.class);
+		}
+
 		if (p != null) {
 			// copy the pool settings - this way if the pool is not found, at least the cache will have a similar config
 			ccf.setPoolFreeConnectionTimeout(p.getFreeConnectionTimeout());

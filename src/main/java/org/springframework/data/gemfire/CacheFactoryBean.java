@@ -28,6 +28,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.Ordered;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -58,7 +59,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @author Costin Leau
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
-		InitializingBean, FactoryBean<GemFireCache>, PersistenceExceptionTranslator {
+		InitializingBean, FactoryBean<GemFireCache>, PersistenceExceptionTranslator, Ordered {
 
 	/**
 	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
@@ -158,6 +159,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			th.setContextClassLoader(oldTCCL);
 		}
 	}
+
 	/**
 	 * Sets the PDX properties for the given object. Note this is implementation specific as it depends on the type
 	 * of the factory passed in.
@@ -182,7 +184,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return ((CacheFactory) factory).create();
 	}
 
-	private Properties mergeProperties() {
+	protected Properties mergeProperties() {
 		Properties cfgProps = (properties != null ? (Properties) properties.clone() : new Properties());
 		return cfgProps;
 	}
@@ -319,5 +321,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	protected BeanFactory getBeanFactory() {
 		return beanFactory;
+	}
+
+	public int getOrder() {
+		return 0;
 	}
 }
