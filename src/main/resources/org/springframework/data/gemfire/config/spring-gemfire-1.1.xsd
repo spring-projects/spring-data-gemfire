@@ -1108,7 +1108,7 @@ Required.
 	    <xsd:attribute name="query" type="xsd:string" use="required">
 	      <xsd:annotation>
 	        <xsd:documentation><![CDATA[
-The query for the GemFire continous query. 
+The query for the GemFire continuous query. 
 	        ]]></xsd:documentation>
 	      </xsd:annotation>
 	    </xsd:attribute>
@@ -1123,14 +1123,14 @@ interface or provide a method named 'handleEvent'.
 	    <xsd:attribute name="name" type="xsd:string" use="optional">
 	      <xsd:annotation>
 	        <xsd:documentation><![CDATA[
-The name of the resulting GemFire continous query. Useful for monitoring and statistics querying. 
+The name of the resulting GemFire continuous query. Useful for monitoring and statistics querying. 
 	        ]]></xsd:documentation>
 	      </xsd:annotation>
 	    </xsd:attribute>
 	    <xsd:attribute name="durable" type="xsd:string" use="optional">
 	      <xsd:annotation>
 	        <xsd:documentation><![CDATA[
-Whether the resulting GemFire continous query is durable or not. 
+Whether the resulting GemFire continuous query is durable or not. 
 	        ]]></xsd:documentation>
 	      </xsd:annotation>
 	    </xsd:attribute>

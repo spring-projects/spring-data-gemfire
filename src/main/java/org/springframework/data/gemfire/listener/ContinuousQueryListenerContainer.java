@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
  * 
  * @author Costin Leau
  */
-public class ContinousQueryListenerContainer implements InitializingBean, DisposableBean, BeanNameAware, SmartLifecycle {
+public class ContinuousQueryListenerContainer implements InitializingBean, DisposableBean, BeanNameAware, SmartLifecycle {
 
 	private class EventDispatcherAdapter implements CqListener {
 		private final ContinuousQueryListener delegate;
@@ -78,7 +78,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	/**
 	 * Default thread name prefix: "ContinousQueryListenerContainer-".
 	 */
-	public static final String DEFAULT_THREAD_NAME_PREFIX = ClassUtils.getShortName(ContinousQueryListenerContainer.class)
+	public static final String DEFAULT_THREAD_NAME_PREFIX = ClassUtils.getShortName(ContinuousQueryListenerContainer.class)
 			+ "-";
 
 	private Executor subscriptionExecutor;
@@ -92,7 +92,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	private volatile boolean initialized = false;
 	private volatile boolean manageExecutor = false;
 
-	private Set<ContinousQueryDefinition> defs = new LinkedHashSet<ContinousQueryDefinition>();
+	private Set<ContinuousQueryDefinition> defs = new LinkedHashSet<ContinuousQueryDefinition>();
 	private Set<CqQuery> queries = new ConcurrentHashSet<CqQuery>();
 
 	private QueryService queryService;
@@ -335,7 +335,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	 * 
 	 * @param queries set of queries
 	 */
-	public void setQueryListeners(Set<ContinousQueryDefinition> queries) {
+	public void setQueryListeners(Set<ContinuousQueryDefinition> queries) {
 		defs.clear();
 		defs.addAll(queries);
 	}
@@ -346,11 +346,11 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	 * 
 	 * @param listener event cqQuery
 	 */
-	public void addListener(ContinousQueryDefinition cqQuery) {
+	public void addListener(ContinuousQueryDefinition cqQuery) {
 		doAddListener(cqQuery);
 	}
 
-	private void initMapping(Set<ContinousQueryDefinition> queryDefinitions) {
+	private void initMapping(Set<ContinuousQueryDefinition> queryDefinitions) {
 		// stop the listener if currently running
 		if (isRunning()) {
 			stop();
@@ -358,7 +358,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 
 		closeQueries();
 
-		for (ContinousQueryDefinition def : queryDefinitions) {
+		for (ContinuousQueryDefinition def : queryDefinitions) {
 			addCQuery(def);
 		}
 
@@ -368,7 +368,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 		}
 	}
 
-	private void doAddListener(ContinousQueryDefinition def) {
+	private void doAddListener(ContinuousQueryDefinition def) {
 		CqQuery cq = addCQuery(def);
 
 		if (isRunning()) {
@@ -376,7 +376,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 		}
 	}
 
-	private CqQuery addCQuery(ContinousQueryDefinition def) {
+	private CqQuery addCQuery(ContinuousQueryDefinition def) {
 		try {
 			CqAttributesFactory caf = new CqAttributesFactory();
 			caf.addCqListener(new EventDispatcherAdapter(def.getListener()));

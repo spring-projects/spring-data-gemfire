@@ -24,7 +24,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.listener.ContinousQueryListenerContainer;
+import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.Pool;
@@ -51,7 +51,7 @@ public class ContainerXmlSetupTest {
 		GenericXmlApplicationContext ctx = new GenericXmlApplicationContext(
 				"/org/springframework/data/gemfire/listener/container.xml");
 
-		ContinousQueryListenerContainer container = ctx.getBean(ContinousQueryListenerContainer.class);
+		ContinuousQueryListenerContainer container = ctx.getBean(ContinuousQueryListenerContainer.class);
 		assertTrue(container.isRunning());
 
 		Cache cache = ctx.getBean("gemfire-cache", Cache.class);

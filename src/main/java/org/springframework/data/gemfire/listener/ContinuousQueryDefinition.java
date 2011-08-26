@@ -27,31 +27,31 @@ import com.gemstone.gemfire.cache.query.CqQuery;
  * 
  * @author Costin Leau
  */
-public class ContinousQueryDefinition implements InitializingBean {
+public class ContinuousQueryDefinition implements InitializingBean {
 
 	private String name = null, query = null;
 	private ContinuousQueryListener listener = null;
 	private boolean durable = false;
 
-	public ContinousQueryDefinition() {
+	public ContinuousQueryDefinition() {
 	}
 
-	public ContinousQueryDefinition(String query, ContinuousQueryListener listener) {
+	public ContinuousQueryDefinition(String query, ContinuousQueryListener listener) {
 		this(query, listener, false);
 	}
 
-	public ContinousQueryDefinition(String query, ContinuousQueryListener listener, boolean durable) {
+	public ContinuousQueryDefinition(String query, ContinuousQueryListener listener, boolean durable) {
 		this.query = query;
 		this.listener = listener;
 		this.durable = durable;
 		afterPropertiesSet();
 	}
 
-	public ContinousQueryDefinition(String name, String query, ContinuousQueryListener listener) {
+	public ContinuousQueryDefinition(String name, String query, ContinuousQueryListener listener) {
 		this(name, query, listener, false);
 	}
 
-	public ContinousQueryDefinition(String name, String query, ContinuousQueryListener listener, boolean durable) {
+	public ContinuousQueryDefinition(String name, String query, ContinuousQueryListener listener, boolean durable) {
 		this.name = name;
 		this.query = query;
 		this.listener = listener;
