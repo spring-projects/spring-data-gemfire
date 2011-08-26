@@ -23,9 +23,9 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedSet;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.listener.ContinousQueryDefinition;
-import org.springframework.data.gemfire.listener.ContinousQueryListenerContainer;
-import org.springframework.data.gemfire.listener.adapter.ContinousQueryListenerAdapter;
+import org.springframework.data.gemfire.listener.ContinuousQueryDefinition;
+import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
+import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -41,8 +41,8 @@ import org.w3c.dom.NamedNodeMap;
 class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
-	protected Class<ContinousQueryListenerContainer> getBeanClass(Element element) {
-		return ContinousQueryListenerContainer.class;
+	protected Class<ContinuousQueryListenerContainer> getBeanClass(Element element) {
+		return ContinuousQueryListenerContainer.class;
 	}
 
 	@Override
@@ -85,14 +85,14 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 	}
 
 	/**
-	 * Parses a listener definition. Returns the listener bean reference definition (of a {@link ContinousQueryDefinition}).
+	 * Parses a listener definition. Returns the listener bean reference definition (of a {@link ContinuousQueryDefinition}).
 	 * 
 	 * @param element
 	 * @return
 	 */
 	private BeanDefinition parseListener(Element element) {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ContinousQueryListenerAdapter.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ContinuousQueryListenerAdapter.class);
 		builder.addConstructorArgReference(element.getAttribute("ref"));
 
 		String attr = element.getAttribute("method");
@@ -100,7 +100,7 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 			builder.addPropertyValue("defaultListenerMethod", attr);
 		}
 
-		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(ContinousQueryDefinition.class);
+		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(ContinuousQueryDefinition.class);
 
 		attr = element.getAttribute("name");
 		if (StringUtils.hasText(attr)) {
