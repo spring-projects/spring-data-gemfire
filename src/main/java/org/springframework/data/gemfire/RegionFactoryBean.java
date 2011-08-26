@@ -16,11 +16,14 @@
 
 package org.springframework.data.gemfire;
 
+import java.lang.reflect.Field;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.ReflectionUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -31,6 +34,7 @@ import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
@@ -68,33 +72,35 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (attributes != null)
 			AttributesFactory.validateAttributes(attributes);
 
-		AttributesFactory<K, V> attrFactory = (attributes != null ? new AttributesFactory<K, V>(attributes)
-				: new AttributesFactory<K, V>());
+		RegionFactory<K, V> regionFactory = (attributes != null ? cache.createRegionFactory(attributes)
+				: cache.<K, V> createRegionFactory());
+
 		if (!ObjectUtils.isEmpty(cacheListeners)) {
 			for (CacheListener<K, V> listener : cacheListeners) {
-				attrFactory.addCacheListener(listener);
+				regionFactory.addCacheListener(listener);
 			}
 		}
 
 		if (cacheLoader != null) {
-			attrFactory.setCacheLoader(cacheLoader);
+			regionFactory.setCacheLoader(cacheLoader);
 		}
 
 		if (cacheWriter != null) {
-			attrFactory.setCacheWriter(cacheWriter);
+			regionFactory.setCacheWriter(cacheWriter);
 		}
 
 		if (dataPolicy != null) {
-			attrFactory.setDataPolicy(dataPolicy);
+			regionFactory.setDataPolicy(dataPolicy);
 		}
 
 		if (scope != null) {
-			attrFactory.setScope(scope);
+			regionFactory.setScope(scope);
 		}
 
-		postProcess(attrFactory);
+		// get underlying AttributesFactory
+		postProcess(findAttrFactory(regionFactory));
 
-		Region<K, V> reg = cache.createRegion(regionName, attrFactory.create());
+		Region<K, V> reg = regionFactory.create(regionName);
 		log.info("Created new cache region [" + regionName + "]");
 		if (snapshot != null) {
 			reg.loadSnapshot(snapshot.getInputStream());
@@ -103,13 +109,23 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		return reg;
 	}
 
+	@SuppressWarnings("unchecked")
+	private AttributesFactory<K, V> findAttrFactory(RegionFactory<K, V> regionFactory) {
+		Field attrField = ReflectionUtils.findField(RegionFactory.class, "attrFactory", AttributesFactory.class);
+		ReflectionUtils.makeAccessible(attrField);
+		return (AttributesFactory<K, V>) ReflectionUtils.getField(attrField, regionFactory);
+	}
+
+
 	/**
 	 * Post-process the attribute factory object used for configuring the region of this factory bean during the initialization process.
 	 * The object is already initialized and configured by the factory bean before this method
 	 * is invoked.
 	 * 
 	 * @param attrFactory attribute factory
+	 * @deprecated as of GemFire 6.5, the use of {@link AttributesFactory} has been deprecated
 	 */
+	@Deprecated
 	protected void postProcess(AttributesFactory<K, V> attrFactory) {
 	}
 
