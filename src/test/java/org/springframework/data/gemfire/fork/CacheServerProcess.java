@@ -20,6 +20,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
+ 
+import org.springframework.data.gemfire.ForkUtil;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -57,7 +60,8 @@ public class CacheServerProcess {
 		server.setNotifyBySubscription(true);
 		server.start();
 
-
+		ForkUtil.createControlFile(CacheServerProcess.class.getName());
+		
 		System.out.println("Waiting for signal");
 		// wait for signal
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
