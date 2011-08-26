@@ -111,7 +111,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	@SuppressWarnings("unchecked")
 	private AttributesFactory<K, V> findAttrFactory(RegionFactory<K, V> regionFactory) {
-		Field attrField = ReflectionUtils.findField(RegionFactory.class, "attrFactory", AttributesFactory.class);
+		Field attrField = ReflectionUtils.findField(RegionFactory.class, "attrsFactory", AttributesFactory.class);
 		ReflectionUtils.makeAccessible(attrField);
 		return (AttributesFactory<K, V>) ReflectionUtils.getField(attrField, regionFactory);
 	}
