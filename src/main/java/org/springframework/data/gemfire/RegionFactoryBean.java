@@ -22,6 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -32,6 +34,7 @@ import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -40,6 +43,9 @@ import com.gemstone.gemfire.cache.Scope;
 /**
  * FactoryBean for creating generic GemFire {@link Region}s. Will try to first locate the region (by name)
  * and, in case none if found, proceed to creating one using the given settings.
+ * 
+ * Note that this factory bean allows for very flexible creation of GemFire {@link Region}. For "client" regions
+ * however, see {@link ClientRegionFactoryBean} which offers easier configuration and defaults.
  * 
  * @author Costin Leau
  */
@@ -68,12 +74,16 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 
 	@Override
-	protected Region<K, V> lookupFallback(Cache cache, String regionName) throws Exception {
+	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
+		Assert.isTrue(cache instanceof Cache, "Unable to create regions from " + cache);
+
+		Cache c = (Cache) cache;
+
 		if (attributes != null)
 			AttributesFactory.validateAttributes(attributes);
 
-		RegionFactory<K, V> regionFactory = (attributes != null ? cache.createRegionFactory(attributes)
-				: cache.<K, V> createRegionFactory());
+		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes)
+				: c.<K, V> createRegionFactory());
 
 		if (!ObjectUtils.isEmpty(cacheListeners)) {
 			for (CacheListener<K, V> listener : cacheListeners) {

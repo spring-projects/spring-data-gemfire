@@ -17,7 +17,6 @@
 package org.springframework.data.gemfire.config;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
@@ -30,10 +29,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
 
 /**
  * Parser for &lt;client-region;gt; definitions.
@@ -57,11 +53,11 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 		// setting the cache/DS to a be 'loner' isn't feasible
 		// so to prevent both client and p2p communication in the region,
 		// the scope is fixed to local
-		builder.addPropertyValue("scope", Scope.LOCAL);
-
 		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicy");
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
+		ParsingUtils.setPropertyValue(element, builder, "shortcut", "shortcut");
+
 
 		// set the persistent policy
 		String attr = element.getAttribute("persistent");
@@ -70,15 +66,8 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 
 		if (Boolean.parseBoolean(attr)) {
 			// check first for GemFire 6.5
-			if (ConcurrentMap.class.isAssignableFrom(Region.class)) {
-				builder.addPropertyValue("dataPolicy", DataPolicy.PERSISTENT_REPLICATE);
-				frozenDataPolicy = true;
-			}
-			else {
-				parserContext.getReaderContext().error(
-						"Can define persistent partitions only from GemFire 6.5 onwards - current version is ["
-								+ CacheFactory.getVersion() + "]", element);
-			}
+			builder.addPropertyValue("dataPolicy", DataPolicy.PERSISTENT_REPLICATE);
+			frozenDataPolicy = true;
 		}
 
 		attr = element.getAttribute("cache-ref");

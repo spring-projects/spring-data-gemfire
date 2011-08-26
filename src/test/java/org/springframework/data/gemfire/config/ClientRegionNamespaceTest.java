@@ -43,7 +43,6 @@ import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 /**
@@ -71,7 +70,6 @@ public class ClientRegionNamespaceTest {
 		assertTrue(context.containsBean("empty"));
 		ClientRegionFactoryBean fb = context.getBean("&empty", ClientRegionFactoryBean.class);
 		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", fb));
-		assertEquals(Scope.LOCAL, TestUtils.readField("scope", fb));
 	}
 
 	//@Test
@@ -103,7 +101,6 @@ public class ClientRegionNamespaceTest {
 		assertTrue(context.containsBean("persistent"));
 		ClientRegionFactoryBean fb = context.getBean("&persistent", ClientRegionFactoryBean.class);
 		assertEquals(DataPolicy.PERSISTENT_REPLICATE, TestUtils.readField("dataPolicy", fb));
-		assertEquals(Scope.LOCAL, TestUtils.readField("scope", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		File[] diskDirs = attrs.getDiskDirs();
 		assertEquals(1, diskDirs.length);

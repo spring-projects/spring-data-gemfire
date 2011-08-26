@@ -840,6 +840,26 @@ The name of the pool used by this client. If not set, a default pool (initialize
  							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
+					<xsd:attribute name="shortcut" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The ClientRegionShortcut for this region. Allows easy initialization of the region based on defaults.
+ 							]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="PROXY"/>
+								<xsd:enumeration value="CACHING_PROXY"/>
+								<xsd:enumeration value="CACHING_PROXY_HEAP_LRU"/>
+								<xsd:enumeration value="CACHING_PROXY_OVERFLOW"/>
+								<xsd:enumeration value="LOCAL"/>
+								<xsd:enumeration value="LOCAL_PERSISTENT"/>
+								<xsd:enumeration value="LOCAL_HEAP_LRU"/>
+								<xsd:enumeration value="LOCAL_OVERFLOW"/>
+								<xsd:enumeration value="LOCAL_PERSISTENT_OVERFLOW"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:attribute>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>

@@ -25,7 +25,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 
 /**
@@ -40,7 +40,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	protected final Log log = LogFactory.getLog(getClass());
 
 	private String beanName;
-	private Cache cache;
+	private GemFireCache cache;
 	private String name;
 
 	Region<K, V> region;
@@ -68,7 +68,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	 * @param regionName region name
 	 * @throws Exception
 	 */
-	protected Region<K, V> lookupFallback(Cache cache, String regionName) throws Exception {
+	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		throw new BeanInitializationException("Cannot find region [" + regionName + "] in cache " + cache);
 	}
 
@@ -94,7 +94,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
 	 * @param cache the cache to set
 	 */
-	public void setCache(Cache cache) {
+	public void setCache(GemFireCache cache) {
 		this.cache = cache;
 	}
 
