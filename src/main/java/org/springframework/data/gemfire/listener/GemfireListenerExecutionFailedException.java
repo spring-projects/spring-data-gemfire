@@ -17,13 +17,13 @@
 package org.springframework.data.gemfire.listener;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.gemfire.listener.adapter.QueryListenerAdapter;
+import org.springframework.data.gemfire.listener.adapter.ContinousQueryListenerAdapter;
 
 /**
  * Exception thrown when the execution of a listener method failed. 
  * 
  * @author Costin Leau
- * @see QueryListenerAdapter
+ * @see ContinousQueryListenerAdapter
  */
 public class GemfireListenerExecutionFailedException extends InvalidDataAccessApiUsageException {
 

@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.listener;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Properties;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -28,9 +26,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.listener.adapter.QueryListenerAdapter;
+import org.springframework.data.gemfire.listener.adapter.ContinousQueryListenerAdapter;
 
 import com.gemstone.gemfire.cache.RegionService;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -42,11 +41,10 @@ import com.gemstone.gemfire.cache.query.CqEvent;
 public class ListenerContainerTests {
 
 	private final BlockingDeque<CqEvent> bag = new LinkedBlockingDeque<CqEvent>();
-	protected QueryListenerContainer container;
+	protected ContinousQueryListenerContainer container;
 
 	private static RegionService cache = null;
 	private static Pool pool = null;
-	private static OutputStream os = null;
 
 	private final Object handler = new Object() {
 		public void handleEvent(CqEvent event) {
@@ -54,11 +52,11 @@ public class ListenerContainerTests {
 		}
 	};
 
-	private final QueryListenerAdapter adapter = new QueryListenerAdapter(handler);
+	private final ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(handler);
 
 	@BeforeClass
 	public static void startUp() throws Exception {
-		os = ForkUtil.cacheServer();
+		ForkUtil.cacheServer();
 
 		Properties props = new Properties();
 		props.put("mcast-port", "0");
@@ -73,7 +71,6 @@ public class ListenerContainerTests {
 
 		cache = cacheFB.getObject();
 
-
 		PoolFactory pf = PoolManager.createFactory();
 		pf.addServer("localhost", 40404);
 		pf.setSubscriptionEnabled(true);
@@ -83,7 +80,7 @@ public class ListenerContainerTests {
 
 	@AfterClass
 	public static void cleanUp() {
-		sendSignal();
+		ForkUtil.sendSignal();
 
 		if (pool != null) {
 			pool.destroy();
@@ -101,27 +98,21 @@ public class ListenerContainerTests {
 	public void setUp() throws Exception {
 		String query = "SELECT * from /test-cq";
 
-		container = new QueryListenerContainer();
-		container.setQueryService(pool.getQueryService());
+		container = new ContinousQueryListenerContainer();
+		//container.setQueryService(pool.getQueryService());
+		System.out.println(cache instanceof ClientCache);
+		container.setCache(cache);
 		container.setBeanName("container");
-		container.addListener(new CqQueryDefinition("test", query, adapter));
+		container.addListener(new ContinousQueryDefinition("test", query, adapter));
 		container.afterPropertiesSet();
 	}
 
-	private static void sendSignal() {
-		try {
-			os.write("\n".getBytes());
-			os.flush();
-		} catch (IOException ex) {
-			throw new IllegalStateException("Cannot communicate with forked VM", ex);
-		}
-	}
 
 	@Test
 	public void testContainer() throws Exception {
-		sendSignal();
+		ForkUtil.sendSignal();
 		Thread.sleep(3000);
 		System.out.println("Bag is " + bag);
-		sendSignal();
+		ForkUtil.sendSignal();
 	}
 }

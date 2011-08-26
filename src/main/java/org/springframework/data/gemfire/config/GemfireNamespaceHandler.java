@@ -37,5 +37,7 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("cache-server", new CacheServerParser());
 
 		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());
+
+		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
 	}
 }
