@@ -28,11 +28,14 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.gemfire.GemfireQueryException;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ErrorHandler;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.RegionService;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.CqEvent;
@@ -74,7 +77,8 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	/**
 	 * Default thread name prefix: "ContinousQueryListenerContainer-".
 	 */
-	public static final String DEFAULT_THREAD_NAME_PREFIX = ClassUtils.getShortName(ContinousQueryListenerContainer.class) + "-";
+	public static final String DEFAULT_THREAD_NAME_PREFIX = ClassUtils.getShortName(ContinousQueryListenerContainer.class)
+			+ "-";
 
 	private Executor subscriptionExecutor;
 	private Executor taskExecutor;
@@ -90,6 +94,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	private Set<CqQuery> queries = new ConcurrentHashSet<CqQuery>();
 
 	private QueryService queryService;
+	private String poolName;
 
 
 	public void afterPropertiesSet() {
@@ -100,6 +105,12 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 
 		if (subscriptionExecutor == null) {
 			subscriptionExecutor = taskExecutor;
+		}
+
+		if (StringUtils.hasText(poolName)) {
+			Pool pool = PoolManager.find(poolName);
+			Assert.notNull(pool, "No pool named [" + poolName + "] found");
+			queryService = pool.getQueryService();
 		}
 
 		initialized = true;
@@ -305,6 +316,15 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	 */
 	public void setQueryService(QueryService service) {
 		this.queryService = service;
+	}
+
+	/**
+	 * Set the name of the {@link Pool} used for performing the queries by this container.
+	 * 
+	 * @param service
+	 */
+	public void setPoolName(String poolName) {
+		this.poolName = poolName;
 	}
 
 	/**

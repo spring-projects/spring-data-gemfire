@@ -16,7 +16,7 @@
 		<prop key="log-level">warning</prop>
 	</util:properties>
 	
-	<gfe:cache properties-ref="props" use-bean-factory-locator="false"/>
+	<gfe:client-cache use-bean-factory-locator="false" pool-name="client"/>
 
 	<gfe:pool id="client" subscription-enabled="true">
 		<gfe:server host="localhost" port="40404"/>
@@ -24,7 +24,7 @@
 	 
 	<task:executor id="testTaskExecutor" />
 	 			
-	<gfe:cq-listener-container cache="gemfire-cache">
+	<gfe:cq-listener-container cache="gemfire-cache" pool-name="client">
 		<!-- default handle method -->
 		<gfe:listener ref="testBean1" query="SELECT * from /test-cq"/>
 		<gfe:listener ref="testBean1" query="SELECT * from /test-cq" name="test-bean-1" method="handleQuery"/>

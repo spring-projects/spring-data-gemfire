@@ -1083,6 +1083,13 @@ and stop as soon as possible.
 	          ]]></xsd:documentation>
 	        </xsd:annotation>
 	      </xsd:attribute>
+		  <xsd:attribute name="pool-name" use="optional" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the pool used by the container.
+ 						]]></xsd:documentation>
+			</xsd:annotation>
+		  </xsd:attribute>
 	    </xsd:complexType>
 	  </xsd:element>
 	

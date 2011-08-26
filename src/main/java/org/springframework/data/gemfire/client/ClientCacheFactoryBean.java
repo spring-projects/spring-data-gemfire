@@ -103,6 +103,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 					+ Pool.class.getName() + " found");
 
 			p = getBeanFactory().getBean(poolName, Pool.class);
+			Assert.notNull(p, "No pool named [" + poolName + "] found");
 		}
 
 		if (p != null) {
@@ -137,7 +138,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			List<InetSocketAddress> servers = p.getServers();
 			if (locators != null) {
 				for (InetSocketAddress inet : servers) {
-					ccf.addPoolLocator(inet.getHostName(), inet.getPort());
+					ccf.addPoolServer(inet.getHostName(), inet.getPort());
 				}
 			}
 		}

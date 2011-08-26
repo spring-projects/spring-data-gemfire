@@ -26,7 +26,6 @@ import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.listener.ContinousQueryListenerContainer;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.CqQuery;
@@ -51,11 +50,6 @@ public class ContainerXmlSetupTest {
 	public void testContainerSetup() throws Exception {
 		GenericXmlApplicationContext ctx = new GenericXmlApplicationContext(
 				"/org/springframework/data/gemfire/listener/container.xml");
-
-		PoolFactory pf = PoolManager.createFactory();
-		pf.addServer("localhost", 40404);
-		pf.setSubscriptionEnabled(true);
-		Pool pool = pf.create("client");
 
 		ContinousQueryListenerContainer container = ctx.getBean(ContinousQueryListenerContainer.class);
 		assertTrue(container.isRunning());

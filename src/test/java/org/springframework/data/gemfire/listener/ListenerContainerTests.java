@@ -24,15 +24,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.listener.adapter.ContinousQueryListenerAdapter;
 
 import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.CqEvent;
 
 /**
@@ -63,18 +60,10 @@ public class ListenerContainerTests {
 		props.put("name", "cq-client");
 		props.put("log-level", "warning");
 
-		CacheFactoryBean cacheFB = new CacheFactoryBean();
-		cacheFB.setBeanName("gemfire-cache");
-		cacheFB.setUseBeanFactoryLocator(false);
-		cacheFB.setProperties(props);
-		cacheFB.afterPropertiesSet();
+		ClientCacheFactory ccf = new ClientCacheFactory(props);
+		ccf.setPoolSubscriptionEnabled(true);
+		cache = ccf.create();
 
-		cache = cacheFB.getObject();
-
-		PoolFactory pf = PoolManager.createFactory();
-		pf.addServer("localhost", 40404);
-		pf.setSubscriptionEnabled(true);
-		pool = pf.create("client");
 	}
 
 
@@ -99,8 +88,6 @@ public class ListenerContainerTests {
 		String query = "SELECT * from /test-cq";
 
 		container = new ContinousQueryListenerContainer();
-		//container.setQueryService(pool.getQueryService());
-		System.out.println(cache instanceof ClientCache);
 		container.setCache(cache);
 		container.setBeanName("container");
 		container.addListener(new ContinousQueryDefinition("test", query, adapter));

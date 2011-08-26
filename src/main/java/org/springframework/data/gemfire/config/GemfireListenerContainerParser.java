@@ -60,10 +60,9 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 			}
 		}
 
-		String phase = element.getAttribute("phase");
-		if (StringUtils.hasText(phase)) {
-			builder.addPropertyValue("phase", phase);
-		}
+
+		ParsingUtils.setPropertyValue(element, builder, "phase", "phase");
+		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
 
 		postProcess(builder, element);
 
