@@ -64,6 +64,11 @@ public class ListenerContainerTests {
 		ccf.setPoolSubscriptionEnabled(true);
 		cache = ccf.create();
 
+		// not really used but here just for future tests :)
+		//		PoolFactory pf = PoolManager.createFactory();
+		//		pf.addServer("localhost", 40404);
+		//		pf.setSubscriptionEnabled(true);
+		//		Pool pool = pf.create("client");
 	}
 
 
@@ -89,11 +94,11 @@ public class ListenerContainerTests {
 
 		container = new ContinousQueryListenerContainer();
 		container.setCache(cache);
+		//container.setPoolName("client");
 		container.setBeanName("container");
-		container.addListener(new ContinousQueryDefinition("test", query, adapter));
 		container.afterPropertiesSet();
+		container.addListener(new ContinousQueryDefinition("test", query, adapter));
 	}
-
 
 	@Test
 	public void testContainer() throws Exception {

@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.listener;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -91,6 +92,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	private volatile boolean initialized = false;
 	private volatile boolean manageExecutor = false;
 
+	private Set<ContinousQueryDefinition> defs = new LinkedHashSet<ContinousQueryDefinition>();
 	private Set<CqQuery> queries = new ConcurrentHashSet<CqQuery>();
 
 	private QueryService queryService;
@@ -113,6 +115,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 			queryService = pool.getQueryService();
 		}
 
+		initMapping(defs);
 		initialized = true;
 
 		start();
@@ -333,7 +336,8 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	 * @param queries set of queries
 	 */
 	public void setQueryListeners(Set<ContinousQueryDefinition> queries) {
-		initMapping(queries);
+		defs.clear();
+		defs.addAll(queries);
 	}
 
 	/**
@@ -355,7 +359,7 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 		closeQueries();
 
 		for (ContinousQueryDefinition def : queryDefinitions) {
-			doAddListener(def);
+			addCQuery(def);
 		}
 
 		// resume activity
@@ -365,12 +369,20 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 	}
 
 	private void doAddListener(ContinousQueryDefinition def) {
-		CqQuery cq = null;
+		CqQuery cq = addCQuery(def);
 
+		if (isRunning()) {
+			executeQuery(cq);
+		}
+	}
+
+	private CqQuery addCQuery(ContinousQueryDefinition def) {
 		try {
 			CqAttributesFactory caf = new CqAttributesFactory();
 			caf.addCqListener(new EventDispatcherAdapter(def.getListener()));
 			CqAttributes attr = caf.create();
+
+			CqQuery cq = null;
 
 			if (StringUtils.hasText(def.getName())) {
 				cq = queryService.newCq(def.getName(), def.getQuery(), attr, def.isDurable());
@@ -378,15 +390,13 @@ public class ContinousQueryListenerContainer implements InitializingBean, Dispos
 			else {
 				cq = queryService.newCq(def.getQuery(), attr, def.isDurable());
 			}
+
 			queries.add(cq);
+			return cq;
 		} catch (RuntimeException ex) {
 			throw new GemfireQueryException("Cannot create query ", ex);
 		} catch (QueryException ex) {
 			throw new GemfireQueryException("Cannot create query ", ex);
-		}
-
-		if (isRunning()) {
-			executeQuery(cq);
 		}
 	}
 

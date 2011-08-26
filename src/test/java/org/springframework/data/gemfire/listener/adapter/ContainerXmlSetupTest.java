@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.listener.adapter;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.AfterClass;
@@ -26,8 +27,7 @@ import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.listener.ContinousQueryListenerContainer;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.query.CqQuery;
 
 /**
@@ -54,12 +54,15 @@ public class ContainerXmlSetupTest {
 		ContinousQueryListenerContainer container = ctx.getBean(ContinousQueryListenerContainer.class);
 		assertTrue(container.isRunning());
 
-		ForkUtil.sendSignal();
-		Thread.sleep(3000);
 		Cache cache = ctx.getBean("gemfire-cache", Cache.class);
+		Pool pool = ctx.getBean("client", Pool.class);
 
 		CqQuery[] cqs = cache.getQueryService().getCqs();
-		System.out.println("Cqs " + cqs.length);
+		CqQuery[] pcqs = pool.getQueryService().getCqs();
+		assertTrue(pool.getQueryService().getCq("test-bean-1") != null);
+		assertEquals(3, cqs.length);
+		assertEquals(3, pcqs.length);
 		ForkUtil.sendSignal();
+		Thread.sleep(3000);
 	}
 }

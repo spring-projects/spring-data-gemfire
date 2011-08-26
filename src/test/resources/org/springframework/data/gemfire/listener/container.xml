@@ -16,7 +16,7 @@
 		<prop key="log-level">warning</prop>
 	</util:properties>
 	
-	<gfe:client-cache use-bean-factory-locator="false" pool-name="client"/>
+	<gfe:client-cache use-bean-factory-locator="false"/>
 
 	<gfe:pool id="client" subscription-enabled="true">
 		<gfe:server host="localhost" port="40404"/>
