@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="apis">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="apis">
   <title>Working with the GemFire APIs</title>
 
   <para>Once the GemFire cache and regions have been configured they can
@@ -136,6 +136,8 @@
     url="http://www.gemstone.com/docs/6.0.1/product/docs/japi/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
   </section>
 
+  <xi:include href="cq-container.xml"/>
+  
   <section id="apis:declarable">
     <title>Wiring <interfacename>Declarable</interfacename> components</title>
 
