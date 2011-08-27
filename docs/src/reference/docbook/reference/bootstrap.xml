@@ -226,6 +226,49 @@
 		allows potential regions, listener, writers or instantiators defined declaratively to be fully initialized and registered before the server starts accepting connections. Keep this in mind
 		when doing programmatic configuration of the items above as the server might start before your components and thus not be seen by the clients connecting right away.</para></note>
     </section>
+
+    <section id="bootstrap:cache:client">
+    	<title>Configuring a GemFire <literal>ClientCache</literal></title>
+    	
+    	<para>Another configuration addition in SGF 1.1 is the dedicated support for configuring 
+    	<ulink url="http://www.gemstone.com/docs/6.5.1/product/docs/japi/com/gemstone/gemfire/cache/client/ClientCache.html">ClientCache</ulink> - 
+    	similar to a <link linkend="bootstrap:cache">cache</link> (in both usage and definition) - through the <literal>org.springframework.data.gemfire.client</literal> package and in particular
+    	<classname>ClientCacheFactoryBean</classname>.
+    	</para>
+    	
+    	<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+        
+    <gfe:client-cache />
+     
+</beans>]]></programlisting>
+
+		<para><literal>client-cache</literal> supports much of the same options as the <emphasis>cache</emphasis> element. However as oppose to a <emphasis>vanilla</emphasis> cache, 
+		a client cache connects to a server through a pool (by default a pool is created to connect to a server on <literal>localhost</literal> and <literal>40404</literal> -  
+    	the default pool is used by all client cache regions (unless configured to use a different pool)).</para>
+    	
+    	<para>Pools can be defined through the <literal>pool</literal>; in case of client caches and regions <literal>pool</literal>s can be used to customize the connectivity to the server for
+    	individual entities or for the entire cache. For example, to custommize the default pool used by <literal>client-cache</literal>, one needs to define a pool and wire it to cache definition:</para>
+    	
+    	<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+        
+	<gfe:client-region id="simple" pool-name="my-pool"/>
+
+	<gfe:pool id="my-pool" subscription-enabled="true">
+	    <gfe:locator host="someHost" port="43210"/>
+	</gfe:pool>
+	 
+</beans>]]></programlisting>    	
+	</section>    
   </section>
 
   <section id="bootstrap:region">
@@ -500,13 +543,19 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
 		
 		<para>GemFire supports various deployment topologies for managing and distributing data. The topic is outside the scope of this documentation however to quickly recap, they
 		can be categoried in short in: peer-to-peer (p2p), client-server (or super-peer cache network) and wide area cache network (or WAN). In the last two scenarios, it is common
-		to declare <emphasis>client</emphasis> regions which connect to a backing cache server (or super peer). SGF offers dedicated support for such configuration through the
-		<literal>client-region</literal> and <literal>pool</literal> elements.
+		to declare <emphasis>client</emphasis> regions which connect to a backing cache server (or super peer). SGF offers dedicated support for such configuration through
+		<xref linkend="bootstrap:cache:client"/>, <literal>client-region</literal> and <literal>pool</literal> elements.
 		As the name imply, the former defines a client region while the latter connection pools to be used/shared by the various client regions.</para>
 		
 		<para>Below is a usual configuration for a client region:</para>
 		
-		<programlisting language="xml"><![CDATA[<!-- client region declaration -->
+		<programlisting language="xml"><![CDATA[<!-- client region using the default client-cache pool -->
+<gfe:client-region id="simple">
+    <gfe:cache-listener ref="c-listener"/>
+</gfe:client-region>
+		
+		
+<!-- region using its own dedicated pool -->
 <gfe:client-region id="complex" pool-name="gemfire-pool">
     <gfe:cache-listener ref="c-listener"/>
 </gfe:client-region>
@@ -514,8 +563,8 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
 <bean id="c-listener" class="some.pkg.SimpleCacheListener"/>
 
 <!-- pool declaration -->	
-<gfe:pool id="gemfire-pool" subscription-enabled="false">
-    <gfe:locator host="localhost" port="40403"/>
+<gfe:pool id="gemfire-pool" subscription-enabled="true">
+    <gfe:locator host="someHost" port="40403"/>
 </gfe:pool>]]></programlisting>
 
 		<para>Just as the other region types, <literal>client-region</literal> allows defining <interfacename>CacheListener</interfacename>s. It also relies on the same naming conventions
