@@ -1,4 +1,3 @@
-
 /**
  *
  * Classes providing support for GemFire client configuration.

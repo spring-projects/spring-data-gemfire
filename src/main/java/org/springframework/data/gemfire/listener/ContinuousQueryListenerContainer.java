@@ -324,7 +324,7 @@ public class ContinuousQueryListenerContainer implements InitializingBean, Dispo
 	/**
 	 * Set the name of the {@link Pool} used for performing the queries by this container.
 	 * 
-	 * @param service
+	 * @param poolName the name of the pool to be used by the container
 	 */
 	public void setPoolName(String poolName) {
 		this.poolName = poolName;
@@ -344,7 +344,7 @@ public class ContinuousQueryListenerContainer implements InitializingBean, Dispo
 	 * Adds a query definition to the (potentially running) container. If the container is running,
 	 * the listener starts receiving (matching) messages as soon as possible.
 	 * 
-	 * @param listener event cqQuery
+	 * @param cqQuery cqQuery definition
 	 */
 	public void addListener(ContinuousQueryDefinition cqQuery) {
 		doAddListener(cqQuery);

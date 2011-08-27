@@ -26,8 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.gemfire.listener.GemfireListenerExecutionFailedException;
 import org.springframework.data.gemfire.listener.ContinuousQueryListener;
+import org.springframework.data.gemfire.listener.GemfireListenerExecutionFailedException;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
@@ -78,7 +78,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 		MethodInvoker(Object delegate, final String methodName) {
 			this.delegate = delegate;
 
-			Class c = delegate.getClass();
+			Class<?> c = delegate.getClass();
 
 			methods = new ArrayList<Method>();
 
@@ -314,7 +314,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	/**
 	 * Invoke the specified listener method.
 	 * @param event the event arguments to be passed in
-	 * @return the result returned from the listener method
+	 * @param methodName the method to invoke
 	 * @see #getListenerMethodName
 	 */
 	protected void invokeListenerMethod(CqEvent event, String methodName) {
