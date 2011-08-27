@@ -5,6 +5,19 @@ http://www.springsource.org/spring-gemfire
 Changes in version 1.1.0.M2 (2011-mm-dd)
 ----------------------------------------
 
+General
+* Introduced support for GemFire Continuous Query (CQ)
+* Introduced support for client cache
+* Introduced namespace support for region expiration attributes
+
+Package org.springframework.data.gemfire
+* Added find methods (based on the query service) inside GemFireTemplate
+* Improved detection of local client regions without pools configured
+
+Package org.springframework.data.gemfire.server
+* Fixed bug occuring when applying defaults for disk stores
+* Delayed CacheServer start up to allow declared regions to properly initialize
+
 
 Changes in version 1.1.0.M1 (2011-07-20)
 ----------------------------------------
