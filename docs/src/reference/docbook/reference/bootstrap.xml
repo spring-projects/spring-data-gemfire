@@ -261,7 +261,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
         
-	<gfe:client-region id="simple" pool-name="my-pool"/>
+	<gfe:client-cache id="simple" pool-name="my-pool"/>
 
 	<gfe:pool id="my-pool" subscription-enabled="true">
 	    <gfe:locator host="someHost" port="43210"/>
