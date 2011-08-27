@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.listener.adapter.ContinousQueryListenerAdapter;
+import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
 
 import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -38,7 +38,7 @@ import com.gemstone.gemfire.cache.query.CqEvent;
 public class ListenerContainerTests {
 
 	private final BlockingDeque<CqEvent> bag = new LinkedBlockingDeque<CqEvent>();
-	protected ContinousQueryListenerContainer container;
+	protected ContinuousQueryListenerContainer container;
 
 	private static RegionService cache = null;
 	private static Pool pool = null;
@@ -49,7 +49,7 @@ public class ListenerContainerTests {
 		}
 	};
 
-	private final ContinousQueryListenerAdapter adapter = new ContinousQueryListenerAdapter(handler);
+	private final ContinuousQueryListenerAdapter adapter = new ContinuousQueryListenerAdapter(handler);
 
 	@BeforeClass
 	public static void startUp() throws Exception {
@@ -92,12 +92,12 @@ public class ListenerContainerTests {
 	public void setUp() throws Exception {
 		String query = "SELECT * from /test-cq";
 
-		container = new ContinousQueryListenerContainer();
+		container = new ContinuousQueryListenerContainer();
 		container.setCache(cache);
 		//container.setPoolName("client");
 		container.setBeanName("container");
 		container.afterPropertiesSet();
-		container.addListener(new ContinousQueryDefinition("test", query, adapter));
+		container.addListener(new ContinuousQueryDefinition("test", query, adapter));
 	}
 
 	@Test

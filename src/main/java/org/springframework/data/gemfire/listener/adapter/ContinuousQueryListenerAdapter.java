@@ -69,7 +69,7 @@ import com.gemstone.gemfire.cache.query.CqQuery;
  * @author Costin Leau
  * @see org.springframework.jms.listener.adapter.MessageListenerAdapter
  */
-public class ContinousQueryListenerAdapter implements ContinuousQueryListener {
+public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
 	private class MethodInvoker {
 		private final Object delegate;
@@ -192,18 +192,18 @@ public class ContinousQueryListenerAdapter implements ContinuousQueryListener {
 	private MethodInvoker invoker;
 
 	/**
-	 * Create a new {@link ContinousQueryListenerAdapter} with default settings.
+	 * Create a new {@link ContinuousQueryListenerAdapter} with default settings.
 	 */
-	public ContinousQueryListenerAdapter() {
+	public ContinuousQueryListenerAdapter() {
 		setDelegate(this);
 	}
 
 	/**
-	 * Create a new {@link ContinousQueryListenerAdapter} for the given delegate.
+	 * Create a new {@link ContinuousQueryListenerAdapter} for the given delegate.
 	 * 
 	 * @param delegate the delegate object
 	 */
-	public ContinousQueryListenerAdapter(Object delegate) {
+	public ContinuousQueryListenerAdapter(Object delegate) {
 		setDelegate(delegate);
 	}
 
