@@ -15,8 +15,8 @@
  */
 package org.springframework.data.gemfire.listener;
 
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.util.ErrorHandler;
 
@@ -25,7 +25,7 @@ import org.springframework.util.ErrorHandler;
  */
 public class StubErrorHandler implements ErrorHandler {
 
-	public BlockingDeque<Throwable> throwables = new LinkedBlockingDeque<Throwable>();
+	public List<Throwable> throwables = new ArrayList<Throwable>();
 
 
 	public void handleError(Throwable t) {

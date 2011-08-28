@@ -16,9 +16,9 @@
 
 package org.springframework.data.gemfire.listener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -37,7 +37,7 @@ import com.gemstone.gemfire.cache.query.CqEvent;
  */
 public class ListenerContainerTests {
 
-	private final BlockingDeque<CqEvent> bag = new LinkedBlockingDeque<CqEvent>();
+	private final List<CqEvent> bag = new ArrayList<CqEvent>();
 	protected ContinuousQueryListenerContainer container;
 
 	private static RegionService cache = null;
