@@ -942,7 +942,9 @@ The name of the pool definition (by default "gemfire-pool").]]></xsd:documentati
 			<xsd:attribute name="load-conditioning-interval" use="optional" type="xsd:string"/>
 			<xsd:attribute name="max-connections" use="optional" type="xsd:string"/>
 			<xsd:attribute name="min-connections" use="optional" type="xsd:string"/>
+			<xsd:attribute name="multi-user-authentication" use="optional" type="xsd:string"/>
 			<xsd:attribute name="ping-interval" use="optional" type="xsd:string"/>
+			<xsd:attribute name="pr-single-hop-enabled" use="optional" type="xsd:string"/>
 			<xsd:attribute name="read-timeout" use="optional" type="xsd:string"/>
 			<xsd:attribute name="retry-attempts" use="optional" type="xsd:string"/>
 			<xsd:attribute name="server-group" use="optional" type="xsd:string"/>

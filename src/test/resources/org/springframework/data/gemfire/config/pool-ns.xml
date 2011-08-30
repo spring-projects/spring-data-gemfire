@@ -20,7 +20,7 @@
 	
 	<gfe:cache />
 	
-	<gfe:pool id="complex" free-connection-timeout="6000" retry-attempts="30" ping-interval="5000" subscription-enabled="true">
+	<gfe:pool id="complex" free-connection-timeout="6000" retry-attempts="30" ping-interval="5000" subscription-enabled="true" multi-user-authentication="false" pr-single-hop-enabled="true">
 		<gfe:server host="localhost" port="${gfe.port.4}"/>
 		<gfe:server host="localhost" port="40405"/>
 	</gfe:pool>

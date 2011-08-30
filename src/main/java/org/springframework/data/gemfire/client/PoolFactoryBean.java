@@ -76,7 +76,9 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private int loadConditioningInterval = PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL;
 	private int maxConnections = PoolFactory.DEFAULT_MAX_CONNECTIONS;
 	private int minConnections = PoolFactory.DEFAULT_MIN_CONNECTIONS;
+	private boolean multiUserAuthentication = PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION;
 	private long pingInterval = PoolFactory.DEFAULT_PING_INTERVAL;
+	private boolean prSingleHopEnabled = PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED;
 	private int readTimeout = PoolFactory.DEFAULT_READ_TIMEOUT;
 	private int retryAttempts = PoolFactory.DEFAULT_RETRY_ATTEMPTS;
 	private String serverGroup = PoolFactory.DEFAULT_SERVER_GROUP;
@@ -149,7 +151,9 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			poolFactory.setLoadConditioningInterval(loadConditioningInterval);
 			poolFactory.setMaxConnections(maxConnections);
 			poolFactory.setMinConnections(minConnections);
+			poolFactory.setMultiuserAuthentication(multiUserAuthentication);
 			poolFactory.setPingInterval(pingInterval);
+			poolFactory.setPRSingleHopEnabled(prSingleHopEnabled);
 			poolFactory.setReadTimeout(readTimeout);
 			poolFactory.setRetryAttempts(retryAttempts);
 			poolFactory.setServerGroup(serverGroup);
@@ -333,5 +337,19 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	public void setBeanFactory(BeanFactory beanFactory) {
 		this.beanFactory = beanFactory;
+	}
+
+	/**
+	 * @param multiUserAuthentication the multiUserAuthentication to set
+	 */
+	public void setMultiUserAuthentication(boolean multiUserAuthentication) {
+		this.multiUserAuthentication = multiUserAuthentication;
+	}
+
+	/**
+	 * @param prSingleHopEnabled the prSingleHopEnabled to set
+	 */
+	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
+		this.prSingleHopEnabled = prSingleHopEnabled;
 	}
 }

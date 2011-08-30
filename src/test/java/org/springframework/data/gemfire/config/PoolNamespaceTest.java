@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -64,6 +65,8 @@ public class PoolNamespaceTest {
 		assertEquals(6000, TestUtils.readField("freeConnectionTimeout", pfb));
 		assertEquals(5000l, TestUtils.readField("pingInterval", pfb));
 		assertTrue((Boolean) TestUtils.readField("subscriptionEnabled", pfb));
+		assertFalse((Boolean) TestUtils.readField("multiUserAuthentication", pfb));
+		assertTrue((Boolean) TestUtils.readField("prSingleHopEnabled", pfb));
 
 		Collection<PoolConnection> servers = TestUtils.readField("servers", pfb);
 		assertEquals(2, servers.size());
