@@ -45,6 +45,7 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
  */
 @SuppressWarnings("serial")
 public class MethodInvokingFunction implements Function {
+	public static final String FUNCTION_ID = MethodInvokingFunction.class.getName();
 	private static transient Log logger = LogFactory.getLog(MethodInvokingFunction.class);
  
 	private volatile boolean HA;
@@ -61,7 +62,7 @@ public class MethodInvokingFunction implements Function {
 	
 	//@Override	 
 	public String getId() {
-		return this.getClass().getName();
+		return FUNCTION_ID;
 	}
 	
 	//@Override	 
@@ -95,27 +96,26 @@ public class MethodInvokingFunction implements Function {
 	//@Override
 	public void execute(FunctionContext functionContext) {
 		Region<?,?> region = null;
-		
-		if (functionContext instanceof RegionFunctionContext) {
-			region = getRegionForContext((RegionFunctionContext)functionContext);
-		}  
-		
+		RegionFunctionContext regionFunctionContext = (RegionFunctionContext)functionContext;
+		 
+		region = getRegionForContext(regionFunctionContext);
+	
 		RemoteMethodInvocation invocation = null;
-		if (functionContext.getArguments().getClass().isArray()) {
-			invocation = (RemoteMethodInvocation)((Serializable[])functionContext.getArguments())[0];
+	
+		if (regionFunctionContext.getArguments().getClass().isArray()) {
+			invocation = (RemoteMethodInvocation)((Serializable[])regionFunctionContext.getArguments())[0];
 		} else {
-			invocation = (RemoteMethodInvocation)functionContext.getArguments();
+			invocation = (RemoteMethodInvocation)regionFunctionContext.getArguments();
 		}
 		
-		Object instance = createDelegateInstance(invocation.getClassName(), region);
+		regionFunctionContext.getFilter();
 		
-	
+		Object instance = createDelegateInstance(invocation.getClassName(), region);		 
 
 		Serializable result = invokeDelegateMethod(instance,invocation, region);
 
 		if (hasResult()){
-			logger.debug("result: " + result);
-			sendResults(functionContext.getResultSender(),result);
+			sendResults(regionFunctionContext.getResultSender(),result);
 		}
 
 	}

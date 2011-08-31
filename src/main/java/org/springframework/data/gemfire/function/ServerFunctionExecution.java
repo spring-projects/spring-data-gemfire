@@ -14,27 +14,40 @@ package org.springframework.data.gemfire.function;
 
 import java.io.Serializable;
 
+import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
  * @author David Turanski
  *
  */
-public class MembersFunctionExecution extends FunctionExecution<Object> {
+public class ServerFunctionExecution<T> extends FunctionExecution<T> {
 	
 
-	private final DistributedSystem distributedSystem;
+	private final RegionService regionService;
 
+    /**
+     * 
+     * @param regionService  e.g., Cache,Client, or GemFireCache
+     * @param function
+     * @param args
+     */
+	public ServerFunctionExecution(RegionService regionService, Function function, Serializable... args) {
+		super(function, args);
+		this.regionService = regionService; 
+	}
+	
 	/**
+	 * 
+	  * @param regionService  e.g., Cache,Client, or GemFireCache
 	 * @param functionId
 	 * @param args
 	 */
-	public MembersFunctionExecution(DistributedSystem distributedSystem, Function function, Serializable... args) {
-		super(function, args);
-		this.distributedSystem = distributedSystem; 
+	public ServerFunctionExecution(RegionService regionService, String functionId, Serializable... args) {
+		super(functionId, args);
+		this.regionService = regionService; 
 	}
 
 	/* (non-Javadoc)
@@ -42,9 +55,6 @@ public class MembersFunctionExecution extends FunctionExecution<Object> {
 	 */
 	@Override
 	protected Execution getExecution() {
-		return FunctionService.onMembers(this.distributedSystem);
+		return FunctionService.onServer(this.regionService);
 	}
-
-	 
-
 }

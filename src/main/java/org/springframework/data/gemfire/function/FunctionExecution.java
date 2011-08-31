@@ -13,33 +13,43 @@
 package org.springframework.data.gemfire.function;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
- 
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 
 /**
  * @author  David Turanski
  */
 
-public abstract class FunctionExecution {
+public abstract class FunctionExecution<T> {
 	protected final Log logger = LogFactory.getLog(this.getClass());
 	
 	private volatile ResultCollector<?, ?> collector;
 	private final Serializable[] args;
-	private final Function function;
-	private boolean functionRegistered;
-	
-	
+	private  Function function;
+	private final String functionId;
+	private long timeout;
 
 	public FunctionExecution(Function function, Serializable... args) {
+		Assert.notNull(function,"function cannot be null");
 		this.function  = function;
+		this.functionId = function.getId();
+		this.args = args;
+	}
+	
+	public FunctionExecution(String functionId, Serializable... args) {
+		Assert.isTrue(StringUtils.hasLength(functionId),"functionId cannot be null or empty");
+		this.functionId  = functionId;
 		this.args = args;
 	}
 	
@@ -53,28 +63,20 @@ public abstract class FunctionExecution {
 	}
 
 	public String getFunctionId() {
-		return function.getId();
+		return functionId;
 	}
 	
 	public Function getFunction() {
 		return function;
 	}
  
-	
- 
-	public void setCollector(ResultCollector<?, ?> collector) {
+	public void setCollector(ResultCollector<?,?> collector) {
 		this.collector = collector;
 	} 
 	
-	public boolean isFunctionRegistered() {
-		return functionRegistered;
-	}
-
-	public void setFunctionRegistered(boolean functionRegistered) {
-		this.functionRegistered = functionRegistered;
-	}
-	
-	public Object execute() {
+		
+	@SuppressWarnings("unchecked")
+	public List<T> execute() {
 		Execution execution = this.getExecution();
 		if (getKeys() != null) {
 			execution = execution.withFilter(getKeys());
@@ -82,18 +84,35 @@ public abstract class FunctionExecution {
 		if (getCollector() != null) {
 			execution = execution.withCollector(getCollector());
 		}
-		 ResultCollector<?,?> resultsCollector = null;
-		 
-		if (isFunctionRegistered()){
-			 resultsCollector =  execution.withArgs(getArgs()).execute(function.getId());
+		
+		ResultCollector<?,?> resultsCollector = null;
+		
+		execution = execution.withArgs(getArgs());
+		
+		if (isRegisteredFunction()){
+			
+			resultsCollector =  (ResultCollector<?,?>) execution.execute(functionId);
 		} else {
-			resultsCollector =  execution.withArgs(getArgs()).execute(function);
+			resultsCollector = (ResultCollector<?,?>) execution.execute(function);
 		}
-		if (function.hasResult()){
-			return resultsCollector.getResult();
+		
+		if (this.timeout > 0 ){
+			try {
+				return (List<T>)resultsCollector.getResult(this.timeout, TimeUnit.MILLISECONDS);
+			}
+			catch (FunctionException e) {
+				throw new RuntimeException(e);
+			}
+			catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
 		} else {
-			return null;
+			return (List<T>)resultsCollector.getResult();
 		}
+	}
+	
+	public T executeAndExtract() {
+		return this.execute().get(0);
 	}
 	
 	protected abstract Execution getExecution();
@@ -101,5 +120,20 @@ public abstract class FunctionExecution {
 	protected Set<?> getKeys() {
 		return null;
 	}
+		
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
 
+	public long getTimeout() {
+		return timeout;
+	}
+
+	/**
+	 * @return
+	 */
+	private boolean isRegisteredFunction() {
+		 return function == null;
+	}
+	 
 }

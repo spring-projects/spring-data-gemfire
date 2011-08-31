@@ -24,13 +24,19 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * @author David Turanski
  * 
  */
-public class RegionFunctionExecution extends FunctionExecution {
+public class RegionFunctionExecution<T> extends FunctionExecution<T> {
+
 
 	private final Region<?, ?> region;
 	private volatile Set<?> keys;
 	
 	public RegionFunctionExecution(Region<?, ?> region, Function function, Serializable... args) {
 		super(function, args);
+		this.region = region;
+	}
+	
+	public RegionFunctionExecution(Region<?, ?> region, String functionId, Serializable... args) {
+		super(functionId, args);
 		this.region = region;
 	}
 	

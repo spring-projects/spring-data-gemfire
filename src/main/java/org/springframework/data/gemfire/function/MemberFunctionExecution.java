@@ -23,7 +23,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  * @author David Turanski
  *
  */
-public class MemberFunctionExecution extends FunctionExecution {
+public class MemberFunctionExecution extends FunctionExecution<Object> {
 	
 
 	private final DistributedSystem distributedSystem;

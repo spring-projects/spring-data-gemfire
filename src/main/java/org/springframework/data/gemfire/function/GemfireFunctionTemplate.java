@@ -13,6 +13,7 @@
 package org.springframework.data.gemfire.function;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -20,77 +21,119 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
  * @author David Turanski
  *
  */
-public class GemfireFunctionTemplate implements InitializingBean {
+public class GemfireFunctionTemplate<T> implements InitializingBean {
 	/** Logger available to subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
-	private Cache cache; 
-	private DistributedSystem distributedSystem;
+	private RegionService cache; 
+	private long timeout;
+	
 	 
-	public <K, V> GemfireFunctionTemplate (Cache cache) {
+	/**
+	 *  
+	 * @param cache
+	 */
+	public GemfireFunctionTemplate (RegionService cache) {
 		this.cache = cache;
-		this.distributedSystem = cache.getDistributedSystem();
 		afterPropertiesSet();
 	}
 	
  
-	public void afterPropertiesSet() {
-		
+	public void afterPropertiesSet() {	
 	}
 	
- 
-	public Object executeOnRegion(Function function, String regionId, Serializable... args) {
+	
+ 	public  List<T> executeOnRegion(Function function, String regionId, Serializable... args) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
-	 
-        
-		RegionFunctionExecution execution = new RegionFunctionExecution(region, function, args);
-		return execution.execute();
+	 		RegionFunctionExecution<T> execution = new RegionFunctionExecution<T>(region, function, args);
+	 		execution.setTimeout(this.timeout);
+	 	return execution.execute();
+	}
+ 	
+ 	public T executeOnRegionAndExtract(Function function, String regionId, Serializable... args) {
+		Region<?,?> region = getRegion(regionId);
+		Assert.notNull(region,"Region '" + regionId + "' not found");
+	 		RegionFunctionExecution<T> execution = new RegionFunctionExecution<T>(region, function, args);
+	 		execution.setTimeout(this.timeout);
+		return execution.executeAndExtract();
 	}
 	
-	public Object executeOnRegion(Function function, String regionId, Set<?> keys, Serializable... args) {
+	public List<T> executeOnRegion(Function function, String regionId, Set<?> keys, Serializable... args) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
         
-		RegionFunctionExecution execution = new RegionFunctionExecution(region, function, args);
+		RegionFunctionExecution<T> execution = new RegionFunctionExecution<T>(region, function, args);
 		execution.setKeys(keys);
+		execution.setTimeout(this.timeout);
 		return execution.execute();
 	}
 	
-	public Object executeOnRegion(String regionId, GemfireFunctionCallback callback ) {
+	public List<T>  executeOnRegion(String functionId, String regionId, Serializable... args) {
+		Region<?,?> region = getRegion(regionId);
+		Assert.notNull(region,"Region '" + regionId + "' not found");
+	 	
+		RegionFunctionExecution<T> execution = new RegionFunctionExecution<T>(region, functionId, args);
+	 	execution.setTimeout(this.timeout);
+	 	return execution.execute();
+	}
+	
+	public List<T> executeOnRegion(String functionId, String regionId, Set<?> keys, Serializable... args) {
+		Region<?,?> region = getRegion(regionId);
+		Assert.notNull(region,"Region '" + regionId + "' not found");
+        
+		RegionFunctionExecution<T> execution = new RegionFunctionExecution<T>(region, functionId, args);
+		execution.setKeys(keys);
+		execution.setTimeout(this.timeout);
+		return execution.execute();
+	}
+	
+	public T executeOnRegion(String regionId, GemfireFunctionCallback<T> callback ) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
 		Execution execution = FunctionService.onRegion(region);
 		return callback.doInGemfire(execution);
 	}
 	
-	public Object executeOnMembers(Function function, Serializable... args) {
-		MembersFunctionExecution execution = new MembersFunctionExecution(this.distributedSystem, function, args);
+	public List<T> executeOnServers(Function function, Serializable... args) {
+		ServersFunctionExecution<T> execution = new ServersFunctionExecution<T>(this.cache, function, args);
+		execution.setTimeout(this.timeout);
 		return execution.execute();
 	}
 	
-	public Object executeOnMembers(GemfireFunctionCallback callback ) {
-		Execution execution = FunctionService.onMembers(this.distributedSystem);
+	public List<T> executeOnServers(String functionId, Serializable... args) {
+		ServersFunctionExecution<T> execution = new ServersFunctionExecution<T>(this.cache, functionId, args);
+		execution.setTimeout(this.timeout);
+		return execution.execute();
+	}
+	
+	public T executeOnServers(GemfireFunctionCallback<T> callback ) {
+		Execution execution = FunctionService.onServers(this.cache);
 		return callback.doInGemfire(execution);
 	}
 	
-	public Object executeOnMember(GemfireFunctionCallback callback ) {
-		Execution execution = FunctionService.onMember(this.distributedSystem,this.distributedSystem.getDistributedMember());
-		return callback.doInGemfire(execution);
-	}
-	
+	 
 	public Region<?,?> getRegion(String regionId) {
 		return this.cache.getRegion(regionId);
+	}
+
+
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
+
+
+	public long getTimeout() {
+		return timeout;
 	}
 	
 	 

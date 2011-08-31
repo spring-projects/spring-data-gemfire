@@ -13,19 +13,23 @@
 package org.springframework.data.gemfire.function;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.GemfireTemplate;
+import org.springframework.data.gemfire.fork.FunctionCacheServerProcess;
+import org.springframework.data.gemfire.function.foo.Foo;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -35,29 +39,26 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionService;
 
 /**
  * @author David Turanski
- *
+ * 
  */
 public class FunctionExecutionTests {
-	
-	 
+
 	private static ClientCache cache = null;
 
 	private static Pool pool = null;
-	
-	private static Region<String,Integer>  clientRegion = null;
-	
+
+	private static Region<String, Integer> clientRegion = null;
+
 	@BeforeClass
 	public static void startUp() throws Exception {
-		ForkUtil.cacheServer();
+		ForkUtil.cacheServer(FunctionCacheServerProcess.class);
 
 		Properties props = new Properties();
 		props.put("mcast-port", "0");
-		props.put("name", "cq-client");
+		props.put("name", "function-client");
 		props.put("log-level", "warning");
 
 		ClientCacheFactory ccf = new ClientCacheFactory(props);
@@ -66,19 +67,14 @@ public class FunctionExecutionTests {
 
 		PoolFactory pf = PoolManager.createFactory();
 		pf.addServer("localhost", 40404);
-		pf.setSubscriptionEnabled(true); 
+		pf.setSubscriptionEnabled(true);
 		pool = pf.create("client");
-		
-		ClientRegionFactory<String, Integer> crf = cache.createClientRegionFactory(ClientRegionShortcut.LOCAL);
+
+		ClientRegionFactory<String, Integer> crf = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
 		crf.setPoolName("client");
-		clientRegion = crf.create("test-cq");
-		
-		ForkUtil.sendSignal();
-		Thread.sleep(500);
-		
-	 
+		clientRegion = crf.create("test-function");
 	}
-	
+
 	@AfterClass
 	public static void cleanUp() {
 		ForkUtil.sendSignal();
@@ -96,64 +92,68 @@ public class FunctionExecutionTests {
 		cache = null;
 	}
 
-	
 	@Test
 	public void testRegionExecution() {
 		RemoteMethodInvocation invocation = new RemoteMethodInvocation(Foo.class, "oneArg", "one");
-		RegionFunctionExecution execution = new RegionFunctionExecution(clientRegion,new MethodInvokingFunction(), invocation);
-		
-		ArrayList<Integer> result = (ArrayList<Integer>)execution.execute();
-		assertEquals(1,result.get(0).intValue());
+		RegionFunctionExecution<Integer> execution = new RegionFunctionExecution<Integer>(clientRegion,
+				new MethodInvokingFunction(), invocation);
+
+		int result = execution.executeAndExtract();
+		assertEquals(1, result);
 	}
-	
-//	@Test
-//	public void testMembersExecution() {
-//		MembersFunctionExecution execution = new MembersFunctionExecution(cache.getDistributedSystem(),new MethodInvokingFunction(Foo.class,"oneArg"),"one");
-//		ArrayList<Integer> result = (ArrayList<Integer>)execution.execute();
-//		assertEquals(1,result.get(0).intValue());
-//	}
-	
-	public static class Foo {
 
-		private Map<String, Integer> dataSet;
+	@Test
+	public void testRegionExecutionWithRegisteredFunction() {
+		RemoteMethodInvocation invocation = new RemoteMethodInvocation(Foo.class, "oneArg", "one");
+		RegionFunctionExecution<Integer> execution = new RegionFunctionExecution<Integer>(clientRegion,
+				new MethodInvokingFunction().getId(), invocation);
+		int result = execution.executeAndExtract();
+		assertEquals(1, result);
+	}
 
-		public Foo(Map<String, Integer> dataSet) {
-			this.dataSet = dataSet;
-		}
-		
-		public Foo() {
-			
-		}
-		
- 
-		public Integer oneArg(String key) {
-			 
-			return dataSet.get(key);
-		}
+	// TODO: Filter only works on partitioned region. No effect here, but server
+	// won't start with a partitioned region. Probably because no locator
+	@Test
+	public void testRegionExecutionWithFilter() {
+		RemoteMethodInvocation invocation = new RemoteMethodInvocation(Foo.class, "oneArg", "one");
+		Set<String> keys = new HashSet<String>();
+		keys.add("two");
+		RegionFunctionExecution<Integer> execution = new RegionFunctionExecution<Integer>(clientRegion,
+				new MethodInvokingFunction().getId(), invocation);
+		execution.setKeys(keys);
+		Integer result = execution.executeAndExtract();
+		// assertEquals(null,result.get(0));
+		assertEquals(1, result.intValue());
+	}
 
-		public Integer twoArg(String akey, String bkey) {
-			if (dataSet.get(akey) != null && dataSet.get(bkey) != null ) {
-				return dataSet.get(akey) + dataSet.get(bkey);
-			}
-			else {
-				return null;
-			}
-		}
+	@Test
+	public void testRegionExecutionForMap() {
+		RemoteMethodInvocation invocation = new RemoteMethodInvocation(Foo.class, "getMapWithNoArgs");
+		RegionFunctionExecution<Map<String, Integer>> execution = new RegionFunctionExecution<Map<String, Integer>>(
+				clientRegion, new MethodInvokingFunction().getId(), invocation);
+		execution.execute();
 
-	 
-		public List<Integer> collections(List<Integer> args) {
-			return args;
-		}
+		Map<String, Integer> result = execution.executeAndExtract();
+		assertTrue(result.containsKey("one"));
+		assertEquals(1, result.get("one").intValue());
+	}
 
-		 
-		public Map<String, Integer> getMapWithNoArgs() {
-			if (dataSet.size() == 0) {
-				return null;
-			}
+	@Test
+	public void testServersExecutionWithRegisteredFunction() {
+		assertNull(clientRegion.get("four"));
+		ServersFunctionExecution execution = new ServersFunctionExecution(cache, "serverFunction", "four", new Integer(
+				4));
+		execution.execute();
+		assertNotNull(clientRegion.get("four"));
+	}
 
-			return new HashMap<String, Integer>(dataSet);
-		}
-
+	@Test
+	public void testServerExecutionWithRegisteredFunction() {
+		assertNull(clientRegion.get("five"));
+		ServerFunctionExecution execution = new ServerFunctionExecution(cache, "serverFunction", "five", new Integer(5));
+		Object result = execution.executeAndExtract();
+		assertNull(result);
+		assertNotNull(clientRegion.get("five"));
 	}
 
 }

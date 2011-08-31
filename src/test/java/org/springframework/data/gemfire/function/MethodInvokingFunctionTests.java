@@ -15,7 +15,6 @@ package org.springframework.data.gemfire.function;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +27,7 @@ import org.junit.Test;
 import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.GemfireCallback;
 import org.springframework.data.gemfire.GemfireTemplate;
+import org.springframework.data.gemfire.function.foo.Foo;
 
 import com.gemstone.bp.edu.emory.mathcs.backport.java.util.Arrays;
 import com.gemstone.gemfire.GemFireCheckedException;
@@ -151,6 +151,7 @@ public class MethodInvokingFunctionTests {
 
 		List<Integer> val = gemfireTemplate.execute(new GemfireCallback<List<Integer>>() {
 
+			@SuppressWarnings("unchecked")
 			public List<Integer> doInGemfire(@SuppressWarnings("rawtypes") Region region) throws GemFireCheckedException, GemFireException {
 				ArrayList<Integer> list = new ArrayList<Integer>(Arrays.asList(new Integer[]{1,2,3,4,5}));
 				RemoteMethodInvocation invocation = new RemoteMethodInvocation(Foo.class,"collections",list);
@@ -176,6 +177,7 @@ public class MethodInvokingFunctionTests {
 
 		Map<String, Integer> val = gemfireTemplate.execute(new GemfireCallback<Map<String, Integer>>() {
 
+			@SuppressWarnings("unchecked")
 			public Map<String, Integer> doInGemfire(@SuppressWarnings("rawtypes") Region region) throws GemFireCheckedException, GemFireException {
 				RemoteMethodInvocation invocation = new RemoteMethodInvocation(Foo.class,"getMapWithNoArgs");
 				Execution execution = FunctionService.onRegion(region);
@@ -190,43 +192,4 @@ public class MethodInvokingFunctionTests {
 			assertTrue(val.values().contains(i+1));
 		}
 	}
-
-	public static class Foo {
-
-		private Map<String, Integer> dataSet;
-
-		public Foo(Map<String, Integer> dataSet) {
-			this.dataSet = dataSet;
-		}
-
-		public Integer oneArg(String key) {
-
-			return dataSet.get(key);
-		}
-
-		public Integer twoArg(String akey, String bkey) {
-			if (dataSet.get(akey) != null && dataSet.get(bkey) != null ) {
-				return dataSet.get(akey) + dataSet.get(bkey);
-			}
-			else {
-				return null;
-			}
-		}
-
-	 
-		public List<Integer> collections(List<Integer> args) {
-			return args;
-		}
-
-		 
-		public Map<String, Integer> getMapWithNoArgs() {
-			if (dataSet.size() == 0) {
-				return null;
-			}
-
-			return new HashMap<String, Integer>(dataSet);
-		}
-
-	}
-
 }

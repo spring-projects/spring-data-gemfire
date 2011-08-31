@@ -12,12 +12,16 @@
  */
 package org.springframework.data.gemfire.function;
 
-import com.gemstone.gemfire.cache.execute.Execution;
-
+import java.io.Serializable;
+import java.util.Set;
 /**
+ * 
  * @author David Turanski
  *
  */
-public interface GemfireFunctionCallback<T> {
-	public T doInGemfire( Execution execution );
+public interface FilterAware {
+	/*
+	 *  Return calling instance to support method chaining
+	 */
+	public Object setFilter(Set<? extends Serializable> filter); 
 }
