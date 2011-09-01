@@ -12,13 +12,9 @@
  */
 package org.springframework.data.gemfire.function;
 
-/**
- * @author David Turanski
- *
- */
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +32,11 @@ import org.springframework.util.ClassUtils;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 
 /**
+ * Creates a Proxy to a delegate that is executed as a Gemfire remote function
+ * using {@link MethodInvokingFunction}. Also, adds the {@link FilterAware}
+ * 
+ * interface to the proxy which is used to set a data filter when execution is
+ * performed on a partitioned region.
  * 
  * @author David Turanski
  * 
@@ -57,20 +58,26 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 
 	private volatile String regionName;
 
-	private final GemfireFunctionTemplate<?> gemfireFunctionTemplate;
+	private final GemfireFunctionOperations<?> gemfireFunctionOperations;
 
 	private static Log logger = LogFactory.getLog(GemfireFunctionProxyFactoryBean.class);
 
+	/**
+	 * 
+	 * @param serviceInterface the proxy interface
+	 * @param delegateClassName the name of the implementation class
+	 * @param gemfireFunctionOperations a strategy interface, normally a
+	 * {@link GemfireFunctionTemplate}
+	 */
 	public GemfireFunctionProxyFactoryBean(Class<?> serviceInterface, String delegateClassName,
-			GemfireFunctionTemplate<?> gemfireFunctionTemplate) {
+			GemfireFunctionOperations<?> gemfireFunctionOperations) {
 		this.delegateClassName = delegateClassName;
 		Assert.notNull(serviceInterface, "'serviceInterface' must not be null");
 		Assert.isTrue(serviceInterface.isInterface(), "'serviceInterface' must be an interface");
-		checkServiceInterfaceTypesAreSerializable(serviceInterface);
 		this.serviceInterface = serviceInterface;
 
-		Assert.notNull(gemfireFunctionTemplate);
-		this.gemfireFunctionTemplate = gemfireFunctionTemplate;
+		Assert.notNull(gemfireFunctionOperations);
+		this.gemfireFunctionOperations = gemfireFunctionOperations;
 		this.filter = new ThreadLocal<Set<? extends Serializable>>();
 	}
 
@@ -79,15 +86,17 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 		beanClassLoader = classLoader;
 	}
 
-	@SuppressWarnings("unchecked")
 	// @Override
+	@SuppressWarnings("unchecked")
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 
 		if (AopUtils.isToStringMethod(invocation.getMethod())) {
 			return "Gemfire function proxy for service interface [" + this.serviceInterface + "]";
 		}
 
-		logger.debug("invoking method " + invocation.getMethod().getName());
+		if (logger.isDebugEnabled()) {
+			logger.debug("invoking method " + invocation.getMethod().getName());
+		}
 
 		if (isSetFilterMethod(invocation.getMethod())) {
 			setFilter((Set<? extends Serializable>) invocation.getArguments()[0]);
@@ -95,40 +104,113 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 		}
 
 		RemoteMethodInvocation remoteInvocation = new RemoteMethodInvocation(this.delegateClassName, invocation
-				.getMethod().getName(), invocation.getArguments());
+				.getMethod().getName(), convertArgsToSerializable(invocation.getArguments()));
 
 		List<?> results = null;
 
 		if (this.methodInvokingFunctionRegistered) {
 			if (this.regionName != null) {
-				results = this.gemfireFunctionTemplate.executeOnRegion(MethodInvokingFunction.FUNCTION_ID,
+
+				results = this.gemfireFunctionOperations.executeOnRegion(MethodInvokingFunction.FUNCTION_ID,
 						this.regionName, this.getFilter(), remoteInvocation);
 			}
 			else {
-				if (this.getFilter() != null ) {
-					logger.warn("No region specified. Filter has no effect on a data independent function exectution");
+				if (this.getFilter() != null) {
+					logger.warn("No region is specified. Filter has no effect on a data independent function execution");
 				}
-				results = this.gemfireFunctionTemplate.executeOnServers(MethodInvokingFunction.FUNCTION_ID,
+				results = this.gemfireFunctionOperations.executeOnServers(MethodInvokingFunction.FUNCTION_ID,
 						remoteInvocation);
 			}
 
 		}
 		else {
 			if (this.regionName != null) {
-				results = this.gemfireFunctionTemplate.executeOnRegion(new MethodInvokingFunction(), this.regionName,
+				results = this.gemfireFunctionOperations.executeOnRegion(new MethodInvokingFunction(), this.regionName,
 						this.getFilter(), remoteInvocation);
 			}
 			else {
-				if (this.getFilter() != null ) {
-					logger.warn("No region specified. Filter has no effect on a data independent function exectution");
+				if (this.getFilter() != null) {
+					logger.warn("No region is specified. Filter has no effect on a data independent function execution");
 				}
-				results = this.gemfireFunctionTemplate.executeOnServers(new MethodInvokingFunction(), remoteInvocation);
+				results = this.gemfireFunctionOperations.executeOnServers(new MethodInvokingFunction(),
+						remoteInvocation);
 			}
 		}
 
 		return extractResult(results, invocation.getMethod().getReturnType());
 	}
 
+	// @Override
+	public Object getObject() throws Exception {
+		if (this.serviceProxy == null) {
+			this.onInit();
+			Assert.notNull(this.serviceProxy, "failed to initialize proxy");
+		}
+		return this.serviceProxy;
+	}
+
+	// @Override
+	public Class<?> getObjectType() {
+		return (this.serviceInterface != null ? this.serviceInterface : null);
+	}
+
+	// @Override
+	public boolean isSingleton() {
+		return true;
+	}
+
+	protected Set<?> getFilter() {
+		return filter.get();
+	}
+
+	protected void setFilter(Set<? extends Serializable> filter) {
+		this.filter.set(filter);
+	}
+
+	/**
+	 * Set to true id {@link MethodInvokingFunction} is a registered function.
+	 * If registered, invocations will not create and transport a new instance
+	 * of the function to the cache server(s).
+	 * @param methodInvokingFunctionRegistered
+	 */
+	public void setMethodInvokingFunctionRegistered(boolean methodInvokingFunctionRegistered) {
+		this.methodInvokingFunctionRegistered = methodInvokingFunctionRegistered;
+	}
+
+	/**
+	 * 
+	 * Optional region to use. If set, the function will execute onRegion, if
+	 * null the function will execute onServers
+	 * 
+	 * @param regionName
+	 */
+	public void setRegionName(String regionName) {
+		this.regionName = regionName;
+	}
+
+	// TODO: Use something like cglib to implement setFilter() directly
+	// to eliminate the need to cast the proxy to FilterAware
+	protected void onInit() {
+		if (this.initialized) {
+			return;
+		}
+		ProxyFactory proxyFactory = new ProxyFactory(serviceInterface, this);
+		proxyFactory.addInterface(FilterAware.class);
+		this.serviceProxy = proxyFactory.getProxy(this.beanClassLoader);
+		this.initialized = true;
+	}
+
+	/*
+	 * This tweek is needed to prevent an argument mismatch on the function
+	 * invocation.
+	 */
+	private Serializable[] convertArgsToSerializable(Object[] array) {
+		return Arrays.copyOf(array, array.length, Serializable[].class);
+	}
+
+	/*
+	 * Match the result to the declared return type
+	 */
 	private Object extractResult(List<?> results, Class<?> returnType) {
 		Object result = null;
 		if (List.class.isAssignableFrom(returnType)) {
@@ -163,68 +245,6 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 		catch (NoSuchMethodException e) {
 		}
 		return false;
-	}
-
-	// @Override
-	public Object getObject() throws Exception {
-		if (this.serviceProxy == null) {
-			this.onInit();
-			Assert.notNull(this.serviceProxy, "failed to initialize proxy");
-		}
-		return this.serviceProxy;
-	}
-
-	// @Override
-	public Class<?> getObjectType() {
-		return (this.serviceInterface != null ? this.serviceInterface : null);
-	}
-
-	// @Override
-	public boolean isSingleton() {
-		return true;
-	}
-
-	protected Set<?> getFilter() {
-		return filter.get();
-	}
-
-	protected void setFilter(Set<? extends Serializable> filter) {
-		this.filter.set(filter);
-	}
-
-	public void setMethodInvokingFunctionRegistered(boolean methodInvokingFunctionRegistered) {
-		this.methodInvokingFunctionRegistered = methodInvokingFunctionRegistered;
-	}
-
-	public void setRegionName(String regionName) {
-		this.regionName = regionName;
-	}
-
-	// TODO: Use something like cglib to implement setFilter() directly
-	// to eliminate the need to cast the proxy to FilterAware
-	protected void onInit() {
-		if (this.initialized) {
-			return;
-		}
-		ProxyFactory proxyFactory = new ProxyFactory(serviceInterface, this);
-		proxyFactory.addInterface(FilterAware.class);
-		this.serviceProxy = proxyFactory.getProxy(this.beanClassLoader);
-		this.initialized = true;
-	}
-
-	private void checkServiceInterfaceTypesAreSerializable(Class<?> serviceInterface) {
-		for (Method method : serviceInterface.getMethods()) {
-			Class<?> returnType = method.getReturnType();
-			if (!method.getName().equals("setFilter")) {
-				Assert.isTrue(
-						Void.class.isAssignableFrom(returnType) || Serializable.class.isAssignableFrom(returnType),
-						"return type must be Serializable on method " + method.getName());
-				for (Class<?> parameterType : method.getParameterTypes()) {
-					Assert.isTrue(Serializable.class.isAssignableFrom(parameterType),
-							"parameter types must be Serializable on method " + method.getName());
-				}
-			}
-		}
 	}
 
 }

@@ -17,9 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -141,7 +139,7 @@ public class FunctionExecutionTests {
 	@Test
 	public void testServersExecutionWithRegisteredFunction() {
 		assertNull(clientRegion.get("four"));
-		ServersFunctionExecution execution = new ServersFunctionExecution(cache, "serverFunction", "four", new Integer(
+		ServersFunctionExecution<?> execution = new ServersFunctionExecution<Object>(cache, "serverFunction", "four", new Integer(
 				4));
 		execution.execute();
 		assertNotNull(clientRegion.get("four"));
@@ -150,7 +148,7 @@ public class FunctionExecutionTests {
 	@Test
 	public void testServerExecutionWithRegisteredFunction() {
 		assertNull(clientRegion.get("five"));
-		ServerFunctionExecution execution = new ServerFunctionExecution(cache, "serverFunction", "five", new Integer(5));
+		ServerFunctionExecution<?> execution = new ServerFunctionExecution<Object>(cache, "serverFunction", "five", new Integer(5));
 		Object result = execution.executeAndExtract();
 		assertNull(result);
 		assertNotNull(clientRegion.get("five"));

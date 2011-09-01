@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * @author David Turanski
  *
  */
-public class GemfireFunctionTemplate<T> implements InitializingBean {
+public class GemfireFunctionTemplate<T> implements InitializingBean, GemfireFunctionOperations<T> {
 	/** Logger available to subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
 	private RegionService cache; 
@@ -52,6 +52,9 @@ public class GemfireFunctionTemplate<T> implements InitializingBean {
 	}
 	
 	
+ 	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnRegion(com.gemstone.gemfire.cache.execute.Function, java.lang.String, java.io.Serializable)
+	 */
  	public  List<T> executeOnRegion(Function function, String regionId, Serializable... args) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
@@ -60,6 +63,9 @@ public class GemfireFunctionTemplate<T> implements InitializingBean {
 	 	return execution.execute();
 	}
  	
+ 	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnRegionAndExtract(com.gemstone.gemfire.cache.execute.Function, java.lang.String, java.io.Serializable)
+	 */
  	public T executeOnRegionAndExtract(Function function, String regionId, Serializable... args) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
@@ -68,6 +74,9 @@ public class GemfireFunctionTemplate<T> implements InitializingBean {
 		return execution.executeAndExtract();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnRegion(com.gemstone.gemfire.cache.execute.Function, java.lang.String, java.util.Set, java.io.Serializable)
+	 */
 	public List<T> executeOnRegion(Function function, String regionId, Set<?> keys, Serializable... args) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
@@ -78,6 +87,9 @@ public class GemfireFunctionTemplate<T> implements InitializingBean {
 		return execution.execute();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnRegion(java.lang.String, java.lang.String, java.io.Serializable)
+	 */
 	public List<T>  executeOnRegion(String functionId, String regionId, Serializable... args) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
@@ -87,6 +99,9 @@ public class GemfireFunctionTemplate<T> implements InitializingBean {
 	 	return execution.execute();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnRegion(java.lang.String, java.lang.String, java.util.Set, java.io.Serializable)
+	 */
 	public List<T> executeOnRegion(String functionId, String regionId, Set<?> keys, Serializable... args) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
@@ -97,6 +112,9 @@ public class GemfireFunctionTemplate<T> implements InitializingBean {
 		return execution.execute();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnRegion(java.lang.String, org.springframework.data.gemfire.function.GemfireFunctionCallback)
+	 */
 	public T executeOnRegion(String regionId, GemfireFunctionCallback<T> callback ) {
 		Region<?,?> region = getRegion(regionId);
 		Assert.notNull(region,"Region '" + regionId + "' not found");
@@ -104,18 +122,27 @@ public class GemfireFunctionTemplate<T> implements InitializingBean {
 		return callback.doInGemfire(execution);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnServers(com.gemstone.gemfire.cache.execute.Function, java.io.Serializable)
+	 */
 	public List<T> executeOnServers(Function function, Serializable... args) {
 		ServersFunctionExecution<T> execution = new ServersFunctionExecution<T>(this.cache, function, args);
 		execution.setTimeout(this.timeout);
 		return execution.execute();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnServers(java.lang.String, java.io.Serializable)
+	 */
 	public List<T> executeOnServers(String functionId, Serializable... args) {
 		ServersFunctionExecution<T> execution = new ServersFunctionExecution<T>(this.cache, functionId, args);
 		execution.setTimeout(this.timeout);
 		return execution.execute();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.GemfireFunctionOperations#executeOnServers(org.springframework.data.gemfire.function.GemfireFunctionCallback)
+	 */
 	public T executeOnServers(GemfireFunctionCallback<T> callback ) {
 		Execution execution = FunctionService.onServers(this.cache);
 		return callback.doInGemfire(execution);

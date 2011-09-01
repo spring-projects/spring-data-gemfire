@@ -12,8 +12,8 @@
  */
 package org.springframework.data.gemfire.function;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 import java.util.Properties;
@@ -87,7 +87,7 @@ public class GemfireFunctionTemplateTests {
 	
 	@Test 
 	public void testExecuteOnRegion() {
-		GemfireFunctionTemplate<Integer> functionTemplate = new GemfireFunctionTemplate<Integer>(cache);
+		GemfireFunctionOperations<Integer> functionTemplate = new GemfireFunctionTemplate<Integer>(cache);
 		RemoteMethodInvocation invocation = new RemoteMethodInvocation(Foo.class,"oneArg", "two");
 		List<Integer> result = functionTemplate.executeOnRegion(new MethodInvokingFunction().getId(),"test-function",invocation);
 		assertEquals(2,result.get(0).intValue());
@@ -95,7 +95,7 @@ public class GemfireFunctionTemplateTests {
 	
 	@Test 
 	public void testExecuteOnRegionAndExtract() {
-		GemfireFunctionTemplate<Integer> functionTemplate = new GemfireFunctionTemplate<Integer>(cache);
+		GemfireFunctionOperations<Integer> functionTemplate = new GemfireFunctionTemplate<Integer>(cache);
 		RemoteMethodInvocation invocation = new RemoteMethodInvocation(Foo.class,"twoArg", "two","three");
 		int result = functionTemplate.executeOnRegionAndExtract(new MethodInvokingFunction(),"test-function",invocation);
 		assertEquals(5,result);
@@ -104,7 +104,7 @@ public class GemfireFunctionTemplateTests {
 	@Test 
 	public void testExecuteOnServer() {
 		assertNull(clientRegion.get("four"));
-		GemfireFunctionTemplate<?> functionTemplate = new GemfireFunctionTemplate<Object>(cache);
+		GemfireFunctionOperations<?> functionTemplate = new GemfireFunctionTemplate<Object>(cache);
 		functionTemplate.executeOnServers("serverFunction","four",4);
 		assertEquals(4,clientRegion.get("four").intValue());
 		

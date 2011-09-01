@@ -20,7 +20,7 @@ import java.util.Map;
  * @author David Turanski
  *
  */
-public class Foo {
+public class Foo implements IFoo {
 
 	private Map<String, Integer> dataSet;
 
@@ -32,11 +32,17 @@ public class Foo {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.foo.IFoo#oneArg(java.lang.String)
+	 */
 	public Integer oneArg(String key) {
 
 		return dataSet.get(key);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.foo.IFoo#twoArg(java.lang.String, java.lang.String)
+	 */
 	public Integer twoArg(String akey, String bkey) {
 		if (dataSet.get(akey) != null && dataSet.get(bkey) != null) {
 			return dataSet.get(akey) + dataSet.get(bkey);
@@ -46,10 +52,16 @@ public class Foo {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.foo.IFoo#collections(java.util.List)
+	 */
 	public List<Integer> collections(List<Integer> args) {
 		return args;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.foo.IFoo#getMapWithNoArgs()
+	 */
 	public Map<String, Integer> getMapWithNoArgs() {
 		if (dataSet.size() == 0) {
 			return null;

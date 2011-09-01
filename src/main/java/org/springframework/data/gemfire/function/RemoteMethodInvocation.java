@@ -33,6 +33,7 @@ public class RemoteMethodInvocation implements Serializable {
 		this.className = clazz.getName();
 	 
 	}
+
 	
 	public RemoteMethodInvocation(String className, String methodName, Serializable... args) {
 		this(methodName,args);

@@ -130,6 +130,14 @@ public class MethodInvokingFunction implements Function {
 			throw new FunctionException("cannot find method ["+ invocation.getMethodName() + 
 					"] on type [" + instance.getClass().getName() + "]");
 		}
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("about to invoke method %s on class %s", invocation.getMethodName(),invocation.getClassName()));
+			for (Object arg: invocation.getArguments()) {
+				logger.debug("arg:"+ arg.getClass().getName() + " " + arg.toString());	
+			}
+			
+		}
 
 		return (Serializable)ReflectionUtils.invokeMethod(method, instance, (Object[]) invocation.getArguments());
 	}
