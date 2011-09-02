@@ -31,12 +31,19 @@
 	</bean>
 	
 	<!--  client configurations -->
-	<bean id="basic-client" class="org.springframework.data.gemfire.client.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region" lazy-init="true">
+	<bean id="basic-client" class="org.springframework.data.gemfire.client.ClientRegionFactoryBean" p:cache-ref="cache" 
+				p:name="client-region" lazy-init="true" p:pool-name="pool">
 		<property name="interests">
 			<array>
 				<bean class="org.springframework.data.gemfire.client.Interest" p:key="Vlaicu" p:policy="NONE"/>
 				<bean class="org.springframework.data.gemfire.client.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/>
 			</array>
+		</property>
+	</bean>
+	
+	<bean id="pool" class="org.springframework.data.gemfire.client.PoolFactoryBean" p:subscription-enabled="true">
+		<property name="servers">
+			<bean class="org.springframework.data.gemfire.client.PoolConnection" p:host="localhost" p:port="40404"/>
 		</property>
 	</bean>
 	

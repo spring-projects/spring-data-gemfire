@@ -24,8 +24,9 @@ import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -91,12 +92,12 @@ public class RegionIntegrationTest {
 	}
 
 	//@Test
-	//TODO: Disabled since for some reason in Spring, I get the bean rather then the client
+	// TODO: disabled since the interest registration requires a proper pool to be created, which requires another JVM to run with the server/locator
 	public void testRegionInterest() throws Exception {
 		ClientRegionFactoryBean regionFB = (ClientRegionFactoryBean) ctx.getBean("&basic-client");
 		System.out.println("**** interests are " + Arrays.toString(regionFB.getInterests()));
-		//BeanDefinition bd = ((BeanDefinitionRegistry) ctx.getAutowireCapableBeanFactory()).getBeanDefinition("basic-client");
-		// System.out.println(bd.getPropertyValues().getPropertyValue("interests").getValue());
+		BeanDefinition bd = ((BeanDefinitionRegistry) ctx.getAutowireCapableBeanFactory()).getBeanDefinition("basic-client");
+		System.out.println(bd.getPropertyValues().getPropertyValue("interests").getValue());
 	}
 
 	@Test

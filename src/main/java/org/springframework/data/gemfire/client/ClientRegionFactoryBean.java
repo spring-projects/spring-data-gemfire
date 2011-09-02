@@ -61,13 +61,13 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	private DataPolicy dataPolicy;
 
 	private RegionAttributes<K, V> attributes;
-
 	private Region<K, V> region;
 
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
+		region = getRegion();
 		postProcess(region);
 	}
 

@@ -43,7 +43,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	private GemFireCache cache;
 	private String name;
 
-	Region<K, V> region;
+	private Region<K, V> region;
 
 	public void afterPropertiesSet() throws Exception {
 		Assert.notNull(cache, "Cache property must be set");
@@ -110,5 +110,9 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	protected Region<K, V> getRegion() {
+		return region;
 	}
 }
