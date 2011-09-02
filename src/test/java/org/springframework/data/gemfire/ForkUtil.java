@@ -98,9 +98,17 @@ public class ForkUtil {
 		os = proc.getOutputStream();
 		return os;
 	}
-
+	
+	public static OutputStream cacheServer(Class<?> clazz) {
+		return startCacheServer(clazz.getName());
+	}
+	
 	public static OutputStream cacheServer() {
-		String className = "org.springframework.data.gemfire.fork.CacheServerProcess";
+		return startCacheServer("org.springframework.data.gemfire.fork.CacheServerProcess");
+	}
+	
+	private static OutputStream startCacheServer(String className) {
+		
 		if (controlFileExists(className)) {
 			deleteControlFile(className);
 		}
