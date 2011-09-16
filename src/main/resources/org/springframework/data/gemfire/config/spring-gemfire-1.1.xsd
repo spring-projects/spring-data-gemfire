@@ -1138,4 +1138,43 @@ Whether the resulting GemFire continuous query is durable or not.
 	    </xsd:attribute>
 	    
 	</xsd:complexType>
+	
+	<xsd:element name="index">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.IndexFactoryBean"><![CDATA[
+Defines a GemFire index.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.query.Index" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="id" type="xsd:ID">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the bean index definition. If property 'name' is not set, it will be used as the index name as well.]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="type" use="optional" default="FUNCTIONAL">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="FUNCTIONAL"/>
+						<xsd:enumeration value="PRIMARY_KEY"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:attribute>
+			<xsd:attribute name="name" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the index.]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="expression" use="required" type="xsd:string"/>
+			<xsd:attribute name="from" use="required" type="xsd:string"/>
+			<xsd:attribute name="imports" use="optional" type="xsd:string"/>
+		</xsd:complexType>
+	</xsd:element>
+	
 </xsd:schema>
