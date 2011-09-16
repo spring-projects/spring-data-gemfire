@@ -25,7 +25,7 @@
 	
 	<gfe:replicated-region id="replicated-data" persistent="true" close="true" destroy="false">
 		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
-			<gfe:disk-dir location="./" max-size="1"/>
+			<gfe:disk-dir location="./build/tmp" max-size="1"/>
 		</gfe:disk-store>
 
 		<gfe:region-ttl timeout="${ttl}" action="DESTROY"/>
