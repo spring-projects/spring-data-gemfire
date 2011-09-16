@@ -34,6 +34,7 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("partitioned-region", new PartitionedRegionParser());
 		registerBeanDefinitionParser("client-region", new ClientRegionParser());
 		registerBeanDefinitionParser("pool", new PoolParser());
+		registerBeanDefinitionParser("index", new IndexParser());
 		registerBeanDefinitionParser("cache-server", new CacheServerParser());
 
 		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());

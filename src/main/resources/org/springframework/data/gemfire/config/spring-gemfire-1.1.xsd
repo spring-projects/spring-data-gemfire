@@ -1174,6 +1174,21 @@ The name of the index.]]></xsd:documentation>
 			<xsd:attribute name="expression" use="required" type="xsd:string"/>
 			<xsd:attribute name="from" use="required" type="xsd:string"/>
 			<xsd:attribute name="imports" use="optional" type="xsd:string"/>
+			
+			<xsd:attribute name="cache-ref" type="xsd:string" default="gemfire-cache" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the bean defining the GemFire cache (by default 'gemfire-cache').
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="pool-name" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the pool used by the index. Used usually in client scenarios.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 	

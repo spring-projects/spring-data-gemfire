@@ -44,7 +44,7 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	private RegionService cache;
 	private String beanName;
 	private String name, expression, from, imports;
-	private IndexType type;
+	private IndexType type = IndexType.FUNCTIONAL;
 
 	public void afterPropertiesSet() throws Exception {
 		if (queryService == null) {
@@ -60,8 +60,13 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 		}
 
 		Assert.notNull(queryService, "Query service required for index creation");
+		Assert.hasText(expression, "Index expression is required");
+		Assert.hasText(from, "Index from clause is required");
 
 		String indexName = StringUtils.hasText(name) ? name : beanName;
+
+		Assert.hasText(indexName, "Index bean id or name is required");
+
 		index = createIndex(queryService, indexName);
 	}
 
