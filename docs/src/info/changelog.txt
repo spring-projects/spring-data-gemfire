@@ -5,6 +5,10 @@ http://www.springsource.org/spring-gemfire
 Changes in version 1.1.0.M3 (2011-mm-dd)
 ----------------------------------------
 
+General
+* Upgraded to GemFire 6.6 GA
+* Introduced support for GemFire Indecies
+
 Package org.springframework.data.gemfire.client
 * Add missing properties to PoolFactoryBean and pool namespace
 

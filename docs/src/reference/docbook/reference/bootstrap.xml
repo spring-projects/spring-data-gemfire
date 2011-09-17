@@ -774,4 +774,17 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
 	<para>Whatever route one chooses to go, SGF supports both approaches allowing for easy migrate between them without forcing an upfront decision.</para>
   </section>
   
+  <section id="bootstrap:indecies">
+	<title>Creating Indecies</title>
+	
+	<para>GemFire allows creation on indices (or indexes) to improve the performance of (common) queries. SGF allows indecies to be declared through the <literal>index</literal> element:</para>
+	
+	
+	<programlisting language="xml"><![CDATA[<gfe:index id="myIndex" expression="someField" from="/someRegion"/>]]></programlisting>
+	
+	<para>Note that index declaration are not bound to a region but rather are top-level elements (just like <literal>gfe:cache</literal>). This allows one to declare any number of indecies on any region
+	whether they are just created or already exist - an improvement versus the GemFire <literal>cache.xml</literal>. By default the index relies on the default cache declaration but one can customize it
+	accordingly or use a pool (if need be) - see the namespace schema for the full set of options.</para>
+  </section>	
+
 </chapter>
