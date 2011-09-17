@@ -15,7 +15,9 @@
 	<!-- as there can be only one cache per VM -->
 	
 	
-	<gfe:index id="simple" expression="status" from="/portfolios"/>
+	<gfe:index id="simple" expression="status" from="/test-index"/>
+	
+	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/test-index tsi" type="PRIMARY_KEY" imports="import java.util"/>
 	
 	<gfe:cache />
 	

@@ -16,13 +16,19 @@
 
 package org.springframework.data.gemfire.config;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexType;
 
 /**
  * 
@@ -32,19 +38,38 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration("index-ns.xml")
 public class IndexNamespaceTest {
 
+	private String name = "test-index";
 	@Autowired
 	private ApplicationContext context;
 
+
+	@Before
+	public void setUp() throws Exception {
+		Cache cache = (Cache) context.getBean("gemfire-cache");
+		if (cache.getRegion(name) == null) {
+			cache.createRegionFactory().create("test-index");
+		}
+	}
+
 	@Test
 	public void testBasicIndex() throws Exception {
-		IndexFactoryBean ifb = null;
+		Index idx = (Index) context.getBean("simple");
 
-		ifb = (IndexFactoryBean) context.getBean("&simple");
-		System.out.println("Ifb is " + ifb);
+		assertEquals("/test-index", idx.getFromClause());
+		assertEquals("status", idx.getIndexedExpression());
+		assertEquals("simple", idx.getName());
+		assertEquals(name, idx.getRegion().getName());
+		assertEquals(IndexType.FUNCTIONAL, idx.getType());
 	}
 
 	@Test
 	public void testComplexIndex() throws Exception {
-	}
+		Index idx = (Index) context.getBean("complex");
 
+		assertEquals("/test-index tsi", idx.getFromClause());
+		assertEquals("tsi.name", idx.getIndexedExpression());
+		assertEquals("complex-index", idx.getName());
+		assertEquals(name, idx.getRegion().getName());
+		assertEquals(IndexType.PRIMARY_KEY, idx.getType());
+	}
 }
