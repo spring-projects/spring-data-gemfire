@@ -145,5 +145,6 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 	private void parseCommonInterestAttr(Element element, BeanDefinitionBuilder builder) {
 		ParsingUtils.setPropertyValue(element, builder, "durable", "durable");
 		ParsingUtils.setPropertyValue(element, builder, "result-policy", "policy");
+		ParsingUtils.setPropertyValue(element, builder, "receive-values", "receiveValues");
 	}
 }

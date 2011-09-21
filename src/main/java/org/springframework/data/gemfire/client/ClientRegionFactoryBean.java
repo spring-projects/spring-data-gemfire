@@ -43,6 +43,7 @@ import com.gemstone.gemfire.cache.client.Pool;
  * Client extension for GemFire regions.
  * 
  * @author Costin Leau
+ * @author Gary Russell
  */
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements BeanFactoryAware,
 		DisposableBean {
@@ -153,10 +154,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			for (Interest<K> interest : interests) {
 				if (interest instanceof RegexInterest) {
 					// do the cast since it's safe
-					region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(), interest.isDurable());
+					region.registerInterestRegex((String) interest.getKey(),
+							interest.getPolicy(), interest.isDurable(),
+							interest.isReceiveValues());
 				}
 				else {
-					region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable());
+					region.registerInterest(interest.getKey(),
+							interest.getPolicy(), interest.isDurable(),
+							interest.isReceiveValues());
 				}
 			}
 		}

@@ -27,6 +27,7 @@ import com.gemstone.gemfire.cache.InterestResultPolicy;
  * and or JavaBeans means.
  * 
  * @author Costin Leau
+ * @author Gary Russell
  */
 public class Interest<K> implements InitializingBean {
 
@@ -35,33 +36,40 @@ public class Interest<K> implements InitializingBean {
 	private K key;
 	private InterestResultPolicy policy = InterestResultPolicy.DEFAULT;
 	private boolean durable = false;
+	private boolean receiveValues = false;
 
 	public Interest() {
 	}
 
 	public Interest(K key) {
-		this(key, InterestResultPolicy.DEFAULT, false);
+		this(key, InterestResultPolicy.DEFAULT, false, false);
 	}
 
 	public Interest(K key, InterestResultPolicy policy) {
-		this(key, policy, false);
+		this(key, policy, false, false);
 	}
 
 	public Interest(K key, String policy) {
-		this(key, policy, false);
+		this(key, policy, false, false);
 	}
 
 	public Interest(K key, String policy, boolean durable) {
+		this(key, policy, durable, false);
+	}
+
+	public Interest(K key, String policy, boolean durable, boolean receiveValues) {
 		this.key = key;
 		this.policy = (InterestResultPolicy) constants.asObject(policy);
 		this.durable = durable;
+		this.receiveValues = receiveValues;
 		afterPropertiesSet();
 	}
 
-	public Interest(K key, InterestResultPolicy policy, boolean durable) {
+	public Interest(K key, InterestResultPolicy policy, boolean durable, boolean receiveValues) {
 		this.key = key;
 		this.policy = policy;
 		this.durable = durable;
+		this.receiveValues = receiveValues;
 		afterPropertiesSet();
 	}
 
@@ -134,5 +142,23 @@ public class Interest<K> implements InitializingBean {
 	 */
 	public void setDurable(boolean durable) {
 		this.durable = durable;
+	}
+
+	/**
+	 * Returns whether values are returned in events.
+	 *
+	 * @return the receiveValues
+	 */
+	protected boolean isReceiveValues() {
+		return receiveValues;
+	}
+
+	/**
+	 * Sets whether values are returned in events.
+	 *
+	 * @param receiveValues the receiveValues to set
+	 */
+	public void setReceiveValues(boolean receiveValues) {
+		this.receiveValues = receiveValues;
 	}
 }

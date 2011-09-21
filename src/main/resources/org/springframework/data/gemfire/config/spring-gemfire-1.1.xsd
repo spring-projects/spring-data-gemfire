@@ -911,6 +911,15 @@ NONE -  Does not initialize the local cache.
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="receive-values" default="true" use="optional" type="xsd:boolean">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+If set to true (default), values are received with create and update events on keys of interest.
+If set to false, only invalidations are received and the value will be received on the next get
+instead.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:complexType>
 	
 	<xsd:element name="pool">

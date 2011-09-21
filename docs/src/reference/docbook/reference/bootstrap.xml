@@ -580,11 +580,19 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
 			key-based and regular-expression-based types being supported; for example:</para>
 			
 			<programlisting language="xml"><![CDATA[<gfe:client-region id="complex" pool-name="gemfire-pool">
-    <gfe:key-interest durable="true" result-policy="KEYS">
-        <bean id="key" class="java.lang.String"/>
+    <gfe:key-interest durable="true" result-policy="KEYS" receive-values="true">
+        <bean class="java.lang.String">
+            <constructor-arg value="myKey"/>
+        </bean>
     </gfe:key-interest>
-    <gfe:regex-interest pattern=".*"/>
+    <gfe:regex-interest pattern=".*" receive-values="false"/>
 </gfe:client-region>]]></programlisting>
+
+		<para>A special key 'ALL_KEYS' means interest is registered for all keys (identical to
+		a regex interest of '.*').</para>
+		<para>The 'receive-values' attribute indicates whether or not the values are received
+		for create and update events. When true, values are received; when false, only 
+		invalidation events are received.</para>
 		</section>
 	</section>
 
