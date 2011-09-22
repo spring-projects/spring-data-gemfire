@@ -581,14 +581,16 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
 			
 			<programlisting language="xml"><![CDATA[<gfe:client-region id="complex" pool-name="gemfire-pool">
     <gfe:key-interest durable="true" result-policy="KEYS">
-        <bean id="key" class="java.lang.String"/>
+        <bean id="key" class="java.lang.String">
+             <constructor-arg value="someKey" /> 
+        </bean>
     </gfe:key-interest>
     <gfe:regex-interest pattern=".*" receive-values="false"/>
 </gfe:client-region>]]></programlisting>
 
-		<para> <para>A special key <literal>ALL_KEYS</literal> means interest is registered for all keys (identical to a regex interest of <literal>.*</literal>. 
+		<para>A special key <literal>ALL_KEYS</literal> means interest is registered for all keys (identical to a regex interest of <literal>.*</literal>). 
 		The <literal>receive-values</literal> attribute indicates whether or not the values are received for create and update events. If true, values are received; if false, only 
-		invalidation events are received - refer to the GemFire documentation for more details.</para></para>
+		invalidation events are received - refer to the GemFire documentation for more details.</para>
 		</section>
 	</section>
 
