@@ -36,7 +36,7 @@
 		<property name="interests">
 			<array>
 				<bean class="org.springframework.data.gemfire.client.Interest" p:key="Vlaicu" p:policy="NONE"/>
-				<bean class="org.springframework.data.gemfire.client.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/>
+				<bean class="org.springframework.data.gemfire.client.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true" p:receive-values="false"/>
 			</array>
 		</property>
 	</bean>

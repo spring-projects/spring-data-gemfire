@@ -583,8 +583,12 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
     <gfe:key-interest durable="true" result-policy="KEYS">
         <bean id="key" class="java.lang.String"/>
     </gfe:key-interest>
-    <gfe:regex-interest pattern=".*"/>
+    <gfe:regex-interest pattern=".*" receive-values="false"/>
 </gfe:client-region>]]></programlisting>
+
+		<para> <para>A special key <literal>ALL_KEYS</literal> means interest is registered for all keys (identical to a regex interest of <literal>.*</literal>. 
+		The <literal>receive-values</literal> attribute indicates whether or not the values are received for create and update events. If true, values are received; if false, only 
+		invalidation events are received - refer to the GemFire documentation for more details.</para></para>
 		</section>
 	</section>
 
@@ -782,7 +786,12 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
 	
 	<programlisting language="xml"><![CDATA[<gfe:index id="myIndex" expression="someField" from="/someRegion"/>]]></programlisting>
 	
-	<para>Note that index declaration are not bound to a region but rather are top-level elements (just like <literal>gfe:cache</literal>). This allows one to declare any number of indecies on any region
+	<para>Before creating an index, SGF will verify whether one with the same name already exists. If it does, it will compare the properties and if they don't match, will remove the old one to create
+	a new one. If the properties match, SGF will simply return the index (in case it does not exist it will simply create one). To prevent the update of the index, even if the properties do not match,
+	set the property <literal>override</literal> to false.</para>
+	
+	<para>
+	Note that index declaration are not bound to a region but rather are top-level elements (just like <literal>gfe:cache</literal>). This allows one to declare any number of indecies on any region
 	whether they are just created or already exist - an improvement versus the GemFire <literal>cache.xml</literal>. By default the index relies on the default cache declaration but one can customize it
 	accordingly or use a pool (if need be) - see the namespace schema for the full set of options.</para>
   </section>	

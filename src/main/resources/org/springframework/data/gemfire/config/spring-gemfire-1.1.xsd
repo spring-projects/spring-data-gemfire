@@ -911,6 +911,15 @@ NONE -  Does not initialize the local cache.
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="receive-values" type="xsd:string" default="true" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Indicates whether values are received with create and update events on keys of interest (true) 
+or only invalidations are received and the value will be received on the next get instead (false).
+Default is true.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>		
 	</xsd:complexType>
 	
 	<xsd:element name="pool">
@@ -1174,6 +1183,12 @@ The name of the index.]]></xsd:documentation>
 			<xsd:attribute name="expression" use="required" type="xsd:string"/>
 			<xsd:attribute name="from" use="required" type="xsd:string"/>
 			<xsd:attribute name="imports" use="optional" type="xsd:string"/>
+			<xsd:attribute name="override" use="optional" type="xsd:string" default="true">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates whether the index is created even if there is an index with the same name (default) or not.]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 			
 			<xsd:attribute name="cache-ref" type="xsd:string" default="gemfire-cache" use="optional">
 				<xsd:annotation>

@@ -45,6 +45,7 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	private String beanName;
 	private String name, expression, from, imports;
 	private IndexType type = IndexType.FUNCTIONAL;
+	private boolean override = true;
 
 	public void afterPropertiesSet() throws Exception {
 		if (queryService == null) {
@@ -72,8 +73,23 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 
 	private Index createIndex(QueryService queryService, String indexName) throws Exception {
 		Collection<Index> indexes = queryService.getIndexes();
+
+		Index old = null;
+
 		for (Index index : indexes) {
 			if (indexName.equals(index.getName())) {
+				if (!override) {
+					return index;
+				}
+				old = index;
+				break;
+			}
+		}
+
+		if (old != null) {
+			// compare indices
+			if (from.equals(old.getFromClause()) && expression.equals(old.getIndexedExpression())
+					&& type.equals(old.getType())) {
 				return index;
 			}
 		}
@@ -166,5 +182,12 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	 */
 	public void setType(IndexType type) {
 		this.type = type;
+	}
+
+	/**
+	 * @param override the override to set
+	 */
+	public void setOverride(boolean override) {
+		this.override = override;
 	}
 }

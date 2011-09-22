@@ -153,10 +153,12 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			for (Interest<K> interest : interests) {
 				if (interest instanceof RegexInterest) {
 					// do the cast since it's safe
-					region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(), interest.isDurable());
+					region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(),
+							interest.isDurable(), interest.isReceiveValues());
 				}
 				else {
-					region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable());
+					region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable(),
+							interest.isReceiveValues());
 				}
 			}
 		}

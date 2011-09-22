@@ -35,6 +35,7 @@ public class Interest<K> implements InitializingBean {
 	private K key;
 	private InterestResultPolicy policy = InterestResultPolicy.DEFAULT;
 	private boolean durable = false;
+	private boolean receiveValues = true;
 
 	public Interest() {
 	}
@@ -52,19 +53,24 @@ public class Interest<K> implements InitializingBean {
 	}
 
 	public Interest(K key, String policy, boolean durable) {
-		this.key = key;
-		this.policy = (InterestResultPolicy) constants.asObject(policy);
-		this.durable = durable;
-		afterPropertiesSet();
+		this(key, policy, false, true);
+	}
+
+	public Interest(K key, String policy, boolean durable, boolean receiveValues) {
+		this(key, (InterestResultPolicy) constants.asObject(policy), durable, receiveValues);
 	}
 
 	public Interest(K key, InterestResultPolicy policy, boolean durable) {
+		this(key, policy, durable, true);
+	}
+
+	public Interest(K key, InterestResultPolicy policy, boolean durable, boolean receiveValues) {
 		this.key = key;
 		this.policy = policy;
 		this.durable = durable;
+		this.receiveValues = receiveValues;
 		afterPropertiesSet();
 	}
-
 
 	public void afterPropertiesSet() {
 		Assert.notNull(key, "a non-null key is required");
@@ -134,5 +140,23 @@ public class Interest<K> implements InitializingBean {
 	 */
 	public void setDurable(boolean durable) {
 		this.durable = durable;
+	}
+
+	/**
+	 * Returns the type of values received by the listener.
+	 * 
+	 * @return the receiveValues
+	 */
+	protected boolean isReceiveValues() {
+		return receiveValues;
+	}
+
+	/**
+	 * Switches between the different entities received by the listener.
+	 * 
+	 * @param receiveValues the receiveValues to set
+	 */
+	public void setReceiveValues(boolean receiveValues) {
+		this.receiveValues = receiveValues;
 	}
 }
