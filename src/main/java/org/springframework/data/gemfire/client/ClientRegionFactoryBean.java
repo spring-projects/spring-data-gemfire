@@ -97,8 +97,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		// map the attributes onto the client
 		if (attributes != null) {
 			CacheListener<K, V>[] listeners = attributes.getCacheListeners();
-			if (!ObjectUtils.isEmpty(cacheListeners)) {
-				for (CacheListener<K, V> listener : cacheListeners) {
+			if (!ObjectUtils.isEmpty(listeners)) {
+				for (CacheListener<K, V> listener : listeners) {
 					factory.addCacheListener(listener);
 				}
 			}
