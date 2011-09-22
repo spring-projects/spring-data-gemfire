@@ -9,8 +9,13 @@ General
 * Upgraded to GemFire 6.6 GA
 * Introduced support for GemFire Indecies
 
+Package org.springframework.data.gemfire
+* Improved region creation by removing the use of GemFire 6.0 API (replaced with 6.5+)
+
 Package org.springframework.data.gemfire.client
-* Add missing properties to PoolFactoryBean and pool namespace
+* Added missing properties to PoolFactoryBean and pool namespace
+* Fixed registration of custom listeners specified through region attributes
+* Added missing 'receive-values' property to region interests
 
 
 Changes in version 1.1.0.M2 (2011-08-29)
