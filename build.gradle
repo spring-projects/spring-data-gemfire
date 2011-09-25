@@ -184,11 +184,18 @@ task dist(type: Zip) {
             into 'docs'
             include 'reference/**/*'
         }
+        from('samples/') {
+            into 'samples'
+            exclude '**/build/**'
+            exclude '**/target/**'
+            exclude '**/.gradle/**'
+            exclude '**/vf*.cfg'
+        }
         from('build/') {
             into 'docs'
             include 'api/**/*'
         }
-            into('dist') {
+        into('dist') {
             from javaprojects.collect {project -> project.libsDir }
         }
     }
