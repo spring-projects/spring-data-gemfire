@@ -80,14 +80,14 @@
         <xsl:param name="sequence" select="''"/>
         <xsl:param name="position" select="''"/>
         <xsl:param name="gentext-key" select="''"/>
-
+        
         <xsl:variable name="Version">
             <xsl:choose>
                 <xsl:when test="//productname">
                     <xsl:value-of select="//productname"/><xsl:text> </xsl:text>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:text>please define productname in your docbook file!</xsl:text>
+                    <xsl:text>Spring GemFire</xsl:text>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>

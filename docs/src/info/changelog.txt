@@ -2,12 +2,13 @@ SPRING GEMFIRE INTEGRATION CHANGELOG
 ====================================
 http://www.springsource.org/spring-gemfire
 
-Changes in version 1.1.0.M3 (2011-mm-dd)
+Changes in version 1.1.0.M3 (2011-09-25)
 ----------------------------------------
 
 General
 * Upgraded to GemFire 6.6 GA
 * Introduced support for GemFire Indecies
+* Reintroduced samples in zip distribution
 
 Package org.springframework.data.gemfire
 * Improved region creation by removing the use of GemFire 6.0 API (replaced with 6.5+)
