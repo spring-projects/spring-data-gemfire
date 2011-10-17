@@ -63,7 +63,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 			Region<?, ?> reg = gemfireCache.getRegion(name);
 			if (reg != null) {
 				cache = new GemfireCache(reg);
-				getCacheMap().put(name, cache);
+				addCache(cache);
 			}
 		}
 

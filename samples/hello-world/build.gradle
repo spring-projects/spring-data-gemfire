@@ -18,6 +18,7 @@ repositories {
     mavenRepo name: "spring-snapshot", urls: "http://maven.springframework.org/snapshot"
     mavenRepo name: "sonatype-snapshot", urls: "http://oss.sonatype.org/content/repositories/snapshots"
     mavenRepo name: "ext-snapshots", urls: "http://springframework.svn.sourceforge.net/svnroot/springframework/repos/repo-ext/"
+    mavenRepo name: "gemfire-release-repo", urls: "http://dist.gemstone.com/maven/release" 
 }
 
 dependencies {
