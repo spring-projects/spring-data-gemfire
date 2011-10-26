@@ -758,7 +758,7 @@ redundancy. Each copy provides extra backup at the expense of extra storages.</e
   <property name="attributes">
     <bean class="org.springframework.data.gemfire.RegionAttributesFactory" p:initial-capacity="1024">
       <property name="partitionAttributes">
-        <bean class="org.springframework.data.gemfire.PartitionAttributesFactory" p:redundant-copies="2" p:local-max-memory="512"/>
+        <bean class="org.springframework.data.gemfire.PartitionAttributesFactoryBean" p:redundant-copies="2" p:local-max-memory="512"/>
       </property>
     </bean>
   </property>
