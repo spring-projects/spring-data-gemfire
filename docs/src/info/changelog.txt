@@ -2,8 +2,12 @@ SPRING GEMFIRE INTEGRATION CHANGELOG
 ====================================
 http://www.springsource.org/spring-gemfire
 
-Changes in version 1.1.0.M4 (2011-mm-dd)
-----------------------------------------
+Changes in version 1.1.0.RC1 (2011-mm-dd)
+-----------------------------------------
+
+General
+* Upgraded to GemFire 6.6.1
+* Introduced PDX options for 'cache' and 'client-cache' elements
 
 
 Changes in version 1.1.0.M3 (2011-09-25)

@@ -62,6 +62,10 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		Resource res = TestUtils.readField("cacheXml", cfb);
 		assertEquals("gemfire-cache.xml", res.getFilename());
 		assertEquals(ctx.getBean("props"), TestUtils.readField("properties", cfb));
+
+		assertEquals(Boolean.FALSE, TestUtils.readField("pdxIgnoreUnreadFields", cfb));
+		assertEquals(Boolean.TRUE, TestUtils.readField("pdxPersistent", cfb));
+
 	}
 
 	@Test(expected = IllegalArgumentException.class)

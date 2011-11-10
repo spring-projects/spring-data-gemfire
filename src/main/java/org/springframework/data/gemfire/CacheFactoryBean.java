@@ -74,13 +74,22 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 
 		public void run() {
-			Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
-
-			factory.setPdxSerializer((PdxSerializer) pdxSerializer);
-			factory.setPdxDiskStore(pdxDiskStoreName);
-			factory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
-			factory.setPdxPersistent(pdxPersistent);
-			factory.setPdxReadSerialized(pdxReadSerialized);
+			if (pdxSerializer != null) {
+				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
+				factory.setPdxSerializer((PdxSerializer) pdxSerializer);
+			}
+			if (pdxDiskStoreName != null) {
+				factory.setPdxDiskStore(pdxDiskStoreName);
+			}
+			if (pdxIgnoreUnreadFields != null) {
+				factory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
+			}
+			if (pdxPersistent != null) {
+				factory.setPdxPersistent(pdxPersistent);
+			}
+			if (pdxReadSerialized != null) {
+				factory.setPdxReadSerialized(pdxReadSerialized);
+			}
 		}
 	}
 

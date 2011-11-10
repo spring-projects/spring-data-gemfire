@@ -50,6 +50,57 @@ when the same cache is used in multiple application context/bean factories insid
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="pdx-serializer" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the PDX serializer for the cache. If this serializer is set, it will be consulted to see if it can serialize any 
+domain classes which are added to the cache in portable data exchange format. 				
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>		
+		<xsd:attribute name="pdx-disk-store" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the name of the disk store to use for PDX meta data. When serializing objects in the PDX format, 
+the type definitions are persisted to disk. This setting controls which disk store is used for that persistence.
+If not set, the metadata will go in the default disk store. 
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>		
+		<xsd:attribute name="pdx-persistent" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Control whether the type metadata for PDX objects is persisted to disk. The default for this setting is true. 
+If you are using a WAN gateway, or persistent regions, you should leave this set to true.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>		
+		<xsd:attribute name="pdx-read-serialized" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the object preference to PdxInstance type. When a cached object that was serialized as a PDX is read from the cache 
+a PdxInstance will be returned instead of the actual domain class. The PdxInstance is an interface that provides run time
+access to the fields of a PDX without deserializing the entire PDX. The PdxInstance implementation is a light weight wrapper
+that simply refers to the raw bytes of the PDX that are kept in the cache. Using this method applications can choose to 
+access PdxInstance instead of Java object.
+
+Note that a PdxInstance is only returned if a serialized PDX is found in the cache. If the cache contains a deserialized PDX, 
+then a domain class instance is returned instead of a PdxInstance. 				
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>		
+		<xsd:attribute name="pdx-ignore-unread-fields" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Controls whether pdx ignores fields that were unread during deserialization. The default is to preserve unread fields be
+including their data during serialization. But if you configure the cache to ignore unread fields then their data will be 
+lost during serialization.
+
+You should only set this attribute to true if you know this member will only be reading cache data. In this use case you 
+do not need to pay the cost of preserving the unread fields since you will never be reserializing pdx data. 				
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>		
 	</xsd:complexType>
     
     <xsd:element name="cache" type="cacheType">
