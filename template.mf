@@ -1,5 +1,5 @@
 Bundle-SymbolicName: org.springframework.data.gemfire
-Bundle-Name: Spring GemFire
+Bundle-Name: Spring Data GemFire
 Bundle-Vendor: SpringSource
 Bundle-ManifestVersion: 2
 Export-Template: org.springframework.data.gemfire.*;version=${version}
