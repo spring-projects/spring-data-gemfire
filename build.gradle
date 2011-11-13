@@ -189,7 +189,8 @@ task dist(type: Zip) {
             exclude '**/build/**'
             exclude '**/target/**'
             exclude '**/.gradle/**'
-            exclude '**/vf*.cfg'
+            exclude '**/vf*.*'
+            exclude '**/vf*.txt'
         }
         from('build/') {
             into 'docs'
@@ -209,7 +210,7 @@ task uploadDist(type: org.springframework.gradle.tasks.S3DistroUpload, dependsOn
     group = "Distribution"
     archiveFile = dist.archivePath
     projectKey = 'SGF'
-    projectName = 'Spring Data GemFire'
+    projectName = 'Spring GemFire'
 }
 
 defaultTasks 'clean', 'build'

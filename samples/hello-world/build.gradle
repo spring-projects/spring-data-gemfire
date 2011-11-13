@@ -1,4 +1,4 @@
-description = 'Spring GemFire Samples - Hello World'
+description = 'Spring Data GemFire Samples - Hello World'
 
 apply plugin: 'base'
 apply plugin: 'idea'
