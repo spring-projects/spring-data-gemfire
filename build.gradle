@@ -1,5 +1,5 @@
 // used for artifact names, building doc upload urls, etc.
-description = 'Spring GemFire'
+description = 'Spring Data GemFire'
 abbreviation = 'SGF'
 
 apply plugin: 'base'
@@ -209,7 +209,7 @@ task uploadDist(type: org.springframework.gradle.tasks.S3DistroUpload, dependsOn
     group = "Distribution"
     archiveFile = dist.archivePath
     projectKey = 'SGF'
-    projectName = 'Spring GemFire'
+    projectName = 'Spring Data GemFire'
 }
 
 defaultTasks 'clean', 'build'

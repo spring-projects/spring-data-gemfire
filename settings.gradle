@@ -1,4 +1,4 @@
-rootProject.name = 'spring-gemfire'
+rootProject.name = 'spring-data-gemfire'
 
 include 'docs'
        

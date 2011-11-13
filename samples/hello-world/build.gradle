@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.springframework.data.gemfire:spring-gemfire:$version"
+    compile "org.springframework.data:spring-data-gemfire:$version"
     compile "javax.inject:javax.inject:1"
     compile "javax.annotation:jsr250-api:1.0"
     
