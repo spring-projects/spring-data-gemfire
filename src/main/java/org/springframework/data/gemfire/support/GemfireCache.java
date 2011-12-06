@@ -17,7 +17,7 @@
 package org.springframework.data.gemfire.support;
 
 import org.springframework.cache.Cache;
-import org.springframework.cache.support.ValueWrapperImpl;
+import org.springframework.cache.support.SimpleValueWrapper;
 
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
@@ -62,7 +62,7 @@ public class GemfireCache implements Cache {
 	public ValueWrapper get(Object key) {
 		Object value = region.get(key);
 
-		return (value == null ? null : new ValueWrapperImpl(value));
+		return (value == null ? null : new SimpleValueWrapper(value));
 	}
 
 	public void put(Object key, Object value) {
