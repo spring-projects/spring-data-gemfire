@@ -20,7 +20,7 @@ For those in a hurry:
 
 * Download the jar through
 
-Maven:
+** Maven:
 
 ~~~~~ xml
 <dependency>
@@ -37,7 +37,7 @@ Maven:
 </repository> 
 ~~~~~
 
-Gradle: 
+** Gradle: 
 
 ~~~~~ groovy
 repositories {
@@ -53,11 +53,11 @@ dependencies {
 
 ~~~~~ xml
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:gfe="http://www.springframework.org/schema/gemfire"
   xsi:schemaLocation="
-  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
 
   <gfe:cache />
   
