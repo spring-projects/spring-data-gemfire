@@ -26,14 +26,22 @@ For those in a hurry:
 <dependency>
   <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-gemfire</artifactId>
-  <version>1.1.0.BUILD-SNAPSHOT</version>
+  <version>${version}</version>
 </dependency> 
 
+<!-- used for nightly builds -->
 <repository>
   <id>spring-maven-snapshot</id>
   <snapshots><enabled>true</enabled></snapshots>
   <name>Springframework Maven SNAPSHOT Repository</name>
   <url>http://maven.springframework.org/snapshot</url>
+</repository> 
+
+<!-- used for milestone/rc releases -->
+<repository>
+  <id>spring-maven-milestone</id>
+  <name>Springframework Maven Milestone Repository</name>
+  <url>http://maven.springframework.org/milestone</url>
 </repository> 
 ~~~~~
 
@@ -42,12 +50,18 @@ For those in a hurry:
 ~~~~~ groovy
 repositories {
    mavenRepo name: "spring-snapshot", urls: "http://maven.springframework.org/snapshot"
+   mavenRepo name: "spring-milestone", urls: "http://maven.springframework.org/milestone"
 }
 
 dependencies {
-   compile "org.springframework.data:spring-data-gemfire:1.1.0.BUILD-SNAPSHOT"
+   compile "org.springframework.data:spring-data-gemfire:${version}"
 }
 ~~~~~
+
+Latest GA release is _1.0.1.RELEASE_  
+Latest milestone release is _1.1.0.RC1_  
+Latest nightly build is _1.1.0.BUILD-SNAPSHOT_
+
 
 * Configure a GemFire cache and Region (replicated, partitioned, client and so on):
 
