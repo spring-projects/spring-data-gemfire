@@ -18,49 +18,59 @@ Quick Start
 
 For those in a hurry:
 
-* Download the jar through Maven:
+* Download the jar through
 
+Maven:
+~~~~~ xml
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-gemfire</artifactId>
+  <version>1.1.0.BUILD-SNAPSHOT</version>
+</dependency> 
 
-      <dependency>
-        <groupId>org.springframework.data.gemfire</groupId>
-        <artifactId>spring-gemfire</artifactId>
-        <version>1.1.0.BUILD-SNAPSHOT</version>
-      </dependency> 
+<repository>
+  <id>spring-maven-snapshot</id>
+  <snapshots><enabled>true</enabled></snapshots>
+  <name>Springframework Maven SNAPSHOT Repository</name>
+  <url>http://maven.springframework.org/snapshot</url>
+</repository> 
+~~~~~
 
+Gradle: 
+~~~~~ groovy
+repositories {
+   mavenRepo name: "spring-snapshot", urls: "http://maven.springframework.org/snapshot"
+}
 
-      <repository>
-        <id>spring-maven-snapshot</id>
-        <snapshots><enabled>true</enabled></snapshots>
-        <name>Springframework Maven SNAPSHOT Repository</name>
-        <url>http://maven.springframework.org/snapshot</url>
-      </repository> 
-
+dependencies {
+   compile "org.springframework.data:spring-data-gemfire:1.1.0.BUILD-SNAPSHOT"
+}
+~~~~~
 
 * Configure a GemFire cache and Region (replicated, partitioned, client and so on):
+~~~~~ xml
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance 
+  xmlns:gfe="http://www.springframework.org/schema/gemfire"
+  xsi:schemaLocation="
+  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
 
-      <beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance 
-        xmlns:gfe="http://www.springframework.org/schema/gemfire"
-        xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+  <gfe:cache />
+  
+  <gfe:partitioned-region id="partition" copies="2" total-buckets="4">
 
-        <gfe:cache />
-        
-        <gfe:partitioned-region id="partition" copies="2" total-buckets="4">
-
-        <bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/>
-      </beans>
-
+  <bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/>
+</beans>
+~~~~~
 * Use the Region to read/write data:
-
-      region.put(Long.valueOf(1), new Person("Jane", "Smith"));
-
+~~~~~ java
+region.put(Long.valueOf(1), new Person("Jane", "Smith"));
+~~~~~
 * Or/And `GemFireTemplate` to interact with GemFire:
-
-      template.query("person = 1");
-
-
+~~~~~ java
+template.query("person = 1");
+~~~~~
 Contributing to Spring GemFire
 ------------------------------
 
