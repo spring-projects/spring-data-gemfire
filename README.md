@@ -21,6 +21,7 @@ For those in a hurry:
 * Download the jar through
 
 Maven:
+
 ~~~~~ xml
 <dependency>
   <groupId>org.springframework.data</groupId>
@@ -37,6 +38,7 @@ Maven:
 ~~~~~
 
 Gradle: 
+
 ~~~~~ groovy
 repositories {
    mavenRepo name: "spring-snapshot", urls: "http://maven.springframework.org/snapshot"
@@ -48,6 +50,7 @@ dependencies {
 ~~~~~
 
 * Configure a GemFire cache and Region (replicated, partitioned, client and so on):
+
 ~~~~~ xml
 <beans xmlns="http://www.springframework.org/schema/beans"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance 
@@ -63,14 +66,18 @@ dependencies {
   <bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/>
 </beans>
 ~~~~~
+
 * Use the Region to read/write data:
+
 ~~~~~ java
 region.put(Long.valueOf(1), new Person("Jane", "Smith"));
 ~~~~~
 * Or/And `GemFireTemplate` to interact with GemFire:
+
 ~~~~~ java
 template.query("person = 1");
 ~~~~~
+
 Contributing to Spring GemFire
 ------------------------------
 
