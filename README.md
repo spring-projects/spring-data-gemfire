@@ -20,7 +20,7 @@ For those in a hurry:
 
 * Download the jar through
 
-** Maven:
+* Maven:
 
 ~~~~~ xml
 <dependency>
@@ -37,7 +37,7 @@ For those in a hurry:
 </repository> 
 ~~~~~
 
-** Gradle: 
+* Gradle: 
 
 ~~~~~ groovy
 repositories {
