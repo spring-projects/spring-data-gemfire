@@ -59,7 +59,7 @@ dependencies {
 ~~~~~
 
 Latest GA release is _1.0.1.RELEASE_  
-Latest milestone release is _1.1.0.RC1_  
+Latest milestone is _1.1.0.RC1_  
 Latest nightly build is _1.1.0.BUILD-SNAPSHOT_
 
 
