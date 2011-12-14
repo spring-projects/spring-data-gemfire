@@ -4,12 +4,12 @@ Spring Data GemFire
 The primary goal of the [Spring GemFire](http://www.springsource.org/spring-gemfire) project is to make it easier to build highly scalable Spring-powered applications using 
 [GemFire](http://www.gemstone.com/products/gemfire) as a distributed [data management](http://www.springsource.com/products/data-management) platform.
 
-Examples
---------
+# Examples
+
 For examples on using the Spring GemFire, see the samples project.
 
-Getting Help
-------------
+# Getting Help
+
 
 Read the main project [website](http://www.springsource.org/spring-gemfire) and the [User Guide](http://static.springsource.org/spring-gemfire/docs/current/reference/html/). Look at the source code and the [JavaDocs](http://static.springsource.org/spring-gemfire/docs/current/api/). For more detailed questions, use the [forum](http://forum.springsource.org/forumdisplay.php?f=80). If you are new to Spring as well as to Spring GemFire, look for information about [Spring projects](http://www.springsource.org/projects). 
 
@@ -92,8 +92,24 @@ region.put(Long.valueOf(1), new Person("Jane", "Smith"));
 template.query("person = 1");
 ~~~~~
 
-Contributing to Spring GemFire
-------------------------------
+# Building
+
+Spring GemFire uses Gradle as its building system. To compile the project, simply type from the root folder
+
+    gradlew
+
+To generate IDE-specific files, use
+
+    gradlew eclipse
+ 
+or
+
+    gradlew idea 
+    
+depending on your editor.
+
+# Contributing
+
 
 Here are some ways for you to get involved in the community:
 

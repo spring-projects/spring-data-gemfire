@@ -9,6 +9,7 @@ pom.xml
 *.ipr
 *.iws
 *.log
+.classpath
 
 /samples/hello-world/vf.gf.dmn-events.cfg
 /samples/hello-world/vf.gf.dmn-license.cfg
