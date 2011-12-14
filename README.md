@@ -59,8 +59,7 @@ dependencies {
 ~~~~~
 
 Latest GA release is _1.1.0.RELEASE_  
-Latest milestone is _1.1.0.RC1_  
-Latest nightly build is _1.2.0.BUILD-SNAPSHOT_
+Latest nightly build is _1.1.1.BUILD-SNAPSHOT_
 
 
 * Configure a GemFire cache and Region (replicated, partitioned, client and so on):
@@ -86,6 +85,7 @@ Latest nightly build is _1.2.0.BUILD-SNAPSHOT_
 ~~~~~ java
 region.put(Long.valueOf(1), new Person("Jane", "Smith"));
 ~~~~~
+
 * Or/And `GemFireTemplate` to interact with GemFire:
 
 ~~~~~ java
