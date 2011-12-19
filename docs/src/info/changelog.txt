@@ -5,6 +5,13 @@ http://www.springsource.org/spring-gemfire
 Changes in version 1.1.0.RELEASE (2011-12-14)
 ---------------------------------------------
 
+Package org.springframework.data.gemfire
+* Fixed incorrect parsing of pdx-serializer (from value to reference)
+
+
+Changes in version 1.1.0.RELEASE (2011-12-14)
+---------------------------------------------
+
 General
 * Upgraded to Spring Framework 3.1 GA
 
