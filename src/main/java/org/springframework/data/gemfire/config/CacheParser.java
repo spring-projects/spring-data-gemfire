@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.w3c.dom.Element;
  * Parser for &lt;cache;gt; definitions.
  * 
  * @author Costin Leau
+ * @author Oliver Gierke
  */
 class CacheParser extends AbstractSingleBeanDefinitionParser {
 
@@ -48,6 +49,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent", "pdxPersistent");
 		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized", "pdxReadSerialized");
 		ParsingUtils.setPropertyValue(element, builder, "pdx-ignore-unread-fields", "pdxIgnoreUnreadFields");
+		ParsingUtils.setPropertyValue(element, builder, "use-bean-factory-locator", "useBeanFactoryLocator");
 	}
 
 	@Override

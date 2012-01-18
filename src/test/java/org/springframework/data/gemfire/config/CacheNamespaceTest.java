@@ -16,10 +16,8 @@
 
 package org.springframework.data.gemfire.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.core.io.Resource;
@@ -28,6 +26,7 @@ import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Costin Leau
@@ -72,6 +71,10 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 	public void testNoBeanFactory() throws Exception {
 		assertTrue(ctx.containsBean("no-bl"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&no-bl");
+
+		assertThat((Boolean) ReflectionTestUtils.getField(cfb, "useBeanFactoryLocator"), is(false));
+		assertThat(ReflectionTestUtils.getField(cfb, "factoryLocator"), is(nullValue()));
+
 		GemfireBeanFactoryLocator locator = new GemfireBeanFactoryLocator();
 		try {
 			assertNotNull(locator.useBeanFactory("cache-with-name"));
