@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.data.gemfire.repository.config.GemfireRepositoryParser;
 
 /**
  * Namespace handler for GemFire definitions.
@@ -40,5 +41,7 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());
 
 		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
+
+		registerBeanDefinitionParser("repositories", new GemfireRepositoryParser());
 	}
 }

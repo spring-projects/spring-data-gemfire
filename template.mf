@@ -12,6 +12,8 @@ Import-Template:
  org.springframework.context.*;version=${spring.range},
  org.springframework.core.*;version=${spring.range},
  org.springframework.dao.*;version=${spring.range},
+ org.springframework.data.*;version="${springDataCommonsVersion:[=.=.=.=,+1.0.0)}",
+ org.springframework.expression.*;version="${springVersion:[=.=.=,+1.0.0)}",
  org.springframework.util.*;version=${spring.range},
  org.springframework.transaction.*;version=${spring.range},
  com.gemstone.gemfire.*;version=${gemfire.range},

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="gemfire-repositories"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns5="http://www.w3.org/1999/xhtml"
+         xmlns:ns4="http://www.w3.org/2000/svg"
+         xmlns:ns3="http://www.w3.org/1998/Math/MathML"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Gemfire Repositories</title>
+
+  <section>
+    <title xml:id="gemfire-repositories.intro">Introduction</title>
+
+    <para>Spring Data Gemfire provides support to use the Spring Data
+    repository abstraction to easily persist entities into Gemfire and execute
+    queries. A general introduction into the repository programmin model has
+    been provided in <xref linkend="repositories" />.</para>
+  </section>
+
+  <section xml:id="gemfire-repositories.spring-configuration">
+    <title>Spring configuration</title>
+
+    <para>To bootstrap Spring Data repositories you use the
+    <code>&lt;repositories /&gt;</code> element from the Gemfire
+    namespace:</para>
+
+    <example>
+      <title>Bootstrap Gemfire repositories</title>
+
+      <programlisting language="xml">&lt;beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:gf="http://www.springframework.org/schema/gemfire"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/gemfire 
+                           http://www.springframework.org/schema/gemfire/spring-gemfire.xsd&gt;
+
+  &lt;gf:repositories base-package="com.acme.repository" /&gt;
+
+&lt;/beans&gt;</programlisting>
+    </example>
+
+    <para>This configuration snippet will look for interfaces below the
+    configured base package and create repository instances for those
+    interfaces backed by a <classname>SimpleGemfireRepository</classname>.
+    Note that you have to have your domain classes correctly mapped to
+    configured regions as the bottstrap process will fail otherwise.</para>
+  </section>
+
+  <section xml:id="gemfire-repositories.executing-queries">
+    <title>Executing OQL queries</title>
+
+    <para>The Gemfire repositories allow the definition of query methods to
+    easily execute OQL queries against the Region the managed entity is mapped
+    to.</para>
+
+    <example>
+      <title>Sample repository</title>
+
+      <programlisting language="java">@Region("myRegion")
+public class Person { … }</programlisting>
+
+      <programlisting language="java">public interface PersonRepository extends CrudRepository&lt;Person, Long&gt; {
+
+  Person findByEmailAddress(String emailAddress);
+
+  Collection&lt;Person&gt; findByFirstname(String firstname);
+
+  @Query("SELECT * FROM /Person p WHERE p.firstname = $1")
+  Collection&lt;Person&gt; findByFirstnameAnnotated(String firstname);
+
+  @Query("SELECT * FROM /Person p WHERE p.firstname IN SET $1")
+  Collection&lt;Person&gt; findByFirstnamesAnnotated(Collection&lt;String&gt; firstnames);
+}</programlisting>
+    </example>
+
+    <para>The first method listed here will cause the following query to be
+    derived: <code>SELECT x FROM /myRegion x WHERE x.emailAddress = $1</code>.
+    The second method works the same way except it's returning all entities
+    found whereas the first one expects a single result value. In case the
+    supported keywords are not sufficient to declare your query or the method
+    name gets to verbose you can annotate the query methods with
+    <interfacename>@Query</interfacename> as seen for methods 3 and 4.</para>
+
+    <para><table>
+        <title>Supported keywords for query methods</title>
+
+        <tgroup cols="3">
+          <colspec colwidth="1*" />
+
+          <colspec colwidth="2*" />
+
+          <colspec colwidth="2*" />
+
+          <thead>
+            <row>
+              <entry>Keyword</entry>
+
+              <entry>Sample</entry>
+
+              <entry>Logical result</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry><literal>GreaterThan</literal></entry>
+
+              <entry><methodname>findByAgeGreaterThan(int
+              age)</methodname></entry>
+
+              <entry><code>x.age &gt; $1</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>GreaterThanEqual</literal></entry>
+
+              <entry><methodname>findByAgeGreaterThanEqual(int
+              age)</methodname></entry>
+
+              <entry><code>x.age &gt;= $1</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>LessThan</literal></entry>
+
+              <entry><methodname>findByAgeLessThan(int
+              age)</methodname></entry>
+
+              <entry><code>x.age &lt; $1</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>LessThanEqual</literal></entry>
+
+              <entry><methodname>findByAgeLessThanEqual(int
+              age)</methodname></entry>
+
+              <entry><code>x.age &lt;= $1</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>IsNotNull</literal>,
+              <literal>NotNull</literal></entry>
+
+              <entry><methodname>findByFirstnameNotNull()</methodname></entry>
+
+              <entry><code>x.firstname =! NULL</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>IsNull</literal>,
+              <literal>Null</literal></entry>
+
+              <entry><methodname>findByFirstnameNull()</methodname></entry>
+
+              <entry><code>x.firstname = NULL</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>In</literal></entry>
+
+              <entry><methodname>findByFirstnameIn(Collection&lt;String&gt;
+              x)</methodname></entry>
+
+              <entry><code>x.firstname IN SET $1</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>NotIn</literal></entry>
+
+              <entry><methodname>findByFirstnameNotIn(Collection&lt;String&gt;
+              x)</methodname></entry>
+
+              <entry><code>x.firstname NOT IN SET $1</code></entry>
+            </row>
+
+            <row>
+              <entry>(No keyword)</entry>
+
+              <entry><methodname>findByFirstname(String
+              name)</methodname></entry>
+
+              <entry><code>x.firstname = $1</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>Not</literal></entry>
+
+              <entry><methodname>findByFirstnameNot(String
+              name)</methodname></entry>
+
+              <entry><code>x.firstname != $1</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>IsTrue</literal>,
+              <literal>True</literal></entry>
+
+              <entry><code>findByActiveIsTrue()</code></entry>
+
+              <entry><code>x.active = true</code></entry>
+            </row>
+
+            <row>
+              <entry><literal>IsFalse</literal>,
+              <literal>False</literal></entry>
+
+              <entry><code>findByActiveIsFalse()</code></entry>
+
+              <entry><code>x.active = false</code></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></para>
+  </section>
+</chapter>
