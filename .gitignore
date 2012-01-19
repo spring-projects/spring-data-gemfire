@@ -10,8 +10,13 @@ pom.xml
 *.iws
 *.log
 .classpath
+.project
+.settings/
 
 /samples/hello-world/vf.gf.dmn-events.cfg
 /samples/hello-world/vf.gf.dmn-license.cfg
 /vf.gf.dmn-events.cfg
+/vf.gf.dmn-events.txt
 /vf.gf.dmn-license.cfg
+
+/BACKUP*
