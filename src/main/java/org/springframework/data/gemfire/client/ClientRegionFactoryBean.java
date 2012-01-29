@@ -90,6 +90,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				}
 			}
 			s = ClientRegionShortcut.LOCAL;
+		} else {
+			s = shortcut;
 		}
 
 		ClientRegionFactory<K, V> factory = c.createClientRegionFactory(s);
