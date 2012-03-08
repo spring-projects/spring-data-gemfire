@@ -9,7 +9,7 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<gfe:cache />
+	<gfe:client-cache />
 	
 	<gfe:client-region id="simple" pool-name="gemfire-pool"/>
 	
