@@ -12,6 +12,6 @@
 	</gfe:pool>
 	 -->
 	 
-	 <gfe:cache/>
+	 <gfe:client-cache/>
 	 <gfe:client-region data-policy="NORMAL" name="ChallengeQuestions" id="challengeQuestionsRegion"/>
 </beans>

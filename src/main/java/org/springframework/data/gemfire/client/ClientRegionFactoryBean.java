@@ -38,6 +38,7 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 /**
  * Client extension for GemFire regions.
@@ -74,8 +75,12 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	@Override
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		Assert.isTrue(cache instanceof ClientCache, "Unable to create regions from " + cache);
-
 		ClientCache c = (ClientCache) cache;
+		
+		if (cache instanceof GemFireCacheImpl) {
+			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required");
+		}
+
 
 		// first look at shortcut
 		ClientRegionShortcut s = null;
@@ -88,8 +93,13 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				else if (DataPolicy.PERSISTENT_REPLICATE.equals(dataPolicy)) {
 					s = ClientRegionShortcut.LOCAL_PERSISTENT;
 				}
+				else {
+					s = ClientRegionShortcut.LOCAL;
+				}
 			}
-			s = ClientRegionShortcut.LOCAL;
+			else {
+				s = ClientRegionShortcut.LOCAL;
+			}
 		} else {
 			s = shortcut;
 		}
