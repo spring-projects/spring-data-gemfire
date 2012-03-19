@@ -6,7 +6,7 @@
             targetNamespace="http://www.springframework.org/schema/gemfire"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="1.1">
+            version="1.1.1">
 
     <xsd:import namespace="http://www.springframework.org/schema/beans"/>
     <xsd:import namespace="http://www.springframework.org/schema/tool"/>
@@ -1074,7 +1074,7 @@ The client subscription configuration that is used to control a clients use of s
 			<xsd:attribute name="max-time-between-pings" use="optional"	type="xsd:string" default="60000" />
 			<xsd:attribute name="message-time-to-live" use="optional" type="xsd:string" default="180" />
 			<xsd:attribute name="socket-buffer-size" use="optional"	type="xsd:string" default="32768" />
-			<xsd:attribute name="notify-by-subscription" use="optional"	type="xsd:boolean" default="true" />
+			<xsd:attribute name="notify-by-subscription" use="optional"	type="xsd:string" default="true" />
 			<xsd:attribute name="groups" use="optional"	type="xsd:string" default="">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
