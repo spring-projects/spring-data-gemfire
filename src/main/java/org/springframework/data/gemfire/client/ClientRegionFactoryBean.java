@@ -93,6 +93,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				else if (DataPolicy.PERSISTENT_REPLICATE.equals(dataPolicy)) {
 					s = ClientRegionShortcut.LOCAL_PERSISTENT;
 				}
+				else if (DataPolicy.NORMAL.equals(this.dataPolicy)) { 
+					s = ClientRegionShortcut.CACHING_PROXY; 
+				}
 				else {
 					s = ClientRegionShortcut.LOCAL;
 				}
