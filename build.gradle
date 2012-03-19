@@ -47,7 +47,8 @@ allprojects {
         mavenRepo name: "spring-snapshot", urls: "http://maven.springframework.org/snapshot"
         mavenRepo name: "sonatype-snapshot", urls: "http://oss.sonatype.org/content/repositories/snapshots"
         mavenRepo name: "ext-snapshots", urls: "http://springframework.svn.sourceforge.net/svnroot/springframework/repos/repo-ext/"
-        mavenRepo name: "gemstone-com-release", urls: "http://repo.springsource.org/gemstone-release"
+        mavenRepo name: "gemstone-com-release", urls: "http://dist.gemstone.com/maven/release"
+        //mavenRepo name: "gemstone-com-release", urls: "http://repo.springsource.org/gemstone-release"
 	}
 
 }
