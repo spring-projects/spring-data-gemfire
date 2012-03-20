@@ -12,6 +12,8 @@ General
 Package org.springframework.data.gemfire
 * Fixed incorrect parsing of pdx-serializer (from value to reference)
 * Fixed incorrect parsing of use-bean-factory-locator
+* Fixed GemfireTransactionCommitException class hierarchy 
+* Improved handling of GemFire 6.5+ transaction exceptions
 
 Package org.springframework.data.gemfire.client
 * Fixed bug that caused client namespace to create only local regions
