@@ -112,6 +112,18 @@ def customizePom(pom) {
                 distribution 'repo'
             }
         }
+        scm {
+            url = 'http://github.com/SpringSource/spring-gemfire'
+            connection = 'scm:git:git://github.com/SpringSource/spring-gemfire'
+            developerConnection = 'scm:git:git://github.com/SpringSource/spring-gemfire'
+        }
+        developers {
+            developer {
+                id = 'costin'
+                name = 'Costin Leau'
+                email = 'cleau@vmware.com'
+            }
+        }
         
         // similar to Spring's configuration
         dependencies {
