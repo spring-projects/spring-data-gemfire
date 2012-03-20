@@ -6,12 +6,22 @@ Changes in version 1.2.0.M1 (2012-03-20)
 ----------------------------------------
 
 General
+* Introduced support for annotation-based entity mapping (@Id, @PersistenceConstructor, @Id)
+* Introduced support for Spring Data Repositories (query exception & derivation)
+
+
+Changes in version 1.1.1.RELEASE (2012-03-20)
+---------------------------------------------
+
+General
 * Upgraded to GemFire 6.6.2
 * Upgraded to Spring Framework 3.1.1 GA
 
 Package org.springframework.data.gemfire
 * Fixed incorrect parsing of pdx-serializer (from value to reference)
 * Fixed incorrect parsing of use-bean-factory-locator
+* Fixed GemfireTransactionCommitException class hierarchy 
+* Improved handling of GemFire 6.5+ transaction exceptions
 
 Package org.springframework.data.gemfire.client
 * Fixed bug that caused client namespace to create only local regions
