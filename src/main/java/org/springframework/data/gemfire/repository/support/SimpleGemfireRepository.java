@@ -41,22 +41,22 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 		this.entityInformation = entityInformation;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#save(java.lang.Object)
+	 * @see org.springframework.data.repository.CrudRepository#save(S)
 	 */
-	public T save(T entity) {
+	public <U extends T> U save(U entity) {
 		template.put(entityInformation.getId(entity), entity);
 		return entity;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#save(java.lang.Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
 	 */
-	public Iterable<T> save(Iterable<? extends T> entities) {
-		List<T> result = new ArrayList<T>();
-		for (T entity : entities) {
+	public <U extends T> Iterable<U> save(Iterable<U> entities) {
+		List<U> result = new ArrayList<U>();
+		for (U entity : entities) {
 			result.add(save(entity));
 		}
 		return result;
@@ -64,7 +64,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#findOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
 	 */
 	@SuppressWarnings("unchecked")
 	public T findOne(ID id) {
@@ -74,7 +74,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#exists(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
 	 */
 	public boolean exists(ID id) {
 		return findOne(id) != null;
@@ -82,7 +82,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#findAll()
+	 * @see org.springframework.data.repository.CrudRepository#findAll()
 	 */
 	public Collection<T> findAll() {
 		return template.execute(new GemfireCallback<Collection<T>>() {
@@ -111,7 +111,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#count()
+	 * @see org.springframework.data.repository.CrudRepository#count()
 	 */
 	public long count() {
 		return template.execute(new GemfireCallback<Long>() {
@@ -124,7 +124,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#delete(java.lang.Object)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
 	 */
 	public void delete(T entity) {
 		template.remove(entityInformation.getId(entity));
@@ -132,7 +132,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#delete(java.lang.Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
 	 */
 	public void delete(Iterable<? extends T> entities) {
 		for (T entity : entities) {
@@ -142,7 +142,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.Repository#deleteAll()
+	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
 	 */
 	public void deleteAll() {
 
