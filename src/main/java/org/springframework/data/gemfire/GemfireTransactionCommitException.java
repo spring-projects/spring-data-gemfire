@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.TransactionException;
+import org.springframework.transaction.TransactionException;
 
 /**
  * Gemfire-specific subclass of {@link org.springframework.transaction.TransactionException}, indicating a transaction failure at commit time.
@@ -25,19 +25,11 @@ import com.gemstone.gemfire.cache.TransactionException;
  */
 public class GemfireTransactionCommitException extends TransactionException {
 
-	public GemfireTransactionCommitException() {
-		super();
-	}
-
 	public GemfireTransactionCommitException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
 	public GemfireTransactionCommitException(String message) {
 		super(message);
-	}
-
-	public GemfireTransactionCommitException(Throwable cause) {
-		super(cause);
 	}
 }

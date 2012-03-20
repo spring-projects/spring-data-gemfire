@@ -30,7 +30,6 @@ import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CommitConflictException;
 import com.gemstone.gemfire.cache.Region;
 
 /**
@@ -136,7 +135,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		} catch (IllegalStateException ex) {
 			throw new NoTransactionException(
 					"No transaction associated with the current thread; are there multiple transaction managers ?", ex);
-		} catch (CommitConflictException ex) {
+		} catch (TransactionException ex) {
 			throw new GemfireTransactionCommitException("Unexpected failure on commit of Cache local transaction", ex);
 		}
 	}
