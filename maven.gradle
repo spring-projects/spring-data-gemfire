@@ -105,6 +105,14 @@ def customizePom(pom) {
     }
 
     pom.project {
+        name = project.description
+        description = project.description
+        url = 'http://github.com/SpringSource/spring-gemfire'
+        organization {
+            name = 'SpringSource'
+            url = 'http://www.springsource.org/spring-gemfire'
+        }
+
         licenses {
             license {
                 name 'The Apache Software License, Version 2.0'
