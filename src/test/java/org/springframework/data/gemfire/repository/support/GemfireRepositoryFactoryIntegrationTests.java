@@ -15,9 +15,12 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
+import org.junit.Test;
 import org.springframework.data.gemfire.mapping.Regions;
 import org.springframework.data.gemfire.repository.sample.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
+
+import com.gemstone.bp.edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Integration test for {@link GemfireRepositoryFactory}.
@@ -32,5 +35,13 @@ public class GemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRep
 
 		GemfireRepositoryFactory factory = new GemfireRepositoryFactory(regions, null);
 		return factory.getRepository(PersonRepository.class);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	@SuppressWarnings("unchecked")
+	public void throwsExceptionIfReferencedRegionIsNotConfigured() {
+
+		GemfireRepositoryFactory factory = new GemfireRepositoryFactory(Collections.emptySet(), null);
+		factory.getRepository(PersonRepository.class);
 	}
 }

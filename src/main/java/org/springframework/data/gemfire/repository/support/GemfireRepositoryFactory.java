@@ -93,9 +93,14 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	private GemfireTemplate getTemplate(RepositoryMetadata metadata) {
 
 		Class<?> domainClass = metadata.getDomainType();
+		GemfirePersistentEntity<?> entity = context.getPersistentEntity(domainClass);
+
 		Region<?, ?> region = regions.getRegion(domainClass);
 
-		GemfirePersistentEntity<?> entity = context.getPersistentEntity(domainClass);
+		if (region == null) {
+			throw new IllegalStateException(String.format("No region '%s' found for domain class %s! Make sure you have "
+					+ "configured a Gemfire region of that name in your application context!", entity.getRegionName(), domainClass));
+		}
 
 		Class<?> regionKeyType = region.getAttributes().getKeyConstraint();
 		Class<?> entityIdType = metadata.getIdType();
