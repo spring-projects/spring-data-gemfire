@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
@@ -32,16 +33,17 @@ import com.gemstone.bp.edu.emory.mathcs.backport.java.util.Collections;
 import com.gemstone.gemfire.cache.Region;
 
 /**
+ * {@link FactoryBean} adapter for {@link GemfireRepositoryFactory}.
  * 
  * @author Oliver Gierke
  */
 public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
-		RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
+RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
 
 	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context;
 	private Iterable<Region<?, ?>> regions;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
@@ -53,13 +55,15 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	}
 
 	/**
+	 * Configures the {@link MappingContext} to be used.
+	 * 
 	 * @param context the context to set
 	 */
 	public void setMappingContext(MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
 		this.context = context;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createRepositoryFactory()
 	 */

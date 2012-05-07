@@ -27,21 +27,21 @@ import org.springframework.data.repository.core.support.ReflectionEntityInformat
  * @author Oliver Gierke
  */
 public class DefaultGemfireEntityInformation<T, ID extends Serializable> extends DelegatingEntityInformation<T, ID>
-		implements GemfireEntityInformation<T, ID> {
+implements GemfireEntityInformation<T, ID> {
 
 	private final GemfirePersistentEntity<T> entity;
 
 	/**
 	 * Creates a new {@link DefaultGemfireEntityInformation}.
 	 * 
-	 * @param domainClass must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
 	 */
 	public DefaultGemfireEntityInformation(GemfirePersistentEntity<T> entity) {
 		super(new ReflectionEntityInformation<T, ID>(entity.getType()));
 		this.entity = entity;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.repository.query.GemfireEntityInformation#getRegionName()
 	 */

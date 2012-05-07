@@ -58,14 +58,16 @@ public class GemfireQueryMethod extends QueryMethod {
 	/**
 	 * Returns whether the query method contains an annotated, non-empty query.
 	 * 
-	 * @return
+	 * @return whether the query method contains an annotated, non-empty query.
 	 */
 	public boolean hasAnnotatedQuery() {
 		return StringUtils.hasText(getAnnotatedQuery());
 	}
 
 	/**
-	 * @return the entity
+	 * Returns the {@link GemfirePersistentEntity} the method deals with.
+	 * 
+	 * @return the {@link GemfirePersistentEntity} the method deals with.
 	 */
 	public GemfirePersistentEntity<?> getPersistentEntity() {
 		return entity;

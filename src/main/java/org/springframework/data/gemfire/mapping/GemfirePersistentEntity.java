@@ -49,7 +49,7 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	/**
 	 * Returns the name of the region the entity shall be stored in.
 	 * 
-	 * @return
+	 * @return the name of the region the entity shall be stored in.
 	 */
 	public String getRegionName() {
 		return this.regionName;

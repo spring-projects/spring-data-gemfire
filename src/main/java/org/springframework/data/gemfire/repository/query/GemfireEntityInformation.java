@@ -31,7 +31,7 @@ public interface GemfireEntityInformation<T, ID extends Serializable> extends En
 	/**
 	 * Returns the name of the {@link Region} the entity is held in.
 	 * 
-	 * @return
+	 * @return the name of the {@link Region} the entity is held in.
 	 */
 	String getRegionName();
 }

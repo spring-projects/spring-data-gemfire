@@ -62,7 +62,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 * name in case no mapping information is found.
 	 * 
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return the {@link Region} the given type is mapped to.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Region<?, T> getRegion(Class<T> type) {
@@ -74,10 +74,10 @@ public class Regions implements Iterable<Region<?, ?>> {
 	}
 
 	/**
-	 * Returns the region with the given name.
+	 * Returns the {@link Region} with the given name.
 	 * 
 	 * @param name must not be {@literal null}.
-	 * @return
+	 * @return the {@link Region} with the given name.
 	 */
 	@SuppressWarnings("unchecked")
 	public <S, T> Region<S, T> getRegion(String name) {
@@ -87,7 +87,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 		return (Region<S, T>) regions.get(name);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
