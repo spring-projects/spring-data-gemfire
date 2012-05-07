@@ -64,7 +64,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		this.regions = new Regions(regions, this.context);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
 	 */
@@ -76,7 +76,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		return new DefaultGemfireEntityInformation<T, ID>(entity);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
@@ -84,7 +84,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Object getTargetRepository(RepositoryMetadata metadata) {
 
-		GemfireEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainClass());
+		GemfireEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
 		GemfireTemplate gemfireTemplate = getTemplate(metadata);
 
 		return new SimpleGemfireRepository(gemfireTemplate, entityInformation);
@@ -92,13 +92,13 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 	private GemfireTemplate getTemplate(RepositoryMetadata metadata) {
 
-		Class<?> domainClass = metadata.getDomainClass();
+		Class<?> domainClass = metadata.getDomainType();
 		Region<?, ?> region = regions.getRegion(domainClass);
 
 		GemfirePersistentEntity<?> entity = context.getPersistentEntity(domainClass);
 
 		Class<?> regionKeyType = region.getAttributes().getKeyConstraint();
-		Class<?> entityIdType = metadata.getIdClass();
+		Class<?> entityIdType = metadata.getIdType();
 
 		if (regionKeyType != null && entity.getIdProperty() != null) {
 			Assert.isTrue(regionKeyType.isAssignableFrom(entityIdType), String.format(
@@ -109,7 +109,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		return new GemfireTemplate(region);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
@@ -118,7 +118,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		return SimpleGemfireRepository.class;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key)
 	 */

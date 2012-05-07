@@ -46,7 +46,7 @@ public class GemfireQueryMethodUnitTests {
 	public void detectsAnnotatedQueryCorrectly() throws Exception {
 
 		GemfireMappingContext context = new GemfireMappingContext();
-		when(metadata.getDomainClass()).thenReturn((Class) Person.class);
+		when(metadata.getDomainType()).thenReturn((Class) Person.class);
 		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) Person.class);
 
 		GemfireQueryMethod method = new GemfireQueryMethod(Sample.class.getMethod("annotated"), metadata, context);
