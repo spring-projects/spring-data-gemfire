@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 
 package org.springframework.data.gemfire.listener.adapter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +29,9 @@ import com.gemstone.gemfire.cache.query.CqEvent;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.internal.CqQueryImpl;
 
-
 /**
  * @author Costin Leau
+ * @author Oliver Gierke
  */
 public class QueryListenerAdapterTest {
 
@@ -92,16 +90,17 @@ public class QueryListenerAdapterTest {
 		void handleOperation(Operation op);
 
 		void handleArray(byte[] ba);
-		
+
 		void handleKey(Object key);
-		
+
 		void handleKV(Object k, Object v);
-		
+
 		void handleEx(Throwable th);
-		
+
 		void handleOps(Operation base, Operation query);
 
-		void handleAll(CqEvent event, CqQuery query, byte[] ba, Object key, Operation op, Throwable th, Operation qOp, Object v);
+		void handleAll(CqEvent event, CqQuery query, byte[] ba, Object key, Operation op, Throwable th, Operation qOp,
+				Object v);
 
 		void handleInvalid(Object o1, Object o2, Object o3);
 	}
@@ -212,4 +211,31 @@ public class QueryListenerAdapterTest {
 		doThrow(new IllegalArgumentException()).when(mock);
 	}
 
+	/**
+	 * @see SGF-89
+	 */
+	@Test
+	public void triggersListenerImplementingInterfaceCorrectly() {
+
+		SampleListener listener = new SampleListener();
+
+		ContinuousQueryListener listenerAdapter = new ContinuousQueryListenerAdapter(listener) {
+			protected void handleListenerException(Throwable ex) {
+				throw new RuntimeException(ex);
+			}
+		};
+
+		listenerAdapter.onEvent(event());
+		assertThat(listener.count, is(1));
+	}
+
+	class SampleListener implements ContinuousQueryListener {
+
+		int count;
+
+		@Override
+		public void onEvent(CqEvent event) {
+			count++;
+		}
+	}
 }
