@@ -105,11 +105,31 @@ def customizePom(pom) {
     }
 
     pom.project {
+        name = project.description
+        description = project.description
+        url = 'http://github.com/SpringSource/spring-gemfire'
+        organization {
+            name = 'SpringSource'
+            url = 'http://www.springsource.org/spring-gemfire'
+        }
+
         licenses {
             license {
                 name 'The Apache Software License, Version 2.0'
                 url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                 distribution 'repo'
+            }
+        }
+        scm {
+            url = 'http://github.com/SpringSource/spring-gemfire'
+            connection = 'scm:git:git://github.com/SpringSource/spring-gemfire'
+            developerConnection = 'scm:git:git://github.com/SpringSource/spring-gemfire'
+        }
+        developers {
+            developer {
+                id = 'costin'
+                name = 'Costin Leau'
+                email = 'cleau@vmware.com'
             }
         }
         

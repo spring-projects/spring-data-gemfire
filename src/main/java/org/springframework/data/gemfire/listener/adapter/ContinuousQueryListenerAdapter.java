@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@ import com.gemstone.gemfire.cache.query.CqQuery;
  *
  * @author Juergen Hoeller
  * @author Costin Leau
+ * @author Oliver Gierke
  * @see org.springframework.jms.listener.adapter.MessageListenerAdapter
  */
 public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
@@ -260,7 +261,6 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	 * @param event the incoming GemFire event
 	 * @see #handleListenerException
 	 */
-	@SuppressWarnings("unchecked")
 	public void onEvent(CqEvent event) {
 		try {
 
@@ -269,6 +269,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 			if (delegate != this) {
 				if (delegate instanceof ContinuousQueryListener) {
 					((ContinuousQueryListener) delegate).onEvent(event);
+					return;
 				}
 			}
 
@@ -282,7 +283,6 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 						+ "Either specify a non-null value for the 'defaultListenerMethod' property or "
 						+ "override the 'getListenerMethodName' method.");
 			}
-
 
 			invokeListenerMethod(event, methodName);
 		} catch (Throwable th) {

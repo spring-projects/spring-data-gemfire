@@ -13,6 +13,11 @@
         <surname>Leau</surname>
         <affiliation>SpringSource, a division of VMware</affiliation>
       </author>
+      <author>
+        <firstname>Oliver</firstname>
+        <surname>Gierke</surname>
+        <affiliation>SpringSource, a division of VMware</affiliation>
+      </author>
     </authorgroup>
 
 
@@ -41,6 +46,11 @@
       <xi:include href="reference/bootstrap.xml"/>
       <xi:include href="reference/data.xml"/>
       <xi:include href="reference/serialization.xml"/>
+      <xi:include href="reference/mapping.xml"/>
+      <xi:include href="https://github.com/SpringSource/spring-data-commons/raw/master/src/docbkx/repositories.xml">
+        <xi:fallback href="../../../../../../spring-data-commons/src/docbkx/repositories.xml" />
+      </xi:include>
+      <xi:include href="reference/repositories.xml"/>
       <xi:include href="reference/samples.xml"/>
   </part>
 

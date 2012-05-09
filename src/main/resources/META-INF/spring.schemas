@@ -1,3 +1,4 @@
 http\://www.springframework.org/schema/gemfire/spring-gemfire-1.0.xsd=org/springframework/data/gemfire/config/spring-gemfire-1.0.xsd
 http\://www.springframework.org/schema/gemfire/spring-gemfire-1.1.xsd=org/springframework/data/gemfire/config/spring-gemfire-1.1.xsd
-http\://www.springframework.org/schema/gemfire/spring-gemfire.xsd=org/springframework/data/gemfire/config/spring-gemfire-1.1.xsd
+http\://www.springframework.org/schema/gemfire/spring-gemfire-1.2.xsd=org/springframework/data/gemfire/config/spring-gemfire-1.2.xsd
+http\://www.springframework.org/schema/gemfire/spring-gemfire.xsd=org/springframework/data/gemfire/config/spring-gemfire-1.2.xsd

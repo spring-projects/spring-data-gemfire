@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="mapping" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns5="http://www.w3.org/1999/xhtml"
+         xmlns:ns4="http://www.w3.org/2000/svg"
+         xmlns:ns3="http://www.w3.org/1998/Math/MathML"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>POJO mapping</title>
+
+  <section xml:id="mapping.entities">
+    <title>Entity mapping</title>
+
+    <para>Spring Data Gemfire provides support to map entities to be stored in
+    a Gemfire grid. The mapping metadata is define by using annotations at the
+    domain classes just like this: </para>
+
+    <example>
+      <title>Mapping a domain class to Gemfire</title>
+
+      <programlisting language="java">@Region("myRegion")
+public class Person {
+
+  @Id Long id;
+  String firstname;
+  String lastname;
+
+  @PersistenceConstructor
+  public Person(String firstname, String lastname) {
+    // …
+  }
+
+  …
+}  </programlisting>
+    </example>
+
+    <para>The first thing you see here is the
+    <interfacename>@Region</interfacename> annotation that can be used to
+    customize the region instances of the <classname>Person</classname> class
+    are stored in. The <interfacename>@Id</interfacename> annotation can be
+    used to annotate the property that shall be used as cache key. The
+    <interfacename>@PersistenceConstructor</interfacename> annotation actually
+    helps disambiguing multiple potentially available constructors taking
+    parameters and explicitly marking the one annotated as the one to be used
+    to create entities. With none or only a single constructor you can omit
+    the annotation.</para>
+  </section>
+
+  <section xml:id="mapping.pdx-serializer">
+    <title>Mapping PDX serializer</title>
+
+    <para>Spring Data Gemfire provides a custom
+    <interfacename>PDXSerializer</interfacename> implementation that uses the
+    mapping information to customize entity serialization. Beyond that it
+    allows customizing the entity instantiation by using the Spring Data
+    <interfacename>EntityInstantiator</interfacename> abstraction. By default
+    the serializer uses a <classname>ReflectionEntityInstantiator</classname>
+    that will use the persistence constructor of the mapped entity (either the
+    single declared one or explicitly annoted with
+    <interfacename>@PersistenceConstructor</interfacename>). To provide values
+    for constructor parameters it will read fields with name of the
+    constructor parameters from the <interfacename>PDXReader</interfacename>
+    supplied.</para>
+
+    <example>
+      <title>Using @Value on entity constructor parameters</title>
+
+      <programlisting language="java">public class Person {
+
+  public Person(@Value("#root.foo") String firstname, @Value("bean") String lastname) {
+    // …
+  }
+
+  …
+}  </programlisting>
+    </example>
+
+    <para>The entity annotated as such will get the field <code>foo</code>
+    read from the <interfacename>PDXReader</interfacename> and handed as
+    constructor parameter value for <code>firstname</code>. The value for
+    <code>lastname</code> will be the Spring bean with name
+    <code>bean</code>.</para>
+  </section>
+</chapter>
