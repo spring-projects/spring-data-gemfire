@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +29,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.AttributesMutator;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheListener;
@@ -64,6 +66,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	private Scope scope;
 	private DataPolicy dataPolicy;
 	private Region<K, V> region;
+	private List<Region<?, ?>> subRegions;
 
 
 	@Override
@@ -72,7 +75,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		region = getRegion();
 		postProcess(region);
 	}
-
 
 	@Override
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
@@ -85,6 +87,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes)
 				: c.<K, V> createRegionFactory());
+		
 
 		if (!ObjectUtils.isEmpty(cacheListeners)) {
 			for (CacheListener<K, V> listener : cacheListeners) {
@@ -110,11 +113,15 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		// get underlying AttributesFactory
 		postProcess(findAttrFactory(regionFactory));
-
+        
 		Region<K, V> reg = regionFactory.create(regionName);
 		log.info("Created new cache region [" + regionName + "]");
 		if (snapshot != null) {
 			reg.loadSnapshot(snapshot.getInputStream());
+		}
+		
+		if (subRegions != null) {
+			System.out.println("**********************************************" + subRegions.get(0));
 		}
 
 		return reg;
@@ -224,6 +231,12 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	public void setCacheListeners(CacheListener<K, V>[] cacheListeners) {
 		this.cacheListeners = cacheListeners;
 	}
+
+	public void setSubRegions(List<Region<?, ?>> subRegions) {
+		log.info("setting subRegions");
+		this.subRegions = subRegions;
+	}
+
 
 	/**
 	 * Sets the cache loader used for the region used by this factory.

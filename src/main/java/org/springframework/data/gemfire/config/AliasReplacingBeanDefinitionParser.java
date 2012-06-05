@@ -21,6 +21,8 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.SubRegionFactoryBean;
 import org.w3c.dom.Element;
 
 /**
@@ -32,10 +34,20 @@ import org.w3c.dom.Element;
  */
 abstract class AliasReplacingBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
+	protected Class<?> getBeanClass(Element element) {
+		if (element.hasAttribute("subregion")){
+			System.out.println("building subregion " + element.getAttribute(NAME_ATTRIBUTE));
+			return SubRegionFactoryBean.class;
+		} else {
+			return RegionFactoryBean.class;
+		}
+	}
+
 	@Override
 	protected final void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		
 		ParsingUtils.addBeanAliasAsMetadata(element, builder);
-
+		
 		doParseInternal(element, parserContext, builder);
 	}
 

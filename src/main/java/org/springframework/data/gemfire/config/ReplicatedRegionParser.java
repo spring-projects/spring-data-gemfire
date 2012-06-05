@@ -18,10 +18,15 @@ package org.springframework.data.gemfire.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.SubRegion;
+import org.springframework.data.gemfire.SubRegionFactoryBean;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -36,14 +41,15 @@ import com.gemstone.gemfire.cache.Scope;
  */
 class ReplicatedRegionParser extends AliasReplacingBeanDefinitionParser {
 
-	protected Class<?> getBeanClass(Element element) {
-		return RegionFactoryBean.class;
-	}
 
 	@Override
 	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
+		System.out.println("building class " +
+		builder.getBeanDefinition().getBeanClassName());
 
+		boolean subRegion = element.hasAttribute("subregion");
+	
 		// set the data policy
 		String attr = element.getAttribute("persistent");
 		if (Boolean.parseBoolean(attr)) {
@@ -57,12 +63,15 @@ class ReplicatedRegionParser extends AliasReplacingBeanDefinitionParser {
 
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 
-		attr = element.getAttribute("cache-ref");
-		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
-
+		BeanDefinitionBuilder attrBuilder = builder;
+		
+		if (!subRegion){
+			attr = element.getAttribute("cache-ref");
+			// add cache reference (fallback to default if nothing is specified)
+			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
+			attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
+		}
 		// add attributes
-		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
 		ParsingUtils.parseStatistics(element, attrBuilder);
 
@@ -79,7 +88,10 @@ class ReplicatedRegionParser extends AliasReplacingBeanDefinitionParser {
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
-		// parse nested cache-listener elements
+		ManagedList subRegions = new ManagedList();
+		subRegions.setElementTypeName(SubRegionFactoryBean.class.getName());
+		 
+		// parse nested elements
 		for (Element subElement : subElements) {
 			String name = subElement.getLocalName();
 
@@ -94,6 +106,22 @@ class ReplicatedRegionParser extends AliasReplacingBeanDefinitionParser {
 			else if ("cache-writer".equals(name)) {
 				builder.addPropertyValue("cacheWriter", parseCacheWriter(parserContext, subElement, builder));
 			}
+			//subregion
+			else if (name.endsWith("region")){
+				System.out.println("element type:" + subElement.getSchemaTypeInfo().getTypeName());
+				String parentRegionName = StringUtils.hasLength(element.getAttribute(NAME_ATTRIBUTE))? element.getAttribute(NAME_ATTRIBUTE):
+					element.getAttribute(ID_ATTRIBUTE);
+				
+			
+				
+				BeanDefinition subRegionDef = this.parseSubRegion(subElement, parserContext, parentRegionName,builder.getBeanDefinition());
+				subRegions.add(subRegionDef);
+				System.out.println("parsed subregion " + subRegionDef);
+			}
+		}
+		
+		if (!CollectionUtils.isEmpty(subRegions)) {
+			builder.addPropertyValue("subRegions", subRegions);
 		}
 	}
 
@@ -107,5 +135,12 @@ class ReplicatedRegionParser extends AliasReplacingBeanDefinitionParser {
 
 	private Object parseCacheWriter(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
 		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
+	}
+
+	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, String parentRegionName,
+			BeanDefinition parentDefinition) {
+		element.setAttribute("subregion", "true");
+		BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element, parentDefinition);
+		return beanDefinition;
 	}
 }
