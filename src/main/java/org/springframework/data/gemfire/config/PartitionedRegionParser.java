@@ -23,7 +23,6 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.PartitionAttributesFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -35,18 +34,17 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * Parser for &lt;partitioned-region;gt; definitions.
  * 
- * To avoid eager evaluations, the region attributes are declared as a nested definition.
+ * To avoid eager evaluations, the region attributes are declared as a nested
+ * definition.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
-class PartitionedRegionParser extends AliasReplacingBeanDefinitionParser {
-
-	protected Class<?> getBeanClass(Element element) {
-		return RegionFactoryBean.class;
-	}
+class PartitionedRegionParser extends AbstractRegionParser {
 
 	@Override
-	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+			boolean subRegion) {
 		super.doParse(element, builder);
 
 		// set the data policy
@@ -67,14 +65,15 @@ class PartitionedRegionParser extends AliasReplacingBeanDefinitionParser {
 			builder.addPropertyValue("dataPolicy", DataPolicy.PARTITION);
 		}
 
+		BeanDefinitionBuilder attrBuilder = builder;
+
+		if (!subRegion) {
+			attr = element.getAttribute("cache-ref");
+			// add cache reference (fallback to default if nothing is specified)
+			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
+			attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
+		}
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
-
-		attr = element.getAttribute("cache-ref");
-		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
-
-		// region attributes
-		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
 		ParsingUtils.parseStatistics(element, attrBuilder);
 		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
@@ -82,8 +81,8 @@ class PartitionedRegionParser extends AliasReplacingBeanDefinitionParser {
 		ParsingUtils.parseDiskStorage(element, attrBuilder);
 
 		// partition attributes
-		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder.genericBeanDefinition(PartitionAttributesFactoryBean.class);
-
+		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder
+				.genericBeanDefinition(PartitionAttributesFactoryBean.class);
 
 		attr = element.getAttribute("colocated-with");
 
@@ -122,7 +121,6 @@ class PartitionedRegionParser extends AliasReplacingBeanDefinitionParser {
 			parAttrBuilder.addPropertyValue("totalNumBuckets", Integer.valueOf(attr));
 		}
 
-
 		List<Element> subElements = DomUtils.getChildElements(element);
 
 		// parse nested cache-listener elements
@@ -142,15 +140,21 @@ class PartitionedRegionParser extends AliasReplacingBeanDefinitionParser {
 			}
 
 			else if ("partition-resolver".equals(name)) {
-				parAttrBuilder.addPropertyValue("partitionResolver", parsePartitionResolver(parserContext, subElement,
-						builder));
+				parAttrBuilder.addPropertyValue("partitionResolver",
+						parsePartitionResolver(parserContext, subElement, builder));
+			}
+			// subregion
+			else if (name.endsWith("region")) {
+				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
 			}
 		}
 
 		// add partition attributes attributes
 		attrBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
 		// add partition/overflow settings as attributes
-		builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
+		if (!subRegion) {
+			builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
+		}
 	}
 
 	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {

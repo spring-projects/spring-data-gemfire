@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd" default-lazy-init="true">
+	<gfe:cache />
+    
+    <gfe:replicated-region id="parent">
+        <gfe:replicated-region name="child">
+            <gfe:replicated-region name="grandchild"/> 
+        </gfe:replicated-region>
+    </gfe:replicated-region>
+    
+    
+     <gfe:replicated-region id="replicatedParent">
+        <gfe:lookup-region name="lookupChild">
+            <gfe:partitioned-region name="partitionedGrandchild"/>            
+        </gfe:lookup-region>
+    </gfe:replicated-region>
+    
+     <gfe:replicated-region id="parentWithSiblings">
+        <gfe:replicated-region name="child1">
+            <gfe:replicated-region name="grandChild11"/>
+             <gfe:replicated-region name="grandChild12"/>
+        </gfe:replicated-region>
+        <gfe:replicated-region name="child2"/>
+    </gfe:replicated-region>
+    
+     <gfe:replicated-region id="complexNested">
+       <gfe:cache-listener ref="c-listener"/>
+        <gfe:replicated-region name="child1">
+            <gfe:replicated-region name="grandChild11">
+                <gfe:cache-loader ref="c-loader"/>
+            </gfe:replicated-region>
+             <gfe:replicated-region name="grandChild12"/>
+        </gfe:replicated-region>
+        <gfe:replicated-region name="child2">
+            <gfe:cache-writer ref="c-writer"/>
+        </gfe:replicated-region>
+    </gfe:replicated-region>
+    
+    <bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
+    <bean id="c-loader" class="org.springframework.data.gemfire.SimpleCacheLoader"/>
+    <bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>
+    
+</beans>

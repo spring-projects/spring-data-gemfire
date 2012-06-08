@@ -16,10 +16,14 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.util.List;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.SubRegionFactoryBean;
 import org.springframework.util.StringUtils;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -27,21 +31,41 @@ import org.w3c.dom.Element;
  * 
  * @author Costin Leau
  */
-class LookupRegionParser extends AliasReplacingBeanDefinitionParser {
+class LookupRegionParser extends AbstractRegionParser {
 
+	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return RegionLookupFactoryBean.class;
+		if (element.hasAttribute("subregion")) {
+			return SubRegionFactoryBean.class;
+		}
+		else {
+			return RegionLookupFactoryBean.class;
+		}
 	}
 
 	@Override
-	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+			boolean subRegion) {
 		super.doParse(element, builder);
 
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 
-		String attr = element.getAttribute("cache-ref");
-		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
+		if (!subRegion) {
+			String attr = element.getAttribute("cache-ref");
+			// add cache reference (fallback to default if nothing is specified)
+			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
+		}
+		else {
+			builder.addPropertyValue("lookupOnly", true);
+		}
 
+		// parse nested elements
+		List<Element> subElements = DomUtils.getChildElements(element);
+		for (Element subElement : subElements) {
+			String name = subElement.getLocalName();
+			if (name.endsWith("region")) {
+				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
+			}
+		}
 	}
 }
