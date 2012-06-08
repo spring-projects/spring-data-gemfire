@@ -28,8 +28,4 @@
 	<bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>
 	
 	<gfe:lookup-region id="lookup" name="existing"/>
-    
-    <gfe:replicated-region id="parent">
-        <gfe:replicated-region name="child"/>
-    </gfe:replicated-region>
 </beans>

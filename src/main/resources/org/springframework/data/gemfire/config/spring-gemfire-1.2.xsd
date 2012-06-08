@@ -275,7 +275,7 @@ The name of the bean referred by this declaration. If no reference exists, use a
         </xsd:attribute>
     </xsd:complexType>
     <!-- -->
-    <xsd:complexType name="lookupSubRegionType">
+    <xsd:complexType name="baseLookupRegionType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
 Defines a lookup Subregion
@@ -288,10 +288,24 @@ Defines a lookup Subregion
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="basicRegionType">
-                <xsd:group ref="subRegionGroup" />
+                <xsd:group ref="subRegionGroup"  minOccurs="0" maxOccurs="unbounded"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
+    <xsd:complexType name="basicSubRegionType">
+        <xsd:complexContent>
+            <xsd:extension base="baseLookupRegionType">
+                <xsd:attribute name="name" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+The name of the region definition.]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
     <xsd:complexType name="basicRegionType">
         <xsd:annotation>
             <xsd:appinfo>
@@ -301,18 +315,12 @@ Defines a lookup Subregion
             </xsd:appinfo>
         </xsd:annotation>
 
-        <xsd:attribute name="name" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).
-                ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
+
     </xsd:complexType>
 
 
     <!-- -->
-    <xsd:complexType name="readOnlySubRegionType"
+    <xsd:complexType name="baseReadOnlyRegionType"
         abstract="true">
         <xsd:complexContent>
             <xsd:extension base="basicRegionType">
@@ -426,15 +434,29 @@ Default is false, meaning statistics are disabled.
     <!-- -->
     <xsd:complexType name="readOnlyRegionType">
         <xsd:complexContent>
-            <xsd:extension base="readOnlySubRegionType">
+            <xsd:extension base="baseReadOnlyRegionType">
                 <xsd:attributeGroup ref="topLevelRegionAttributes" />
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    <!-- -->
-    <xsd:complexType name="subRegionType">
+    
+    <xsd:complexType name="readOnlySubRegionType">
         <xsd:complexContent>
-            <xsd:extension base="readOnlySubRegionType">
+            <xsd:extension base="baseReadOnlyRegionType">
+                <xsd:attribute name="name" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+The name of the region definition.]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <!-- -->
+    <xsd:complexType name="baseRegionType">
+        <xsd:complexContent>
+            <xsd:extension base="baseReadOnlyRegionType">
                 <xsd:sequence minOccurs="0" maxOccurs="1">
                     <xsd:element name="cache-loader" type="beanDeclarationType"
                         minOccurs="0" maxOccurs="1">
@@ -509,26 +531,43 @@ Time to idle (or idle timeout) configuration for the region entries. Default: no
     <!-- -->
     <xsd:complexType name="regionType">
         <xsd:complexContent>
-            <xsd:extension base="subRegionType">
+            <xsd:extension base="baseRegionType">
                 <xsd:attributeGroup ref="topLevelRegionAttributes" />
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+     <xsd:complexType name="subRegionType">
+        <xsd:complexContent>
+            <xsd:extension base="baseRegionType">
+               <xsd:attribute name="name" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+                The name of the region definition.
+                        ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     <!-- -->
     <xsd:complexType name="lookupRegionType">
-        <xsd:annotation>
-            <xsd:documentation><![CDATA[[
-Looks up an existing, working, GemFire region. Typically regions are defined through GemFire own configuration, the 
-cache.xml. If the region does not exist, an exception will be thrown.
-
-For defining regions, consider the region elements.
-			]]></xsd:documentation>
-        </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="basicRegionType">
-                <xsd:group ref="subRegionGroup" minOccurs="0"
-                    maxOccurs="unbounded" />
+            <xsd:extension base="baseLookupRegionType">
                 <xsd:attributeGroup ref="topLevelRegionAttributes" />
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+     <xsd:complexType name="lookupSubRegionType">
+        <xsd:complexContent>
+            <xsd:extension base="baseLookupRegionType">
+               <xsd:attribute name="name" type="xsd:string"  use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+                The name of the region definition.
+                        ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -557,11 +596,18 @@ The name of the bean defining the GemFire cache (by default 'gemfire-cache').
 				]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="name" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[
+The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name). Required for subregions.
+                ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:attributeGroup>
     <!-- -->
     <xsd:element name="lookup-region" type="lookupRegionType" />
     <!-- -->
-    <xsd:complexType name="replicatedSubRegionType">
+    <xsd:complexType name="baseReplicatedRegionType">
         <xsd:annotation>
             <xsd:documentation
                 source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
@@ -576,7 +622,7 @@ up to date copy of the data.
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="subRegionType">
+            <xsd:extension base="baseRegionType">
                 <xsd:sequence minOccurs="1" maxOccurs="1">
                     <xsd:element name="eviction" minOccurs="0"
                         maxOccurs="1">
@@ -609,17 +655,31 @@ The action to take when performing eviction.
     <!-- -->
     <xsd:complexType name="replicatedRegionType">
         <xsd:complexContent>
-            <xsd:extension base="replicatedSubRegionType">
-                <xsd:group ref="subRegionGroup" minOccurs="0"
-                    maxOccurs="unbounded" />
+            <xsd:extension base="baseReplicatedRegionType">
                 <xsd:attributeGroup ref="topLevelRegionAttributes" />
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
+      <xsd:complexType name="replicatedSubRegionType">
+        <xsd:complexContent>
+            <xsd:extension base="baseReplicatedRegionType">
+                   <xsd:attribute name="name" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+                The name of the region definition.
+                        ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+
     <!-- -->
     <xsd:element name="replicated-region" type="replicatedRegionType" />
     <!-- -->
-    <xsd:complexType name="partitionedSubRegionType">
+    <xsd:complexType name="basePartitionedRegionType">
         <xsd:annotation>
             <xsd:documentation
                 source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
@@ -635,7 +695,7 @@ in different members, for high availability in case of an application failure.
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="subRegionType">
+            <xsd:extension base="baseRegionType">
                 <xsd:sequence>
                     <xsd:element name="partition-resolver"
                         type="beanDeclarationType" minOccurs="0"
@@ -760,12 +820,28 @@ The delay in milliseconds that new members will wait before satisfying redundanc
     <!-- -->
     <xsd:complexType name="partitionedRegionType">
         <xsd:complexContent>
-            <xsd:extension base="partitionedSubRegionType">
+            <xsd:extension base="basePartitionedRegionType">
                 <!-- subRegions not supported -->
                 <xsd:attributeGroup ref="topLevelRegionAttributes" />
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
+      <xsd:complexType name="partitionedSubRegionType">
+        <xsd:complexContent>
+            <xsd:extension base="basePartitionedRegionType">
+                <!-- subRegions not supported -->
+                      <xsd:attribute name="name" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+                The name of the region definition.
+                        ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
     <!-- -->
     <xsd:element name="partitioned-region" type="partitionedRegionType" />
     <!-- -->
