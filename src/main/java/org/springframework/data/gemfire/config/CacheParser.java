@@ -50,6 +50,11 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized", "pdxReadSerialized");
 		ParsingUtils.setPropertyValue(element, builder, "pdx-ignore-unread-fields", "pdxIgnoreUnreadFields");
 		ParsingUtils.setPropertyValue(element, builder, "use-bean-factory-locator", "useBeanFactoryLocator");
+		ParsingUtils.setPropertyValue(element, builder, "copy-on-read", "copyOnRead");
+		ParsingUtils.setPropertyValue(element, builder, "lock-timeout", "lockTimeout");
+		ParsingUtils.setPropertyValue(element, builder, "lock-lease", "lockLease");
+		ParsingUtils.setPropertyValue(element, builder, "message-sync-interval", "messageSyncInterval");
+		ParsingUtils.setPropertyValue(element, builder, "search-timeout", "searchTimeout");
 	}
 
 	@Override

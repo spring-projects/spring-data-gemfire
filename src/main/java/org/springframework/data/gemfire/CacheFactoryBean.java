@@ -41,21 +41,26 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
- * Factory used for configuring a Gemfire Cache manager. Allows either retrieval of an existing, opened cache 
- * or the creation of a new one.
-
- * <p>This class implements the {@link org.springframework.dao.support.PersistenceExceptionTranslator}
+ * Factory used for configuring a Gemfire Cache manager. Allows either retrieval
+ * of an existing, opened cache or the creation of a new one.
+ * 
+ * <p>
+ * This class implements the
+ * {@link org.springframework.dao.support.PersistenceExceptionTranslator}
  * interface, as auto-detected by Spring's
- * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor},
- * for AOP-based translation of native exceptions to Spring DataAccessExceptions.
- * Hence, the presence of this class automatically enables
- * a PersistenceExceptionTranslationPostProcessor to translate GemFire exceptions.
+ * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor}
+ * , for AOP-based translation of native exceptions to Spring
+ * DataAccessExceptions. Hence, the presence of this class automatically enables
+ * a PersistenceExceptionTranslationPostProcessor to translate GemFire
+ * exceptions.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
 		InitializingBean, FactoryBean<GemFireCache>, PersistenceExceptionTranslator {
@@ -67,12 +72,13 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	private class PdxOptions implements Runnable {
 
-		private CacheFactory factory;
+		private final CacheFactory factory;
 
 		PdxOptions(CacheFactory factory) {
 			this.factory = factory;
 		}
 
+		@Override
 		public void run() {
 			if (pdxSerializer != null) {
 				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
@@ -93,24 +99,70 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 	}
 
+	private class InternalCacheOptions implements Runnable {
+		private final GemFireCacheImpl cacheImpl;
+
+		InternalCacheOptions(GemFireCache cache) {
+			this.cacheImpl = (GemFireCacheImpl) cache;
+		}
+
+		@Override
+		public void run() {
+			if (lockLease != null) {
+				cacheImpl.setLockLease(lockLease);
+			}
+			if (lockTimeout != null) {
+				cacheImpl.setLockTimeout(lockTimeout);
+			}
+			if (searchTimeout != null) {
+				cacheImpl.setSearchTimeout(searchTimeout);
+			}
+			if (messageSyncInterval != null) {
+				cacheImpl.setMessageSyncInterval(messageSyncInterval);
+			}
+		}
+	}
+
 	protected final Log log = LogFactory.getLog(getClass());
 
 	private GemFireCache cache;
+
 	private Resource cacheXml;
+
 	private Properties properties;
+
 	private ClassLoader beanClassLoader;
+
 	private GemfireBeanFactoryLocator factoryLocator;
 
 	private BeanFactory beanFactory;
+
 	private String beanName;
+
 	private boolean useBeanFactoryLocator = true;
+
 	// PDX options
 	protected Object pdxSerializer;
+
 	protected Boolean pdxPersistent;
+
 	protected Boolean pdxReadSerialized;
+
 	protected Boolean pdxIgnoreUnreadFields;
+
 	protected String pdxDiskStoreName;
 
+	protected Boolean copyOnRead;
+
+	protected Integer lockTimeout;
+
+	protected Integer lockLease;
+
+	protected Integer messageSyncInterval;
+
+	protected Integer searchTimeout;
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
 		// initialize locator
 		if (useBeanFactoryLocator) {
@@ -132,7 +184,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			try {
 				cache = fetchCache();
 				msg = "Retrieved existing";
-			} catch (CacheClosedException ex) {
+			}
+			catch (CacheClosedException ex) {
 				Object factory = createFactory(cfgProps);
 
 				// GemFire 6.6 specific options
@@ -147,6 +200,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 				cache = createCache(factory);
 				msg = "Created";
 			}
+			if (this.copyOnRead != null) {
+				cache.setCopyOnRead(this.copyOnRead);
+			}
+
+			applyInternalCacheOptions();
 
 			DistributedSystem system = cache.getDistributedSystem();
 			DistributedMember member = system.getDistributedMember();
@@ -163,15 +221,15 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 					log.debug("Initialized cache from " + cacheXml);
 			}
 
-
-		} finally {
+		}
+		finally {
 			th.setContextClassLoader(oldTCCL);
 		}
 	}
 
 	/**
-	 * Sets the PDX properties for the given object. Note this is implementation specific as it depends on the type
-	 * of the factory passed in.
+	 * Sets the PDX properties for the given object. Note this is implementation
+	 * specific as it depends on the type of the factory passed in.
 	 * 
 	 * @param factory
 	 */
@@ -179,6 +237,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		if (factory instanceof CacheFactory) {
 			new PdxOptions((CacheFactory) factory).run();
 		}
+	}
+
+	protected void applyInternalCacheOptions() {
+		new InternalCacheOptions(cache).run();
 	}
 
 	protected Object createFactory(Properties props) {
@@ -198,6 +260,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return cfgProps;
 	}
 
+	@Override
 	public void destroy() throws Exception {
 		if (cache != null && !cache.isClosed()) {
 			cache.close();
@@ -211,6 +274,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 	}
 
+	@Override
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 		if (ex instanceof GemFireException) {
 			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) ex);
@@ -226,26 +290,32 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return null;
 	}
 
+	@Override
 	public GemFireCache getObject() throws Exception {
 		return cache;
 	}
 
+	@Override
 	public Class<? extends GemFireCache> getObjectType() {
 		return (cache != null ? cache.getClass() : Cache.class);
 	}
 
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
+	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
 	}
 
+	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
+	@Override
 	public void setBeanName(String name) {
 		this.beanName = name;
 	}
@@ -269,9 +339,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Indicates whether a bean factory locator is enabled (default) for this cache definition or not. The locator stores
-	 * the enclosing bean factory reference to allow auto-wiring of Spring beans into GemFire managed classes. Usually disabled
-	 * when the same cache is used in multiple application context/bean factories inside the same VM.
+	 * Indicates whether a bean factory locator is enabled (default) for this
+	 * cache definition or not. The locator stores the enclosing bean factory
+	 * reference to allow auto-wiring of Spring beans into GemFire managed
+	 * classes. Usually disabled when the same cache is used in multiple
+	 * application context/bean factories inside the same VM.
 	 * 
 	 * @param usage true if the bean factory locator is used underneath or not
 	 */
@@ -280,8 +352,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Sets the {@link PdxSerializable} for this cache. Applicable on GemFire 6.6 or higher.
-	 * The argument is of type object for compatibility with GemFire 6.5.
+	 * Sets the {@link PdxSerializable} for this cache. Applicable on GemFire
+	 * 6.6 or higher. The argument is of type object for compatibility with
+	 * GemFire 6.5.
 	 * 
 	 * @param serializer pdx serializer configured for this cache.
 	 */
@@ -290,8 +363,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Sets the object preference to PdxInstance type. Applicable on GemFire 6.6 or higher.
-	 *  
+	 * Sets the object preference to PdxInstance type. Applicable on GemFire 6.6
+	 * or higher.
+	 * 
 	 * @param pdxPersistent the pdxPersistent to set
 	 */
 	public void setPdxPersistent(Boolean pdxPersistent) {
@@ -299,7 +373,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Controls whether the type metadata for PDX objects is persisted to disk. Applicable on GemFire 6.6 or higher.
+	 * Controls whether the type metadata for PDX objects is persisted to disk.
+	 * Applicable on GemFire 6.6 or higher.
 	 * 
 	 * @param pdxReadSerialized the pdxReadSerialized to set
 	 */
@@ -308,7 +383,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Controls whether pdx ignores fields that were unread during deserialization. Applicable on GemFire 6.6 or higher.
+	 * Controls whether pdx ignores fields that were unread during
+	 * deserialization. Applicable on GemFire 6.6 or higher.
 	 * 
 	 * @param pdxIgnoreUnreadFields the pdxIgnoreUnreadFields to set
 	 */
@@ -317,8 +393,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Set the disk store that is used for PDX meta data. Applicable on GemFire 6.6 or higher.
-	 *  
+	 * Set the disk store that is used for PDX meta data. Applicable on GemFire
+	 * 6.6 or higher.
+	 * 
 	 * @param pdxDiskStoreName the pdxDiskStoreName to set
 	 */
 	public void setPdxDiskStoreName(String pdxDiskStoreName) {
@@ -331,4 +408,25 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected BeanFactory getBeanFactory() {
 		return beanFactory;
 	}
+
+	public void setCopyOnRead(boolean copyOnRead) {
+		this.copyOnRead = copyOnRead;
+	}
+
+	public void setLockTimeout(int lockTimeout) {
+		this.lockTimeout = lockTimeout;
+	}
+
+	public void setLockLease(int lockLease) {
+		this.lockLease = lockLease;
+	}
+
+	public void setMessageSyncInterval(int messageSyncInterval) {
+		this.messageSyncInterval = messageSyncInterval;
+	}
+
+	public void setSearchTimeout(int searchTimeout) {
+		this.searchTimeout = searchTimeout;
+	}
+
 }
