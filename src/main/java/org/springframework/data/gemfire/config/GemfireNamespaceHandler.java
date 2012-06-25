@@ -23,9 +23,11 @@ import org.springframework.data.gemfire.repository.config.GemfireRepositoryParse
  * Namespace handler for GemFire definitions.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
 class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 
+	@Override
 	public void init() {
 		registerBeanDefinitionParser("cache", new CacheParser());
 		registerBeanDefinitionParser("client-cache", new ClientCacheParser());
@@ -33,15 +35,14 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("lookup-region", new LookupRegionParser());
 		registerBeanDefinitionParser("replicated-region", new ReplicatedRegionParser());
 		registerBeanDefinitionParser("partitioned-region", new PartitionedRegionParser());
+		registerBeanDefinitionParser("local-region", new LocalRegionParser());
 		registerBeanDefinitionParser("client-region", new ClientRegionParser());
 		registerBeanDefinitionParser("pool", new PoolParser());
 		registerBeanDefinitionParser("index", new IndexParser());
+		registerBeanDefinitionParser("disk-store", new DiskStoreParser());
 		registerBeanDefinitionParser("cache-server", new CacheServerParser());
-
 		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());
-
 		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
-
 		registerBeanDefinitionParser("repositories", new GemfireRepositoryParser());
 	}
 }

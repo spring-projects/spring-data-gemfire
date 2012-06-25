@@ -18,7 +18,7 @@
     
      <gfe:replicated-region id="replicatedParent">
         <gfe:lookup-region name="lookupChild">
-            <gfe:partitioned-region name="partitionedGrandchild"/>            
+            <gfe:partitioned-region name="partitionedGrandchild"/>
         </gfe:lookup-region>
     </gfe:replicated-region>
     

@@ -27,11 +27,13 @@ import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.core.Conventions;
+import org.springframework.data.gemfire.DiskStoreFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 
@@ -44,14 +46,20 @@ abstract class ParsingUtils {
 
 	private static final String ALIASES_KEY = ParsingUtils.class.getName() + ":aliases";
 
-	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attrName, String propertyName) {
-		String attr = element.getAttribute(attrName);
+	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
+			String propertyName) {
+		String attr = element.getAttribute(attributeName);
 		if (StringUtils.hasText(attr)) {
 			builder.addPropertyValue(propertyName, attr);
 		}
 	}
 
-	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attrName, String propertyName) {
+	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName) {
+		setPropertyValue(element, builder, attributeName, Conventions.attributeNameToPropertyName(attributeName));
+	}
+
+	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attrName,
+			String propertyName) {
 		String attr = element.getAttribute(attrName);
 		if (StringUtils.hasText(attr)) {
 			builder.addPropertyReference(propertyName, attr);
@@ -59,9 +67,11 @@ abstract class ParsingUtils {
 	}
 
 	/**
-	 * Utility for parsing bean aliases. Normally parsed by AbstractBeanDefinitionParser however due to the attribute clash
-	 * (bean uses 'name' for aliases while region use it to indicate their name), the parser needs to handle this differently by
-	 * storing them as metadata which gets deleted just before registration.
+	 * Utility for parsing bean aliases. Normally parsed by
+	 * AbstractBeanDefinitionParser however due to the attribute clash (bean
+	 * uses 'name' for aliases while region use it to indicate their name), the
+	 * parser needs to handle this differently by storing them as metadata which
+	 * gets deleted just before registration.
 	 * 
 	 * @param element
 	 * @param builder
@@ -87,10 +97,13 @@ abstract class ParsingUtils {
 
 	/**
 	 * Utility method handling parsing of nested definition of the type:
+	 * 
 	 * <pre>
 	 *   <tag ref="someBean"/>
 	 * </pre>
-	 * or 
+	 * 
+	 * or
+	 * 
 	 * <pre>
 	 *   <tag>
 	 *     <bean .... />
@@ -100,11 +113,13 @@ abstract class ParsingUtils {
 	 * @param element
 	 * @return
 	 */
-	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element, BeanDefinitionBuilder builder) {
+	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder builder) {
 		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, "ref");
 	}
 
-	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element, BeanDefinitionBuilder builder, String refAttrName) {
+	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder builder, String refAttrName) {
 		String attr = element.getAttribute(refAttrName);
 		boolean hasRef = StringUtils.hasText(attr);
 
@@ -142,10 +157,12 @@ abstract class ParsingUtils {
 	}
 
 	/**
-	 * Parses disk store sub-element. Populates the given attribute factory with the proper attributes.
+	 * Parses disk store sub-element. Populates the given attribute factory with
+	 * the proper attributes.
 	 * 
 	 * @param element - element enclosing the disk-store definition
-	 * @param beanBuilder - beanbuilder for a RegionAttributesFactoryBean instance
+	 * @param beanBuilder - beanbuilder for a RegionAttributesFactoryBean
+	 * instance
 	 * @return true if parsing actually occured, false otherwise
 	 */
 	static boolean parseDiskStorage(Element element, BeanDefinitionBuilder beanBuilder) {
@@ -154,13 +171,15 @@ abstract class ParsingUtils {
 		if (diskStoreElement == null)
 			return false;
 
-		BeanDefinitionBuilder diskDefBuilder = BeanDefinitionBuilder.genericBeanDefinition(DiskWriteAttributesFactory.class);
-		setPropertyValue(diskStoreElement, diskDefBuilder, "synchronous-write", "synchronous");
+		if (diskStoreElement.getParentNode().getLocalName().endsWith("region")) {
+			System.out.println("This is a nested disk-store");
+		}
+
+		BeanDefinitionBuilder diskDefBuilder = BeanDefinitionBuilder.genericBeanDefinition(DiskStoreFactory.class);
 		setPropertyValue(diskStoreElement, diskDefBuilder, "auto-compact", "rollOplogs");
 		setPropertyValue(diskStoreElement, diskDefBuilder, "max-oplog-size", "maxOplogSize");
 		setPropertyValue(diskStoreElement, diskDefBuilder, "time-interval", "timeInterval");
 		setPropertyValue(diskStoreElement, diskDefBuilder, "queue-size", "bytesThreshold");
-
 
 		// parse nested disk-dir
 		List<Element> list = DomUtils.getChildElementsByTagName(diskStoreElement, "disk-dir");
@@ -176,7 +195,7 @@ abstract class ParsingUtils {
 
 		// wrap up the disk attributes factory to call 'create'
 
-		BeanDefinitionBuilder factoryWrapper = BeanDefinitionBuilder.genericBeanDefinition(DiskWriteAttributesFactoryBean.class);
+		BeanDefinitionBuilder factoryWrapper = BeanDefinitionBuilder.genericBeanDefinition(DiskStoreFactoryBean.class);
 		factoryWrapper.addPropertyValue("diskAttributesFactory", diskDefBuilder.getBeanDefinition());
 		beanBuilder.addPropertyValue("diskWriteAttributes", factoryWrapper.getBeanDefinition());
 		beanBuilder.addPropertyValue("diskDirs", locations);
@@ -186,7 +205,8 @@ abstract class ParsingUtils {
 	}
 
 	/**
-	 * Parses the eviction sub-element. Populates the given attribute factory with the proper attributes.
+	 * Parses the eviction sub-element. Populates the given attribute factory
+	 * with the proper attributes.
 	 * 
 	 * @param parserContext
 	 * @param element
@@ -199,7 +219,8 @@ abstract class ParsingUtils {
 		if (evictionElement == null)
 			return false;
 
-		BeanDefinitionBuilder evictionDefBuilder = BeanDefinitionBuilder.genericBeanDefinition(EvictionAttributesFactoryBean.class);
+		BeanDefinitionBuilder evictionDefBuilder = BeanDefinitionBuilder
+				.genericBeanDefinition(EvictionAttributesFactoryBean.class);
 
 		// do manual conversion since the enum is not public
 		String attr = evictionElement.getAttribute("type");
@@ -209,7 +230,6 @@ abstract class ParsingUtils {
 
 		setPropertyValue(evictionElement, evictionDefBuilder, "threshold", "threshold");
 		setPropertyValue(evictionElement, evictionDefBuilder, "action", "action");
-
 
 		// get object sizer (if declared)
 		Element objectSizerElement = DomUtils.getChildElementByTagName(evictionElement, "object-sizer");
@@ -223,13 +243,13 @@ abstract class ParsingUtils {
 		return true;
 	}
 
-
 	static void parseStatistics(Element element, BeanDefinitionBuilder attrBuilder) {
 		setPropertyValue(element, attrBuilder, "statistics", "statisticsEnabled");
 	}
 
 	/**
-	 * Parses the expiration sub-elements. Populates the given attribute factory with proper attributes. 
+	 * Parses the expiration sub-elements. Populates the given attribute factory
+	 * with proper attributes.
 	 * 
 	 * @param parserContext
 	 * @param element
@@ -250,7 +270,25 @@ abstract class ParsingUtils {
 		return result;
 	}
 
-	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName, BeanDefinitionBuilder attrBuilder) {
+	static void parseAdditionalAttributes(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder attrBuilder) {
+		setPropertyValue(element, attrBuilder, "persistent", "persistBackup");
+		setPropertyValue(element, attrBuilder, "ignore-jta", "ignoreJTA");
+		setPropertyValue(element, attrBuilder, "key-constraint", "keyConstraint");
+		setPropertyValue(element, attrBuilder, "value-constraint", "valueConstraint");
+		setPropertyValue(element, attrBuilder, "lock-grantor", "lockGrantor");
+		setPropertyValue(element, attrBuilder, "enable-subscription-conflation", "enableSubscriptionConflation");
+		setPropertyValue(element, attrBuilder, "enable-async-conflation", "enableAsyncConflation");
+		setPropertyValue(element, attrBuilder, "initial-capacity", "initialCapacity");
+		String indexUpdateType = element.getAttribute("index-update-type");
+		if (StringUtils.hasText(indexUpdateType)) {
+			attrBuilder.addPropertyValue("indexMaintenanceSynchronous", "synchronous".equals(indexUpdateType));
+		}
+
+	}
+
+	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName,
+			BeanDefinitionBuilder attrBuilder) {
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
 		if (expirationElement == null)
@@ -258,7 +296,6 @@ abstract class ParsingUtils {
 
 		String expirationTime = null;
 		ExpirationAction action = ExpirationAction.INVALIDATE;
-
 
 		// do manual conversion since the enum is not public
 		String attr = expirationElement.getAttribute("timeout");
@@ -284,7 +321,8 @@ abstract class ParsingUtils {
 				action = ExpirationAction.LOCAL_INVALIDATE;
 			}
 		}
-		BeanDefinitionBuilder expirationAttributes = BeanDefinitionBuilder.genericBeanDefinition(ExpirationAttributes.class);
+		BeanDefinitionBuilder expirationAttributes = BeanDefinitionBuilder
+				.genericBeanDefinition(ExpirationAttributes.class);
 		expirationAttributes.addConstructorArgValue(expirationTime);
 		expirationAttributes.addConstructorArgValue(action);
 		attrBuilder.addPropertyValue(propertyName, expirationAttributes.getBeanDefinition());

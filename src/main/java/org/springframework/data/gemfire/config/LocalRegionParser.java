@@ -25,7 +25,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
@@ -34,21 +33,22 @@ import com.gemstone.gemfire.cache.Scope;
  * @author Costin Leau
  * @author David Turanski
  */
-class ReplicatedRegionParser extends AbstractRegionParser {
+class LocalRegionParser extends AbstractRegionParser {
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 
 		// set the data policy
 		String attr = element.getAttribute("persistent");
-		if (Boolean.parseBoolean(attr)) {
-			builder.addPropertyValue("dataPolicy", DataPolicy.PERSISTENT_REPLICATE);
-		}
-		else {
-			builder.addPropertyValue("dataPolicy", DataPolicy.REPLICATE);
-		}
+		// if (Boolean.parseBoolean(attr)) {
+		// builder.addPropertyValue("dataPolicy",
+		// DataPolicy.PERSISTENT_REPLICATE);
+		// }
+		// else {
+		// builder.addPropertyValue("dataPolicy", DataPolicy.REPLICATE);
+		// }
 
-		builder.addPropertyValue("scope", Scope.DISTRIBUTED_ACK);
+		builder.addPropertyValue("scope", Scope.LOCAL);
 
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 
@@ -61,7 +61,7 @@ class ReplicatedRegionParser extends AbstractRegionParser {
 			attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 		}
 		// add attributes
-		ParsingUtils.parseAdditionalAttributes(parserContext, element, attrBuilder);
+
 		ParsingUtils.parseStatistics(element, attrBuilder);
 
 		attr = element.getAttribute("publisher");

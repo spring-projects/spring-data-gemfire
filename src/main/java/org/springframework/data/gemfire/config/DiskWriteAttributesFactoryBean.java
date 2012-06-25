@@ -23,27 +23,35 @@ import com.gemstone.gemfire.cache.DiskWriteAttributes;
 import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
 
 /**
- * Simple utility class used for defining nested factory-method like definitions w/o polluting the container with useless beans.
+ * Simple utility class used for defining nested factory-method like definitions
+ * w/o polluting the container with useless beans.
  * 
  * @author Costin Leau
+ * @deprecated
  */
+@Deprecated
 class DiskWriteAttributesFactoryBean implements FactoryBean<DiskWriteAttributes>, InitializingBean {
 
 	private DiskWriteAttributes attributes;
+
 	private DiskWriteAttributesFactory attrFactory;
 
+	@Override
 	public void afterPropertiesSet() {
 		attributes = attrFactory.create();
 	}
 
+	@Override
 	public DiskWriteAttributes getObject() throws Exception {
 		return attributes;
 	}
 
+	@Override
 	public Class<?> getObjectType() {
 		return (attributes != null ? attributes.getClass() : DiskWriteAttributes.class);
 	}
 
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
