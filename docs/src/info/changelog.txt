@@ -2,6 +2,16 @@ SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
 
+Changes in version 1.1.2.RELEASE (2012-07-25)
+---------------------------------------------
+
+General
+* Upgraded to GemFire 6.6.3
+
+Package org.springframework.data.gemfire.config
+* Fixed incorrect parsing of pdx-disk-store attribute
+* Fixed a bug in DiskStoreAndEvictionRegionParsingTest that caused the test to fail if a temporary directory does not exist
+
 Changes in version 1.1.1.RELEASE (2012-03-20)
 ---------------------------------------------
 
