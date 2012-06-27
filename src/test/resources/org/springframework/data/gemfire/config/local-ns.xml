@@ -22,6 +22,16 @@
 		<gfe:cache-loader ref="c-loader"/>
 		<gfe:cache-writer ref="c-writer"/>
 	</gfe:local-region>
+    
+    <gfe:local-region id="local-with-attributes" 
+        disk-synchronous="true"
+        ignore-jta="true"
+        index-update-type="asynchronous"
+        initial-capacity="10"
+        key-constraint="java.lang.String"
+        value-constraint="java.lang.String"
+        data-policy="PRELOADED"
+    />
 	
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
 	<bean id="c-loader" class="org.springframework.data.gemfire.SimpleCacheLoader"/>

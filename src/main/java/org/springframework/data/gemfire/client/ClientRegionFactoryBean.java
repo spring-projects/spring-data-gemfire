@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * Client extension for GemFire regions.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements BeanFactoryAware,
 		DisposableBean {
@@ -51,19 +52,28 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	private static final Log log = LogFactory.getLog(ClientRegionFactoryBean.class);
 
 	private boolean destroy = false;
+
 	private boolean close = true;
+
 	private Resource snapshot;
 
 	private CacheListener<K, V> cacheListeners[];
+
 	private Interest<K>[] interests;
+
 	private String poolName;
+
 	private BeanFactory beanFactory;
+
 	private ClientRegionShortcut shortcut = null;
+
 	private DataPolicy dataPolicy;
 
 	private RegionAttributes<K, V> attributes;
+
 	private Region<K, V> region;
 
+	private String diskStoreName;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -76,11 +86,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		Assert.isTrue(cache instanceof ClientCache, "Unable to create regions from " + cache);
 		ClientCache c = (ClientCache) cache;
-		
+
 		if (cache instanceof GemFireCacheImpl) {
 			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required");
 		}
-
 
 		// first look at shortcut
 		ClientRegionShortcut s = null;
@@ -103,7 +112,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			else {
 				s = ClientRegionShortcut.LOCAL;
 			}
-		} else {
+		}
+		else {
 			s = shortcut;
 		}
 
@@ -154,6 +164,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			factory.setPoolName(poolName);
 		}
 
+		if (diskStoreName != null) {
+			factory.setDiskStoreName(diskStoreName);
+		}
+
 		Region<K, V> reg = factory.create(regionName);
 		log.info("Created new cache region [" + regionName + "]");
 		if (snapshot != null) {
@@ -179,6 +193,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		}
 	}
 
+	@Override
 	public void destroy() throws Exception {
 		Region<K, V> region = getObject();
 		// unregister interests
@@ -193,8 +208,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 					}
 				}
 			}
-			// should not really happen since interests are validated at start/registration
-		} catch (UnsupportedOperationException ex) {
+			// should not really happen since interests are validated at
+			// start/registration
+		}
+		catch (UnsupportedOperationException ex) {
 			log.warn("Cannot unregister cache interests", ex);
 		}
 
@@ -203,7 +220,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				if (!region.getCache().isClosed()) {
 					try {
 						region.close();
-					} catch (CacheClosedException cce) {
+					}
+					catch (CacheClosedException cce) {
 						// nothing to see folks, move on.
 					}
 				}
@@ -215,13 +233,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		region = null;
 	}
 
+	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
-
 	/**
-	 * Set the interests for this client region. Both key and regex interest are supported.
+	 * Set the interests for this client region. Both key and regex interest are
+	 * supported.
 	 * 
 	 * @param interests the interests to set
 	 */
@@ -257,9 +276,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Initializes the client using a GemFire {@link ClientRegionShortcut}.
-	 * The recommended way for creating clients since it covers all the major scenarios with minimal
-	 * configuration. 
+	 * Initializes the client using a GemFire {@link ClientRegionShortcut}. The
+	 * recommended way for creating clients since it covers all the major
+	 * scenarios with minimal configuration.
 	 * 
 	 * @param shortcut
 	 */
@@ -268,9 +287,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Indicates whether the region referred by this factory bean,
-	 * will be destroyed on shutdown (default false).
-	 * Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
+	 * Indicates whether the region referred by this factory bean, will be
+	 * destroyed on shutdown (default false). Note: destroy and close are
+	 * mutually exclusive. Enabling one will automatically disable the other.
 	 * 
 	 * @param destroy whether or not to destroy the region
 	 * 
@@ -285,9 +304,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Indicates whether the region referred by this factory bean,
-	 * will be closed on shutdown (default true).
-	 * Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
+	 * Indicates whether the region referred by this factory bean, will be
+	 * closed on shutdown (default true). Note: destroy and close are mutually
+	 * exclusive. Enabling one will automatically disable the other.
 	 * 
 	 * @param close whether to close or not the region
 	 * @see #setDestroy(boolean)
@@ -300,9 +319,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the snapshots used for loading a newly <i>created</i> region.
-	 * That is, the snapshot will be used <i>only</i> when a new region is created - if the region
-	 * already exists, no loading will be performed.
+	 * Sets the snapshots used for loading a newly <i>created</i> region. That
+	 * is, the snapshot will be used <i>only</i> when a new region is created -
+	 * if the region already exists, no loading will be performed.
 	 * 
 	 * @see #setName(String)
 	 * @param snapshot the snapshot to set
@@ -312,9 +331,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the cache listeners used for the region used by this factory.
-	 * Used only when a new region is created.Overrides the settings
-	 * specified through {@link #setAttributes(RegionAttributes)}.
+	 * Sets the cache listeners used for the region used by this factory. Used
+	 * only when a new region is created.Overrides the settings specified
+	 * through {@link #setAttributes(RegionAttributes)}.
 	 * 
 	 * @param cacheListeners the cacheListeners to set on a newly created region
 	 */
@@ -332,11 +351,20 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
+	 * Sets the name of disk store to use for overflow and persistence
+	 * @param diskStoreName
+	 */
+	public void setDiskStoreName(String diskStoreName) {
+		this.diskStoreName = diskStoreName;
+	}
+
+	/**
 	 * Sets the region attributes used for the region used by this factory.
-	 * Allows maximum control in specifying the region settings.
-	 * Used only when a new region is created.
-	 * Note that using this method allows for advanced customization of the region - while it provides a lot of flexibility,
-	 * note that it's quite easy to create misconfigured regions (especially in a client/server scenario).
+	 * Allows maximum control in specifying the region settings. Used only when
+	 * a new region is created. Note that using this method allows for advanced
+	 * customization of the region - while it provides a lot of flexibility,
+	 * note that it's quite easy to create misconfigured regions (especially in
+	 * a client/server scenario).
 	 * 
 	 * @param attributes the attributes to set on a newly created region
 	 */

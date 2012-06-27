@@ -34,7 +34,6 @@ import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
@@ -50,15 +49,15 @@ public class LocalRegionNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
-	public void testBasicReplica() throws Exception {
+	public void testBasicLocal() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 
 	@Test
-	public void testPublishingReplica() throws Exception {
+	public void testPublishingLocal() throws Exception {
 		assertTrue(context.containsBean("pub"));
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);
-		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", fb));
+		assertEquals("NORMAL", TestUtils.readField("dataPolicyName", fb));
 		assertEquals(Scope.LOCAL, TestUtils.readField("scope", fb));
 		assertEquals("publisher", TestUtils.readField("name", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
@@ -66,7 +65,7 @@ public class LocalRegionNamespaceTest {
 	}
 
 	@Test
-	public void testComplexReplica() throws Exception {
+	public void testComplexLocal() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
 		CacheListener[] listeners = TestUtils.readField("cacheListeners", fb);
@@ -76,6 +75,19 @@ public class LocalRegionNamespaceTest {
 
 		assertSame(context.getBean("c-loader"), TestUtils.readField("cacheLoader", fb));
 		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
+	}
+
+	@Test
+	public void testLocalWithAttributes() throws Exception {
+		assertTrue(context.containsBean("local-with-attributes"));
+		Region region = context.getBean("local-with-attributes", Region.class);
+		RegionAttributes attrs = region.getAttributes();
+		assertEquals(10, attrs.getInitialCapacity());
+		assertEquals(true, attrs.getIgnoreJTA());
+		assertEquals(false, attrs.getIndexMaintenanceSynchronous());
+		assertEquals(String.class, attrs.getKeyConstraint());
+		assertEquals(String.class, attrs.getValueConstraint());
+		assertEquals(true, attrs.isDiskSynchronous());
 	}
 
 	@Test

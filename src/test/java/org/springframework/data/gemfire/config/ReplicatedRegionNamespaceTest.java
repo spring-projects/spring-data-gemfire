@@ -79,6 +79,25 @@ public class ReplicatedRegionNamespaceTest {
 	}
 
 	@Test
+	public void testReplicaWithAttributes() throws Exception {
+		assertTrue(context.containsBean("replicated-with-attributes"));
+		Region region = context.getBean("replicated-with-attributes", Region.class);
+		RegionAttributes attrs = region.getAttributes();
+		assertEquals(10, attrs.getInitialCapacity());
+		assertEquals(true, attrs.getIgnoreJTA());
+		assertEquals(false, attrs.getIndexMaintenanceSynchronous());
+		assertEquals(String.class, attrs.getKeyConstraint());
+		assertEquals(String.class, attrs.getValueConstraint());
+		assertEquals(true, attrs.isDiskSynchronous());
+		assertEquals(Scope.GLOBAL, attrs.getScope());
+		assertEquals(true, attrs.isLockGrantor());
+		assertEquals(true, attrs.getEnableAsyncConflation());
+		assertEquals(true, attrs.getEnableSubscriptionConflation());
+		assertEquals(0.50, attrs.getLoadFactor(), 0.001);
+		assertEquals(false, attrs.getCloningEnabled());
+	}
+
+	@Test
 	public void testRegionLookup() throws Exception {
 		Cache cache = context.getBean(Cache.class);
 		Region existing = cache.createRegionFactory().create("existing");

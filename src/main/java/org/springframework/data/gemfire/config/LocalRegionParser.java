@@ -16,15 +16,13 @@
 
 package org.springframework.data.gemfire.config;
 
-import java.util.List;
-
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.util.StringUtils;
-import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
@@ -39,78 +37,23 @@ class LocalRegionParser extends AbstractRegionParser {
 			boolean subRegion) {
 
 		// set the data policy
-		String attr = element.getAttribute("persistent");
-		// if (Boolean.parseBoolean(attr)) {
-		// builder.addPropertyValue("dataPolicy",
-		// DataPolicy.PERSISTENT_REPLICATE);
-		// }
-		// else {
-		// builder.addPropertyValue("dataPolicy", DataPolicy.REPLICATE);
-		// }
+		String attr = element.getAttribute("data-policy");
+		if (StringUtils.hasText(attr)) {
+			builder.addPropertyValue("dataPolicyName", attr.toUpperCase());
+		}
+		else {
+			builder.addPropertyValue("dataPolicy", DataPolicy.NORMAL);
+		}
 
 		builder.addPropertyValue("scope", Scope.LOCAL);
 
-		ParsingUtils.setPropertyValue(element, builder, "name", "name");
+		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
+				.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
-		BeanDefinitionBuilder attrBuilder = builder;
-
-		if (!subRegion) {
-			attr = element.getAttribute("cache-ref");
-			// add cache reference (fallback to default if nothing is specified)
-			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
-			attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
-		}
-		// add attributes
-
-		ParsingUtils.parseStatistics(element, attrBuilder);
-
-		attr = element.getAttribute("publisher");
-		if (StringUtils.hasText(attr)) {
-			attrBuilder.addPropertyValue("publisher", Boolean.valueOf(attr));
-		}
-
-		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
-		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
-		ParsingUtils.parseDiskStorage(element, attrBuilder);
-
+		super.doParseRegionCommon(element, parserContext, builder, attrBuilder, subRegion);
 		if (!subRegion) {
 			builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
 		}
-
-		List<Element> subElements = DomUtils.getChildElements(element);
-
-		// parse nested elements
-		for (Element subElement : subElements) {
-			String name = subElement.getLocalName();
-
-			if ("cache-listener".equals(name)) {
-				builder.addPropertyValue("cacheListeners", parseCacheListener(parserContext, subElement, builder));
-			}
-
-			else if ("cache-loader".equals(name)) {
-				builder.addPropertyValue("cacheLoader", parseCacheLoader(parserContext, subElement, builder));
-			}
-
-			else if ("cache-writer".equals(name)) {
-				builder.addPropertyValue("cacheWriter", parseCacheWriter(parserContext, subElement, builder));
-			}
-			// subregion
-			else if (name.endsWith("region")) {
-				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
-			}
-		}
-	}
-
-	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
-	}
-
-	private Object parseCacheLoader(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
-	}
-
-	private Object parseCacheWriter(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 
 }

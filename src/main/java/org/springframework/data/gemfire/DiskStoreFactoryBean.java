@@ -109,7 +109,6 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 			}
 			diskStoreFactory.setDiskDirsAndSizes(diskDirFiles, diskDirSizes);
 		}
-
 	}
 
 	public void setCache(GemFireCache cache) {
@@ -168,5 +167,4 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 			this.maxSize = null;
 		}
 	}
-
 }

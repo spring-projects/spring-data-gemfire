@@ -10,44 +10,48 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	 <util:properties id="props">
-       <prop key="ttl">300</prop>
-     </util:properties>
-
+    <gfe:cache/>
+    <util:properties id="props">
+        <prop key="location">./build/tmp</prop>
+        <prop key="queueSize">50</prop>
+        <prop key="autoCompact">true</prop>
+        <prop key="maxOpLogSize">10</prop>
+        <prop key="timeInterval">9999</prop>
+        <prop key="maxSize">1</prop>
+        <prop key="ttl">300</prop>
+    </util:properties>
+    
     <context:property-placeholder properties-ref="props"/>
-    
-		
-	<gfe:cache />
-    
-    <gfe:partitioned-region id="partitioned-data-with-timeout">
-        <gfe:entry-ttl timeout="${ttl}" action="DESTROY"/>
-    </gfe:partitioned-region>
-	
-	<gfe:replicated-region id="replicated-data" persistent="true" close="true" destroy="false">
-		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
-			<gfe:disk-dir location="./build/tmp" max-size="1"/>
-		</gfe:disk-store>
 
+    <gfe:disk-store id="diskStore1" queue-size="${queueSize}" auto-compact="${autoCompact}" 
+        max-oplog-size="${maxOpLogSize}" time-interval="${timeInterval}">
+        <gfe:disk-dir location="${location}" max-size="${maxSize}"/>
+    </gfe:disk-store>
+ 
+<!--     <gfe:partitioned-region id="partitioned-data-with-timeout" disk-store-ref="diskStore1" persistent="true"> -->
+<!--         <gfe:entry-ttl timeout="${ttl}" action="DESTROY"/> -->
+<!--     </gfe:partitioned-region> -->
+	
+	<gfe:replicated-region id="replicated-data" close="true" destroy="false" disk-store-ref="diskStore1">
 		<gfe:region-ttl timeout="${ttl}" action="DESTROY"/>
 		<gfe:region-tti timeout="400" action="INVALIDATE"/>
 
 		<gfe:entry-ttl timeout="100" action="DESTROY"/>
 		<gfe:entry-tti timeout="200" action="INVALIDATE"/>
 		
-		<gfe:eviction type="ENTRY_COUNT" threshold="50" />
+		<gfe:eviction type="ENTRY_COUNT" threshold="50" action="OVERFLOW_TO_DISK"/>
 	</gfe:replicated-region>
  	
- 	
-	<gfe:partitioned-region id="partition-data" persistent="false">
-		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
-			<gfe:disk-dir location="./" max-size="1"/>
-		</gfe:disk-store> 
-
+	<gfe:partitioned-region id="partition-data" persistent="true" disk-store-ref="ds2">
 		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="LOCAL_DESTROY">
 			<gfe:object-sizer>
 				<bean class="org.springframework.data.gemfire.SimpleObjectSizer"/>
 			</gfe:object-sizer>
 		</gfe:eviction>
 	</gfe:partitioned-region>
-	
+    
+        <gfe:disk-store id="ds2" queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
+            <gfe:disk-dir location="./" max-size="1"/>
+    </gfe:disk-store>
+ 
 </beans>

@@ -65,21 +65,13 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			builder.addPropertyValue("dataPolicy", DataPolicy.PARTITION);
 		}
 
-		BeanDefinitionBuilder attrBuilder = builder;
+		ParsingUtils.parseScope(element, builder);
 
-		if (!subRegion) {
-			attr = element.getAttribute("cache-ref");
-			// add cache reference (fallback to default if nothing is specified)
-			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
-			attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
-		}
-		ParsingUtils.setPropertyValue(element, builder, "name", "name");
+		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
+				.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
-		ParsingUtils.parseStatistics(element, attrBuilder);
-		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
-		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
-		ParsingUtils.parseDiskStorage(element, attrBuilder);
-
+		super.doParseRegionCommon(element, parserContext, builder, attrBuilder, subRegion);
+		//
 		// partition attributes
 		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder
 				.genericBeanDefinition(PartitionAttributesFactoryBean.class);
@@ -120,53 +112,21 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		if (StringUtils.hasText(attr)) {
 			parAttrBuilder.addPropertyValue("totalNumBuckets", Integer.valueOf(attr));
 		}
-
-		List<Element> subElements = DomUtils.getChildElements(element);
-
-		// parse nested cache-listener elements
+		//
+		List<Element> subElements = DomUtils.getChildElementsByTagName(element, "partition-resolver");
+		//
+		// // parse nested cache-listener elements
 		for (Element subElement : subElements) {
-			String name = subElement.getLocalName();
-
-			if ("cache-listener".equals(name)) {
-				builder.addPropertyValue("cacheListeners", parseCacheListener(parserContext, subElement, builder));
-			}
-
-			else if ("cache-loader".equals(name)) {
-				builder.addPropertyValue("cacheLoader", parseCacheLoader(parserContext, subElement, builder));
-			}
-
-			else if ("cache-writer".equals(name)) {
-				builder.addPropertyValue("cacheWriter", parseCacheWriter(parserContext, subElement, builder));
-			}
-
-			else if ("partition-resolver".equals(name)) {
-				parAttrBuilder.addPropertyValue("partitionResolver",
-						parsePartitionResolver(parserContext, subElement, builder));
-			}
-			// subregion
-			else if (name.endsWith("region")) {
-				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
-			}
+			parAttrBuilder.addPropertyValue("partitionResolver",
+					parsePartitionResolver(parserContext, subElement, builder));
 		}
-
-		// add partition attributes attributes
+		//
+		// // add partition attributes attributes
 		attrBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
 		// add partition/overflow settings as attributes
 		if (!subRegion) {
 			builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
 		}
-	}
-
-	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
-	}
-
-	private Object parseCacheLoader(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
-	}
-
-	private Object parseCacheWriter(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 
 	private Object parsePartitionResolver(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {

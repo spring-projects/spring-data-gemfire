@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import com.gemstone.gemfire.cache.Scope;
  * defaults.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
 public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
 
@@ -73,7 +74,11 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	private Scope scope;
 
+	private String diskStoreName;
+
 	private DataPolicy dataPolicy;
+
+	private String dataPolicyName;
 
 	private Region<K, V> region;
 
@@ -116,9 +121,30 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			regionFactory.setDataPolicy(dataPolicy);
 		}
 
+		if (dataPolicyName != null) {
+			Assert.isNull(dataPolicy, "'dataPolicy' and 'dataPolicyName' are mutually exclusive.");
+			if ("NORMAL".equals(dataPolicyName)) {
+				regionFactory.setDataPolicy(DataPolicy.NORMAL);
+			}
+			else if ("PRELOADED".equals(dataPolicyName)) {
+				regionFactory.setDataPolicy(DataPolicy.PRELOADED);
+			}
+			else {
+				throw new IllegalArgumentException("Data policy '" + dataPolicyName + "' is unsupported or invalid.");
+			}
+
+		}
+
 		if (scope != null) {
 			regionFactory.setScope(scope);
 		}
+
+		if (diskStoreName != null) {
+			regionFactory.setDiskStoreName(diskStoreName);
+		}
+
+		Assert.state(!attributes.isLockGrantor() || scope.isGlobal(),
+				"Lock grantor only applies to a global scoped region");
 
 		// get underlying AttributesFactory
 		postProcess(findAttrFactory(regionFactory));
@@ -129,8 +155,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			reg.loadSnapshot(snapshot.getInputStream());
 		}
 
-		if (subRegions != null) {
-			System.out.println("**********************************************" + subRegions.get(0));
+		if (attributes.isLockGrantor()) {
+			reg.becomeLockGrantor();
 		}
 
 		return reg;
@@ -289,6 +315,23 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	public void setScope(Scope scope) {
 		this.scope = scope;
+	}
+
+	/**
+	 * Sets the dataPolicy as a String. Required to support property
+	 * placeholders
+	 * @param dataPolicyName the dataPolicy name (NORMAL, PRELOADED, etc)
+	 */
+	public void setDataPolicyName(String dataPolicyName) {
+		this.dataPolicyName = dataPolicyName;
+	}
+
+	/**
+	 * Sets the name of disk store to use for overflow and persistence
+	 * @param diskStoreName
+	 */
+	public void setDiskStoreName(String diskStoreName) {
+		this.diskStoreName = diskStoreName;
 	}
 
 	/**

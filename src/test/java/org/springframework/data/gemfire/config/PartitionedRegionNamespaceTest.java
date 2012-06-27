@@ -48,7 +48,7 @@ public class PartitionedRegionNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
-	public void testBasicReplica() throws Exception {
+	public void testBasicPartition() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 

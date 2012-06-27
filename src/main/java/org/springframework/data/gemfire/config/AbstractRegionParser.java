@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.StringUtils;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -86,6 +89,52 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 		this.registerBeanDefinition(new BeanDefinitionHolder(subRegionDef, regionPath), parserContext.getRegistry());
 	}
 
+	protected void doParseRegionCommon(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+			BeanDefinitionBuilder attrBuilder, boolean subRegion) {
+
+		if (!subRegion) {
+			String cacheRef = element.getAttribute("cache-ref");
+			// add cache reference (fallback to default if nothing is specified)
+			builder.addPropertyReference("cache", (StringUtils.hasText(cacheRef) ? cacheRef : "gemfire-cache"));
+		}
+		// add attributes
+		ParsingUtils.setPropertyValue(element, builder, "name");
+		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, attrBuilder);
+		ParsingUtils.parseStatistics(element, attrBuilder);
+		ParsingUtils.setPropertyValue(element, attrBuilder, "publisher");
+
+		if (StringUtils.hasText(element.getAttribute("disk-store-ref"))) {
+			ParsingUtils.setPropertyValue(element, builder, "disk-store-ref", "diskStoreName");
+			builder.addDependsOn(element.getAttribute("disk-store-ref"));
+		}
+
+		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
+		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
+
+		List<Element> subElements = DomUtils.getChildElements(element);
+
+		// parse nested elements
+		for (Element subElement : subElements) {
+			String name = subElement.getLocalName();
+
+			if ("cache-listener".equals(name)) {
+				builder.addPropertyValue("cacheListeners", parseCacheListener(parserContext, subElement, builder));
+			}
+
+			else if ("cache-loader".equals(name)) {
+				builder.addPropertyValue("cacheLoader", parseCacheLoader(parserContext, subElement, builder));
+			}
+
+			else if ("cache-writer".equals(name)) {
+				builder.addPropertyValue("cacheWriter", parseCacheWriter(parserContext, subElement, builder));
+			}
+			// subregion
+			else if (name.endsWith("region")) {
+				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
+			}
+		}
+	}
+
 	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element,
 				builder.getBeanDefinition());
@@ -95,5 +144,17 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 	private String getRegionNameFromElement(Element element) {
 		String name = element.getAttribute(NAME_ATTRIBUTE);
 		return StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE);
+	}
+
+	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
+	}
+
+	private Object parseCacheLoader(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
+	}
+
+	private Object parseCacheWriter(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 }
