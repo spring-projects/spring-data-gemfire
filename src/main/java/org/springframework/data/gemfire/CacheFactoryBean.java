@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -33,12 +34,17 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.TransactionListener;
+import com.gemstone.gemfire.cache.TransactionWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -64,7 +70,6 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
 		InitializingBean, FactoryBean<GemFireCache>, PersistenceExceptionTranslator {
-
 	/**
 	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
 	 * 
@@ -120,6 +125,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			if (messageSyncInterval != null) {
 				cacheImpl.setMessageSyncInterval(messageSyncInterval);
 			}
+
+			if (initializer != null) {
+				// Props are null because already configured in Spring
+				cacheImpl.setInitializer(initializer, null);
+			}
+
 		}
 	}
 
@@ -161,6 +172,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected Integer messageSyncInterval;
 
 	protected Integer searchTimeout;
+
+	protected List<TransactionListener> transactionListeners;
+
+	protected TransactionWriter transactionWriter;
+
+	protected Declarable initializer;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -217,13 +234,38 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			if (cacheXml != null) {
 				cache.loadCacheXml(cacheXml.getInputStream());
 
-				if (log.isDebugEnabled())
+				if (log.isDebugEnabled()) {
 					log.debug("Initialized cache from " + cacheXml);
+				}
 			}
+
+			registerTransactionListeners();
+			registerTransactionWriter();
 
 		}
 		finally {
 			th.setContextClassLoader(oldTCCL);
+		}
+	}
+
+	/**
+	 * Register a transaction writer if declared
+	 */
+	protected void registerTransactionWriter() {
+		if (transactionWriter != null) {
+			cache.getCacheTransactionManager().setWriter(transactionWriter);
+		}
+	}
+
+	/**
+	 * Register all declared transaction listeners
+	 */
+	protected void registerTransactionListeners() {
+		if (!CollectionUtils.isEmpty(transactionListeners)) {
+			CacheTransactionManager txManager = cache.getCacheTransactionManager();
+			for (TransactionListener transactionListener : transactionListeners) {
+				txManager.addListener(transactionListener);
+			}
 		}
 	}
 
@@ -427,6 +469,18 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	public void setSearchTimeout(int searchTimeout) {
 		this.searchTimeout = searchTimeout;
+	}
+
+	public void setTransactionListeners(List<TransactionListener> transactionListeners) {
+		this.transactionListeners = transactionListeners;
+	}
+
+	public void setTransactionWriter(TransactionWriter transactionWriter) {
+		this.transactionWriter = transactionWriter;
+	}
+
+	public void setInitializer(Declarable initializer) {
+		this.initializer = initializer;
 	}
 
 }

@@ -29,6 +29,7 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
+ * Parser for the &lt;disk-store&gt; definitions.
  * @author David Turanski
  * 
  */

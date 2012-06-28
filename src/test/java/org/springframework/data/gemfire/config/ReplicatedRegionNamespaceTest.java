@@ -95,6 +95,8 @@ public class ReplicatedRegionNamespaceTest {
 		assertEquals(true, attrs.getEnableSubscriptionConflation());
 		assertEquals(0.50, attrs.getLoadFactor(), 0.001);
 		assertEquals(false, attrs.getCloningEnabled());
+		assertEquals(10, attrs.getConcurrencyLevel());
+		assertEquals(true, attrs.getMulticastEnabled());
 	}
 
 	@Test

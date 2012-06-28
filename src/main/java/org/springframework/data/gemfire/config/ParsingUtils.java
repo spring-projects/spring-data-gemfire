@@ -236,6 +236,8 @@ abstract class ParsingUtils {
 		setPropertyValue(element, attrBuilder, "initial-capacity");
 		setPropertyValue(element, attrBuilder, "load-factor");
 		setPropertyValue(element, attrBuilder, "cloning-enabled");
+		setPropertyValue(element, attrBuilder, "concurrency-level");
+		setPropertyValue(element, attrBuilder, "multicast-enabled");
 
 		String indexUpdateType = element.getAttribute("index-update-type");
 		if (StringUtils.hasText(indexUpdateType)) {

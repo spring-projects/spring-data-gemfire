@@ -143,9 +143,10 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			regionFactory.setDiskStoreName(diskStoreName);
 		}
 
-		Assert.state(!attributes.isLockGrantor() || scope.isGlobal(),
-				"Lock grantor only applies to a global scoped region");
-
+		if (attributes != null) {
+			Assert.state(!attributes.isLockGrantor() || scope.isGlobal(),
+					"Lock grantor only applies to a global scoped region");
+		}
 		// get underlying AttributesFactory
 		postProcess(findAttrFactory(regionFactory));
 
@@ -155,7 +156,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			reg.loadSnapshot(snapshot.getInputStream());
 		}
 
-		if (attributes.isLockGrantor()) {
+		if (attributes != null && attributes.isLockGrantor()) {
 			reg.becomeLockGrantor();
 		}
 

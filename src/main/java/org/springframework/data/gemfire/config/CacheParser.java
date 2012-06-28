@@ -16,13 +16,18 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.util.List;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
+import org.springframework.beans.factory.support.ManagedList;
+import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -30,8 +35,9 @@ import org.w3c.dom.Element;
  * 
  * @author Costin Leau
  * @author Oliver Gierke
+ * @author David Turanski
  */
-class CacheParser extends AbstractSingleBeanDefinitionParser {
+class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
@@ -39,7 +45,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	@Override
-	protected void doParse(Element element, BeanDefinitionBuilder builder) {
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
@@ -55,6 +61,26 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "lock-lease", "lockLease");
 		ParsingUtils.setPropertyValue(element, builder, "message-sync-interval", "messageSyncInterval");
 		ParsingUtils.setPropertyValue(element, builder, "search-timeout", "searchTimeout");
+		List<Element> txListeners = DomUtils.getChildElementsByTagName(element, "transaction-listener");
+		if (!CollectionUtils.isEmpty(txListeners)) {
+			ManagedList<Object> transactionListeners = new ManagedList<Object>();
+			for (Element txListener : txListeners) {
+				transactionListeners.add(ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, txListener,
+						builder));
+			}
+			builder.addPropertyValue("transactionListeners", transactionListeners);
+		}
+		Element txWriter = DomUtils.getChildElementByTagName(element, "transaction-writer");
+		if (txWriter != null) {
+			builder.addPropertyValue("transactionWriter",
+					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, txWriter, builder));
+		}
+
+		Element initializer = DomUtils.getChildElementByTagName(element, "initializer");
+		if (initializer != null) {
+			builder.addPropertyValue("initializer",
+					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, initializer, builder));
+		}
 	}
 
 	@Override
@@ -66,4 +92,5 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		}
 		return name;
 	}
+
 }

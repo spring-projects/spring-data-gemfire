@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,21 @@ import com.gemstone.gemfire.cache.CacheCallback;
 import com.gemstone.gemfire.cache.Declarable;
 
 /**
- * Convenience class for Spring-aware GemFire Declarable components.
- * Provides a reference to the current Spring application context, e.g. for bean lookup or resource loading.
+ * Convenience class for Spring-aware GemFire Declarable components. Provides a
+ * reference to the current Spring application context, e.g. for bean lookup or
+ * resource loading.
  * 
- * Note that in most cases, one can just declare the same components as Spring beans, through 
- * {@link RegionFactoryBean} which gives access to the full container capabilities and does not enforce the 
- * {@link Declarable} interface to be implemented.
+ * Note that in most cases, one can just declare the same components as Spring
+ * beans, through {@link RegionFactoryBean} which gives access to the full
+ * container capabilities and does not enforce the {@link Declarable} interface
+ * to be implemented.
  * 
  * @author Costin Leau
  */
 public abstract class DeclarableSupport implements CacheCallback, Declarable {
 
 	private String factoryKey = null;
+
 	private BeanFactoryReference bfReference = null;
 
 	public DeclarableSupport() {
@@ -48,8 +51,9 @@ public abstract class DeclarableSupport implements CacheCallback, Declarable {
 	 * 
 	 * {@inheritDoc}
 	 * 
-	 * @see #setFactoryKey(String) 
+	 * @see #setFactoryKey(String)
 	 */
+	@Override
 	public final void init(Properties props) {
 		bfReference = new GemfireBeanFactoryLocator().useBeanFactory(factoryKey);
 		initInstance(props);
@@ -67,15 +71,16 @@ public abstract class DeclarableSupport implements CacheCallback, Declarable {
 		return bfReference.getFactory();
 	}
 
+	@Override
 	public void close() {
 		bfReference.release();
 		bfReference = null;
 	}
 
 	/**
-	 * Sets the key under which the enclosing beanFactory can be found.
-	 * Needed only if multiple beanFactories are used with GemFire inside
-	 * the same class loader / class space.
+	 * Sets the key under which the enclosing beanFactory can be found. Needed
+	 * only if multiple beanFactories are used with GemFire inside the same
+	 * class loader / class space.
 	 * 
 	 * @see GemfireBeanFactoryLocator
 	 * @param key

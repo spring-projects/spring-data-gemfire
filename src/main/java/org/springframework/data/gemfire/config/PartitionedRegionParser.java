@@ -65,8 +65,6 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			builder.addPropertyValue("dataPolicy", DataPolicy.PARTITION);
 		}
 
-		ParsingUtils.parseScope(element, builder);
-
 		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
 				.genericBeanDefinition(RegionAttributesFactoryBean.class);
 

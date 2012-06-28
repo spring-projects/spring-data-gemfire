@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,22 +33,26 @@ import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * Local transaction manager for GemFire Enterprise Fabric (GEF). Provides a {@link PlatformTransactionManager}
- * implementation for a single GemFire {@link CacheTransactionManager}.
+ * Local transaction manager for GemFire Enterprise Fabric (GEF). Provides a
+ * {@link PlatformTransactionManager} implementation for a single GemFire
+ * {@link CacheTransactionManager}.
  * 
- * Binds one or multiple GemFire regions for the specified {@link Cache} to the thread, potentially allowing for one
- * region per cache model.
- * 
- * <p>
- * This local strategy is an alternative to executing cache operations within JTA transactions. Its advantage is that
- * is able to work in any environment, for example a stand-alone application or a test suite. It is <i>not</i> able to
- * provide XA transactions, for example to share transactions with data access.
+ * Binds one or multiple GemFire regions for the specified {@link Cache} to the
+ * thread, potentially allowing for one region per cache model.
  * 
  * <p>
- * To prevent dirty reads, by default, the cache is configured to return copies rather then direct references for
- * <code>get</code> operations. As a workaround, one could use explicitly deep copy objects before making changes
+ * This local strategy is an alternative to executing cache operations within
+ * JTA transactions. Its advantage is that is able to work in any environment,
+ * for example a stand-alone application or a test suite. It is <i>not</i> able
+ * to provide XA transactions, for example to share transactions with data
+ * access.
+ * 
+ * <p>
+ * To prevent dirty reads, by default, the cache is configured to return copies
+ * rather then direct references for <code>get</code> operations. As a
+ * workaround, one could use explicitly deep copy objects before making changes
  * to them to avoid unnecessary copying on every fetch.
- *
+ * 
  * @see com.gemstone.gemfire.cache.CacheTransactionManager
  * @see com.gemstone.gemfire.cache.Cache#setCopyOnRead(boolean)
  * @see com.gemstone.gemfire.cache.Region#get(Object)
@@ -58,11 +62,13 @@ import com.gemstone.gemfire.cache.Region;
  * 
  * @author Costin Leau
  */
-// TODO add lenient behavior if a transaction is already started on the current thread (what should happen then)
+// TODO add lenient behavior if a transaction is already started on the current
+// thread (what should happen then)
 public class GemfireTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean,
 		ResourceTransactionManager {
 
 	private Cache cache;
+
 	private boolean copyOnRead = true;
 
 	/**
@@ -81,6 +87,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		afterPropertiesSet();
 	}
 
+	@Override
 	public void afterPropertiesSet() {
 		Assert.notNull(cache, "Cache property is required");
 		cache.setCopyOnRead(copyOnRead);
@@ -94,6 +101,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		return txObject;
 	}
 
+	@Override
 	protected boolean isExistingTransaction(Object transaction) throws TransactionException {
 		CacheTransactionObject txObject = (CacheTransactionObject) transaction;
 		// Consider a pre-bound cache as transaction.
@@ -126,29 +134,34 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	@Override
 	protected void doCommit(DefaultTransactionStatus status) throws TransactionException {
-		//CacheTransactionObject txObject = (CacheTransactionObject) status.getTransaction();
+		// CacheTransactionObject txObject = (CacheTransactionObject)
+		// status.getTransaction();
 		if (status.isDebug()) {
 			logger.debug("Committing Gemfire local transaction on Cache [" + cache + "]");
 		}
 		try {
 			cache.getCacheTransactionManager().commit();
-		} catch (IllegalStateException ex) {
+		}
+		catch (IllegalStateException ex) {
 			throw new NoTransactionException(
 					"No transaction associated with the current thread; are there multiple transaction managers ?", ex);
-		} catch (TransactionException ex) {
+		}
+		catch (TransactionException ex) {
 			throw new GemfireTransactionCommitException("Unexpected failure on commit of Cache local transaction", ex);
 		}
 	}
 
 	@Override
 	protected void doRollback(DefaultTransactionStatus status) throws TransactionException {
-		//CacheTransactionObject txObject = (CacheTransactionObject) status.getTransaction();
+		// CacheTransactionObject txObject = (CacheTransactionObject)
+		// status.getTransaction();
 		if (status.isDebug()) {
 			logger.debug("Rolling back Cache local transaction for [" + cache + "]");
 		}
 		try {
 			cache.getCacheTransactionManager().rollback();
-		} catch (IllegalStateException ex) {
+		}
+		catch (IllegalStateException ex) {
 			throw new NoTransactionException(
 					"No transaction associated with the current thread; are there multiple transaction managers ?", ex);
 		}
@@ -163,6 +176,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		txObject.getHolder().setRollbackOnly();
 	}
 
+	@Override
 	protected void doCleanupAfterCompletion(Object transaction) {
 		// Remove the cache holder from the thread.
 		TransactionSynchronizationManager.unbindResource(cache);
@@ -183,7 +197,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * Sets the Cache that this instance manages local transactions for. 
+	 * Sets the Cache that this instance manages local transactions for.
 	 * 
 	 * @param cache Gemfire cache
 	 */
@@ -191,12 +205,14 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		this.cache = cache;
 	}
 
+	@Override
 	public Object getResourceFactory() {
 		return getCache();
 	}
 
 	/**
-	 * Sets the Gemfire {@link Region} (as an alternative in setting in the cache directly).
+	 * Sets the Gemfire {@link Region} (as an alternative in setting in the
+	 * cache directly).
 	 * 
 	 * @param region Gemfire region
 	 */
@@ -206,21 +222,23 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * Indicates whether the cache returns direct references or copies of the objects (default) it manages.
-	 * While copies imply additional work for every fetch operation, direct references can cause dirty reads
-	 * across concurrent threads in the same VM, whether or not transactions are used.
-	 * <p/> 
-	 * One could explicitly deep copy objects before making changes (for example by using {@link com.gemstone.gemfire.CopyHelper#copy(Object)}
-	 * in which case this setting can be set to <code>false</code>. However, unless there is a measurable 
-	 * performance penalty, the recommendation is to keep this setting to <code>true</code>   
-	 *  
-	 * @param copyOnRead whether copies (default) rather then direct references will be returned on 
-	 * fetch operations
+	 * Indicates whether the cache returns direct references or copies of the
+	 * objects (default) it manages. While copies imply additional work for
+	 * every fetch operation, direct references can cause dirty reads across
+	 * concurrent threads in the same VM, whether or not transactions are used.
+	 * <p/>
+	 * One could explicitly deep copy objects before making changes (for example
+	 * by using {@link com.gemstone.gemfire.CopyHelper#copy(Object)} in which
+	 * case this setting can be set to <code>false</code>. However, unless there
+	 * is a measurable performance penalty, the recommendation is to keep this
+	 * setting to <code>true</code>
+	 * 
+	 * @param copyOnRead whether copies (default) rather then direct references
+	 * will be returned on fetch operations
 	 */
 	public void setCopyOnRead(boolean copyOnRead) {
 		this.copyOnRead = copyOnRead;
 	}
-
 
 	/**
 	 * Indicates whether copy on read is set or not on the transaction manager.
@@ -231,7 +249,6 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	public boolean isCopyOnRead() {
 		return copyOnRead;
 	}
-
 
 	/**
 	 * GemfireTM local transaction object.
@@ -253,7 +270,6 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	private static class CacheHolder {
 
 		private boolean rollbackOnly = false;
-
 
 		public boolean isRollbackOnly() {
 			return rollbackOnly;
