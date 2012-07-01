@@ -20,23 +20,16 @@
   	
   	<para>To use the SGF namespace, one just needs to import it inside the configuration:</para>
 
- 	<programlistingco>
- 		<areaspec>
- 			<area id="gfe#ns#prefix" coords="4 11"/>
- 			<area id="gfe#ns#uri" coords="4 58"/>
- 			<area id="gfe#ns#uri#loc" coords="7 119"/>
- 			<area id="gfe#ns#example" coords="10 9"/>
- 		</areaspec>
  		<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xmlns:]]><co id="gfe#ns#prefix"/><![CDATA[gfe="http://www.springframework.org/schema/gemfire"]]><co id="gfe#ns#uri"/><![CDATA[
 	xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+        ]]><co id="gfe#ns#uri#loc"/><![CDATA[http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
 	<bean id ... >
 	
-    <gfe:cache ...>
+    ]]><co id="gfe#ns#example"/><![CDATA[<gfe:cache ...>
 		
 </beans>]]></programlisting>
  		<calloutlist>
@@ -54,30 +47,22 @@
  				<para>Declaration example for the GemFire namespace. Notice the prefix usage.</para>
  			</callout>
  		</calloutlist>
- 	</programlistingco>
  	
  	<para>Once declared, the namespace elements can be declared simply by appending the aforementioned prefix. Note that is possible to change the default namespace,
  	for example from <literal>&lt;beans&gt;</literal> to <literal>&lt;gfe&gt;</literal>. This is useful for configuration composed mainly of GemFire components as
  	it avoids declaring the prefix. To achieve this, simply swap the namespace prefix declaration above:</para>
 
- 	<programlistingco>
- 		<areaspec>
- 			<area id="gfe#default-ns#prefix" coords="2 64"/>
- 			<area id="gfe#default-ns#beans-prefix" coords="3 64"/>
- 			<area id="gfe#default-ns#beans-example" coords="9 64"/>
- 			<area id="gfe#default-ns#gfe-example" coords="11 64"/>
- 		</areaspec>
  		<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/gemfire"
+<beans xmlns="]]><co id="gfe#default-ns#prefix"/><![CDATA[http://www.springframework.org/schema/gemfire"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:]]><co id="gfe#default-ns#beans-prefix"/><![CDATA[beans="http://www.springframework.org/schema/beans"
 	xsi:schemaLocation="
 	    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
 	    
-    <beans:bean id ... >
+    ]]><co id="gfe#default-ns#beans-example"/><![CDATA[<beans:bean id ... >
 	
-    <cache ...>
+    ]]><co id="gfe#default-ns#gfe-example"/><![CDATA[<cache ...>
 	
 </beans>]]></programlisting>
  		<calloutlist>
@@ -94,7 +79,6 @@
  				<para>Bean declaration using the <literal>&lt;gfe&gt;</literal> namespace. Notice the lack of prefix (as the default namespace is used).</para>
  			</callout>
  		</calloutlist>
- 	</programlistingco>
  	
  	<para>For the remainder of this doc, to improve readability, the XML examples will simply refer to the <literal>&lt;gfe&gt;</literal> namespace
  	without the namespace declaration, where possible.</para>

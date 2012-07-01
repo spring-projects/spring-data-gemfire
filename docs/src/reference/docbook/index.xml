@@ -5,7 +5,10 @@
     xmlns:xlink="http://www.w3.org/1999/xlink">
   <bookinfo>
     <title>Spring Gemfire Integration Reference Guide</title>
-	  <releaseinfo>@version@</releaseinfo>
+    <releaseinfo>${version}</releaseinfo>
+    <titleabbrev>Spring GemFire ${version}</titleabbrev>
+    <productname>Spring GemFire</productname>
+
     
     <authorgroup>
       <author>
