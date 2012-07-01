@@ -22,6 +22,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,25 @@ public class DiskStoreAndEvictionRegionParsingTest {
 
 	@Autowired
 	private ApplicationContext context;
+
+	private static File diskStoreDir;
+
+	@BeforeClass
+	public static void setUp() {
+		String path = "./build/tmp";
+		diskStoreDir = new File(path);
+		if (!diskStoreDir.exists()) {
+			diskStoreDir.mkdir();
+		}
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		for (File file : diskStoreDir.listFiles()) {
+			file.delete();
+		}
+		diskStoreDir.delete();
+	}
 
 	@Test
 	public void testReplicaDataOptions() throws Exception {
@@ -82,8 +103,9 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
 		assertEquals(EvictionAction.LOCAL_DESTROY, evicAttr.getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, evicAttr.getAlgorithm());
-		// for some reason GemFire resets this to 56 on my machine (not sure why)
-		//assertEquals(10, evicAttr.getMaximum());
+		// for some reason GemFire resets this to 56 on my machine (not sure
+		// why)
+		// assertEquals(10, evicAttr.getMaximum());
 		ObjectSizer sizer = evicAttr.getObjectSizer();
 		assertEquals(SimpleObjectSizer.class, sizer.getClass());
 	}
