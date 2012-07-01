@@ -3,43 +3,35 @@ description = 'Spring Data GemFire Samples - Hello World'
 apply plugin: 'base'
 apply plugin: 'idea'
 apply plugin: 'java'
-apply plugin: 'eclipse'  // `gradle eclipse` to generate .classpath/.project
+apply plugin: 'eclipse'
+apply plugin: 'application'
 
 [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
-
 repositories {
-    mavenLocal()
-    mavenCentral()
     // Public Spring artefacts
-    mavenRepo name: "springsource-org-release", urls: "http://repository.springsource.com/maven/bundles/release"
-    mavenRepo name: "spring-release", urls: "http://maven.springframework.org/release"
-    mavenRepo name: "spring-milestone", urls: "http://maven.springframework.org/milestone"
-    mavenRepo name: "spring-snapshot", urls: "http://maven.springframework.org/snapshot"
-    mavenRepo name: "sonatype-snapshot", urls: "http://oss.sonatype.org/content/repositories/snapshots"
-    mavenRepo name: "ext-snapshots", urls: "http://springframework.svn.sourceforge.net/svnroot/springframework/repos/repo-ext/"
-    mavenRepo name: "gemfire-release-repo", urls: "http://dist.gemstone.com/maven/release" 
+    maven { url "http://repo.springsource.org/libs-snapshot" }
+    mavenLocal()
 }
 
 dependencies {
     compile "org.springframework.data:spring-data-gemfire:$version"
     compile "javax.inject:javax.inject:1"
     compile "javax.annotation:jsr250-api:1.0"
+
+    runtime "log4j:log4j:$log4jVersion"
+    runtime "org.slf4j:slf4j-log4j12:$slf4jVersion"
     
     testCompile "junit:junit:$junitVersion"
     testCompile "org.springframework:spring-test:$springVersion"
 }
 
-sourceCompatibility = 1.5
-targetCompatibility = 1.5 
 
-
-task run(type: JavaExec) {
-       description = 'Runs the application'
-       main = "org.springframework.data.gemfire.samples.helloworld.Main"
-       classpath = sourceSets.main.runtimeClasspath
-       standardInput = System.in
-       systemProperties['java.net.preferIPv4Stack'] = 'true'
+run {
+   main = "org.springframework.data.gemfire.samples.helloworld.Main"
+   classpath = sourceSets.main.runtimeClasspath
+   standardInput = System.in
+   systemProperties['java.net.preferIPv4Stack'] = 'true'
 }
 
 defaultTasks 'run'
