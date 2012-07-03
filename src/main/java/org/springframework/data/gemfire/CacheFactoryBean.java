@@ -16,7 +16,9 @@
 
 package org.springframework.data.gemfire;
 
+import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -41,13 +43,15 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.Declarable;
+import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.datasource.ConfigProperty;
+import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
@@ -125,12 +129,81 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			if (messageSyncInterval != null) {
 				cacheImpl.setMessageSyncInterval(messageSyncInterval);
 			}
+		}
+	}
 
-			if (initializer != null) {
-				// Props are null because already configured in Spring
-				cacheImpl.setInitializer(initializer, null);
+	public static class DynamicRegionSupport {
+		private String diskDir;
+
+		private String poolName;
+
+		private Boolean persistent = Boolean.TRUE;
+
+		private Boolean registerInterest = Boolean.TRUE;
+
+		public String getDiskDir() {
+			return diskDir;
+		}
+
+		public void setDiskDir(String diskDir) {
+			this.diskDir = diskDir;
+		}
+
+		public Boolean getPersistent() {
+			return persistent;
+		}
+
+		public void setPersistent(Boolean persistent) {
+			this.persistent = persistent;
+		}
+
+		public Boolean getRegisterInterest() {
+			return registerInterest;
+		}
+
+		public void setRegisterInterest(Boolean registerInterest) {
+			this.registerInterest = registerInterest;
+		}
+
+		public String getPoolName() {
+			return poolName;
+		}
+
+		public void setPoolName(String poolName) {
+			this.poolName = poolName;
+		}
+
+		public void initializeDynamicRegionFactory() {
+			DynamicRegionFactory.Config config = null;
+			if (diskDir == null) {
+				config = new DynamicRegionFactory.Config(null, poolName, persistent, registerInterest);
 			}
+			else {
+				config = new DynamicRegionFactory.Config(new File(diskDir), poolName, persistent, registerInterest);
+			}
+			DynamicRegionFactory.get().open(config);
+		}
+	}
 
+	public static class JndiDataSource {
+		private Map<String, String> attributes;
+
+		private List<ConfigProperty> props;
+
+		public Map<String, String> getAttributes() {
+			return attributes;
+		}
+
+		public void setAttributes(Map<String, String> attributes) {
+			this.attributes = attributes;
+		}
+
+		public List<ConfigProperty> getProps() {
+			return props;
+		}
+
+		public void setProps(List<ConfigProperty> props) {
+			this.props = props;
 		}
 	}
 
@@ -177,7 +250,13 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	protected TransactionWriter transactionWriter;
 
-	protected Declarable initializer;
+	protected Float evictionHeapPercentage;
+
+	protected Float criticalHeapPercentage;
+
+	protected DynamicRegionSupport dynamicRegionSupport;
+
+	protected List<JndiDataSource> jndiDataSources;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -203,6 +282,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 				msg = "Retrieved existing";
 			}
 			catch (CacheClosedException ex) {
+
+				initializeDynamicRegionFactory();
+
 				Object factory = createFactory(cfgProps);
 
 				// GemFire 6.6 specific options
@@ -238,14 +320,50 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 					log.debug("Initialized cache from " + cacheXml);
 				}
 			}
-
+			setHeapPercentages();
 			registerTransactionListeners();
 			registerTransactionWriter();
-
+			registerJndiDataSources();
 		}
 		finally {
 			th.setContextClassLoader(oldTCCL);
 		}
+	}
+
+	private void registerJndiDataSources() {
+		if (jndiDataSources != null) {
+			for (JndiDataSource jndiDataSource : jndiDataSources) {
+				JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
+			}
+		}
+	}
+
+	/**
+	 * If dynamic regions are enabled, create a DynamicRegionFactory before
+	 * creating the cache
+	 */
+	private void initializeDynamicRegionFactory() {
+		if (dynamicRegionSupport != null) {
+			dynamicRegionSupport.initializeDynamicRegionFactory();
+		}
+	}
+
+	private void setHeapPercentages() {
+		if (criticalHeapPercentage != null) {
+			Assert.isTrue(criticalHeapPercentage > 0.0 && criticalHeapPercentage <= 100.0,
+					"invalid value specified for criticalHeapPercentage :" + criticalHeapPercentage
+							+ ". Must be > 0.0 and <= 100.0");
+			cache.getResourceManager().setCriticalHeapPercentage(criticalHeapPercentage);
+
+		}
+
+		if (evictionHeapPercentage != null) {
+			Assert.isTrue(evictionHeapPercentage > 0.0 && evictionHeapPercentage <= 100.0,
+					"invalid value specified for evictionHeapPercentage :" + evictionHeapPercentage
+							+ ". Must be > 0.0 and <= 100.0");
+			cache.getResourceManager().setEvictionHeapPercentage(evictionHeapPercentage);
+		}
+
 	}
 
 	/**
@@ -471,6 +589,14 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		this.searchTimeout = searchTimeout;
 	}
 
+	public void setEvictionHeapPercentage(Float evictionHeapPercentage) {
+		this.evictionHeapPercentage = evictionHeapPercentage;
+	}
+
+	public void setCriticalHeapPercentage(Float criticalHeapPercentage) {
+		this.criticalHeapPercentage = criticalHeapPercentage;
+	}
+
 	public void setTransactionListeners(List<TransactionListener> transactionListeners) {
 		this.transactionListeners = transactionListeners;
 	}
@@ -479,8 +605,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		this.transactionWriter = transactionWriter;
 	}
 
-	public void setInitializer(Declarable initializer) {
-		this.initializer = initializer;
+	public void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
+		this.dynamicRegionSupport = dynamicRegionSupport;
 	}
 
+	public void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
+		this.jndiDataSources = jndiDataSources;
+	}
 }

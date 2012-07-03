@@ -9,17 +9,7 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
-	<!-- as there can be only one cache per VM -->
-
 	<gfe:cache>
-        <gfe:initializer ref="cacheInitializer"/>
-     </gfe:cache>
-    <gfe:local-region id="local"/>
-    <bean id="cacheInitializer" class="org.springframework.data.gemfire.config.CacheInitializerTest.TestInitializer">
-        <property name="first" value="David"/>
-        <property name="last" value="Turanski"/>
-    </bean>
-    
-
+        <gfe:dynamic-region-factory persistent="false" register-interest="false" disk-dir="/foo"/>
+    </gfe:cache>
 </beans>

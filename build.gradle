@@ -97,6 +97,8 @@ dependencies {
 
     // Spring Data
     compile "org.springframework.data:spring-data-commons-core:${springDataCommonsVersion}"
+	//
+	testCompile "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
 }
 
 javaprojects = rootProject

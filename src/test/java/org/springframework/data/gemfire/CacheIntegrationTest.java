@@ -16,7 +16,6 @@
 
 package org.springframework.data.gemfire;
 
-
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -24,9 +23,10 @@ import org.junit.Test;
 import com.gemstone.gemfire.cache.Cache;
 
 /**
- * Integration test trying various basic configurations of GemFire through Spring.
+ * Integration test trying various basic configurations of GemFire through
+ * Spring.
  * 
- * Made abstract to avoid multiple caches running at the same time. 
+ * Made abstract to avoid multiple caches running at the same time.
  * 
  * @author Costin Leau
  */
