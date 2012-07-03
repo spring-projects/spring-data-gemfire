@@ -23,6 +23,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
@@ -34,6 +35,9 @@ import org.w3c.dom.Element;
 
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.LossAction;
+import com.gemstone.gemfire.cache.MembershipAttributes;
+import com.gemstone.gemfire.cache.ResumptionAction;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
@@ -243,7 +247,33 @@ abstract class ParsingUtils {
 		if (StringUtils.hasText(indexUpdateType)) {
 			attrBuilder.addPropertyValue("indexMaintenanceSynchronous", "synchronous".equals(indexUpdateType));
 		}
+	}
 
+	static void parseMembershipAttributes(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder attrBuilder) {
+		Element membershipAttributes = DomUtils.getChildElementByTagName(element, "membership-attributes");
+		if (membershipAttributes != null) {
+			String requiredRoles[] = StringUtils.commaDelimitedListToStringArray(membershipAttributes
+					.getAttribute("required-roles"));
+			String lossActionAttr = membershipAttributes.getAttribute("loss-action");
+			LossAction lossAction = StringUtils.hasText(lossActionAttr) ? LossAction.fromName(lossActionAttr
+					.toUpperCase().replace("-", "_")) : null;
+			String resumptionActionAttr = membershipAttributes.getAttribute("resumption-action");
+			ResumptionAction resumptionAction = StringUtils.hasText(resumptionActionAttr) ? ResumptionAction
+					.fromName(resumptionActionAttr.toUpperCase().replace("-", "_")) : null;
+
+			ManagedArray requiredRolesArray = new ManagedArray("java.lang.String", requiredRoles.length);
+			for (int i = 0; i < requiredRoles.length; i++) {
+				requiredRolesArray.add(requiredRoles[i]);
+			}
+			BeanDefinitionBuilder membershipAttributesBuilder = BeanDefinitionBuilder
+					.genericBeanDefinition(MembershipAttributes.class);
+			membershipAttributesBuilder.addConstructorArgValue(requiredRolesArray);
+			membershipAttributesBuilder.addConstructorArgValue(lossAction);
+			membershipAttributesBuilder.addConstructorArgValue(resumptionAction);
+
+			attrBuilder.addPropertyValue("membershipAttributes", membershipAttributesBuilder.getRawBeanDefinition());
+		}
 	}
 
 	static void parseScope(Element element, BeanDefinitionBuilder builder) {

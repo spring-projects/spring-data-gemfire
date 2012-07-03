@@ -89,8 +89,8 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 		this.registerBeanDefinition(new BeanDefinitionHolder(subRegionDef, regionPath), parserContext.getRegistry());
 	}
 
-	protected void doParseRegionCommon(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
-			BeanDefinitionBuilder attrBuilder, boolean subRegion) {
+	protected void doParseCommonRegionConfiguration(Element element, ParserContext parserContext,
+			BeanDefinitionBuilder builder, BeanDefinitionBuilder attrBuilder, boolean subRegion) {
 
 		if (!subRegion) {
 			String cacheRef = element.getAttribute("cache-ref");
@@ -110,6 +110,7 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 
 		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
 		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
+		ParsingUtils.parseMembershipAttributes(parserContext, element, attrBuilder);
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
