@@ -21,7 +21,6 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.SubRegionFactoryBean;
 import org.w3c.dom.Element;
 
@@ -43,9 +42,11 @@ abstract class AliasReplacingBeanDefinitionParser extends AbstractSingleBeanDefi
 			return SubRegionFactoryBean.class;
 		}
 		else {
-			return RegionFactoryBean.class;
+			return getRegionFactoryClass();
 		}
 	}
+
+	protected abstract Class<?> getRegionFactoryClass();
 
 	@Override
 	protected final void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {

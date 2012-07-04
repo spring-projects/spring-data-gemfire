@@ -34,7 +34,6 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -54,7 +53,7 @@ import com.gemstone.gemfire.cache.Scope;
  * @author Costin Leau
  * @author David Turanski
  */
-public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
+public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -74,9 +73,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	private Scope scope;
 
-	private String diskStoreName;
+	private boolean persistent;
 
-	private DataPolicy dataPolicy;
+	private String diskStoreName;
 
 	private String dataPolicyName;
 
@@ -117,23 +116,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			regionFactory.setCacheWriter(cacheWriter);
 		}
 
-		if (dataPolicy != null) {
-			regionFactory.setDataPolicy(dataPolicy);
-		}
-
-		if (dataPolicyName != null) {
-			Assert.isNull(dataPolicy, "'dataPolicy' and 'dataPolicyName' are mutually exclusive.");
-			if ("NORMAL".equals(dataPolicyName)) {
-				regionFactory.setDataPolicy(DataPolicy.NORMAL);
-			}
-			else if ("PRELOADED".equals(dataPolicyName)) {
-				regionFactory.setDataPolicy(DataPolicy.PRELOADED);
-			}
-			else {
-				throw new IllegalArgumentException("Data policy '" + dataPolicyName + "' is unsupported or invalid.");
-			}
-
-		}
+		resolveDataPolicy(regionFactory, persistent, dataPolicyName);
 
 		if (scope != null) {
 			regionFactory.setScope(scope);
@@ -162,6 +145,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		return reg;
 	}
+
+	protected abstract void resolveDataPolicy(RegionFactory<K, V> regionFactory, boolean persistent,
+			String dataPolicyName);
 
 	@SuppressWarnings("unchecked")
 	private AttributesFactory<K, V> findAttrFactory(RegionFactory<K, V> regionFactory) {
@@ -298,16 +284,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Sets the data policy. Used only when a new region is created. Overrides
-	 * the settings specified through {@link #setAttributes(RegionAttributes)}.
-	 * 
-	 * @param dataPolicy the region data policy
-	 */
-	public void setDataPolicy(DataPolicy dataPolicy) {
-		this.dataPolicy = dataPolicy;
-	}
-
-	/**
 	 * Sets the region scope. Used only when a new region is created. Overrides
 	 * the settings specified through {@link #setAttributes(RegionAttributes)}.
 	 * 
@@ -316,6 +292,10 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	public void setScope(Scope scope) {
 		this.scope = scope;
+	}
+
+	public void setPersistent(boolean persistent) {
+		this.persistent = persistent;
 	}
 
 	/**

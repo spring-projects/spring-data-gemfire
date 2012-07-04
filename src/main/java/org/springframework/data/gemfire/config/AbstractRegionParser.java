@@ -102,6 +102,11 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, attrBuilder);
 		ParsingUtils.parseStatistics(element, attrBuilder);
 		ParsingUtils.setPropertyValue(element, attrBuilder, "publisher");
+		if (!isSubRegion(element)) {
+			ParsingUtils.setPropertyValue(element, builder, "persistent");
+		}
+		// set the data policy
+		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicyName");
 
 		if (StringUtils.hasText(element.getAttribute("disk-store-ref"))) {
 			ParsingUtils.setPropertyValue(element, builder, "disk-store-ref", "diskStoreName");

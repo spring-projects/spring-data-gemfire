@@ -781,6 +781,7 @@ Provides an estimate of the maximum number of application threads that will conc
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="scope" type="scopeType"/>
+                <xsd:attribute name="data-policy" type="baseDataPolicyType"/>
 				<xsd:attribute name="is-lock-grantor" type="xsd:string" use="optional" default="false">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
@@ -1858,7 +1859,6 @@ Specifies a data type if other than java.lang.String
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="NORMAL"/>
 			<xsd:enumeration value="EMPTY"/>
-			<xsd:enumeration value="NORMAL"/>
 			<xsd:enumeration value="PRELOADED"/>
 		</xsd:restriction>
 	</xsd:simpleType>

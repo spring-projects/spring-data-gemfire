@@ -2,12 +2,14 @@ SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
 
-Changes in version 1.2.0.M1 (2012-03-20)
-----------------------------------------
+Changes in version 1.1.2.RELEASE (2012-07-04)
+---------------------------------------------
 
 General
-* Introduced support for annotation-based entity mapping (@Id, @PersistenceConstructor, @Id)
-* Introduced support for Spring Data Repositories (query exception & derivation)
+* Upgraded to GemFire 6.6.3
+
+Package org.springframework.data.gemfire.config
+* Fixed incorrect parsing of pdx-disk-store attribute
 
 
 Changes in version 1.1.1.RELEASE (2012-03-20)

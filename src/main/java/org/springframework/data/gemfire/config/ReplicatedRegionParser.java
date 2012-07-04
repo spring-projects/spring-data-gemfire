@@ -19,9 +19,8 @@ package org.springframework.data.gemfire.config;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
+import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.w3c.dom.Element;
-
-import com.gemstone.gemfire.cache.DataPolicy;
 
 /**
  * Parser for &lt;replicated-region;gt; definitions.
@@ -34,15 +33,6 @@ class ReplicatedRegionParser extends AbstractRegionParser {
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 
-		// set the data policy
-		String attr = element.getAttribute("persistent");
-		if (Boolean.parseBoolean(attr)) {
-			builder.addPropertyValue("dataPolicy", DataPolicy.PERSISTENT_REPLICATE);
-		}
-		else {
-			builder.addPropertyValue("dataPolicy", DataPolicy.REPLICATE);
-		}
-
 		ParsingUtils.parseScope(element, builder);
 
 		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
@@ -52,5 +42,10 @@ class ReplicatedRegionParser extends AbstractRegionParser {
 		if (!subRegion) {
 			builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
 		}
+	}
+
+	@Override
+	protected Class<?> getRegionFactoryClass() {
+		return ReplicatedRegionFactoryBean.class;
 	}
 }

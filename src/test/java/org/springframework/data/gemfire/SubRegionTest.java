@@ -27,52 +27,54 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * 
  * @author David Turanski
- *
+ * 
  */
 public class SubRegionTest extends RecreatingContextTest {
 	@Override
 	protected String location() {
-		return  "org/springframework/data/gemfire/basic-subregion.xml";
+		return "org/springframework/data/gemfire/basic-subregion.xml";
 	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Test 
+	@Test
 	public void testBasic() throws Exception {
 		CacheFactoryBean cfb = new CacheFactoryBean();
 		cfb.setUseBeanFactoryLocator(false);
 		cfb.afterPropertiesSet();
 		GemFireCache cache = cfb.getObject();
-		RegionFactoryBean rfb = new RegionFactoryBean();
+		RegionFactoryBean rfb = new ReplicatedRegionFactoryBean();
 		rfb.setCache(cache);
 		rfb.setName("parent");
 		rfb.afterPropertiesSet();
 		Region parent = rfb.getObject();
-		
+
 		SubRegionFactoryBean srfb = new SubRegionFactoryBean();
 		srfb.setParent(parent);
 		srfb.setName("/parent/child");
 		srfb.setRegionName("child");
 		srfb.afterPropertiesSet();
 		Region child = srfb.getObject();
-		
+
 		assertNotNull(parent.getSubregion("child"));
-		assertSame(child,parent.getSubregion("child"));
-		
+		assertSame(child, parent.getSubregion("child"));
+
 		cache.close();
 	}
+
 	@SuppressWarnings("rawtypes")
-	@Test 
+	@Test
 	public void testContext() throws Exception {
 		Region parent = ctx.getBean("parent", Region.class);
 		Region child = ctx.getBean("/parent/child", Region.class);
 		assertNotNull(parent.getSubregion("child"));
-		assertSame(child,parent.getSubregion("child"));
-		assertEquals("/parent/child",child.getFullPath());
+		assertSame(child, parent.getSubregion("child"));
+		assertEquals("/parent/child", child.getFullPath());
 	}
-	
+
 	@SuppressWarnings("rawtypes")
-	@Test 
+	@Test
 	public void testChildOnly() throws Exception {
 		Region child = ctx.getBean("/parent/child", Region.class);
-		assertEquals("/parent/child",child.getFullPath());
+		assertEquals("/parent/child", child.getFullPath());
 	}
 }

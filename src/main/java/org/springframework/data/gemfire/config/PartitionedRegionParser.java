@@ -17,19 +17,15 @@
 package org.springframework.data.gemfire.config;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.PartitionAttributesFactoryBean;
+import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * Parser for &lt;partitioned-region;gt; definitions.
@@ -41,29 +37,15 @@ import com.gemstone.gemfire.cache.Region;
  * @author David Turanski
  */
 class PartitionedRegionParser extends AbstractRegionParser {
+	@Override
+	protected Class<?> getRegionFactoryClass() {
+		return PartitionedRegionFactoryBean.class;
+	}
 
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 		super.doParse(element, builder);
-
-		// set the data policy
-		String attr = element.getAttribute("persistent");
-
-		if (Boolean.parseBoolean(attr)) {
-			// check first for GemFire 6.5
-			if (ConcurrentMap.class.isAssignableFrom(Region.class)) {
-				builder.addPropertyValue("dataPolicy", "PERSISTENT_PARTITION");
-			}
-			else {
-				parserContext.getReaderContext().error(
-						"Can define persistent partitions only from GemFire 6.5 onwards - current version is ["
-								+ CacheFactory.getVersion() + "]", element);
-			}
-		}
-		else {
-			builder.addPropertyValue("dataPolicy", DataPolicy.PARTITION);
-		}
 
 		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
 				.genericBeanDefinition(RegionAttributesFactoryBean.class);
@@ -74,7 +56,7 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder
 				.genericBeanDefinition(PartitionAttributesFactoryBean.class);
 
-		attr = element.getAttribute("colocated-with");
+		String attr = element.getAttribute("colocated-with");
 
 		if (StringUtils.hasText(attr)) {
 			parAttrBuilder.addPropertyValue("colocatedWith", attr);

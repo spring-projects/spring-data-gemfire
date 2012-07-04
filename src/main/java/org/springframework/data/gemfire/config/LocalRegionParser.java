@@ -18,11 +18,10 @@ package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
@@ -36,15 +35,6 @@ class LocalRegionParser extends AbstractRegionParser {
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 
-		// set the data policy
-		String attr = element.getAttribute("data-policy");
-		if (StringUtils.hasText(attr)) {
-			builder.addPropertyValue("dataPolicyName", attr.toUpperCase());
-		}
-		else {
-			builder.addPropertyValue("dataPolicy", DataPolicy.NORMAL);
-		}
-
 		builder.addPropertyValue("scope", Scope.LOCAL);
 
 		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
@@ -54,6 +44,11 @@ class LocalRegionParser extends AbstractRegionParser {
 		if (!subRegion) {
 			builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
 		}
+	}
+
+	@Override
+	protected Class<?> getRegionFactoryClass() {
+		return LocalRegionFactoryBean.class;
 	}
 
 }

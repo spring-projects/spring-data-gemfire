@@ -29,14 +29,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.EvictionAction;
@@ -98,7 +99,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	public void testReplicaDataOptions() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
 		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
-		assertEquals(DataPolicy.REPLICATE, TestUtils.readField("dataPolicy", fb));
+		assertTrue(fb instanceof ReplicatedRegionFactoryBean);
 		assertEquals(Scope.DISTRIBUTED_ACK, TestUtils.readField("scope", fb));
 		Region region = context.getBean("replicated-data", Region.class);
 		// eviction tests
@@ -114,8 +115,10 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	public void testPartitionDataOptions() throws Exception {
 		assertTrue(context.containsBean("partition-data"));
 		RegionFactoryBean fb = context.getBean("&partition-data", RegionFactoryBean.class);
-		assertEquals(DataPolicy.PERSISTENT_PARTITION, TestUtils.readField("dataPolicy", fb));
+		assertTrue(fb instanceof PartitionedRegionFactoryBean);
+		assertTrue((Boolean) TestUtils.readField("persistent", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+
 		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
 		assertEquals(EvictionAction.LOCAL_DESTROY, evicAttr.getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, evicAttr.getAlgorithm());

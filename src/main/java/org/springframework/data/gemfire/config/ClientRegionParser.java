@@ -41,9 +41,8 @@ import com.gemstone.gemfire.cache.DataPolicy;
  * @author David Turanski
  */
 class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
-
 	@Override
-	protected Class<?> getBeanClass(Element element) {
+	protected Class<?> getRegionFactoryClass() {
 		return ClientRegionFactoryBean.class;
 	}
 
