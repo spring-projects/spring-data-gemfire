@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +40,13 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 /**
  * @author Costin Leau
+ * @author David Turanski
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("client-ns.xml")
@@ -72,7 +72,7 @@ public class ClientRegionNamespaceTest {
 		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", fb));
 	}
 
-	//@Test
+	// @Test
 	public void testComplexClient() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		ClientRegionFactoryBean fb = context.getBean("&complex", ClientRegionFactoryBean.class);
@@ -87,7 +87,8 @@ public class ClientRegionNamespaceTest {
 		Interest keyInt = ints[0];
 		assertTrue((Boolean) TestUtils.readField("durable", keyInt));
 		assertEquals(InterestResultPolicy.KEYS, TestUtils.readField("policy", keyInt));
-		//assertEquals(Object.class, TestUtils.readField("key", keyInt).getClass());
+		// assertEquals(Object.class, TestUtils.readField("key",
+		// keyInt).getClass());
 
 		// regex interest
 		RegexInterest regexInt = (RegexInterest) ints[1];
@@ -99,14 +100,10 @@ public class ClientRegionNamespaceTest {
 	@Test
 	public void testPersistent() throws Exception {
 		assertTrue(context.containsBean("persistent"));
-		ClientRegionFactoryBean fb = context.getBean("&persistent", ClientRegionFactoryBean.class);
-		assertEquals(DataPolicy.PERSISTENT_REPLICATE, TestUtils.readField("dataPolicy", fb));
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		File[] diskDirs = attrs.getDiskDirs();
-		assertEquals(1, diskDirs.length);
-		int[] diskDirSizes = attrs.getDiskDirSizes();
-		assertEquals(1, diskDirSizes.length);
-		assertEquals(1, diskDirSizes[0]);
+		Region region = context.getBean("persistent", Region.class);
+		RegionAttributes attrs = region.getAttributes();
+		assertEquals("diskStore", attrs.getDiskStoreName());
+		assertEquals(1, attrs.getDiskDirSizes()[0]);
 	}
 
 	@Test
@@ -116,10 +113,11 @@ public class ClientRegionNamespaceTest {
 		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
-		assertEquals(EvictionAction.LOCAL_DESTROY, evicAttr.getAction());
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evicAttr.getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, evicAttr.getAlgorithm());
-		// for some reason GemFire resets this to 56 on my machine (not sure why)
-		//assertEquals(10, evicAttr.getMaximum());
+		// for some reason GemFire resets this to 56 on my machine (not sure
+		// why)
+		// assertEquals(10, evicAttr.getMaximum());
 		ObjectSizer sizer = evicAttr.getObjectSizer();
 		assertEquals(SimpleObjectSizer.class, sizer.getClass());
 	}

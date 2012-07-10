@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@
 
 package org.springframework.data.gemfire.config;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.springframework.core.io.Resource;
@@ -79,7 +84,8 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		try {
 			assertNotNull(locator.useBeanFactory("cache-with-name"));
 			locator.useBeanFactory("no-bl");
-		} finally {
+		}
+		finally {
 			locator.destroy();
 		}
 	}
@@ -98,5 +104,15 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		ClientCacheFactoryBean cfb = (ClientCacheFactoryBean) ctx.getBean("&client-cache-with-xml");
 		Resource res = TestUtils.readField("cacheXml", cfb);
 		assertEquals("gemfire-client-cache.xml", res.getFilename());
+	}
+
+	@Test
+	public void testHeapTunedCache() throws Exception {
+		assertTrue(ctx.containsBean("heap-tuned-cache"));
+		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&heap-tuned-cache");
+		Float chp = (Float) TestUtils.readField("criticalHeapPercentage", cfb);
+		Float ehp = (Float) TestUtils.readField("evictionHeapPercentage", cfb);
+		assertEquals(70, chp, 0.0001);
+		assertEquals(60, ehp, 0.0001);
 	}
 }

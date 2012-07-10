@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,51 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.util.List;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.util.StringUtils;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;lookup-region;gt; definitions.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
-class LookupRegionParser extends AliasReplacingBeanDefinitionParser {
-
-	protected Class<?> getBeanClass(Element element) {
-		return RegionLookupFactoryBean.class;
-	}
+class LookupRegionParser extends AbstractRegionParser {
 
 	@Override
-	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+			boolean subRegion) {
 		super.doParse(element, builder);
 
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 
-		String attr = element.getAttribute("cache-ref");
-		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
+		if (!subRegion) {
+			String attr = element.getAttribute("cache-ref");
+			// add cache reference (fallback to default if nothing is specified)
+			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
+		}
+		else {
+			builder.addPropertyValue("lookupOnly", true);
+		}
 
+		// parse nested elements
+		List<Element> subElements = DomUtils.getChildElements(element);
+		for (Element subElement : subElements) {
+			String name = subElement.getLocalName();
+			if (name.endsWith("region")) {
+				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
+			}
+		}
+	}
+
+	@Override
+	protected Class<?> getRegionFactoryClass() {
+		return RegionLookupFactoryBean.class;
 	}
 }

@@ -14,12 +14,12 @@
 		</property>
 	</bean>
 	
-	<bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="basic"/>
+	<bean id="basic" class="org.springframework.data.gemfire.LocalRegionFactoryBean" p:cache-ref="cache" p:name="basic"/>
 	
 	<!-- find existing region -->
-	<bean id="root" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"/>
+	<bean id="root" class="org.springframework.data.gemfire.LocalRegionFactoryBean" p:cache-ref="cache"/>
 	
-	<bean id="listeners" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="listeners">
+	<bean id="listeners" class="org.springframework.data.gemfire.LocalRegionFactoryBean" p:cache-ref="cache" p:name="listeners">
 		<property name="cacheListeners">
 			<array>
 				<bean class="org.springframework.data.gemfire.client.RegionIntegrationTest$CacheList"/>
@@ -48,7 +48,7 @@
 	</bean>
 	
 	<!-- region with various attributes -->
-	<bean id="attr-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" lazy-init="true">
+	<bean id="attr-region" class="org.springframework.data.gemfire.PartitionedRegionFactoryBean" p:cache-ref="cache" lazy-init="true">
 		<property name="attributes">
 			<bean class="org.springframework.data.gemfire.RegionAttributesFactoryBean" p:initial-capacity="1024">
 				<property name="partitionAttributes">

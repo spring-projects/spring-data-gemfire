@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.SimplePartitionResolver;
 import org.springframework.data.gemfire.TestUtils;
@@ -33,7 +34,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
@@ -48,7 +48,7 @@ public class PartitionedRegionNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
-	public void testBasicReplica() throws Exception {
+	public void testBasicPartition() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 
@@ -56,7 +56,7 @@ public class PartitionedRegionNamespaceTest {
 	public void testPartitionOptions() throws Exception {
 		assertTrue(context.containsBean("options"));
 		RegionFactoryBean fb = context.getBean("&options", RegionFactoryBean.class);
-		assertEquals(DataPolicy.PARTITION, TestUtils.readField("dataPolicy", fb));
+		assertTrue(fb instanceof PartitionedRegionFactoryBean);
 		assertEquals(null, TestUtils.readField("scope", fb));
 		assertEquals("redundant", TestUtils.readField("name", fb));
 

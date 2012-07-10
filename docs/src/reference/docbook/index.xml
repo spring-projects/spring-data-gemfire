@@ -5,7 +5,10 @@
     xmlns:xlink="http://www.w3.org/1999/xlink">
   <bookinfo>
     <title>Spring Gemfire Integration Reference Guide</title>
-	  <releaseinfo>@version@</releaseinfo>
+    <releaseinfo>${version}</releaseinfo>
+    <titleabbrev>Spring GemFire ${version}</titleabbrev>
+    <productname>Spring GemFire</productname>
+
     
     <authorgroup>
       <author>
@@ -16,6 +19,11 @@
       <author>
         <firstname>Oliver</firstname>
         <surname>Gierke</surname>
+        <affiliation>SpringSource, a division of VMware</affiliation>
+      </author>
+      <author>
+        <firstname>David</firstname>
+        <surname>Turanski</surname>
         <affiliation>SpringSource, a division of VMware</affiliation>
       </author>
     </authorgroup>
@@ -47,9 +55,11 @@
       <xi:include href="reference/data.xml"/>
       <xi:include href="reference/serialization.xml"/>
       <xi:include href="reference/mapping.xml"/>
+      <!--
       <xi:include href="https://github.com/SpringSource/spring-data-commons/raw/master/src/docbkx/repositories.xml">
         <xi:fallback href="../../../../../../spring-data-commons/src/docbkx/repositories.xml" />
       </xi:include>
+      -->
       <xi:include href="reference/repositories.xml"/>
       <xi:include href="reference/samples.xml"/>
   </part>
@@ -59,7 +69,7 @@
       <partintro>
           <para>
               In addition to this reference documentation, there are a number of
-              other resources that may help you learn how to use GemFire and Spring framework. 
+              other resources that may help you learn how to use GemFire and Spring framework.
               These additional, third-party resources are enumerated in this section.
           </para>
       </partintro>

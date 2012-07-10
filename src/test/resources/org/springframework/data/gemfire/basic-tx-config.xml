@@ -8,7 +8,7 @@
 	
 	<bean id="transactionManager" class="org.springframework.data.gemfire.GemfireTransactionManager" p:cache-ref="cache"/>
 	
-	<bean id="rollback-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:name="r-region" p:cache-ref="cache"/>
-	<bean id="commit-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:name="c-region" p:cache-ref="cache"/>
+	<bean id="rollback-region" class="org.springframework.data.gemfire.LocalRegionFactoryBean" p:name="r-region" p:cache-ref="cache"/>
+	<bean id="commit-region" class="org.springframework.data.gemfire.LocalRegionFactoryBean" p:name="c-region" p:cache-ref="cache"/>
 	
 </beans>
