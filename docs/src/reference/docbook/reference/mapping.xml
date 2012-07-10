@@ -32,6 +32,7 @@ public class Person {
 
   …
 }  </programlisting>
+
     </example>
 
     <para>The first thing you see here is the
@@ -71,8 +72,8 @@ public class Person {
     // …
   }
 
-  …
 }  </programlisting>
+
     </example>
 
     <para>The entity annotated as such will get the field <code>foo</code>

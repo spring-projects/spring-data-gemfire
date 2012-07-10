@@ -32,18 +32,14 @@
 		<gfe:locator host="localhost" port="40403"/>
 	</gfe:pool>
 
-	<gfe:client-region id="persistent" pool-name="gemfire-pool" persistent="true">
-		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
-			<gfe:disk-dir location="./" max-size="1"/>
-		</gfe:disk-store>
-	</gfe:client-region>
+	<gfe:client-region id="persistent" pool-name="gemfire-pool" persistent="true" disk-store-ref="diskStore" disk-synchronous="true"/>
+ 
+     <gfe:disk-store id="diskStore" queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
+            <gfe:disk-dir location="./" max-size="1"/>
+     </gfe:disk-store>
 	
-	<gfe:client-region id="overflow" pool-name="gemfire-pool">
-		<gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
-			<gfe:disk-dir location="./" max-size="1"/>
-		</gfe:disk-store>
-
-		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="LOCAL_DESTROY">
+	<gfe:client-region id="overflow" pool-name="gemfire-pool" disk-store-ref="diskStore">
+		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="OVERFLOW_TO_DISK">
 			<gfe:object-sizer>
 				<bean class="org.springframework.data.gemfire.SimpleObjectSizer"/>
 			</gfe:object-sizer>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +34,15 @@ import com.gemstone.gemfire.cache.DataPolicy;
 /**
  * Parser for &lt;client-region;gt; definitions.
  * 
- * To avoid eager evaluations, the region interests are declared as nested definition.
+ * To avoid eager evaluations, the region interests are declared as nested
+ * definition.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
 class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
-
-	protected Class<?> getBeanClass(Element element) {
+	@Override
+	protected Class<?> getRegionFactoryClass() {
 		return ClientRegionFactoryBean.class;
 	}
 
@@ -57,7 +59,6 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
 		ParsingUtils.setPropertyValue(element, builder, "shortcut", "shortcut");
-
 
 		// set the persistent policy
 		String attr = element.getAttribute("persistent");
@@ -76,14 +77,19 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 
 		// eviction + overflow attributes
 		// client attributes
-		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
+		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder
+				.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
 		ParsingUtils.parseStatistics(element, attrBuilder);
+
+		if (StringUtils.hasText(element.getAttribute("disk-store-ref"))) {
+			ParsingUtils.setPropertyValue(element, builder, "disk-store-ref", "diskStoreName");
+			builder.addDependsOn(element.getAttribute("disk-store-ref"));
+		}
 
 		boolean overwriteDataPolicy = false;
 
 		overwriteDataPolicy |= ParsingUtils.parseEviction(parserContext, element, attrBuilder);
-		overwriteDataPolicy |= ParsingUtils.parseDiskStorage(element, attrBuilder);
 
 		if (!frozenDataPolicy && overwriteDataPolicy) {
 			builder.addPropertyValue("dataPolicy", DataPolicy.NORMAL);

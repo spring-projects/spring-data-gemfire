@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.springframework.data.gemfire;
 
-
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -24,9 +23,10 @@ import org.junit.Test;
 import com.gemstone.gemfire.cache.Cache;
 
 /**
- * Integration test trying various basic configurations of GemFire through Spring.
+ * Integration test trying various basic configurations of GemFire through
+ * Spring.
  * 
- * Made abstract to avoid multiple caches running at the same time. 
+ * Made abstract to avoid multiple caches running at the same time.
  * 
  * @author Costin Leau
  */

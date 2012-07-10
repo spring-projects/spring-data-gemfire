@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@
 package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;client-cache;gt; definitions.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
 class ClientCacheParser extends CacheParser {
 
@@ -33,9 +36,17 @@ class ClientCacheParser extends CacheParser {
 	}
 
 	@Override
-	protected void doParse(Element element, BeanDefinitionBuilder builder) {
-		super.doParse(element, builder);
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		super.doParse(element, parserContext, builder);
 
 		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
+	}
+
+	@Override
+	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
+		String poolName = element.getAttribute("pool-name");
+		if (StringUtils.hasText(poolName)) {
+			dynamicRegionSupport.addPropertyValue("poolName", poolName);
+		}
 	}
 }

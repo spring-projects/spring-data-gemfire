@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -34,7 +35,6 @@ import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
@@ -58,7 +58,7 @@ public class ReplicatedRegionNamespaceTest {
 	public void testPublishingReplica() throws Exception {
 		assertTrue(context.containsBean("pub"));
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);
-		assertEquals(DataPolicy.REPLICATE, TestUtils.readField("dataPolicy", fb));
+		assertTrue(fb instanceof ReplicatedRegionFactoryBean);
 		assertEquals(Scope.DISTRIBUTED_ACK, TestUtils.readField("scope", fb));
 		assertEquals("publisher", TestUtils.readField("name", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
@@ -76,6 +76,27 @@ public class ReplicatedRegionNamespaceTest {
 
 		assertSame(context.getBean("c-loader"), TestUtils.readField("cacheLoader", fb));
 		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
+	}
+
+	@Test
+	public void testReplicaWithAttributes() throws Exception {
+		assertTrue(context.containsBean("replicated-with-attributes"));
+		Region region = context.getBean("replicated-with-attributes", Region.class);
+		RegionAttributes attrs = region.getAttributes();
+		assertEquals(10, attrs.getInitialCapacity());
+		assertEquals(true, attrs.getIgnoreJTA());
+		assertEquals(false, attrs.getIndexMaintenanceSynchronous());
+		assertEquals(String.class, attrs.getKeyConstraint());
+		assertEquals(String.class, attrs.getValueConstraint());
+		assertEquals(true, attrs.isDiskSynchronous());
+		assertEquals(Scope.GLOBAL, attrs.getScope());
+		assertEquals(true, attrs.isLockGrantor());
+		assertEquals(true, attrs.getEnableAsyncConflation());
+		assertEquals(true, attrs.getEnableSubscriptionConflation());
+		assertEquals(0.50, attrs.getLoadFactor(), 0.001);
+		assertEquals(false, attrs.getCloningEnabled());
+		assertEquals(10, attrs.getConcurrencyLevel());
+		assertEquals(true, attrs.getMulticastEnabled());
 	}
 
 	@Test

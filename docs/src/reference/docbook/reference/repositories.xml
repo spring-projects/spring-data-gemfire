@@ -14,7 +14,7 @@
 
     <para>Spring Data Gemfire provides support to use the Spring Data
     repository abstraction to easily persist entities into Gemfire and execute
-    queries. A general introduction into the repository programmin model has
+    queries. A general introduction into the repository programming model has
     been provided in <xref linkend="repositories" />.</para>
   </section>
 

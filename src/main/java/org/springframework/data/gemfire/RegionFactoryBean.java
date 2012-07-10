@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2010-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +34,6 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -41,30 +41,47 @@ import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
- * FactoryBean for creating generic GemFire {@link Region}s. Will try to first locate the region (by name)
- * and, in case none if found, proceed to creating one using the given settings.
+ * FactoryBean for creating generic GemFire {@link Region}s. Will try to first
+ * locate the region (by name) and, in case none if found, proceed to creating
+ * one using the given settings.
  * 
- * Note that this factory bean allows for very flexible creation of GemFire {@link Region}. For "client" regions
- * however, see {@link ClientRegionFactoryBean} which offers easier configuration and defaults.
+ * Note that this factory bean allows for very flexible creation of GemFire
+ * {@link Region}. For "client" regions however, see
+ * {@link ClientRegionFactoryBean} which offers easier configuration and
+ * defaults.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
-public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
+public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
 	private boolean destroy = false;
+
 	private boolean close = true;
+
 	private Resource snapshot;
 
 	private CacheListener<K, V> cacheListeners[];
+
 	private CacheLoader<K, V> cacheLoader;
+
 	private CacheWriter<K, V> cacheWriter;
+
 	private RegionAttributes<K, V> attributes;
+
 	private Scope scope;
-	private DataPolicy dataPolicy;
+
+	private boolean persistent;
+
+	private String diskStoreName;
+
+	private String dataPolicyName;
+
 	private Region<K, V> region;
 
+	private List<Region<?, ?>> subRegions;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -72,7 +89,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		region = getRegion();
 		postProcess(region);
 	}
-
 
 	@Override
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
@@ -83,8 +99,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (attributes != null)
 			AttributesFactory.validateAttributes(attributes);
 
-		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes)
-				: c.<K, V> createRegionFactory());
+		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes) : c
+				.<K, V> createRegionFactory());
 
 		if (!ObjectUtils.isEmpty(cacheListeners)) {
 			for (CacheListener<K, V> listener : cacheListeners) {
@@ -100,14 +116,20 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			regionFactory.setCacheWriter(cacheWriter);
 		}
 
-		if (dataPolicy != null) {
-			regionFactory.setDataPolicy(dataPolicy);
-		}
+		resolveDataPolicy(regionFactory, persistent, dataPolicyName);
 
 		if (scope != null) {
 			regionFactory.setScope(scope);
 		}
 
+		if (diskStoreName != null) {
+			regionFactory.setDiskStoreName(diskStoreName);
+		}
+
+		if (attributes != null) {
+			Assert.state(!attributes.isLockGrantor() || scope.isGlobal(),
+					"Lock grantor only applies to a global scoped region");
+		}
 		// get underlying AttributesFactory
 		postProcess(findAttrFactory(regionFactory));
 
@@ -117,8 +139,15 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			reg.loadSnapshot(snapshot.getInputStream());
 		}
 
+		if (attributes != null && attributes.isLockGrantor()) {
+			reg.becomeLockGrantor();
+		}
+
 		return reg;
 	}
+
+	protected abstract void resolveDataPolicy(RegionFactory<K, V> regionFactory, boolean persistent,
+			String dataPolicyName);
 
 	@SuppressWarnings("unchecked")
 	private AttributesFactory<K, V> findAttrFactory(RegionFactory<K, V> regionFactory) {
@@ -127,24 +156,24 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		return (AttributesFactory<K, V>) ReflectionUtils.getField(attrField, regionFactory);
 	}
 
-
 	/**
-	 * Post-process the attribute factory object used for configuring the region of this factory bean during the initialization process.
-	 * The object is already initialized and configured by the factory bean before this method
+	 * Post-process the attribute factory object used for configuring the region
+	 * of this factory bean during the initialization process. The object is
+	 * already initialized and configured by the factory bean before this method
 	 * is invoked.
 	 * 
 	 * @param attrFactory attribute factory
-	 * @deprecated as of GemFire 6.5, the use of {@link AttributesFactory} has been deprecated
+	 * @deprecated as of GemFire 6.5, the use of {@link AttributesFactory} has
+	 * been deprecated
 	 */
 	@Deprecated
 	protected void postProcess(AttributesFactory<K, V> attrFactory) {
 	}
 
-
 	/**
-	 * Post-process the region object for this factory bean during the initialization process.
-	 * The object is already initialized and configured by the factory bean before this method
-	 * is invoked.
+	 * Post-process the region object for this factory bean during the
+	 * initialization process. The object is already initialized and configured
+	 * by the factory bean before this method is invoked.
 	 * 
 	 * @param region
 	 */
@@ -152,13 +181,15 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		// do nothing
 	}
 
+	@Override
 	public void destroy() throws Exception {
 		if (region != null) {
 			if (close) {
 				if (!region.getCache().isClosed()) {
 					try {
 						region.close();
-					} catch (CacheClosedException cce) {
+					}
+					catch (CacheClosedException cce) {
 						// nothing to see folks, move on.
 					}
 				}
@@ -171,9 +202,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Indicates whether the region referred by this factory bean,
-	 * will be destroyed on shutdown (default false).
-	 * Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
+	 * Indicates whether the region referred by this factory bean, will be
+	 * destroyed on shutdown (default false). Note: destroy and close are
+	 * mutually exclusive. Enabling one will automatically disable the other.
 	 * 
 	 * @param destroy whether or not to destroy the region
 	 * 
@@ -188,9 +219,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Indicates whether the region referred by this factory bean,
-	 * will be closed on shutdown (default true).
-	 * Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
+	 * Indicates whether the region referred by this factory bean, will be
+	 * closed on shutdown (default true). Note: destroy and close are mutually
+	 * exclusive. Enabling one will automatically disable the other.
 	 * 
 	 * @param close whether to close or not the region
 	 * @see #setDestroy(boolean)
@@ -203,9 +234,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Sets the snapshots used for loading a newly <i>created</i> region.
-	 * That is, the snapshot will be used <i>only</i> when a new region is created - if the region
-	 * already exists, no loading will be performed.
+	 * Sets the snapshots used for loading a newly <i>created</i> region. That
+	 * is, the snapshot will be used <i>only</i> when a new region is created -
+	 * if the region already exists, no loading will be performed.
 	 * 
 	 * @see #setName(String)
 	 * @param snapshot the snapshot to set
@@ -215,9 +246,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Sets the cache listeners used for the region used by this factory.
-	 * Used only when a new region is created.Overrides the settings
-	 * specified through {@link #setAttributes(RegionAttributes)}.
+	 * Sets the cache listeners used for the region used by this factory. Used
+	 * only when a new region is created.Overrides the settings specified
+	 * through {@link #setAttributes(RegionAttributes)}.
 	 * 
 	 * @param cacheListeners the cacheListeners to set on a newly created region
 	 */
@@ -225,10 +256,15 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		this.cacheListeners = cacheListeners;
 	}
 
+	public void setSubRegions(List<Region<?, ?>> subRegions) {
+		log.info("setting subRegions");
+		this.subRegions = subRegions;
+	}
+
 	/**
-	 * Sets the cache loader used for the region used by this factory.
-	 * Used only when a new region is created.Overrides the settings
-	 * specified through {@link #setAttributes(RegionAttributes)}.
+	 * Sets the cache loader used for the region used by this factory. Used only
+	 * when a new region is created.Overrides the settings specified through
+	 * {@link #setAttributes(RegionAttributes)}.
 	 * 
 	 * @param cacheLoader the cacheLoader to set on a newly created region
 	 */
@@ -237,9 +273,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Sets the cache writer used for the region used by this factory.
-	 * Used only when a new region is created. Overrides the settings
-	 * specified through {@link #setAttributes(RegionAttributes)}.
+	 * Sets the cache writer used for the region used by this factory. Used only
+	 * when a new region is created. Overrides the settings specified through
+	 * {@link #setAttributes(RegionAttributes)}.
 	 * 
 	 * @param cacheWriter the cacheWriter to set on a newly created region
 	 */
@@ -248,18 +284,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Sets the data policy. Used only when a new region is created.
-	 * Overrides the settings specified through {@link #setAttributes(RegionAttributes)}.
-	 * 
-	 * @param dataPolicy the region data policy
-	 */
-	public void setDataPolicy(DataPolicy dataPolicy) {
-		this.dataPolicy = dataPolicy;
-	}
-
-	/**
-	 * Sets the region scope. Used only when a new region is created.
-	 * Overrides the settings specified through {@link #setAttributes(RegionAttributes)}.
+	 * Sets the region scope. Used only when a new region is created. Overrides
+	 * the settings specified through {@link #setAttributes(RegionAttributes)}.
 	 * 
 	 * @see Scope
 	 * @param scope the region scope
@@ -268,10 +294,31 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		this.scope = scope;
 	}
 
+	public void setPersistent(boolean persistent) {
+		this.persistent = persistent;
+	}
+
+	/**
+	 * Sets the dataPolicy as a String. Required to support property
+	 * placeholders
+	 * @param dataPolicyName the dataPolicy name (NORMAL, PRELOADED, etc)
+	 */
+	public void setDataPolicyName(String dataPolicyName) {
+		this.dataPolicyName = dataPolicyName;
+	}
+
+	/**
+	 * Sets the name of disk store to use for overflow and persistence
+	 * @param diskStoreName
+	 */
+	public void setDiskStoreName(String diskStoreName) {
+		this.diskStoreName = diskStoreName;
+	}
+
 	/**
 	 * Sets the region attributes used for the region used by this factory.
-	 * Allows maximum control in specifying the region settings.
-	 * Used only when a new region is created.
+	 * Allows maximum control in specifying the region settings. Used only when
+	 * a new region is created.
 	 * 
 	 * @param attributes the attributes to set on a newly created region
 	 */
