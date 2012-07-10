@@ -55,9 +55,11 @@
       <xi:include href="reference/data.xml"/>
       <xi:include href="reference/serialization.xml"/>
       <xi:include href="reference/mapping.xml"/>
+      <!--
       <xi:include href="https://github.com/SpringSource/spring-data-commons/raw/master/src/docbkx/repositories.xml">
         <xi:fallback href="../../../../../../spring-data-commons/src/docbkx/repositories.xml" />
       </xi:include>
+      -->
       <xi:include href="reference/repositories.xml"/>
       <xi:include href="reference/samples.xml"/>
   </part>
@@ -67,7 +69,7 @@
       <partintro>
           <para>
               In addition to this reference documentation, there are a number of
-              other resources that may help you learn how to use GemFire and Spring framework. 
+              other resources that may help you learn how to use GemFire and Spring framework.
               These additional, third-party resources are enumerated in this section.
           </para>
       </partintro>
