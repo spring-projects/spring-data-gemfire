@@ -38,7 +38,7 @@ import com.gemstone.gemfire.cache.Region;
  * @author Oliver Gierke
  */
 public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
-RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
+		RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
 
 	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context;
 	private Iterable<Region<?, ?>> regions;
