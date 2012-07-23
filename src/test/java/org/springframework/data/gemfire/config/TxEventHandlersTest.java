@@ -52,6 +52,7 @@ public class TxEventHandlersTest {
 	@Resource(name = "gemfire-cache")
 	Cache cache;
 
+	@SuppressWarnings("rawtypes")
 	@Resource(name = "local")
 	Region local;
 

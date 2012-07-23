@@ -38,10 +38,10 @@ import com.gemstone.gemfire.cache.query.IndexType;
 @ContextConfiguration("index-ns.xml")
 public class IndexNamespaceTest {
 
-	private String name = "test-index";
+	private final String name = "test-index";
+
 	@Autowired
 	private ApplicationContext context;
-
 
 	@Before
 	public void setUp() throws Exception {
@@ -52,7 +52,12 @@ public class IndexNamespaceTest {
 	}
 
 	@Test
-	public void testBasicIndex() throws Exception {
+	public void testAll() throws Exception {
+		testBasicIndex();
+		testComplexIndex();
+	}
+
+	private void testBasicIndex() throws Exception {
 		Index idx = (Index) context.getBean("simple");
 
 		assertEquals("/test-index", idx.getFromClause());
@@ -62,8 +67,7 @@ public class IndexNamespaceTest {
 		assertEquals(IndexType.FUNCTIONAL, idx.getType());
 	}
 
-	@Test
-	public void testComplexIndex() throws Exception {
+	private void testComplexIndex() throws Exception {
 		Index idx = (Index) context.getBean("complex");
 
 		assertEquals("/test-index tsi", idx.getFromClause());

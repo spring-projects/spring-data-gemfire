@@ -21,6 +21,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentEntity;
@@ -37,21 +38,24 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.PdxWriter;
 
 /**
- * {@link PdxSerializer} implementation that uses a {@link GemfireMappingContext} to read and write entities.
+ * {@link PdxSerializer} implementation that uses a
+ * {@link GemfireMappingContext} to read and write entities.
  * 
  * @author Oliver Gierke
  */
 public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAware {
 
 	private final GemfireMappingContext mappingContext;
+
 	private final ConversionService conversionService;
 
 	private EntityInstantiators instantiators;
+
 	private SpELContext context;
 
 	/**
-	 * Creates a new {@link MappingPdxSerializer} using the given {@link GemfireMappingContext} and
-	 * {@link ConversionService}.
+	 * Creates a new {@link MappingPdxSerializer} using the given
+	 * {@link GemfireMappingContext} and {@link ConversionService}.
 	 * 
 	 * @param mappingContext must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
@@ -68,7 +72,16 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	/**
-	 * Configures the {@link EntityInstantiator}s to be used to create the instances to be read.
+	 * Creates a new {@link MappingPdxSerializer} using the default
+	 * {@link GemfireMappingContext} and {@link DefaultConversionService}.
+	 */
+	public MappingPdxSerializer() {
+		this(new GemfireMappingContext(), new DefaultConversionService());
+	}
+
+	/**
+	 * Configures the {@link EntityInstantiator}s to be used to create the
+	 * instances to be read.
 	 * 
 	 * @param gemfireInstantiators must not be {@literal null}.
 	 */
@@ -77,9 +90,12 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		this.instantiators = new EntityInstantiators(gemfireInstantiators);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 * 
+	 * @see
+	 * org.springframework.context.ApplicationContextAware#setApplicationContext
+	 * (org.springframework.context.ApplicationContext)
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -88,8 +104,11 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.gemstone.gemfire.pdx.PdxSerializer#fromData(java.lang.Class, com.gemstone.gemfire.pdx.PdxReader)
+	 * 
+	 * @see com.gemstone.gemfire.pdx.PdxSerializer#fromData(java.lang.Class,
+	 * com.gemstone.gemfire.pdx.PdxReader)
 	 */
+	@Override
 	public Object fromData(Class<?> type, final PdxReader reader) {
 
 		final GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
@@ -102,9 +121,11 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 		Object instance = instantiator.createInstance(entity, provider);
 
-		final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(instance, conversionService);
+		final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper
+				.create(instance, conversionService);
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
+			@Override
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
 
 				if (entity.isConstructorArgument(persistentProperty)) {
@@ -115,7 +136,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 				try {
 					wrapper.setProperty(persistentProperty, value);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					throw new MappingException("Could not read value " + value.toString(), e);
 				}
 			}
@@ -126,20 +148,25 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.gemstone.gemfire.pdx.PdxSerializer#toData(java.lang.Object, com.gemstone.gemfire.pdx.PdxWriter)
+	 * 
+	 * @see com.gemstone.gemfire.pdx.PdxSerializer#toData(java.lang.Object,
+	 * com.gemstone.gemfire.pdx.PdxWriter)
 	 */
+	@Override
 	public boolean toData(Object value, final PdxWriter writer) {
 
 		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(value.getClass());
 		final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(value, conversionService);
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
+			@Override
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
 
 				try {
 					Object value = wrapper.getProperty(persistentProperty);
 					writer.writeObject(persistentProperty.getName(), value);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					throw new MappingException("Could not write value for property " + persistentProperty.toString(), e);
 				}
 			}

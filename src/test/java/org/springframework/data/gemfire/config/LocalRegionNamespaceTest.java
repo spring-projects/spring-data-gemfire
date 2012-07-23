@@ -49,12 +49,20 @@ public class LocalRegionNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
-	public void testBasicLocal() throws Exception {
+	public void testAll() throws Exception {
+		testBasicLocal();
+		testComplexLocal();
+		testLocalWithAttributes();
+		testPublishingLocal();
+		testRegionLookup();
+	}
+
+	private void testBasicLocal() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 
-	@Test
-	public void testPublishingLocal() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testPublishingLocal() throws Exception {
 		assertTrue(context.containsBean("pub"));
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);
 		assertEquals("NORMAL", TestUtils.readField("dataPolicyName", fb));
@@ -64,8 +72,8 @@ public class LocalRegionNamespaceTest {
 		assertFalse(attrs.getPublisher());
 	}
 
-	@Test
-	public void testComplexLocal() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testComplexLocal() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
 		CacheListener[] listeners = TestUtils.readField("cacheListeners", fb);
@@ -77,8 +85,8 @@ public class LocalRegionNamespaceTest {
 		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
 	}
 
-	@Test
-	public void testLocalWithAttributes() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testLocalWithAttributes() throws Exception {
 		assertTrue(context.containsBean("local-with-attributes"));
 		Region region = context.getBean("local-with-attributes", Region.class);
 		RegionAttributes attrs = region.getAttributes();
@@ -90,8 +98,8 @@ public class LocalRegionNamespaceTest {
 		assertEquals(true, attrs.isDiskSynchronous());
 	}
 
-	@Test
-	public void testRegionLookup() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testRegionLookup() throws Exception {
 		Cache cache = context.getBean(Cache.class);
 		Region existing = cache.createRegionFactory().create("existing");
 		assertTrue(context.containsBean("lookup"));

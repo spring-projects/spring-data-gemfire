@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.mapping;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,7 +23,6 @@ import java.util.Map;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
-import com.gemstone.bp.edu.emory.mathcs.backport.java.util.Collections;
 import com.gemstone.gemfire.cache.Region;
 
 /**
@@ -33,10 +33,12 @@ import com.gemstone.gemfire.cache.Region;
 public class Regions implements Iterable<Region<?, ?>> {
 
 	private final Map<String, Region<?, ?>> regions;
+
 	private final MappingContext<? extends GemfirePersistentEntity<?>, ?> context;
 
 	/**
-	 * Creates a new {@link Regions} wrapper for the given {@link Region}s and {@link MappingContext}.
+	 * Creates a new {@link Regions} wrapper for the given {@link Region}s and
+	 * {@link MappingContext}.
 	 * 
 	 * @param regions must not be {@literal null}.
 	 * @param context must not be {@literal null}.
@@ -58,8 +60,9 @@ public class Regions implements Iterable<Region<?, ?>> {
 	}
 
 	/**
-	 * Returns the {@link Region} the given type is mapped to. Will try to find a {@link Region} with the simple class
-	 * name in case no mapping information is found.
+	 * Returns the {@link Region} the given type is mapped to. Will try to find
+	 * a {@link Region} with the simple class name in case no mapping
+	 * information is found.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @return the {@link Region} the given type is mapped to.
@@ -89,6 +92,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Iterable#iterator()
 	 */
 	@Override

@@ -56,23 +56,31 @@ public class ClientRegionNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
-	public void testBasicClient() throws Exception {
+	public void testAll() throws Exception {
+		testBasicClient();
+		testBeanNames();
+		testPublishingClient();
+		testPersistent();
+		testOverflowToDisk();
+	}
+
+	private void testBasicClient() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 
-	@Test
-	public void testBeanNames() throws Exception {
+	private void testBeanNames() throws Exception {
 		assertTrue(ObjectUtils.isEmpty(context.getAliases("publisher")));
 	}
 
-	@Test
-	public void testPublishingClient() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testPublishingClient() throws Exception {
 		assertTrue(context.containsBean("empty"));
 		ClientRegionFactoryBean fb = context.getBean("&empty", ClientRegionFactoryBean.class);
 		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", fb));
 	}
 
 	// @Test
+	@SuppressWarnings("rawtypes")
 	public void testComplexClient() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		ClientRegionFactoryBean fb = context.getBean("&complex", ClientRegionFactoryBean.class);
@@ -97,8 +105,8 @@ public class ClientRegionNamespaceTest {
 		assertEquals(".*", TestUtils.readField("key", regexInt));
 	}
 
-	@Test
-	public void testPersistent() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testPersistent() throws Exception {
 		assertTrue(context.containsBean("persistent"));
 		Region region = context.getBean("persistent", Region.class);
 		RegionAttributes attrs = region.getAttributes();
@@ -106,8 +114,8 @@ public class ClientRegionNamespaceTest {
 		assertEquals(1, attrs.getDiskDirSizes()[0]);
 	}
 
-	@Test
-	public void testOverflowToDisk() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testOverflowToDisk() throws Exception {
 		assertTrue(context.containsBean("overflow"));
 		ClientRegionFactoryBean fb = context.getBean("&overflow", ClientRegionFactoryBean.class);
 		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", fb));

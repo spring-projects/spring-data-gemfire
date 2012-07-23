@@ -83,7 +83,14 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	}
 
 	@Test
-	public void testDiskStore() {
+	public void testAll() throws Exception {
+		testDiskStore();
+		testReplicaDataOptions();
+		testPartitionDataOptions();
+		testEntryTtl();
+	}
+
+	private void testDiskStore() {
 		assertEquals("diskStore1", diskStore1.getName());
 		assertEquals(50, diskStore1.getQueueSize());
 		assertEquals(true, diskStore1.getAutoCompact());
@@ -95,12 +102,13 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertSame(diskStore1, cache.findDiskStore("diskStore1"));
 	}
 
-	@Test
-	public void testReplicaDataOptions() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testReplicaDataOptions() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
 		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
 		assertTrue(fb instanceof ReplicatedRegionFactoryBean);
 		assertEquals(Scope.DISTRIBUTED_ACK, TestUtils.readField("scope", fb));
+		@SuppressWarnings("unused")
 		Region region = context.getBean("replicated-data", Region.class);
 		// eviction tests
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
@@ -111,8 +119,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertNull(evicAttr.getObjectSizer());
 	}
 
-	@Test
-	public void testPartitionDataOptions() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testPartitionDataOptions() throws Exception {
 		assertTrue(context.containsBean("partition-data"));
 		RegionFactoryBean fb = context.getBean("&partition-data", RegionFactoryBean.class);
 		assertTrue(fb instanceof PartitionedRegionFactoryBean);
@@ -129,8 +137,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(SimpleObjectSizer.class, sizer.getClass());
 	}
 
-	@Test
-	public void testEntryTtl() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testEntryTtl() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
 		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);

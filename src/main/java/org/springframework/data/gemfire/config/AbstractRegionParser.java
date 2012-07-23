@@ -23,7 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -117,27 +119,66 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
 		ParsingUtils.parseMembershipAttributes(parserContext, element, attrBuilder);
 
+		String enableGateway = element.getAttribute("enable-gateway");
+		String hubId = element.getAttribute("hub-id");
+		// Factory will enable gateway if it is not set and hub-id is set.
+		if (StringUtils.hasText(enableGateway)) {
+			if (ParsingUtils.GEMFIRE_VERSION.startsWith("7")) {
+				log.warn("'enable-gateway' is deprecated since Gemfire 7.0");
+			}
+		}
+		ParsingUtils.setPropertyValue(element, builder, "enable-gateway");
+
+		if (StringUtils.hasText(hubId)) {
+			if (ParsingUtils.GEMFIRE_VERSION.startsWith("7")) {
+				log.warn("'hub-id' is deprecated since Gemfire 7.0");
+			}
+			if (!CollectionUtils.isEmpty(DomUtils.getChildElementsByTagName(element, "gateway-sender"))) {
+				parserContext.getReaderContext().error("It is invalid to specify both 'hub-id' and 'gateway-sender'",
+						element);
+			}
+		}
+		ParsingUtils.setPropertyValue(element, builder, "hub-id");
+
+		// Parse child elements
+
+		parseCollectionOfCustomSubElements(parserContext, element, builder,
+				"com.gemstone.gemfire.cache.wan.GatewaySender", "gateway-sender", "gatewaySenders");
+		parseCollectionOfCustomSubElements(parserContext, element, builder,
+				"com.gemstone.gemfire.cache.wan.AsyncEventQueue", "async-event-queue", "asyncEventQueues");
+
 		List<Element> subElements = DomUtils.getChildElements(element);
-
-		// parse nested elements
 		for (Element subElement : subElements) {
-			String name = subElement.getLocalName();
-
-			if ("cache-listener".equals(name)) {
-				builder.addPropertyValue("cacheListeners", parseCacheListener(parserContext, subElement, builder));
+			if (subElement.getLocalName().equals("cache-listener")) {
+				builder.addPropertyValue("cacheListeners",
+						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
 			}
-
-			else if ("cache-loader".equals(name)) {
-				builder.addPropertyValue("cacheLoader", parseCacheLoader(parserContext, subElement, builder));
+			else if (subElement.getLocalName().equals("cache-loader")) {
+				builder.addPropertyValue("cacheLoader",
+						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
 			}
-
-			else if ("cache-writer".equals(name)) {
-				builder.addPropertyValue("cacheWriter", parseCacheWriter(parserContext, subElement, builder));
+			else if (subElement.getLocalName().equals("cache-writer")) {
+				builder.addPropertyValue("cacheWriter",
+						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
 			}
-			// subregion
-			else if (name.endsWith("region")) {
+			else if (subElement.getLocalName().endsWith("region")) {
 				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
 			}
+		}
+
+	}
+
+	private void parseCollectionOfCustomSubElements(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder builder, String className, String subElementName, String propertyName) {
+		List<Element> subElements = DomUtils.getChildElementsByTagName(element, new String[] { subElementName,
+				subElementName + "-ref" });
+		if (!CollectionUtils.isEmpty(subElements)) {
+
+			ManagedArray array = new ManagedArray(className, subElements.size());
+			for (Element subElement : subElements) {
+				array.add(ParsingUtils.parseRefOrNestedCustomElement(parserContext, subElement, builder));
+			}
+			builder.addPropertyValue(propertyName, array);
 		}
 	}
 
@@ -150,17 +191,5 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 	private String getRegionNameFromElement(Element element) {
 		String name = element.getAttribute(NAME_ATTRIBUTE);
 		return StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE);
-	}
-
-	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
-	}
-
-	private Object parseCacheLoader(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
-	}
-
-	private Object parseCacheWriter(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 }

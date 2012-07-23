@@ -15,12 +15,17 @@
  */
 package org.springframework.data.gemfire.repository.sample;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.gemfire.mapping.Region;
+
 /**
  * 
  * @author Oliver Gierke
  */
+@Region("address")
 public class Address {
-
+	@Id
 	public String zipCode;
+
 	public String city;
 }

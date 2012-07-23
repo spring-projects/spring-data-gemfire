@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.gemfire.mapping;
 
-package org.springframework.data.gemfire;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.cache.util.ObjectSizerImpl;
+import org.springframework.data.annotation.Reference;
 
 /**
- * @author Costin Leau
+ * @author David Turanski
+ * 
  */
-public class SimpleObjectSizer implements ObjectSizer {
-
-	private static final ObjectSizer sizer = new ObjectSizerImpl();
-
-	@Override
-	public int sizeof(Object o) {
-		return sizer.sizeof(o);
-	}
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+@Documented
+@Reference
+public @interface RegionRef {
+	String value() default "";
 }

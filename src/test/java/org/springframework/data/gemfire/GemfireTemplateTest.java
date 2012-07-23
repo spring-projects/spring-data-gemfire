@@ -30,6 +30,7 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 public class GemfireTemplateTest extends RecreatingContextTest {
 
 	private static final String MULTI_QUERY = "select * from /simple";
+
 	private static final String SINGLE_QUERY = "(select * from /simple).size";
 
 	@Override
@@ -38,28 +39,33 @@ public class GemfireTemplateTest extends RecreatingContextTest {
 	}
 
 	@Test
-	public void testFind() throws Exception {
-		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
-		SelectResults<Object> find = template.find(MULTI_QUERY);
-		assertNotNull(find);
-	}
-
-	@Test
-	public void testFindUnique() throws Exception {
-		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
-		Integer find = template.findUnique(SINGLE_QUERY);
-		assertEquals(find, Integer.valueOf(0));
+	public void testAll() throws Exception {
+		testFind();
+		testFindUnique();
 	}
 
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void testFindMultiException() throws Exception {
 		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
-		SelectResults<Object> find = template.find(SINGLE_QUERY);
+		template.find(SINGLE_QUERY);
 	}
 
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void testFindMultiOne() throws Exception {
 		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
-		SelectResults<Object> find = template.findUnique(MULTI_QUERY);
+		template.findUnique(MULTI_QUERY);
 	}
+
+	private void testFind() throws Exception {
+		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
+		SelectResults<Object> find = template.find(MULTI_QUERY);
+		assertNotNull(find);
+	}
+
+	private void testFindUnique() throws Exception {
+		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
+		Integer find = template.findUnique(SINGLE_QUERY);
+		assertEquals(find, Integer.valueOf(0));
+	}
+
 }

@@ -21,6 +21,7 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 /**
  * @author Costin Leau
  */
+@SuppressWarnings("rawtypes")
 public class SimpleCacheListener extends CacheListenerAdapter {
 
 }

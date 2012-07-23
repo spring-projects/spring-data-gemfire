@@ -33,6 +33,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.LossAction;
@@ -47,6 +48,8 @@ import com.gemstone.gemfire.cache.Scope;
  * @author David Turanski
  */
 abstract class ParsingUtils {
+
+	final static String GEMFIRE_VERSION = CacheFactory.getVersion();
 
 	private static final String ALIASES_KEY = ParsingUtils.class.getName() + ":aliases";
 
@@ -119,11 +122,14 @@ abstract class ParsingUtils {
 	 */
 	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder builder) {
-		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, "ref");
+		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, "ref", false);
 	}
 
-	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
-			BeanDefinitionBuilder builder, String refAttrName) {
+	static Object getBeanReference(ParserContext parserContext, Element element) {
+		return getBeanReference(parserContext, element, "ref");
+	}
+
+	static Object getBeanReference(ParserContext parserContext, Element element, String refAttrName) {
 		String attr = element.getAttribute(refAttrName);
 		boolean hasRef = StringUtils.hasText(attr);
 
@@ -138,17 +144,53 @@ abstract class ParsingUtils {
 			}
 			return new RuntimeBeanReference(attr);
 		}
-
-		if (childElements.isEmpty()) {
-			parserContext.getReaderContext().error(
-					"specify either '" + refAttrName + "' attribute or a nested bean declaration for '"
-							+ element.getLocalName() + "' element", element);
+		else {
+			return null;
 		}
+	}
+
+	static Object parseRefOrNestedCustomElement(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder builder) {
+		Object beanRef = ParsingUtils.getBeanReference(parserContext, element, "bean");
+		if (beanRef != null) {
+			return beanRef;
+		}
+		else {
+			return parserContext.getDelegate().parseCustomElement(element, builder.getBeanDefinition());
+		}
+	}
+
+	static Object parseRefOrSingleNestedBeanDeclaration(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder builder) {
+		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, "ref", true);
+	}
+
+	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder builder, String refAttrName) {
+		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, refAttrName, false);
+	}
+
+	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder builder, String refAttrName, boolean single) {
+		Object beanRef = getBeanReference(parserContext, element, refAttrName);
+		if (beanRef != null) {
+			return beanRef;
+		}
+
+		// check nested declarations
+		List<Element> childElements = DomUtils.getChildElements(element);
 
 		// nested parse nested bean definition
 		if (childElements.size() == 1) {
 			return parserContext.getDelegate().parsePropertySubElement(childElements.get(0),
 					builder.getRawBeanDefinition());
+		}
+		else {
+			if (single) {
+				parserContext.getReaderContext().error(
+						"the element '" + element.getLocalName()
+								+ "' does not support multiple nested bean definitions", element);
+			}
 		}
 
 		ManagedList<Object> list = new ManagedList<Object>();
@@ -197,6 +239,14 @@ abstract class ParsingUtils {
 
 		attrBuilder.addPropertyValue("evictionAttributes", evictionDefBuilder.getBeanDefinition());
 		return true;
+	}
+
+	static void parseTransportFilters(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		Element transportFilterElement = DomUtils.getChildElementByTagName(element, "transport-filter");
+		if (transportFilterElement != null) {
+			builder.addPropertyValue("transportFilters",
+					parseRefOrNestedBeanDeclaration(parserContext, transportFilterElement, builder));
+		}
 	}
 
 	static void parseStatistics(Element element, BeanDefinitionBuilder attrBuilder) {
@@ -273,6 +323,17 @@ abstract class ParsingUtils {
 			membershipAttributesBuilder.addConstructorArgValue(resumptionAction);
 
 			attrBuilder.addPropertyValue("membershipAttributes", membershipAttributesBuilder.getRawBeanDefinition());
+		}
+	}
+
+	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
+		boolean checkGemfireV7 = !GEMFIRE_VERSION.startsWith("7");
+		if (checkGemfireV7) {
+			String messagePrefix = (attributeName == null) ? "element '" + elementName + "'" : "attribute '"
+					+ attributeName + " of element '" + elementName + "'";
+			parserContext.getReaderContext().error(
+					messagePrefix + " requires Gemfire version 7 or later. The current version is " + GEMFIRE_VERSION,
+					null);
 		}
 	}
 

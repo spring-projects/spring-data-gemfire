@@ -44,23 +44,30 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 	}
 
 	@Test
-	public void testBasicCache() throws Exception {
+	public void testAll() throws Exception {
+		testBasicCache();
+		testNamedCache();
+		testCacheWithXml();
+		// testBasicClientCache();
+		// testBasicClientCacheWithXml();
+		testHeapTunedCache();
+	}
+
+	private void testBasicCache() throws Exception {
 		assertTrue(ctx.containsBean("gemfire-cache"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&gemfire-cache");
 		assertNull(TestUtils.readField("cacheXml", cfb));
 		assertNull(TestUtils.readField("properties", cfb));
 	}
 
-	@Test
-	public void testNamedCache() throws Exception {
+	private void testNamedCache() throws Exception {
 		assertTrue(ctx.containsBean("cache-with-name"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache-with-name");
 		assertNull(TestUtils.readField("cacheXml", cfb));
 		assertNull(TestUtils.readField("properties", cfb));
 	}
 
-	@Test
-	public void testCacheWithXml() throws Exception {
+	private void testCacheWithXml() throws Exception {
 		assertTrue(ctx.containsBean("cache-with-xml"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache-with-xml");
 		Resource res = TestUtils.readField("cacheXml", cfb);
@@ -106,8 +113,7 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		assertEquals("gemfire-client-cache.xml", res.getFilename());
 	}
 
-	@Test
-	public void testHeapTunedCache() throws Exception {
+	private void testHeapTunedCache() throws Exception {
 		assertTrue(ctx.containsBean("heap-tuned-cache"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&heap-tuned-cache");
 		Float chp = (Float) TestUtils.readField("criticalHeapPercentage", cfb);

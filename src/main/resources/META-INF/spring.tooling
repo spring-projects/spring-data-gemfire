@@ -2,3 +2,7 @@
 http\://www.springframework.org/schema/gemfire@name=gemfire Namespace
 http\://www.springframework.org/schema/gemfire@prefix=gfe
 http\://www.springframework.org/schema/gemfire@icon=org/springframework/data/gemfire/config/spring-gemfire.gif
+#
+http\://www.springframework.org/schema/data/gemfire@name=Spring data gemfire Namespace
+http\://www.springframework.org/schema/data/gemfire@prefix=gfe-data
+http\://www.springframework.org/schema/data/gemfire@icon=org/springframework/data/gemfire/config/spring-gemfire.gif

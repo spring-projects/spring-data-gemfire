@@ -42,11 +42,24 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#createAssociation()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#
+	 * createAssociation()
 	 */
 	@Override
 	protected Association<GemfirePersistentProperty> createAssociation() {
-		return null;
+		return new Association<GemfirePersistentProperty>(this, null);
 	}
+
+	@Override
+	public boolean isAssociation() {
+		return field.isAnnotationPresent(RegionRef.class) || super.isAssociation();
+	}
+
+	public RegionRef geRegionRef() {
+		return getField().getAnnotation(RegionRef.class);
+	}
+
 }

@@ -48,12 +48,18 @@ public class PartitionedRegionNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
-	public void testBasicPartition() throws Exception {
+	public void testAll() throws Exception {
+		testBasicPartition();
+		testComplexPartition();
+		testPartitionOptions();
+	}
+
+	private void testBasicPartition() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 
-	@Test
-	public void testPartitionOptions() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testPartitionOptions() throws Exception {
 		assertTrue(context.containsBean("options"));
 		RegionFactoryBean fb = context.getBean("&options", RegionFactoryBean.class);
 		assertTrue(fb instanceof PartitionedRegionFactoryBean);
@@ -70,8 +76,8 @@ public class PartitionedRegionNamespaceTest {
 		assertSame(SimplePartitionResolver.class, pAttr.getPartitionResolver().getClass());
 	}
 
-	@Test
-	public void testComplexPartition() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testComplexPartition() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
 		CacheListener[] listeners = TestUtils.readField("cacheListeners", fb);

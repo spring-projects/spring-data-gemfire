@@ -35,9 +35,15 @@ public class SubRegionTest extends RecreatingContextTest {
 		return "org/springframework/data/gemfire/basic-subregion.xml";
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
-	public void testBasic() throws Exception {
+	public void testAll() throws Exception {
+		testBasic();
+		testContext();
+		testChildOnly();
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void testBasic() throws Exception {
 		CacheFactoryBean cfb = new CacheFactoryBean();
 		cfb.setUseBeanFactoryLocator(false);
 		cfb.afterPropertiesSet();
@@ -57,13 +63,10 @@ public class SubRegionTest extends RecreatingContextTest {
 
 		assertNotNull(parent.getSubregion("child"));
 		assertSame(child, parent.getSubregion("child"));
-
-		cache.close();
 	}
 
 	@SuppressWarnings("rawtypes")
-	@Test
-	public void testContext() throws Exception {
+	private void testContext() throws Exception {
 		Region parent = ctx.getBean("parent", Region.class);
 		Region child = ctx.getBean("/parent/child", Region.class);
 		assertNotNull(parent.getSubregion("child"));
@@ -72,7 +75,6 @@ public class SubRegionTest extends RecreatingContextTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	@Test
 	public void testChildOnly() throws Exception {
 		Region child = ctx.getBean("/parent/child", Region.class);
 		assertEquals("/parent/child", child.getFullPath());

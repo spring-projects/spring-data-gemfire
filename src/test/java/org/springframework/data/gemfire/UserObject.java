@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire;
 
-import org.springframework.data.gemfire.WiringDeclarableSupport;
-
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheLoaderException;
 import com.gemstone.gemfire.cache.LoaderHelper;
@@ -27,11 +25,13 @@ import com.gemstone.gemfire.cache.LoaderHelper;
  * 
  * @author Costin Leau
  */
+@SuppressWarnings("rawtypes")
 public class UserObject extends WiringDeclarableSupport implements CacheLoader {
 
 	public static UserObject THIS;
 
 	private String prop1;
+
 	private Object prop2;
 
 	public UserObject() {
@@ -39,6 +39,7 @@ public class UserObject extends WiringDeclarableSupport implements CacheLoader {
 		THIS = this;
 	}
 
+	@Override
 	public Object load(LoaderHelper helper) throws CacheLoaderException {
 		return new Object();
 	}

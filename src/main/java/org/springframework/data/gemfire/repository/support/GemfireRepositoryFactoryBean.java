@@ -17,6 +17,7 @@ package org.springframework.data.gemfire.repository.support;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
@@ -29,7 +30,6 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
-import com.gemstone.bp.edu.emory.mathcs.backport.java.util.Collections;
 import com.gemstone.gemfire.cache.Region;
 
 /**
@@ -38,20 +38,24 @@ import com.gemstone.gemfire.cache.Region;
  * @author Oliver Gierke
  */
 public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
-RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
+		RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
 
 	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context;
+
 	private Iterable<Region<?, ?>> regions;
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 * 
+	 * @see
+	 * org.springframework.context.ApplicationContextAware#setApplicationContext
+	 * (org.springframework.context.ApplicationContext)
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		Collection<Region> regions = applicationContext.getBeansOfType(Region.class).values();
-		this.regions = Collections.unmodifiableCollection(regions);
+		this.regions = (Iterable) Collections.unmodifiableCollection(regions);
 	}
 
 	/**
@@ -59,13 +63,17 @@ RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
 	 * 
 	 * @param context the context to set
 	 */
-	public void setMappingContext(MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
+	public void setMappingContext(
+			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
 		this.context = context;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createRepositoryFactory()
+	 * 
+	 * @see
+	 * org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport
+	 * #createRepositoryFactory()
 	 */
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {

@@ -15,10 +15,12 @@
  */
 package org.springframework.data.gemfire.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -28,7 +30,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.expression.TypedValue;
 
-import com.gemstone.bp.edu.emory.mathcs.backport.java.util.Arrays;
 import com.gemstone.gemfire.pdx.PdxReader;
 
 /**
@@ -42,7 +43,6 @@ public class PdxReaderPropertyAccessorUnitTests {
 	PdxReader reader;
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void appliesToPdxReadersOnly() {
 		List<Class<?>> classes = Arrays.asList(PdxReaderPropertyAccessor.INSTANCE.getSpecificTargetClasses());
 		assertThat(classes, hasItem(PdxReader.class));

@@ -46,7 +46,12 @@ public class PoolNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
-	public void testBasicClient() throws Exception {
+	public void testAll() throws Exception {
+		testBasicClient();
+		testComplexPool();
+	}
+
+	private void testBasicClient() throws Exception {
 		assertTrue(context.containsBean("gemfire-pool"));
 		assertEquals(context.getBean("gemfire-pool"), PoolManager.find("gemfire-pool"));
 		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&gemfire-pool");
@@ -57,8 +62,7 @@ public class PoolNamespaceTest {
 		assertEquals(40403, locator.getPort());
 	}
 
-	@Test
-	public void testComplexPool() throws Exception {
+	private void testComplexPool() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&complex");
 		assertEquals(30, TestUtils.readField("retryAttempts", pfb));

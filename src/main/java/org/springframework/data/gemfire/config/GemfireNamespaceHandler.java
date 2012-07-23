@@ -16,8 +16,13 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
-import org.springframework.data.gemfire.repository.config.GemfireRepositoryParser;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.w3c.dom.Element;
 
 /**
  * Namespace handler for GemFire definitions.
@@ -26,12 +31,25 @@ import org.springframework.data.gemfire.repository.config.GemfireRepositoryParse
  * @author David Turanski
  */
 class GemfireNamespaceHandler extends NamespaceHandlerSupport {
+	static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList("async-event-queue", "gateway-sender",
+			"gateway-receiver");
+
+	@Override
+	public BeanDefinition parse(Element element, ParserContext parserContext) {
+
+		boolean v7ElementsPresent = GEMFIRE7_ELEMENTS.contains(element.getLocalName());
+
+		if (v7ElementsPresent) {
+			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), null, parserContext);
+		}
+
+		return super.parse(element, parserContext);
+	}
 
 	@Override
 	public void init() {
 		registerBeanDefinitionParser("cache", new CacheParser());
 		registerBeanDefinitionParser("client-cache", new ClientCacheParser());
-
 		registerBeanDefinitionParser("lookup-region", new LookupRegionParser());
 		registerBeanDefinitionParser("replicated-region", new ReplicatedRegionParser());
 		registerBeanDefinitionParser("partitioned-region", new PartitionedRegionParser());
@@ -43,6 +61,10 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("cache-server", new CacheServerParser());
 		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());
 		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
-		registerBeanDefinitionParser("repositories", new GemfireRepositoryParser());
+		registerBeanDefinitionParser("async-event-queue", new AsyncEventQueueParser());
+		registerBeanDefinitionParser("gateway-sender", new GatewaySenderParser());
+		registerBeanDefinitionParser("gateway-receiver", new GatewayReceiverParser());
+		// V6 WAN parsers
+		registerBeanDefinitionParser("gateway-hub", new GatewayHubParser());
 	}
 }

@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.config;
 
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.cache.util.ObjectSizerImpl;
+import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.data.gemfire.repository.config.GemfireRepositoryParser;
 
 /**
+ * Namespace handler for GemFire definitions.
+ * 
  * @author Costin Leau
+ * @author David Turanski
  */
-public class SimpleObjectSizer implements ObjectSizer {
-
-	private static final ObjectSizer sizer = new ObjectSizerImpl();
+class GemfireDataNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
-	public int sizeof(Object o) {
-		return sizer.sizeof(o);
+	public void init() {
+		registerBeanDefinitionParser("repositories", new GemfireRepositoryParser());
 	}
-
 }

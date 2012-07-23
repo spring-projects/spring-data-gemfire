@@ -21,6 +21,7 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 /**
  * @author Costin Leau
  */
+@SuppressWarnings("rawtypes")
 public class SimpleCacheWriter extends CacheWriterAdapter {
 
 }

@@ -23,12 +23,15 @@ import com.gemstone.gemfire.cache.LoaderHelper;
 /**
  * @author Costin Leau
  */
+@SuppressWarnings("rawtypes")
 public class SimpleCacheLoader implements CacheLoader {
 
+	@Override
 	public Object load(LoaderHelper helper) throws CacheLoaderException {
 		return null;
 	}
 
+	@Override
 	public void close() {
 	}
 }

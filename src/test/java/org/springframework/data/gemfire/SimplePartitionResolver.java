@@ -24,16 +24,20 @@ import com.gemstone.gemfire.cache.PartitionResolver;
 /**
  * @author Costin Leau
  */
+@SuppressWarnings("rawtypes")
 public class SimplePartitionResolver implements PartitionResolver {
 
+	@Override
 	public String getName() {
 		return getClass().getName();
 	}
 
+	@Override
 	public Serializable getRoutingObject(EntryOperation opDetails) {
 		return getName();
 	}
 
+	@Override
 	public void close() {
 	}
 }

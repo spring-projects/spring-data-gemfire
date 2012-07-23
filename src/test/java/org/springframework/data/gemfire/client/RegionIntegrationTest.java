@@ -40,7 +40,6 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 
-
 /**
  * @author Costin Leau
  */
@@ -53,10 +52,12 @@ public class RegionIntegrationTest {
 
 	private static class CacheLoad<K, V> implements CacheLoader<K, V> {
 
+		@Override
 		public V load(LoaderHelper<K, V> arg0) throws CacheLoaderException {
 			return null;
 		}
 
+		@Override
 		public void close() {
 		}
 	}
@@ -68,20 +69,28 @@ public class RegionIntegrationTest {
 	private ApplicationContext ctx;
 
 	@Test
-	public void testBasicRegion() throws Exception {
+	public void testAll() throws Exception {
+		testBasicRegion();
+		testExistingRegion();
+		testRegionWithListeners();
+		testRegionAttributes();
+	}
+
+	private void testBasicRegion() throws Exception {
+		@SuppressWarnings("rawtypes")
 		Region region = ctx.getBean("basic", Region.class);
 		assertEquals("basic", region.getName());
 	}
 
-	@Test
-	public void testExistingRegion() throws Exception {
+	private void testExistingRegion() throws Exception {
+		@SuppressWarnings("rawtypes")
 		Region region = ctx.getBean("root", Region.class);
 		// the name property seems to be ignored
 		assertEquals("root", region.getName());
 	}
 
-	@Test
-	public void testRegionWithListeners() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testRegionWithListeners() throws Exception {
 		Region region = ctx.getBean("listeners", Region.class);
 		assertEquals("listeners", region.getName());
 		CacheListener[] listeners = region.getAttributes().getCacheListeners();
@@ -91,17 +100,20 @@ public class RegionIntegrationTest {
 		assertSame(CacheWrite.class, region.getAttributes().getCacheWriter().getClass());
 	}
 
-	//@Test
-	// TODO: disabled since the interest registration requires a proper pool to be created, which requires another JVM to run with the server/locator
+	// @Test
+	// TODO: disabled since the interest registration requires a proper pool to
+	// be created, which requires another JVM to run with the server/locator
+	@SuppressWarnings("rawtypes")
 	public void testRegionInterest() throws Exception {
 		ClientRegionFactoryBean regionFB = (ClientRegionFactoryBean) ctx.getBean("&basic-client");
 		System.out.println("**** interests are " + Arrays.toString(regionFB.getInterests()));
-		BeanDefinition bd = ((BeanDefinitionRegistry) ctx.getAutowireCapableBeanFactory()).getBeanDefinition("basic-client");
+		BeanDefinition bd = ((BeanDefinitionRegistry) ctx.getAutowireCapableBeanFactory())
+				.getBeanDefinition("basic-client");
 		System.out.println(bd.getPropertyValues().getPropertyValue("interests").getValue());
 	}
 
-	@Test
-	public void testRegionAttributes() throws Exception {
+	@SuppressWarnings("rawtypes")
+	private void testRegionAttributes() throws Exception {
 		Region region = ctx.getBean("attr-region", Region.class);
 		assertEquals("attr-region", region.getName());
 		RegionAttributes attr = region.getAttributes();

@@ -17,7 +17,6 @@
 package org.springframework.data.gemfire;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
+import com.gemstone.gemfire.cache.AsyncEventQueue;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -39,11 +39,12 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
- * FactoryBean for creating generic GemFire {@link Region}s. Will try to first
- * locate the region (by name) and, in case none if found, proceed to creating
- * one using the given settings.
+ * Base class for FactoryBeans used to create GemFire {@link Region}s. Will try
+ * to first locate the region (by name) and, in case none if found, proceed to
+ * creating one using the given settings.
  * 
  * Note that this factory bean allows for very flexible creation of GemFire
  * {@link Region}. For "client" regions however, see
@@ -69,19 +70,25 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private CacheWriter<K, V> cacheWriter;
 
+	private GatewaySender gatewaySenders[];
+
+	private AsyncEventQueue asyncEventQueues[];
+
 	private RegionAttributes<K, V> attributes;
 
 	private Scope scope;
 
 	private boolean persistent;
 
+	private Boolean enableGateway;
+
+	private String hubId;
+
 	private String diskStoreName;
 
 	private String dataPolicyName;
 
 	private Region<K, V> region;
-
-	private List<Region<?, ?>> subRegions;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -102,9 +109,36 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes) : c
 				.<K, V> createRegionFactory());
 
+		if (hubId != null) {
+			enableGateway = enableGateway == null ? true : enableGateway;
+			Assert.isTrue(enableGateway, "hubId requires the enableGateway property to be true");
+
+			regionFactory.setGatewayHubId(hubId);
+		}
+		if (enableGateway != null) {
+			if (enableGateway) {
+				Assert.notNull(hubId, "enableGateway requires the hubId property to be true");
+			}
+			regionFactory.setEnableGateway(enableGateway);
+		}
 		if (!ObjectUtils.isEmpty(cacheListeners)) {
 			for (CacheListener<K, V> listener : cacheListeners) {
 				regionFactory.addCacheListener(listener);
+			}
+		}
+
+		if (!ObjectUtils.isEmpty(gatewaySenders)) {
+			Assert.isTrue(
+					hubId == null,
+					"It is invalid to configure a region with both a hubId and gatewaySenders. Note that the enableGateway and hubId properties are deprecated since Gemfire 7.0");
+			for (GatewaySender gatewaySender : gatewaySenders) {
+				regionFactory.addGatewaySender(gatewaySender);
+			}
+		}
+
+		if (!ObjectUtils.isEmpty(asyncEventQueues)) {
+			for (AsyncEventQueue asyncEventQueue : asyncEventQueues) {
+				regionFactory.addAsyncEventQueue(asyncEventQueue);
 			}
 		}
 
@@ -256,11 +290,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.cacheListeners = cacheListeners;
 	}
 
-	public void setSubRegions(List<Region<?, ?>> subRegions) {
-		log.info("setting subRegions");
-		this.subRegions = subRegions;
-	}
-
 	/**
 	 * Sets the cache loader used for the region used by this factory. Used only
 	 * when a new region is created.Overrides the settings specified through
@@ -313,6 +342,22 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 */
 	public void setDiskStoreName(String diskStoreName) {
 		this.diskStoreName = diskStoreName;
+	}
+
+	public void setGatewaySenders(GatewaySender[] gatewaySenders) {
+		this.gatewaySenders = gatewaySenders;
+	}
+
+	public void setAsyncEventQueues(AsyncEventQueue[] asyncEventQueues) {
+		this.asyncEventQueues = asyncEventQueues;
+	}
+
+	public void setEnableGateway(boolean enableGateway) {
+		this.enableGateway = enableGateway;
+	}
+
+	public void setHubId(String hubId) {
+		this.hubId = hubId;
 	}
 
 	/**
