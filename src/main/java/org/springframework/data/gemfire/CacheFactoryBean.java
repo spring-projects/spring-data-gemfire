@@ -47,6 +47,9 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
+import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -128,6 +131,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			}
 			if (messageSyncInterval != null) {
 				cacheImpl.setMessageSyncInterval(messageSyncInterval);
+			}
+
+			if (gatewayConflictResolver != null) {
+				cacheImpl.setGatewayConflictResolver(gatewayConflictResolver);
 			}
 		}
 	}
@@ -258,6 +265,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	protected List<JndiDataSource> jndiDataSources;
 
+	protected List<Function> functions;
+
+	protected GatewayConflictResolver gatewayConflictResolver;
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		// initialize locator
@@ -324,9 +335,21 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			registerTransactionListeners();
 			registerTransactionWriter();
 			registerJndiDataSources();
+			registerFunctions();
 		}
 		finally {
 			th.setContextClassLoader(oldTCCL);
+		}
+	}
+
+	/**
+	 * 
+	 */
+	private void registerFunctions() {
+		if (!CollectionUtils.isEmpty(functions)) {
+			for (Function function : functions) {
+				FunctionService.registerFunction(function);
+			}
 		}
 	}
 
@@ -603,6 +626,14 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	public void setTransactionWriter(TransactionWriter transactionWriter) {
 		this.transactionWriter = transactionWriter;
+	}
+
+	public void setFunctions(List<Function> functions) {
+		this.functions = functions;
+	}
+
+	public void setGatewayConflictResolver(GatewayConflictResolver gatewayConflictResolver) {
+		this.gatewayConflictResolver = gatewayConflictResolver;
 	}
 
 	public void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {

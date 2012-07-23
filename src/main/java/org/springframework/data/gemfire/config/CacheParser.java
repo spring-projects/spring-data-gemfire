@@ -84,6 +84,20 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, txWriter, builder));
 		}
 
+		Element gatewayConflictResolver = DomUtils.getChildElementByTagName(element, "gateway-conflict-resolver");
+		if (gatewayConflictResolver != null) {
+			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), "gateway-conflict-resolver",
+					parserContext);
+			builder.addPropertyValue("gatewayConflictResolver",
+					ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, gatewayConflictResolver, builder));
+		}
+
+		Element function = DomUtils.getChildElementByTagName(element, "function");
+		if (function != null) {
+			builder.addPropertyValue("functions",
+					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, function, builder));
+		}
+
 		parseDynamicRegionFactory(element, builder);
 		parseJndiBindings(element, builder);
 	}

@@ -35,6 +35,45 @@ and may be nested or referenced.
 			]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
+            <xsd:element name="gateway-conflict-resolver"
+                minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation
+                        source="com.gemstone.gemfire.cache.util.GatewayConflictResolver"><![CDATA[
+A gateway conflict resolver for this cache. A gateway conflict resolver handles conflicts in the case of concurrent updates using a WAN gateway. The bean
+must implement com.gemstone.gemfire.cache.util.GatewayConflictResolver. Requires Gemfire version 7.0 or higher.
+                            ]]></xsd:documentation>
+                    <xsd:appinfo>
+                        <tool:annotation>
+                            <tool:exports
+                                type="com.gemstone.gemfire.cache.util.GatewayConflictResolver" />
+                        </tool:annotation>
+                    </xsd:appinfo>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:any namespace="##other"
+                            processContents="skip" minOccurs="0"
+                            maxOccurs="unbounded">
+                            <xsd:annotation>
+                                <xsd:documentation><![CDATA[
+Inner bean definition of the gateway conflict resolver.
+                                        ]]></xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:any>
+                    </xsd:sequence>
+                    <xsd:attribute name="ref" type="xsd:string"
+                        use="optional">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+The name of the gateway conflict resolver bean referred by this declaration. Used as a convenience method. If no reference exists, 
+use inner bean declarations.
+                                    ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+
             <xsd:element name="dynamic-region-factory"
                 minOccurs="0" maxOccurs="1">
                 <xsd:annotation>
@@ -2438,6 +2477,58 @@ The id of the cache - default is gemfire-cache
             <xsd:enumeration value="PRELOADED" />
         </xsd:restriction>
     </xsd:simpleType>
+
+    <xsd:element name="function-service">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="function" minOccurs="0"
+                    maxOccurs="1">
+                    <xsd:annotation>
+                        <xsd:documentation
+                            source="com.gemstone.gemfire.cache.execute.Function"><![CDATA[
+Declares one or more remote functions for this cache and register's with them the FunctionService. each bean
+must implement com.gemstone.gemfire.cache.execute.Function
+                            ]]></xsd:documentation>
+                        <xsd:appinfo>
+                            <tool:annotation>
+                                <tool:exports
+                                    type="com.gemstone.gemfire.cache.execute.Function" />
+                            </tool:annotation>
+                        </xsd:appinfo>
+                    </xsd:annotation>
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:any namespace="##other"
+                                processContents="skip" minOccurs="0"
+                                maxOccurs="unbounded">
+                                <xsd:annotation>
+                                    <xsd:documentation><![CDATA[
+Inner bean definition of the remote function.
+                                        ]]></xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:any>
+                        </xsd:sequence>
+                        <xsd:attribute name="ref" type="xsd:string"
+                            use="optional">
+                            <xsd:annotation>
+                                <xsd:documentation><![CDATA[
+The name of the remote function bean referred by this declaration. Used as a convenience method. If no reference exists, 
+use inner bean declarations.
+                                    ]]></xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:attribute>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string" use="optional">
+                        <xsd:annotation>
+                                <xsd:documentation><![CDATA[
+The id of the function service (optional)
+                                    ]]></xsd:documentation>
+                            </xsd:annotation>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
     <!-- -->
     <xsd:simpleType name="scopeType">
         <xsd:annotation>

@@ -64,6 +64,7 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("async-event-queue", new AsyncEventQueueParser());
 		registerBeanDefinitionParser("gateway-sender", new GatewaySenderParser());
 		registerBeanDefinitionParser("gateway-receiver", new GatewayReceiverParser());
+		registerBeanDefinitionParser("function-service", new FunctionServiceParser());
 		// V6 WAN parsers
 		registerBeanDefinitionParser("gateway-hub", new GatewayHubParser());
 	}

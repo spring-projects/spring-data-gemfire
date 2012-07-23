@@ -12,7 +12,7 @@
 	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
 	<!-- as there can be only one cache per VM -->
 	
-	<gfe:cache />
+	<gfe:cache/>
 	
 	<gfe:cache id="cache-with-name"/>
 	
@@ -29,4 +29,11 @@
 	<gfe:client-cache id="client-cache-with-xml" cache-xml-location="classpath:gemfire-client-cache.xml"/>
 
     <gfe:cache id="heap-tuned-cache" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
+    
+    <gfe:cache id="cache-with-conflict-resolver">
+        <gfe:gateway-conflict-resolver>
+            <bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestConflictResolver"/>
+        </gfe:gateway-conflict-resolver>
+    </gfe:cache>
 </beans>
+    
