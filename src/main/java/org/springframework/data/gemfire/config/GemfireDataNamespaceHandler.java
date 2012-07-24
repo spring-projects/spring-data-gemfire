@@ -17,18 +17,23 @@
 package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
-import org.springframework.data.gemfire.repository.config.GemfireRepositoryParser;
+import org.springframework.data.gemfire.repository.config.GemfireRepositoryConfigurationExtension;
+import org.springframework.data.repository.config.RepositoryBeanDefinitionParser;
+import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 
 /**
  * Namespace handler for GemFire definitions.
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author Oliver Gierke
  */
 class GemfireDataNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
 	public void init() {
-		registerBeanDefinitionParser("repositories", new GemfireRepositoryParser());
+		// Repository namespace
+		RepositoryConfigurationExtension extension = new GemfireRepositoryConfigurationExtension();
+		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(extension));
 	}
 }

@@ -216,21 +216,21 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	private GemFireCache cache;
+	protected GemFireCache cache;
 
-	private Resource cacheXml;
+	protected Resource cacheXml;
 
-	private Properties properties;
+	protected Properties properties;
 
-	private ClassLoader beanClassLoader;
+	protected ClassLoader beanClassLoader;
 
-	private GemfireBeanFactoryLocator factoryLocator;
+	protected GemfireBeanFactoryLocator factoryLocator;
 
-	private BeanFactory beanFactory;
+	protected BeanFactory beanFactory;
 
-	private String beanName;
+	protected String beanName;
 
-	private boolean useBeanFactoryLocator = true;
+	protected boolean useBeanFactoryLocator = true;
 
 	// PDX options
 	protected Object pdxSerializer;

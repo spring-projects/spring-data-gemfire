@@ -21,9 +21,6 @@ targetNamespace="http://www.springframework.org/schema/data/gemfire" elementForm
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="repository:repositories">
-					<xsd:sequence>
-						<xsd:element name="repository" type="gemfire-repository" minOccurs="0" maxOccurs="unbounded"/>
-					</xsd:sequence>
 					<xsd:attributeGroup ref="gemfire-repository-attributes"/>
 					<xsd:attributeGroup ref="repository:repository-attributes"/>
 				</xsd:extension>
@@ -31,31 +28,21 @@ targetNamespace="http://www.springframework.org/schema/data/gemfire" elementForm
 		</xsd:complexType>
 	</xsd:element>
 	<!-- -->
-	<xsd:complexType name="gemfire-repository">
-		<xsd:complexContent>
-			<xsd:extension base="repository:repository">
-				<xsd:attributeGroup ref="gemfire-repository-attributes"/>
-				<xsd:attributeGroup ref="repository:repository-attributes"/>
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
-	<!-- -->
 	<xsd:attributeGroup name="gemfire-repository-attributes">
-		<xsd:attribute name="gemfire-template-ref" type="gemfireTemplateRef" default="gemfireTemplate">
+		<xsd:attribute name="mapping-context-ref" type="mappingContextRef">
 			<xsd:annotation>
 				<xsd:documentation>
-                    The reference to a GemfireTemplate.
-                    Will default to 'gemfireTemplate'.
+                    The reference to a MappingContext. If not set a default one will be created.
                 </xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:attributeGroup>
 	<!-- -->
-	<xsd:simpleType name="gemfireTemplateRef">
+	<xsd:simpleType name="mappingContextRef">
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
-					<tool:assignable-to type="org.springframework.data.gemfire.GemfireTemplate"/>
+					<tool:assignable-to type="org.springframework.data.gemfire.GemfireMappingContext"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>

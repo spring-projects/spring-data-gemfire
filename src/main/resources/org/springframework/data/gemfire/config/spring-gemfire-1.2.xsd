@@ -2818,7 +2818,7 @@ THREAD:Indicates that events will be parallelized based on the event's originati
             use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
-
+Specifies the number of parallel threads
             ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>

@@ -1,6 +1,28 @@
 SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
+Changes in version 1.2.0.RELEASE (2012-08-15)
+---------------------------------------------
+General
+* Upgraded to GemFire 7.0
+* Upgraded to Spring 3.1.2.RELEASE
+* Upgraded to Spring Data Commons 1.4.0.RELEASE
+* XML namespace supports everything that can be configured with Cache XML
+
+Enhancements
+* [SGF-53] - Add "enable-gateway" to replicated and partitioned region namespace config
+* [SGF-75] - Ability to define gateways in the Spring Gemfire namespace
+* [SGF-76] - Disk store should be its own bean
+* [SGF-79] - Missing gateway attributes for regions
+* [SGF-86] - Make instance variables protected in CacheFactoryBean
+* [SGF-95] - Add namespace support for subregions
+* [SGF-98] - Provide namespace support for all cache and region properties
+* [SGF-102] - Add support for JavaConfig for repositories
+* [SGF-104] - The repository deleteAll() method only works for replicated regions
+* [SGF-109] - Separate repository support into its own namespace
+
+Bug Fixes
+
 
 Changes in version 1.1.2.RELEASE (2012-07-04)
 ---------------------------------------------

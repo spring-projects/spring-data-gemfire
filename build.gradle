@@ -14,7 +14,9 @@ version = "$springGemfireVersion"
 
 repositories {
   maven { url "http://repo.springsource.org/libs-snapshot" }
-  maven { url "http://repo.springsource.org/plugins-release" }
+  maven { url "http://repo.springsource.org/plugins-release"}
+  //TODO: This is temporary for the Gemfire 7.0 dependency
+  maven { url "https://repo.springsource.org/ext-private-local"}
 }
 
 
@@ -61,6 +63,7 @@ dependencies {
     // Spring Data
     compile "org.springframework.data:spring-data-commons-core:${springDataCommonsVersion}"
 	//
+	testCompile "cglib:cglib:${cglibVersion}"
 	testCompile "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
 }
 
