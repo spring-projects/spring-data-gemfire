@@ -15,13 +15,13 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -108,13 +108,24 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 		assertResultsFound(repository.findByFirstnameOrLastname("Carter", "Matthews"), carter, dave);
 	}
 
-	private <T> void assertResultsFound(Collection<T> result, T... expected) {
+	/**
+	 * @see SGF-101
+	 */
+	@Test
+	public void deletesAllEntitiesFromRegions() {
+
+		repository.deleteAll();
+
+		assertResultsFound(repository.findAll());
+	}
+
+	private <T> void assertResultsFound(Iterable<T> result, T... expected) {
 
 		assertThat(result, is(notNullValue()));
-		assertThat(result.size(), is(expected.length));
+		assertThat(result, is(Matchers.<T> iterableWithSize(expected.length)));
 
 		for (T element : expected) {
-			assertThat(result.contains(element), is(true));
+			assertThat(result, hasItem(element));
 		}
 	}
 }
