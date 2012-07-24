@@ -1106,6 +1106,22 @@ colocate data based on custom criterias (such as colocating trades by month and 
                             </xsd:appinfo>
                         </xsd:annotation>
                     </xsd:element>
+                    <xsd:element name="partition-listener"
+                        type="beanDeclarationType" minOccurs="0"
+                        maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation
+                                source="com.gemstone.gemfire.cache.partition.PartitionListener"><![CDATA[
+The partition listener definition for this region. Defines a callback for partitioned regions, invoked when a partition region is created or any bucket in a partitioned region becomes primary
+                                ]]></xsd:documentation>
+                            <xsd:appinfo>
+                                <tool:annotation>
+                                    <tool:exports
+                                        type="com.gemstone.gemfire.cache.partition.PartitionListener" />
+                                </tool:annotation>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>                    
                     <xsd:element name="eviction" minOccurs="0"
                         maxOccurs="1">
                         <xsd:annotation>

@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -35,7 +36,9 @@ import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.partition.PartitionListener;
 
 /**
  * @author Costin Leau
@@ -90,7 +93,38 @@ public class PartitionedRegionNamespaceTest {
 
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		PartitionAttributes pAttr = attrs.getPartitionAttributes();
-
 		assertEquals(20, pAttr.getLocalMaxMemory());
+
+		assertNotNull(pAttr.getPartitionListeners());
+		assertEquals(1, pAttr.getPartitionListeners().length);
+		assertTrue(pAttr.getPartitionListeners()[0] instanceof TestPartitionListener);
+	}
+
+	public static class TestPartitionListener implements PartitionListener {
+
+		@Override
+		public void afterBucketCreated(int arg0, Iterable<?> arg1) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void afterBucketRemoved(int arg0, Iterable<?> arg1) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void afterPrimary(int arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void afterRegionCreate(Region<?, ?> arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
 	}
 }

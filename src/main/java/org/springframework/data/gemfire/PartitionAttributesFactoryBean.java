@@ -16,71 +16,88 @@
 
 package org.springframework.data.gemfire;
 
+import java.util.List;
+
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionResolver;
+import com.gemstone.gemfire.cache.partition.PartitionListener;
 
 /**
- * Spring-friendly bean for creating {@link PartitionAttributes}. Eliminates the need of using
- * a XML 'factory-method' tag and allows the attributes properties to be set directly.
+ * Spring-friendly bean for creating {@link PartitionAttributes}. Eliminates the
+ * need of using a XML 'factory-method' tag and allows the attributes properties
+ * to be set directly.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
-@SuppressWarnings("unchecked")
-public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttributes> {
+@SuppressWarnings({ "unchecked", "rawtypes" })
+public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttributes>, InitializingBean {
 
-	private com.gemstone.gemfire.cache.PartitionAttributesFactory paf = new com.gemstone.gemfire.cache.PartitionAttributesFactory();
+	private final com.gemstone.gemfire.cache.PartitionAttributesFactory paf = new com.gemstone.gemfire.cache.PartitionAttributesFactory();
 
+	private List<PartitionListener> listeners;
+
+	@Override
 	public PartitionAttributes getObject() throws Exception {
 		return paf.create();
 	}
 
+	@Override
 	public Class<?> getObjectType() {
 		return PartitionAttributes.class;
 	}
 
+	@Override
 	public boolean isSingleton() {
 		return false;
 	}
-
 
 	public void setColocatedWith(String colocatedRegionFullPath) {
 		paf.setColocatedWith(colocatedRegionFullPath);
 	}
 
-
 	public void setLocalMaxMemory(int mb) {
 		paf.setLocalMaxMemory(mb);
 	}
-
 
 	public void setPartitionResolver(PartitionResolver resolver) {
 		paf.setPartitionResolver(resolver);
 	}
 
+	public void setPartitionListeners(List<PartitionListener> listeners) {
+		this.listeners = listeners;
+	}
 
 	public void setRecoveryDelay(long recoveryDelay) {
 		paf.setRecoveryDelay(recoveryDelay);
 	}
 
-
 	public void setRedundantCopies(int redundantCopies) {
 		paf.setRedundantCopies(redundantCopies);
 	}
-
 
 	public void setStartupRecoveryDelay(long startupRecoveryDelay) {
 		paf.setStartupRecoveryDelay(startupRecoveryDelay);
 	}
 
-
 	public void setTotalMaxMemory(long mb) {
 		paf.setTotalMaxMemory(mb);
 	}
 
-
 	public void setTotalNumBuckets(int numBuckets) {
 		paf.setTotalNumBuckets(numBuckets);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (listeners != null) {
+			for (PartitionListener listener : listeners) {
+				paf.addPartitionListener(listener);
+			}
+		}
+
 	}
 }

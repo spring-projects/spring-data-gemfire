@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.config;
 
-import java.util.List;
-
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.PartitionAttributesFactoryBean;
@@ -93,13 +91,20 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			parAttrBuilder.addPropertyValue("totalNumBuckets", Integer.valueOf(attr));
 		}
 		//
-		List<Element> subElements = DomUtils.getChildElementsByTagName(element, "partition-resolver");
-		//
-		// // parse nested cache-listener elements
-		for (Element subElement : subElements) {
+		Element subElement = DomUtils.getChildElementByTagName(element, "partition-resolver");
+		// parse nested partition resolver element
+		if (subElement != null) {
 			parAttrBuilder.addPropertyValue("partitionResolver",
 					parsePartitionResolver(parserContext, subElement, builder));
 		}
+
+		subElement = DomUtils.getChildElementByTagName(element, "partition-listener");
+		// parse nested partition resolver element
+		if (subElement != null) {
+			parAttrBuilder.addPropertyValue("partitionListeners",
+					parsePartitionListeners(parserContext, subElement, builder));
+		}
+
 		//
 		// // add partition attributes attributes
 		attrBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
@@ -110,6 +115,11 @@ class PartitionedRegionParser extends AbstractRegionParser {
 	}
 
 	private Object parsePartitionResolver(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+		return ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, builder);
+	}
+
+	private Object parsePartitionListeners(ParserContext parserContext, Element subElement,
+			BeanDefinitionBuilder builder) {
 		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 }

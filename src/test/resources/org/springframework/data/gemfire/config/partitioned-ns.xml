@@ -25,6 +25,9 @@
 		</gfe:cache-listener>
 		<gfe:cache-loader ref="c-loader"/>
 		<gfe:cache-writer ref="c-writer"/>
+        <gfe:partition-listener>
+            <bean class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest.TestPartitionListener"/>
+        </gfe:partition-listener>
 	</gfe:partitioned-region>
 	
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
