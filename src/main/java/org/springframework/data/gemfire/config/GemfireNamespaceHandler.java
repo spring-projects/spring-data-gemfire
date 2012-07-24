@@ -17,13 +17,16 @@
 package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
-import org.springframework.data.gemfire.repository.config.GemfireRepositoryParser;
+import org.springframework.data.gemfire.repository.config.GemfireRepositoryConfigurationExtension;
+import org.springframework.data.repository.config.RepositoryBeanDefinitionParser;
+import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 
 /**
  * Namespace handler for GemFire definitions.
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author Oliver Gierke
  */
 class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 
@@ -43,6 +46,9 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("cache-server", new CacheServerParser());
 		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());
 		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
-		registerBeanDefinitionParser("repositories", new GemfireRepositoryParser());
+
+		// Repository namespace
+		RepositoryConfigurationExtension extension = new GemfireRepositoryConfigurationExtension();
+		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(extension));
 	}
 }
