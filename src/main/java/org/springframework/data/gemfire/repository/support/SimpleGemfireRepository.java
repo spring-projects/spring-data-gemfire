@@ -149,7 +149,11 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 		template.execute(new GemfireCallback<Void>() {
 			@SuppressWarnings("rawtypes")
 			public Void doInGemfire(Region region) {
-				region.clear();
+
+				for (Object key : region.keySet()) {
+					region.remove(key);
+				}
+
 				return null;
 			}
 		});
