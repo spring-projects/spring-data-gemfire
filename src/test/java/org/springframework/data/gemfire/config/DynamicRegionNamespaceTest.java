@@ -21,6 +21,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+
 import org.junit.Test;
 import org.springframework.data.gemfire.RecreatingContextTest;
 
@@ -47,6 +49,6 @@ public class DynamicRegionNamespaceTest extends RecreatingContextTest {
 		DynamicRegionFactory.Config config = drf.getConfig();
 		assertFalse(config.persistBackup);
 		assertFalse(config.registerInterest);
-		assertEquals("/foo", config.diskDir.getAbsolutePath());
+		assertEquals(File.separator + "foo", config.diskDir.getPath());
 	}
 }

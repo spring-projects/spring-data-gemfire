@@ -35,27 +35,24 @@ public class ForkUtil {
 
 	public static OutputStream cloneJVM(String argument) {
 		String cp = System.getProperty("java.class.path");
-		String home = System.getProperty("java.home");
-
-		Process proc = null;
+		String home = System.getProperty("java.home");	
 		String sp = System.getProperty("file.separator");
 		String java = home + sp + "bin" + sp + "java";
-		String argCp = " -cp " + cp;
 		String argClass = argument;
+		String cmd = java + "-cp " + cp + " " + argClass;
 
-		String cmd = java + argCp + " " + argClass;
+		final Process proc; 
 		try {
-			//ProcessBuilder builder = new ProcessBuilder(cmd, argCp, argClass);
-			//builder.redirectErrorStream(true);
-			proc = Runtime.getRuntime().exec(cmd);
+			ProcessBuilder builder = new ProcessBuilder(java , "-cp", cp, argClass);
+			builder.redirectErrorStream(true);
+			proc = builder.start();
 		} catch (IOException ioe) {
 			throw new IllegalStateException("Cannot start command " + cmd, ioe);
 		}
 
 		System.out.println("Started fork from command\n" + cmd);
-		final Process p = proc;
-
-		final BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		
+		final BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		final AtomicBoolean run = new AtomicBoolean(true);
 
 		Thread reader = new Thread(new Runnable() {
@@ -83,11 +80,11 @@ public class ForkUtil {
 				System.out.println("Stopping fork...");
 				run.set(false);
 				os = null;
-				if (p != null)
-					p.destroy();
+				if (proc != null)
+					proc.destroy();
 
 				try {
-					p.waitFor();
+					proc.waitFor();
 				} catch (InterruptedException e) {
 					// ignore
 				}
@@ -134,17 +131,22 @@ public class ForkUtil {
 	}
 
 	public static boolean deleteControlFile(String name) {
-		String path = TEMP_DIR + File.separator + name;
+		String path = getControlFilePath(name);
 		return new File(path).delete();
 	}
 
 	public static boolean createControlFile(String name) throws IOException {
-		String path = TEMP_DIR + File.separator + name;
+		String path = getControlFilePath(name);
+		System.out.println("creating " + path);
 		return new File(path).createNewFile();
 	}
 
 	public static boolean controlFileExists(String name) {
-		String path = TEMP_DIR + File.separator + name;
+		String path = getControlFilePath(name);
 		return new File(path).exists();
+	}
+	
+	private static String getControlFilePath(String name) {
+		return TEMP_DIR.endsWith(File.separator)? TEMP_DIR + name : TEMP_DIR + File.separator + name;
 	}
 }
