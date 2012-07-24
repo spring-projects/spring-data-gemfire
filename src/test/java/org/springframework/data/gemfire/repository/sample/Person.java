@@ -21,7 +21,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.Region;
 
 /**
- * 
  * @author Oliver Gierke
  */
 @Region("simple")
@@ -53,5 +52,34 @@ public class Person implements Serializable {
 	 */
 	public String getLastname() {
 		return lastname;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if (this == obj) {
+			return true;
+		}
+
+		if (!(obj instanceof Person)) {
+			return false;
+		}
+
+		Person that = (Person) obj;
+
+		return this.id == null ? false : this.id.equals(that.id);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return this.id == null ? 0 : this.id.hashCode();
 	}
 }
