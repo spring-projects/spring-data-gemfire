@@ -15,7 +15,6 @@ version = "$springGemfireVersion"
 repositories {
   maven { url "http://repo.springsource.org/libs-snapshot" }
   maven { url "http://repo.springsource.org/plugins-release" }
-  maven { url "http://repo1.maven.org/maven2" }
 }
 
 
