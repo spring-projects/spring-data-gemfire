@@ -22,20 +22,15 @@ import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.Scope;
-
 /**
- * Parser for &lt;replicated-region;gt; definitions.
+ * Parser for &lt;local-region;gt; definitions.
  * 
- * @author Costin Leau
  * @author David Turanski
  */
 class LocalRegionParser extends AbstractRegionParser {
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
-
-		builder.addPropertyValue("scope", Scope.LOCAL);
 
 		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
 				.genericBeanDefinition(RegionAttributesFactoryBean.class);

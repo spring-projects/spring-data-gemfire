@@ -541,11 +541,10 @@ use inner bean declarations.
                         </xsd:element>
                     </xsd:choice>
                 </xsd:sequence>
-                <xsd:attribute name="persistent" type="xsd:string"
-                    default="false">
+                <xsd:attribute name="persistent" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-Indicates whether the defined region is persistent or not. GemFire ensures that all the data you put into a region that
+Indicates whether the defined region is persistent. GemFire ensures that all the data you put into a region that
  is configured for persistence will be written to disk in a way that it can be recovered the next time you create the 
 region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart 
 of GemFire.
@@ -948,8 +947,20 @@ Provides an estimate of the maximum number of application threads that will conc
                         ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="scope" type="scopeType" />
-                <xsd:attribute name="data-policy" type="baseDataPolicyType" />
+                <xsd:attribute name="scope" type="xsd:string">
+                   <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+Specifies the scope for this region: distributed-ack,distributed-no-ack, global
+                        ]]></xsd:documentation>
+                    </xsd:annotation>                
+                </xsd:attribute>
+                <xsd:attribute name="data-policy" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+Specifies the data policy for this region
+                        ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="is-lock-grantor"
                     type="xsd:string" use="optional" default="false">
                     <xsd:annotation>
@@ -990,7 +1001,7 @@ Provides an estimate of the maximum number of application threads that will conc
     <xsd:complexType name="baseLocalRegionType">
         <xsd:annotation>
             <xsd:documentation
-                source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
+                source="org.springframework.data.gemfire.ReplicatedRegionFactoryBean"><![CDATA[
 Defines a GemFire local region instance. Each local region is scoped only to the local JVM.
             ]]></xsd:documentation>
             <xsd:appinfo>
@@ -1600,7 +1611,7 @@ The action to take when performing eviction.
                         </xsd:element>
                     </xsd:sequence>
                     <xsd:attribute name="data-policy"
-                        type="baseDataPolicyType" use="optional"
+                        type="xsd:string" use="optional"
                         default="NORMAL">
                         <xsd:annotation>
                             <xsd:documentation><![CDATA[
@@ -2486,14 +2497,6 @@ The id of the cache - default is gemfire-cache
 
     <xsd:element name="gateway-receiver" type="gatewayReceiverType" />
     <!-- -->
-    <xsd:simpleType name="baseDataPolicyType">
-        <xsd:restriction base="xsd:string">
-            <xsd:enumeration value="NORMAL" />
-            <xsd:enumeration value="EMPTY" />
-            <xsd:enumeration value="PRELOADED" />
-        </xsd:restriction>
-    </xsd:simpleType>
-
     <xsd:element name="function-service">
         <xsd:complexType>
             <xsd:sequence>

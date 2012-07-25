@@ -26,22 +26,28 @@ import com.gemstone.gemfire.cache.RegionFactory;
  */
 public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	@Override
-	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, boolean persistent, String dataPolicyName) {
-
-		DataPolicy dataPolicy = null;
-		if (dataPolicyName != null) {
-			if ("EMPTY".equals(dataPolicyName)) {
-				Assert.isTrue(!persistent, "Cannot have persistence on an empty region");
-				dataPolicy = DataPolicy.EMPTY;
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+		DataPolicy dp = null;
+		if (dataPolicy != null) {
+			dataPolicy = dataPolicy.toUpperCase();
+			if ("EMPTY".equals(dataPolicy)) {
+				Assert.isTrue(persistent == null || !persistent, "Cannot have persistence on an empty region");
+				dp = DataPolicy.EMPTY;
 			}
 			else {
-				throw new IllegalArgumentException("Data policy '" + dataPolicyName
-						+ "' is unsupported or invalid for replicated regions.");
+				dp = new DataPolicyConverter().convert(dataPolicy);
+				Assert.notNull(dp, "Data policy " + dataPolicy + " is invalid");
+				Assert.isTrue(dp.withReplication(), "Data policy " + dataPolicy
+						+ " is invalid or unsupported in replicated regions");
+				if (isPersistent()) {
+					Assert.isTrue(dp.withPersistence(), "Data policy " + dataPolicy
+							+ " is invalid when persistent is false");
+				}
 			}
 		}
 		else {
-			dataPolicy = persistent ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE;
+			dp = (isPersistent()) ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE;
 		}
-		regionFactory.setDataPolicy(dataPolicy);
+		regionFactory.setDataPolicy(dp);
 	}
 }

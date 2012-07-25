@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -54,7 +55,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * @author Costin Leau
  * @author David Turanski
  */
-public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
+public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -70,15 +71,15 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private CacheWriter<K, V> cacheWriter;
 
-	private GatewaySender gatewaySenders[];
+	private Object gatewaySenders[];
 
-	private AsyncEventQueue asyncEventQueues[];
+	private Object asyncEventQueues[];
 
 	private RegionAttributes<K, V> attributes;
 
 	private Scope scope;
 
-	private boolean persistent;
+	private Boolean persistent;
 
 	private Boolean enableGateway;
 
@@ -86,7 +87,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private String diskStoreName;
 
-	private String dataPolicyName;
+	private String dataPolicy;
 
 	private Region<K, V> region;
 
@@ -131,14 +132,14 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			Assert.isTrue(
 					hubId == null,
 					"It is invalid to configure a region with both a hubId and gatewaySenders. Note that the enableGateway and hubId properties are deprecated since Gemfire 7.0");
-			for (GatewaySender gatewaySender : gatewaySenders) {
-				regionFactory.addGatewaySender(gatewaySender);
+			for (Object gatewaySender : gatewaySenders) {
+				regionFactory.addGatewaySender((GatewaySender) gatewaySender);
 			}
 		}
 
 		if (!ObjectUtils.isEmpty(asyncEventQueues)) {
-			for (AsyncEventQueue asyncEventQueue : asyncEventQueues) {
-				regionFactory.addAsyncEventQueue(asyncEventQueue);
+			for (Object asyncEventQueue : asyncEventQueues) {
+				regionFactory.addAsyncEventQueue((AsyncEventQueue) asyncEventQueue);
 			}
 		}
 
@@ -150,7 +151,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			regionFactory.setCacheWriter(cacheWriter);
 		}
 
-		resolveDataPolicy(regionFactory, persistent, dataPolicyName);
+		resolveDataPolicy(regionFactory, persistent, dataPolicy);
 
 		if (scope != null) {
 			regionFactory.setScope(scope);
@@ -180,8 +181,31 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		return reg;
 	}
 
-	protected abstract void resolveDataPolicy(RegionFactory<K, V> regionFactory, boolean persistent,
-			String dataPolicyName);
+	/**
+	 * This validates the configured data policy and may override it, taking
+	 * into account the persistent attribute and constraints for the region type
+	 * @param regionFactory
+	 * @param persistent
+	 * @param dataPolicy requested data policy
+	 */
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+		if (dataPolicy == null) {
+			if (isPersistent()) {
+				regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+			}
+			else {
+				regionFactory.setDataPolicy(DataPolicy.DEFAULT);
+			}
+			return;
+		}
+
+		DataPolicy dp = new DataPolicyConverter().convert(dataPolicy);
+		Assert.notNull(dp, "Data policy " + dataPolicy + " is invalid");
+		if (dp.withPersistence()) {
+			Assert.isTrue(!isNotPersistent(), "Data policy " + dataPolicy + " is invalid when persistent is false");
+		}
+		regionFactory.setDataPolicy(dp);
+	}
 
 	@SuppressWarnings("unchecked")
 	private AttributesFactory<K, V> findAttrFactory(RegionFactory<K, V> regionFactory) {
@@ -330,10 +354,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	/**
 	 * Sets the dataPolicy as a String. Required to support property
 	 * placeholders
-	 * @param dataPolicyName the dataPolicy name (NORMAL, PRELOADED, etc)
+	 * @param dataPolicy the dataPolicy name (NORMAL, PRELOADED, etc)
 	 */
-	public void setDataPolicyName(String dataPolicyName) {
-		this.dataPolicyName = dataPolicyName;
+	public void setDataPolicy(String dataPolicyName) {
+		this.dataPolicy = dataPolicyName;
 	}
 
 	/**
@@ -344,11 +368,21 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.diskStoreName = diskStoreName;
 	}
 
-	public void setGatewaySenders(GatewaySender[] gatewaySenders) {
+	/**
+	 * 
+	 * @param gatewaySenders defined as Object for backward compatibility with
+	 * Gemfire 6
+	 */
+	public void setGatewaySenders(Object[] gatewaySenders) {
 		this.gatewaySenders = gatewaySenders;
 	}
 
-	public void setAsyncEventQueues(AsyncEventQueue[] asyncEventQueues) {
+	/**
+	 * 
+	 * @param asyncEventQueues defined as Object for backward compatibility with
+	 * Gemfire 6
+	 */
+	public void setAsyncEventQueues(Object[] asyncEventQueues) {
 		this.asyncEventQueues = asyncEventQueues;
 	}
 
@@ -369,5 +403,13 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 */
 	public void setAttributes(RegionAttributes<K, V> attributes) {
 		this.attributes = attributes;
+	}
+
+	protected boolean isPersistent() {
+		return persistent != null && persistent;
+	}
+
+	protected boolean isNotPersistent() {
+		return persistent != null && !persistent;
 	}
 }

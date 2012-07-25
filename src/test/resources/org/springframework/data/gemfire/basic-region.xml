@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    default-lazy-init="true"
+    xmlns:gfe="http://www.springframework.org/schema/gemfire"
+    xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire-1.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+        
+        <gfe:cache/>
+        <bean id="replicate-persistent-region" class="org.springframework.data.gemfire.RegionFactoryBean">
+            <property name="cache" ref="gemfire-cache"/>
+            <property name="dataPolicy" value="REPLICATE_PERSISTENT"/>
+        </bean>
+</beans>

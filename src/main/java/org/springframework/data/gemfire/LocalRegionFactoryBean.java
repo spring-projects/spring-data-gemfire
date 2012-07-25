@@ -17,27 +17,44 @@ package org.springframework.data.gemfire;
 
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.Scope;
 
 /**
  * @author David Turanski
  * 
  */
 public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
+	@Override
+	public void setScope(Scope scope) {
+		throw new UnsupportedOperationException("setScope() is not allowed for Local Regions");
+	}
 
 	@Override
-	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, boolean persistent, String dataPolicyName) {
-		if (dataPolicyName != null) {
-			if ("NORMAL".equals(dataPolicyName) || dataPolicyName == null) {
+	public void setPersistent(boolean persistent) {
+		throw new UnsupportedOperationException("setPersistent() is not allowed for Local Regions");
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		super.setScope(Scope.LOCAL);
+		super.afterPropertiesSet();
+	}
+
+	@Override
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+		if (dataPolicy != null) {
+			dataPolicy = dataPolicy.toUpperCase();
+			if ("NORMAL".equals(dataPolicy) || dataPolicy == null) {
 				regionFactory.setDataPolicy(DataPolicy.NORMAL);
 			}
-			else if ("PRELOADED".equals(dataPolicyName)) {
+			else if ("PRELOADED".equals(dataPolicy)) {
 				regionFactory.setDataPolicy(DataPolicy.PRELOADED);
 			}
-			else if ("EMPTY".equals(dataPolicyName)) {
+			else if ("EMPTY".equals(dataPolicy)) {
 				regionFactory.setDataPolicy(DataPolicy.EMPTY);
 			}
 			else {
-				throw new IllegalArgumentException("Data policy '" + dataPolicyName
+				throw new IllegalArgumentException("Data policy '" + dataPolicy
 						+ "' is unsupported or invalid for local regions.");
 			}
 		}

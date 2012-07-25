@@ -17,6 +17,8 @@ package org.springframework.data.gemfire;
 
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.util.Assert;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -29,8 +31,23 @@ import com.gemstone.gemfire.cache.RegionFactory;
 public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	@Override
-	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, boolean persistent, String dataPolicyName) {
-		if (persistent) {
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+		if (dataPolicy != null) {
+			DataPolicy dp = new DataPolicyConverter().convert(dataPolicy);
+			Assert.notNull(dp, "Data policy " + dataPolicy + " is invalid");
+			Assert.isTrue(dp.withPartitioning(), "Data Policy " + dp.toString()
+					+ " is not supported in partitioned regions");
+			if (!isPersistent()) {
+				regionFactory.setDataPolicy(dp);
+			}
+			else {
+				Assert.isTrue(dp.withPersistence(), "Data Policy " + dp.toString()
+						+ "is invalid when persistent is false");
+				regionFactory.setDataPolicy(dp);
+			}
+			return;
+		}
+		if (isPersistent()) {
 			// check first for GemFire 6.5
 			if (ConcurrentMap.class.isAssignableFrom(Region.class)) {
 				regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);

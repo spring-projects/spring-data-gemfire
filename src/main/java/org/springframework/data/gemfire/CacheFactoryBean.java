@@ -134,7 +134,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			}
 
 			if (gatewayConflictResolver != null) {
-				cacheImpl.setGatewayConflictResolver(gatewayConflictResolver);
+				cacheImpl.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
 			}
 		}
 	}
@@ -267,7 +267,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	protected List<Function> functions;
 
-	protected GatewayConflictResolver gatewayConflictResolver;
+	// Defined this way for backward compatibility
+	protected Object gatewayConflictResolver;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -632,7 +633,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		this.functions = functions;
 	}
 
-	public void setGatewayConflictResolver(GatewayConflictResolver gatewayConflictResolver) {
+	/**
+	 * 
+	 * @param gatewayConflictResolver defined as Object for backward
+	 * compatibility with Gemfire 6 compatibility
+	 */
+	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
 		this.gatewayConflictResolver = gatewayConflictResolver;
 	}
 
