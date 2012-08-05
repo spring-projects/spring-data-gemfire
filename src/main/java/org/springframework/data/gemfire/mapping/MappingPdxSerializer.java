@@ -42,6 +42,7 @@ import com.gemstone.gemfire.pdx.PdxWriter;
  * {@link GemfireMappingContext} to read and write entities.
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
 public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAware {
 
@@ -50,6 +51,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	private final ConversionService conversionService;
 
 	private EntityInstantiators instantiators;
+	
+	private Map<Class<?>,PdxSerializer> customSerializers;
 
 	private SpELContext context;
 
@@ -90,6 +93,14 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		this.instantiators = new EntityInstantiators(gemfireInstantiators);
 	}
 
+	/**
+	 * Configures custom pdx serializers to use for specific types 
+	 * @param customSerializers
+	 */
+	public void setCustomSerializers(Map<Class<?>, PdxSerializer> customSerializers) {
+		this.customSerializers = customSerializers;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -110,7 +121,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public Object fromData(Class<?> type, final PdxReader reader) {
-
+		// TODO: check for custom serializer (PDX)
+		
 		final GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		GemfirePropertyValueProvider propertyValueProvider = new GemfirePropertyValueProvider(reader);
@@ -131,7 +143,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 				if (entity.isConstructorArgument(persistentProperty)) {
 					return;
 				}
-
+				// TODO: check for custom serializer (Spring Converter - primitives)
 				Object value = reader.readField(persistentProperty.getName());
 
 				try {
@@ -154,17 +166,18 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public boolean toData(Object value, final PdxWriter writer) {
-
+		// TODO: check for custom serializer (PDX)
 		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(value.getClass());
 		final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(value, conversionService);
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			@Override
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
-
+				// TODO: check for custom serializer (Spring Converter)
 				try {
-					Object value = wrapper.getProperty(persistentProperty);
-					writer.writeObject(persistentProperty.getName(), value);
+					Object propertyValue = wrapper.getProperty(persistentProperty);
+					writer.writeField(persistentProperty.getName(), propertyValue, (Class) persistentProperty.getType());
 				}
 				catch (Exception e) {
 					throw new MappingException("Could not write value for property " + persistentProperty.toString(), e);

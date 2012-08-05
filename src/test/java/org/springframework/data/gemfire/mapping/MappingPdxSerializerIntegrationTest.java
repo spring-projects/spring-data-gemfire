@@ -15,14 +15,16 @@
  */
 package org.springframework.data.gemfire.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.gemfire.mapping.GemfireMappingContext;
-import org.springframework.data.gemfire.mapping.MappingPdxSerializer;
 import org.springframework.data.gemfire.repository.sample.Address;
 import org.springframework.data.gemfire.repository.sample.Person;
 
@@ -41,6 +43,8 @@ public class MappingPdxSerializerIntegrationTest {
 
 	Region<Object, Object> region;
 
+	static Cache cache;
+
 	@Before
 	public void setUp() {
 
@@ -50,8 +54,7 @@ public class MappingPdxSerializerIntegrationTest {
 		CacheFactory factory = new CacheFactory();
 		factory.setPdxSerializer(serializer);
 		factory.setPdxPersistent(true);
-
-		Cache cache = factory.create();
+		cache = factory.create();
 
 		RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
 		regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -77,5 +80,23 @@ public class MappingPdxSerializerIntegrationTest {
 		assertThat(reference.getFirstname(), is(person.getFirstname()));
 		assertThat(reference.getLastname(), is(person.getLastname()));
 		assertThat(reference.address, is(person.address));
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		try {
+			cache.close();
+		}
+		catch (Exception e) {
+		}
+		for (String name : new File(".").list(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.startsWith("BACKUP");
+			}
+		})) {
+			new File(name).delete();
+		}
 	}
 }

@@ -35,8 +35,11 @@ public class TxManagerNamespaceTest extends RecreatingContextTest {
 
 	@Test
 	public void testBasicCache() throws Exception {
+		assertTrue(ctx.containsBean("gemfireTransactionManager"));
+		//Check old style alias also registered
 		assertTrue(ctx.containsBean("gemfire-transaction-manager"));
-		GemfireTransactionManager tx = ctx.getBean("gemfire-transaction-manager", GemfireTransactionManager.class);
+				
+		GemfireTransactionManager tx = ctx.getBean("gemfireTransactionManager", GemfireTransactionManager.class);
 		assertFalse(tx.isCopyOnRead());
 	}
 }

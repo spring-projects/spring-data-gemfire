@@ -37,7 +37,7 @@ class GatewayReceiverParser extends AbstractSimpleBeanDefinitionParser {
 		builder.setLazyInit(false);
 		String cacheRef = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)
-		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef : "gemfire-cache"));
+		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef : "gemfireCache"));
 		ParsingUtils.setPropertyValue(element, builder, "start-port");
 		ParsingUtils.setPropertyValue(element, builder, "end-port");
 		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");

@@ -44,7 +44,7 @@ public class DynamicRegionNamespaceTest extends RecreatingContextTest {
 		DynamicRegionFactory drf = DynamicRegionFactory.get();
 		assertFalse(drf.isOpen());
 		assertNull(drf.getConfig());
-		ctx.getBean("gemfire-cache", Cache.class);
+		ctx.getBean("gemfireCache", Cache.class);
 		assertTrue(drf.isOpen());
 		DynamicRegionFactory.Config config = drf.getConfig();
 		assertFalse(config.persistBackup);

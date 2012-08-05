@@ -15,10 +15,13 @@
  */
 package org.springframework.data.gemfire.support;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.gemfire.CacheFactoryBean;
@@ -38,7 +41,7 @@ public abstract class AbstractRegionFactoryBeanTest {
 	@Before
 	public void setUp() throws Exception {
 		CacheFactoryBean cfb = new CacheFactoryBean();
-		cfb.setBeanName("gemfire-cache");
+		cfb.setBeanName("gemfireCache");
 		cfb.setUseBeanFactoryLocator(false);
 		cfb.afterPropertiesSet();
 		cache = cfb.getObject();
@@ -49,6 +52,19 @@ public abstract class AbstractRegionFactoryBeanTest {
 		createRegionFactoryBeanConfigs();
 		for (RegionFactoryBeanConfig rfbc : regionFactoryBeanConfigs.values()) {
 			rfbc.test();
+		}
+	}
+
+	@AfterClass
+	public static void cleanUp() {
+		for (String name : new File(".").list(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.startsWith("BACKUP");
+			}
+		})) {
+			new File(name).delete();
 		}
 	}
 

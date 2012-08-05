@@ -25,6 +25,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.cache.query.internal.ResultsBag;
+
 /**
  * {@link GemfireRepositoryQuery} using plain {@link String} based OQL queries.
  * 
@@ -81,8 +83,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		while (indexes.hasNext()) {
 			query = query.bindIn(toCollection(accessor.getBindableValue(indexes.next() - 1)));
 		}
-
-		return template.find(query.toString(), parameters);
+		return toCollection(template.find(query.toString(), parameters));
 	}
 
 	/**
@@ -93,10 +94,15 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @return
 	 */
 	private Collection<?> toCollection(Object source) {
-
+		if (source instanceof ResultsBag) {
+			ResultsBag bag = (ResultsBag)source;
+			return bag.asList();
+		}
+		
 		if (source instanceof Collection) {
 			return (Collection<?>) source;
 		}
+		
 
 		return source.getClass().isArray() ? CollectionUtils.arrayToList(source) : Collections.singleton(source);
 	}

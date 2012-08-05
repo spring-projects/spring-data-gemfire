@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- edited with XMLSpy v2011 rel. 2 sp1 (http://www.altova.com) by David 
-    Turanski (EMC) -->
 <xsd:schema xmlns="http://www.springframework.org/schema/data/gemfire" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans" 
 xmlns:tool="http://www.springframework.org/schema/tool" 
 xmlns:repository="http://www.springframework.org/schema/data/repository" 

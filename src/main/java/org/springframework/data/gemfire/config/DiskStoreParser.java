@@ -42,6 +42,7 @@ public class DiskStoreParser extends AbstractSingleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, parserContext, builder);
+		builder.setLazyInit(false);
 		ParsingUtils.setPropertyReference(element, builder, "cache-ref", "cache");
 		ParsingUtils.setPropertyValue(element, builder, "auto-compact");
 		ParsingUtils.setPropertyValue(element, builder, "allow-force-compaction");

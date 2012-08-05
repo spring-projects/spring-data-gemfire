@@ -58,8 +58,11 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 	}
 
 	private void testBasicCache() throws Exception {
+		assertTrue(ctx.containsBean("gemfireCache"));
+		//Check alias is registered
 		assertTrue(ctx.containsBean("gemfire-cache"));
-		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&gemfire-cache");
+		//
+		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&gemfireCache");
 		assertNull(TestUtils.readField("cacheXml", cfb));
 		assertNull(TestUtils.readField("properties", cfb));
 	}

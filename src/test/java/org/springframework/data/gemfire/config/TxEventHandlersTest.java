@@ -49,7 +49,7 @@ public class TxEventHandlersTest {
 	@Autowired
 	TestWriter txWriter;
 
-	@Resource(name = "gemfire-cache")
+	@Resource(name = "gemfireCache")
 	Cache cache;
 
 	@SuppressWarnings("rawtypes")

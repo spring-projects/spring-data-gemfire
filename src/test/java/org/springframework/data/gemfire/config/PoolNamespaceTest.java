@@ -52,9 +52,12 @@ public class PoolNamespaceTest {
 	}
 
 	private void testBasicClient() throws Exception {
+		assertTrue(context.containsBean("gemfirePool"));
+		//Check old style alias also registered
 		assertTrue(context.containsBean("gemfire-pool"));
-		assertEquals(context.getBean("gemfire-pool"), PoolManager.find("gemfire-pool"));
-		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&gemfire-pool");
+		
+		assertEquals(context.getBean("gemfirePool"), PoolManager.find("gemfirePool"));
+		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&gemfirePool");
 		Collection<PoolConnection> locators = TestUtils.readField("locators", pfb);
 		assertEquals(1, locators.size());
 		PoolConnection locator = locators.iterator().next();

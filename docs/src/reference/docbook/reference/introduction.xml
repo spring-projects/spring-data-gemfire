@@ -1,23 +1,28 @@
 <partintro>
    <title>Document structure</title>
 
-   <para>This part of the reference documentation explains the core functionality
-   offered by Spring GemFire integration.</para>
+   <para>The following chapters explain the core functionality offered by Spring Data GemFire.</para>
 
    <para><xref linkend="bootstrap"/> describes the configuration support provided for
-   bootstrapping, initializing and accessing a GemFire cache or region.</para>
+   bootstrapping, initializing, configuring, and accessing GemFire caches, regions and distributed system components.</para>
 
-   <para><xref linkend="apis"/> explains the integration between GemFire API and
-   the various "data" features available in Spring, such as transaction management
+   <para><xref linkend="apis"/> explains the integration between the GemFire APIs and
+   the various data access features available in Spring, such as transaction management
    and exception translation.
    </para>
 
    <para><xref linkend="serialization"/> describes the enhancements for GemFire 
-   (de)serialization process and management of associated objects.
+   (de)serialization and management of associated objects.
+   </para>
+   
+   <para><xref linkend="mapping"/> describes persistence mapping for POJOs stored in GemFire using Spring Data 
+   </para>
+   
+    <para><xref linkend="gemfire-repositories"/> describes how to create and use GemFire Repositories using Spring Data 
    </para>
 
    <para><xref linkend="samples"/> describes the samples provided with the distribution
-   for showcasing the various features available in Spring GemFire.
+   to illustrate the various features available in Spring GemFire.
    </para>
 
    <!-- 

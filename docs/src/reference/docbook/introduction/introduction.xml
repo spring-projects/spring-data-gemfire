@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <partintro xmlns="http://docbook.org/ns/docbook" version="5.0">
-    <para>
-      <para>This document is the reference guide for Spring GemFire project (SGF). It explains the relationship
-      between Spring framework and GemFire Enterprise Fabric (GEF) 6.0.x, defines the basic concepts and semantics of the integration
-      and how these can be used effectively.
+      <para>This document is the reference guide for Spring Data GemFire project (SGF). It explains the relationship
+      between Spring framework and <ulink url="http://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html">vFabric GemFire</ulink> 
+      and defines the basic concepts, semantics, and effect use of Spring's support for GemFire.
       </para>
-    </para>
 </partintro>

@@ -44,7 +44,7 @@ class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
 		if (!StringUtils.hasText(name)) {
-			name = "gemfire-server";
+			name = "gemfireServer";
 		}
 		return name;
 	}
@@ -60,7 +60,7 @@ class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 
 		String attr = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfire-cache"));
+		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfireCache"));
 
 		attr = element.getAttribute("groups");
 		if (StringUtils.hasText(attr)) {

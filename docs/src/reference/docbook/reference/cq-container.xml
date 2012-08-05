@@ -114,7 +114,7 @@
 
 <lineannotation>&lt;!-- and this is the event listener container... --&gt;</lineannotation>
 &lt;bean id="gemfireListenerContainer" class="org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer"&gt;
-    &lt;property name="cache" ref="gemfire-cache"/&gt;
+    &lt;property name="cache" ref="gemfireCache"/&gt;
     &lt;property name="queryListeners"&gt;
       <lineannotation>&lt;!-- set of listeners --&gt;</lineannotation>
       &lt;set&gt;

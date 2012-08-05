@@ -32,23 +32,27 @@ import com.gemstone.gemfire.cache.Region;
  * discovers the created caches (or {@link Region}s in Gemfire terminology).
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
 public class GemfireCacheManager extends AbstractCacheManager {
 
 	private com.gemstone.gemfire.cache.Cache gemfireCache;
+	private Set<Region<?,?>> regions;
 
 	@Override
 	protected Collection<Cache> loadCaches() {
-		Assert.notNull(gemfireCache, "a backing GemFire cache is required");
-		Assert.isTrue(!gemfireCache.isClosed(), "the GemFire cache is closed; an open instance is required");
-
-		Set<Region<?, ?>> regions = gemfireCache.rootRegions();
-		Collection<Cache> caches = new LinkedHashSet<Cache>(regions.size());
+		 
+		if (regions == null) {
+			Assert.notNull(gemfireCache, "a backing GemFire cache is required");
+			Assert.isTrue(!gemfireCache.isClosed(), "the GemFire cache is closed; an open instance is required");
+			regions = gemfireCache.rootRegions();
+		}  
 		
-		for (Region<?, ?> region : regions) {
+		Collection<Cache> caches = new LinkedHashSet<Cache>(regions.size());
+		for (Region<?,?> region: this.regions) {
 			caches.add(new GemfireCache(region));
 		}
-
+	
 		return caches;
 	}
 
@@ -77,5 +81,13 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	 */
 	public void setCache(com.gemstone.gemfire.cache.Cache gemfireCache) {
 		this.gemfireCache = gemfireCache;
+	}
+	
+	/**
+	 * Sets a set of regions to use (alternative to injecting the GemFire Cache)
+	 * @param regions
+	 */
+	public void setRegions(Set<Region<?,?>> regions) {
+		this.regions = regions;
 	}
 }

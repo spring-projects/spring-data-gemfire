@@ -4,11 +4,10 @@
     xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:xlink="http://www.w3.org/1999/xlink">
   <bookinfo>
-    <title>Spring Gemfire Integration Reference Guide</title>
+    <title>Spring Data Gemfire Reference Guide</title>
     <releaseinfo>${version}</releaseinfo>
-    <titleabbrev>Spring GemFire ${version}</titleabbrev>
-    <productname>Spring GemFire</productname>
-
+    <titleabbrev>Spring Data GemFire ${version}</titleabbrev>
+    <productname>Spring Data GemFire</productname>
     
     <authorgroup>
       <author>
@@ -35,6 +34,13 @@
       copies and further provided that each copy contains this Copyright
       Notice, whether distributed in print or electronically.</para>
     </legalnotice>
+    
+    <releaseinfo>
+    <note>
+    As of the 1.2.0 release, this project, formerly known as Spring GemFire, has been renamed to Spring Data GemFire to reflect that 
+    it is now a component of the <ulink url="http://www.springsource.org/spring-data">Spring Data</ulink> project.
+    </note>
+    </releaseinfo>
   </bookinfo>
 
   <toc />
@@ -45,6 +51,7 @@
 
 	  <xi:include href="introduction/introduction.xml"/>
       <xi:include href="introduction/requirements.xml"/>
+      <xi:include href="introduction/new-features.xml"/>
   </part>
 
   <part id="reference">

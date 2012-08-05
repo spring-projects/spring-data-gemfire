@@ -24,6 +24,7 @@ import com.gemstone.gemfire.pdx.PdxReader;
  * {@link PropertyValueProvider} to read property values from a {@link PdxReader}.
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
 class GemfirePropertyValueProvider implements PropertyValueProvider<GemfirePersistentProperty> {
 
@@ -46,6 +47,6 @@ class GemfirePropertyValueProvider implements PropertyValueProvider<GemfirePersi
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T getPropertyValue(GemfirePersistentProperty property) {
-		return (T) reader.readObject(property.getName());
+		return (T) reader.readField(property.getName());
 	}
 }

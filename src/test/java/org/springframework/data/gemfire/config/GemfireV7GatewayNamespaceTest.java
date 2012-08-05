@@ -19,11 +19,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.gemfire.RecreatingContextTest;
@@ -71,6 +74,19 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 			testInnerGatewaySender();
 			testInnerGatewayReceiver();
 			testAsyncEventQueue();
+		}
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		for (String name : new File(".").list(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.startsWith("BACKUP");
+			}
+		})) {
+			new File(name).delete();
 		}
 	}
 

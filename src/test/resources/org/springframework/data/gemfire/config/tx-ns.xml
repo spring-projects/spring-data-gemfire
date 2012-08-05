@@ -7,5 +7,5 @@
 
 	<gfe:cache />
 	
-	<gfe:transaction-manager cache-ref="gemfire-cache" copy-on-read="false" />
+	<gfe:transaction-manager cache-ref="gemfireCache" copy-on-read="false" />
 </beans>

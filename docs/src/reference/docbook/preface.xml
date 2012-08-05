@@ -2,18 +2,17 @@
 <preface xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="preface">
 	<title>Preface</title>
 	<para>
-	Spring GemFire Integration focuses on integrating Spring Framework's powerful, non-invasive programming model
-	and concepts with Gemstone's GemFire Enterprise Fabric, providing easier configuration, use and high-level abstractions.
-	This document assumes the reader already has a basic familiarity with the Spring Framework and GemFire concepts 
-	and APIs.  
+	Spring Data GemFire focuses on integrating Spring Framework's powerful, non-invasive programming model
+	and concepts with vFabric GemFire, simplifying configuration, development and providing high-level abstractions.
+	This document assumes the reader already has a basic familiarity with the Spring Framework and vFabric GemFire
+	concepts and APIs.  
 	</para>
 	
 	<para>
 	While every effort has been made to ensure that this documentation is comprehensive and there are no errors, 
-	nevertheless some topics might require more explanation and some typos might have crept in. If you do spot any 
+	some topics might require more explanation and some typos might have crept in. If you do spot any 
 	mistakes or even more serious errors and you can spare a few cycles during lunch, please do bring the error 
-	to the attention of the Spring GemFire Integration team by raising an 
+	to the attention of the Spring Data GemFire team by raising an 
 	<ulink url="http://jira.springframework.org">issue</ulink>. Thank you.
 	</para>
-    
 </preface>

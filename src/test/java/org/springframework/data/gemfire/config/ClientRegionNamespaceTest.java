@@ -21,6 +21,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +66,20 @@ public class ClientRegionNamespaceTest {
 		testPublishingClient();
 		testPersistent();
 		testOverflowToDisk();
+	}
+
+	@AfterClass
+	public static void tearDown() {
+
+		for (String name : new File(".").list(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.startsWith("BACKUP");
+			}
+		})) {
+			new File(name).delete();
+		}
 	}
 
 	private void testBasicClient() throws Exception {

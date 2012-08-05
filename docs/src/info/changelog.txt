@@ -1,13 +1,16 @@
 SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
+
 Changes in version 1.2.0.RELEASE (2012-08-15)
 ---------------------------------------------
 General
+* The Spring Data GemFire project, formerly Spring GemFire, is now a component of the Spring Data project
 * Upgraded to GemFire 7.0
 * Upgraded to Spring 3.1.2.RELEASE
 * Upgraded to Spring Data Commons 1.4.0.RELEASE
-* XML namespace supports everything that can be configured with Cache XML
+* The XML namespace supports everything that can be configured with Cache XML
+* A separate namespace for Spring Data Repository support
 
 Enhancements
 * [SGF-53] - Add "enable-gateway" to replicated and partitioned region namespace config

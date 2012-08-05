@@ -116,7 +116,7 @@
 
 	<programlisting language="xml">&lt;gfe:transaction-manager id="tx-manager" cache-ref="cache"/&gt;</programlisting>
 	<note>The example above can be simplified even more by eliminating the <literal>cache-ref</literal> attribute if the GemFire cache is defined under the default 
-	name <literal>gemfire-cache</literal>. As with the other SGF namespace elements, if the cache name is not configured, the aforementioned naming convention will used.
+	name <literal>gemfireCache</literal>. As with the other SGF namespace elements, if the cache name is not configured, the aforementioned naming convention will used.
 	Additionally, the transaction manager name, if not specified is <literal>gemfire-transaction-manager</literal>.</note>
 	
 	<para>or if you prefer <literal>bean</literal> declarations:</para>

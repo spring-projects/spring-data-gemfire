@@ -56,10 +56,12 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 	private String name;
 
 	private List<DiskDir> diskDirs;
+	
+	private DiskStore diskStore;
 
 	@Override
 	public DiskStore getObject() throws Exception {
-		return diskStoreFactory.create(name == null ? DiskStoreFactory.DEFAULT_DISK_STORE_NAME : name);
+		return diskStore;
 	}
 
 	@Override
@@ -109,6 +111,8 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 			}
 			diskStoreFactory.setDiskDirsAndSizes(diskDirFiles, diskDirSizes);
 		}
+		
+		diskStore = diskStoreFactory.create(name == null ? DiskStoreFactory.DEFAULT_DISK_STORE_NAME : name);
 	}
 
 	public void setCache(GemFireCache cache) {

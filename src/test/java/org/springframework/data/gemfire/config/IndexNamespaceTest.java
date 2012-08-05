@@ -45,7 +45,7 @@ public class IndexNamespaceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		Cache cache = (Cache) context.getBean("gemfire-cache");
+		Cache cache = (Cache) context.getBean("gemfireCache");
 		if (cache.getRegion(name) == null) {
 			cache.createRegionFactory().create("test-index");
 		}

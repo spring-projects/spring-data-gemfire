@@ -80,7 +80,7 @@ public class GemfireV6GatewayNamespaceTest extends RecreatingContextTest {
 
 	@SuppressWarnings("rawtypes")
 	private void testGatewaysInGemfire() {
-		Cache cache = ctx.getBean("gemfire-cache", Cache.class);
+		Cache cache = ctx.getBean("gemfireCache", Cache.class);
 		GatewayHub gwh = cache.getGatewayHub("gateway-hub");
 		assertNotNull(gwh);
 

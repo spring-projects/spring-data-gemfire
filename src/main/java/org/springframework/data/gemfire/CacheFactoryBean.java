@@ -47,8 +47,6 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -265,8 +263,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	protected List<JndiDataSource> jndiDataSources;
 
-	protected List<Function> functions;
-
 	// Defined this way for backward compatibility
 	protected Object gatewayConflictResolver;
 
@@ -336,21 +332,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			registerTransactionListeners();
 			registerTransactionWriter();
 			registerJndiDataSources();
-			registerFunctions();
 		}
 		finally {
 			th.setContextClassLoader(oldTCCL);
-		}
-	}
-
-	/**
-	 * 
-	 */
-	private void registerFunctions() {
-		if (!CollectionUtils.isEmpty(functions)) {
-			for (Function function : functions) {
-				FunctionService.registerFunction(function);
-			}
 		}
 	}
 
@@ -593,59 +577,99 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return beanFactory;
 	}
 
+	/**
+	 * 
+	 * @param copyOnRead
+	 */
 	public void setCopyOnRead(boolean copyOnRead) {
 		this.copyOnRead = copyOnRead;
 	}
 
+	/**
+	 * 
+	 * @param lockTimeout
+	 */
 	public void setLockTimeout(int lockTimeout) {
 		this.lockTimeout = lockTimeout;
 	}
-
+	
+    /**
+     * 
+     * @param lockLease
+     */
 	public void setLockLease(int lockLease) {
 		this.lockLease = lockLease;
 	}
 
+	/**
+	 * 
+	 * @param messageSyncInterval
+	 */
 	public void setMessageSyncInterval(int messageSyncInterval) {
 		this.messageSyncInterval = messageSyncInterval;
 	}
 
+	/**
+	 * 
+	 * @param searchTimeout
+	 */
 	public void setSearchTimeout(int searchTimeout) {
 		this.searchTimeout = searchTimeout;
 	}
-
+	
+	/**
+	 * 
+	 * @param evictionHeapPercentage
+	 */
 	public void setEvictionHeapPercentage(Float evictionHeapPercentage) {
 		this.evictionHeapPercentage = evictionHeapPercentage;
 	}
-
+	
+    /**
+     * 
+     * @param criticalHeapPercentage
+     */
 	public void setCriticalHeapPercentage(Float criticalHeapPercentage) {
 		this.criticalHeapPercentage = criticalHeapPercentage;
 	}
 
+	/**
+	 * 
+	 * @param transactionListeners
+	 */
 	public void setTransactionListeners(List<TransactionListener> transactionListeners) {
 		this.transactionListeners = transactionListeners;
 	}
 
+	/**
+	 * 
+	 * @param transactionWriter
+	 */
 	public void setTransactionWriter(TransactionWriter transactionWriter) {
 		this.transactionWriter = transactionWriter;
 	}
-
-	public void setFunctions(List<Function> functions) {
-		this.functions = functions;
-	}
-
 	/**
-	 * 
-	 * @param gatewayConflictResolver defined as Object for backward
-	 * compatibility with Gemfire 6 compatibility
+	 * Requires GemFire 7.0 or higher
+	 * @param gatewayConflictResolver defined as Object in the signature for backward
+	 * compatibility with Gemfire 6 compatibility. This must be an instance of 
+	 * {@link com.gemstone.gemfire.cache.util.GatewayConflictResolver}
 	 */
 	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
 		this.gatewayConflictResolver = gatewayConflictResolver;
 	}
 
+	/**
+	 * 
+	 * @param dynamicRegionSupport
+	 */
 	public void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
 		this.dynamicRegionSupport = dynamicRegionSupport;
 	}
 
+	/**
+	 * 
+	 * @param jndiDataSources
+	 */
 	public void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
 		this.jndiDataSources = jndiDataSources;
 	}

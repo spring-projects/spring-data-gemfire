@@ -22,6 +22,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FilenameFilter;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -80,6 +81,16 @@ public class DiskStoreAndEvictionRegionParsingTest {
 			file.delete();
 		}
 		diskStoreDir.delete();
+
+		for (String name : new File(".").list(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.startsWith("BACKUPds");
+			}
+		})) {
+			new File(name).delete();
+		}
 	}
 
 	@Test
@@ -98,7 +109,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(9999, diskStore1.getTimeInterval());
 		assertEquals(10, diskStore1.getMaxOplogSize());
 		assertEquals(diskStoreDir, diskStore1.getDiskDirs()[0]);
-		Cache cache = context.getBean("gemfire-cache", Cache.class);
+		Cache cache = context.getBean("gemfireCache", Cache.class);
 		assertSame(diskStore1, cache.findDiskStore("diskStore1"));
 	}
 

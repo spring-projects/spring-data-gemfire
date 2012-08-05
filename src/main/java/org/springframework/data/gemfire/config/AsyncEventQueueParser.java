@@ -41,7 +41,7 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
 		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext,
 				asyncEventListenerElement, builder);
-		String cacheName = StringUtils.isEmpty(element.getAttribute("cache-ref")) ? "gemfire-cache" : element
+		String cacheName = StringUtils.isEmpty(element.getAttribute("cache-ref")) ? "gemfireCache" : element
 				.getAttribute("cache-ref");
 		builder.addConstructorArgReference(cacheName);
 		builder.addConstructorArgValue(asyncEventListener);

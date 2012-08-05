@@ -37,7 +37,7 @@ public class JndiBindingsTest extends RecreatingContextTest {
 
 	@Test
 	public void testJndiBindings() throws Exception {
-		Cache cache = ctx.getBean("gemfire-cache", Cache.class);
+		Cache cache = ctx.getBean("gemfireCache", Cache.class);
 		assertNotNull(cache.getJNDIContext().lookup("java:/SimpleDataSource"));
 		GemFireBasicDataSource ds = (GemFireBasicDataSource) cache.getJNDIContext().lookup("java:/SimpleDataSource");
 		assertEquals("org.apache.derby.jdbc.EmbeddedDriver", ds.getJDBCDriver());

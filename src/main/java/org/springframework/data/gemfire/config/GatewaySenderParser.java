@@ -39,7 +39,7 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 		builder.setLazyInit(false);
 		String cacheRef = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)
-		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef : "gemfire-cache"));
+		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef : "gemfireCache"));
 		ParsingUtils.setPropertyValue(element, builder, "alert-threshold");
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
 		ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");

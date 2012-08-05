@@ -19,8 +19,10 @@ package org.springframework.data.gemfire.config;
 import java.util.List;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
@@ -180,7 +182,9 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
 		if (!StringUtils.hasText(name)) {
-			name = "gemfire-cache";
+			name = "gemfireCache";
+			//For backward compatibility
+			parserContext.getRegistry().registerAlias("gemfireCache", "gemfire-cache");
 		}
 		return name;
 	}

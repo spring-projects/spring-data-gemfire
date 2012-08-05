@@ -128,7 +128,7 @@ or copies of the objects (true).
         <xsd:attribute name="id" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
-The name of the cache definition (by default "gemfire-cache").]]></xsd:documentation>
+The name of the cache definition (by default "gemfireCache").]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="cache-xml-location" type="xsd:string"
@@ -338,14 +338,14 @@ Defines a GemFire Transaction Manager instance for a single GemFire cache.
                 use="optional">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-The name of the transaction manager definition (by default "gemfire-transaction-manager").]]></xsd:documentation>
+The name of the transaction manager definition (by default "gemfireTransactionManager").]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="cache-ref" type="xsd:string"
-                use="optional" default="gemfire-cache">
+                use="optional" default="gemfireCache">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-The name of the bean defining the GemFire cache (by default 'gemfire-cache').
+The name of the bean defining the GemFire cache (by default 'gemfireCache').
 					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
@@ -853,10 +853,10 @@ The id of the region bean definition.
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="cache-ref" type="xsd:string"
-            use="optional" default="gemfire-cache">
+            use="optional" default="gemfireCache">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
-The name of the bean defining the GemFire cache (by default 'gemfire-cache').
+The name of the bean defining the GemFire cache (by default 'gemfireCache').
 				]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
@@ -1500,9 +1500,9 @@ The name of the disk store bean definition. This is also used as the disk store 
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="cache-ref" type="xsd:string"
-                    use="optional" default="gemfire-cache">
+                    use="optional" default="gemfireCache">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[The name of the bean defining the GemFire cache (by default 'gemfire-cache').]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[The name of the bean defining the GemFire cache (by default 'gemfireCache').]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
             </xsd:extension>
@@ -1748,7 +1748,7 @@ Note that in order to instantiate a pool, a GemFire cache needs to be already st
                 use="optional">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-The name of the pool definition (by default "gemfire-pool").]]></xsd:documentation>
+The name of the pool definition (by default "gemfirePool").]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="free-connection-timeout"
@@ -1837,7 +1837,7 @@ The client subscription configuration that is used to control a clients use of s
             <xsd:attribute name="id" type="xsd:string"
                 use="optional">
                 <xsd:annotation>
-                    <xsd:documentation><![CDATA[The name of the cache server definition (by default "gemfire-server").]]></xsd:documentation>
+                    <xsd:documentation><![CDATA[The name of the cache server definition (by default "gemfireServer").]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="auto-startup" type="xsd:string"
@@ -1883,9 +1883,9 @@ The server groups that this server will be a member of given as a comma separate
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="cache-ref" type="xsd:string"
-                use="optional" default="gemfire-cache">
+                use="optional" default="gemfireCache">
                 <xsd:annotation>
-                    <xsd:documentation><![CDATA[The name of the bean defining the GemFire cache (by default 'gemfire-cache').]]></xsd:documentation>
+                    <xsd:documentation><![CDATA[The name of the bean defining the GemFire cache (by default 'gemfireCache').]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
         </xsd:complexType>
@@ -1909,10 +1909,10 @@ Container for continuous query listeners. All listeners will be hosted by the sa
                     minOccurs="0" maxOccurs="unbounded" />
             </xsd:sequence>
             <xsd:attribute name="cache" type="xsd:string"
-                default="gemfire-cache">
+                default="gemfireCache">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-A reference (by name) to the GemFire cache bean. Default is "gemfire-cache".
+A reference (by name) to the GemFire cache bean. Default is "gemfireCache".
 	          ]]></xsd:documentation>
                     <xsd:appinfo>
                         <tool:annotation kind="ref">
@@ -2052,10 +2052,10 @@ Indicates whether the index is created even if there is an index with the same n
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="cache-ref" type="xsd:string"
-                use="optional" default="gemfire-cache">
+                use="optional" default="gemfireCache">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-The name of the bean defining the GemFire cache (by default 'gemfire-cache').
+The name of the bean defining the GemFire cache (by default 'gemfireCache').
 					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
@@ -2384,7 +2384,7 @@ The id of this bean definition
             use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
-The id of the cache - default is gemfire-cache
+The id of the cache - default is gemfireCache
                   ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
@@ -2461,7 +2461,7 @@ The id of this bean definition.
                         use="optional">
                         <xsd:annotation>
                             <xsd:documentation><![CDATA[
-The id of the cache - default is gemfire-cache
+The id of the cache - default is gemfireCache
                   ]]></xsd:documentation>
                         </xsd:annotation>
                     </xsd:attribute>
@@ -2486,7 +2486,7 @@ The id of this bean definition.
                         use="optional">
                         <xsd:annotation>
                             <xsd:documentation><![CDATA[
-The id of the cache - default is gemfire-cache
+The id of the cache - default is gemfireCache
                   ]]></xsd:documentation>
                         </xsd:annotation>
                     </xsd:attribute>
@@ -2629,7 +2629,7 @@ The port for this hub (integer value, if not specified, Gemfire will select an o
             use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
-The id of the cache - default is gemfire-cache
+The id of the cache - default is gemfireCache
                   ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>

@@ -53,7 +53,7 @@ class FunctionServiceParser extends AbstractSimpleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
 		if (!StringUtils.hasText(name)) {
-			name = "gemfire-function-service";
+			name = "gemfireFunctionService";
 		}
 		return name;
 	}

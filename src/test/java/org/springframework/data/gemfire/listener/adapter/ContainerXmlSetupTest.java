@@ -54,7 +54,7 @@ public class ContainerXmlSetupTest {
 		ContinuousQueryListenerContainer container = ctx.getBean(ContinuousQueryListenerContainer.class);
 		assertTrue(container.isRunning());
 
-		Cache cache = ctx.getBean("gemfire-cache", Cache.class);
+		Cache cache = ctx.getBean("gemfireCache", Cache.class);
 		Pool pool = ctx.getBean("client", Pool.class);
 
 		CqQuery[] cqs = cache.getQueryService().getCqs();

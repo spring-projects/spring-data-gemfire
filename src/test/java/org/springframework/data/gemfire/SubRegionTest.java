@@ -45,6 +45,7 @@ public class SubRegionTest extends RecreatingContextTest {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void testBasic() throws Exception {
 		CacheFactoryBean cfb = new CacheFactoryBean();
+		cfb.setBeanName("gemfireCache");
 		cfb.setUseBeanFactoryLocator(false);
 		cfb.afterPropertiesSet();
 		GemFireCache cache = cfb.getObject();

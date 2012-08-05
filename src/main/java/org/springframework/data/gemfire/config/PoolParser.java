@@ -88,7 +88,9 @@ class PoolParser extends AbstractSimpleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
 		if (!StringUtils.hasText(name)) {
-			name = "gemfire-pool";
+			name = "gemfirePool";
+			//For backward compatibility
+			parserContext.getRegistry().registerAlias("gemfirePool", "gemfire-pool");
 		}
 		return name;
 	}

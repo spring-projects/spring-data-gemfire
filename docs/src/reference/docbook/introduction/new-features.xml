@@ -1,0 +1,46 @@
+ <chapter xml:id="new-features" xmlns="http://docbook.org/ns/docbook" version="5.0">
+<title>New Features</title>
+
+<note>
+As of the 1.2.0 release, this project, formerly known as Spring GemFire, has been renamed to Spring Data GemFire to reflect that 
+it is now a component of the <ulink url="http://www.springsource.org/spring-data">Spring Data</ulink> project.
+</note>
+        
+<section id="new-in-1-2-0">
+<title>New in the 1.2.0 Release</title>
+<itemizedlist>
+<listitem><para>
+Full support for GemFire configuration via  <emphasis>gfe</emphasis> namespace. Now GemFire components may be configured completely without requiring a native cache.xml file. 
+</para>
+</listitem>
+<listitem><para>
+WAN Gateway support for both GemFire 6.6.x and GemFire 7.0 
+</para>
+</listitem>
+<listitem><para>
+Spring Data Repository support with a dedicated namespace: <emphasis>gfe-data</emphasis> 
+</para>
+</listitem>
+<listitem><para>
+Namespace support for registering GemFire functions 
+</para>
+</listitem>
+<listitem>
+<para>
+A top level <literal>&lt;disk-store&gt;</literal> element has been added to the <emphasis>gfe</emphasis> namespace to allow sharing of persist stores among regions, 
+and other components that support persistent backup. 
+<caution>The <literal>&lt;*-region&gt;</literal> elements no longer allow a nested <literal>&lt;disk-store&gt;</literal>
+</caution>   
+</para>
+</listitem>
+<listitem><para>
+GemFire subregions are supported via nested <literal>&lt;*-region&gt;</literal> elements 
+</para>
+</listitem>
+<listitem><para>
+ A <literal>&lt;local-region&gt;</literal> element has been added to configure a local region 
+</para>
+</listitem>
+</itemizedlist>
+</section>
+</chapter>
