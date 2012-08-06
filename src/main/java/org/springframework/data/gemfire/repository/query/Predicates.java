@@ -162,6 +162,11 @@ class Predicates implements Predicate {
 			case IS_NOT_NULL:
 			case NEGATING_SIMPLE_PROPERTY:
 				return "!=";
+			case LIKE:
+			case STARTING_WITH:
+			case ENDING_WITH:
+			case CONTAINING:
+				return "LIKE";
 			case IS_NULL:
 			case SIMPLE_PROPERTY:
 				return "=";
