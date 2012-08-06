@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.util.Assert;
@@ -33,6 +34,8 @@ import com.gemstone.gemfire.cache.query.internal.ResultsBag;
  * @author Oliver Gierke
  */
 public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
+
+	private static final String INVALID_EXECUTION = "Paging and modifying queries are not supported!";
 
 	private final QueryString query;
 	private final GemfireQueryMethod method;
@@ -67,6 +70,10 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		this.query = new QueryString(StringUtils.hasText(query) ? query : method.getAnnotatedQuery());
 		this.method = method;
 		this.template = template;
+
+		if (method.isPageQuery() || method.isModifyingQuery()) {
+			throw new IllegalStateException(INVALID_EXECUTION);
+		}
 	}
 
 	/* 
@@ -83,7 +90,24 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		while (indexes.hasNext()) {
 			query = query.bindIn(toCollection(accessor.getBindableValue(indexes.next() - 1)));
 		}
-		return toCollection(template.find(query.toString(), parameters));
+
+		Collection<?> result = toCollection(template.find(query.toString(), parameters));
+
+		if (method.isCollectionQuery()) {
+			return result;
+		} else if (method.isQueryForEntity()) {
+
+			if (result.isEmpty()) {
+				return null;
+			} else if (result.size() == 1) {
+				return result.iterator().next();
+			} else {
+				throw new IncorrectResultSizeDataAccessException(1, result.size());
+			}
+
+		} else {
+			throw new IllegalStateException(INVALID_EXECUTION);
+		}
 	}
 
 	/**
@@ -94,15 +118,15 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @return
 	 */
 	private Collection<?> toCollection(Object source) {
+
 		if (source instanceof ResultsBag) {
-			ResultsBag bag = (ResultsBag)source;
+			ResultsBag bag = (ResultsBag) source;
 			return bag.asList();
 		}
-		
+
 		if (source instanceof Collection) {
 			return (Collection<?>) source;
 		}
-		
 
 		return source.getClass().isArray() ? CollectionUtils.arrayToList(source) : Collections.singleton(source);
 	}
