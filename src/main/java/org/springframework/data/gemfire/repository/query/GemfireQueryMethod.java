@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.repository.query;
 import java.lang.reflect.Method;
 
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
 import org.springframework.data.gemfire.repository.Query;
@@ -50,6 +51,13 @@ public class GemfireQueryMethod extends QueryMethod {
 		super(method, metadata);
 
 		Assert.notNull(context);
+
+		for (Class<?> type : method.getParameterTypes()) {
+			if (Pageable.class.isAssignableFrom(type)) {
+				throw new IllegalStateException("Pagination is not supported by Gemfire repositories! Offending method: "
+						+ method.toString());
+			}
+		}
 
 		this.method = method;
 		this.entity = context.getPersistentEntity(getDomainClass());
