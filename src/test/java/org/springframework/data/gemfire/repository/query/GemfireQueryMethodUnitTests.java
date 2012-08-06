@@ -21,17 +21,21 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.Query;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
+ * Unit tests for {@link GemfireQueryMethod}.
  * 
  * @author Oliver Gierke
  */
@@ -62,6 +66,23 @@ public class GemfireQueryMethodUnitTests {
 		assertThat(method.getAnnotatedQuery(), is(nullValue()));
 	}
 
+	/**
+	 * @see SGF-112
+	 */
+	@Test
+	public void rejectsQueryMethodWithPageableParameter() throws Exception {
+
+		GemfireMappingContext context = new GemfireMappingContext();
+		Method method = Invalid.class.getMethod("someMethod", Pageable.class);
+
+		try {
+			new GemfireQueryMethod(method, metadata, context);
+			fail("Expected exception!");
+		} catch (IllegalStateException e) {
+			assertThat(e.getMessage(), Matchers.startsWith("Pagination is not supported by Gemfire repositories!"));
+		}
+	}
+
 	interface Sample {
 
 		@Query("foo")
@@ -71,5 +92,10 @@ public class GemfireQueryMethodUnitTests {
 		void annotatedButEmpty();
 
 		void notAnnotated();
+	}
+
+	interface Invalid {
+
+		Page<?> someMethod(Pageable pageable);
 	}
 }
