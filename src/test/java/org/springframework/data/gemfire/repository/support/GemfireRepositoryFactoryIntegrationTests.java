@@ -38,7 +38,7 @@ public class GemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRep
 	}
 
 	@Test(expected = IllegalStateException.class)
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionIfReferencedRegionIsNotConfigured() {
 
 		GemfireRepositoryFactory factory = new GemfireRepositoryFactory((Iterable) Collections.emptySet(), null);

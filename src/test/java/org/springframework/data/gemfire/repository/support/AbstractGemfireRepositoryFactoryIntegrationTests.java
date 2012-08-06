@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.Regions;
@@ -46,7 +47,7 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 	@Autowired
 	List<Region<?, ?>> regions;
 
-	Person dave, carter, boyd, stefan, leroi, jeff;
+	Person dave, carter, boyd, stefan, leroi, jeff, oliverAugust;
 	PersonRepository repository;
 
 	@Before
@@ -58,6 +59,7 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 		stefan = new Person(4L, "Stefan", "Lessard");
 		leroi = new Person(5L, "Leroi", "Moore");
 		jeff = new Person(6L, "Jeff", "Coffin");
+		oliverAugust = new Person(7L, "Oliver August", "Matthews");
 
 		GemfireMappingContext context = new GemfireMappingContext();
 
@@ -70,6 +72,7 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 		template.put(stefan.id, stefan);
 		template.put(leroi.id, leroi);
 		template.put(jeff.id, jeff);
+		template.put(oliverAugust.id, oliverAugust);
 
 		repository = getRepository(regions);
 	}
@@ -105,7 +108,7 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 
 	@Test
 	public void executesDerivedQueryWithOrCorrectly() {
-		assertResultsFound(repository.findByFirstnameOrLastname("Carter", "Matthews"), carter, dave);
+		assertResultsFound(repository.findByFirstnameOrLastname("Carter", "Matthews"), carter, dave, oliverAugust);
 	}
 
 	/**
@@ -117,6 +120,37 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 		repository.deleteAll();
 
 		assertResultsFound(repository.findAll());
+	}
+
+	/**
+	 * @see SGF-113
+	 */
+	@Test
+	public void findsPersonByLastname() {
+		assertThat(repository.findByLastname("Beauford"), is(carter));
+	}
+
+	/**
+	 * @see SGF-113
+	 */
+	@Test
+	public void returnsNullForEmptyResultForSingleEntityQuery() {
+		assertThat(repository.findByLastname("Foo"), is(nullValue()));
+	}
+
+	/**
+	 * @see SGF-113
+	 */
+	@Test
+	public void throwsExceptionForMoreThanOneResultForSingleEntityQuery() {
+
+		try {
+			repository.findByLastname("Matthews");
+			fail("Exception expected!");
+		} catch (IncorrectResultSizeDataAccessException e) {
+			assertThat(e.getExpectedSize(), is(1));
+			assertThat(e.getActualSize(), is(2));
+		}
 	}
 
 	private <T> void assertResultsFound(Iterable<T> result, T... expected) {
