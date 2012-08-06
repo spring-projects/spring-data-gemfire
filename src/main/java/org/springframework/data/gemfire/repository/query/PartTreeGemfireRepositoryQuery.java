@@ -15,9 +15,13 @@
  */
 package org.springframework.data.gemfire.repository.query;
 
+import java.util.Iterator;
+
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.data.repository.query.parser.Part;
+import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
@@ -63,6 +67,39 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
 		RepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery(query.toString(), method, template);
 
-		return repositoryQuery.execute(parameters);
+		return repositoryQuery.execute(prepareStringParameters(parameters));
+	}
+
+	private Object[] prepareStringParameters(Object[] parameters) {
+
+		Iterator<Part> iterator = tree.getParts().iterator();
+		Object[] result = new Object[parameters.length];
+
+		for (int i = 0; i < parameters.length; i++) {
+			Object parameter = parameters[i];
+
+			if (parameter == null) {
+				result[i] = parameter;
+				continue;
+			}
+
+			Type type = iterator.next().getType();
+
+			switch (type) {
+			case CONTAINING:
+				result[i] = String.format("%%%s%%", parameter.toString());
+				break;
+			case STARTING_WITH:
+				result[i] = String.format("%s%%", parameter.toString());
+				break;
+			case ENDING_WITH:
+				result[i] = String.format("%%%s", parameter.toString());
+				break;
+			default:
+				result[i] = parameter;
+			}
+		}
+
+		return result;
 	}
 }

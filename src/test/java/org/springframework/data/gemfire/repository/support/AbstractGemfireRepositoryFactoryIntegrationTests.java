@@ -153,6 +153,38 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 		}
 	}
 
+	/**
+	 * @see SGF-115
+	 */
+	@Test
+	public void executesStartsWithCorrectly() {
+		assertResultsFound(repository.findByFirstnameStartingWith("Da"), dave);
+	}
+
+	/**
+	 * @see SGF-115
+	 */
+	@Test
+	public void executesEndsWithCorrectly() {
+		assertResultsFound(repository.findByLastnameEndingWith("ews"), dave, oliverAugust);
+	}
+
+	/**
+	 * @see SGF-115
+	 */
+	@Test
+	public void executesContainsCorrectly() {
+		assertResultsFound(repository.findByFirstnameContaining("o"), boyd, leroi);
+	}
+
+	/**
+	 * @see SGF-115
+	 */
+	@Test
+	public void executesLikeCorrectly() {
+		assertResultsFound(repository.findByFirstnameLike("Da%"), dave);
+	}
+
 	private <T> void assertResultsFound(Iterable<T> result, T... expected) {
 
 		assertThat(result, is(notNullValue()));

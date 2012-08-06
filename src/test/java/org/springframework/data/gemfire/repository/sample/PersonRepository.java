@@ -44,4 +44,12 @@ public interface PersonRepository extends CrudRepository<Person, Long> {
 	Collection<Person> findByFirstnameOrLastname(String firstname, String lastname);
 
 	Person findByLastname(String lastname);
+
+	Collection<Person> findByFirstnameLike(String firstname);
+
+	Collection<Person> findByFirstnameStartingWith(String firstname);
+
+	Collection<Person> findByLastnameEndingWith(String lastname);
+
+	Collection<Person> findByFirstnameContaining(String firstname);
 }
