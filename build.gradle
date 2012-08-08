@@ -38,8 +38,8 @@ dependencies {
     // Logging
     compile "org.slf4j:slf4j-api:$slf4jVersion"
     compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
-    runtime "log4j:log4j:$log4jVersion"
-    runtime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    testRuntime "log4j:log4j:$log4jVersion"
+    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
     
     // Spring Framework
     compile("org.springframework:spring-core:$springVersion") {
@@ -227,71 +227,6 @@ task wrapper(type: Wrapper) {
     description = 'Generates gradlew[.bat] scripts'
     gradleVersion = '1.0'
 }
-
-def customizePom(def pom, def gradleProject) {
-    pom.whenConfigured { generatedPom ->
-        // respect 'optional' and 'provided' dependencies
-        def deps = gradleProject.configurations.runtime.allDependencies
-        def optionalDeps = deps.findAll { dep ->
-            dep.asDynamicObject.hasProperty('optional') && dep.optional
-        }
-        def providedDeps = deps.findAll { dep ->
-            dep.asDynamicObject.hasProperty('provided') && dep.provided
-        }
-        generatedPom.dependencies.each { mavenDep ->
-            mavenDep.optional = optionalDeps.any { optionalDep ->
-                optionalDep.group == mavenDep.groupId &&
-                        optionalDep.name == mavenDep.artifactId &&
-                        optionalDep.version == mavenDep.version
-            }
-            boolean isProvided = providedDeps.any { providedDep ->
-                providedDep.group == mavenDep.groupId &&
-                        providedDep.name == mavenDep.artifactId &&
-                        providedDep.version == mavenDep.version
-            }
-            if (isProvided) {
-                mavenDep.scope = 'provided'
-            }
-        }
-
-        // eliminate test-scoped dependencies (no need in maven central poms)
-        generatedPom.dependencies.removeAll { dep ->
-            dep.scope == 'test'
-        }
-
-        // add all items necessary for maven central publication
-        generatedPom.project {
-            name = gradleProject.description
-            description = gradleProject.description
-            url = 'https://github.com/SpringSource/spring-gemfire'
-            organization {
-                name = 'SpringSource'
-                url = 'http://springsource.org'
-            }
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                url = 'https://github.com/SpringSource/spring-gemfire'
-                connection = 'scm:git:git://github.com/SpringSource/spring-gemfire'
-                developerConnection = 'scm:git:git://github.com/SpringSource/spring-gemfire'
-            }
-            developers {
-                developer {
-                    id = 'dturanski'
-                    name = 'David Turanski'
-                    email = 'dturanski@vmware.com'
-                }
-            }
-        }
-    }
-}
-
-
 
 assemble.dependsOn = ['jar', 'sourcesJar']
 defaultTasks 'build'
