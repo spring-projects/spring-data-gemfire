@@ -17,11 +17,11 @@ package org.springframework.data.gemfire.wan;
 
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.AsyncEventQueue;
-import com.gemstone.gemfire.cache.AsyncEventQueueFactory;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.wan.AsyncEventListener;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
@@ -43,8 +43,6 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	private Integer maximumQueueMemory;
 
 	private Boolean persistent;
-
-	private Boolean parallel;
 
 	private String diskStoreRef;
 
@@ -71,11 +69,13 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	@Override
 	protected void doInit() {
 		Assert.notNull(asyncEventListener, "AsyncEventListener cannot be null");
-
-		AsyncEventQueueFactory asyncEventQueueFactory = cache.createAsyncEventQueueFactory();
-		if (parallel != null) {
-			asyncEventQueueFactory.setParallel(parallel);
+		AsyncEventQueueFactory asyncEventQueueFactory = null;
+		if (this.factory == null) {
+			asyncEventQueueFactory = cache.createAsyncEventQueueFactory();
+		} else {
+			asyncEventQueueFactory = (AsyncEventQueueFactory)factory;
 		}
+		
 		if (persistent != null) {
 			asyncEventQueueFactory.setPersistent(persistent);
 		}
@@ -99,7 +99,6 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	public void destroy() throws Exception {
 		if (!cache.isClosed()) {
 			try {
-				asyncEventQueue.stop();
 				asyncEventListener.close();
 			}
 			catch (CacheClosedException cce) {
@@ -118,9 +117,5 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
-	}
-
-	public void setParallel(Boolean parallel) {
-		this.parallel = parallel;
 	}
 }

@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
-import com.gemstone.gemfire.cache.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -133,13 +133,13 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 					hubId == null,
 					"It is invalid to configure a region with both a hubId and gatewaySenders. Note that the enableGateway and hubId properties are deprecated since Gemfire 7.0");
 			for (Object gatewaySender : gatewaySenders) {
-				regionFactory.addGatewaySender((GatewaySender) gatewaySender);
+				regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId());
 			}
 		}
 
 		if (!ObjectUtils.isEmpty(asyncEventQueues)) {
 			for (Object asyncEventQueue : asyncEventQueues) {
-				regionFactory.addAsyncEventQueue((AsyncEventQueue) asyncEventQueue);
+				regionFactory.addAsyncEventQueueId(((AsyncEventQueue) asyncEventQueue).getId());
 			}
 		}
 

@@ -1,6 +1,7 @@
 Spring GemFire Samples
 ----------------------
-
+NOTE: Spring Data GemFire Sample code has been moved to https://github.com/SpringSource/spring-gemfire-examples
+-----------------------------------------------------------------------------------------------------------------
 This folder contains various various demo applications and samples for Spring GemFire.
 
 Please see each folder for detailed instructions (readme.txt).

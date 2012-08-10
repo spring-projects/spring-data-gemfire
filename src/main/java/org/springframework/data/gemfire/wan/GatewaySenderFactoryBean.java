@@ -92,7 +92,12 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	@Override
 	protected void doInit() {
-		GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
+		GatewaySenderFactory gatewaySenderFactory = null;
+		if (this.factory == null) {
+			gatewaySenderFactory = cache.createGatewaySenderFactory();
+		} else {
+			gatewaySenderFactory = (GatewaySenderFactory)factory;
+		}
 		if (diskStoreRef != null) {
 			persistent = (persistent == null) ? Boolean.TRUE : persistent;
 			Assert.isTrue(persistent, "specifying a disk store requires persistent property to be true");
@@ -159,10 +164,6 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			gatewaySenderFactory.setSocketReadTimeout(socketReadTimeout);
 		}
 		gatewaySender = gatewaySenderFactory.create(name, remoteDistributedSystemId);
-	}
-
-	public void setGatewaySender(GatewaySender gatewaySender) {
-		this.gatewaySender = gatewaySender;
 	}
 
 	public void setRemoteDistributedSystemId(int remoteDistributedSystemId) {

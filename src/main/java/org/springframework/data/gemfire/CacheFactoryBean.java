@@ -38,6 +38,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 
+import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -453,6 +454,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			if (!(wrapped instanceof GemfireSystemException)) {
 				return wrapped;
 			}
+		}
+		if (ex.getCause() instanceof GemFireException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireException)ex.getCause());
+		}
+		if (ex.getCause() instanceof GemFireCheckedException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireCheckedException)ex.getCause());
 		}
 
 		return null;

@@ -10,11 +10,10 @@
 
 	<gfe:cache />
     
-	 <!-- need manual-start=true for the unit test because GF will throw an exception if no locators are configured -->
 	<gfe:partitioned-region id="region-inner-gateway-sender" >
         <gfe:gateway-sender 
+        manual-start="true"
         remote-distributed-system-id="1" 
-        manual-start="true" 
         alert-threshold="10" 
         batch-size="11" 
         batch-time-interval="3000" 

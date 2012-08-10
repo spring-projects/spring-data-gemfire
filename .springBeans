@@ -7,6 +7,7 @@
 	</configSuffixes>
 	<enableImports><![CDATA[false]]></enableImports>
 	<configs>
+		<config>src/test/resources/org/springframework/data/gemfire/support/GemfirePersistenceExceptionTranslationTest-context.xml</config>
 	</configs>
 	<configSets>
 	</configSets>

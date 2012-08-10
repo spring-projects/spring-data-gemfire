@@ -38,6 +38,8 @@ public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<
 
 	protected final Cache cache;
 
+	protected Object factory;
+
 	protected AbstractWANComponentFactoryBean(Cache cache) {
 		this.cache = cache;
 	}
@@ -71,4 +73,9 @@ public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<
 	public final boolean isSingleton() {
 		return true;
 	}
+	
+	public void setFactory(Object factory) {
+		this.factory = factory;
+	}
+	
 }

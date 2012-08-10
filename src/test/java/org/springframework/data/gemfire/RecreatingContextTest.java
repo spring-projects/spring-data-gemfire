@@ -29,14 +29,20 @@ import org.springframework.context.support.GenericXmlApplicationContext;
  */
 public abstract class RecreatingContextTest {
 
-	protected GenericApplicationContext ctx;
+	protected GenericXmlApplicationContext ctx;
 
 	protected abstract String location();
+	
+	protected  void configureContext(){
+	}
 
 	@Before
 	public void createCtx() {
-		ctx = new GenericXmlApplicationContext(location());
+		ctx = new GenericXmlApplicationContext();
+		configureContext();
+		ctx.load(location());
 		ctx.registerShutdownHook();
+		ctx.refresh();
 	}
 
 	@After
