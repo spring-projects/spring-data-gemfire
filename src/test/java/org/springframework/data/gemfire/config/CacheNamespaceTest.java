@@ -33,11 +33,6 @@ import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.util.GatewayConflictHelper;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
-
 /**
  * @author Costin Leau
  */
@@ -54,7 +49,6 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		testNamedCache();
 		testCacheWithXml();
 		testHeapTunedCache();
-		testCacheWithGatewayConflictResolver();
 	}
 
 	private void testBasicCache() throws Exception {
@@ -84,12 +78,6 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		assertEquals(Boolean.FALSE, TestUtils.readField("pdxIgnoreUnreadFields", cfb));
 		assertEquals(Boolean.TRUE, TestUtils.readField("pdxPersistent", cfb));
 
-	}
-
-	private void testCacheWithGatewayConflictResolver() {
-		Cache cache = ctx.getBean("cache-with-conflict-resolver", Cache.class);
-		assertNotNull(cache.getGatewayConflictResolver());
-		assertTrue(cache.getGatewayConflictResolver() instanceof TestConflictResolver);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -133,13 +121,5 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		Float ehp = (Float) TestUtils.readField("evictionHeapPercentage", cfb);
 		assertEquals(70, chp, 0.0001);
 		assertEquals(60, ehp, 0.0001);
-	}
-
-	public static class TestConflictResolver implements GatewayConflictResolver {
-		@Override
-		public void onEvent(TimestampedEntryEvent arg0, GatewayConflictHelper arg1) {
-			// TODO Auto-generated method stub
-
-		}
 	}
 }

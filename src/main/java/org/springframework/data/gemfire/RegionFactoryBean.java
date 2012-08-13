@@ -27,7 +27,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -40,7 +39,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * Base class for FactoryBeans used to create GemFire {@link Region}s. Will try
@@ -70,10 +68,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	private CacheLoader<K, V> cacheLoader;
 
 	private CacheWriter<K, V> cacheWriter;
-
-	private Object gatewaySenders[];
-
-	private Object asyncEventQueues[];
 
 	private RegionAttributes<K, V> attributes;
 
@@ -125,21 +119,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (!ObjectUtils.isEmpty(cacheListeners)) {
 			for (CacheListener<K, V> listener : cacheListeners) {
 				regionFactory.addCacheListener(listener);
-			}
-		}
-
-		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			Assert.isTrue(
-					hubId == null,
-					"It is invalid to configure a region with both a hubId and gatewaySenders. Note that the enableGateway and hubId properties are deprecated since Gemfire 7.0");
-			for (Object gatewaySender : gatewaySenders) {
-				regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId());
-			}
-		}
-
-		if (!ObjectUtils.isEmpty(asyncEventQueues)) {
-			for (Object asyncEventQueue : asyncEventQueues) {
-				regionFactory.addAsyncEventQueueId(((AsyncEventQueue) asyncEventQueue).getId());
 			}
 		}
 
@@ -366,24 +345,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	public void setDiskStoreName(String diskStoreName) {
 		this.diskStoreName = diskStoreName;
-	}
-
-	/**
-	 * 
-	 * @param gatewaySenders defined as Object for backward compatibility with
-	 * Gemfire 6
-	 */
-	public void setGatewaySenders(Object[] gatewaySenders) {
-		this.gatewaySenders = gatewaySenders;
-	}
-
-	/**
-	 * 
-	 * @param asyncEventQueues defined as Object for backward compatibility with
-	 * Gemfire 6
-	 */
-	public void setAsyncEventQueues(Object[] asyncEventQueues) {
-		this.asyncEventQueues = asyncEventQueues;
 	}
 
 	public void setEnableGateway(boolean enableGateway) {
