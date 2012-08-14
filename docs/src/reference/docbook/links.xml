@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="links">
-	<title>Useful Links</title>
+<chapter xml:id="sgf-links" xmlns="http://docbook.org/ns/docbook"
+         xmlns:ns52="http://www.w3.org/1999/xhtml"
+         xmlns:ns5="http://www.w3.org/1999/xlink"
+         xmlns:ns4="http://www.w3.org/2000/svg"
+         xmlns:ns3="http://www.w3.org/1998/Math/MathML"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Useful Links</title>
 
-	<itemizedlist>
+  <itemizedlist>
+    <listitem>
+      <para>Spring Data GemFire Home Page</para>
+    </listitem>
 
-    <listitem><emphasis>Spring GemFire Integration Home Page</emphasis> - <ulink url="http://www.springframework.org/spring-gemfire/">here</ulink></listitem>
-    <listitem><emphasis>SpringSource blog</emphasis> - <ulink url="http://blog.springsource.com/">here</ulink></listitem>
-    <listitem><emphasis>GemFire Community</emphasis> - <ulink url="http://community.gemstone.com/display/gemfire/GemFire+Enterprise">here</ulink></listitem>
-	
-	</itemizedlist>
+    <listitem>
+      <para>SpringSource Blog</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>New para</para>
+
+  <para/>
 </chapter>

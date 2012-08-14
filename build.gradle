@@ -14,8 +14,6 @@ group = 'org.springframework.data'
 repositories {
   maven { url "http://repo.springsource.org/libs-snapshot" }
   maven { url "http://repo.springsource.org/plugins-release"}
-  //TODO: This is temporary for the Gemfire 7.0 dependency
-  maven { url "https://repo.springsource.org/ext-private-local"}
 }
 
 
