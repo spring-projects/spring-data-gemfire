@@ -60,6 +60,7 @@ For those in a hurry:
 repositories {
    mavenRepo name: "spring-snapshot", urls: "http://repo.springsource.org/snapshot"
    mavenRepo name: "spring-milestone", urls: "http://repo.springsource.org/milestone"
+   mavenRepo name: "spring-plugins" , urls: "http://repo.springsource.org/plugins-release"
 }
 
 dependencies {
