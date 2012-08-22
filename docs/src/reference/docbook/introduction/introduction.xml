@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<part>
+<chapter xml:id="intro-introduction" xmlns="http://docbook.org/ns/docbook" version="5.0">
   <title>Introduction</title>
-
-  <chapter>
-    <section>
-      <para>This reference guide for the Spring Data GemFire project (SGF)
-      explains how to use Spring framework to configure and develop
-      applications with vFabric GemFire. It presents the basic concepts,
-      semantics and provides numerous examples to help you get started.
+    
+      <para>This reference guide for the Spring Data GemFire project explains how to use Spring framework to
+      configure and develop applications with vFabric GemFire.
+      It presents the basic concepts, semantics and provides numerous examples to help you get started.
       </para>
 
       <note>Spring Data GemFire started as a top level Spring project called
-      Spring GemFire and has sinced moved under the Spring Data umbrella
-      project and has been renamed accordingly.</note>
-    </section>
-  </chapter>
-</part>
+      Spring GemFire (SGF) and has since moved under the Spring Data umbrella project
+      and has been renamed accordingly.</note>
+</chapter>
+

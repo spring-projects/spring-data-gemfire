@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section version="5.0" id="bootstrap:gateway"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title>Configuring WAN Gateways</title>
+
+  <para>WAN gateways provide a way to synchronize GemFire distributed systems
+  across geographic distributed areas. As of Release 1.2.0, Spring Data
+  GemFire provides namespace support for configuring WAN gateways as
+  illustrated in the following example:</para>
+
+  <programlisting language="xml">&lt;gfe:cache/&gt;
+
+&lt;gfe:replicated-region id="region-with-gateway" enable-gateway="true" hub-id="gateway-hub"/&gt;
+
+&lt;gfe:gateway-hub id="gateway-hub" manual-start="true"&gt;
+    &lt;gfe:gateway gateway-id="gateway"&gt;
+         &lt;gfe:gateway-listener&gt;
+             &lt;bean class="com.company.example.MyGatewayListener"/&gt;
+         &lt;/gfe:gateway-listener&gt;
+         &lt;gfe:gateway-queue maximum-queue-memory="5" batch-size="3" 
+                batch-time-interval="10" /&gt;
+     &lt;/gfe:gateway&gt;
+
+     &lt;gfe:gateway gateway-id="gateway2"&gt;
+         &lt;gfe:gateway-endpoint port="1234" host="host1" endpoint-id="endpoint1"/&gt;
+         &lt;gfe:gateway-endpoint port="2345" host="host2" endpoint-id="endpoint2"/&gt;
+    &lt;/gfe:gateway&gt;
+&lt;/gfe:gateway-hub&gt;</programlisting>
+
+  <para>A region may synchronize all or part of its contents to a gateway hub
+  used to access one or more remote systems. The region must set
+  <literal>enable-gateway</literal> to <literal>true</literal> and specify the
+  <literal>hub-id</literal>. </para>
+
+  <para><note>
+      <para>If just a hub-id is specified, Spring Data GemFire automatically
+      assumes that the gateway should be enabled. </para>
+    </note></para>
+
+  <para>Please refer to the GemFire product document for a detailed
+  explanation of all the configuration options.</para>
+</section>

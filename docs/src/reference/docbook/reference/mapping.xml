@@ -11,12 +11,12 @@
   <section xml:id="mapping.entities">
     <title>Entity mapping</title>
 
-    <para>Spring Data Gemfire provides support to map entities to be stored in
-    a Gemfire grid. The mapping metadata is define by using annotations at the
+    <para>Spring Data GemFire provides support to map entities to be stored in
+    a GemFire grid. The mapping metadata is define by using annotations at the
     domain classes just like this: </para>
 
     <example>
-      <title>Mapping a domain class to Gemfire</title>
+      <title>Mapping a domain class to GemFire</title>
 
       <programlisting language="java">@Region("myRegion")
 public class Person {
@@ -41,7 +41,7 @@ public class Person {
     are stored in. The <interfacename>@Id</interfacename> annotation can be
     used to annotate the property that shall be used as cache key. The
     <interfacename>@PersistenceConstructor</interfacename> annotation actually
-    helps disambiguing multiple potentially available constructors taking
+    helps disambiguating multiple potentially available constructors taking
     parameters and explicitly marking the one annotated as the one to be used
     to create entities. With none or only a single constructor you can omit
     the annotation.</para>
@@ -50,7 +50,7 @@ public class Person {
   <section xml:id="mapping.pdx-serializer">
     <title>Mapping PDX serializer</title>
 
-    <para>Spring Data Gemfire provides a custom
+    <para>Spring Data GemFire provides a custom
     <interfacename>PDXSerializer</interfacename> implementation that uses the
     mapping information to customize entity serialization. Beyond that it
     allows customizing the entity instantiation by using the Spring Data

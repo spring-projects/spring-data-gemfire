@@ -9,15 +9,19 @@
 
   <itemizedlist>
     <listitem>
-      <para>Spring Data GemFire Home Page</para>
+      <ulink url="http://www.springsource.org/spring-gemfire">Spring Data GemFire Home Page</ulink>
     </listitem>
-
+     <listitem>
+      <ulink url="http://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html">vFabric GemFire Home Page</ulink>
+    </listitem>
+     <listitem>
+      <ulink url="https://www.vmware.com/support/pubs/vfabric-gemfire.html">vFabric GemFire Documentation</ulink>
+    </listitem>
     <listitem>
-      <para>SpringSource Blog</para>
+      <ulink url="http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire">GemFire Community Home Page</ulink>
+    </listitem>
+    <listitem>
+      <ulink url="http://forum.springsource.org/forumdisplay.php?77-GemFire">Spring Data GemFire Forum</ulink>
     </listitem>
   </itemizedlist>
-
-  <para>New para</para>
-
-  <para/>
 </chapter>

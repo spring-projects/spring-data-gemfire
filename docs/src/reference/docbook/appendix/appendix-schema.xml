@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <appendix xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="appendix-schema" xmlns:xi="http://www.w3.org/2001/XInclude">
-    <title>Spring GemFire Integration Schema</title>
+    <title>Spring Data GemFire Schema</title>
 
-	<para>Spring GemFire Schema</para>	
-    <programlisting language="xml"><xi:include href="../../../src/main/resources/org/springframework/data/gemfire/config/spring-gemfire-1.1.xsd" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude">
+	<para>Spring Data GemFire Core Schema (gfe)</para>	
+    <programlisting language="xml"><xi:include href="../../../src/main/resources/org/springframework/data/gemfire/config/spring-gemfire-1.2.xsd" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude">
+       <xi:fallback>
+    	<para><emphasis>FIXME: SGF SCHEMA LOCATION/NAME CHANGED</emphasis></para>
+  	   </xi:fallback>
+  	 </xi:include>
+    </programlisting>
+    <para>Spring Data GemFire Data Access Schema (gfe-data)</para>	
+    <programlisting language="xml"><xi:include href="../../../src/main/resources/org/springframework/data/gemfire/config/spring-data-gemfire-1.2.xsd" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude">
        <xi:fallback>
     	<para><emphasis>FIXME: SGF SCHEMA LOCATION/NAME CHANGED</emphasis></para>
   	   </xi:fallback>

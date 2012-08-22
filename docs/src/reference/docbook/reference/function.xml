@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section version="5.0" id="bootstrap:function"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title>Configuring GemFire's Function Service</title>
+
+  <para>As of Release 1.2.0, Spring Data GemFire provides namespace support
+  for registering GemFire <interfacename>Function</interfacename>s for remote
+  function execution. Please refer to the GemFire documentation for more
+  information on the function execution framework. Functions are declared as
+  Spring beans and must implement the
+  <interfacename>com.gemstone.gemfire.cache.execute.Function</interfacename>
+  interface or extend
+  <interfacename>com.gemstone.gemfire.cache.execute.FunctionAdapter</interfacename>.
+  The namespace uses a familiar pattern to declare functions:</para>
+
+  <programlisting language="xml">&lt;gfe:function-service&gt;
+  &lt;gfe:function&gt;
+      &lt;bean class="com.company.example.Function1"/&gt;
+      &lt;ref bean="function2"/&gt;
+  &lt;/gfe:function&gt;
+&lt;/gfe:function-service&gt;
+    
+&lt;bean id="function2" class="com.company.example.Function2"/&gt;</programlisting>
+</section>

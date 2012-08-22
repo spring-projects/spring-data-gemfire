@@ -1,7 +1,7 @@
   <chapter xml:id="requirements" xmlns="http://docbook.org/ns/docbook" version="5.0">
       <title>Requirements</title>
 
-      <para>Spring Data GemFire requires JDK level 5.0 and above, Spring 
+      <para>Spring Data GemFire requires JDK level 6.0 and above, Spring 
       <ulink url="http://www.springsource.org/about">Framework</ulink> 3 and 
       <ulink url="http://www.vmware.com/support/pubs/vfabric-gemfire.html">vFabric GemFire</ulink> 6.6 and above.
       </para>

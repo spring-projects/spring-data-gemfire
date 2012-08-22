@@ -2,8 +2,8 @@
 <chapter xmlns="http://docbook.org/ns/docbook" version="5.0"  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="serialization">
   <title>Working with GemFire Serialization</title>
 
-  <para>To improve overall performance of the data fabric, GemFire supports a
-  dedicated serialization protocol that is both faster and offers more compact
+  <para>To improve overall performance of the data grid, GemFire supports a
+  dedicated serialization protocol (PDX) that is both faster and offers more compact
   results over the standard Java serialization and works transparently across
   various language <ulink
   url="http://community.gemstone.com/display/gemfire/Interoperability">platforms</ulink>
@@ -11,7 +11,7 @@
   url="http://community.gemstone.com/display/gemfire/Serialization+in+Java">Java</ulink>,
   <ulink
   url="http://community.gemstone.com/display/gemfire/Serialization+in+.NET">.NET</ulink>
-  and C++). This chapter discusses the various ways in which SGF simplifies
+  and C++). This chapter discusses the various ways in which Spring Data GemFire simplifies
   and improves GemFire custom serialization in Java.</para>
 
   <section id="serialization:wiring">
@@ -21,7 +21,7 @@
     Transient data is often dependent on the node or environment where it
     lives at a certain point in time, for example a DataSource. Serializing
     such information is useless (and potentially even dangerous) since it is
-    local to a certain VM/machine. For such cases, SGF offers a special <ulink
+    local to a certain VM/machine. For such cases, Spring Data GemFire offers a special <ulink
     url="http://www.gemstone.com/docs/6.0.1/product/docs/japi/com/gemstone/gemfire/Instantiator.html"><classname>Instantiator</classname></ulink>
     that performs wiring for each new instance created by GemFire during
     deserialization.</para>
@@ -63,7 +63,7 @@
     be created on each machine as data flows in. Out of the box, GemFire uses
     reflection to create new types but for some scenarios, this might prove to
     be expensive. As always, it is good to perform profiling to quantify
-    whether this is the case or not. For such cases, SGF allows the automatic
+    whether this is the case or not. For such cases, Spring Data GemFire allows the automatic
     generation of <classname>Instatiator</classname> classes which instantiate
     a new type (using the default constructor) without the use of
     reflection:</para>

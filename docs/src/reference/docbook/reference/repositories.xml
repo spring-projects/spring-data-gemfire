@@ -7,26 +7,27 @@
          xmlns:ns4="http://www.w3.org/2000/svg"
          xmlns:ns3="http://www.w3.org/1998/Math/MathML"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Gemfire Repositories</title>
+  <title>GemFire Repositories</title>
 
   <section>
     <title xml:id="gemfire-repositories.intro">Introduction</title>
 
-    <para>Spring Data Gemfire provides support to use the Spring Data
-    repository abstraction to easily persist entities into Gemfire and execute
-    queries. A general introduction into the repository programming model has
-    been provided in <xref linkend="repositories" />.</para>
+    <para>Spring Data GemFire provides support to use the Spring Data
+    repository abstraction to easily persist entities into GemFire and execute
+    queries. A general introduction into the repository programming model is
+    been provided <ulink url="http://static.springsource.org/spring-data/data-commons/docs/current/reference/html/#repositories">here
+    </ulink>.</para>
   </section>
 
   <section xml:id="gemfire-repositories.spring-configuration">
     <title>Spring configuration</title>
 
     <para>To bootstrap Spring Data repositories you use the
-    <code>&lt;repositories /&gt;</code> element from the Gemfire
+    <code>&lt;repositories /&gt;</code> element from the GemFire
     namespace:</para>
 
     <example>
-      <title>Bootstrap Gemfire repositories</title>
+      <title>Bootstrap GemFire repositories</title>
 
       <programlisting language="xml">&lt;beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:gf="http://www.springframework.org/schema/gemfire"
@@ -43,7 +44,7 @@
 
     <para>This configuration snippet will look for interfaces below the
     configured base package and create repository instances for those
-    interfaces backed by a <classname>SimpleGemfireRepository</classname>.
+    interfaces backed by a <classname>SimpleGemFireRepository</classname>.
     Note that you have to have your domain classes correctly mapped to
     configured regions as the bottstrap process will fail otherwise.</para>
   </section>
@@ -51,7 +52,7 @@
   <section xml:id="gemfire-repositories.executing-queries">
     <title>Executing OQL queries</title>
 
-    <para>The Gemfire repositories allow the definition of query methods to
+    <para>The GemFire repositories allow the definition of query methods to
     easily execute OQL queries against the Region the managed entity is mapped
     to.</para>
 

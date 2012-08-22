@@ -35,45 +35,7 @@ and may be nested or referenced.
 			]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
-            <xsd:element name="gateway-conflict-resolver"
-                minOccurs="0" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation
-                        source="com.gemstone.gemfire.cache.util.GatewayConflictResolver"><![CDATA[
-A gateway conflict resolver for this cache. A gateway conflict resolver handles conflicts in the case of concurrent updates using a WAN gateway. The bean
-must implement com.gemstone.gemfire.cache.util.GatewayConflictResolver. Requires Gemfire version 7.0 or higher.
-                            ]]></xsd:documentation>
-                    <xsd:appinfo>
-                        <tool:annotation>
-                            <tool:exports
-                                type="com.gemstone.gemfire.cache.util.GatewayConflictResolver" />
-                        </tool:annotation>
-                    </xsd:appinfo>
-                </xsd:annotation>
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:any namespace="##other"
-                            processContents="skip" minOccurs="0"
-                            maxOccurs="unbounded">
-                            <xsd:annotation>
-                                <xsd:documentation><![CDATA[
-Inner bean definition of the gateway conflict resolver.
-                                        ]]></xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:any>
-                    </xsd:sequence>
-                    <xsd:attribute name="ref" type="xsd:string"
-                        use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
-The name of the gateway conflict resolver bean referred by this declaration. Used as a convenience method. If no reference exists, 
-use inner bean declarations.
-                                    ]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:complexType>
-            </xsd:element>
-
+            
             <xsd:element name="dynamic-region-factory"
                 minOccurs="0" maxOccurs="1">
                 <xsd:annotation>
@@ -506,40 +468,6 @@ when one or more missing required roles is restored to the distributed membershi
                             </xsd:attribute>
                         </xsd:complexType>
                     </xsd:element>
-                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                        <xsd:element name="gateway-sender"
-                            type="baseGatewaySenderType" />
-                        <xsd:element name="gateway-sender-ref">
-                            <xsd:complexType>
-                                <xsd:attribute name="bean"
-                                    type="xsd:string" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation><![CDATA[
-The name of the gateway sender bean referred by this declaration. Used as a convenience method. If no reference exists,
-use inner bean declarations.
-                               ]]></xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:choice>
-                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                        <xsd:element name="async-event-queue"
-                            type="baseAsyncEventQueueType" />
-                        <xsd:element name="async-event-queue-ref">
-                            <xsd:complexType>
-                                <xsd:attribute name="bean"
-                                    type="xsd:string" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation><![CDATA[
-The name of the gateway sender bean referred by this declaration. Used as a convenience method. If no reference exists,
-use inner bean declarations.
-                               ]]></xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:choice>
                 </xsd:sequence>
                 <xsd:attribute name="persistent" type="xsd:string">
                     <xsd:annotation>
@@ -631,7 +559,9 @@ The fully qualified class name of the expected value type
                     use="optional" default="false">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
- Indicates whether operations on this region participates in active JTA transactions or ignores them and operates outside of transactions. This is primarily used in cache loaders, writers, and listeners that need to perform non-transactional operations on a region, such as caching a result set.
+ Indicates whether operations on this region participates in active JTA transactions or ignores them and operates outside of transactions.
+ This is primarily used in cache loaders, writers, and listeners that need to perform non-transactional operations on a region,
+ such as caching a result set.
 								]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -661,7 +591,7 @@ The fully qualified class name of the expected value type
                     use="optional">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
- Specifies if WAN gateway communications are enabled for this region (true or false) (Deprecated since Gemfire v 7.0)
+ Specifies if WAN gateway communications are enabled for this region (true or false)
                                 ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -669,7 +599,7 @@ The fully qualified class name of the expected value type
                     use="optional">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
- Specifies if WAN gateway hub id if enable-gateway is true. (Deprecated since Gemfire v 7.0)
+ Specifies if WAN gateway hub id if enable-gateway is true.
                                 ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -692,7 +622,8 @@ The fully qualified class name of the expected value type
                     use="required">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-The name of the region definition.]]></xsd:documentation>
+The name of the region definition.]]>
+</xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
             </xsd:extension>
@@ -774,7 +705,8 @@ Time to idle (or idle timeout) configuration for the region entries. Default: no
                     default="0.75">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[[
-Together with the initial-capacity region attribute, sets the initial parameters on the underlying java.util.ConcurrentHashMap used for storing region entries. This must be a floating point number between 0 and 1, inclusive.
+Together with the initial-capacity region attribute, sets the initial parameters on the underlying java.util.ConcurrentHashMap
+used for storing region entries. This must be a floating point number between 0 and 1, inclusive.
 							]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -782,7 +714,8 @@ Together with the initial-capacity region attribute, sets the initial parameters
                     type="xsd:string" default="true">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[[
-Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.
+Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a
+clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.
 							]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -827,7 +760,7 @@ Determines how fromDelta applies deltas to the local cache for delta propagation
                     use="required">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-                The name of the region definition.
+The name of the region definition.
                         ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -863,7 +796,8 @@ The name of the bean defining the GemFire cache (by default 'gemfireCache').
         <xsd:attribute name="name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
-The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name). Required for subregions.
+The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).
+Required for subregions.
                 ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
@@ -874,7 +808,7 @@ The name of the region definition. If no specified, it will have the value of th
             type="xsd:string" default="false">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
- Indicates whether the region can conflate its messages to the client.
+Indicates whether the region can conflate its messages to the client.
                                 ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
@@ -882,14 +816,16 @@ The name of the region definition. If no specified, it will have the value of th
             type="xsd:string" default="false">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
- For TCP/IP distributions between peers, specifies whether to allow aggregation of asynchronous messages sent by the producer member for the region. This is a special-purpose boolean attribute that applies only when asynchronous queues are used for slow consumers
+ For TCP/IP distributions between peers, specifies whether to allow aggregation of asynchronous messages sent by the producer member for the region.
+ This is a special-purpose boolean attribute that applies only when asynchronous queues are used for slow consumers
                                 ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="multicast-enabled" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
- Boolean that indicates whether distributed operations on a region should use multicasting. To enable this, multicast must be enabled for the distributed system with the mcast-port gemfire.properties setting.
+Boolean that indicates whether distributed operations on a region should use multicasting. To enable this, multicast must be enabled for the
+distributed system with the mcast-port gemfire.properties setting.
                                 ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
@@ -943,7 +879,9 @@ The action to take when performing eviction.
                 <xsd:attribute name="concurrency-level">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-Provides an estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions. This attribute helps GemFire optimize the use of system resources and reduce thread contention. This sets an initial parameter on the underlying java.util.ConcurrentHashMap used for storing region entries.
+Provides an estimate of the maximum number of application threads that will concurrently access a region entry at one time.
+This attribute does not apply to partitioned regions. This attribute helps GemFire optimize the use of system resources and
+reduce thread contention. This sets an initial parameter on the underlying java.util.ConcurrentHashMap used for storing region entries.
                         ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -965,7 +903,7 @@ Specifies the data policy for this region
                     type="xsd:string" use="optional" default="false">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
- Indicates whether the region is a lock grantor.This attribute is only relevant for regions with global scope, as only they allow locking.
+Indicates whether the region is a lock grantor.This attribute is only relevant for regions with global scope, as only they allow locking.
                                 ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -988,7 +926,7 @@ Specifies the data policy for this region
                     use="required">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-                The name of the region definition.
+The name of the region definition.
                         ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -1042,14 +980,16 @@ The action to take when performing eviction.
                     default="NORMAL">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-								Indicates the DataPolicy to use for this region (NORMAL or PRELOADED)
+Indicates the DataPolicy to use for this region (NORMAL or PRELOADED)
 						]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="concurrency-level">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-Provides an estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions. This attribute helps GemFire optimize the use of system resources and reduce thread contention. This sets an initial parameter on the underlying java.util.ConcurrentHashMap used for storing region entries.
+Provides an estimate of the maximum number of application threads that will concurrently access a region entry at one time.
+This attribute does not apply to partitioned regions. This attribute helps GemFire optimize the use of system resources and
+reduce thread contention. This sets an initial parameter on the underlying java.util.ConcurrentHashMap used for storing region entries.
                         ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -1072,7 +1012,7 @@ Provides an estimate of the maximum number of application threads that will conc
                     use="required">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-                The name of the region definition.
+The name of the region definition.
                         ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -1123,7 +1063,8 @@ colocate data based on custom criterias (such as colocating trades by month and 
                         <xsd:annotation>
                             <xsd:documentation
                                 source="com.gemstone.gemfire.cache.partition.PartitionListener"><![CDATA[
-The partition listener definition for this region. Defines a callback for partitioned regions, invoked when a partition region is created or any bucket in a partitioned region becomes primary
+The partition listener definition for this region. Defines a callback for partitioned regions, invoked when a partition region
+is created or any bucket in a partitioned region becomes primary
                                 ]]></xsd:documentation>
                             <xsd:appinfo>
                                 <tool:annotation>
@@ -1230,7 +1171,7 @@ The delay in milliseconds that existing members will wait before satisfying redu
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
 The delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members
- will not trigger redundancy recovery. The default is to recover redundancy immediately when a new member is added.
+will not trigger redundancy recovery. The default is to recover redundancy immediately when a new member is added.
  							]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -1254,7 +1195,7 @@ The delay in milliseconds that new members will wait before satisfying redundanc
                     use="required">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
-                The name of the region definition.
+The name of the region definition.
                         ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -1457,12 +1398,12 @@ Considered only for asynchronous writing.
         <xsd:attribute name="compaction-threshold"
             default="50">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Sets the threshold at which an oplog will become
-            compactable. Until it reaches this threshold the oplog will not be compacted.
-            The threshold is a percentage in the range 0..100. When the amount of garbage
-            in an oplog exceeds this percentage then when a compaction is done this garbage
-            will be cleaned up freeing up disk space. Garbage is created by entry destroys,
-            entry updates, and region destroys. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[
+Sets the threshold at which an oplog will become compactable. Until it reaches this threshold the oplog will not be compacted.
+The threshold is a percentage in the range 0..100. When the amount of garbage in an oplog exceeds this percentage then when a
+compaction is done this garbage will be cleaned up freeing up disk space. Garbage is created by entry destroys,
+entry updates, and region destroys.
+]]></xsd:documentation>
             </xsd:annotation>
             <xsd:simpleType>
                 <xsd:restriction base="xsd:short">
@@ -1502,7 +1443,9 @@ The name of the disk store bean definition. This is also used as the disk store 
                 <xsd:attribute name="cache-ref" type="xsd:string"
                     use="optional" default="gemfireCache">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[The name of the bean defining the GemFire cache (by default 'gemfireCache').]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[
+The name of the bean defining the GemFire cache (by default 'gemfireCache').
+						]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
             </xsd:extension>
@@ -1837,7 +1780,9 @@ The client subscription configuration that is used to control a clients use of s
             <xsd:attribute name="id" type="xsd:string"
                 use="optional">
                 <xsd:annotation>
-                    <xsd:documentation><![CDATA[The name of the cache server definition (by default "gemfireServer").]]></xsd:documentation>
+                    <xsd:documentation><![CDATA[
+The name of the cache server definition (by default "gemfireServer").
+				]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="auto-startup" type="xsd:string"
@@ -1847,7 +1792,9 @@ The client subscription configuration that is used to control a clients use of s
             <xsd:attribute name="port" type="xsd:string"
                 use="optional" default="40404">
                 <xsd:annotation>
-                    <xsd:documentation><![CDATA[The port number of the server.]]></xsd:documentation>
+                    <xsd:documentation><![CDATA[
+The port number of the server.
+					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="host-name-for-clients"
@@ -1879,13 +1826,17 @@ The server groups that this server will be a member of given as a comma separate
             <xsd:attribute name="load-probe-ref" type="xsd:string"
                 use="optional">
                 <xsd:annotation>
-                    <xsd:documentation><![CDATA[The name of the bean defining the CacheServer Load Probe.]]></xsd:documentation>
+                    <xsd:documentation><![CDATA[
+The name of the bean defining the CacheServer Load Probe.
+					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="cache-ref" type="xsd:string"
                 use="optional" default="gemfireCache">
                 <xsd:annotation>
-                    <xsd:documentation><![CDATA[The name of the bean defining the GemFire cache (by default 'gemfireCache').]]></xsd:documentation>
+                    <xsd:documentation><![CDATA[
+The name of the bean defining the GemFire cache (by default 'gemfireCache').
+					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
         </xsd:complexType>
@@ -2019,7 +1970,8 @@ Defines a GemFire index.
             <xsd:attribute name="id" type="xsd:string">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-The name of the index bean definition. If property 'name' is not set, it will be used as the index name as well.]]></xsd:documentation>
+The name of the index bean definition. If property 'name' is not set, it will be used as the index name as well.
+					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="type" use="optional"
@@ -2035,7 +1987,8 @@ The name of the index bean definition. If property 'name' is not set, it will be
                 use="optional">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-The name of the index.]]></xsd:documentation>
+The name of the index.
+					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="expression" type="xsd:string"
@@ -2048,7 +2001,8 @@ The name of the index.]]></xsd:documentation>
                 use="optional" default="true">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-Indicates whether the index is created even if there is an index with the same name (default) or not.]]></xsd:documentation>
+Indicates whether the index is created even if there is an index with the same name (default) or not.
+					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="cache-ref" type="xsd:string"
@@ -2149,137 +2103,6 @@ Specifies a data type if other than java.lang.String
         </xsd:attribute>
     </xsd:complexType>
     <!-- -->
-    <xsd:complexType name="baseGatewaySenderType">
-        <xsd:annotation>
-            <xsd:documentation
-                source="com.gemstone.gemfire.cache.wan.GatewaySender"><![CDATA[
-A gateway sender gateway definition (requires Gemfire 7.0 or later)
-               ]]></xsd:documentation>
-            <xsd:appinfo>
-                <tool:annotation>
-                    <tool:exports
-                        type="com.gemstone.gemfire.cache.wan.GatewaySender" />
-                </tool:annotation>
-            </xsd:appinfo>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="event-filter" minOccurs="0"
-                maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation
-                        source="com.gemstone.gemfire.cache.wan.GatewayEventFilter"><![CDATA[
-A gateway event filter for this gateway sender
-                            ]]></xsd:documentation>
-                    <xsd:appinfo>
-                        <tool:annotation>
-                            <tool:exports
-                                type="com.gemstone.gemfire.cache.wan.GatewayEventFilter" />
-                        </tool:annotation>
-                    </xsd:appinfo>
-                </xsd:annotation>
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:any namespace="##other"
-                            processContents="skip" minOccurs="0"
-                            maxOccurs="unbounded">
-                            <xsd:annotation>
-                                <xsd:documentation><![CDATA[
-Inner bean definition of the event filter
-                                        ]]></xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:any>
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="transport-filter" type="gatewayTransportFilterType"
-                minOccurs="0" maxOccurs="1" />
-        </xsd:sequence>
-        <xsd:attributeGroup ref="commonWANQueueAttributes" />
-        <xsd:attribute name="remote-distributed-system-id"
-            type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies the remote distributed system id, an integer value representing the remote distributed system
-                  ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="manual-start" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies if the gateway sender is manually (true) or automatically(false) started
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="socket-buffer-size" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies the socket buffer size in bytes
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="socket-read-timeout" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies the socket read timeout in milliseconds
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="enable-batch-conflation"
-            type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies whether batch conflation is enabled (true or false)
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="batch-time-interval" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-The maximum time interval that can elapse before a partial batch is sent from a GatewaySender to its corresponding GatewayReceiver.
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="alert-threshold" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies the alert threshold in miliseconds, indicating the maximum time elapsed from when the gateway sent the message
-to when the acknowldgement was received from the gateway receiver.
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="dispatcher-threads" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies the number of dispatcher threads to allocate to the gateway sender
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="order-policy" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies the order policy - This only applies if parallel is enabled:
-KEY: Indicates that events will be parallelized based on the event's key,
-PARTITION:Indicates that events will be parallelized based on the event's: partition (using the PartitionResolver)
-THREAD:Indicates that events will be parallelized based on the event's originating member and thread
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="parallel" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies whether all VMs need to distribute events to remote site. In this case only the events originating in a particular VM will be dispatched in order.
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
     <!-- -->
     <xsd:attributeGroup name="commonWANQueueAttributes">
         <xsd:attribute name="batch-size" type="xsd:string"
@@ -2390,113 +2213,6 @@ The id of the cache - default is gemfireCache
         </xsd:attribute>
     </xsd:complexType>
     <!-- -->
-    <xsd:complexType name="baseAsyncEventQueueType">
-        <xsd:annotation>
-            <xsd:documentation
-                source="com.gemstone.gemfire.cache.wan.AsyncEventQueue"><![CDATA[
-An async event queue definition (requires Gemfire 7.0 or later)
-           ]]></xsd:documentation>
-            <xsd:appinfo>
-                <tool:annotation>
-                    <tool:exports
-                        type="com.gemstone.gemfire.cache.wan.AsyncEventQueue" />
-                </tool:annotation>
-            </xsd:appinfo>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="async-event-listener"
-                minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation
-                        source="com.gemstone.gemfire.cache.wan.AsyncEventListener"><![CDATA[
-An async event listener definition for this distributed system. (requires Gemfire 7.0)
-                            ]]></xsd:documentation>
-                    <xsd:appinfo>
-                        <tool:annotation>
-                            <tool:exports
-                                type="com.gemstone.gemfire.cache.wan.AsyncEventListener" />
-                        </tool:annotation>
-                    </xsd:appinfo>
-                </xsd:annotation>
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:any namespace="##other"
-                            processContents="skip" minOccurs="0"
-                            maxOccurs="unbounded">
-                            <xsd:annotation>
-                                <xsd:documentation><![CDATA[
-Inner bean definition of the async event listener
-                                        ]]></xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:any>
-                    </xsd:sequence>
-                    <xsd:attribute name="ref" type="xsd:string"
-                        use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
-The name of the async event listener bean referred by this declaration. Used as a convenience method. If no reference exists,
-use inner bean declarations.
-                                    ]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-        <xsd:attributeGroup ref="commonWANQueueAttributes" />
-    </xsd:complexType>
-    <!-- -->
-    <xsd:element name="gateway-sender">
-        <xsd:complexType>
-            <xsd:complexContent>
-                <xsd:extension base="baseGatewaySenderType">
-                    <xsd:attribute name="id" type="xsd:string"
-                        use="required">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
-The id of this bean definition.
-                    ]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="cache-ref" type="xsd:string"
-                        use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
-The id of the cache - default is gemfireCache
-                  ]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:extension>
-            </xsd:complexContent>
-        </xsd:complexType>
-    </xsd:element>
-    <!-- -->
-    <xsd:element name="async-event-queue">
-        <xsd:complexType>
-            <xsd:complexContent>
-                <xsd:extension base="baseAsyncEventQueueType">
-                    <xsd:attribute name="id" type="xsd:string"
-                        use="required">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
-The id of this bean definition.
-                    ]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="cache-ref" type="xsd:string"
-                        use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
-The id of the cache - default is gemfireCache
-                  ]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:extension>
-            </xsd:complexContent>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="gateway-receiver" type="gatewayReceiverType" />
-    <!-- -->
     <xsd:element name="function-service">
         <xsd:complexType>
             <xsd:sequence>
@@ -2552,7 +2268,8 @@ The id of the function service (optional)
     <xsd:simpleType name="scopeType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
-Determines how updates to region entries are distributed to the other caches in the distributed system where the region and entry are defined. Scope also determines whether to allow remote invocation of some of the region’s event handlers
+Determines how updates to region entries are distributed to the other caches in the distributed system where the region and entry are defined.
+Scope also determines whether to allow remote invocation of some of the region’s event handlers
 ]]></xsd:documentation>
         </xsd:annotation>
         <xsd:restriction base="xsd:string">
@@ -2590,7 +2307,7 @@ Inner bean definition of the transport filter.
                 <xsd:documentation><![CDATA[
 The name of the transport filter bean referred by this declaration. Used as a convenience method. If no reference exists,
 use inner bean declarations.
-                                    ]]></xsd:documentation>
+                ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -2598,7 +2315,6 @@ use inner bean declarations.
     <xsd:complexType name="gatewayHubType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
-Deprecated as of Gemfire 7
 ]]></xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
@@ -2606,7 +2322,6 @@ Deprecated as of Gemfire 7
                 minOccurs="0" maxOccurs="unbounded">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
-Deprecated as of Gemfire 7
 ]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
@@ -2670,7 +2385,6 @@ Specifies the startup policy (primary,secondary, none) for the gateway hub
     <xsd:complexType name="gatewayEndpointType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
-Deprecated as of Gemfire 7
 ]]></xsd:documentation>
         </xsd:annotation>
         <xsd:attribute name="host" type="xsd:string" use="required">
@@ -2685,7 +2399,6 @@ Deprecated as of Gemfire 7
     <xsd:complexType name="gatewayQueueType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
-Deprecated as of Gemfire 7
 ]]></xsd:documentation>
         </xsd:annotation>
         <xsd:attribute name="enable-batch-conflation"
@@ -2750,7 +2463,6 @@ Specifies the maximum memory in MB to allocate for the queue
     <xsd:complexType name="gatewayType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
-Deprecated as of Gemfire 7
 ]]></xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
@@ -2846,7 +2558,6 @@ Specifies the number of parallel threads
     <xsd:element name="gateway-hub" type="gatewayHubType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
-Deprecated as of Gemfire 7
 ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>

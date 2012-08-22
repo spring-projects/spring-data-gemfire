@@ -22,25 +22,21 @@
     url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/orm.html#orm-exception-translation">exception
     translation</ulink> can be applied transparently to your data access
     objects through the use of the <literal>@Repository</literal> annotation
-    and AOP by defining a PersistenceExceptionTranslationPostProcessor bean.
-    The same exception translation functionality is enabled when using Gemfire
-    as long as at least a <classname>CacheFactoryBean</classname> is declared.
-    The <interfacename>Cache</interfacename> factory acts as an exception
-    translator which is automatically detected by the Spring infrastructure
+    and AOP by defining a <classname>PersistenceExceptionTranslationPostProcessor</classname> bean.
+    The same exception translation functionality is enabled when using GemFire
+    as long as at least a <classname>CacheFactoryBean</classname> is declared, e.g., using a <literal>&lt;gfe:cache/&gt;</literal> declaration)
+    as it acts as an exception translator which is automatically detected by the Spring infrastructure
     and used accordingly.</para>
   </section>
  
   <section id="apis:template">
-    <title><classname>GemfireTemplate</classname></title>
+    <title>GemfireTemplate</title>
 
-    <para>As with many other high-level abstractions provided by the Spring
-    Framework and related projects, Spring GemFire provides a
-    <emphasis>template</emphasis> that plays a central role when working with
-    the GemFire API. The class provides several <emphasis>one-liner</emphasis>
-    methods, for popular operations but also the ability to
+    <para>As with many other high-level abstractions provided by the Spring projects, Spring Data GemFire provides a
+    <emphasis>template</emphasis> that simplifies GemFire data access. The class provides several <emphasis>one-line</emphasis>
+    methods, for common region operations but also the ability to
     <emphasis>execute</emphasis> code against the native GemFire API without
-    having to deal with exceptions for example through the
-    <interfacename>GemfireCallback</interfacename>.</para>
+    having to deal with GemFire checked exceptions for example through the <interfacename>GemfireCallback</interfacename>.</para>
 
     <para>The template class requires a GemFire
     <interfacename>Region</interfacename> instance and once configured is
@@ -65,9 +61,9 @@
   }
 });</programlisting>
 
-   <para>For accessing the full power of the GemFire query language, one can use the <methodname>find</methodname> and <methodname>findUnique</methodname> which, as oppose to the 
-   <methodname>query</methodname> method, can execute queries inside across multiple regions, execute projections just to name a few features. <methodname>find</methodname> method should be
-   used when the query selects multiple items (through <literal>SelectResults</literal>) and the latter, <methodname>findUnique</methodname>, as the name suggests when only one object is returned.
+   <para>For accessing the full power of the GemFire query language, one can use the <methodname>find</methodname> and <methodname>findUnique</methodname> which, as opposed to the 
+   <methodname>query</methodname> method, can execute queries across multiple regions, execute projections, and the like. The <methodname>find</methodname> method should be
+   used when the query selects multiple items (through <literal>SelectResults</literal>) and the latter, <methodname>findUnique</methodname>, as the name suggests, when only one object is returned.
    </para>
   </section>
 
@@ -75,9 +71,8 @@
   	<title>Support for Spring Cache Abstraction</title>
   	
   	<para>Since 1.1, Spring GemFire provides an implementation for Spring 3.1 
-  	<ulink url="http://static.springsource.org/spring/docs/3.1.0.M2/spring-framework-reference/html/cache.html">cache abstraction</ulink> through the
-<literal>org.springframework.data.gemfire.support</literal> package. To use GemFire
-  	as a backing implementation, simply add <literal>GemfireCacheManager</literal> to your configuration:</para>
+  	<ulink url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#cache">cache abstraction</ulink>.
+  	To use GemFire as a backing implementation, simply add <classname>GemfireCacheManager</classname> to your configuration:</para>
   	
   	<programlisting language="xml"><![CDATA[<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:cache="http://www.springframework.org/schema/cache"
@@ -102,25 +97,17 @@
     <title>Transaction Management</title>
 
     <para>One of the most popular features of Spring Framework is <ulink
-    url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html">transaction</ulink>
+    url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#transaction">transaction</ulink>
     management. If you are not familiar with it, we strongly recommend <ulink
-    url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html#transaction-motivation">looking</ulink>
-    into it as it offers a consistent programming model that works
-    transparently across multiple APIs that can be configured either
-    programmatically or declaratively (the most popular choice).</para>
+    url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#transaction-motivation">looking</ulink>
+    into it as it offers a consistent programming model that works transparently across multiple APIs that can be configured either programmatically or declaratively (the most popular choice).</para>
 
-    <para>For GemFire, SGF provides a dedicated, per-cache, transaction
-    manager that once declared, allows actions on the
-    <interfacename>Region</interfacename>s to be grouped and executed
-    atomically through Spring:</para>
+    <para>For GemFire, Spring Data GemFire provides a dedicated, per-cache, transaction manager that once declared, allows region operations to be executed atomically through Spring:</para>
 
 	<programlisting language="xml">&lt;gfe:transaction-manager id="tx-manager" cache-ref="cache"/&gt;</programlisting>
 	<note>The example above can be simplified even more by eliminating the <literal>cache-ref</literal> attribute if the GemFire cache is defined under the default 
-	name <literal>gemfireCache</literal>. As with the other SGF namespace elements, if the cache name is not configured, the aforementioned naming convention will used.
-	Additionally, the transaction manager name, if not specified is <literal>gemfire-transaction-manager</literal>.</note>
-	
-	<para>or if you prefer <literal>bean</literal> declarations:</para>
-    <programlisting language="xml">&lt;bean id="tx-manager" class="org.springframework.data.gemfire.GemfireTransactionManager" p:cache-ref="cache"/&gt;</programlisting>
+	name <literal>gemfireCache</literal>. As with the other Spring Data GemFire namespace elements, if the cache name is not configured, the aforementioned naming convention will used.
+	Additionally, the transaction manager name, if not specified is <literal>gemfireTransactionManager</literal>.</note>
 
     <para>Note that currently GemFire supports optimistic transactions with
     <emphasis>read committed</emphasis> isolation. Furthermore, to guarantee
@@ -129,11 +116,11 @@
     values present in the cache. To prevent this from happening, the
     transaction manager configured the cache to use <emphasis>copy on
     read</emphasis> semantics, meaning a clone of the actual value is created,
-    each time a read is performed. This behaviour can be disabled if needed
+    each time a read is performed. This behavior can be disabled if needed
     through the <literal>copyOnRead</literal> property. For more information
     on the semantics of the underlying GemFire transaction manager, see the
     GemFire <ulink
-    url="http://www.gemstone.com/docs/6.0.1/product/docs/japi/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
+    url="https://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
   </section>
 
   <xi:include href="cq-container.xml"/>
@@ -143,21 +130,21 @@
 
     <para>GemFire XML configuration (usually named
     <literal>cache.xml</literal> allows <emphasis>user</emphasis> objects to
-    be declared as part of the fabric configuration. Usually these objects are
-    <interfacename>CacheLoader</interfacename>s or other pluggable components
-    into GemFire. Out of the box in GemFire, each such type declared through
+    be declared as part of the configuration. Usually these objects are
+    <interfacename>CacheLoader</interfacename>s or other pluggable callback components
+    supported by GemFire. Using native GemFire configuration, each user type declared through
     XML must implement the <interfacename>Declarable</interfacename> interface
     which allows arbitrary parameters to be passed to the declared class
     through a <classname>Properties</classname> instance.</para>
 
-    <para>In this section we describe how you can configure the pluggable
+    <para>In this section we describe how you can configure these pluggable
     components defined in <literal>cache.xml</literal> using Spring while
     keeping your Cache/Region configuration defined in
     <literal>cache.xml</literal> This allows your pluggable components to
     focus on the application logic and not the location or creation of
-    DataSources or other collaboration object.</para>
+    DataSources or other collaboration objects.</para>
 
-    <para>However, if you are starting on a green-field project, it is
+    <para>However, if you are starting a green field project, it is
     recommended that you configure Cache, Region, and other pluggable
     components directly in Spring. This avoids inheriting from the
     <interfacename>Declarable</interfacename> interface or the base class
@@ -168,11 +155,11 @@
       <title>Eliminate <interfacename>Declarable</interfacename>
       components</title>
 
-      <para>One can configure custom types entirely inside through Spring as
+      <para>One can configure custom types entirely through Spring as
       mentioned in <xref linkend="bootstrap:region" />. That way, one does not
       have to implement the <interfacename>Declarable</interfacename>
-      interface and gets access to all the features of the Spring IoC
-      container (including not just dependency injection but also life-cycle
+      interface and also benefits from all the features of the Spring IoC
+      container (not just dependency injection but also life-cycle
       and instance management).</para>
     </sidebar>
 
@@ -189,10 +176,10 @@
 &lt;/cache-loader&gt;</programlisting>
 
     <para>To simplify the task of parsing, converting the parameters and
-    initializing the object, SGF offers a base class
+    initializing the object, Spring Data GemFire offers a base class
     (<classname>WiringDeclarableSupport</classname>) that allows GemFire user
     objects to be wired through a <emphasis>template</emphasis> bean
-    definition or, in case that is missing perform autowiring through the
+    definition or, in case that is missing, perform autowiring through the
     Spring container. To take advantage of this feature, the user objects need
     to extend <classname>WiringDeclarableSupport</classname> which
     automatically locates the declaring
@@ -204,17 +191,16 @@
 
       <para>In the current GemFire release there is no concept of an
       <emphasis>object factory</emphasis> and the types declared are
-      instantiated and used as is - that is there are no other ways in which
-      third parties can take care of the object creation outside GemFire.
-      Support for this feature is planned for the up-coming GemFire release
-      (6.5)</para>
+      instantiated and used as is. In other words, there is no easy way
+      to manage object creation outside GemFire.
+      </para>
     </sidebar>
 
     <section id="apis:declarable:template-wiring">
       <title>Configuration using <emphasis>template</emphasis>
       definitions</title>
 
-      <para>When used <classname>WiringDeclarableSupport</classname> tries to
+      <para>When used, <classname>WiringDeclarableSupport</classname> tries to
       first locate an existing bean definition and use that as wiring
       template. Unless specified, the component class name will be used as an
       implicit bean definition name. Let's see how our
@@ -251,9 +237,8 @@
 &lt;/beans&gt;</programlisting>
 
       <para>In the scenario above, as no parameter was specified, a bean with
-      id/name <literal>com.company.app.DBLoader</literal> was searched for.
-      The found bean definition is used as a template for wiring the instance
-      created by GemFire. For cases where the bean name uses a different
+      the id/name <literal>com.company.app.DBLoader</literal> was used as a template
+      for wiring the instance created by GemFire. For cases where the bean name uses a different
       convention, one can pass in the <literal>bean-name</literal> parameter
       in the GemFire configuration:</para>
 
@@ -292,14 +277,14 @@
 
       <para>If no bean definition is found, by default,
       <classname>WiringDeclarableSupport</classname> will <ulink
-      url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factory-autowire">autowire</ulink>
+      url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#beans-factory-autowire">autowire</ulink>
       the declaring instance. This means that unless any dependency injection
       <emphasis>metadata</emphasis> is offered by the instance, the container
       will find the object setters and try to automatically satisfy these
       dependencies. However, one can also use JDK 5 annotations to provide
       additional information to the auto-wiring process. We strongly recommend
       reading the dedicated <ulink
-      url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-annotation-config">chapter</ulink>
+      url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#beans-annotation-config">chapter</ulink>
       in the Spring documentation for more information on the supported
       annotations and enabling factors.</para>
 

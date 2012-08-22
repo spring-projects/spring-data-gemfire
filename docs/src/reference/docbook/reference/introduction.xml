@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<part>
-  <title>Reference Guide</title>
-
-  <partintro>
+<chapter version="5.0" xml:id="ref-introduction"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+        >
     <title>Document structure</title>
 
     <para>The following chapters explain the core functionality offered by
@@ -12,7 +11,8 @@
 
     <para><xref linkend="bootstrap"/> describes the configuration support
     provided for bootstrapping, initializing, configuring, and accessing
-    GemFire caches, regions and distributed system components.</para>
+    GemFire caches, cache servers, regions, and related distributed system
+    components</para>
 
     <para><xref linkend="apis"/> explains the integration between the GemFire
     APIs and the various data access features available in Spring, such as
@@ -30,10 +30,5 @@
     <para><xref linkend="samples"/> describes the samples provided with the
     distribution to illustrate the various features available in Spring
     GemFire.</para>
-
-    <!-- 
-   <para><xref linkend="testing"/> showcases various ways of testing GemFire inside
-   Spring framework.</para>
- 	-->
-  </partintro>
-</part>
+  </chapter>
+ 

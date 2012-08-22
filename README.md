@@ -1,17 +1,19 @@
 Spring Data GemFire
 ===================
 
-The primary goal of the [Spring GemFire](http://www.springsource.org/spring-gemfire) project is to make it easier to build highly scalable Spring-powered applications using 
-[GemFire](http://www.gemstone.com/products/gemfire) as a distributed [data management](http://www.springsource.com/products/data-management) platform.
+The primary goal of the [Spring Data GemFire](http://www.springsource.org/spring-gemfire) project is to make it easier to build highly scalable Spring-powered applications using 
+[vFabric GemFire](http://www.vmware.com/products/application-platform/vfabric-gemfire) as a distributed [data management](http://www.springsource.com/products/data-management) platform.
 
 # Examples
 
-For examples on using the Spring GemFire, see the samples project.
+For examples on using the Spring Data GemFire, see the [spring-gemfire-examples](https://github.com/SpringSource/spring-gemfire-examples) project.
 
 # Getting Help
 
-
-Read the main project [website](http://www.springsource.org/spring-gemfire) and the [User Guide](http://static.springsource.org/spring-gemfire/docs/current/reference/html/). Look at the source code and the [JavaDocs](http://static.springsource.org/spring-gemfire/docs/current/api/). For more detailed questions, use the [forum](http://forum.springsource.org/forumdisplay.php?f=80). If you are new to Spring as well as to Spring GemFire, look for information about [Spring projects](http://www.springsource.org/projects). 
+Read the main project [website](http://www.springsource.org/spring-gemfire) and the [User Guide](http://static.springsource.org/spring-gemfire/docs/current/reference/html/). 
+Look at the source code and the [JavaDocs](http://static.springsource.org/spring-gemfire/docs/current/api/). 
+For more detailed questions, use the [forum](http://forum.springsource.org/forumdisplay.php?f=80). 
+If you are new to Spring as well as to Spring Data GemFire, look for information about [Spring projects](http://www.springsource.org/projects). 
 
 Quick Start
 -----------
@@ -34,14 +36,21 @@ For those in a hurry:
   <id>spring-maven-snapshot</id>
   <snapshots><enabled>true</enabled></snapshots>
   <name>Springframework Maven SNAPSHOT Repository</name>
-  <url>http://maven.springframework.org/snapshot</url>
+  <url>http://repo.springsource.org/snapshot</url>
 </repository> 
 
 <!-- used for milestone/rc releases -->
 <repository>
   <id>spring-maven-milestone</id>
   <name>Springframework Maven Milestone Repository</name>
-  <url>http://maven.springframework.org/milestone</url>
+  <url>http://repo.springsource.org/milestone</url>
+</repository>
+
+<!-- required for gemfire jar -->
+<repository>
+  <id>spring-maven-plugins-release</id>
+  <name>Springframework Maven Plugins Release Repository</name>
+  <url>http://repo.springsource.org/plugins-release</url>
 </repository> 
 ~~~~~
 
@@ -49,8 +58,8 @@ For those in a hurry:
 
 ~~~~~ groovy
 repositories {
-   mavenRepo name: "spring-snapshot", urls: "http://maven.springframework.org/snapshot"
-   mavenRepo name: "spring-milestone", urls: "http://maven.springframework.org/milestone"
+   mavenRepo name: "spring-snapshot", urls: "http://repo.springsource.org/snapshot"
+   mavenRepo name: "spring-milestone", urls: "http://repo.springsource.org/milestone"
 }
 
 dependencies {

@@ -9,8 +9,8 @@
     Spring GemFire provides dedicated support for CQs through the <literal>org.springframework.data.gemfire.listener</literal> package and
     its <emphasis>listener container</emphasis>; very similar in functionality 
     and naming to the JMS integration in  Spring Framework; in fact, users familiar with the JMS support in Spring, should
-    feel right at home. Basically SGF allows methods on POJOs to become end-points for CQ - simply define the query and indicate the method
-    that should be notified when there is a match - SGF takes care of the rest. This of Java EE's message-driven bean style, but without any
+    feel right at home. Basically Spring Data GemFire allows methods on POJOs to become end-points for CQ - simply define the query and indicate the method
+    that should be notified when there is a match - Spring Data GemFire takes care of the rest. This is similar Java EE's message-driven bean style, but without any
     requirement for base class or interface implementations, based on GemFire.</para>
 
 	<note>
@@ -21,7 +21,7 @@
     <section id="apis:cq-container:containers">
       <title>Continuous Query Listener Container</title>
 
-      <para>SGF simplifies the creation, registration, life-cycle and dispatch of CQs by taking care of the infrastructure around them through
+      <para>Spring Data GemFire simplifies the creation, registration, life-cycle and dispatch of CQs by taking care of the infrastructure around them through
       <classname>ContinuousQueryListenerContainer</classname> which does all the heavy lifting on behalf of the user - 
       users familiar with EJB and JMS should find the concepts familiar as it is designed as close as possible to the
       support in Spring Framework and its message-driven POJOs (MDPs)</para> 
@@ -29,13 +29,13 @@
       <para><classname>ContinuousQueryListenerContainer</classname> acts as an event (or message) listener container; it is used to receive the events
       from the registered CQs and drive the POJOs that are injected into it. The listener container is responsible for all threading of message
       reception and dispatches into the listener for processing. It acts as the intermediary between an EDP (Event Driven POJO) and the event provider
-      and takes care of creation and registration of CQs (to receive events), resource acquisition and release, exception conversion and suchlike. 
+      and takes care of creation and registration of CQs (to receive events), resource acquisition and release, exception conversion and the like. 
       This allows you as an application developer to write the (possibly complex) business logic associated with receiving an event (and reacting to it), 
       and delegates boilerplate GemFire infrastructure concerns to the framework.
       </para>
 
 	  <para>The container is fully customizable - one can chose either to use the CQ thread to perform the dispatch (synchronous delivery) or a new thread
-	  (from an existing pool for examples) for an asynch approach by defining the suitable <interfacename>java.util.concurrent.Executor</interfacename> 
+	  (from an existing pool for examples) for an asynchronous approach by defining the suitable <interfacename>java.util.concurrent.Executor</interfacename> 
 	  (or Spring's <interfacename>TaskExecutor</interfacename>). Depending on the load, the number of listeners or the runtime
 	  environment, one should change or tweak the executor to better serve her needs - in particular in managed environments (such as app servers), it is 
 	  highly recommended to pick a a proper <interfacename>TaskExecutor</interfacename> to take advantage of its runtime.</para>  
@@ -45,9 +45,9 @@
       <title>The <classname>ContinuousQueryListenerAdapter</classname> and <interfacename>ContinuousQueryListener</interfacename></title>
 
       <para>The <classname>ContinuousQueryListenerAdapter</classname> class is the
-      final component in SGF CQ support: in a  nutshell, it allows you to expose almost <emphasis>any</emphasis> class
+      final component in Spring Data GemFire CQ support: in a  nutshell, it allows you to expose almost <emphasis>any</emphasis> class
       as a EDP (there are of course some constraints) - it implements <interfacename>ContinuousQueryListener</interfacename>, a simpler listener interface
-      similar to GemFire <ulink url="http://www.gemstone.com/docs/6.5.1/product/docs/japi/com/gemstone/gemfire/cache/query/CqListener.html">CqListener</ulink>.</para>
+      similar to GemFire <ulink url="https://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/query/CqListener.html">CqListener</ulink>.</para>
 
 	  <para>Consider the following interface definition. Notice the 
       various event handling methods and their parameters:</para>
@@ -102,7 +102,7 @@
       a name for the resulting continuous query (useful for monitoring) but also the name of the method (the default is <literal>handleEvent</literal>). The specified method can have various
       argument types, the <interfacename>EventDelegate</interfacename> interface lists the allowed types.</note>
 	
-      <para>The example above uses the SGF namespace to declare the event listener container and automatically register the POJOs as listeners. The full blown, <emphasis>beans</emphasis> definition
+      <para>The example above uses the Spring Data GemFire namespace to declare the event listener container and automatically register the listeners. The full blown, <emphasis>beans</emphasis> definition
       is displayed below:</para>
       
       <programlisting language="xml"><lineannotation>&lt;!-- this is the Event Driven POJO (MDP) --&gt;</lineannotation>

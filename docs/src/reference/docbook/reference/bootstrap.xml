@@ -1,1024 +1,196 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="bootstrap">
+<chapter version="5.0" xml:id="bootstrap"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+        >
   <title>Bootstrapping GemFire through the Spring Container</title>
 
-  <para>Spring Data GemFire provides full configuration and initialization of the GemFire
-  data grid through Spring's IoC container. Spring Data GemFire provides several
-  classes that simplify the configuration of GemFire components including caches, regions, WAN gateways, persistence backup, and other distributed system components to
-  support a variety of scenarios with minimal effort.</para>
+  <para>Spring Data GemFire provides full configuration and initialization of
+  the GemFire data grid through Spring's IoC container and provides several
+  classes that simplify the configuration of GemFire components including
+  caches, regions, WAN gateways, persistence backup, and other distributed
+  system components to support a variety of scenarios with minimal
+  effort.</para>
+
+  <note>
+    <para>This section assumes basic familiarity with GemFire. For more
+    information see the <link
+    xlink:href="http://www.vmware.com/products/application-platform/vfabric-gemfire">product</link>
+    documentation.</para>
+  </note>
+
+  <section id="bootstrap:region:spring:config">
+    <title>Advantages of using Spring over GemFire
+    <literal>cache.xml</literal></title>
+
+    <para xmlns="">As of release 1.2.0, Spring Data Gemfire's XML namespace
+    supports full configuration of the data grid. In fact, the Spring
+    namespace is considered the preferred way to configure GemFire. GemFire
+    will continue to support <filename>cache.xml</filename> for legacy
+    reasons, but you can now do everything in Spring XML and take advantage of
+    the many wonderful things Spring has to offer such as modular XML
+    configuration, property placeholders, SpEL, and environment profiles.
+    Behind the namespace, Spring Data GemFire makes extensive use of Spring's
+    <interfacename>FactoryBean</interfacename> pattern to simplify the
+    creation and initialization of GemFire components.</para>
+
+    <para xmlns=""> For example, GemFire provides several callback interfaces
+    such as <interfacename>CacheListener</interfacename>,
+    <interfacename>CacheWriter</interfacename>,
+    <interfacename>CacheLoader</interfacename> to allow developers to add
+    custom event handlers. Using the Spring IoC container, these may
+    configured as normal Spring beans and injected into GemFire components.
+    This is a significant improvement over cache.xml which provides relatively
+    limited configuration options and requires callbacks to implement
+    GemFire's <literal>Declarable</literal> interface (see <xref
+    linkend="apis:declarable" xmlns="http://docbook.org/ns/docbook"/> to see
+    how you can still use Declarables within Spring's DI container).</para>
+
+    <para xmlns=""> In addition, IDEs such as the Spring Tool Suite (STS)
+    provide excellent support for Spring XML namespaces, such as code
+    completion, pop-up annotations, and real time validation, making them easy
+    to use. </para>
+  </section>
 
   <section id="bootstrap:namespace">
-  	<title>Using the Core Spring Data GemFire Namespace</title>
-  	
-  	<para>To simplify configuration, Spring Data Gemfire provides a dedicated namespace for configuring core GemFire components.
-  	It is also possible to configure the beans directly through Springs usual &lt;bean&gt; definition. However, as of Spring Data GemFire 1.2.0, the namespace provides full 
-  	support and is much easier to use. For more information about XML Schema-based configuration in Spring, see 
-  	<ulink url="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/xsd-config.html">this</ulink> appendix in the
-  	Spring Framework reference documentation.</para>
-  	
-  	<note><para>
-    Spring Data Repository support uses a separate dedicated namespace. See <xref linkend="gemfire-repositories"/> for more information on how to configure GemFire Repositories.   
-  	</para></note>
-  	
-  	<para>To use the Spring Data GemFire namespace, simply declare it in your Spring XML configuration:</para>
+    <title>Using the Core Spring Data GemFire Namespace</title>
 
- 		<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:]]><co id="gfe#ns#prefix"/><![CDATA[gfe="http://www.springframework.org/schema/gemfire"]]><co id="gfe#ns#uri"/><![CDATA[
-	xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        ]]><co id="gfe#ns#uri#loc"/><![CDATA[http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
-	<bean id ... >
-	
-    ]]><co id="gfe#ns#example"/><![CDATA[<gfe:cache ...>
-		
-</beans>]]></programlisting>
- 		<calloutlist>
- 			<callout arearefs="gfe#ns#prefix">
- 				<para>Spring GemFire namespace prefix. Any name can do but through out the reference documentation, the <literal>gfe</literal> will be used.</para>
- 			</callout>
- 			<callout arearefs="gfe#ns#uri">
- 				<para>The namespace URI.</para>
- 			</callout>
- 			<callout arearefs="gfe#ns#uri#loc">
- 				<para>The namespace URI location. Note that even though the location points to an external address (which exists and is valid), Spring will resolve
- 				the schema locally as it is included in the Spring GemFire library.</para>
- 			</callout>
- 			<callout arearefs="gfe#ns#example">
- 				<para>Declaration example for the GemFire namespace. Notice the prefix usage.</para>
- 			</callout>
- 		</calloutlist>
- 	
- 	<para>Once declared, the namespace elements can be declared simply by appending the aforementioned prefix.</para>
- 	<note><para>It is possible to change the default namespace,
- 	for example from <literal>beans</literal> to <literal>gfe</literal>. This is useful for configuration composed mainly of GemFire components as
- 	it avoids declaring the prefix. To achieve this, simply swap the namespace prefix declaration above:</para>
- 	
+    <para>To simplify configuration, Spring Data Gemfire provides a dedicated
+    XML namespace for configuring core GemFire components. It is also possible
+    to configure the beans directly through Springs standard &lt;bean&gt;
+    definition. However, as of Spring Data GemFire 1.2.0, all bean properties
+    are exposed via the namespace so there is little benefit to using raw bean
+    definitions. For more information about XML Schema-based configuration in
+    Spring, see <ulink
+    url="http://static.springsource.org/spring/docs/current/spring-framework-reference/html/xsd-config.html">this</ulink>
+    appendix in the Spring Framework reference documentation.</para>
 
- 		<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="]]><co id="gfe#default-ns#prefix"/><![CDATA[http://www.springframework.org/schema/gemfire"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:]]><co id="gfe#default-ns#beans-prefix"/><![CDATA[beans="http://www.springframework.org/schema/beans"
-	xsi:schemaLocation="
-	    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-	    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
-	    
-    ]]><co id="gfe#default-ns#beans-example"/><![CDATA[<beans:bean id ... >
-	
-    ]]><co id="gfe#default-ns#gfe-example"/><![CDATA[<cache ...>
-	
-</beans>]]></programlisting>
- 		<calloutlist>
- 			<callout arearefs="gfe#default-ns#prefix">
- 				<para>The default namespace declaration for this XML file points to the Spring Data GemFire namespace.</para>
- 			</callout>
- 			<callout arearefs="gfe#default-ns#beans-prefix">
- 				<para>The beans namespace prefix declaration.</para>
- 			</callout>
- 			<callout arearefs="gfe#default-ns#beans-example">
- 				<para>Bean declaration using the <literal>beans</literal> namespace. Notice the prefix.</para>
- 			</callout>
- 			<callout arearefs="gfe#default-ns#gfe-example">
- 				<para>Bean declaration using the <literal>gfe</literal> namespace. Notice the lack of prefix (as the default namespace is used).</para>
- 			</callout>
- 		</calloutlist>
- </note>		
-  </section>
-  
-  <section id="bootstrap:cache">
-  	<title>Configuring the GemFire Cache</title>
-
-    <para>In order to use GemFire, one needs to either create a new
-    <interfacename>Cache</interfacename> or connect to an existing one. In
-    the current version of GemFire, there can be only one opened cache per VM
-    (or per classloader to be technically correct). In most cases the cache is created once.
-    </para>
-
-    <para>A cache with default configuration can be created with a very simple declaration:</para>
-
-	<programlisting language="xml"><![CDATA[<gfe:cache/>]]></programlisting>
- 	
- 	<para> 
- 	A Spring application context containing this definition will, upon initialization, will register a <literal>CacheFactoryBean</literal>
- 	to create a Spring bean named <literal>gemfireCache</literal> referencing a GemFire <interfacename>Cache</interfacename> instance.
- 	This will be either an existing cache, or if one does not exist, a newly created one. Since no additional properties were specified, a newly created
- 	cache will apply the default cache configuration.</para>
-    
-    <para>
- 	All Spring Data GemFire components which depend on 
- 	the Cache respect this naming convention so that there is no need to explicitly declare the Cache dependency. If you prefer, you can make the dependence explicit via the 
- 	<literal>cache-ref</literal> attribute provided by various namespace elements. Also you can easily override the Cache's bean name:
-    </para>	
- 	<programlisting language="xml"><![CDATA[<gfe:cache id="my-cache"/>]]></programlisting>
-	
- 	<para>
- 	Starting with Spring Data GemFire 1.2.0, The GemFire Cache may be fully configured using Spring. However, GemFire's native XML 
- 	configuration file (e.g., cache.xml) is also supported. For scenarios in which the GemFire cache needs to be
-    configured natively, simply provide a reference the GemFire configuration
-    file using the <literal>cache-xml-location</literal> attribute:</para>
-
-    <programlisting language="xml"><![CDATA[<gfe:cache id="cache-with-xml" cache-xml-location="classpath:cache.xml"/>]]></programlisting>
-    
-    <para>In this example, if the cache needs to be created, it will use the
-    file named <literal>cache.xml</literal> located in the classpath root.
-    </para> 
-    
     <note>
-        <para>Note that the configuration makes use of Spring's <ulink
-        url="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/resources.html"><interfacename>Resource</interfacename></ulink>
-        abstraction to locate the file. This allows various search patterns to
-        be used, depending on the runtime environment or the prefix specified
-        (if any) in the resource location.</para>
-      </note>
-    <para>  
-    In addition to referencing an external configuration file one can
-    specify GemFire <ulink url="http://pubs.vmware.com/vfabric51/topic/com.vmware.vfabric.gemfire.6.6/reference/topics/gemfire_properties.html">properties</ulink> 
-    using one of Spring's common properties configuration methods. For example, one can use the <literal>properties</literal> element defined in the <literal>util</literal> namespace
-    to define properties directly or load properties files. The latter is recommended for externalizing environment specific settings outside the application configuration:</para>
-
-    <programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:gfe="http://www.springframework.org/schema/gemfire"
-    xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
-        
-     <gfe:cache properties-ref="props"/>
-	 
-     <util:properties id="props" location="file:/vfabric/gemfire/gemfire.properties"/>
-</beans>]]></programlisting>
- 	
-    <note>
-    <para>
-    The cache settings apply only if a new cache needs to be created. If an open cache already exists in the JVM, these settings will
-    be ignored.
-    </para>
+      <para>Spring Data Repository support uses a separate XML namespace. See
+      <xref linkend="gemfire-repositories"/> for more information on how to
+      configure GemFire Repositories.</para>
     </note>
-    
-    <section id="bootstrap:cache:advanced"><title>Advanced Cache Configuration</title>
-    <para>For advanced cache configuration, the <literal>cache</literal> element provides several attributes and child elements:</para>
-    <programlisting language="xml">
-     <co id="gfe#cache-element#attributes"/><![CDATA[
-     <gfe:cache
-        copy-on-read="true"
-        critical-heap-percentage="70" 
-        eviction-heap-percentage="60"
-        lock-lease="120"
-        lock-timeout="60"
-        pdx-disk-store="diskStore"
-        pdx-ignore-unread-fields="true"
-        pdx-persistent="true"
-        pdx-read-serialized="false"
-        message-sync-interval="1"
-        search-timeout="300"
-    >]]>
-     <co id="gfe#transaction#listener"/><![CDATA[<gfe:transaction-listener ref="myTransactionListener"/>]]> 
-      <co id="gfe#transaction#writer"/><![CDATA[<gfe:transaction-writer>
-        <bean class="org.springframework.data.gemfire.example.TransactionListener"/>
-      </gfe:transaction-writer>]]>
-      <co id="gfe#gateway#resolver"/><![CDATA[<gfe:gateway-conflict-resolver>
-             <bean class="org.springframework.data.gemfire.example.GatewayConflictResolver"/>
-       </gfe:gateway-conflict-resolver>]]>
-       <co id="gfe#dynamic#region"/><![CDATA[<gfe:dynamic-region-factory/>]]>
-       <co id="gfe#jndi#binding"/><![CDATA[<gfe:jndi-binding jndi-name="myDataSource" type="ManagedDataSource"/>
-     </gfe:cache>]]>
-    </programlisting>
-    
-        <calloutlist>
-            <callout arearefs="gfe#cache-element#attributes">
-                <para>Various cache options are provided via these attributes. For a detailed explanation of any of these attributes, please consult
-                the GemFire product <ulink url="http://www.vmware.com/support/pubs/vfabric-gemfire.html">documentation</ulink></para>
-            </callout>
-            <callout arearefs="gfe#transaction#listener">
-                <para>An example of a <interfacename>TransactionListener</interfacename> declaration using a bean reference. The referenced bean must implement
-                <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/TransactionListener.html">TransactionListener</ulink>.
-                For a detailed explanation of the functionality provided by this
-                and any of the following elements, please consult the GemFire product <ulink url="http://www.vmware.com/support/pubs/vfabric-gemfire.html">documentation</ulink></para>
-            </callout>
-            <callout arearefs="gfe#transaction#writer">
-                <para>An example of a <interfacename>TransactionWriter</interfacename> declaration using an inner bean declaration this time. The bean must implement
-                 <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/TransactionWriter.html">TransactionWriter</ulink></para>
-            </callout>
-            <callout arearefs="gfe#gateway#resolver">com.gemstone.gemfire.cache.util.GatewayConflictResolver
-                <para>An example of a <interfacename>GatewayConflictResolver</interfacename> declaration. The bean must implement 
-                <interfacename>com.gemstone.gemfire.cache.util.GatewayConflictResolver</interfacename>. This requires GemFire 7.0</para>
-            </callout>
-             <callout arearefs="gfe#dynamic#region">
-                <para>Enable GemFire's <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/DynamicRegionFactory.html">DynamicRegionFactory</ulink></para>
-            </callout>
-             <callout arearefs="gfe#jndi#binding">
-                <para>Declares a JNDI binding to enlist an extenal datasource in a GemFire transaction</para>
-            </callout>            
-        </calloutlist>
-    </section>
-    
-    <section id="bootstrap:cache:server">
-    	<title>Configuring a GemFire Cache Server</title>
-    	
-    	<para>In Spring Data GemFire 1.1 dedicated support for configuring a 
-    	<ulink url="http://www.gemstone.com/docs/6.5.1/product/docs/japi/com/gemstone/gemfire/cache/server/package-summary.html">CacheServer</ulink> was added,
-    	 allowing complete configuration through the Spring container:</para>
-    	
-    	<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:context="http://www.springframework.org/schema/context"	
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<gfe:cache />
-	
-	<!-- Advanced example depicting various cache server configuration options -->
-	<gfe:cache-server id="advanced-config" auto-startup="true"
-		bind-address="localhost" port="${gfe.port.6}" host-name-for-clients="localhost"
-		load-poll-interval="2000" max-connections="22" max-threads="16"
-		max-message-count="1000" max-time-between-pings="30000"
-		groups="test-server">
-
-		<gfe:subscription-config eviction-type="ENTRY" capacity="1000" disk-store="file://${java.io.tmpdir}"/>
-	</gfe:cache-server>
-
-	<context:property-placeholder location="classpath:cache-server.properties" />
-</beans>]]></programlisting>
-
-		<para>The configuration above illustrates the <literal>cache-server</literal> element and the many options available.</para> 
-		
-		<note><para>Rather than hard-coding the port, this configuration uses Spring <literal><ulink url="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/xsd-config.html#xsd-config-body-schemas-context">context</ulink></literal>
-		 namespace to declare a <literal>property-placeholder</literal>. The <ulink url="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/beans.html#beans-factory-placeholderconfigurer">property placeholder</ulink>
-		 reads one or more properties file and then replaces property placeholders with values at runtime. This allows administrators to change such values without having to touch the main application configuration. Spring 
-		 also provides   
-		<ulink url="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/new-in-3.0.html#new-feature-el">SpEL</ulink> and the <ulink url="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/new-in-3.1.html#new-in-3.1-environment-abstraction">environment abstraction</ulink> one
-		to support externalization of environment specific properties from the main code base, easing the deployment across multiple machines.
-		</para>
-		</note>
-		<note><para>To avoid initialization problems, the <interfacename>CacheServer</interfacename>s started by Spring Data GemFire will start <emphasis>after</emphasis> the container has been fully initialized. This
-		allows potential regions, listener, writers or instantiators defined declaratively to be fully initialized and registered before the server starts accepting connections. Keep this in mind
-		when doing programmatic configuration of the items above as the server might start before your components and thus not be seen by the clients connecting right away.</para></note>
-    </section>
-
-    <section id="bootstrap:cache:client">
-    	<title>Configuring a GemFire Client Cache</title>
-    	
-    	<para>Another configuration addition in Spring Data GemFire 1.1 is the dedicated support for configuring 
-    	<ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/client/ClientCache.html">ClientCache</ulink>. 
-    	This is similar to a <link linkend="bootstrap:cache">cache</link> in both usage and definition and supported by the 
-    	the <classname>ClientCacheFactoryBean</classname> in the <literal>org.springframework.data.gemfire.client</literal> package.
-    	</para>
-    	
-  <programlisting language="xml"><![CDATA[<beans>
-    <gfe:client-cache />   
-</beans>]]></programlisting>
-
-		<para><literal>client-cache</literal> supports much of the same options as the <emphasis>cache</emphasis> element. However as opposed to a <emphasis>full</emphasis> cache, 
-		a client cache connects to a remote cache server through a pool. By default a pool is created to connect to a server on <literal>localhost</literal> port <literal>40404</literal>. The 
-    	the default pool is used by all client regions unless the region is configured to use a different pool.</para>
-    	
-    	<para>Pools can be defined through the <literal>pool</literal> element; The client side <literal>pool</literal>s can be used to configure connectivity to the server for
-    	individual entities or for the entire cache. For example, to customize the default pool used by <literal>client-cache</literal>, one needs to define a pool and wire it to cache definition:</para>
-    	
-    	<programlisting language="xml">
-<![CDATA[<beans>
-	<gfe:client-cache id="simple" pool-name="my-pool"/>
-
-	<gfe:pool id="my-pool" subscription-enabled="true">
-	    <gfe:locator host="${locatorHost}" port="${locatorPort}"/>
-	</gfe:pool>
-</beans>]]></programlisting>    	
-	</section>    
-  </section>
-
-  <section id="bootstrap:region">
-    <title>Configuring a GemFire Region</title>
-
-    <para>Once the Cache is configured, one needs to configure one or more Regions to 
-    access cached data. Spring Data GemFire allows regions to be configured and created directly in Spring or, 
-    if they are already created natively in GemFire, registered in the Spring context.</para>
-    
-    <para>For more information about the various region types and their capabilities as well as configuration options, please
-    refer to the GemFire Developer's <ulink url="http://pubs.vmware.com/vfabric51/index.jsp?topic=/com.vmware.vfabric.gemfire.6.6/developing/book_intro.html">Guide</ulink> and community 
-    <ulink url="http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire">site</ulink>.</para> 
-
-	<section id="bootstrap:region:lookup">
-		<title>Using an externaly configured Region</title>
-		
-		<para>For referencing Regions already configured through GemFire native configuration, e.g., a <literal>cache.xml</literal> file,
-		use the <literal>lookup-region</literal> element. Simply declare the target region name with the <literal>
-		name</literal> attribute; for example to declare a bean definition, named <literal>region-bean</literal>
-		for an existing region named <literal>orders</literal> one can use the following definition:</para>
-		
-		<programlisting language="xml"><![CDATA[<gfe:lookup-region id="region-bean" name="orders"/>]]></programlisting>
-		
-		<para>If the <literal>name</literal> is not specified, the bean's <literal>id</literal> will be used. The example above
-		becomes:</para>
-		
-		<programlisting language="xml"><![CDATA[<!-- lookup for a region called 'orders' -->
-<gfe:lookup-region id="orders"/>]]></programlisting>
-
-		<note><para>If the region does not exist, an initialization exception will be thrown. For configuring new GemFire regions, 
-		proceed to the appropriate sections below.</para></note>
-
-		<para>Note that in the previous examples, since no cache name was defined, the default naming convention (<literal>gemfireCache</literal>)
-		was used. If that is not an option, one can reference the cache bean through the <literal>cache-ref</literal> attribute:
-		</para>
-		
-		<programlisting language="xml"><![CDATA[<gfe:cache id="cache"/>
-		
-<gfe:lookup-region id="region-bean" name="orders" cache-ref="cache"/>]]></programlisting>
-				
-		<para>The <literal>lookup-region</literal> provides a simple way of retrieving existing, pre-configured regions without exposing
-		the region semantics or setup infrastructure.</para>
-	</section>
-	
-	<section id="bootstrap:region:overview">
-	<title>Configuring Regions</title>
-	<para>Spring Data GemFire provides comprehensive support for configuring any type of Region GemFire provides. Currently these include:
-	<itemizedlist>
-	<listitem><para>Local Region <literal>&lt;local-region&gt;</literal> - The region is only visible to the defining member</para></listitem>
-	<listitem><para>Replicated Region <literal>&lt;replicated-region&gt;</literal> - Holds all data from the distributed region</para></listitem>
-	<listitem><para>Partitioned Region <literal>&lt;partitioned-region&gt;</literal> - Data is divided into buckets across members</para></listitem>
-	<listitem><para>Client Region <literal>&lt;client-region&gt;</literal> - A local region used with a client cache</para></listitem>
-	</itemizedlist>
-	For a comprehensive description of <ulink url="http://pubs.vmware.com/vfabric51/topic/com.vmware.vfabric.gemfire.6.6/developing/region_options/region_types.html">region types</ulink> please 
-	consult the GemFire product documentation.
-	</para>
-	
-	<section id="bootstrap:region:common:attributes">
-	<title>Common Region Attributes</title>
-	<para>The following table(s) list attributes available for all region types:
-	  <table id="bootstrap:region:common:attributes:table" pgwide="1" align="left" rowsep="1">
-          <title>Common Region Attributes</title>
-          <tgroup cols="3">
-            <colspec colname="c1" colwidth="15%"/>
-            <colspec colname="c2"/>
-            <colspec colname="c3"/>
-            <thead>
-              <row>
-                <entry>Name</entry>
-                <entry spanname="values">Values</entry>
-                <entry spanname="description">Description</entry>
-              </row>
-            </thead>
-            
-            <tbody>
-             <row>
-                <entry>cache-ref</entry>
-                <entry spanname="values"><emphasis>GemFire cache bean name</emphasis></entry>
-                <entry spanname="description">The name of the bean defining the GemFire cache (by default 'gemfireCache').</entry>
-              </row>
-              <row>
-                <entry>close</entry>
-                <entry spanname="values"><emphasis>boolean, default:true</emphasis></entry>
-                <entry spanname="description">Indicates whether the region should be closed at shutdown</entry>
-              </row>
-              <row>
-                <entry>data-policy</entry>
-                <entry spanname="values"><emphasis>See GemFire's <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/DataPolicy.html">Data Policy</ulink></emphasis></entry>
-                <entry spanname="description">The region's data policy. Note not all data policies are supported for every region type</entry>
-              </row>
-              <row>
-                <entry>destroy</entry>
-                <entry spanname="values"><emphasis>boolean, default:false</emphasis></entry>
-                <entry spanname="description">Indicates whether the region should be destroyed at shutdown</entry>
-              </row>
-              <row>
-                <entry>disk-store-ref</entry>
-                <entry spanname="values"><emphasis>The name of a configured disk store</emphasis></entry>
-                <entry spanname="description">A reference to a bean created via the <literal>disk-store</literal> element. Note: This will automatically enable persistence. If persistent is explicitly set to false, an exception will be thrown.</entry>
-              </row>
-               <row>
-                <entry>disk-synchronous</entry>
-                <entry spanname="values"><emphasis>boolean, default:false</emphasis></entry>
-                <entry spanname="description">Indicates whether disk store writes are synchronous. Note: This will automatically enable persistence. If persistent is explicitly set to false, an exception will be thrown.</entry>
-              </row>
-              <row>
-                <entry>enable-gateway</entry>
-                <entry spanname="values"><emphasis>boolean, default:false</emphasis></entry>
-                <entry spanname="description">Indicates whether the region will synchronize entries over a WAN gateway. Note: This is deprecated in GemFire 7.0</entry>
-              </row>
-              <row>
-                <entry>hub-id</entry>
-                <entry spanname="values"><emphasis>The name of the Gateway Hub</emphasis></entry>
-                <entry spanname="description">Note: This is deprecated in GemFire 7.0. Also this will automatically set enable-gateway to true. If enable-gateway is explicitly set to false, an exception will be thrown.</entry>
-              </row>
-               <row>
-                <entry>id</entry>
-                <entry spanname="values"><emphasis>any valid bean name</emphasis></entry>
-                <entry spanname="description">Will also be the region name by default</entry>
-             </row>
-              <row>
-                <entry>ignore-jta</entry>
-                <entry spanname="values"><emphasis>boolean, default:false</emphasis></entry>
-                <entry spanname="description">Indicates whether the region participates in JTA transactions</entry>
-             </row>
-             <row>
-                <entry>index-update-type</entry>
-                <entry spanname="values"><emphasis>synchronous or asynchronous, default:asynchronous</emphasis></entry>
-                <entry spanname="description">Indicates whether indices will be updated synchronously or asynchronously on entry creation</entry>
-             </row> 
-              <row>
-                <entry>initial-capacity</entry>
-                <entry spanname="values"><emphasis>integer, default:16</emphasis></entry>
-                <entry spanname="description">The initial memory allocation for number of entries</entry>
-             </row>
-             <row>
-                <entry>key-constraint</entry>
-                <entry spanname="values"><emphasis>any valid java class name</emphasis></entry>
-                <entry spanname="description">The expected key type</entry>
-             </row>
-              <row>
-                <entry>name</entry>
-                <entry spanname="values"><emphasis>any valid region name</emphasis></entry>
-                <entry spanname="description">The name of the region definition. If no specified, it will assume the value of the id attribute (the bean name).</entry>
-             </row>
-             <row>
-                <entry>persistent</entry>
-                <entry spanname="values"><emphasis>boolean, default:false</emphasis></entry>
-                <entry spanname="description">Indicates whether the region persists entries to a disk store</entry>
-             </row>
-             <row>
-                <entry>statistics</entry>
-                <entry spanname="values"><emphasis>boolean, default:false</emphasis></entry>
-                <entry spanname="description">Indicates whether the region reports statistics</entry>
-             </row>
-              <row>
-                <entry>value-constraint</entry>
-                <entry spanname="values"><emphasis>any valid java class name</emphasis></entry>
-                <entry spanname="description">The expected value type</entry>
-             </row>
-             </tbody>
-            </tgroup>
-           </table>        
-	 </para>
-	</section>
-	<section id="bootstrap:region:common:cache-listener">
-    <title>Cache Listeners</title>
-    <para>Cache Listeners are registered with a region to handle region events such as entries being created, updated, destroyed, etc. A Cache Listener can be any bean that
-    implements the <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheListener.html"><interfacename>CacheListener</interfacename></ulink>
-    interface. A region may have multiple listeners, declared using the <literal>cache-listener</literal> element enclosed in a <literal>*-region</literal> element.
-    In the example below, there are two <interfacename>CacheListener</interfacename>s declared. The first references a top level named Spring bean; the second is an
-    anonymous inner bean definition. 
-    
-    <programlisting language="xml"><![CDATA[
-<gfe:replicated-region id="region-with-listeners">
-    <gfe:cache-listener>
-        <!-- nested cache listener reference -->
-        <ref bean="c-listener"/>
-        <!-- nested cache listener declaration -->
-        <bean class="some.pkg.AnotherSimpleCacheListener"/>
-    </gfe:cache-listener>
-    
-    <bean id="c-listener" class="some.pkg.SimpleCacheListener"/>
- </gfe:replicated-region>]]>
-    </programlisting>
-
-The following example uses an alternate form of the <literal>cache-listener</literal> element with a <literal>ref</literal> attribute. This allows for more concise configuration
-for a single cache listener. Note that the namespace only allows a single <literal>cache-listener</literal> element so either the style above or below must be used. 
- <caution><para>Using <literal>ref</literal> and a nested declaration in a <literal>cache-listener</literal>, or similar element,
-is illegal. The two options are mutually exclusive and using both on the same element will result in an exception.</para></caution>
-   
-   <programlisting language="xml"><![CDATA[<beans>
-    <gfe:replicated-region id="region-with-one listener">
-        <gfe:cache-listener ref="c-listener"/>
-    </gfe:replicated-region>
- 
-    <bean id="c-listener" class="some.pkg.SimpleCacheListener"/>
- </beans>]]>
-    </programlisting>
-    
-    </para>
-      <note><title>Note:Bean Reference Conventions</title><para>
-        The <literal>cache-listener</literal> element is an example of a common pattern used in the namespace anywhere GemFire provides an interface that may be
-        implemented to invoke custom Java code. In order to simplify the configuration, a single occurance of the element is all that is required,
-        but may contain nested bean references and inner bean definitions in any combination if multiple instances are permitted.
-        The element name always takes the singular form (i.e., <literal>cache-listener</literal> vs <literal>cache-listeners</literal>) because it is assumed that
-        the most common scenario will in fact be a single instance.
-        We have already seen some examples of this pattern in the <link linkend="bootstrap:cache:advanced">advanced cache</link> configuration example.  
-        </para>
-        </note>
-    </section>
-    
-    <section id="bootstrap:region:common:loaders-writers">
-     <title>Cache Loaders and Cache Writers</title>
-     <para>Similar to <literal>cache-listener</literal>, the namespace provides <literal>cache-loader</literal> and <literal>cache-writer</literal> elements to register these
-     respective components for a region. A <interfacename>CacheLoader</interfacename> is invoked on a cache miss to allow an entry to be loaded from an external source, a database
-     for example. A <interfacename>CacheWriter</interfacename> is invoked afer an entry is created or updated,intended for synchronizing to an external data source. 
-     The difference is GemFire only supports at most a single instance of each for each region. However, either declaration style may be
-     used. See <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheLoader.html"><interfacename>CacheLoader</interfacename></ulink> and
-     <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheWriter.html"><interfacename>CacheWriter</interfacename></ulink> for more details.</para>
-    </section>
-    
-	<section id="bootstrap:region:common:subregions">
-	<title>Subregions</title>
-	 <para>In Release 1.2.0, Spring Data GemFire added support for subregions, allowing regions to be arranged in a hierarchical relationship. For example, GemFire allows for
-	 a <emphasis>/Customer/Address</emphasis> region and a different <emphasis>/Employee/Address</emphasis> region. Additionally, a subregion may have it's own subregions 
-	 and  its own configuration. A subregion does not inherit attributes from the parent region. Regions types may be mixed and matched subject to GemFire constraints. 
-	 A subregion is naturally declared as a child element of a region. A subregion's name attribute is the simple name. The above example might be configured as:
-	 <programlisting language="xml"><![CDATA[<beans>
-    
-    <gfe:replicated-region name="Customer">
-        <gfe:replicated-region name="Address"/>
-    </gfe:replicated-region>
-    
-    <gfe:replicated-region name="Employee">
-        <gfe:replicated-region name="Address"/>
-    </gfe:replicated-region>
-    
-</beans>]]>
-	 </programlisting>
-	  The subregions will be created with bean names <emphasis>/Customer/Address</emphasis> and <emphasis>/Employee/Address</emphasis>, respectively. So they may be referenced
-	  directly by other beans that use them, such as <classname>GemfireTemplate</classname>.
-	 </para>
-	 </section>
-	</section>
-
-	<section id="bootstrap:region:replicate">
-		<title>Replicated Region</title>
-		
-		<para>One of the common region types supported by GemFire is <emphasis>replicated region</emphasis> or <emphasis>replica</emphasis>. In short:</para>
-		
-		<note><title>What is a replica?</title>
-		When a region is configured to be a replicated region, every member that hosts that region stores a copy of the contents of the region locally. 
-		Any update to a replicated region is distributed to all copies of the region. [...] When a replica is created, it goes through an initialization stage 
-		in which it discovers other replicas and automatically copies all the entries. While one replica is initializing you can still continue to use the other replicas.
-		</note>
-		
-		<para>Spring Data GemFire offers a dedicated element for creating replicas in the form of <literal>replicated-region</literal> element. A minimal declaration looks as follows
-		(again, the example relies on the Spring Data GemFire namespace naming conventions to wire the cache):</para>
-
-		<programlisting language="xml"><![CDATA[<gfe:replicated-region id="simple-replica" />]]></programlisting>
-		
-		<para>Here, a replicated region is created (if one doesn't exist already). The name of the region is the same as the bean id (<literal>simple-replica</literal>) and 
-		the bean assumes the existence of a GemFire cache named <literal>gemfireCache</literal>.</para>
-		
-		<para>When setting up a region, it is fairly common to associate various <interfacename>CacheLoader</interfacename>s, <interfacename>CacheListener</interfacename>s and
-        <interfacename>CacheWriter</interfacename>s with it. These components can be either referrenced or declared inlined by the region declaration.</para> 
-        
-        <note><para>
-        Following the GemFire API, the namespace allows multiple cache listeners but only one
-        cache writer and cache loader for each region.</para>
-        </note>
-        
-      
-        
-		<para>Below is an example, showing both styles:</para>
-        
-		<programlisting language="xml"><![CDATA[<gfe:replicated-region id="mixed">
-    <gfe:cache-listener>
-    	<!-- nested cache listener reference -->
-        <ref bean="c-listener"/>
-        <!-- nested cache listener declaration -->
-        <bean class="some.pkg.SimpleCacheListener"/>
-    </gfe:cache-listener>
-    <!-- loader reference -->
-    <gfe:cache-loader ref="c-loader"/>
-    <!-- writer reference -->
-    <gfe:cache-writer ref="c-writer"/>
-</gfe:replicated-region>]]></programlisting>
-
-		<caution><para>Using <literal>ref</literal> and a nested declaration on <literal>cache-listener</literal>, <literal>cache-loader</literal> or <literal>cache-writer</literal>
-		is illegal. The two options are mutually exclusive and using both on the same element will result in an exception.</para></caution>
-		
-		<section id="bootstrap:region:replicate:options">
-			<title><literal>replicated-region</literal> Options</title>
-			
-			<para>The following table offers a quick overview of the most important configuration options names, possible values and short descriptions for each of settings supported by the
-			<literal>replicated-region</literal> element. Please see the storage and eviction section for the relevant configuration.</para>
-			
-        <table id="bootstrap:region:replicate:attrs:table" pgwide="1" align="left">
-          <title><![CDATA[replicated-region]]> options</title>
-          <tgroup cols="3">
-          	<colspec colname="c1"/>
-          	<colspec colname="c2"/>
-          	<colspec colname="c3"/>
-            <thead>
-              <row>
-                <entry>Name</entry>
-                <entry spanname="values">Values</entry>
-                <entry align="center">Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>id</entry>
-                <entry spanname="values"><emphasis>any valid bean name</emphasis></entry>
-                <entry>The id of the region bean definition.</entry>
-              </row>
-              <row>
-                <entry>name</entry>
-                <entry spanname="values"><emphasis>any valid region name</emphasis></entry>
-                <entry>The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).</entry>
-              </row>
-              <row>
-                <entry>cache-ref</entry>
-                <entry spanname="values"><emphasis>GemFire cache bean name</emphasis></entry>
-                <entry>The name of the bean defining the GemFire cache (by default 'gemfireCache').</entry>
-              </row>
-              <row>
-                <entry>cache-listener</entry>
-                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
-                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheListener</interfacename>.</entry>
-              </row>
-              <row>
-                <entry>cache-loader</entry>
-                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
-                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheLoader</interfacename>.</entry>
-              </row>
-              <row>
-                <entry>cache-writer</entry>
-                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
-                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheWriter</interfacename>.</entry>
-              </row>
-             </tbody>
-            </tgroup>
-	       </table>        
-		</section>		
-		
-	</section>
-	
-	<section id="bootstrap:region:partition">
-		<title>Partition(ed) Region</title>
-		
-		<para>Another region type supported out of the box by the Spring Data GemFire namespace, is the partitioned region. To quote again the GemFire docs:</para>
-		
-		<note><title>What is a partition?</title>
-		<para>A partitioned region is a region where data is divided between peer servers hosting the region so that each peer stores a subset of the data. 
-		When using a partitioned region, applications are presented with a logical view of the region that looks like a single map containing all of the data in the region. 
-		Reads or writes to this map are transparently routed to the peer that hosts the entry that is the target of the operation. [...]
-		GemFire divides the domain of hashcodes into buckets. Each bucket is assigned to a specific peer, but may be relocated at any time to another peer in 
-		order to improve the utilization of resources across the cluster.</para></note>
-		
-		<para>A partition can be created by Spring Data GemFire through the <literal>partitioned-region</literal> element. Its configuration options are similar to that of the 
-		<literal>replicated-region</literal> plus the partion specific features such as the number of redundant copies, total maximum memory, number of buckets, partition
-		resolver and so on.
-		Below is a quick example on setting up a partition region with 2 redundant copies:</para>
-		
-		<programlisting language="xml"><![CDATA[<!-- bean definition named 'distributed-partition' backed by a region named 'redundant' with 2 copies 
-and a nested resolver declaration  -->
-<gfe:partitioned-region id="distributed-partition" copies="2" total-buckets="4" name="redundant">
-    <gfe:partition-resolver>
-        <bean class="some.pkg.SimplePartitionResolver"/>
-    </gfe:partition-resolver>
-</gfe:partitioned-region>]]></programlisting>
-
-		<section id="bootstrap:region:partition:options">
-			<title><literal>partitioned-region</literal> Options</title>
-			
-			<para>The following table offers a quick overview of the most important configuration options names, possible values and short descriptions for each of settings supported by the
-			partition element. Please see the storage and eviction section for the relevant configuration.</para>
-			
-        <table id="bootstrap:region:partition:attrs:table" pgwide="1" align="center">
-          <title><![CDATA[partitioned-region]]> options</title>
-          <tgroup cols="3">
-          	<colspec colname="c1"/>
-          	<colspec colname="c2"/>
-          	<colspec colname="c3"/>
-            <thead>
-              <row>
-                <entry>Name</entry>
-                <entry spanname="values">Values</entry>
-                <entry align="center">Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>id</entry>
-                <entry spanname="values"><emphasis>any valid bean name</emphasis></entry>
-                <entry>The id of the region bean definition.</entry>
-              </row>
-              <row>
-                <entry>name</entry>
-                <entry spanname="values"><emphasis>any valid region name</emphasis></entry>
-                <entry>The name of the region definition. If no specified, it will have the value of the id attribute (that is, the bean name).</entry>
-              </row>
-              <row>
-                <entry>cache-ref</entry>
-                <entry spanname="values"><emphasis>GemFire cache bean name</emphasis></entry>
-                <entry>The name of the bean defining the GemFire cache (by default 'gemfireCache').</entry>
-              </row>
-
-              <row>
-                <entry>cache-listener</entry>
-                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
-                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheListener</interfacename>.</entry>
-              </row>
-              <row>
-                <entry>cache-loader</entry>
-                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
-                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheLoader</interfacename>.</entry>
-              </row>
-              <row>
-                <entry>cache-writer</entry>
-                <entry spanname="values"><emphasis>valid bean name or definition</emphasis></entry>
-                <entry>The name or nested bean declaration of a GemFire <interfacename>CacheWriter</interfacename>.</entry>
-              </row>
-              
-              <row>
-                <entry>partition-resolver</entry>
-                <entry spanname="values"><emphasis>bean name</emphasis></entry>
-                <entry>The name of the partitioned resolver used by this region, for custom partitioning.</entry>
-              </row>
-              <row>
-                <entry>copies</entry>
-                <entry spanname="values">0..4</entry>
-                <entry>The number of copies for each partition for high-availability. By default, no copies are created meaning there is no
-redundancy. Each copy provides extra backup at the expense of extra storages.</entry>
-              </row>
-              <row>
-                <entry>colocated-with</entry>
-                <entry spanname="values"><emphasis>valid region name</emphasis></entry>
-                <entry>The name of the partitioned region with which this newly created partitioned region is colocated.</entry>
-              </row>
-              <row>
-                <entry>local-max-memory</entry>
-                <entry spanname="values"><emphasis>positive integer</emphasis></entry>
-                <entry>The maximum amount of memory, in megabytes, to be used by the region in <emphasis>this</emphasis> process.</entry>
-              </row>
-              <row>
-                <entry>total-max-memory</entry>
-                <entry spanname="values"><emphasis>any integer value</emphasis></entry>
-                <entry>The maximum amount of memory, in megabytes, to be used by the region in <emphasis>all</emphasis> processes.</entry>
-              </row>
-              <row>
-                <entry>recovery-delay</entry>
-                <entry spanname="values"><emphasis>any long value</emphasis></entry>
-                <entry>The delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes.
--1 (the default) indicates that redundancy will not be recovered after a failure.</entry>
-              </row>
-              <row>
-                <entry>startup-recovery-delay</entry>
-                <entry spanname="values"><emphasis>any long value</emphasis></entry>
-                <entry>The delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members
- will not trigger redundancy recovery. The default is to recover redundancy immediately when a new member is added.</entry>
-              </row>
-            </tbody>
-          </tgroup>
-         </table>        
-		</section>
-	</section>
-	
-	<section id="bootstrap:region:client">
-		<title>Client Region</title>
-		
-		<para>GemFire supports various deployment topologies for managing and distributing data. The topic is outside the scope of this documentation however to quickly recap, they
-		can be categoried in short in: peer-to-peer (p2p), client-server (or super-peer cache network) and wide area cache network (or WAN). In the last two scenarios, it is common
-		to declare <emphasis>client</emphasis> regions which connect to a backing cache server (or super peer). Spring Data GemFire offers dedicated support for such configuration through
-		<xref linkend="bootstrap:cache:client"/>, <literal>client-region</literal> and <literal>pool</literal> elements.
-		As the name imply, the former defines a client region while the latter connection pools to be used/shared by the various client regions.</para>
-		
-		<para>Below is a usual configuration for a client region:</para>
-		
-		<programlisting language="xml"><![CDATA[<!-- client region using the default client-cache pool -->
-<gfe:client-region id="simple">
-    <gfe:cache-listener ref="c-listener"/>
-</gfe:client-region>
-		
-		
-<!-- region using its own dedicated pool -->
-<gfe:client-region id="complex" pool-name="gemfire-pool">
-    <gfe:cache-listener ref="c-listener"/>
-</gfe:client-region>
-	
-<bean id="c-listener" class="some.pkg.SimpleCacheListener"/>
-
-<!-- pool declaration -->	
-<gfe:pool id="gemfire-pool" subscription-enabled="true">
-    <gfe:locator host="someHost" port="40403"/>
-</gfe:pool>]]></programlisting>
-
-		<para>Just as the other region types, <literal>client-region</literal> allows defining <interfacename>CacheListener</interfacename>s. It also relies on the same naming conventions
-		in case the region name or the cache are not set explicitely. However, it also requires a connection <literal>pool</literal> to be specified for connecting to the server. Each client
-		can have its own pool or they can share the same one.</para>
-		
-		<para>For a full list of options to set on the client and especially on the pool, please refer to the Spring Data GemFire schema (<xref linkend="appendix-schema"/>) and the GemFire documentation.</para>
-		
-		<section id="bootstrap:region:client:interests">
-			<title>Client Interests</title>
-			
-			<para>To minimize network traffic, each client can define its own 'interest', pointing out to GemFire, the data it actually needs. In Spring Data GemFire, interests can be defined for each client, both
-			key-based and regular-expression-based types being supported; for example:</para>
-			
-			<programlisting language="xml"><![CDATA[<gfe:client-region id="complex" pool-name="gemfire-pool">
-    <gfe:key-interest durable="true" result-policy="KEYS">
-        <bean id="key" class="java.lang.String">
-             <constructor-arg value="someKey" /> 
-        </bean>
-    </gfe:key-interest>
-    <gfe:regex-interest pattern=".*" receive-values="false"/>
-</gfe:client-region>]]></programlisting>
-
-		<para>A special key <literal>ALL_KEYS</literal> means interest is registered for all keys (identical to a regex interest of <literal>.*</literal>). 
-		The <literal>receive-values</literal> attribute indicates whether or not the values are received for create and update events. If true, values are received; if false, only 
-		invalidation events are received - refer to the GemFire documentation for more details.</para>
-		</section>
-	</section>
-
-	<section id="bootstrap:region:disk-storage">
-		<title>Configurating Disk Storage</title>
-		
-		<para>GemFire can use disk as a secondary storage for persisting regions or/and overflow (known as data pagination or eviction to disk). Spring Data GemFire allows such options to be configured
-		directly from Spring through <literal>disk-store</literal> element available on both <literal>replicated-region</literal> and <literal>partitioned-region</literal> as well as 
-		<literal>client-region</literal>.
-		A disk store defines how that particular region can use the disk and how much space it has available. Multiple directories can be defined in a disk store such as in our example below: 
-		</para>
-		
-		<programlisting language="xml"><![CDATA[<gfe:partitioned-region id="partition-data">
-    <gfe:disk-store queue-size="50" auto-compact="true" max-oplog-size="10" synchronous-write="false" time-interval="9999">
-        <gfe:disk-dir location="/mainbackup/partition" max-size="999"/>
-        <gfe:disk-dir location="/backup2/partition" max-size="999"/>
-    </gfe:disk-store> 
-</gfe:replicated-region>]]></programlisting>
-		
-		<para>In general, for maximum efficiency, it is recommended that each region that accesses the disk uses a disk store configuration.</para>
-		
-		<para>
-		For the full set of options and their meaning please refer to the <xref linkend="appendix-schema"/>	and GemFire documentation.   
-		</para>
-		
-	</section>	
-	
-	<section id="bootstrap:region:persistence">
-		<title>Data Persistence</title>
-		
-		<para>Both partitioned and replicated regions can be made persistent. That is:</para>
-		
-		<note><title>What is region persistence?</title>
-		<para>GemFire ensures that all the data you put into a region that is configured for persistence will be written to disk in a way that it can be 
-		recovered the next time you create the region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and 
-		restart of GemFire.</para>
-		</note>
-		
-		<para>With Spring Data GemFire, to enable persistence, simply set to true the <literal>persistent</literal> attribute on <literal>replicated-region</literal>,
-		<literal>partitioned-region</literal> or <literal>client-region</literal>:</para>
-		
-		<programlisting language="xml"><![CDATA[<gfe:partitioned-region id="persitent-partition" persistent="true"/>]]></programlisting>
-
-		<important><para>Persistence for partitioned regions is supported from GemFire 6.5 onwards - configuring this option on a previous release will trigger
-		an initialization exception.</para></important>
-		
-		<para>When persisting regions, it is recommended to configure the storage through the <literal>disk-store</literal> element for maximum efficiency.</para>
-	</section>
-	
-	<section id="bootstrap:region:eviction">
-		<title>Data Eviction and Overflowing</title>
-		
-		<para>Based on various constraints, each region can have an eviction policy in place for <literal>evicting</literal> data from memory. Currently, in GemFire
-		eviction applies on the least recently used entry (also known as <ulink url="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used">LRU</ulink>).
-		Evicted entries are either destroyed or paged to disk (also known as <emphasis>overflow</emphasis>).</para>
-		
-		<para>Spring Data GemFire supports all eviction policies (entry count, memory and heap usage) for both <literal>partitioned-region</literal> and <literal>replicated-region</literal>
-		as well as <literal>client-region</literal>, through the nested <literal>eviction</literal> element. 
-		For example, to configure a partition to overflow to disk if its size is more then 512 MB, one could use
-		the following configuration:</para>
-		
-		<programlisting language="xml"><![CDATA[<gfe:partitioned-region id="overflow-partition">
-     <gfe:eviction type="MEMORY_SIZE" threshold="512" action="OVERFLOW_TO_DISK"/>
-</gfe:partitioned-region>]]></programlisting>
-		
-		<important><para>Replicas cannot use a <literal>local destroy</literal> eviction since that would invalidate them. See the GemFire docs for more information.</para></important>
-		
-		<para>When configuring regions for oveflow, it is recommended to configure the storage through the <literal>disk-store</literal> element for maximum efficiency.</para>
-		
-		<para>For a detailed description of eviction policies, see the GemFire documentation (such as <ulink url="http://community.gemstone.com/display/gemfire/Data+Eviction">this</ulink>
-		page).</para>
-	</section>
-	
-	<section id="bootstrap:region:beans:config">
-		<title>Advanced Region Configuration</title>
-	
-		<para>Spring Data GemFire namespaces allow short and easy configuration of the major GemFire regions and associated entities. However, there might be corner cases where the namespaces are not enough, where
-		a certain combination or set of attributes needs to be used. For such situations, using directly the Spring Data GemFire <interfacename>FactoryBean</interfacename>s is a possible alternative as it gives
-		access to the full set of options at the expense of conciseness.</para>
-		
-		<para>As a warm up, below are some common configurations, declared through raw <literal>beans</literal> definitions.</para>
-		
-		<para>A basic configuration looks as follows:</para>
-		
-		<programlisting language="xml">&lt;bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean"&gt;
-  &lt;property name="cache"&gt;
-      &lt;bean class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;
-  &lt;/property&gt;
-  &lt;property name="name" value="basic"/&gt;
-&lt;/bean&gt;</programlisting>
-
-		<para>Notice how the GemFire cache definition has been nested into the declaring region definition. Let's add more regions
-		and make the cache a top level bean.</para>
-    	<para>Since the region bean definition name is usually the same with that
-    of the cache, the <literal>name</literal> property can be omitted (the
-    bean name will be used automatically). Additionally by using the name the
-    <literal><ulink
-    url="http://static.springsource.org/spring/docs/2.5.x/reference/beans.html#beans-p-namespace">p</ulink></literal>
-    namespace, the configuration can be simplified even more:</para>
+    <para>To use the Spring Data GemFire namespace, simply declare it in your
+    Spring XML configuration:</para>
 
     <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:p="http://www.springframework.org/schema/p"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"&gt;
-  
-    &lt;!-- shared cache across regions --&gt;
-    &lt;bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean"/&gt;
+  xmlxsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xml<co id="gfe#ns#prefix"/>gfe="http://www.springframework.org/schema/gemfire"<co
+        id="gfe#ns#uri"/>
+  xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        <co id="gfe#ns#uri#loc"/>http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"&gt;
+     
+    &lt;bean id ... &gt;
 
-    &lt;!-- region named 'basic' --&gt;
-    &lt;bean id="basic" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"/&gt;
+    <co id="gfe#ns#example"/>&lt;gfe:cache ...&gt;
 
-    &lt;!-- region with a name different then the bean definition --&gt;
-    &lt;bean id="root-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache" p:name="default-region"/&gt;
 &lt;/beans&gt;</programlisting>
 
-    <para>It is worth pointing out, that for the vast majority of cases
-    configuring the cache loader, listener and writer through the Spring
-    container is preferred since the same instances can be reused across
-    multiple regions and additionally, the instances themselves can benefit
-    from the container's rich feature set:</para>
+    <calloutlist>
+      <callout arearefs="gfe#ns#prefix">
+        <para>Spring GemFire namespace prefix. Any name will do but through
+        out the reference documentation, <literal>gfe</literal> will be
+        used.</para>
+      </callout>
 
-    <programlisting language="xml">&lt;bean id="cacheLogger" class="org.some.pkg.CacheLogger"/&gt;
-&lt;bean id="customized-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"&gt;
-  &lt;property name="cacheListeners"&gt;
-    &lt;array&gt;
-      &lt;ref name="cacheLogger"/&gt;
-    &lt;bean class="org.some.other.pkg.SysoutLogger"/&gt;
-    &lt;/array&gt;
-  &lt;/property&gt;
-  &lt;property name="cacheLoader"&gt;&lt;bean class="org.some.pkg.CacheLoad"/&gt;&lt;/property&gt;
-  &lt;property name="cacheWriter"&gt;&lt;bean class="org.some.pkg.CacheWrite"/&gt;&lt;/property&gt;
-&lt;/bean&gt;
+      <callout arearefs="gfe#ns#uri">
+        <para>The namespace URI.</para>
+      </callout>
 
-&lt;bean id="local-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache"&gt;
-  &lt;property name="cacheListeners" ref="cacheLogger"/&gt;	
-&lt;/bean&gt;</programlisting>
+      <callout arearefs="gfe#ns#uri#loc">
+        <para>The namespace URI location. Note that even though the location
+        points to an external address (which exists and is valid), Spring will
+        resolve the schema locally as it is included in the Spring Data
+        GemFire library.</para>
+      </callout>
 
-      <para>For scenarios where a <emphasis>CacheServer</emphasis> is used and
-      <emphasis>clients</emphasis> need to be configured and the namespace is not an option, Spring Data GemFire offers a
-      dedicated configuration class named:
-      <classname>ClientRegionFactoryBean</classname>. This allows client
-      <emphasis>interests</emphasis> to be registered in both key and regex
-      form through <classname>Interest</classname> and
-      <classname>RegexInterest</classname> classes in the
-      <literal>org.springframework.data.gemfire.client</literal> package:</para>
+      <callout arearefs="gfe#ns#example">
+        <para>Declaration example for the GemFire namespace. Notice the prefix
+        usage.</para>
+      </callout>
+    </calloutlist>
 
-      <programlisting language="xml">&lt;bean id="interested-client" class="org.springframework.data.gemfire.client.ClientRegionFactoryBean" p:cache-ref="cache" p:name="client-region"&gt;
-  &lt;property name="interests"&gt;
-    &lt;array&gt;
-      &lt;!-- key-based interest --&gt;
-      &lt;bean class="org.springframework.data.gemfire.client.Interest" p:key="Vlaicu" p:policy="NONE"/&gt;
-      &lt;!-- regex-based interest --&gt;
-      &lt;bean class="org.springframework.data.gemfire.client.RegexInterest" p:key=".*" p:policy="KEYS" p:durable="true"/&gt;
-    &lt;/array&gt;
-  &lt;/property&gt;
-&lt;/bean&gt;</programlisting>
-      
-      <para>Users that need fine control over a region, can configure it in Spring by using the <literal>attributes</literal> property. To ease declarative configuration in Spring,
-      Spring Data GemFire provides two <interfacename>FactoryBean</interfacename>s for creating <interfacename>RegionAttributes</interfacename> and <interfacename>PartitionAttributes</interfacename>,
-      namely <classname>RegionAttributesFactory</classname> and <classname>PartitionAttributesFactory</classname>. See below an example of configuring a partitioned region through Spring
-      XML:</para>
+    <para>Once declared, the namespace elements can be declared simply by
+    appending the aforementioned prefix.</para>
+
+    <note>
+      <para>It is possible to change the default namespace, for example from
+      <literal>beans</literal> to <literal>gfe</literal>. This is useful for
+      configuration composed mainly of GemFire components as it avoids
+      declaring the prefix. To achieve this, simply swap the namespace prefix
+      declaration above:</para>
+
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="<co id="gfe#default-ns#prefix"/>http://www.springframework.org/schema/gemfire"
+    xmlxsi="http://www.w3.org/2001/XMLSchema-instance"
+ xml<co id="gfe#default-ns#beans-prefix"/>beans="http://www.springframework.org/schema/beans"
+ xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"&gt;
+     
+    <co id="gfe#default-ns#beans-example"/>&lt;beabean id ... &gt;
  
-    <programlisting language="xml"><![CDATA[<bean id="partitioned-region" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="cache">
-  <property name="attributes">
-    <bean class="org.springframework.data.gemfire.RegionAttributesFactory" p:initial-capacity="1024">
-      <property name="partitionAttributes">
-        <bean class="org.springframework.data.gemfire.PartitionAttributesFactoryBean" p:redundant-copies="2" p:local-max-memory="512"/>
-      </property>
-    </bean>
-  </property>
-</bean>]]></programlisting>
-      
-      <para>By using the attribute factories above, one can reduce the size of the <literal>cache.xml</literal> or even eliminate it all together.</para>  
-    </section>
-  </section>
-  
-  <section id="bootstrap:region:spring:config">
-	<title>Advantages of using Spring over GemFire <literal>cache.xml</literal></title>
-	
-	<para>With Spring Data GemFire, GemFire regions, pools and cache can be configured either through Spring or directly inside GemFire, native, <literal>cache.xml</literal> file. While both are valid
-	approaches, it's worth pointing out that Spring's powerful DI container and AOP functionality makes it very easy to wire GemFire into an application. For example configuring a region
-	cache loader, listener and writer through the Spring container is preferred since the same instances can be reused across  multiple regions and additionally are either to configure
-	due to the presence of the DI and eliminates the need of implementing GemFire's <interfacename>Declarable</interfacename> interface (see <xref linkend="apis:declarable"/> on chapter
-	on how you can still use them yet benefit from Spring's DI container).</para>
-	
-	<para>Whatever route one chooses to go, Spring Data GemFire supports both approaches allowing for easy migrate between them without forcing an upfront decision.</para>
-  </section>
-  
-  <section id="bootstrap:indecies">
-	<title>Creating Indecies</title>
-	
-	<para>GemFire allows creation on indices (or indexes) to improve the performance of (common) queries. Spring Data GemFire allows indecies to be declared through the <literal>index</literal> element:</para>
-	
-	
-	<programlisting language="xml"><![CDATA[<gfe:index id="myIndex" expression="someField" from="/someRegion"/>]]></programlisting>
-	
-	<para>Before creating an index, Spring Data GemFire will verify whether one with the same name already exists. If it does, it will compare the properties and if they don't match, will remove the old one to create
-	a new one. If the properties match, Spring Data GemFire will simply return the index (in case it does not exist it will simply create one). To prevent the update of the index, even if the properties do not match,
-	set the property <literal>override</literal> to false.</para>
-	
-	<para>
-	Note that index declaration are not bound to a region but rather are top-level elements (just like <literal>gfe:cache</literal>). This allows one to declare any number of indecies on any region
-	whether they are just created or already exist - an improvement versus the GemFire <literal>cache.xml</literal>. By default the index relies on the default cache declaration but one can customize it
-	accordingly or use a pool (if need be) - see the namespace schema for the full set of options.</para>
-  </section>	
+    <co id="gfe#default-ns#gfe-example"/>&lt;cache ...&gt;
 
+&lt;/beans&gt;</programlisting>
+
+      <calloutlist>
+        <callout arearefs="gfe#default-ns#prefix">
+          <para>The default namespace declaration for this XML file points to
+          the Spring Data GemFire namespace.</para>
+        </callout>
+
+        <callout arearefs="gfe#default-ns#beans-prefix">
+          <para>The beans namespace prefix declaration.</para>
+        </callout>
+
+        <callout arearefs="gfe#default-ns#beans-example">
+          <para>Bean declaration using the <literal>beans</literal> namespace.
+          Notice the prefix.</para>
+        </callout>
+
+        <callout arearefs="gfe#default-ns#gfe-example">
+          <para>Bean declaration using the <literal>gfe</literal> namespace.
+          Notice the lack of prefix (as the default namespace is used).</para>
+        </callout>
+      </calloutlist>
+    </note>
+  </section>
+
+  <xi:include href="cache.xml"/>
+
+  <xi:include href="region.xml"/>
+
+  <section id="bootstrap:indicies">
+    <title>Creating an Index</title>
+
+    <para>GemFire allows creation on indexes (or indices) to improve the
+    performance of (common) queries. Spring Data GemFire allows indecies to be
+    declared through the <literal>index</literal> element:</para>
+
+    <programlisting language="xml">&lt;gfe:index id="myIndex" expression="someField" from="/someRegion"/&gt;</programlisting>
+
+    <para>Before creating an index, Spring Data GemFire will verify whether
+    one with the same name already exists. If it does, it will compare the
+    properties and if they don't match, will remove the old one to create a
+    new one. If the properties match, Spring Data GemFire will simply return
+    the index (in case it does not exist it will simply create one). To
+    prevent the update of the index, even if the properties do not match, set
+    the property <literal>override</literal> to false.</para>
+
+    <para>Note that index declaration are not bound to a region but rather are
+    top-level elements (just like <literal>gfe:cache</literal>). This allows
+    one to declare any number of indecies on any region whether they are just
+    created or already exist - an improvement versus the GemFire
+    <literal>cache.xml</literal>. By default the index relies on the default
+    cache declaration but one can customize it accordingly or use a pool (if
+    need be) - see the namespace schema for the full set of options.</para>
+  </section>
+   <xi:include href="diskstore.xml"/>
+   <xi:include href="function.xml"/>
+   <xi:include href="gateway.xml"/>
 </chapter>

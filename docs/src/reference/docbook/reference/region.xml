@@ -1,0 +1,850 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section id="bootstrap:region" version="5.0"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns5="http://www.w3.org/1998/Math/MathML"
+         xmlns:ns4="http://www.w3.org/2000/svg"
+         xmlns:ns3="http://www.w3.org/1999/xhtml"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Configuring a GemFire Region</title>
+
+  <para xmlns="">A region is required to store and retrieve data from the
+  cache. <interfacename>Region</interfacename> is an interface extends
+  <interfacename>java.util.map</interfacename> used to perform basic data
+  access using familiar key-value semantics. The
+  <interfacename>Region</interfacename> interface is wired into classes that
+  require it so the actual region type is decoupled from the programming model
+  . Typically each region is associated with one domain object, similar to a
+  table in a relational database.</para>
+
+  <para>GemFire implements the following types of regions:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para><emphasis>Replicated</emphasis> - Data is replicated across all
+      cache members that define the region. This provides very high read
+      performance but writes take longer to perform the replication.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis>Partioned</emphasis> - Data is partitioned into buckets
+      among cache members that define the region. This provides high read and
+      write performance and is suitable for very large data sets that are too
+      big for a single node.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis>Local</emphasis> - Data only exists on the local
+      node.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis>Client</emphasis> - Technically a client region is a
+      local region that acts as a proxy to a replicated or partitioned region
+      hosted on cache servers. It may hold data created or fetched locally,
+      alternately it can be empty. Local updates are synchronized to the cache
+      server. Also, a client region may subscribe to events in order to stay
+      synchronized with changes originating from remote processes that access
+      the same region.</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>For more information about the various region types and their
+  capabilities as well as configuration options, please refer to the GemFire
+  Developer's <ulink
+  url="http://pubs.vmware.com/vfabric51/index.jsp?topic=/com.vmware.vfabric.gemfire.6.6/developing/book_intro.html">Guide</ulink>
+  and community <ulink
+  url="http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire">site</ulink>.</para>
+
+  <section id="bootstrap:region:lookup">
+    <title>Using an externally configured Region</title>
+
+    <para>For referencing Regions already configured through GemFire native
+    configuration, e.g., a <literal>cache.xml</literal> file, use the
+    <literal>lookup-region</literal> element. Simply declare the target region
+    name with the<literal> name</literal> attribute; for example to declare a
+    bean definition, named <literal>region-bean</literal> for an existing
+    region named <literal>orders</literal> one can use the following
+    definition:</para>
+
+    <programlisting language="xml">&lt;gfe:lookup-region id="region-bean" name="orders"/&gt;</programlisting>
+
+    <para>If the <literal>name</literal> is not specified, the bean's
+    <literal>id</literal> will be used. The example above becomes:</para>
+
+    <programlisting language="xml">&lt;!-- lookup for a region called 'orders' --&gt;
+&lt;gfe:lookup-region id="orders"/&gt;</programlisting>
+
+    <note>
+      <para>If the region does not exist, an initialization exception will be
+      thrown. For configuring new GemFire regions, proceed to the appropriate
+      sections below.</para>
+    </note>
+
+    <para>Note that in the previous examples, since no cache name was defined,
+    the default naming convention (<literal>gemfireCache</literal>) was used.
+    Alternately, one can reference the cache bean through the
+    <literal>cache-ref</literal> attribute:</para>
+
+    <programlisting language="xml">&lt;gfe:cache id="cache"/&gt;
+&lt;gfe:lookup-region id="region-bean" name="orders" cache-ref="cache"/&gt;</programlisting>
+
+    <para>The <literal>lookup-region</literal> provides a simple way of
+    retrieving existing, pre-configured regions without exposing the region
+    semantics or setup infrastructure.</para>
+  </section>
+
+  <section id="bootstrap:region:overview">
+    <title>Configuring Regions</title>
+
+    <para>Spring Data GemFire provides comprehensive support for configuring
+    any type of GemFire Region via the following elements: <itemizedlist>
+        <listitem>
+          <para>Local Region <literal>&lt;local-region&gt;</literal></para>
+        </listitem>
+
+        <listitem>
+          <para>Replicated Region
+          <literal>&lt;replicated-region&gt;</literal></para>
+        </listitem>
+
+        <listitem>
+          <para>Partitioned Region
+          <literal>&lt;partitioned-region&gt;</literal></para>
+        </listitem>
+
+        <listitem>
+          <para>Client Region <literal>&lt;client-region&gt;</literal></para>
+        </listitem>
+      </itemizedlist>For a comprehensive description of <ulink
+    url="http://pubs.vmware.com/vfabric51/topic/com.vmware.vfabric.gemfire.6.6/developing/region_options/region_types.html">region
+    types</ulink> please consult the GemFire product documentation.</para>
+
+    <section id="bootstrap:region:common:attributes">
+      <title>Common Region Attributes</title>
+
+      <para>The following table(s) list attributes available for various
+      region types: 
+      <table
+          id="bootstrap:region:common:attributes:table">
+          <title>Common Region Attributes</title>
+
+          <tgroup cols="3">
+            <colspec colwidth="1*"/>
+
+            <colspec colwidth="2*"/>
+
+            <colspec colwidth="2*"/>
+
+            <thead>
+              <row>
+                <entry>Name</entry>
+
+                <entry spanname="values">Values</entry>
+
+                <entry spanname="description">Description</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>cache-ref</entry>
+
+                <entry spanname="values">
+                  <emphasis>GemFire cache bean name</emphasis>
+                </entry>
+
+                <entry spanname="description">The name of the bean defining
+                the GemFire cache (by default 'gemfireCache').</entry>
+              </row>
+
+              <row>
+                <entry>close</entry>
+
+                <entry spanname="values">
+                  <emphasis>boolean, default:true</emphasis>
+                </entry>
+
+                <entry spanname="description">Indicates whether the region
+                should be closed at shutdown</entry>
+              </row>
+
+              <row>
+                <entry>data-policy</entry>
+
+                <entry spanname="values">
+                  <emphasis>See GemFire's <ulink
+                  url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/DataPolicy.html">Data
+                  Policy</ulink></emphasis>
+                </entry>
+
+                <entry spanname="description">The region's data policy. Note
+                not all data policies are supported for every region
+                type</entry>
+              </row>
+
+              <row>
+                <entry>destroy</entry>
+
+                <entry spanname="values">
+                  <emphasis>boolean, default:false</emphasis>
+                </entry>
+
+                <entry spanname="description">Indicates whether the region
+                should be destroyed at shutdown</entry>
+              </row>
+
+              <row>
+                <entry>disk-store-ref</entry>
+
+                <entry spanname="values">
+                  <emphasis>The name of a configured disk store</emphasis>
+                </entry>
+
+                <entry spanname="description">A reference to a bean created
+                via the <literal>disk-store</literal> element. Note: This will
+                automatically enable persistence. If persistent is explicitly
+                set to false, an exception will be thrown.</entry>
+              </row>
+
+              <row>
+                <entry>disk-synchronous</entry>
+
+                <entry spanname="values">
+                  <emphasis>boolean, default:false</emphasis>
+                </entry>
+
+                <entry spanname="description">Indicates whether disk store
+                writes are synchronous. Note: This will automatically enable
+                persistence. If persistent is explicitly set to false, an
+                exception will be thrown.</entry>
+              </row>
+
+              <row>
+                <entry>enable-gateway</entry>
+
+                <entry spanname="values">
+                  <emphasis>boolean, default:false</emphasis>
+                </entry>
+
+                <entry spanname="description">Indicates whether the region
+                will synchronize entries over a WAN gateway.</entry>
+              </row>
+
+              <row>
+                <entry>hub-id</entry>
+
+                <entry spanname="values">
+                  <emphasis>The name of the Gateway Hub</emphasis>
+                </entry>
+
+                <entry spanname="description">This will automatically set
+                enable-gateway to true. If enable-gateway is explicitly set to
+                false, an exception will be thrown.</entry>
+              </row>
+
+              <row>
+                <entry>id</entry>
+
+                <entry spanname="values">
+                  <emphasis>any valid bean name</emphasis>
+                </entry>
+
+                <entry spanname="description">Will also be the region name by
+                default</entry>
+              </row>
+
+              <row>
+                <entry>ignore-jta</entry>
+
+                <entry spanname="values">
+                  <emphasis>boolean, default:false</emphasis>
+                </entry>
+
+                <entry spanname="description">Indicates whether the region
+                participates in JTA transactions</entry>
+              </row>
+
+              <row>
+                <entry>index-update-type</entry>
+
+                <entry spanname="values">
+                  <emphasis>synchronous or asynchronous,
+                  default:asynchronous</emphasis>
+                </entry>
+
+                <entry spanname="description">Indicates whether indices will
+                be updated synchronously or asynchronously on entry
+                creation</entry>
+              </row>
+
+              <row>
+                <entry>initial-capacity</entry>
+
+                <entry spanname="values">
+                  <emphasis>integer, default:16</emphasis>
+                </entry>
+
+                <entry spanname="description">The initial memory allocation
+                for number of entries</entry>
+              </row>
+
+              <row>
+                <entry>key-constraint</entry>
+
+                <entry spanname="values">
+                  <emphasis>any valid java class name</emphasis>
+                </entry>
+
+                <entry spanname="description">The expected key type</entry>
+              </row>
+
+              <row>
+                <entry>name</entry>
+
+                <entry spanname="values">
+                  <emphasis>any valid region name</emphasis>
+                </entry>
+
+                <entry spanname="description">The name of the region
+                definition. If no specified, it will assume the value of the
+                id attribute (the bean name).</entry>
+              </row>
+
+              <row>
+                <entry>persistent</entry>
+
+                <entry spanname="values">
+                  <emphasis>boolean, default:false</emphasis>
+                </entry>
+
+                <entry spanname="description">Indicates whether the region
+                persists entries to a disk store</entry>
+              </row>
+
+              <row>
+                <entry>statistics</entry>
+
+                <entry spanname="values">
+                  <emphasis>boolean, default:false</emphasis>
+                </entry>
+
+                <entry spanname="description">Indicates whether the region
+                reports statistics</entry>
+              </row>
+
+              <row>
+                <entry>value-constraint</entry>
+
+                <entry spanname="values">
+                  <emphasis>any valid java class name</emphasis>
+                </entry>
+
+                <entry spanname="description">The expected value type</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></para>
+    </section>
+
+    <section id="bootstrap:region:common:cache-listener">
+      <title>Cache Listeners</title>
+
+      <para>Cache Listeners are registered with a region to handle region
+      events such as entries being created, updated, destroyed, etc. A Cache
+      Listener can be any bean that implements the <ulink
+          url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheListener.html">
+          <interfacename>CacheListener</interfacename>
+        </ulink> interface. A region may have multiple listeners, declared
+      using the <literal>cache-listener</literal> element enclosed in a
+      <literal>*-region</literal> element. In the example below, there are two
+      <interfacename>CacheListener</interfacename>s declared. The first
+      references a top level named Spring bean; the second is an anonymous
+      inner bean definition. <programlisting language="xml">
+&lt;gfe:replicated-region id="region-with-listeners"&gt;
+    &lt;gfe:cache-listener&gt;
+        &lt;!-- nested cache listener reference --&gt;
+        &lt;ref bean="c-listener"/&gt;
+        &lt;!-- nested cache listener declaration --&gt;
+        &lt;bean class="some.pkg.AnotherSimpleCacheListener"/&gt;
+    &lt;/gfe:cache-listener&gt;
+    
+    &lt;bean id="c-listener" class="some.pkg.SimpleCacheListener"/&gt;
+ &lt;/gfe:replicated-region&gt;
+    </programlisting> The following example uses an alternate form of the
+      <literal>cache-listener</literal> element with a <literal>ref</literal>
+      attribute. This allows for more concise configuration for a single cache
+      listener. Note that the namespace only allows a single
+      <literal>cache-listener</literal> element so either the style above or
+      below must be used. <caution>
+          <para>Using <literal>ref</literal> and a nested declaration in a
+          <literal>cache-listener</literal>, or similar element, is illegal.
+          The two options are mutually exclusive and using both on the same
+          element will result in an exception.</para>
+        </caution><programlisting language="xml">&lt;beans&gt;
+    &lt;gfe:replicated-region id="region-with-one listener"&gt;
+        &lt;gfe:cache-listener ref="c-listener"/&gt;
+    &lt;/gfe:replicated-region&gt;
+ 
+    &lt;bean id="c-listener" class="some.pkg.SimpleCacheListener"/&gt;
+ &lt;/beans&gt;
+    </programlisting></para>
+
+      <note>
+        <title>Bean Reference Conventions</title>
+
+        <para>The <literal>cache-listener</literal> element is an example of a
+        common pattern used in the namespace anywhere GemFire provides a
+        callback interface to be implemented in order to invoke custom code in
+        response to cache or region events. Using Spring's IoC container, the
+        implementation is a standard Spring bean. In order to simplify the
+        configuration, the schema allows a single occurrence of the
+        <literal>cache-listener</literal> element, but it may contain nested
+        bean references and inner bean definitions in any combination if
+        multiple instances are permitted. The convention is to use the
+        singular form (i.e., <literal>cache-listener</literal> vs
+        <literal>cache-listeners</literal>) reflecting that the most common
+        scenario will in fact be a single instance. We have already seen
+        examples of this pattern in the <link
+        linkend="bootstrap:cache:advanced">advanced cache</link> configuration
+        example.</para>
+      </note>
+    </section>
+
+    <section id="bootstrap:region:common:loaders-writers">
+      <title>Cache Loaders and Cache Writers</title>
+
+      <para>Similar to <literal>cache-listener</literal>, the namespace
+      provides <literal>cache-loader</literal> and
+      <literal>cache-writer</literal> elements to register these respective
+      components for a region. A <interfacename>CacheLoader</interfacename> is
+      invoked on a cache miss to allow an entry to be loaded from an external
+      source, a database for example. A
+      <interfacename>CacheWriter</interfacename> is invoked afer an entry is
+      created or updated,intended for synchronizing to an external data
+      source. The difference is GemFire only supports at most a single
+      instance of each for each region. However, either declaration style may
+      be used. See <ulink
+          url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheLoader.html">
+          <interfacename>CacheLoader</interfacename>
+        </ulink> and <ulink
+          url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheWriter.html">
+          <interfacename>CacheWriter</interfacename>
+        </ulink> for more details.</para>
+    </section>
+
+    <section id="bootstrap:region:common:subregions">
+      <title>Subregions</title>
+
+      <para>In Release 1.2.0, Spring Data GemFire added support for
+      subregions, allowing regions to be arranged in a hierarchical
+      relationship. For example, GemFire allows for a
+      <emphasis>/Customer/Address</emphasis> region and a different
+      <emphasis>/Employee/Address</emphasis> region. Additionally, a subregion
+      may have it's own subregions and its own configuration. A subregion does
+      not inherit attributes from the parent region. Regions types may be
+      mixed and matched subject to GemFire constraints. A subregion is
+      naturally declared as a child element of a region. The subregion's name
+      attribute is the simple name. The above example might be configured as:
+      <programlisting language="xml">&lt;beans&gt;
+    
+    &lt;gfe:replicated-region name="Customer"&gt;
+        &lt;gfe:replicated-region name="Address"/&gt;
+    &lt;/gfe:replicated-region&gt;
+    
+    &lt;gfe:replicated-region name="Employee"&gt;
+        &lt;gfe:replicated-region name="Address"/&gt;
+    &lt;/gfe:replicated-region&gt;
+    
+&lt;/beans&gt;</programlisting>Note that the <literal>
+          <literal>id</literal>
+        </literal> attribute is not permitted for a subregion. The subregions
+      will be created with bean names <emphasis>/Customer/Address</emphasis>
+      and <emphasis>/Employee/Address</emphasis>, respectively. So they may be
+      injected using the full path name into other beans that use them, such
+      as <classname>GemfireTemplate</classname>. The full path should also be
+      used in OQL query strings.</para>
+    </section>
+  </section>
+
+  <section id="bootstrap:region:persistence">
+    <title>Data Persistence</title>
+
+    <para>Regions can be made persistent. GemFire ensures that all the data
+    you put into a region that is configured for persistence will be written
+    to disk in a way that it can be recovered the next time you create the
+    region. This allows data to be recovered after a machine or process
+    failure or after an orderly shutdown and restart of GemFire.</para>
+
+    <para>With Spring Data GemFire, to enable persistence, simply set the
+    <literal>persistent</literal> attribute to true:</para>
+
+    <programlisting language="xml">&lt;gfe:partitioned-region id="persitent-partition" persistent="true"/&gt;</programlisting>
+
+    <important>
+      <para>Persistence for partitioned regions is supported from GemFire 6.5
+      onwards - configuring this option on a previous release will trigger an
+      initialization exception.</para>
+    </important>
+
+    <para>When persisting regions, it is recommended to configure the storage
+    through the <literal>disk-store</literal> element for maximum efficiency.
+    The diskstore is referenced using the disk-store-ref attribute.
+    Additionally, the region may perform disk writes synchronously or
+    asynchronously:</para>
+
+    <programlisting language="xml">&lt;gfe:partitioned-region id="persitent-partition" persistent="true" disk-store-ref="myDiskStore" disk-synchronous="true"/&gt;</programlisting>
+
+    <para>This is discussed further in <xref
+    linkend="bootstrap-diskstore"/></para>
+  </section>
+
+  <section id="bootstrap:region:eviction">
+    <title>Data Eviction and Overflowing</title>
+
+    <para>Based on various constraints, each region can have an eviction
+    policy in place for <literal>evicting</literal> data from memory.
+    Currently, in GemFire eviction applies to the least recently used entry
+    (also known as <ulink
+    url="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used">LRU</ulink>).
+    Evicted entries are either destroyed or paged to disk (also known as
+    <emphasis>overflow</emphasis>).</para>
+
+    <para>Spring Data GemFire supports all eviction policies (entry count,
+    memory and heap usage) for both <literal>partitioned-region</literal> and
+    <literal>replicated-region</literal> as well as
+    <literal>client-region</literal>, through the nested
+    <literal>eviction</literal> element. For example, to configure a partition
+    to overflow to disk if its size is more then 512 MB, one could use the
+    following configuration:</para>
+
+    <programlisting language="xml">&lt;gfe:partitioned-region id="overflow-partition"&gt;
+     &lt;gfe:eviction type="MEMORY_SIZE" threshold="512" action="OVERFLOW_TO_DISK"/&gt;
+&lt;/gfe:partitioned-region&gt;</programlisting>
+
+    <important>
+      <para>Replicas cannot use a <literal>local destroy</literal> eviction
+      since that would invalidate them. See the GemFire docs for more
+      information.</para>
+    </important>
+
+    <para>When configuring regions for oveflow, it is recommended to configure
+    the storage through the <literal>disk-store</literal> element for maximum
+    efficiency.</para>
+
+    <para>For a detailed description of eviction policies, see the GemFire
+    documentation (such as <ulink
+    url="http://pubs.vmware.com/vfabric51/topic/com.vmware.vfabric.gemfire.6.6/developing/eviction/how_eviction_works.html">this</ulink>
+    page).</para>
+  </section>
+
+  <section><title>Data Expiration</title>GemFire allows you to control how
+  long entries exist in the cache. Eviction is driven by elapsed time, as
+  opposed to eviction which is driven by memory usage. Once an entry expires
+  it may no longer be accessed from the cache. GemFire supports the following
+  expiration types: <itemizedlist>
+      <listitem>
+        <para><emphasis>Time to live (TTL)</emphasis> - The amount of time, in
+        seconds, the object may remain in the cache after the last creation or
+        update. For entries, the counter is set to zero for create and put
+        operations. Region counters are reset when the region is created and
+        when an entry has its counter reset.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Idle timeout</emphasis> - The amount of time, in
+        seconds, the object may remain in the cache after the last access. The
+        idle timeout counter for an object is reset any time its TTL counter
+        is reset. In addition, an entry’s idle timeout counter is reset any
+        time the entry is accessed through a get operation or a netSearch .
+        The idle timeout counter for a region is reset whenever the idle
+        timeout is reset for one of its entries.</para>
+      </listitem>
+    </itemizedlist> <para> Each of these may be applied to the region itself
+  or entries in the region. Spring Data GemFire provides
+  <literal>&lt;region-ttl&gt;</literal>,
+  <literal>&lt;region-tti&gt;</literal>, <literal>&lt;entry-ttl&gt;</literal>
+  and <literal>&lt;entry-tti&gt;</literal> region child elements to specify
+  timeout values and expiration actions.</para></section>
+
+  <section id="bootstrap:region:local">
+    <title>Local Region</title>
+
+    <para>Spring Data GemFire offers a dedicated
+    <literal>local-region</literal> element for creating local regions. Local
+    regions, as the name implies, are standalone meaning they do not share
+    data with any other distributed system member. Other than that, all common
+    region configuration options are supported. A minimal declaration looks as
+    follows (again, the example relies on the Spring Data GemFire namespace
+    naming conventions to wire the cache):</para>
+
+    <programlisting language="xml">&lt;gfe:local-region id="myLocalRegion" /&gt;</programlisting>
+
+    <para>Here, a local region is created (if one doesn't exist already). The
+    name of the region is the same as the bean id (myLocalRegion) and the bean
+    assumes the existence of a GemFire cache named
+    <literal>gemfireCache</literal>.</para>
+  </section>
+
+  <section id="bootstrap:region:replicate">
+    <title>Replicated Region</title>
+
+    <para>One of the common region types is a <emphasis>replicated
+    region</emphasis> or <emphasis>replica</emphasis>. In short, when a region
+    is configured to be a replicated region, every member that hosts that
+    region stores a copy of the region's entries locally. Any update to a
+    replicated region is distributed to all copies of the region. When a
+    replica is created, it goes through an initialization stage in which it
+    discovers other replicas and automatically copies all the entries. While
+    one replica is initializing you can still continue to use the other
+    rep</para>
+
+    <para>Spring Data GemFire offers a <literal>replicated-region</literal>
+    element. A minimal declaration looks as follows. All common configuration
+    options are available for replicated regions.</para>
+
+    <programlisting language="xml">&lt;gfe:replicated-region id="simpleReplica" /&gt;</programlisting>
+  </section>
+
+  <section id="bootstrap:region:partition">
+    <title>Partitioned Region</title>
+
+    <para>Another region type supported out of the box by the Spring Data
+    GemFire namespace, is the partitioned region. To quote the GemFire
+    docs:</para>
+
+    <para>"A partitioned region is a region where data is divided between peer
+    servers hosting the region so that each peer stores a subset of the data.
+    When using a partitioned region, applications are presented with a logical
+    view of the region that looks like a single map containing all of the data
+    in the region. Reads or writes to this map are transparently routed to the
+    peer that hosts the entry that is the target of the operation. [...]
+    GemFire divides the domain of hashcodes into buckets. Each bucket is
+    assigned to a specific peer, but may be relocated at any time to another
+    peer in order to improve the utilization of resources across the
+    cluster."</para>
+
+    <para>A partition is created using the
+    <literal>partitioned-region</literal> element. Its configuration options
+    are similar to that of the <literal>replicated-region</literal> plus the
+    partion specific features such as the number of redundant copies, total
+    maximum memory, number of buckets, partition resolver and so on. Below is
+    a quick example on setting up a partition region with 2 redundant
+    copies:</para>
+
+    <programlisting language="xml">&lt;!-- bean definition named 'distributed-partition' backed by a region named 'redundant' with 2 copies 
+and a nested resolver declaration  --&gt;
+&lt;gfe:partitioned-region id="distributed-partition" copies="2" total-buckets="4" name="redundant"&gt;
+    &lt;gfe:partition-resolver&gt;
+        &lt;bean class="some.pkg.SimplePartitionResolver"/&gt;
+    &lt;/gfe:partition-resolver&gt;
+&lt;/gfe:partitioned-region&gt;</programlisting>
+
+    <section id="bootstrap:region:partition:options">
+      <title><literal>partitioned-region</literal> Options</title>
+
+      <para>The following table offers a quick overview of configuration
+      options specific to partitioned regions. These are in addition to the
+      common region configuration options described above.</para>
+
+      <table id="bootstrap:region:partition:attrs:table">
+        <title>partitioned-region options</title>
+
+        <tgroup cols="3">
+          <colspec colwidth="1*"/>
+
+          <colspec colwidth="2*"/>
+
+          <colspec colwidth="2*"/>
+
+          <thead>
+            <row>
+              <entry>Name</entry>
+
+              <entry spanname="values">Values</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>partition-resolver</entry>
+
+              <entry spanname="values">
+                <emphasis>bean name</emphasis>
+              </entry>
+
+              <entry>The name of the partitioned resolver used by this region,
+              for custom partitioning.</entry>
+            </row>
+
+            <row>
+              <entry>partition-listener</entry>
+
+              <entry spanname="values">
+                <emphasis>bean name</emphasis>
+              </entry>
+
+              <entry>The name of the partitioned listener used by this region,
+              for handling partition events.</entry>
+            </row>
+
+            <row>
+              <entry>copies</entry>
+
+              <entry spanname="values">0..4</entry>
+
+              <entry>The number of copies for each partition for
+              high-availability. By default, no copies are created meaning
+              there is no redundancy. Each copy provides extra backup at the
+              expense of extra storage.</entry>
+            </row>
+
+            <row>
+              <entry>colocated-with</entry>
+
+              <entry spanname="values">
+                <emphasis>valid region name</emphasis>
+              </entry>
+
+              <entry>The name of the partitioned region with which this newly
+              created partitioned region is colocated.</entry>
+            </row>
+
+            <row>
+              <entry>local-max-memory</entry>
+
+              <entry spanname="values">
+                <emphasis>positive integer</emphasis>
+              </entry>
+
+              <entry>The maximum amount of memory, in megabytes, to be used by
+              the region in <emphasis>this</emphasis> process.</entry>
+            </row>
+
+            <row>
+              <entry>total-max-memory</entry>
+
+              <entry spanname="values">
+                <emphasis>any integer value</emphasis>
+              </entry>
+
+              <entry>The maximum amount of memory, in megabytes, to be used by
+              the region in <emphasis>all</emphasis> processes.</entry>
+            </row>
+
+            <row>
+              <entry>recovery-delay</entry>
+
+              <entry spanname="values">
+                <emphasis>any long value</emphasis>
+              </entry>
+
+              <entry>The delay in milliseconds that existing members will wait
+              before satisfying redundancy after another member crashes. -1
+              (the default) indicates that redundancy will not be recovered
+              after a failure.</entry>
+            </row>
+
+            <row>
+              <entry>startup-recovery-delay</entry>
+
+              <entry spanname="values">
+                <emphasis>any long value</emphasis>
+              </entry>
+
+              <entry>The delay in milliseconds that new members will wait
+              before satisfying redundancy. -1 indicates that adding new
+              members will not trigger redundancy recovery. The default is to
+              recover redundancy immediately when a new member is
+              added.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  </section>
+
+  <section id="bootstrap:region:client">
+    <title>Client Region</title>
+
+    <para>GemFire supports various deployment topologies for managing and
+    distributing data. The topic is outside the scope of this documentation
+    however to quickly recap, they can be classified in short in: peer-to-peer
+    (p2p), client-server, and wide area cache network (or WAN). In the last
+    two scenarios, it is common to declare <emphasis>client</emphasis> regions
+    which connect to a cache server. Spring Data GemFire offers dedicated
+    support for such configuration through <xref
+    linkend="bootstrap:cache:client"/>, <literal>client-region</literal> and
+    <literal>pool</literal> elements. As the names imply, the former defines a
+    client region while the latter defines connection pools to be used/shared
+    by the various client regions.</para>
+
+    <para>Below is a typical client region configuration:</para>
+
+    <programlisting language="xml">&lt;!-- client region using the default client-cache pool --&gt;
+&lt;gfe:client-region id="simple"&gt;
+    &lt;gfe:cache-listener ref="c-listener"/&gt;
+&lt;/gfe:client-region&gt;
+
+&lt;!-- region using its own dedicated pool --&gt;
+&lt;gfe:client-region id="complex" pool-name="gemfire-pool"&gt;
+    &lt;gfe:cache-listener ref="c-listener"/&gt;
+&lt;/gfe:client-region&gt;
+
+&lt;bean id="c-listener" class="some.pkg.SimpleCacheListener"/&gt;
+
+&lt;!-- pool declaration --&gt;
+&lt;gfe:pool id="gemfire-pool" subscription-enabled="true"&gt;
+    &lt;gfe:locator host="someHost" port="40403"/&gt;
+&lt;/gfe:pool&gt;</programlisting>
+
+    <para>As with the other region types, <literal>client-region</literal>
+    supports <interfacename>CacheListener</interfacename>s (but not
+    CacheLoaders or CacheWriters). It also requires a connection
+    <literal>pool</literal> for connecting to a server. Each client can have
+    its own pool or they can share the same one.</para>
+
+    <para/>
+
+    <note>In the above example, the pool is configured with a
+    <literal>locator</literal>. The locator is a separate process used to
+    discover cache servers in the distributed system and are recommended for
+    production systems. It is also possible to configure the pool to connect
+    directly to one or more cache servers using the <literal>server</literal>
+    element.</note>
+
+    <para>For a full list of options to set on the client and especially on
+    the pool, please refer to the Spring Data GemFire schema (<xref
+    linkend="appendix-schema"/>) and the GemFire documentation.</para>
+
+    <section id="bootstrap:region:client:interests">
+      <title>Client Interests</title>
+
+      <para>To minimize network traffic, each client can define its own
+      'interest', pointing out to GemFire, the data it actually needs. In
+      Spring Data GemFire, interests can be defined for each client, both
+      key-based and regular-expression-based types being supported; for
+      example:</para>
+
+      <programlisting language="xml">&lt;gfe:client-region id="complex" pool-name="gemfire-pool"&gt;
+    &lt;gfe:key-interest durable="true" result-policy="KEYS"&gt;
+        &lt;bean id="key" class="java.lang.String"&gt;
+             &lt;constructor-arg value="someKey" /&gt; 
+        &lt;/bean&gt;
+    &lt;/gfe:key-interest&gt;
+    &lt;gfe:regex-interest pattern=".*" receive-values="false"/&gt;
+&lt;/gfe:client-region&gt;</programlisting>
+
+      <para>A special key <literal>ALL_KEYS</literal> means interest is
+      registered for all keys (identical to a regex interest of
+      <literal>.*</literal>). The <literal>receive-values</literal> attribute
+      indicates whether or not the values are received for create and update
+      events. If true, values are received; if false, only invalidation events
+      are received - refer to the GemFire documentation for more
+      details.</para>
+    </section>
+  </section>
+</section>

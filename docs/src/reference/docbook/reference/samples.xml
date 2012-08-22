@@ -2,13 +2,17 @@
 <chapter xmlns="http://docbook.org/ns/docbook" version="5.0"  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="samples">
   <title>Sample Applications</title>
 
-  <para>The Spring GemFire project includes one sample application. Named
+  <para>The Spring Data GemFire project includes one sample application. Named
   "Hello World", the sample demonstrates how to configure and use GemFire
   inside a Spring application. At runtime, the sample offers a
   <emphasis>shell</emphasis> to the user allowing him to run various commands
   against the grid. It provides an excellent starting point for users
   unfamiliar with the essential components or the Spring and GemFire
   concepts.</para>
+  
+  <para>
+  Additional sample applications may be found in the <ulink url="https://github.com/SpringSource/spring-gemfire-examples">Spring Data GemFire Examples</ulink> repository.
+  </para>
 
   <para>The sample is bundled with the distribution and is Maven-based. One
   can easily import them into any Maven-aware IDE (such as SpringSource <ulink

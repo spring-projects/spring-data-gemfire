@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section version="5.0" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook"
+         id="bootstrap-diskstore">
+  <title>Configuring a Disk Store</title>
+
+  <para>As of Release 1.2.0, Spring Data GemFire supports disk store
+  configuration via a top level <literal>disk-store</literal> element.</para>
+
+  <note>
+    <para>Prior to Release 1.2.0,
+    <literal>disk-store</literal> was a child element of
+    <literal>*-region</literal>. If you have regions configured with disk
+    storage using a prior release of Spring Data GemFire and want to upgrade
+    to the latest release, move the disk-store element to the top level,
+    assign an id and use the region's <literal>disk-store-ref</literal>
+    attribute. Also, <literal>disk-synchronous</literal> is now a region level
+    attribute. </para>
+  </note>
+
+  <programlisting language="xml" xml:lang="xml">&lt;gfe:disk-store id="diskStore1" queue-size="50" auto-compact="true" 
+        max-oplog-size="10" time-interval="9999"&gt;
+        &lt;gfe:disk-dir location="/gemfire/store1/" max-size="20"/&gt;
+        &lt;gfe:disk-dir location="/gemfire/store2/" max-size="20"/&gt;
+&lt;/gfe:disk-store&gt;</programlisting>
+
+  <para>Disk stores are used by regions for file system persistent backup or
+  overflow storage of evicted entries, and persistent backup of WAN gateways.
+  Note that multiple components may share the same disk store. Also multiple
+  directories may be defined for a single disk store. Please refer to the
+  GemFire documentation for an explanation of the configuration
+  options.</para>
+</section>

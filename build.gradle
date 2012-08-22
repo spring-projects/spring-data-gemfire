@@ -64,8 +64,8 @@ dependencies {
 	testCompile "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
 }
 
-sourceCompatibility = 1.5
-targetCompatibility = 1.5 
+sourceCompatibility = 1.6
+targetCompatibility = 1.6 
 
 javadoc {
   ext.srcDir = file("${projectDir}/docs/src/api")

@@ -5,27 +5,34 @@ http://www.springsource.org/spring-gemfire
 Changes in version 1.2.0.RELEASE (2012-08-15)
 ---------------------------------------------
 General
+* Added support for Spring Data repositories
 * The Spring Data GemFire project, formerly Spring GemFire, is now a component of the Spring Data project
-* Upgraded to GemFire 7.0
 * Upgraded to Spring 3.1.2.RELEASE
 * Upgraded to Spring Data Commons 1.4.0.RELEASE
-* The XML namespace supports everything that can be configured with Cache XML
-* A separate namespace for Spring Data Repository support
+* The XML namespace provides support for everything that can be configured natively with Cache XML
+* A separate XML namespace has been created for Spring Data Repository support
 
 Enhancements
-* [SGF-53] - Add "enable-gateway" to replicated and partitioned region namespace config
-* [SGF-75] - Ability to define gateways in the Spring Gemfire namespace
-* [SGF-76] - Disk store should be its own bean
-* [SGF-79] - Missing gateway attributes for regions
-* [SGF-86] - Make instance variables protected in CacheFactoryBean
-* [SGF-95] - Add namespace support for subregions
-* [SGF-98] - Provide namespace support for all cache and region properties
+* [SGF-53]  - Add "enable-gateway" to replicated and partitioned region namespace config
+* [SGF-75]  - Ability to define gateways in the Spring GemFire namespace
+* [SGF-76]  - Disk store should be its own bean
+* [SGF-79]  - Missing gateway attributes for regions
+* [SGF-86]  - Make instance variables protected in CacheFactoryBean
+* [SGF-95]  - Add namespace support for subregions
+* [SGF-98]  - Provide namespace support for all cache and region properties
 * [SGF-102] - Add support for JavaConfig for repositories
+* [SGF-103] - Replace xsd:id type with xsd:string to support Spring environment profiles
 * [SGF-104] - The repository deleteAll() method only works for replicated regions
 * [SGF-109] - Separate repository support into its own namespace
+* [SGF-111] - Change default bean names from hyphenated to camel case to support @Autowired
+* [SGF-112] - Repositories should reject PagingAndSorting and Pageable parameters
+* [SGF-113] - Repositories should support single entities returned from a query method
+* [SGF-115] - Add support for 'Like', 'StartsWith','EndsWith', and 'Containing' repository queries
 
 Bug Fixes
-
+* [SGF-85] - Pdx disk store does not work when trying to references a disk store created in cache.xml
+* [SGF-89] - Continuous query container fails when implementing the ContinuousQueryListener interface
+* [SGF-101] - The repository deleteAll() method only works for replicated regions
 
 Changes in version 1.1.2.RELEASE (2012-07-04)
 ---------------------------------------------

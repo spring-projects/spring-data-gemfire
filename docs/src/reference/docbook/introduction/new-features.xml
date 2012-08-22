@@ -10,25 +10,26 @@ it is now a component of the <ulink url="http://www.springsource.org/spring-data
 <title>New in the 1.2.0 Release</title>
 <itemizedlist>
 <listitem><para>
-Full support for GemFire configuration via  <emphasis>gfe</emphasis> namespace. Now GemFire components may be configured completely without requiring a native cache.xml file. 
+Full support for GemFire configuration via the <emphasis>gfe</emphasis> namespace. Now GemFire components may be configured completely without
+requiring a native cache.xml file. 
 </para>
 </listitem>
 <listitem><para>
-WAN Gateway support for both GemFire 6.6.x and GemFire 7.0 
+WAN Gateway support for both GemFire 6.6.x. See <xref linkend="bootstrap:gateway"/>
 </para>
 </listitem>
 <listitem><para>
-Spring Data Repository support with a dedicated namespace: <emphasis>gfe-data</emphasis> 
+Spring Data Repository support with a dedicated namespace, <emphasis>gfe-data</emphasis>. See <xref linkend="gemfire-repositories"/> 
 </para>
 </listitem>
 <listitem><para>
-Namespace support for registering GemFire functions 
+Namespace support for registering GemFire functions. See <xref linkend="bootstrap:function"/>
 </para>
 </listitem>
 <listitem>
 <para>
 A top level <literal>&lt;disk-store&gt;</literal> element has been added to the <emphasis>gfe</emphasis> namespace to allow sharing of persist stores among regions, 
-and other components that support persistent backup. 
+and other components that support persistent backup. See <xref linkend="bootstrap-diskstore"/>
 <caution>The <literal>&lt;*-region&gt;</literal> elements no longer allow a nested <literal>&lt;disk-store&gt;</literal>
 </caution>   
 </para>
