@@ -976,8 +976,7 @@ The action to take when performing eviction.
                     <xsd:group ref="subRegionGroup" minOccurs="0"
                         maxOccurs="unbounded" />
                 </xsd:sequence>
-                <xsd:attribute name="data-policy" type="xsd:string"
-                    default="NORMAL">
+                <xsd:attribute name="data-policy" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
 Indicates the DataPolicy to use for this region (NORMAL or PRELOADED)
@@ -1553,9 +1552,7 @@ The action to take when performing eviction.
                             </xsd:complexType>
                         </xsd:element>
                     </xsd:sequence>
-                    <xsd:attribute name="data-policy"
-                        type="xsd:string" use="optional"
-                        default="NORMAL">
+                    <xsd:attribute name="data-policy" type="xsd:string" use="optional">
                         <xsd:annotation>
                             <xsd:documentation><![CDATA[
 The data policy for this client. Can be either 'EMPTY' or 'NORMAL' (the default). In case persistence or overflow are

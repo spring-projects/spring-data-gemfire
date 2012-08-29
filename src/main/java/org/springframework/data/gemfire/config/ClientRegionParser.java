@@ -55,10 +55,10 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 		// setting the cache/DS to a be 'loner' isn't feasible
 		// so to prevent both client and p2p communication in the region,
 		// the scope is fixed to local
-		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicy");
-		ParsingUtils.setPropertyValue(element, builder, "name", "name");
-		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
-		ParsingUtils.setPropertyValue(element, builder, "shortcut", "shortcut");
+		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicyName");
+		ParsingUtils.setPropertyValue(element, builder, "name");
+		ParsingUtils.setPropertyValue(element, builder, "pool-name");
+		ParsingUtils.setPropertyValue(element, builder, "shortcut");
 
 		// set the persistent policy
 		String attr = element.getAttribute("persistent");

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.DataPolicyConverter;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -75,6 +76,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	private String diskStoreName;
 
+	private String dataPolicyName;
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
@@ -89,6 +92,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 		if (cache instanceof GemFireCacheImpl) {
 			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required");
+		}
+		
+		Assert.isTrue(!(StringUtils.hasText(dataPolicyName) && dataPolicy != null), "Only one of 'dataPolicy' or 'dataPolicyName' can be set");
+		
+		
+		if (StringUtils.hasText(dataPolicyName)) {
+			dataPolicy = new DataPolicyConverter().convert(dataPolicyName);
+			Assert.notNull(dataPolicy, "Data policy " + dataPolicyName + " is invalid");
 		}
 
 		// first look at shortcut
@@ -348,6 +359,16 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 */
 	public void setDataPolicy(DataPolicy dataPolicy) {
 		this.dataPolicy = dataPolicy;
+	}
+	
+	/**
+	 * An alternative way to set the data policy as a string. Useful for 
+	 * property placeholders, etc.
+	 * 
+	 * @param dataPolicyName
+	 */
+	public void setDataPolicyName(String dataPolicyName) {
+		this.dataPolicyName = dataPolicyName;
 	}
 
 	/**
