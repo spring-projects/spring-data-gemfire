@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +66,7 @@ public class LocalRegionNamespaceTest {
 	private void testPublishingLocal() throws Exception {
 		assertTrue(context.containsBean("pub"));
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);
-		assertEquals("NORMAL", TestUtils.readField("dataPolicy", fb));
+		assertNull(TestUtils.readField("dataPolicy", fb));
 		assertEquals(Scope.LOCAL, TestUtils.readField("scope", fb));
 		assertEquals("publisher", TestUtils.readField("name", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
