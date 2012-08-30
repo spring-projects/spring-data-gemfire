@@ -16,12 +16,17 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.util.List;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.FixedPartitionAttributesFactoryBean;
 import org.springframework.data.gemfire.PartitionAttributesFactoryBean;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
@@ -40,6 +45,7 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		return PartitionedRegionFactoryBean.class;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
@@ -104,8 +110,22 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			parAttrBuilder.addPropertyValue("partitionListeners",
 					parsePartitionListeners(parserContext, subElement, builder));
 		}
+		
+		List<Element> fixedPartitions = DomUtils.getChildElementsByTagName(element, "fixed-partition");
+		if (! CollectionUtils.isEmpty(fixedPartitions)){
+			
+		    @SuppressWarnings("rawtypes")
+			ManagedList fixedPartitionAttributes = new ManagedList();
+			for (Element fp: fixedPartitions) {
+				BeanDefinitionBuilder fpaBuilder = BeanDefinitionBuilder.genericBeanDefinition(FixedPartitionAttributesFactoryBean.class);
+				ParsingUtils.setPropertyValue(fp, fpaBuilder, "partition-name");
+				ParsingUtils.setPropertyValue(fp, fpaBuilder, "num-buckets");
+				ParsingUtils.setPropertyValue(fp, fpaBuilder, "primary");
+				fixedPartitionAttributes.add(fpaBuilder.getBeanDefinition());
+			}
+			parAttrBuilder.addPropertyValue("fixedPartitionAttributes", fixedPartitionAttributes);
+		}
 
-		//
 		// // add partition attributes attributes
 		attrBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
 		// add partition/overflow settings as attributes

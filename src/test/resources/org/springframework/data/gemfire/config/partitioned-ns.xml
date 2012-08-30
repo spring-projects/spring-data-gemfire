@@ -30,6 +30,12 @@
         </gfe:partition-listener>
 	</gfe:partitioned-region>
 	
+	<gfe:partitioned-region id="fixed">
+		<gfe:fixed-partition partition-name="p1" primary="true" num-buckets="3"/>
+		<gfe:fixed-partition partition-name="p2"/>
+		<gfe:fixed-partition partition-name="p3" primary="true"/>
+	</gfe:partitioned-region>
+	
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
 	<bean id="c-loader" class="org.springframework.data.gemfire.SimpleCacheLoader"/>
 	<bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>

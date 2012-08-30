@@ -21,6 +21,7 @@ import java.util.List;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionResolver;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
@@ -57,6 +58,12 @@ public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttr
 
 	public void setColocatedWith(String colocatedRegionFullPath) {
 		paf.setColocatedWith(colocatedRegionFullPath);
+	}
+	
+	public void setFixedPartitionAttributes(List<FixedPartitionAttributes> fixedPartitionAttributes) {
+		for (FixedPartitionAttributes fpa: fixedPartitionAttributes) {
+			paf.addFixedPartitionAttributes(fpa);
+		}
 	}
 
 	public void setLocalMaxMemory(int mb) {

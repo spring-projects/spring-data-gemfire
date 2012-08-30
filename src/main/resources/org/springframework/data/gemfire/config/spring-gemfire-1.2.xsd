@@ -1072,6 +1072,36 @@ is created or any bucket in a partitioned region becomes primary
                                 </tool:annotation>
                             </xsd:appinfo>
                         </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="fixed-partition" minOccurs="0" maxOccurs="unbounded">
+                    	<xsd:annotation>
+                    		<xsd:documentation source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
+ Create a fixed partition with the given attributes. Required for a FixedPartitionResolver.                   			
+                    		]]></xsd:documentation>
+                    	</xsd:annotation>
+                    	<xsd:complexType>
+                    		<xsd:attribute name="partition-name" type="xsd:string" use="required">
+                    		<xsd:annotation>
+                    		<xsd:documentation source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
+Specifies the fixed partition name                   			
+                    		]]></xsd:documentation>
+                    		</xsd:annotation>
+                    		</xsd:attribute>
+                    		<xsd:attribute name="primary" use="optional" default="true">
+                    		<xsd:annotation>
+                    		<xsd:documentation source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
+Specifies if this member is primary for this partition                  			
+                    		]]></xsd:documentation>
+                    		</xsd:annotation>                    		
+                    		</xsd:attribute>
+                    		<xsd:attribute name="num-buckets" use="optional">
+                     		<xsd:annotation>
+                    		<xsd:documentation source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
+Specifies the number of buckets to allocate to the fixed partition                   			
+                    		]]></xsd:documentation>
+                    		</xsd:annotation>                   		
+                    		</xsd:attribute>
+                    	</xsd:complexType>
                     </xsd:element>                    
                     <xsd:element name="eviction" minOccurs="0"
                         maxOccurs="1">

@@ -35,6 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -55,6 +56,7 @@ public class PartitionedRegionNamespaceTest {
 		testBasicPartition();
 		testComplexPartition();
 		testPartitionOptions();
+		testFixedPartition();
 	}
 
 	private void testBasicPartition() throws Exception {
@@ -64,7 +66,8 @@ public class PartitionedRegionNamespaceTest {
 	@SuppressWarnings("rawtypes")
 	private void testPartitionOptions() throws Exception {
 		assertTrue(context.containsBean("options"));
-		RegionFactoryBean fb = context.getBean("&options", RegionFactoryBean.class);
+		RegionFactoryBean fb = context.getBean("&options",
+				RegionFactoryBean.class);
 		assertTrue(fb instanceof PartitionedRegionFactoryBean);
 		assertEquals(null, TestUtils.readField("scope", fb));
 		assertEquals("redundant", TestUtils.readField("name", fb));
@@ -76,20 +79,24 @@ public class PartitionedRegionNamespaceTest {
 
 		assertEquals(1, pAttr.getRedundantCopies());
 		assertEquals(4, pAttr.getTotalNumBuckets());
-		assertSame(SimplePartitionResolver.class, pAttr.getPartitionResolver().getClass());
+		assertSame(SimplePartitionResolver.class, pAttr.getPartitionResolver()
+				.getClass());
 	}
 
 	@SuppressWarnings("rawtypes")
 	private void testComplexPartition() throws Exception {
 		assertTrue(context.containsBean("complex"));
-		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
+		RegionFactoryBean fb = context.getBean("&complex",
+				RegionFactoryBean.class);
 		CacheListener[] listeners = TestUtils.readField("cacheListeners", fb);
 		assertFalse(ObjectUtils.isEmpty(listeners));
 		assertEquals(2, listeners.length);
 		assertSame(listeners[0], context.getBean("c-listener"));
 
-		assertSame(context.getBean("c-loader"), TestUtils.readField("cacheLoader", fb));
-		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
+		assertSame(context.getBean("c-loader"),
+				TestUtils.readField("cacheLoader", fb));
+		assertSame(context.getBean("c-writer"),
+				TestUtils.readField("cacheWriter", fb));
 
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		PartitionAttributes pAttr = attrs.getPartitionAttributes();
@@ -98,6 +105,22 @@ public class PartitionedRegionNamespaceTest {
 		assertNotNull(pAttr.getPartitionListeners());
 		assertEquals(1, pAttr.getPartitionListeners().length);
 		assertTrue(pAttr.getPartitionListeners()[0] instanceof TestPartitionListener);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public void testFixedPartition() throws Exception {
+		RegionFactoryBean fb = context.getBean("&fixed",
+				RegionFactoryBean.class);
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		PartitionAttributes pAttr = attrs.getPartitionAttributes();
+		assertNotNull(pAttr.getFixedPartitionAttributes());
+		assertEquals(3, pAttr.getFixedPartitionAttributes().size());
+
+		FixedPartitionAttributes fpa = (FixedPartitionAttributes) pAttr
+				.getFixedPartitionAttributes().get(0);
+		assertEquals(3, fpa.getNumBuckets());
+		assertTrue(fpa.isPrimary());
+
 	}
 
 	public static class TestPartitionListener implements PartitionListener {
