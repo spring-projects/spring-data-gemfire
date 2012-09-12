@@ -49,6 +49,8 @@ class GatewayHubParser extends AbstractSimpleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "manual-start");
 		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
 		ParsingUtils.setPropertyValue(element, builder, "startup-policy");
+		ParsingUtils.setPropertyValue(element, builder, "port");
+		
 		List<Element> gatewayElements = DomUtils.getChildElementsByTagName(element, "gateway");
 		if (!CollectionUtils.isEmpty(gatewayElements)) {
 			ManagedList gateways = new ManagedList();
@@ -90,8 +92,17 @@ class GatewayHubParser extends AbstractSimpleBeanDefinitionParser {
 					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "maximum-queue-memory");
 					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "persistent");
 					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "disk-store-ref");
+					/*
+					 * Make sure any disk store is created first
+					 */
+					if (gatewayQueueElement.hasAttribute("disk-store-ref")) {
+						gatewayBuilder.getBeanDefinition().setDependsOn(
+								new String[] {gatewayQueueElement.getAttribute("disk-store-ref")});
+					}
 					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "enable-batch-conflation");
 					gatewayBuilder.addPropertyValue("queue", queueBuilder.getBeanDefinition());
+					
+					
 				}
 				gateways.add(gatewayBuilder.getBeanDefinition());
 			}

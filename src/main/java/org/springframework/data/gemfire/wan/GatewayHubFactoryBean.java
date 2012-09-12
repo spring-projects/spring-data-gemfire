@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -82,7 +83,7 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 		}
 
 		Assert.notNull(cache.getGatewayHub(name));
-
+		
 		if (bindAddress != null) {
 			gatewayHub.setBindAddress(bindAddress);
 		}
@@ -123,9 +124,6 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 			if (gateway.getSocketBufferSize() != null) {
 				gw.setSocketBufferSize(gateway.getSocketBufferSize());
 			}
-			if (gateway.getSocketReadTimeout() != null) {
-				gw.setSocketReadTimeout(gateway.getSocketReadTimeout());
-			}
 
 			if (gateway.getQueue() != null) {
 				GatewayQueue queue = gateway.getQueue();
@@ -156,6 +154,13 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 				if (queue.getMaximumQueueMemory() != null) {
 					queueAttributes.setMaximumQueueMemory(queue.getMaximumQueueMemory());
 				}
+			}
+		}
+		if (gatewayHub.getManualStart() == false) {
+			try {
+				gatewayHub.start();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}

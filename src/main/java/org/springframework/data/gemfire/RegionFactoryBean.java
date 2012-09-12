@@ -98,9 +98,10 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		Cache c = (Cache) cache;
 
-		if (attributes != null)
+		if (attributes != null) {
 			AttributesFactory.validateAttributes(attributes);
-
+		}
+		
 		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes) : c
 				.<K, V> createRegionFactory());
 
@@ -110,12 +111,11 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 			regionFactory.setGatewayHubId(hubId);
 		}
-		if (enableGateway != null) {
-			if (enableGateway) {
-				Assert.notNull(hubId, "enableGateway requires the hubId property to be true");
-			}
+		
+		if (enableGateway !=null) {
 			regionFactory.setEnableGateway(enableGateway);
 		}
+	
 		if (!ObjectUtils.isEmpty(cacheListeners)) {
 			for (CacheListener<K, V> listener : cacheListeners) {
 				regionFactory.addCacheListener(listener);
@@ -129,15 +129,17 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (cacheWriter != null) {
 			regionFactory.setCacheWriter(cacheWriter);
 		}
-
+		
+		if (diskStoreName != null) {
+			regionFactory.setDiskStoreName(diskStoreName);
+			Assert.isTrue(!isNotPersistent(),"it is invalid to specify a disk store if 'persistent' is set to false.");
+			persistent = true;
+		}
+		
 		resolveDataPolicy(regionFactory, persistent, dataPolicy);
 
 		if (scope != null) {
 			regionFactory.setScope(scope);
-		}
-
-		if (diskStoreName != null) {
-			regionFactory.setDiskStoreName(diskStoreName);
 		}
 
 		if (attributes != null) {

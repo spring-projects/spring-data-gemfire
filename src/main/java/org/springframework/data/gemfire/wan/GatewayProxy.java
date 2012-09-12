@@ -17,6 +17,7 @@ package org.springframework.data.gemfire.wan;
 
 import java.util.List;
 
+import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.util.GatewayEventListener;
 
 /**
@@ -30,7 +31,7 @@ public class GatewayProxy {
 
 	private List<GatewayEndpoint> endpoints;
 
-	private Integer concurrencyLevel;
+	private Integer concurrencyLevel = Gateway.DEFAULT_CONCURRENCY_LEVEL;
 
 	private String id;
 
@@ -38,9 +39,7 @@ public class GatewayProxy {
 
 	private String orderPolicy;
 
-	private int socketBufferSize;
-
-	private int socketReadTimeout;
+	private int socketBufferSize = Gateway.DEFAULT_SOCKET_BUFFER_SIZE;
 
 	private GatewayQueue queue;
 
@@ -83,11 +82,7 @@ public class GatewayProxy {
 	public Integer getSocketBufferSize() {
 		return this.socketBufferSize;
 	}
-
-	public Integer getSocketReadTimeout() {
-		return this.socketReadTimeout;
-	}
-
+	
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -99,10 +94,6 @@ public class GatewayProxy {
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 
-	}
-
-	public void setSocketReadTimeout(int socketReadTimeout) {
-		this.socketReadTimeout = socketReadTimeout;
 	}
 
 	public static class GatewayEndpoint {
