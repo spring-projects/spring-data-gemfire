@@ -18,16 +18,21 @@ package org.springframework.data.gemfire.mapping;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.gemfire.repository.sample.Address;
 import org.springframework.data.gemfire.repository.sample.Person;
 
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -41,12 +46,12 @@ import com.gemstone.gemfire.cache.RegionFactory;
  */
 public class MappingPdxSerializerIntegrationTest {
 
-	Region<Object, Object> region;
+	static Region<Object, Object> region;
 
 	static Cache cache;
 
-	@Before
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 
 		MappingPdxSerializer serializer = new MappingPdxSerializer(new GemfireMappingContext(),
 				new DefaultConversionService());
@@ -81,6 +86,29 @@ public class MappingPdxSerializerIntegrationTest {
 		assertThat(reference.getLastname(), is(person.getLastname()));
 		assertThat(reference.address, is(person.address));
 	}
+	
+	@Test
+	public void serializeAndDeserializeCorrectlyWithDataSerializable() {
+
+		Address address = new Address();
+		address.zipCode = "01234";
+		address.city = "London";
+
+		PersonWithDataSerializableProperty person = new PersonWithDataSerializableProperty(2L, "Oliver", "Gierke", new DataSerializableProperty("foo"));
+		person.address = address;
+
+		region.put(2L, person);
+		Object result = region.get(2L);
+
+		assertThat(result instanceof PersonWithDataSerializableProperty, is(true));
+
+		PersonWithDataSerializableProperty reference = person;
+		assertThat(reference.getFirstname(), is(person.getFirstname()));
+		assertThat(reference.getLastname(), is(person.getLastname()));
+		assertThat(reference.address, is(person.address));
+		assertThat(reference.dsProperty.getValue(),is("foo"));
+	}
+	
 
 	@AfterClass
 	public static void tearDown() {
@@ -98,5 +126,58 @@ public class MappingPdxSerializerIntegrationTest {
 		})) {
 			new File(name).delete();
 		}
+	}
+	
+	@SuppressWarnings("serial")
+	public static class PersonWithDataSerializableProperty extends Person {
+
+		private DataSerializableProperty dsProperty;
+
+		public PersonWithDataSerializableProperty(Long id, String firstname,
+				String lastname, DataSerializableProperty dsProperty) {
+			super(id, firstname, lastname);
+			this.dsProperty = dsProperty;
+		}
+		
+		public DataSerializableProperty getDataSerializableProperty() {
+			return this.dsProperty;
+		}
+		
+	}
+	
+	@SuppressWarnings("serial")
+	public static class DataSerializableProperty implements DataSerializable {
+		
+		static {
+			Instantiator.register(new Instantiator(DataSerializableProperty.class,101) {
+				public DataSerializable newInstance() {
+					return new DataSerializableProperty("");
+				}
+			});
+		}
+		
+		private String value;
+		
+		public DataSerializableProperty(String value) {
+			this.value = value;
+		}
+		
+		
+		@Override
+		public void fromData(DataInput dataInput) throws IOException,
+				ClassNotFoundException {
+			value = dataInput.readUTF();
+			
+		}
+
+		@Override
+		public void toData(DataOutput dataOutput) throws IOException {
+			dataOutput.writeUTF(value);
+		}
+		
+		public String getValue() {
+			return this.value;
+		}
+		
 	}
 }

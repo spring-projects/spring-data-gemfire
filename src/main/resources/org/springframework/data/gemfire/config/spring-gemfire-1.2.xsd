@@ -122,12 +122,12 @@ when the same cache is used in multiple application context/bean factories insid
 				]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="pdx-serializer" type="xsd:string"
+        <xsd:attribute name="pdx-serializer-ref" type="xsd:string"
             use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
 Sets the PDX serializer for the cache. If this serializer is set, it will be consulted to see if it can serialize any
-domain classes which are added to the cache in portable data exchange format.
+domain classes which are added to the cache in portable data exchange (PDX) format.
 				]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>

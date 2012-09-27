@@ -121,8 +121,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public Object fromData(Class<?> type, final PdxReader reader) {
-		// TODO: check for custom serializer (PDX)
-		
 		final GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		GemfirePropertyValueProvider propertyValueProvider = new GemfirePropertyValueProvider(reader);
@@ -143,9 +141,15 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 				if (entity.isConstructorArgument(persistentProperty)) {
 					return;
 				}
-				// TODO: check for custom serializer (Spring Converter - primitives)
-				Object value = reader.readField(persistentProperty.getName());
-
+				
+				PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType()); 
+				Object value = null;
+				if (customSerializer != null) {
+					System.out.println("using custom serializer");
+					value = customSerializer.fromData(persistentProperty.getType(), reader);
+				} else {
+					value = reader.readField(persistentProperty.getName());
+				}
 				try {
 					wrapper.setProperty(persistentProperty, value);
 				}
@@ -166,7 +170,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public boolean toData(Object value, final PdxWriter writer) {
-		// TODO: check for custom serializer (PDX)
 		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(value.getClass());
 		final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(value, conversionService);
 
@@ -174,10 +177,15 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			@Override
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
-				// TODO: check for custom serializer (Spring Converter)
+				
 				try {
 					Object propertyValue = wrapper.getProperty(persistentProperty);
-					writer.writeField(persistentProperty.getName(), propertyValue, (Class) persistentProperty.getType());
+					PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
+					if (customSerializer != null) {
+						customSerializer.toData(propertyValue, writer);
+					} else {
+						writer.writeField(persistentProperty.getName(), propertyValue, (Class) persistentProperty.getType());
+					} 
 				}
 				catch (Exception e) {
 					throw new MappingException("Could not write value for property " + persistentProperty.toString(), e);
@@ -192,5 +200,9 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		}
 
 		return true;
+	}
+	
+	private PdxSerializer getCustomSerializer(Class<?> clazz) {
+		return customSerializers == null ? null : customSerializers.get(clazz);
 	}
 }

@@ -15,7 +15,8 @@
     <para>Spring Data GemFire provides support to use the Spring Data
     repository abstraction to easily persist entities into GemFire and execute
     queries. A general introduction into the repository programming model is
-    been provided <ulink url="http://static.springsource.org/spring-data/data-commons/docs/current/reference/html/#repositories">here
+    been provided <ulink
+    url="http://static.springsource.org/spring-data/data-commons/docs/current/reference/html/#repositories">here
     </ulink>.</para>
   </section>
 
@@ -30,14 +31,14 @@
       <title>Bootstrap GemFire repositories</title>
 
       <programlisting language="xml">&lt;beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:gf="http://www.springframework.org/schema/gemfire"
+       xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans 
                            http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/gemfire 
-                           http://www.springframework.org/schema/gemfire/spring-gemfire.xsd&gt;
+                           http://www.springframework.org/schema/data/gemfire 
+                           http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd&gt;
 
-  &lt;gf:repositories base-package="com.acme.repository" /&gt;
+  &lt;gfe-data:repositories base-package="com.acme.repository" /&gt;
 
 &lt;/beans&gt;</programlisting>
     </example>
@@ -88,11 +89,11 @@ public class Person { … }</programlisting>
         <title>Supported keywords for query methods</title>
 
         <tgroup cols="3">
-          <colspec colwidth="1*" />
+          <colspec colwidth="1*"/>
 
-          <colspec colwidth="2*" />
+          <colspec colwidth="2*"/>
 
-          <colspec colwidth="2*" />
+          <colspec colwidth="2*"/>
 
           <thead>
             <row>

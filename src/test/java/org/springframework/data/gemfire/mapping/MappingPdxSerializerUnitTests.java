@@ -29,10 +29,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.EntityInstantiator;
+import org.springframework.data.gemfire.repository.sample.Address;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 
 import com.gemstone.gemfire.pdx.PdxReader;
+import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
  * Unit tests for {@link MappingPdxSerializer}.
@@ -50,6 +52,9 @@ public class MappingPdxSerializerUnitTests {
 	EntityInstantiator instantiator;
 	@Mock
 	PdxReader reader;
+	
+	@Mock
+	PdxSerializer addressSerializer;
 
 	@Before
 	public void setUp() {
@@ -57,14 +62,21 @@ public class MappingPdxSerializerUnitTests {
 		context = new GemfireMappingContext();
 		conversionService = new GenericConversionService();
 		serializer = new MappingPdxSerializer(context, conversionService);
+		Map<Class<?>,PdxSerializer> customSerializers = new HashMap<Class<?>, PdxSerializer>();
+		customSerializers.put(Address.class, addressSerializer);
+		serializer.setCustomSerializers(customSerializers);
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void usesRegisteredInstantiator() {
+		Address address = new Address();
+		address.zipCode = "01234";
+		address.city = "London";
 
 		Person person = new Person(1L, "Oliver", "Gierke");
-
+		person.address = address;
+		
 		ParameterValueProvider<GemfirePersistentProperty> provider = any(ParameterValueProvider.class);
 		GemfirePersistentEntity<?> entity = any(GemfirePersistentEntity.class);
 		when(instantiator.createInstance(entity, provider)).thenReturn(person);
@@ -77,5 +89,6 @@ public class MappingPdxSerializerUnitTests {
 
 		verify(instantiator, times(1)).createInstance(eq(context.getPersistentEntity(Person.class)),
 				any(ParameterValueProvider.class));
+		verify(addressSerializer,times(1)).fromData(eq(Address.class), any(PdxReader.class));
 	}
 }

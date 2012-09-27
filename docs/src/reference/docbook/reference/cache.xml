@@ -193,7 +193,9 @@
       com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer</classname>,
       however it is common for developers to provide their own implementation.
       The value of the attribute is simply a reference to a Spring bean that
-      implements the required interface. More information on serialization support can be found in <xref linkend="serialization"/> </para>
+      implements the required interface. More information on serialization
+      support can be found in <xref linkend="serialization"/></para>
+
       <para/>
     </section>
   </section>
@@ -264,7 +266,7 @@
       instantiators defined declaratively to be fully initialized and
       registered before the server starts accepting connections. Keep this in
       mind when programmatically configuring these items as the server might
-      start before your components and thus not be seen by the clients
+      start after your components and thus not be seen by the clients
       connecting right away.</para>
     </note>
   </section>
