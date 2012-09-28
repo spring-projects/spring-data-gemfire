@@ -12,14 +12,14 @@ import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * Basic repository implementation.
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
 public class SimpleGemfireRepository<T, ID extends Serializable> implements GemfireRepository<T, ID> {
 
@@ -135,14 +135,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public long count() {
-		return template.execute(new GemfireCallback<Long>() {
-			@Override
-			@SuppressWarnings("rawtypes")
-			// TODO: Take into account keySetOnServer()
-			public Long doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return Long.valueOf(region.keySet().size());
-			}
-		});
+		SelectResults<Integer> results = template.find("select count(*) from " + template.getRegion().getFullPath());
+		return (long)results.iterator().next();
 	}
 
 	/*
