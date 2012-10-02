@@ -55,7 +55,7 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
 		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
-		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer", "pdxSerializer");
+		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer-ref", "pdxSerializer");
 		ParsingUtils.setPropertyValue(element, builder, "pdx-disk-store", "pdxDiskStoreName");
 		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
 		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized");
