@@ -27,8 +27,6 @@ def customizePom(pom, gradleProject) {
             dep.scope == 'test'
         }
         
-        generatedPom.dependencies.find { dep -> dep.groupId == 'com.gemstone.gemfire' && dep.artifactId == 'gemfire' }.version = "$gemfireVersion6x"
-
         // add all items necessary for maven central publication
         generatedPom.project {
             name = gradleProject.description
@@ -60,6 +58,11 @@ def customizePom(pom, gradleProject) {
 				id = 'dturanski'
 				name = 'David Turanski'
 				email = 'dturanski@vmware.com'
+			}
+			developer {
+				id = 'ogierke'
+				name = 'Oliver Gierke'
+				email = 'ogierke@vmware.com'
 			}
            }
         }
