@@ -20,7 +20,9 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Properties;
 
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -33,7 +35,8 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
  * FactoryBean dedicated to creating client caches (caches for client JVMs).
- * Acts an utility class (as client caches are a subset with a particular configuration of the generic cache).
+ * Acts an utility class (as client caches are a subset with a particular
+ * configuration of the generic cache).
  * 
  * @author Costin Leau
  */
@@ -54,7 +57,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 
 		public void run() {
 			if (pdxSerializer != null) {
-				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
+				Assert.isAssignable(PdxSerializer.class,
+						pdxSerializer.getClass(), "Invalid pdx serializer used");
 				factory.setPdxSerializer((PdxSerializer) pdxSerializer);
 			}
 			if (pdxDiskStoreName != null) {
@@ -95,10 +99,12 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	private void initializePool(ClientCacheFactory ccf) {
 		Pool p = pool;
 
-		if (p == null && StringUtils.hasText(poolName)) {
-			p = PoolManager.find(poolName);
-
-			// initialize a client-like Distributed System before initializing the pool
+		if (p == null) {
+			if (StringUtils.hasText(poolName)) {
+				p = PoolManager.find(poolName);
+			}
+			// initialize a client-like Distributed System before initializing
+			// the pool
 			if (p == null) {
 				Properties prop = mergeProperties();
 				prop.setProperty("mcast-port", "0");
@@ -107,16 +113,32 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 				DistributedSystem system = DistributedSystem.connect(prop);
 			}
 
-			// trigger pool initialization
-			Assert.isTrue(getBeanFactory().isTypeMatch(poolName, Pool.class), "No bean named " + poolName + " of type "
-					+ Pool.class.getName() + " found");
+			if (StringUtils.hasText(poolName)) {
+				try {
 
-			p = getBeanFactory().getBean(poolName, Pool.class);
-			Assert.notNull(p, "No pool named [" + poolName + "] found");
+					getBeanFactory().isTypeMatch(poolName, Pool.class);
+				} catch (Exception e) {
+					String msg = "No bean found  with name " + poolName
+							+ " of type " + Pool.class.getName();
+					if (poolName
+							.equals(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)) {
+						msg += ". A client cache requires a pool";
+					}
+					throw new BeanInitializationException(msg);
+				}
+				p = getBeanFactory().getBean(poolName, Pool.class);
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Checking for a unique pool");
+				}
+				p = getBeanFactory().getBean(Pool.class);
+				this.poolName = p.getName();
+			}
 		}
 
 		if (p != null) {
-			// copy the pool settings - this way if the pool is not found, at least the cache will have a similar config
+			// copy the pool settings - this way if the pool is not found, at
+			// least the cache will have a similar config
 			ccf.setPoolFreeConnectionTimeout(p.getFreeConnectionTimeout());
 			ccf.setPoolIdleTimeout(p.getIdleTimeout());
 			ccf.setPoolLoadConditioningInterval(p.getLoadConditioningInterval());
@@ -132,7 +154,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			ccf.setPoolStatisticInterval(p.getStatisticInterval());
 			ccf.setPoolSubscriptionAckInterval(p.getSubscriptionAckInterval());
 			ccf.setPoolSubscriptionEnabled(p.getSubscriptionEnabled());
-			ccf.setPoolSubscriptionMessageTrackingTimeout(p.getSubscriptionMessageTrackingTimeout());
+			ccf.setPoolSubscriptionMessageTrackingTimeout(p
+					.getSubscriptionMessageTrackingTimeout());
 			ccf.setPoolSubscriptionRedundancy(p.getSubscriptionRedundancy());
 			ccf.setPoolThreadLocalConnections(p.getThreadLocalConnections());
 
@@ -142,7 +165,6 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 					ccf.addPoolLocator(inet.getHostName(), inet.getPort());
 				}
 			}
-
 
 			List<InetSocketAddress> servers = p.getServers();
 			if (locators != null) {

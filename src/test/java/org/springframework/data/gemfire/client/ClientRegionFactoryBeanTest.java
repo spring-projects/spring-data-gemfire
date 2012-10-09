@@ -4,11 +4,13 @@ import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.BeanFactory;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.Pool;
 
 public class ClientRegionFactoryBeanTest {
 
@@ -17,6 +19,14 @@ public class ClientRegionFactoryBeanTest {
 			throws Exception {
 		ClientRegionFactoryBean<Object, Object> fb = new ClientRegionFactoryBean<Object, Object>();
 		fb.setShortcut(ClientRegionShortcut.CACHING_PROXY);
+		
+		Pool pool = Mockito.mock(Pool.class);
+		
+		BeanFactory beanFactory = Mockito.mock(BeanFactory.class);
+		
+		Mockito.when(beanFactory.getBean(Pool.class)).thenReturn(pool);
+		
+		fb.setBeanFactory(beanFactory);
 
 		String regionName = "regionName";
 		ClientCache cache = Mockito.mock(ClientCache.class);
@@ -36,5 +46,4 @@ public class ClientRegionFactoryBeanTest {
 
 		assertSame(region, result);
 	}
-
 }

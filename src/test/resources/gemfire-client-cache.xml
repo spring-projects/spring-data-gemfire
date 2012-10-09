@@ -3,8 +3,11 @@
     "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
     "http://www.gemstone.com/dtd/cache6_5.dtd">
 
-<client-cache>     
-  <region name="myRegion" refid="PROXY"/>
+<client-cache>      
+   <pool name="DEFAULT">
+   	<locator port="1234" host="localhost"/>
+   </pool>
+   <region name="myRegion" refid="PROXY"/>
    <!-- you can override or add to the PROXY attributes by adding
          a region-attributes sub element here -->
 </client-cache>

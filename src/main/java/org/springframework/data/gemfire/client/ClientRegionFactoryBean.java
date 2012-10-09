@@ -173,6 +173,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			}
 
 			factory.setPoolName(poolName);
+		} else {
+			Pool pool = beanFactory.getBean(Pool.class);
+			factory.setPoolName(pool.getName());
 		}
 
 		if (diskStoreName != null) {

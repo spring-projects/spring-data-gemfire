@@ -45,7 +45,7 @@ class TransactionManagerParser extends AbstractSingleBeanDefinitionParser {
 
 		String attr = element.getAttribute("cache-ref");
 		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfireCache"));
+		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 
 	}
 
@@ -54,9 +54,9 @@ class TransactionManagerParser extends AbstractSingleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
 		if (!StringUtils.hasText(name)) {
-			name = "gemfireTransactionManager";
+			name = GemfireConstants.DEFAULT_GEMFIRE_TXMANAGER_NAME;
 			//For backward compatibility
-			parserContext.getRegistry().registerAlias("gemfireTransactionManager", "gemfire-transaction-manager");
+			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_TXMANAGER_NAME, "gemfire-transaction-manager");
 		}
 		return name;
 	}

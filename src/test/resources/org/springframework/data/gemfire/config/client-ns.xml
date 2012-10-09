@@ -11,7 +11,7 @@
 
 	<gfe:client-cache />
 	
-	<gfe:client-region id="simple" pool-name="gemfire-pool"/>
+	<gfe:client-region id="simple"/>
 	
 	<gfe:client-region id="empty" pool-name="gemfire-pool" name="publisher" data-policy="empty" close="true" destroy="false"/>
 	

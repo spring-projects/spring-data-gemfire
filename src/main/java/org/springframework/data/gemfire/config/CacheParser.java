@@ -180,9 +180,9 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
 		if (!StringUtils.hasText(name)) {
-			name = "gemfireCache";
+			name = GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME;
 			//For backward compatibility
-			parserContext.getRegistry().registerAlias("gemfireCache", "gemfire-cache");
+			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME, "gemfire-cache");
 		}
 		return name;
 	}

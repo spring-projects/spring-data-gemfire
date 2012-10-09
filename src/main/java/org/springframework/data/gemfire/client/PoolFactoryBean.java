@@ -20,7 +20,6 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
@@ -38,10 +37,11 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 
 /**
- * Factory bean for easy declaration and configuration of a GemFire pool.
- * If a new pool is created, its life-cycle is bound to that of the declaring container.
+ * Factory bean for easy declaration and configuration of a GemFire pool. If a
+ * new pool is created, its life-cycle is bound to that of the declaring
+ * container.
  * 
- * Note that if the pool already exists, it will be returned as is, without any 
+ * Note that if the pool already exists, it will be returned as is, without any
  * modifications and its life cycle untouched by this factory.
  * 
  * @see PoolManager
@@ -50,8 +50,8 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
  * 
  * @author Costin Leau
  */
-public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean, BeanNameAware,
-		BeanClassLoaderAware, BeanFactoryAware {
+public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
+		DisposableBean, BeanNameAware, BeanFactoryAware {
 
 	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
 
@@ -66,7 +66,6 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private Collection<PoolConnection> locators;
 	private Collection<PoolConnection> servers;
 
-	private ClassLoader classLoader = getClass().getClassLoader();
 	private BeanFactory beanFactory;
 
 	private boolean keepAlive = false;
@@ -120,14 +119,17 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			pool = existingPool;
 			internalPool = false;
 			if (log.isDebugEnabled())
-				log.debug("Pool '" + name + " already exists; using found instance...");
-		}
-		else {
+				log.debug("Pool '" + name
+						+ " already exists; using found instance...");
+		} else {
 			if (log.isDebugEnabled())
-				log.debug("No pool named '" + name + "' found. Creating a new once...");
+				log.debug("No pool named '" + name
+						+ "' found. Creating a new once...");
 
-			if (CollectionUtils.isEmpty(locators) && CollectionUtils.isEmpty(servers)) {
-				throw new IllegalArgumentException("at least one locator or server is required");
+			if (CollectionUtils.isEmpty(locators)
+					&& CollectionUtils.isEmpty(servers)) {
+				throw new IllegalArgumentException(
+						"at least one locator or server is required");
 			}
 
 			internalPool = true;
@@ -136,13 +138,15 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 			if (!CollectionUtils.isEmpty(locators)) {
 				for (PoolConnection connection : locators) {
-					poolFactory.addLocator(connection.getHost(), connection.getPort());
+					poolFactory.addLocator(connection.getHost(),
+							connection.getPort());
 				}
 			}
 
 			if (!CollectionUtils.isEmpty(servers)) {
 				for (PoolConnection connection : servers) {
-					poolFactory.addServer(connection.getHost(), connection.getPort());
+					poolFactory.addServer(connection.getHost(),
+							connection.getPort());
 				}
 			}
 
@@ -161,7 +165,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			poolFactory.setStatisticInterval(statisticInterval);
 			poolFactory.setSubscriptionEnabled(subscriptionEnabled);
 			poolFactory.setSubscriptionAckInterval(subscriptionAckInterval);
-			poolFactory.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
+			poolFactory
+					.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
 			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
 			poolFactory.setThreadLocalConnections(threadLocalConnections);
 
@@ -185,154 +190,172 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @param pool the pool to set
+	 * @param pool
+	 *            the pool to set
 	 */
 	public void setPool(Pool pool) {
 		this.pool = pool;
 	}
 
 	/**
-	 * @param name the name to set
+	 * @param name
+	 *            the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * @param locators the locators to set
+	 * @param locators
+	 *            the locators to set
 	 */
 	public void setLocators(Collection<PoolConnection> locators) {
 		this.locators = locators;
 	}
 
 	/**
-	 * @param servers the servers to set
+	 * @param servers
+	 *            the servers to set
 	 */
 	public void setServers(Collection<PoolConnection> servers) {
 		this.servers = servers;
 	}
 
 	/**
-	 * @param keepAlive the keepAlive to set
+	 * @param keepAlive
+	 *            the keepAlive to set
 	 */
 	public void setKeepAlive(boolean keepAlive) {
 		this.keepAlive = keepAlive;
 	}
 
 	/**
-	 * @param freeConnectionTimeout the freeConnectionTimeout to set
+	 * @param freeConnectionTimeout
+	 *            the freeConnectionTimeout to set
 	 */
 	public void setFreeConnectionTimeout(int freeConnectionTimeout) {
 		this.freeConnectionTimeout = freeConnectionTimeout;
 	}
 
 	/**
-	 * @param idleTimeout the idleTimeout to set
+	 * @param idleTimeout
+	 *            the idleTimeout to set
 	 */
 	public void setIdleTimeout(long idleTimeout) {
 		this.idleTimeout = idleTimeout;
 	}
 
 	/**
-	 * @param loadConditioningInterval the loadConditioningInterval to set
+	 * @param loadConditioningInterval
+	 *            the loadConditioningInterval to set
 	 */
 	public void setLoadConditioningInterval(int loadConditioningInterval) {
 		this.loadConditioningInterval = loadConditioningInterval;
 	}
 
 	/**
-	 * @param maxConnections the maxConnections to set
+	 * @param maxConnections
+	 *            the maxConnections to set
 	 */
 	public void setMaxConnections(int maxConnections) {
 		this.maxConnections = maxConnections;
 	}
 
 	/**
-	 * @param minConnections the minConnections to set
+	 * @param minConnections
+	 *            the minConnections to set
 	 */
 	public void setMinConnections(int minConnections) {
 		this.minConnections = minConnections;
 	}
 
 	/**
-	 * @param pingInterval the pingInterval to set
+	 * @param pingInterval
+	 *            the pingInterval to set
 	 */
 	public void setPingInterval(long pingInterval) {
 		this.pingInterval = pingInterval;
 	}
 
 	/**
-	 * @param readTimeout the readTimeout to set
+	 * @param readTimeout
+	 *            the readTimeout to set
 	 */
 	public void setReadTimeout(int readTimeout) {
 		this.readTimeout = readTimeout;
 	}
 
 	/**
-	 * @param retryAttempts the retryAttempts to set
+	 * @param retryAttempts
+	 *            the retryAttempts to set
 	 */
 	public void setRetryAttempts(int retryAttempts) {
 		this.retryAttempts = retryAttempts;
 	}
 
 	/**
-	 * @param serverGroup the serverGroup to set
+	 * @param serverGroup
+	 *            the serverGroup to set
 	 */
 	public void setServerGroup(String serverGroup) {
 		this.serverGroup = serverGroup;
 	}
 
 	/**
-	 * @param socketBufferSize the socketBufferSize to set
+	 * @param socketBufferSize
+	 *            the socketBufferSize to set
 	 */
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
 	/**
-	 * @param statisticInterval the statisticInterval to set
+	 * @param statisticInterval
+	 *            the statisticInterval to set
 	 */
 	public void setStatisticInterval(int statisticInterval) {
 		this.statisticInterval = statisticInterval;
 	}
 
 	/**
-	 * @param subscriptionAckInterval the subscriptionAckInterval to set
+	 * @param subscriptionAckInterval
+	 *            the subscriptionAckInterval to set
 	 */
 	public void setSubscriptionAckInterval(int subscriptionAckInterval) {
 		this.subscriptionAckInterval = subscriptionAckInterval;
 	}
 
 	/**
-	 * @param subscriptionEnabled the subscriptionEnabled to set
+	 * @param subscriptionEnabled
+	 *            the subscriptionEnabled to set
 	 */
 	public void setSubscriptionEnabled(boolean subscriptionEnabled) {
 		this.subscriptionEnabled = subscriptionEnabled;
 	}
 
 	/**
-	 * @param subscriptionMessageTrackingTimeout the subscriptionMessageTrackingTimeout to set
+	 * @param subscriptionMessageTrackingTimeout
+	 *            the subscriptionMessageTrackingTimeout to set
 	 */
-	public void setSubscriptionMessageTrackingTimeout(int subscriptionMessageTrackingTimeout) {
+	public void setSubscriptionMessageTrackingTimeout(
+			int subscriptionMessageTrackingTimeout) {
 		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
 	}
 
 	/**
-	 * @param subscriptionRedundancy the subscriptionRedundancy to set
+	 * @param subscriptionRedundancy
+	 *            the subscriptionRedundancy to set
 	 */
 	public void setSubscriptionRedundancy(int subscriptionRedundancy) {
 		this.subscriptionRedundancy = subscriptionRedundancy;
 	}
 
 	/**
-	 * @param threadLocalConnections the threadLocalConnections to set
+	 * @param threadLocalConnections
+	 *            the threadLocalConnections to set
 	 */
 	public void setThreadLocalConnections(boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
-	}
-
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.classLoader = classLoader;
 	}
 
 	public void setBeanFactory(BeanFactory beanFactory) {
@@ -340,14 +363,16 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * @param multiUserAuthentication the multiUserAuthentication to set
+	 * @param multiUserAuthentication
+	 *            the multiUserAuthentication to set
 	 */
 	public void setMultiUserAuthentication(boolean multiUserAuthentication) {
 		this.multiUserAuthentication = multiUserAuthentication;
 	}
 
 	/**
-	 * @param prSingleHopEnabled the prSingleHopEnabled to set
+	 * @param prSingleHopEnabled
+	 *            the prSingleHopEnabled to set
 	 */
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;

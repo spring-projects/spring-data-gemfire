@@ -27,7 +27,11 @@
 	<gfe:client-cache id="client-cache"/>
 	
 	<gfe:client-cache id="client-cache-with-xml" cache-xml-location="classpath:gemfire-client-cache.xml"/>
-
+	
+	<gfe:pool>
+		<gfe:server host="localhost" port="1234"/>
+	</gfe:pool>
+	
     <gfe:cache id="heap-tuned-cache" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
 </beans>
     

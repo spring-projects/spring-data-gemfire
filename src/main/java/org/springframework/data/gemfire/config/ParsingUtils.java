@@ -53,13 +53,25 @@ abstract class ParsingUtils {
 
 	private static final String ALIASES_KEY = ParsingUtils.class.getName() + ":aliases";
 
+
+
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
-			String propertyName) {
+			String propertyName, Object defaultValue) {
 		String attr = element.getAttribute(attributeName);
 		if (StringUtils.hasText(attr)) {
 			builder.addPropertyValue(propertyName, attr);
+		} else {
+			if (defaultValue != null) {
+				builder.addPropertyValue(propertyName, defaultValue);
+			}
 		}
 	}
+	
+	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
+			String propertyName) {
+		setPropertyValue(element, builder, attributeName, propertyName,null);
+	}
+	
 
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName) {
 		setPropertyValue(element, builder, attributeName, Conventions.attributeNameToPropertyName(attributeName));

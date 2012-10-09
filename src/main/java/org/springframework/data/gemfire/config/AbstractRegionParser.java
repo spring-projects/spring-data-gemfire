@@ -97,7 +97,7 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 		if (!subRegion) {
 			String cacheRef = element.getAttribute("cache-ref");
 			// add cache reference (fallback to default if nothing is specified)
-			builder.addPropertyReference("cache", (StringUtils.hasText(cacheRef) ? cacheRef : "gemfireCache"));
+			builder.addPropertyReference("cache", (StringUtils.hasText(cacheRef) ? cacheRef : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 		}
 		// add attributes
 		ParsingUtils.setPropertyValue(element, builder, "name");

@@ -43,7 +43,7 @@ class LookupRegionParser extends AbstractRegionParser {
 		if (!subRegion) {
 			String attr = element.getAttribute("cache-ref");
 			// add cache reference (fallback to default if nothing is specified)
-			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : "gemfireCache"));
+			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 		}
 		else {
 			builder.addPropertyValue("lookupOnly", true);
