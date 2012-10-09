@@ -48,6 +48,7 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
+import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -129,6 +130,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			}
 			if (messageSyncInterval != null) {
 				cacheImpl.setMessageSyncInterval(messageSyncInterval);
+			}
+
+			if (gatewayConflictResolver != null) {
+				cacheImpl.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
 			}
 		}
 	}
@@ -258,6 +263,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected DynamicRegionSupport dynamicRegionSupport;
 
 	protected List<JndiDataSource> jndiDataSources;
+
+	// Defined this way for backward compatibility
+	protected Object gatewayConflictResolver;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -646,6 +654,15 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setTransactionWriter(TransactionWriter transactionWriter) {
 		this.transactionWriter = transactionWriter;
+	}
+	/**
+	 * Requires GemFire 7.0 or higher
+	 * @param gatewayConflictResolver defined as Object in the signature for backward
+	 * compatibility with Gemfire 6 compatibility. This must be an instance of 
+	 * {@link com.gemstone.gemfire.cache.util.GatewayConflictResolver}
+	 */
+	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
+		this.gatewayConflictResolver = gatewayConflictResolver;
 	}
 
 	/**

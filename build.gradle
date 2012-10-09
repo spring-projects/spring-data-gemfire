@@ -14,6 +14,7 @@ group = 'org.springframework.data'
 repositories {
   maven { url "http://repo.springsource.org/libs-milestone" }
   maven { url "http://repo.springsource.org/plugins-release"}
+  maven { url "https://repo.springsource.org/ext-private-local"}
 }
 
 
@@ -48,6 +49,8 @@ dependencies {
 
     // GemFire
     compile("com.gemstone.gemfire:gemfire:$gemfireVersion")
+    runtime("antlr:antlr:2.7.7")
+    //runtime("commons-modeler;commons-modeler:2.0.1")
 
     // Testing
     testCompile "junit:junit-dep:$junitVersion"

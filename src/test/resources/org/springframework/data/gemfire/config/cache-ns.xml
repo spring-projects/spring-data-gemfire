@@ -33,5 +33,11 @@
 	</gfe:pool>
 	
     <gfe:cache id="heap-tuned-cache" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
+    
+    <gfe:cache id="cache-with-conflict-resolver">
+        <gfe:gateway-conflict-resolver>
+            <bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestConflictResolver"/>
+        </gfe:gateway-conflict-resolver>
+    </gfe:cache>
 </beans>
     
