@@ -21,6 +21,8 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.annotation.Resource;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +34,11 @@ import org.springframework.data.repository.core.support.ReflectionEntityInformat
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 
 /**
  * Integration tests for {@link SimpleGemfireRepository}.
@@ -45,12 +51,20 @@ public class SimpleGemfireRepositoryIntegrationTest {
 
 	@Autowired
 	GemfireTemplate template;
+	
+	@Resource(name="simple")
+	Region<?,?> simpleRegion;
 
 	SimpleGemfireRepository<Person, Long> repository;
+	
+	@SuppressWarnings("rawtypes")
+	RegionClearListener regionClearListener;
 
 	@Before
 	public void setUp() {
-
+		regionClearListener = new RegionClearListener();
+		simpleRegion.getAttributesMutator().addCacheListener(regionClearListener);
+		
 		EntityInformation<Person, Long> information = new ReflectionEntityInformation<Person, Long>(Person.class);
 		repository = new SimpleGemfireRepository<Person, Long>(template, information);
 	}
@@ -71,6 +85,13 @@ public class SimpleGemfireRepositoryIntegrationTest {
 		assertThat(repository.count(), is(0L));
 		assertThat(repository.findOne(person.id), is(nullValue()));
 		assertThat(repository.findAll().size(), is(0));
+	}
+	
+	@Test
+	public void testDeleteAllFiresClearEvent() {
+		assertFalse(regionClearListener.eventFired);
+		repository.deleteAll();
+		assertTrue(regionClearListener.eventFired);
 	}
 
 	@Test
@@ -100,5 +121,13 @@ public class SimpleGemfireRepositoryIntegrationTest {
 		Collection<Person> result = repository.findAll(Arrays.asList(carter.id, leroi.id));
 		assertThat(result, hasItems(carter, leroi));
 		assertThat(result, not(hasItems(dave)));
+	}
+	
+	public static class RegionClearListener extends CacheListenerAdapter {
+		public boolean eventFired;
+		@Override
+		public void afterRegionClear(RegionEvent ev) {
+			eventFired = true;
+		}
 	}
 }

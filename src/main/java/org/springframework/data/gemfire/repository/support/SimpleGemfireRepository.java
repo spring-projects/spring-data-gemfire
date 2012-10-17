@@ -177,9 +177,13 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 			@Override
 			@SuppressWarnings("rawtypes")
 			public Void doInGemfire(Region region) {
-
-				for (Object key : region.keySet()) {
-					region.remove(key);
+				//clear() does not work for partitioned regions
+				try {
+					region.clear();
+				} catch (UnsupportedOperationException e) {
+					for (Object key : region.keySet()) {
+						region.remove(key);
+					}
 				}
 
 				return null;
