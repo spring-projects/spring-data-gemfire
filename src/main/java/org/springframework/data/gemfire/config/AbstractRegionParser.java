@@ -123,14 +123,14 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 		String hubId = element.getAttribute("hub-id");
 		// Factory will enable gateway if it is not set and hub-id is set.
 		if (StringUtils.hasText(enableGateway)) {
-			if (ParsingUtils.GEMFIRE_VERSION.startsWith("7")) {
+			if (ParsingUtils.isGemfireV7OrAbove()) {
 				log.warn("'enable-gateway' is deprecated since Gemfire 7.0");
 			}
 		}
 		ParsingUtils.setPropertyValue(element, builder, "enable-gateway");
 
 		if (StringUtils.hasText(hubId)) {
-			if (ParsingUtils.GEMFIRE_VERSION.startsWith("7")) {
+			if (ParsingUtils.isGemfireV7OrAbove()) {
 				log.warn("'hub-id' is deprecated since Gemfire 7.0");
 			}
 			if (!CollectionUtils.isEmpty(DomUtils.getChildElementsByTagName(element, "gateway-sender"))) {

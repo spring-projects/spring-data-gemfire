@@ -1064,6 +1064,16 @@ reduce thread contention. This sets an initial parameter on the underlying java.
                         ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                
+                <xsd:attribute name="concurrency-checks-enabled" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+ Enables a versioning system that detects concurrent modifications and ensures that region contents are consistent across 
+ the distributed system. True by default. Only available in GemFire 7.0 or above
+ 						]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+      
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>

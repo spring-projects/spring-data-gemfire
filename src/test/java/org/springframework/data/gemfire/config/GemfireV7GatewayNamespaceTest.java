@@ -307,12 +307,6 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest impleme
 		}
 
 		@Override
-		public AsyncEventQueueFactory setBatchTimeInterval(int arg0) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
 		public AsyncEventQueueFactory setParallel(boolean arg0) {
 			// TODO Auto-generated method stub
 			return null;
