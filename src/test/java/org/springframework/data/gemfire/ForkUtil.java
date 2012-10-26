@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,24 +35,27 @@ public class ForkUtil {
 
 	public static OutputStream cloneJVM(String argument) {
 		String cp = System.getProperty("java.class.path");
-		String home = System.getProperty("java.home");	
+		String home = System.getProperty("java.home");
+
+		Process proc = null;
 		String sp = System.getProperty("file.separator");
 		String java = home + sp + "bin" + sp + "java";
+		String argCp = " -cp " + cp;
 		String argClass = argument;
-		String cmd = java + "-cp " + cp + " " + argClass;
 
-		final Process proc; 
+		String cmd = java + argCp + " " + argClass;
 		try {
-			ProcessBuilder builder = new ProcessBuilder(java , "-cp", cp, argClass);
-			builder.redirectErrorStream(true);
-			proc = builder.start();
+			//ProcessBuilder builder = new ProcessBuilder(cmd, argCp, argClass);
+			//builder.redirectErrorStream(true);
+			proc = Runtime.getRuntime().exec(cmd);
 		} catch (IOException ioe) {
 			throw new IllegalStateException("Cannot start command " + cmd, ioe);
 		}
 
 		System.out.println("Started fork from command\n" + cmd);
-		
-		final BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+		final Process p = proc;
+
+		final BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		final AtomicBoolean run = new AtomicBoolean(true);
 
 		Thread reader = new Thread(new Runnable() {
@@ -80,11 +83,11 @@ public class ForkUtil {
 				System.out.println("Stopping fork...");
 				run.set(false);
 				os = null;
-				if (proc != null)
-					proc.destroy();
+				if (p != null)
+					p.destroy();
 
 				try {
-					proc.waitFor();
+					p.waitFor();
 				} catch (InterruptedException e) {
 					// ignore
 				}
@@ -95,9 +98,17 @@ public class ForkUtil {
 		os = proc.getOutputStream();
 		return os;
 	}
-
+	
+	public static OutputStream cacheServer(Class<?> clazz) {
+		return startCacheServer(clazz.getName());
+	}
+	
 	public static OutputStream cacheServer() {
-		String className = "org.springframework.data.gemfire.fork.CacheServerProcess";
+		return startCacheServer("org.springframework.data.gemfire.fork.CacheServerProcess");
+	}
+	
+	private static OutputStream startCacheServer(String className) {
+		
 		if (controlFileExists(className)) {
 			deleteControlFile(className);
 		}
@@ -131,22 +142,17 @@ public class ForkUtil {
 	}
 
 	public static boolean deleteControlFile(String name) {
-		String path = getControlFilePath(name);
+		String path = TEMP_DIR + File.separator + name;
 		return new File(path).delete();
 	}
 
 	public static boolean createControlFile(String name) throws IOException {
-		String path = getControlFilePath(name);
-		System.out.println("creating " + path);
+		String path = TEMP_DIR + File.separator + name;
 		return new File(path).createNewFile();
 	}
 
 	public static boolean controlFileExists(String name) {
-		String path = getControlFilePath(name);
+		String path = TEMP_DIR + File.separator + name;
 		return new File(path).exists();
-	}
-	
-	private static String getControlFilePath(String name) {
-		return TEMP_DIR.endsWith(File.separator)? TEMP_DIR + name : TEMP_DIR + File.separator + name;
 	}
 }
