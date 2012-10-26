@@ -50,7 +50,7 @@ dependencies {
     // GemFire
     compile("com.gemstone.gemfire:gemfire:$gemfireVersion")
     runtime("antlr:antlr:2.7.7")
-    runtime("commons-modeler:ßcommons-modeler:2.0.1")
+    runtime("commons-modeler:commons-modeler:2.0.1")
 
     // Testing
     testCompile "junit:junit-dep:$junitVersion"

@@ -59,6 +59,7 @@ public class MethodInvokingFunction implements Function {
 		this.HA = false;
 		this.hasResult = true;
 		this.optimizeForWrite = false;
+		this.id = FUNCTION_ID;
 	}
 	
 	//@Override	 

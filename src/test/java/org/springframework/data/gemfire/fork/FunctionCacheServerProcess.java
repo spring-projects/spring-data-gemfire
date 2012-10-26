@@ -69,10 +69,13 @@ public class FunctionCacheServerProcess {
 		testRegion.put("one", 1);
 		testRegion.put("two", 2);
 		testRegion.put("three", 3);	
-	
+		
+		System.out.println("Registering ServerFunction");
 		FunctionService.registerFunction(new ServerFunction());
+		System.out.println("Registered ServerFunction");
 		 
 		FunctionService.registerFunction(new MethodInvokingFunction());
+		System.out.println("Registered MethodInvokingFunction");
 		
 		ForkUtil.createControlFile(FunctionCacheServerProcess.class.getName());
 		
