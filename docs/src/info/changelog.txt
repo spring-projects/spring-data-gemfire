@@ -2,6 +2,12 @@ SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
 
+Changes in version 1.2.1.RELEASE (2012-10-26)
+---------------------------------------------
+General
+* Upgraded to GemFire 7.0
+* Added support for GemFire 7.0 WAN Configuration
+
 Changes in version 1.2.0.RELEASE (2012-08-15)
 ---------------------------------------------
 General

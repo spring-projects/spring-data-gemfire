@@ -47,7 +47,7 @@
       <para>The <classname>ContinuousQueryListenerAdapter</classname> class is the
       final component in Spring Data GemFire CQ support: in a  nutshell, it allows you to expose almost <emphasis>any</emphasis> class
       as a EDP (there are of course some constraints) - it implements <interfacename>ContinuousQueryListener</interfacename>, a simpler listener interface
-      similar to GemFire <ulink url="https://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/query/CqListener.html">CqListener</ulink>.</para>
+      similar to GemFire <ulink url="https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/query/CqListener.html">CqListener</ulink>.</para>
 
 	  <para>Consider the following interface definition. Notice the 
       various event handling methods and their parameters:</para>

@@ -120,7 +120,7 @@
     through the <literal>copyOnRead</literal> property. For more information
     on the semantics of the underlying GemFire transaction manager, see the
     GemFire <ulink
-    url="https://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
+    url="https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
   </section>
 
   <xi:include href="cq-container.xml"/>

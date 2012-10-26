@@ -68,7 +68,7 @@
 
   <para>In addition to referencing an external configuration file one can
   specify GemFire <ulink
-  url="http://pubs.vmware.com/vfabric51/topic/com.vmware.vfabric.gemfire.6.6/reference/topics/gemfire_properties.html">properties</ulink>
+  url="http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/reference/topics/gemfire_properties.html">properties</ulink>
   using any of Spring's common properties support features. For example, one
   can use the <literal>properties</literal> element defined in the
   <literal>util</literal> namespace to define properties directly or load
@@ -142,19 +142,19 @@
         <interfacename>TransactionListener</interfacename> callback
         declaration using a bean reference. The referenced bean must implement
         <ulink
-        url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/TransactionListener.html">TransactionListener</ulink></para>
+        url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/TransactionListener.html">TransactionListener</ulink></para>
       </callout>
 
       <callout arearefs="gfe#transaction#writer">
         <para>An example of a <interfacename>TransactionWriter</interfacename>
         callback declaration using an inner bean declaration this time. The
         bean must implement <ulink
-        url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/TransactionWriter.html">TransactionWriter</ulink></para>
+        url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/TransactionWriter.html">TransactionWriter</ulink></para>
       </callout>
 
       <callout arearefs="gfe#dynamic#region">
         <para>Enable GemFire's <ulink
-        url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/DynamicRegionFactory.html">DynamicRegionFactory</ulink></para>
+        url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DynamicRegionFactory.html">DynamicRegionFactory</ulink></para>
       </callout>
 
       <callout arearefs="gfe#jndi#binding">
@@ -205,7 +205,7 @@
 
     <para>In Spring Data GemFire 1.1 dedicated support for configuring a
     <ulink
-    url="http://www.gemstone.com/docs/6.5.1/product/docs/japi/com/gemstone/gemfire/cache/server/package-summary.html">CacheServer</ulink>
+    url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/server/CacheServer.html">CacheServer</ulink>
     was added, allowing complete configuration through the Spring
     container:</para>
 
@@ -276,7 +276,7 @@
 
     <para>Another configuration addition in Spring Data GemFire 1.1 is the
     dedicated support for configuring <ulink
-    url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/client/ClientCache.html">ClientCache</ulink>.
+    url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/client/ClientCache.html">ClientCache</ulink>.
     This is similar to a <link linkend="bootstrap:cache">cache</link> in both
     usage and definition and supported by
     <classname>org.springframework.data.gemfire.clientClientCacheFactoryBean</classname>.</para>
@@ -310,5 +310,5 @@
   </section>
 
   <para>Client side configuration is covered in more detail in <xref
-  linkend="bootstrap:client"/>.</para>
+  linkend="bootstrap:region:client"/>.</para>
 </section>

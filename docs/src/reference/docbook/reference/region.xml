@@ -53,7 +53,7 @@
   <para>For more information about the various region types and their
   capabilities as well as configuration options, please refer to the GemFire
   Developer's <ulink
-  url="http://pubs.vmware.com/vfabric51/index.jsp?topic=/com.vmware.vfabric.gemfire.6.6/developing/book_intro.html">Guide</ulink>
+  url="http://pubs.vmware.com/vfabricNoSuite/index.jsp?topic=/com.vmware.vfabric.gemfire.7.0/developing/book_intro.html">Guide</ulink>
   and community <ulink
   url="http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire">site</ulink>.</para>
 
@@ -118,7 +118,7 @@
           <para>Client Region <literal>&lt;client-region&gt;</literal></para>
         </listitem>
       </itemizedlist>For a comprehensive description of <ulink
-    url="http://pubs.vmware.com/vfabric51/topic/com.vmware.vfabric.gemfire.6.6/developing/region_options/region_types.html">region
+    url="http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/region_options/region_types.html">region
     types</ulink> please consult the GemFire product documentation.</para>
 
     <section id="bootstrap:region:common:attributes">
@@ -175,7 +175,7 @@
 
                 <entry spanname="values">
                   <emphasis>See GemFire's <ulink
-                  url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/DataPolicy.html">Data
+                  url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DataPolicy.html">Data
                   Policy</ulink></emphasis>
                 </entry>
 
@@ -354,7 +354,7 @@
       <para>Cache Listeners are registered with a region to handle region
       events such as entries being created, updated, destroyed, etc. A Cache
       Listener can be any bean that implements the <ulink
-          url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheListener.html">
+          url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheListener.html">
           <interfacename>CacheListener</interfacename>
         </ulink> interface. A region may have multiple listeners, declared
       using the <literal>cache-listener</literal> element enclosed in a
@@ -426,10 +426,10 @@
       source. The difference is GemFire only supports at most a single
       instance of each for each region. However, either declaration style may
       be used. See <ulink
-          url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheLoader.html">
+          url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheLoader.html">
           <interfacename>CacheLoader</interfacename>
         </ulink> and <ulink
-          url="http://www.vmware.com/support/developer/vfabric-gemfire/663-api/com/gemstone/gemfire/cache/CacheWriter.html">
+          url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheWriter.html">
           <interfacename>CacheWriter</interfacename>
         </ulink> for more details.</para>
     </section>
@@ -535,7 +535,7 @@
 
     <para>For a detailed description of eviction policies, see the GemFire
     documentation (such as <ulink
-    url="http://pubs.vmware.com/vfabric51/topic/com.vmware.vfabric.gemfire.6.6/developing/eviction/how_eviction_works.html">this</ulink>
+    url="http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/eviction/how_eviction_works.html">this</ulink>
     page).</para>
   </section>
 
