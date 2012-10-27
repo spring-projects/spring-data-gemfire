@@ -3,7 +3,7 @@ buildscript {
         maven { url 'http://repo.springsource.org/plugins-release' }
     }
     dependencies {
-        classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.2'
+       // classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.2'
         classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.1.5'
     }
 }
@@ -23,7 +23,7 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply from: "$rootDir/maven.gradle"
 apply plugin: 'docbook-reference'
-apply plugin: 'bundlor'
+//apply plugin: 'bundlor'
 
 [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
@@ -100,11 +100,11 @@ javadoc {
     
   title = "${rootProject.description} ${version} API"
 }
-
+/*
 bundlor {
    manifestTemplate = file("${projectDir}/template.mf").text
 }
-
+*/
 jar {
     manifest.attributes['Implementation-Title'] = 'spring-data-gemfire'
     manifest.attributes['Implementation-Version'] = project.version
