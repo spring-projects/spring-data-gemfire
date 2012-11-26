@@ -43,7 +43,6 @@ public abstract class AbstractRegionFactoryBeanTest {
 		CacheFactoryBean cfb = new CacheFactoryBean();
 		cfb.setBeanName("gemfireCache");
 		cfb.setUseBeanFactoryLocator(false);
-		cfb.afterPropertiesSet();
 		cache = cfb.getObject();
 	}
 

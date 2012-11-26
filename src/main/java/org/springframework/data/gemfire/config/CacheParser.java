@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.config;
 import java.util.List;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
@@ -27,7 +26,6 @@ import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.GemfireBeanPostProcessor;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -54,10 +52,6 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
-		
-//    	BeanDefinition gemfirePostProcessor = BeanDefinitionBuilder.genericBeanDefinition(GemfireBeanPostProcessor.class).getBeanDefinition();
-//    	parserContext.getRegistry().registerBeanDefinition(GemfireBeanPostProcessor.class.getName(), gemfirePostProcessor);
-
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
 		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
 		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer-ref", "pdxSerializer");

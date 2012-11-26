@@ -112,8 +112,15 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 
 		// eagerly initialize cache (if needed)
 		if (InternalDistributedSystem.getAnyInstance() == null) {
-			// no cache found, create a temp connection
-			connectToTemporaryDs();
+			Properties properties = null;
+			try {
+				ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
+				properties = clientCacheFactoryBean.getProperties();
+			} catch (Exception e) {
+				
+			}
+			connectToTemporaryDs(properties);
+			
 		}
 
 		// first check the configured pools
@@ -386,10 +393,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 	 *  initialize a client-like Distributed System before initializing
 	 *  the pool
 	 */
-	static void connectToTemporaryDs() {
-		Properties prop = new Properties();
-		prop.setProperty("mcast-port", "0");
-		prop.setProperty("locators", "");
-		DistributedSystem.connect(prop);
+	static void connectToTemporaryDs(Properties properties) {
+		Properties props = properties != null? (Properties) properties.clone() : new Properties();
+		props.setProperty("mcast-port", "0");
+		props.setProperty("locators", "");
+		DistributedSystem.connect(props);
 	}
 }

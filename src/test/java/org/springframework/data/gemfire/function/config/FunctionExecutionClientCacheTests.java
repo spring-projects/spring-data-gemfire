@@ -69,7 +69,7 @@ public class FunctionExecutionClientCacheTests {
 @ImportResource("/org/springframework/data/gemfire/function/config/FunctionExecutionCacheClientTests-context.xml")
 @EnableGemfireFunctionExecutions (basePackages = "org.springframework.data.gemfire.function.config.three",
  excludeFilters = {
-		@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnRegion.class)/*,
+		/*@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnRegion.class),
 		@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnServer.class)*/
 		}
 )

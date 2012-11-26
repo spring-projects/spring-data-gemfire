@@ -12,6 +12,8 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
@@ -29,8 +31,8 @@ public class GemfireFunctionPostBeanProcessorRegistrar implements ImportBeanDefi
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-		// TODO Auto-generated method stub
-		
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(GemfireFunctionBeanPostProcessor.class);
+		BeanDefinitionReaderUtils.registerWithGeneratedName(builder.getBeanDefinition(), registry);
 	}
 
 }

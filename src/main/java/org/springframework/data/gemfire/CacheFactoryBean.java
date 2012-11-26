@@ -30,8 +30,6 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -76,14 +74,13 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @author David Turanski
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
-		InitializingBean, FactoryBean<GemFireCache>, PersistenceExceptionTranslator   {
+		FactoryBean<GemFireCache>, PersistenceExceptionTranslator {
 	/**
 	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
 	 * 
 	 * @author Costin Leau
 	 */
-	
-	
+
 	private class PdxOptions implements Runnable {
 
 		private final CacheFactory factory;
@@ -186,8 +183,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			DynamicRegionFactory.Config config = null;
 			if (diskDir == null) {
 				config = new DynamicRegionFactory.Config(null, poolName, persistent, registerInterest);
-			}
-			else {
+			} else {
 				config = new DynamicRegionFactory.Config(new File(diskDir), poolName, persistent, registerInterest);
 			}
 			DynamicRegionFactory.get().open(config);
@@ -270,8 +266,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	// Defined this way for backward compatibility
 	protected Object gatewayConflictResolver;
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
+	private void init() throws Exception {
 		// initialize locator
 		if (useBeanFactoryLocator) {
 			factoryLocator = new GemfireBeanFactoryLocator();
@@ -279,12 +274,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			factoryLocator.setBeanName(beanName);
 			factoryLocator.afterPropertiesSet();
 		}
-		Properties cfgProps = mergeProperties();
-		
 		// use the bean class loader to load Declarable classes
 		Thread th = Thread.currentThread();
 		ClassLoader oldTCCL = th.getContextClassLoader();
-		 
 
 		try {
 			th.setContextClassLoader(beanClassLoader);
@@ -293,12 +285,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			try {
 				cache = fetchCache();
 				msg = "Retrieved existing";
-			}
-			catch (CacheClosedException ex) {
+			} catch (CacheClosedException ex) {
 
 				initializeDynamicRegionFactory();
 
-				Object factory = createFactory(cfgProps);
+				Object factory = createFactory(this.properties);
 
 				// GemFire 6.6 specific options
 				if (pdxSerializer != null || pdxPersistent != null || pdxReadSerialized != null
@@ -333,13 +324,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 					log.debug("Initialized cache from " + cacheXml);
 				}
 			}
-			
+
 			setHeapPercentages();
 			registerTransactionListeners();
 			registerTransactionWriter();
 			registerJndiDataSources();
-		}
-		finally {
+		} finally {
 			th.setContextClassLoader(oldTCCL);
 		}
 	}
@@ -429,11 +419,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return ((CacheFactory) factory).create();
 	}
 
-	protected Properties mergeProperties() {
-		Properties cfgProps = (properties != null ? (Properties) properties.clone() : new Properties());
-		return cfgProps;
-	}
-
 	@Override
 	public void destroy() throws Exception {
 		if (cache != null && !cache.isClosed()) {
@@ -461,10 +446,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			}
 		}
 		if (ex.getCause() instanceof GemFireException) {
-			return GemfireCacheUtils.convertGemfireAccessException((GemFireException)ex.getCause());
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) ex.getCause());
 		}
 		if (ex.getCause() instanceof GemFireCheckedException) {
-			return GemfireCacheUtils.convertGemfireAccessException((GemFireCheckedException)ex.getCause());
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireCheckedException) ex.getCause());
 		}
 
 		return null;
@@ -472,6 +457,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	@Override
 	public GemFireCache getObject() throws Exception {
+		init();
 		return cache;
 	}
 
@@ -604,11 +590,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public void setLockTimeout(int lockTimeout) {
 		this.lockTimeout = lockTimeout;
 	}
-	
-    /**
-     * 
-     * @param lockLease
-     */
+
+	/**
+	 * 
+	 * @param lockLease
+	 */
 	public void setLockLease(int lockLease) {
 		this.lockLease = lockLease;
 	}
@@ -628,7 +614,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public void setSearchTimeout(int searchTimeout) {
 		this.searchTimeout = searchTimeout;
 	}
-	
+
 	/**
 	 * 
 	 * @param evictionHeapPercentage
@@ -636,11 +622,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public void setEvictionHeapPercentage(Float evictionHeapPercentage) {
 		this.evictionHeapPercentage = evictionHeapPercentage;
 	}
-	
-    /**
-     * 
-     * @param criticalHeapPercentage
-     */
+
+	/**
+	 * 
+	 * @param criticalHeapPercentage
+	 */
 	public void setCriticalHeapPercentage(Float criticalHeapPercentage) {
 		this.criticalHeapPercentage = criticalHeapPercentage;
 	}
@@ -660,6 +646,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public void setTransactionWriter(TransactionWriter transactionWriter) {
 		this.transactionWriter = transactionWriter;
 	}
+
 	/**
 	 * Requires GemFire 7.0 or higher
 	 * @param gatewayConflictResolver defined as Object in the signature for backward
@@ -685,7 +672,5 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
 		this.jndiDataSources = jndiDataSources;
 	}
-
- 
 
 }

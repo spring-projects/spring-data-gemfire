@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.client;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Handler;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.data.gemfire.CacheFactoryBean;
@@ -27,15 +26,10 @@ import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
@@ -100,6 +94,10 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	protected GemFireCache fetchCache() {
 		return ClientCacheFactory.getAnyInstance();
 	}
+	
+	Properties getProperties() {
+		return this.properties;
+	}
 
 	private void initializePool(ClientCacheFactory ccf) {
 		Pool p = pool;
@@ -111,7 +109,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			
 		   // Bind this client cache to a pool that hasn't been created yet.
 			if (p == null) {
-				PoolFactoryBean.connectToTemporaryDs();
+				PoolFactoryBean.connectToTemporaryDs(this.properties);
 			}
 			
 			if (StringUtils.hasText(poolName)) {

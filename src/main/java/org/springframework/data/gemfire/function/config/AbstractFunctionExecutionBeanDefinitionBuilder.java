@@ -61,11 +61,10 @@ abstract class AbstractFunctionExecutionBeanDefinitionBuilder {
 		
 		builder.addConstructorArgReference(functionTemplateName);
 		
-//		builder.addConstructorArgValue(functionTemplate);
-		
-		
-		return builder.getBeanDefinition();
-		 
+	 
+		builder.addPropertyValue("functionId", (String)configuration.getAttribute("id")); 
+ 
+		return builder.getBeanDefinition(); 
 	}	
 	 
 	/*

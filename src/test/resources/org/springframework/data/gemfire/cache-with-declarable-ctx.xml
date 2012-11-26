@@ -2,12 +2,12 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:p="http://www.springframework.org/schema/p"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="cache-with-declarable" class="org.springframework.data.gemfire.CacheFactoryBean">
-		<property name="cacheXml" value="classpath:cache-with-declarable.xml"/>
-	</bean>
-	
+   <gfe:cache cache-xml-location="classpath:cache-with-declarable.xml"/>
+
 	<bean id="bean" class="java.lang.Object"/>
 	
 	<bean abstract="true" class="org.springframework.data.gemfire.UserObject" p:prop1="Enescu" p:prop2-ref="bean"/>

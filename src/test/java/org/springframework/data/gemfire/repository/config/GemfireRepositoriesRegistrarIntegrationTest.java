@@ -49,7 +49,6 @@ public class GemfireRepositoriesRegistrarIntegrationTest {
 		public GemFireCache cache() throws Exception {
 
 			CacheFactoryBean factory = new CacheFactoryBean();
-			factory.afterPropertiesSet();
 			return factory.getObject();
 		}
 

@@ -134,7 +134,7 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 	 * Optional to set a default function Id for a single method interface with no {code}@FunctionId{code} annotations
 	 * @param functionId
 	 */
-	protected void setFunctionId(String functionId) {
+	public void setFunctionId(String functionId) {
 		this.functionId = functionId;
 	}
 

@@ -27,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.gemstone.gemfire.cache.Cache;
+
 
 /**
  * Integration test for declarable support (and GEF bean factory locator). 
@@ -42,6 +44,7 @@ public class DeclarableSupportTest {
 
 	@Test
 	public void testUserObject() throws Exception {
+		ctx.getBean(Cache.class);
 		assertNotNull(UserObject.THIS);
 		UserObject obj = UserObject.THIS;
 		assertSame(ctx, obj.getBeanFactory());

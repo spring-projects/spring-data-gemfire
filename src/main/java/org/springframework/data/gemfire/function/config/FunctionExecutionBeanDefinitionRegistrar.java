@@ -41,8 +41,6 @@ public class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefin
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
-
-		logger.debug("registering bean definitions...");
 		
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
 		AnnotationFunctionExecutionConfigurationSource configurationSource = new AnnotationFunctionExecutionConfigurationSource(

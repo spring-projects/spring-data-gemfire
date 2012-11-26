@@ -15,8 +15,6 @@ package org.springframework.data.gemfire.function.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
-import java.util.Set;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +22,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.function.config.EnableGemfireFunctionExecutions;
 import org.springframework.data.gemfire.function.config.two.TestOnRegionFunction;
 import org.springframework.data.gemfire.function.execution.GemfireOnRegionFunctionTemplate;
 import org.springframework.data.gemfire.function.execution.OnRegionFunctionProxyFactoryBean;
@@ -32,8 +29,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.Pool;
 
 /**
  * @author David Turanski

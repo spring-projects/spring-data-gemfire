@@ -231,7 +231,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 		if (region != null) {
 			if (close) {
-				if (!region.getCache().isClosed()) {
+				if (!region.getRegionService().isClosed()) {
 					try {
 						region.close();
 					}

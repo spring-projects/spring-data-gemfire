@@ -47,7 +47,6 @@ public class SubRegionTest extends RecreatingContextTest {
 		CacheFactoryBean cfb = new CacheFactoryBean();
 		cfb.setBeanName("gemfireCache");
 		cfb.setUseBeanFactoryLocator(false);
-		cfb.afterPropertiesSet();
 		GemFireCache cache = cfb.getObject();
 		RegionFactoryBean rfb = new ReplicatedRegionFactoryBean();
 		rfb.setCache(cache);

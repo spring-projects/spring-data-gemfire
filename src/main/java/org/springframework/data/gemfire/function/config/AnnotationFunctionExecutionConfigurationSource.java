@@ -76,8 +76,6 @@ class AnnotationFunctionExecutionConfigurationSource implements FunctionExecutio
 		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(EnableGemfireFunctionExecutions.class.getName()));
 		this.metadata = metadata;
 		
-	
-		
 	}
 
 	
@@ -135,7 +133,9 @@ class AnnotationFunctionExecutionConfigurationSource implements FunctionExecutio
 		Set<ScannedGenericBeanDefinition> result = new HashSet<ScannedGenericBeanDefinition>();
 
 		for (String basePackage : getBasePackages()) {
-			logger.debug("scanning package " + basePackage);
+			if (logger.isDebugEnabled()) {
+				logger.debug("scanning package " + basePackage);
+			}
 			Collection<BeanDefinition> components = scanner.findCandidateComponents(basePackage);
 			for (BeanDefinition definition : components) {
 				result.add((ScannedGenericBeanDefinition)definition);
