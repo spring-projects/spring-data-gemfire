@@ -108,11 +108,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			if (StringUtils.hasText(poolName)) {
 				p = PoolManager.find(poolName);
 			}
-		   // Bind this client cache to a pool that hasn't been created yet.
 			
-		   // initialize a client-like Distributed System before initializing
-		   // the pool
-			 
+		   // Bind this client cache to a pool that hasn't been created yet.
 			if (p == null) {
 				PoolFactoryBean.connectToTemporaryDs();
 			}
