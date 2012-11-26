@@ -171,8 +171,9 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (this.functionId != null) {
-		   Assert.isTrue(this.methodMetadata.isSingletonInterface(), "cannot assign default function id if interface has multiple methods");
-		   this.methodMetadata.getSingletonMethodMetada().setFunctionId(this.functionId);
+		   if (this.methodMetadata.isSingletonInterface()) {
+			   this.methodMetadata.getSingletonMethodMetada().setFunctionId(this.functionId);
+		   }
 		}
 	}
 }

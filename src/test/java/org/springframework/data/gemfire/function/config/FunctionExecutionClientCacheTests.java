@@ -43,24 +43,15 @@ public class FunctionExecutionClientCacheTests {
 	ApplicationContext context;
 	
 	@Test
-	public void testContextCreated() throws Exception {
-		
-		//String name ="testClientOnRegionFunction";
-		String name ="testClientOnServerFunction";
-	    
-	//	GemfireFunctionProxyFactoryBean factoryBean = (GemfireFunctionProxyFactoryBean)context.getBean("&"+name);
-	 
+	public void testContextCreated() throws Exception {    
+	  
 		ClientCache cache = context.getBean("gemfireCache",ClientCache.class);
 		Pool pool = context.getBean("gemfirePool",Pool.class);
 		assertEquals("gemfirePool", pool.getName());
 		assertEquals(1, cache.getDefaultPool().getServers().size());
 		assertEquals(pool.getServers().get(0), cache.getDefaultPool().getServers().get(0));
 		
- 	
 		context.getBean("r1",Region.class);
-		//ComponentScan s;
-		//FilterType f;
-		
 	}
 	
 }
