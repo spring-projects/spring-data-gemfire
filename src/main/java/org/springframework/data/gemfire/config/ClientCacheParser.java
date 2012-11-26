@@ -37,7 +37,7 @@ class ClientCacheParser extends CacheParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, parserContext, builder);
-		ParsingUtils.setPropertyValue(element, builder, "pool-name");
+		//ParsingUtils.setPropertyValue(element, builder, "pool-name","poolName",GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
 	}
 
 	@Override

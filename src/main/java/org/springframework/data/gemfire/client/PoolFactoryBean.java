@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.client;
 
 import java.util.Collection;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,7 +35,9 @@ import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import java.net.InetSocketAddress;
 
 /**
  * Factory bean for easy declaration and configuration of a GemFire pool. If a
@@ -63,8 +66,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 	// pool settings
 	private String beanName;
 	private String name;
-	private Collection<PoolConnection> locators;
-	private Collection<PoolConnection> servers;
+	private Collection<InetSocketAddress> locators;
+	private Collection<InetSocketAddress> servers;
 
 	private BeanFactory beanFactory;
 
@@ -109,8 +112,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 
 		// eagerly initialize cache (if needed)
 		if (InternalDistributedSystem.getAnyInstance() == null) {
-			// no cache found, do eager initialization
-			beanFactory.getBean(GemFireCache.class);
+			// no cache found, create a temp connection
+			connectToTemporaryDs();
 		}
 
 		// first check the configured pools
@@ -137,15 +140,15 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 			PoolFactory poolFactory = PoolManager.createFactory();
 
 			if (!CollectionUtils.isEmpty(locators)) {
-				for (PoolConnection connection : locators) {
-					poolFactory.addLocator(connection.getHost(),
+				for (InetSocketAddress connection : locators) {
+					poolFactory.addLocator(connection.getHostName(),
 							connection.getPort());
 				}
 			}
 
 			if (!CollectionUtils.isEmpty(servers)) {
-				for (PoolConnection connection : servers) {
-					poolFactory.addServer(connection.getHost(),
+				for (InetSocketAddress connection : servers) {
+					poolFactory.addServer(connection.getHostName(),
 							connection.getPort());
 				}
 			}
@@ -209,7 +212,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 	 * @param locators
 	 *            the locators to set
 	 */
-	public void setLocators(Collection<PoolConnection> locators) {
+	public void setLocators(Collection<InetSocketAddress> locators) {
 		this.locators = locators;
 	}
 
@@ -217,7 +220,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 	 * @param servers
 	 *            the servers to set
 	 */
-	public void setServers(Collection<PoolConnection> servers) {
+	public void setServers(Collection<InetSocketAddress> servers) {
 		this.servers = servers;
 	}
 
@@ -376,5 +379,17 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 	 */
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
+	}
+	
+	/*
+	 *  A work around to create a pool if no cache has been created yet 
+	 *  initialize a client-like Distributed System before initializing
+	 *  the pool
+	 */
+	static void connectToTemporaryDs() {
+		Properties prop = new Properties();
+		prop.setProperty("mcast-port", "0");
+		prop.setProperty("locators", "");
+		DistributedSystem.connect(prop);
 	}
 }

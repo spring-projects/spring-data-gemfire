@@ -23,11 +23,11 @@ import java.lang.annotation.Target;
  * {@link Map}. The contents depends on the region configuration (for a partitioned region, this will
  * contain only entries for the local partition)
  * and any filters configured for the function context.  
+ * 
  * @author David Turanski
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER})
 public @interface RegionData {
-	String value() default "";
 }

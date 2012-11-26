@@ -28,6 +28,7 @@ import com.gemstone.gemfire.cache.query.QueryInvalidException;
  * 
  * @author Costin Leau
  */
+@SuppressWarnings("serial")
 public class GemfireQueryException extends InvalidDataAccessResourceUsageException {
 
 	public GemfireQueryException(String message, QueryException ex) {

@@ -18,6 +18,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 
+ * Used to declare a concrete method as a GemFire function implementation
+ * 
  * @author David Turanski
  *
  */

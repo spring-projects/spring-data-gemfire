@@ -12,7 +12,6 @@
  */
 package org.springframework.data.gemfire.function.config;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -24,13 +23,16 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ * A {@link BeanPostProcessor} to discover components wired as function implementations. That is 
+ * beans that contain methods annotated with {code} @GemfireFunction {code}
+ *  
  * @author David Turanski
  *
  */
 public class GemfireFunctionBeanPostProcessor implements BeanPostProcessor {
  
 	private static final String GEMFIRE_FUNCTION_ANNOTATION_NAME = GemfireFunction.class.getName();
-	private static final String REGION_DATA_ANNOTATION_NAME = RegionData.class.getName();
+
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)
@@ -45,7 +47,14 @@ public class GemfireFunctionBeanPostProcessor implements BeanPostProcessor {
 	 */
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-
+		
+		registerAnyDeclaredGemfireFunctionMethods(bean); 
+		
+		return bean;
+	}
+	
+	private void registerAnyDeclaredGemfireFunctionMethods (Object bean) {
+		
 		Method[] methods = ReflectionUtils.getAllDeclaredMethods(bean.getClass());
 		
 		for (Method method: methods) {
@@ -53,34 +62,9 @@ public class GemfireFunctionBeanPostProcessor implements BeanPostProcessor {
 			if (annotation != null) {
 				Assert.isTrue(Modifier.isPublic(method.getModifiers()),"The method " + method.getName()+ " annotated with" + GEMFIRE_FUNCTION_ANNOTATION_NAME+ " must be public");
 				Map<String,Object> attributes = AnnotationUtils.getAnnotationAttributes(annotation,false,true);
-				
-				processParameterAnnotations(method);
-				
 				GemfireFunctionUtils.registerFunctionForPojoMethod(bean, method, attributes, false);
-			}	
-		}
-		
-		return bean;
-	}
-
-	private void processParameterAnnotations(Method method) {
-		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-		if (parameterAnnotations.length == 0) {
-			return;
-		}
-		
-		Class<?>[] paramTypes = method.getParameterTypes();
-		
-		for (int i=0; i< parameterAnnotations.length; i++) {
-			Annotation[] annotations  = parameterAnnotations[i];
-			if (annotations.length > 0) {
-				System.out.println("found annotations for parameter in position " + i + " " + paramTypes[i] );
-				for (Annotation annotation:annotations) {
-					System.out.println("Annotation type:" + annotation.annotationType().getName());
-				}
 			}
-			
 		}
-		
 	}
+	
 }

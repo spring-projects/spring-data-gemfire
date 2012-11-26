@@ -64,6 +64,7 @@ import com.gemstone.gemfire.cache.Region;
  */
 // TODO add lenient behavior if a transaction is already started on the current
 // thread (what should happen then)
+@SuppressWarnings("serial")
 public class GemfireTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean,
 		ResourceTransactionManager {
 
@@ -218,7 +219,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 */
 	public <K, V> void setRegion(Region<K, V> region) {
 		Assert.notNull(region, "non-null arguments are required");
-		this.cache = region.getCache();
+		this.cache = (Cache)region.getRegionService();
 	}
 
 	/**
@@ -271,6 +272,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 		private boolean rollbackOnly = false;
 
+		@SuppressWarnings("unused")
 		public boolean isRollbackOnly() {
 			return rollbackOnly;
 		}

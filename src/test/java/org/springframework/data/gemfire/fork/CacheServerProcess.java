@@ -28,6 +28,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -43,21 +44,19 @@ public class CacheServerProcess {
 		props.setProperty("name", "CqServer");
 		props.setProperty("log-level", "warning");
 
-		System.out.println("\nConnecting to the distributed system and creating the cache.");
-		DistributedSystem ds = DistributedSystem.connect(props);
-		Cache cache = CacheFactory.create(ds);
+		Cache cache = new CacheFactory(props).create();
 
 		// Create region.
-		AttributesFactory factory = new AttributesFactory();
+		// Create region.
+		RegionFactory<Object,Object> factory = cache.createRegionFactory();
 		factory.setDataPolicy(DataPolicy.REPLICATE);
 		factory.setScope(Scope.DISTRIBUTED_ACK);
-		Region testRegion = cache.createRegion("test-cq", factory.create());
+		Region testRegion = factory.create("test-cq");
 		System.out.println("Test region, " + testRegion.getFullPath() + ", created in cache.");
-
+	 
 		// Start Cache Server.
 		CacheServer server = cache.addCacheServer();
 		server.setPort(40404);
-		server.setNotifyBySubscription(true);
 		server.start();
 
 		ForkUtil.createControlFile(CacheServerProcess.class.getName());

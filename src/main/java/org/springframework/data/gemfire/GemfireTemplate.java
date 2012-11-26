@@ -98,8 +98,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public boolean containsKey(final Object key) {
 		return execute(new GemfireCallback<Boolean>() {
-			@SuppressWarnings("unchecked")
-			public Boolean doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+ 			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
 				return region.containsKey(key);
 			}
 		});
@@ -107,8 +106,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public boolean containsKeyOnServer(final Object key) {
 		return execute(new GemfireCallback<Boolean>() {
-			@SuppressWarnings("unchecked")
-			public Boolean doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
 				return region.containsKeyOnServer(key);
 			}
 		});
@@ -116,8 +114,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public boolean containsValue(final Object value) {
 		return execute(new GemfireCallback<Boolean>() {
-			@SuppressWarnings("unchecked")
-			public Boolean doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
 				return region.containsValue(value);
 			}
 		});
@@ -125,8 +122,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public boolean containsValueForKey(final Object key) {
 		return execute(new GemfireCallback<Boolean>() {
-			@SuppressWarnings("unchecked")
-			public Boolean doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
 				return region.containsValueForKey(key);
 			}
 		});
@@ -134,7 +130,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> void create(final K key, final V value) {
 		execute(new GemfireCallback<Object>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Object doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				region.create(key, value);
 				return null;
@@ -144,7 +140,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> V get(final K key) {
 		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return (V) region.get(key);
 			}
@@ -153,7 +149,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> V put(final K key, final V value) {
 		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return (V) region.put(key, value);
 			}
@@ -162,7 +158,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> V putIfAbsent(final K key, final V value) {
 		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return (V) region.putIfAbsent(key, value);
 			}
@@ -171,7 +167,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> V remove(final K key) {
 		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return (V) region.remove(key);
 			}
@@ -180,7 +176,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> V replace(final K key, final V value) {
 		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return (V) region.replace(key, value);
 			}
@@ -189,7 +185,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> boolean replace(final K key, final V oldValue, final V newValue) {
 		return execute(new GemfireCallback<Boolean>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Boolean doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return region.replace(key, oldValue, newValue);
 			}
@@ -198,7 +194,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> Map<K, V> getAll(final Collection<?> keys) {
 		return execute(new GemfireCallback<Map<K, V>>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Map<K, V> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return (Map<K, V>) region.getAll(keys);
 			}
@@ -207,7 +203,7 @@ public class GemfireTemplate extends GemfireAccessor {
 
 	public <K, V> void putAll(final Map<? extends K, ? extends V> map) {
 		execute(new GemfireCallback<Object>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Object doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				region.putAll(map);
 				return null;
@@ -228,7 +224,7 @@ public class GemfireTemplate extends GemfireAccessor {
 	 */
 	public <E> SelectResults<E> query(final String query) {
 		return execute(new GemfireCallback<SelectResults<E>>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				return region.query(query);
 			}
@@ -255,7 +251,7 @@ public class GemfireTemplate extends GemfireAccessor {
 	public <E> SelectResults<E> find(final String query, final Object... params)
 			throws InvalidDataAccessApiUsageException {
 		return execute(new GemfireCallback<SelectResults<E>>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				QueryService queryService = lookupQueryService(region);
 				Query q = queryService.newQuery(query);
@@ -287,7 +283,7 @@ public class GemfireTemplate extends GemfireAccessor {
 	 */
 	public <T> T findUnique(final String query, final Object... params) throws InvalidDataAccessApiUsageException {
 		return execute(new GemfireCallback<T>() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public T doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				QueryService queryService = lookupQueryService(region);
 				Query q = queryService.newQuery(query);

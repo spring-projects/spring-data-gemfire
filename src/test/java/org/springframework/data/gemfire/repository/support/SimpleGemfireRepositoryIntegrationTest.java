@@ -15,8 +15,13 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +39,6 @@ import org.springframework.data.repository.core.support.ReflectionEntityInformat
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.query.SelectResults;
@@ -57,9 +61,10 @@ public class SimpleGemfireRepositoryIntegrationTest {
 
 	SimpleGemfireRepository<Person, Long> repository;
 	
-	@SuppressWarnings("rawtypes")
+ 
 	RegionClearListener regionClearListener;
 
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() {
 		regionClearListener = new RegionClearListener();
@@ -123,6 +128,7 @@ public class SimpleGemfireRepositoryIntegrationTest {
 		assertThat(result, not(hasItems(dave)));
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static class RegionClearListener extends CacheListenerAdapter {
 		public boolean eventFired;
 		@Override

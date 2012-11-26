@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +61,13 @@ public class AnnotationDrivenFunctionsTest {
 		assertTrue(function.isHA());
 		assertTrue(function.optimizeForWrite());
 		assertTrue(function.hasResult());
+		
+		
+		assertTrue(FunctionService.isRegistered("injectFilter"));
+		function = FunctionService.getFunction("injectFilter");
+		assertTrue(function.isHA());
+		assertTrue(function.optimizeForWrite());
+		assertTrue(function.hasResult());
 	}
 
 	@Component
@@ -81,8 +89,8 @@ public class AnnotationDrivenFunctionsTest {
 			return null;
 		}
 		
-		@GemfireFunction(id="injectMultipleRegions", HA=true,optimizeForWrite=true)
-		public List<String> injectMultipleRegions (@RegionData("someRegion") Map<?,?> someRegion, @RegionData("someOtherRegion") Map<?,?> someOtherRegion) {
+		@GemfireFunction(id="injectFilter", HA=true,optimizeForWrite=true)
+		public List<String> injectFilter (@Filter Set<?> keySet) {
 			return null;
 		}
 	}

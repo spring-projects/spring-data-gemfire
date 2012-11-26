@@ -52,6 +52,7 @@ public class WiringInstantiatorTest {
 	private WiringInstantiator instantiator;
 
 
+	@SuppressWarnings("serial")
 	public static class AnnotatedBean implements DataSerializable {
 		@Autowired
 		Point point;
@@ -69,6 +70,7 @@ public class WiringInstantiatorTest {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public static class TemplateWiringBean implements DataSerializable {
 		Point point;
 		Beans beans;
@@ -84,6 +86,7 @@ public class WiringInstantiatorTest {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public static class TypeA implements DataSerializable {
 
 		public void fromData(DataInput arg0) throws IOException, ClassNotFoundException {
@@ -93,6 +96,7 @@ public class WiringInstantiatorTest {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public static class TypeB implements DataSerializable {
 
 		public void fromData(DataInput arg0) throws IOException, ClassNotFoundException {
@@ -136,6 +140,7 @@ public class WiringInstantiatorTest {
 	}
 
 	public void testInstantiatorFactoryBean() throws Exception {
+		@SuppressWarnings("unchecked")
 		List<Instantiator> list = (List<Instantiator>) ctx.getBean("instantiator-factory");
 		assertNotNull(list);
 		assertEquals(2, list.size());

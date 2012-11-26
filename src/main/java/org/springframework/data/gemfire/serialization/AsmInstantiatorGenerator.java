@@ -176,7 +176,7 @@ public class AsmInstantiatorGenerator implements InstantiatorGenerator, Opcodes 
 	}
 
 	byte[] generateClassBytecode(String className, Class<? extends DataSerializable> clazz, int classId) {
-		ClassWriter cw = new ClassWriter(false);
+		ClassWriter cw = new ClassWriter(0);
 
 		cw.visit(V1_5, ACC_PUBLIC + ACC_SUPER, className, null, INSTANTIATOR_NAME, new String[] { SERIALIZABLE_NAME });
 		FieldVisitor fv = cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, CLASS_FIELD_NAME, CLASS_DESCRIPTOR, null,

@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.client;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Handler;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.data.gemfire.CacheFactoryBean;
@@ -26,11 +27,15 @@ import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
@@ -103,16 +108,15 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			if (StringUtils.hasText(poolName)) {
 				p = PoolManager.find(poolName);
 			}
-			// initialize a client-like Distributed System before initializing
-			// the pool
+		   // Bind this client cache to a pool that hasn't been created yet.
+			
+		   // initialize a client-like Distributed System before initializing
+		   // the pool
+			 
 			if (p == null) {
-				Properties prop = mergeProperties();
-				prop.setProperty("mcast-port", "0");
-				prop.setProperty("locators", "");
-
-				DistributedSystem system = DistributedSystem.connect(prop);
+				PoolFactoryBean.connectToTemporaryDs();
 			}
-
+			
 			if (StringUtils.hasText(poolName)) {
 				try {
 
@@ -134,6 +138,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 				p = getBeanFactory().getBean(Pool.class);
 				this.poolName = p.getName();
 			}
+		 
 		}
 
 		if (p != null) {
@@ -167,7 +172,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			}
 
 			List<InetSocketAddress> servers = p.getServers();
-			if (locators != null) {
+			if (servers != null) {
 				for (InetSocketAddress inet : servers) {
 					ccf.addPoolServer(inet.getHostName(), inet.getPort());
 				}

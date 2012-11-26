@@ -32,8 +32,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ForkUtil {
 	private static OutputStream os;
 	private static String TEMP_DIR = System.getProperty("java.io.tmpdir");
+	
+	
 
-	public static OutputStream cloneJVM(String argument) {
+	public static OutputStream cloneJVM(String arguments) {
 		String cp = System.getProperty("java.class.path");
 		String home = System.getProperty("java.home");
 
@@ -41,9 +43,9 @@ public class ForkUtil {
 		String sp = System.getProperty("file.separator");
 		String java = home + sp + "bin" + sp + "java";
 		String argCp = " -cp " + cp;
-		String argClass = argument;
+		 
 
-		String cmd = java + argCp + " " + argClass;
+		String cmd = java + argCp + " " + arguments;
 		try {
 			//ProcessBuilder builder = new ProcessBuilder(cmd, argCp, argClass);
 			//builder.redirectErrorStream(true);
@@ -107,12 +109,15 @@ public class ForkUtil {
 		return startCacheServer("org.springframework.data.gemfire.fork.CacheServerProcess");
 	}
 	
-	private static OutputStream startCacheServer(String className) {
+	public static OutputStream startCacheServer(String args) {
+		String className = args.split(" ")[0];
+		
+		System.out.println("main class:" + className);
 		
 		if (controlFileExists(className)) {
 			deleteControlFile(className);
 		}
-		OutputStream os = cloneJVM(className);
+		OutputStream os = cloneJVM(args);
 		int maxTime = 30000;
 		int time = 0;
 		while (!controlFileExists(className) && time < maxTime) {

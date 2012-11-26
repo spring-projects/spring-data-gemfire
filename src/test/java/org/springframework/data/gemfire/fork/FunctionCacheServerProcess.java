@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,48 +20,45 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
- 
 import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.function.MethodInvokingFunction;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
  * @author Costin Leau
+ * @author David Turanski
  */
 public class FunctionCacheServerProcess {
-	static Region testRegion;
+	static Region<Object,Object> testRegion;
 	public static void main(String[] args) throws Exception {
 
 		Properties props = new Properties();
-		props.setProperty("name", "CqServer");
+		props.setProperty("name", "FunctionServer");
 		props.setProperty("log-level", "config");
-
-		System.out.println("\nConnecting to the distributed system and creating the cache.");
-		DistributedSystem ds = DistributedSystem.connect(props);
-		Cache cache = CacheFactory.create(ds);
+		props.setProperty("groups","g1,g2,g3");
+		 
+		 
+		Cache cache = new CacheFactory(props).create();
 
 		// Create region.
-		AttributesFactory factory = new AttributesFactory();
+		RegionFactory<Object,Object> factory = cache.createRegionFactory();
 		factory.setDataPolicy(DataPolicy.REPLICATE);
 		factory.setScope(Scope.DISTRIBUTED_ACK);
-		testRegion = cache.createRegion("test-function", factory.create());
+		testRegion = factory.create("test-function");
 		System.out.println("Test region, " + testRegion.getFullPath() + ", created in cache.");
 
 		// Start Cache Server.
 		CacheServer server = cache.addCacheServer();
 		server.setPort(40404);
-		server.setNotifyBySubscription(true);
 		server.start(); 
 		System.out.println("Server started");
 
@@ -73,9 +70,10 @@ public class FunctionCacheServerProcess {
 		System.out.println("Registering ServerFunction");
 		FunctionService.registerFunction(new ServerFunction());
 		System.out.println("Registered ServerFunction");
-		 
-		FunctionService.registerFunction(new MethodInvokingFunction());
-		System.out.println("Registered MethodInvokingFunction");
+		
+		System.out.println("Registering EchoFunction");
+		FunctionService.registerFunction(new EchoFunction());
+		System.out.println("Registered EchoFunction");
 		
 		ForkUtil.createControlFile(FunctionCacheServerProcess.class.getName());
 		
@@ -102,6 +100,31 @@ public class FunctionCacheServerProcess {
 		@Override
 		public String getId() {
 			return "serverFunction"; 
+		}
+ 
+	}
+	
+	static class EchoFunction extends FunctionAdapter {
+		 
+		/* (non-Javadoc)
+		 * @see com.gemstone.gemfire.cache.execute.FunctionAdapter#execute(com.gemstone.gemfire.cache.execute.FunctionContext)
+		 */
+		@Override
+		public void execute(FunctionContext functionContext) {
+			Object[] args = (Object[])functionContext.getArguments();
+			for (int i=0; i< args.length; i++){
+				if (i == args.length-1){
+					functionContext.getResultSender().lastResult(args[i]);
+				} else {
+					functionContext.getResultSender().sendResult(args[i]);
+				}
+			}
+		 
+			
+		}
+		@Override
+		public String getId() {
+			return "echoFunction"; 
 		}
  
 	}

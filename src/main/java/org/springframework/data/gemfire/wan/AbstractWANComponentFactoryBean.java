@@ -34,14 +34,24 @@ public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<
 		DisposableBean {
 	protected Log log = LogFactory.getLog(this.getClass());
 
-	protected String name;
+	private String name;
 
 	protected final Cache cache;
 
 	protected Object factory;
 
+	private String beanName;
+
 	protected AbstractWANComponentFactoryBean(Cache cache) {
 		this.cache = cache;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name!=null ? name: beanName;
 	}
 
 	@Override
@@ -50,13 +60,13 @@ public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<
 	}
 
 	@Override
-	public final void setBeanName(String name) {
-		this.name = name;
+	public final void setBeanName(String beanName) {
+		this.beanName = beanName;
 	}
 
 	@Override
 	public final void afterPropertiesSet() throws Exception {
-		Assert.notNull(name, "Name cannot be null");
+		Assert.notNull(getName(), "Name cannot be null");
 		Assert.notNull(cache, "Cache cannot be null");
 		doInit();
 	}

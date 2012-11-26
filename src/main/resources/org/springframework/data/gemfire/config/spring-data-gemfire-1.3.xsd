@@ -2,15 +2,20 @@
 <xsd:schema xmlns="http://www.springframework.org/schema/data/gemfire" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans" 
 xmlns:tool="http://www.springframework.org/schema/tool" 
 xmlns:repository="http://www.springframework.org/schema/data/repository" 
+xmlns:context="http://www.springframework.org/schema/context"
 targetNamespace="http://www.springframework.org/schema/data/gemfire" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.3">
 	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
 	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
-	<xsd:import namespace="http://www.springframework.org/schema/data/repository" schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
-    <xsd:import namespace="http://www.springframework.org/schema/gemfire" schemaLocation="http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/data/repository" 
+				schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
+    <xsd:import namespace="http://www.springframework.org/schema/gemfire" 
+    			schemaLocation="http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"/>
+    <xsd:import namespace="http://www.springframework.org/schema/context"
+				schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd" />
 	<!-- -->
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
-            Namespace support for the Spring Data GemFire Repositories.
+            Namespace support for the Spring Data GemFire Client side data access.
         ]]></xsd:documentation>
 	</xsd:annotation>
 	<!-- -->
@@ -25,6 +30,32 @@ targetNamespace="http://www.springframework.org/schema/data/gemfire" elementForm
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
+	<!-- -->
+	<xsd:complexType name="functions">
+		<xsd:sequence>
+			<xsd:element name="include-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+   Controls which eligible types to include for component scanning.
+                           ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="exclude-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+   Controls which eligible types to exclude for component scanning.
+                       ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="base-package" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+				Defines the base package where function execution interfaces will be tried to be detected.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
 	<!-- -->
 	<xsd:attributeGroup name="gemfire-repository-attributes">
 		<xsd:attribute name="mapping-context-ref" type="mappingContextRef">

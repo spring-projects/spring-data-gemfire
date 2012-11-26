@@ -26,6 +26,7 @@ import com.gemstone.gemfire.GemFireException;
  *  
  * @author Costin Leau
  */
+@SuppressWarnings("serial")
 public class GemfireSystemException extends UncategorizedDataAccessException {
 
 	public GemfireSystemException(GemFireCheckedException ex) {

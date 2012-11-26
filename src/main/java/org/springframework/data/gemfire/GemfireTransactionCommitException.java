@@ -23,6 +23,7 @@ import org.springframework.transaction.TransactionException;
  * 
  * @author Costin Leau
  */
+@SuppressWarnings("serial")
 public class GemfireTransactionCommitException extends TransactionException {
 
 	public GemfireTransactionCommitException(String message, Throwable cause) {

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -28,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.client.PoolConnection;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -41,7 +41,7 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("pool-ns.xml")
 public class PoolNamespaceTest {
-
+   
 	@Autowired
 	private ApplicationContext context;
 
@@ -58,10 +58,10 @@ public class PoolNamespaceTest {
 		
 		assertEquals(context.getBean("gemfirePool"), PoolManager.find("gemfirePool"));
 		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&gemfirePool");
-		Collection<PoolConnection> locators = TestUtils.readField("locators", pfb);
+		Collection<InetSocketAddress> locators = TestUtils.readField("locators", pfb);
 		assertEquals(1, locators.size());
-		PoolConnection locator = locators.iterator().next();
-		assertEquals("localhost", locator.getHost());
+		InetSocketAddress locator = locators.iterator().next();
+		assertEquals("localhost", locator.getHostName());
 		assertEquals(40403, locator.getPort());
 	}
 
@@ -75,15 +75,15 @@ public class PoolNamespaceTest {
 		assertFalse((Boolean) TestUtils.readField("multiUserAuthentication", pfb));
 		assertTrue((Boolean) TestUtils.readField("prSingleHopEnabled", pfb));
 
-		Collection<PoolConnection> servers = TestUtils.readField("servers", pfb);
+		Collection<InetSocketAddress> servers = TestUtils.readField("servers", pfb);
 		assertEquals(2, servers.size());
-		Iterator<PoolConnection> iterator = servers.iterator();
-		PoolConnection server = iterator.next();
-		assertEquals("localhost", server.getHost());
+		Iterator<InetSocketAddress> iterator = servers.iterator();
+		InetSocketAddress server = iterator.next();
+		assertEquals("localhost", server.getHostName());
 		assertEquals(40404, server.getPort());
 
 		server = iterator.next();
-		assertEquals("localhost", server.getHost());
+		assertEquals("localhost", server.getHostName());
 		assertEquals(40405, server.getPort());
 	}
 }

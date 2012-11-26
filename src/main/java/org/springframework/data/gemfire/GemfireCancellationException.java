@@ -25,6 +25,7 @@ import com.gemstone.gemfire.CancelException;
  * 
  * @author Costin Leau
  */
+@SuppressWarnings("serial")
 public class GemfireCancellationException extends InvalidDataAccessResourceUsageException {
 
 	public GemfireCancellationException(CancelException ex) {

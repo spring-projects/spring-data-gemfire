@@ -21,13 +21,14 @@ import java.lang.reflect.Field;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.wan.SmartLifecycleGatewaySender;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -40,6 +41,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
@@ -55,7 +57,11 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * @author Costin Leau
  * @author David Turanski
  */
-public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
+public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean, SmartLifecycle {
+
+	private boolean autoStartup = true;
+
+	private boolean running;
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -150,13 +156,13 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (cacheWriter != null) {
 			regionFactory.setCacheWriter(cacheWriter);
 		}
-		
+
 		if (diskStoreName != null) {
 			regionFactory.setDiskStoreName(diskStoreName);
-			Assert.isTrue(!isNotPersistent(),"it is invalid to specify a disk store if 'persistent' is set to false.");
+			Assert.isTrue(!isNotPersistent(), "it is invalid to specify a disk store if 'persistent' is set to false.");
 			persistent = true;
 		}
-		
+
 		resolveDataPolicy(regionFactory, persistent, dataPolicy);
 
 		if (scope != null) {
@@ -194,8 +200,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (dataPolicy == null) {
 			if (isPersistent()) {
 				regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-			}
-			else {
+			} else {
 				regionFactory.setDataPolicy(DataPolicy.DEFAULT);
 			}
 			return;
@@ -238,23 +243,21 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * @param region
 	 */
 	protected void postProcess(Region<K, V> region) {
-		// do nothing
+
 	}
 
 	@Override
 	public void destroy() throws Exception {
 		if (region != null) {
 			if (close) {
-				if (!region.getCache().isClosed()) {
+				if (!region.getRegionService().isClosed()) {
 					try {
 						region.close();
-					}
-					catch (CacheClosedException cce) {
+					} catch (CacheClosedException cce) {
 						// nothing to see folks, move on.
 					}
 				}
-			}
-			else if (destroy) {
+			} else if (destroy) {
 				region.destroyRegion();
 			}
 		}
@@ -414,4 +417,73 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	protected boolean isNotPersistent() {
 		return persistent != null && !persistent;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Lifecycle#start()
+	 */
+	@Override
+	public void start() {
+		
+		if (!ObjectUtils.isEmpty(gatewaySenders)) {
+			synchronized (gatewaySenders) {
+				for (Object obj : gatewaySenders) {
+					SmartLifecycleGatewaySender gws = (SmartLifecycleGatewaySender) obj;
+					if (gws.isAutoStartup() && !gws.isRunning()) {
+							gws.start();
+					}
+				}
+			}
+		}
+		this.running = true;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Lifecycle#stop()
+	 */
+	@Override
+	public void stop() {
+		if (!ObjectUtils.isEmpty(gatewaySenders)) {
+			synchronized (gatewaySenders) {
+				for (Object obj : gatewaySenders) {
+				  SmartLifecycleGatewaySender gws = (SmartLifecycleGatewaySender) obj;
+					gws.stop();
+				 }
+			}
+		}
+		this.running = false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Lifecycle#isRunning()
+	 */
+	@Override
+	public boolean isRunning() {
+		return this.running;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Phased#getPhase()
+	 */
+	@Override
+	public int getPhase() {
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.SmartLifecycle#isAutoStartup()
+	 */
+	@Override
+	public boolean isAutoStartup() {
+		return this.autoStartup;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.SmartLifecycle#stop(java.lang.Runnable)
+	 */
+	@Override
+	public void stop(Runnable callback) {
+		stop();
+		callback.run();
+	}
+
 }

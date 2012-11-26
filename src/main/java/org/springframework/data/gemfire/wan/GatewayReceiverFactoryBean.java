@@ -52,8 +52,6 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	 */
 	public GatewayReceiverFactoryBean(Cache cache) {
 		super(cache);
-		// Bean name not required.
-		this.name = "gateway-receiver";
 	}
 
 	@Override

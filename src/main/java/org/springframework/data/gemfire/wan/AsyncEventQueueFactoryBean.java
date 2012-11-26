@@ -92,7 +92,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			asyncEventQueueFactory.setMaximumQueueMemory(maximumQueueMemory);
 		}
 
-		asyncEventQueue = asyncEventQueueFactory.create(name, asyncEventListener);
+		asyncEventQueue = asyncEventQueueFactory.create(getName(), asyncEventListener);
 	}
 
 	@Override

@@ -29,6 +29,7 @@ import com.gemstone.gemfire.cache.query.IndexNameConflictException;
  *  
  * @author Costin Leau
  */
+@SuppressWarnings("serial")
 public class GemfireIndexException extends DataIntegrityViolationException {
 
 	public GemfireIndexException(IndexCreationException ex) {

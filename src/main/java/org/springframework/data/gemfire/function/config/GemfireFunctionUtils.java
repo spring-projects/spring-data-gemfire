@@ -12,35 +12,49 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.data.gemfire.function.PojoFunctionWrapper;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 
 /**
+ * 
  * @author David Turanski
  *
  */
 public abstract class GemfireFunctionUtils {
 	private static Log log = LogFactory.getLog(GemfireFunctionUtils.class);
-	
-	public static void registerFunctionForPojoMethod(Object target, Method method, Map<String,Object> attributes, boolean overwrite) {
-		String id = attributes.containsKey("id") ? (String)attributes.get("id") : "";
-		
-		PojoFunctionWrapper function = new PojoFunctionWrapper(target,method, id);
-	    
+
+	/**
+	 * Wrap a target object and method in a GemFire Function and register the function to the {@link FunctionService} 
+	 * 
+	 * @param target the target object
+	 * @param method the method bound to the function
+	 * @param attributes function attributes
+	 * @param overwrite if true, will replace the existing function
+	 */
+	public static void registerFunctionForPojoMethod(Object target, Method method, Map<String, Object> attributes,
+			boolean overwrite) {
+		String id = attributes.containsKey("id") ? (String) attributes.get("id") : "";
+
+		PojoFunctionWrapper function = new PojoFunctionWrapper(target, method, id);
+
 		if (attributes.containsKey("HA")) {
-	    	function.setHA((Boolean)attributes.get("HA"));
-	    }
-	    if (attributes.containsKey("optimizeForWrite")) {
-	    	function.setOptimizeForWrite((Boolean)attributes.get("optimizeForWrite"));
-	    }
-	    
+			function.setHA((Boolean) attributes.get("HA"));
+		}
+		if (attributes.containsKey("optimizeForWrite")) {
+			function.setOptimizeForWrite((Boolean) attributes.get("optimizeForWrite"));
+		}
+
 		if (FunctionService.isRegistered(function.getId())) {
 			if (overwrite) {
 				if (log.isDebugEnabled()) {
@@ -49,7 +63,7 @@ public abstract class GemfireFunctionUtils {
 				FunctionService.unregisterFunction(function.getId());
 			}
 		}
-		if (!FunctionService.isRegistered(function.getId())){
+		if (!FunctionService.isRegistered(function.getId())) {
 			FunctionService.registerFunction(function);
 			if (log.isDebugEnabled()) {
 				log.debug("registered function " + function.getId());
@@ -59,5 +73,43 @@ public abstract class GemfireFunctionUtils {
 				log.debug("function already registered " + function.getId());
 			}
 		}
+	}
+	
+	/**
+	 * Determine the order position of a an annotated method parameter
+	 * 
+	 * @param method the {@link Method} instance
+	 * @param targetAnnotationType the annotation
+	 * @param requiredTypes an array of valid parameter types for the annotation
+	 * @return the parameter position or -1 if the annotated parameter is not found
+	 */
+	public static int getAnnotationParameterPosition(Method method, Class<?> targetAnnotationType, Class<?>[] requiredTypes) {
+		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+		if (parameterAnnotations.length > 0) {
+			int position = -1;
+			Class<?>[] paramTypes = method.getParameterTypes();
+			
+			List<Class<?>> requiredTypesList = Arrays.asList(requiredTypes);
+
+			
+			for (int i = 0; i < parameterAnnotations.length; i++) {
+				Annotation[] annotations = parameterAnnotations[i];
+				if (annotations.length > 0) {
+					for (Annotation annotation : annotations) {
+						if (annotation.annotationType().equals(targetAnnotationType)) {
+							Assert.state(position < 0, String.format("Method %s signature cannot contain more than one parameter annotated with type %s"
+									,method.getName(),targetAnnotationType.getName()));
+							Assert.isTrue(requiredTypesList.contains(paramTypes[i]), String.format(
+									"Parameter annotated with %s must be one of type %s in method %s", targetAnnotationType.getName(),
+									StringUtils.arrayToCommaDelimitedString(requiredTypes), method.getName()));
+							position =  i;
+						}
+
+					}
+				}
+			}
+			return position;
+		}
+		return -1;
 	}
 }

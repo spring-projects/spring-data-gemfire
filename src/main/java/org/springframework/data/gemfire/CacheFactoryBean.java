@@ -31,6 +31,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -75,12 +76,14 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @author David Turanski
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
-		InitializingBean, FactoryBean<GemFireCache>, PersistenceExceptionTranslator {
+		InitializingBean, FactoryBean<GemFireCache>, PersistenceExceptionTranslator   {
 	/**
 	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
 	 * 
 	 * @author Costin Leau
 	 */
+	
+	
 	private class PdxOptions implements Runnable {
 
 		private final CacheFactory factory;
@@ -277,10 +280,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			factoryLocator.afterPropertiesSet();
 		}
 		Properties cfgProps = mergeProperties();
-
+		
 		// use the bean class loader to load Declarable classes
 		Thread th = Thread.currentThread();
 		ClassLoader oldTCCL = th.getContextClassLoader();
+		 
 
 		try {
 			th.setContextClassLoader(beanClassLoader);
@@ -329,6 +333,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 					log.debug("Initialized cache from " + cacheXml);
 				}
 			}
+			
 			setHeapPercentages();
 			registerTransactionListeners();
 			registerTransactionWriter();
@@ -680,4 +685,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
 		this.jndiDataSources = jndiDataSources;
 	}
+
+ 
+
 }

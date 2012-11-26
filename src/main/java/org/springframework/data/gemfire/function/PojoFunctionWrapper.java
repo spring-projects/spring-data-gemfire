@@ -12,11 +12,10 @@
  */
 package org.springframework.data.gemfire.function;
 
-import java.io.Serializable;
+ 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,23 +24,21 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
 
 /**
  * Invokes a POJO's given method as a Gemfire remote function. 
  * If the POJO has a constructor that takes a Map, and the function context is Region, the 
  * region will be injected. The delegate class name, the method name, and the method arguments
- * are part of a remote function invocation, therefore all arguments must be serializable. 
+ * are part of a remote function invocation, therefore all arguments must be serializable 
+ * or an alternate serialization method must be used. 
  * The delegate class must be the class path of the remote cache(s)
  * @author David Turanski
  *
  */
+ 
 @SuppressWarnings("serial")
 public class PojoFunctionWrapper implements Function {
 
@@ -53,9 +50,13 @@ public class PojoFunctionWrapper implements Function {
 	private final Object target;
 	private final Method method;
 	private final String id;
-	private volatile Integer regionParameterPosition;
+
+	private final FunctionArgumentResolver functionArgumentResolver;
 
 	public PojoFunctionWrapper(Object target, Method method, String id) {
+		
+		this.functionArgumentResolver = new FunctionContextInjectingArgumentResolver(method);
+		
 		this.id = StringUtils.hasText(id) ? id : ClassUtils.getQualifiedMethodName(method);
 		this.target = target;
 		this.method = method;
@@ -95,31 +96,13 @@ public class PojoFunctionWrapper implements Function {
 		this.optimizeForWrite = optimizeForWrite;
 	}
 	
-	public void setRegionParameterPosition(int regionParameterPosition) {
-		this.regionParameterPosition = regionParameterPosition; 
-	}
-
 	//@Override
 	public void execute(FunctionContext functionContext) {
+		
+		Object[] args = this.functionArgumentResolver.resolveFunctionArguments(functionContext);
 
-		Object[] args = (functionContext.getArguments().getClass().isArray()) ? (Object[]) functionContext
-				.getArguments() : new Object[] { functionContext.getArguments() };
-
-		Serializable result = null;
-
-		if (functionContext instanceof RegionFunctionContext) {
-			RegionFunctionContext regionFunctionContext = (RegionFunctionContext) functionContext;
-			Region<?, ?> region = getRegionForContext(regionFunctionContext);
-			//TODO: Not sure if filter is needed at this point
-			Set<?> filter = regionFunctionContext.getFilter();
-			//Insert the region into the associated position
-			if (this.regionParameterPosition != null) {
-				ArrayUtils.insert(args, regionParameterPosition, region);
-			}
-	
-		} else {
-			
-		}
+	 
+		Object result = null;
 
 		result = invokeTargetMethod(args);
 		
@@ -129,7 +112,7 @@ public class PojoFunctionWrapper implements Function {
 	}
 
  
-	protected final Serializable invokeTargetMethod(Object[] args) {
+	protected final Object invokeTargetMethod(Object[] args) {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("about to invoke method %s on class %s as function %s", method.getName(), target
@@ -141,54 +124,36 @@ public class PojoFunctionWrapper implements Function {
 
 		}
 
-		return (Serializable) ReflectionUtils.invokeMethod(method, target, (Object[]) args);
-	}
-
-	/*
-	 * @param regionFunctionContext
-	 * @return
-	 */
-	private Region<?, ?> getRegionForContext(RegionFunctionContext regionFunctionContext) {
-
-		Region<?, ?> region = regionFunctionContext.getDataSet();
-		if (PartitionRegionHelper.isPartitionedRegion(region)) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("this is a partitioned region - filtering local data for context");
-			}
-			region = PartitionRegionHelper.getLocalDataForContext(regionFunctionContext);
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("region contains " + region.size() + " items");
-		}
-		return region;
+		return (Object) ReflectionUtils.invokeMethod(method, target, (Object[]) args);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void sendResults(ResultSender<Object> resultSender, Serializable result) {
+	private void sendResults(ResultSender<Object> resultSender, Object result) {
 		if (result == null) {
 			resultSender.lastResult(null);
 			return;
 		}
-
-		Serializable lastItem = result;
-
-		List<Serializable> results = null;
+	 
+		List<Object> results = null;
+		
 		if (ObjectUtils.isArray(result)) {
-			results = Arrays.asList((Serializable[]) result);
+			results = Arrays.asList((Object[]) result);
+		
 		} else if (List.class.isAssignableFrom(result.getClass())) {
-			results = (List<Serializable>) result;
+			results = (List<Object>) result;
 		}
 
 		if (results != null) {
 			int i = 0;
-			for (Serializable item : results) {
+			for (Object item : results) {
 				if (i++ < results.size() - 1) {
 					resultSender.sendResult(item);
 				} else {
-					lastItem = item;
+					resultSender.lastResult(item);
 				}
 			}
+		} else {
+			resultSender.lastResult(result);
 		}
-		resultSender.lastResult(lastItem);
 	}
 }

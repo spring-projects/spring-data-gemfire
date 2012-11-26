@@ -18,7 +18,6 @@ package org.springframework.data.gemfire;
 
 import org.junit.After;
 import org.junit.Before;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 
 /**

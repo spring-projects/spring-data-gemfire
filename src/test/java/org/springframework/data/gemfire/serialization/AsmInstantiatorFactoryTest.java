@@ -36,6 +36,7 @@ import com.gemstone.gemfire.Instantiator;
  */
 public class AsmInstantiatorFactoryTest {
 
+	@SuppressWarnings("serial")
 	public static class SomeClass implements DataSerializable {
 		public static boolean instantiated = false;
 

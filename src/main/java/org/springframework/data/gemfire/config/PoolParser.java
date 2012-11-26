@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.client.PoolConnection;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -35,13 +35,16 @@ import org.w3c.dom.Element;
  * Parser for &lt;pool;gt; definitions.
  *  
  * @author Costin Leau
+ * @author David Turanski
  */
 class PoolParser extends AbstractSimpleBeanDefinitionParser {
 
+	@Override	
 	protected Class<?> getBeanClass(Element element) {
 		return PoolFactoryBean.class;
 	}
-
+	
+	@Override
 	protected void postProcess(BeanDefinitionBuilder builder, Element element) {
 		List<Element> subElements = DomUtils.getChildElements(element);
 		ManagedList<Object> locators = new ManagedList<Object>(subElements.size());
@@ -77,9 +80,9 @@ class PoolParser extends AbstractSimpleBeanDefinitionParser {
 	}
 
 	private BeanDefinition parseConnection(Element element) {
-		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(PoolConnection.class);
-		ParsingUtils.setPropertyValue(element, defBuilder, "host", "host");
-		ParsingUtils.setPropertyValue(element, defBuilder, "port", "port");
+		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(InetSocketAddress.class);
+		defBuilder.addConstructorArgValue(element.getAttribute("host"));
+		defBuilder.addConstructorArgValue(element.getAttribute("port"));
 		return defBuilder.getBeanDefinition();
 	}
 
