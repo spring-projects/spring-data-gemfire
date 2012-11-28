@@ -74,7 +74,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 		String mappingContextRef = element.getAttribute(MAPPING_CONTEXT_REF);
 
 		if (StringUtils.hasText(mappingContextRef)) {
-			builder.addPropertyReference("mappingContext", mappingContextRef);
+			builder.addPropertyReference("gemfireMappingContext", mappingContextRef);
 		}
 	}
 }
