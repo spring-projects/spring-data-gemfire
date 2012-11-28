@@ -23,6 +23,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
@@ -63,7 +64,7 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 * 
 	 * @param context the context to set
 	 */
-	public void setMappingContext(
+	public void setGemfireMappingContext(
 			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
 		this.context = context;
 	}
@@ -78,5 +79,20 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
 		return new GemfireRepositoryFactory(regions, context);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() {
+
+		if (this.context == null) {
+			this.context = new GemfireMappingContext();
+			setMappingContext(context);
+		}
+
+		super.afterPropertiesSet();
 	}
 }
