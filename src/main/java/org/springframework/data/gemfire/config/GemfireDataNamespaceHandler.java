@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.data.gemfire.function.config.FunctionExecutionBeanDefinitionParser;
 import org.springframework.data.gemfire.repository.config.GemfireRepositoryConfigurationExtension;
 import org.springframework.data.repository.config.RepositoryBeanDefinitionParser;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
@@ -35,5 +36,6 @@ class GemfireDataNamespaceHandler extends NamespaceHandlerSupport {
 		// Repository namespace
 		RepositoryConfigurationExtension extension = new GemfireRepositoryConfigurationExtension();
 		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(extension));
+		registerBeanDefinitionParser("function-executions", new FunctionExecutionBeanDefinitionParser());
 	}
 }

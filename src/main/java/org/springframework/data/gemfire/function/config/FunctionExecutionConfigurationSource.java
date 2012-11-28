@@ -12,10 +12,7 @@
  */
 package org.springframework.data.gemfire.function.config;
 
-import java.util.Collection;
-
-import org.springframework.context.annotation.ScannedGenericBeanDefinition;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.filter.TypeFilter;
 
 /**
  * Interface for function execution configuration sources (e.g., annotation or XML configuration) to configure 
@@ -40,11 +37,17 @@ interface FunctionExecutionConfigurationSource {
 	 */
 	Iterable<String> getBasePackages();
  
+	
 	/**
-	 * Returns the scanned bean definitions
-	 * 
-	 * @param loader
-	 * @return
+	 * Returns configured {@link TypeFilter}s
+	 * @return include filters
 	 */
-	Collection<ScannedGenericBeanDefinition> getCandidates(ResourceLoader loader);
+	Iterable<TypeFilter> getIncludeFilters();
+	
+	/**
+	 * Returns configured {@link TypeFilter}s
+	 * @return exclude filters
+	 */
+	Iterable<TypeFilter> getExcludeFilters();
+	
 }

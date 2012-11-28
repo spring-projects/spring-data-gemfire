@@ -17,7 +17,6 @@ import java.util.Set;
 import org.springframework.data.gemfire.function.config.Filter;
 import org.springframework.data.gemfire.function.config.FunctionId;
 import org.springframework.data.gemfire.function.config.OnRegion;
-import org.springframework.data.gemfire.function.config.OnServer;
 
 /**
  * @author David Turanski

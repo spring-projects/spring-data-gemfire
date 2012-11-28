@@ -14,7 +14,6 @@ package org.springframework.data.gemfire.function.config.three;
 
 import java.util.Set;
 
-import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.function.config.Filter;
 import org.springframework.data.gemfire.function.config.FunctionId;
 import org.springframework.data.gemfire.function.config.OnServer;

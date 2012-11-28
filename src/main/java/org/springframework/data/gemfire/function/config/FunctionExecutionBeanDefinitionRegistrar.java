@@ -15,8 +15,6 @@ package org.springframework.data.gemfire.function.config;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -34,21 +32,27 @@ import org.springframework.util.StringUtils;
  *
  */
 public class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
-
-	private static Log logger = LogFactory.getLog(FunctionExecutionBeanDefinitionRegistrar.class);
+	
 	/* (non-Javadoc)
 	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
-		
-		ResourceLoader resourceLoader = new DefaultResourceLoader();
-		AnnotationFunctionExecutionConfigurationSource configurationSource = new AnnotationFunctionExecutionConfigurationSource(
+		AbstractFunctionExecutionConfigurationSource configurationSource = new AnnotationFunctionExecutionConfigurationSource(
 				annotationMetadata);
 
+		registerBeanDefinitions(configurationSource, registry);
+
+	}
+	
+	/*
+	 * This registers bean definitions from any function execution configuration source
+	 */
+	void registerBeanDefinitions (AbstractFunctionExecutionConfigurationSource configurationSource, BeanDefinitionRegistry registry) {
+		ResourceLoader resourceLoader = new DefaultResourceLoader();
 		Set<String> functionExecutionAnnotationTypes = new HashSet<String>(
 				AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes().size());
-		for (Class<?> annotation : AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes()) {
+		for (Class<?> annotation : AbstractFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes()) {
 			functionExecutionAnnotationTypes.add(annotation.getName());
 		}
 
@@ -70,7 +74,6 @@ public class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefin
 
 			registry.registerBeanDefinition(beanName, builder.build(registry));
 		}
-
 	}
 
 	private String getFunctionExecutionAnnotation(ScannedGenericBeanDefinition beanDefinition,
@@ -91,4 +94,5 @@ public class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefin
 
 		return functionExecutionAnnotation;
 	}
+	 
 }

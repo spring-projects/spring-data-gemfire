@@ -31,7 +31,14 @@ targetNamespace="http://www.springframework.org/schema/data/gemfire" elementForm
 		</xsd:complexType>
 	</xsd:element>
 	<!-- -->
-	<xsd:complexType name="functions">
+	<xsd:element name="function-executions">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+   Enables component scanning for annotated function execution interfaces.
+             ]]></xsd:documentation>
+		</xsd:annotation>
+	
+	   <xsd:complexType>
 		<xsd:sequence>
 			<xsd:element name="include-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
@@ -55,7 +62,8 @@ targetNamespace="http://www.springframework.org/schema/data/gemfire" elementForm
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-	</xsd:complexType>
+	  </xsd:complexType>
+	</xsd:element>
 	<!-- -->
 	<xsd:attributeGroup name="gemfire-repository-attributes">
 		<xsd:attribute name="mapping-context-ref" type="mappingContextRef">
