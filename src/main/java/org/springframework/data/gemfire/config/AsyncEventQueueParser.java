@@ -19,10 +19,9 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
+import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
-
-import com.gemstone.gemfire.internal.lang.StringUtils;
 
 /**
  * @author David Turanski
@@ -41,8 +40,10 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
 		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext,
 				asyncEventListenerElement, builder);
-		String cacheName = StringUtils.isEmpty(element.getAttribute("cache-ref")) ? "gemfireCache" : element
-				.getAttribute("cache-ref");
+
+		String cacheName = !StringUtils.hasText(element.getAttribute("cache-ref")) ? GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME
+				: element.getAttribute("cache-ref");
+
 		builder.addConstructorArgReference(cacheName);
 		builder.addConstructorArgValue(asyncEventListener);
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
@@ -50,5 +51,23 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "disk-store-ref");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
+		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
+
+		if (!StringUtils.hasText(element.getAttribute(NAME_ATTRIBUTE))) {
+			if (element.getParentNode().getNodeName().endsWith("region")) {
+				Element region = (Element) element.getParentNode();
+				String regionName = StringUtils.hasText(region.getAttribute("name")) ? region.getAttribute("name")
+						: region.getAttribute("id");
+
+				int i = 0;
+				String name = regionName + ".asyncEventQueue#" + i;
+				while (parserContext.getRegistry().isBeanNameInUse(name)) {
+					i++;
+					name = regionName + ".asyncEventQueue#" + i;
+				}
+
+				builder.addPropertyValue("name", name);
+			}
+		}
 	}
 }

@@ -76,6 +76,7 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 
 	@Override
 	protected void doInit() {
+		String name = getName();
 		gatewayHub = cache.addGatewayHub(name, port == null ? GatewayHub.DEFAULT_PORT : port);
 
 		if (log.isDebugEnabled()) {

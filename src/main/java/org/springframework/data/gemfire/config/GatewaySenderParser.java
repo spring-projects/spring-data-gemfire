@@ -36,10 +36,12 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		builder.setLazyInit(false);
+
 		String cacheRef = element.getAttribute("cache-ref");
+
 		// add cache reference (fallback to default if nothing is specified)
-		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef : "gemfireCache"));
+		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef
+				: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 		ParsingUtils.setPropertyValue(element, builder, "alert-threshold");
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
 		ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
@@ -55,6 +57,7 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "socket-read-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
+		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
 
 		Element eventFilterElement = DomUtils.getChildElementByTagName(element, "event-filter");
 		if (eventFilterElement != null) {
@@ -63,5 +66,25 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 		}
 
 		ParsingUtils.parseTransportFilters(element, parserContext, builder);
+
+		/**
+		 * set the name for an inner bean
+		 */
+		if (!StringUtils.hasText(element.getAttribute(NAME_ATTRIBUTE))) {
+			if (element.getParentNode().getNodeName().endsWith("region")) {
+				Element region = (Element) element.getParentNode();
+				String regionName = StringUtils.hasText(region.getAttribute("name")) ? region.getAttribute("name")
+						: region.getAttribute("id");
+
+				int i = 0;
+				String name = regionName + ".gatewaySender#" + i;
+				while (parserContext.getRegistry().isBeanNameInUse(name)) {
+					i++;
+					name = regionName + ".gatewaySender#" + i;
+				}
+
+				builder.addPropertyValue("name", name);
+			}
+		}
 	}
 }

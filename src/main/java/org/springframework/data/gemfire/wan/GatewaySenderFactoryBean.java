@@ -33,7 +33,7 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @author David Turanski
  * 
  */
-public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender> {
+public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>  {
 	private static List<String> validOrderPolicyValues = Arrays.asList("KEY", "PARTITION", "THREAD");
 
 	private GatewaySender gatewaySender;
@@ -58,7 +58,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	private Integer dispatcherThreads;
 
-	private Boolean manualStart;
+	private boolean manualStart = false;
 
 	private Integer maximumQueueMemory;
 
@@ -82,12 +82,12 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	@Override
 	public GatewaySender getObject() throws Exception {
-		return gatewaySender;
+		return new SmartLifecycleGatewaySender(gatewaySender, !manualStart);
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return GatewaySender.class;
+		return SmartLifecycleGatewaySender.class;
 	}
 
 	@Override
@@ -151,9 +151,9 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		if (dispatcherThreads != null) {
 			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
 		}
-		if (manualStart != null) {
-			gatewaySenderFactory.setManualStart(manualStart);
-		}
+	 
+		gatewaySenderFactory.setManualStart(true);
+		 
 		if (maximumQueueMemory != null) {
 			gatewaySenderFactory.setMaximumQueueMemory(maximumQueueMemory);
 		}
@@ -163,7 +163,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		if (socketReadTimeout != null) {
 			gatewaySenderFactory.setSocketReadTimeout(socketReadTimeout);
 		}
-		gatewaySender = gatewaySenderFactory.create(name, remoteDistributedSystemId);
+		gatewaySender = gatewaySenderFactory.create(getName(), remoteDistributedSystemId);
 	}
 
 	public void setRemoteDistributedSystemId(int remoteDistributedSystemId) {
@@ -233,5 +233,4 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	public void setSocketReadTimeout(Integer socketReadTimeout) {
 		this.socketReadTimeout = socketReadTimeout;
 	}
-
 }

@@ -2258,6 +2258,13 @@ Inner bean definition of the event filter
                 minOccurs="0" maxOccurs="1" />
         </xsd:sequence>
         <xsd:attributeGroup ref="commonWANQueueAttributes" />
+         <xsd:attribute name="name" type="xsd:string" use="optional">
+             <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Optionally specifies the GemFire gateway sender id. By default this value is the bean id or a generated value if an inner bean.
+                  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="remote-distributed-system-id"
             type="xsd:string" use="required">
             <xsd:annotation>
@@ -2506,6 +2513,13 @@ use inner bean declarations.
             </xsd:element>
         </xsd:sequence>
         <xsd:attributeGroup ref="commonWANQueueAttributes" />
+        <xsd:attribute name="name" type="xsd:string" use="optional">
+             <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Optionally specifies the GemFire gateway sender id. By default this value is the bean id or a generated value if an inner bean.
+                  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
     <!-- -->
     <xsd:element name="gateway-sender">
