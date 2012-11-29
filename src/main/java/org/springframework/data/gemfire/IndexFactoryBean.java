@@ -28,8 +28,13 @@ import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexExistsException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.RegionNotFoundException;
+import com.springsource.vfabric.licensing.log.Logger;
 
 /**
  * Factory bean for easy declarative creation of GemFire Indexes.
@@ -71,7 +76,7 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 		index = createIndex(queryService, indexName);
 	}
 
-	private Index createIndex(QueryService queryService, String indexName) throws Exception {
+	private Index createIndex(QueryService queryService, String indexName) throws Exception  {
 		Collection<Index> indexes = queryService.getIndexes();
 
 		Index old = null;
@@ -95,13 +100,17 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 		}
 
 		Index index = null;
-
+		try {
 		if (StringUtils.hasText(imports)) {
 			index = queryService.createIndex(indexName, type, expression, from, imports);
 		}
 		else {
 			index = queryService.createIndex(indexName, type, expression, from);
 		}
+		
+	} catch (IndexExistsException e) {
+		 // This is ok
+	}  
 
 		return index;
 	}

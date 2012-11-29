@@ -142,10 +142,10 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 
 		// Parse child elements
 
+	 	parseCollectionOfCustomSubElements(parserContext, element, builder,
+				"com.gemstone.gemfire.cache.wan.GatewaySender", "gateway-sender","gatewaySenders");
 		parseCollectionOfCustomSubElements(parserContext, element, builder,
-				"com.gemstone.gemfire.cache.wan.GatewaySender", "gateway-sender", "gatewaySenders");
-		parseCollectionOfCustomSubElements(parserContext, element, builder,
-				"com.gemstone.gemfire.cache.wan.AsyncEventQueue", "async-event-queue", "asyncEventQueues");
+				"com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue", "async-event-queue", "asyncEventQueues");
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 		for (Element subElement : subElements) {

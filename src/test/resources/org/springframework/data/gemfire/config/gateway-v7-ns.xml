@@ -34,6 +34,7 @@
             </gfe:transport-filter>
         </gfe:gateway-sender>
         <gfe:gateway-sender-ref bean="gateway-sender"/>
+        <gfe:async-event-queue-ref bean="async-event-queue"/>
     </gfe:partitioned-region>
     
     <gfe:async-event-queue id="async-event-queue" batch-size="10" persistent="true" disk-store-ref="diskstore" 
