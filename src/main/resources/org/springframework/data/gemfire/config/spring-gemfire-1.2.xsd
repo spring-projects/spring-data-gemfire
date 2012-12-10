@@ -756,22 +756,57 @@ Time to idle (or idle timeout) configuration for the region itself. Default: no 
 							]]></xsd:documentation>
                         </xsd:annotation>
                     </xsd:element>
-                    <xsd:element name="entry-ttl" type="expirationType"
+ 				   <xsd:choice>
+                    	<xsd:element name="entry-ttl" type="expirationType"
                         minOccurs="0" maxOccurs="1">
-                        <xsd:annotation>
+                        	<xsd:annotation>
                             <xsd:documentation><![CDATA[[
 Time to live configuration for the region entries. Default: no expiration.
 							]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:element>
-                    <xsd:element name="entry-tti" type="expirationType"
+                        	</xsd:annotation>
+                    	</xsd:element>
+                    
+                    	<xsd:element name="custom-entry-ttl" type="customExpirationType"
+                        	minOccurs="0" maxOccurs="1">
+                        	<xsd:annotation>
+                        	 <xsd:appinfo>
+                                <tool:annotation>
+                                    <tool:exports
+                                        type="com.gemstone.gemfire.cache.CustomExpiry" />
+                                </tool:annotation>
+                            </xsd:appinfo>
+                            <xsd:documentation><![CDATA[[
+CustomExpiry time to live configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+                        	</xsd:annotation>
+              	       	</xsd:element>
+  					</xsd:choice>
+  				
+  					<xsd:choice>
+  					<xsd:element name="entry-tti" type="expirationType"
                         minOccurs="0" maxOccurs="1">
-                        <xsd:annotation>
+                        	<xsd:annotation>
                             <xsd:documentation><![CDATA[[
 Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
 							]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:element>
+                        	</xsd:annotation>
+                     	</xsd:element>
+                     	<xsd:element name="custom-entry-tti" type="customExpirationType"
+                        minOccurs="0" maxOccurs="1">
+                        	<xsd:annotation>
+                        	 <xsd:appinfo>
+                                <tool:annotation>
+                                    <tool:exports
+                                        type="com.gemstone.gemfire.cache.CustomExpiry" />
+                                </tool:annotation>
+                            </xsd:appinfo>
+                            <xsd:documentation><![CDATA[[
+CustomExpiry Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+                        	</xsd:annotation>
+                     	</xsd:element>
+                    </xsd:choice>
+   
                 </xsd:sequence>
                 <xsd:attribute name="load-factor" type="xsd:string"
                     default="0.75">
@@ -1360,6 +1395,28 @@ When the region or cached object expires, it is destroyed locally only. Not supp
                 </xsd:restriction>
             </xsd:simpleType>
         </xsd:attribute>
+    </xsd:complexType>
+    <!--  -->
+    <!--  -->
+    <xsd:complexType name="customExpirationType">
+	  <xsd:sequence>
+		<xsd:any namespace="##other" processContents="skip" minOccurs="0"
+			maxOccurs="unbounded">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Inner bean definition of the CustomExpiry.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:any>
+		</xsd:sequence>
+		<xsd:attribute name="ref" type="xsd:string" use="optional">
+			<xsd:annotation>
+			<xsd:documentation><![CDATA[
+The name of the CustomExpiry bean referred by this declaration. Used as a convenience method. If no reference exists, 
+use inner bean declarations.
+		   ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
     </xsd:complexType>
     <!-- -->
     <xsd:complexType name="evictionType">
@@ -2258,6 +2315,13 @@ Inner bean definition of the event filter
                 minOccurs="0" maxOccurs="1" />
         </xsd:sequence>
         <xsd:attributeGroup ref="commonWANQueueAttributes" />
+         <xsd:attribute name="name" type="xsd:string" use="optional">
+             <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Optionally specifies the GemFire gateway sender id. By default this value is the bean id or a generated value if an inner bean.
+                  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="remote-distributed-system-id"
             type="xsd:string" use="required">
             <xsd:annotation>
@@ -2506,6 +2570,13 @@ use inner bean declarations.
             </xsd:element>
         </xsd:sequence>
         <xsd:attributeGroup ref="commonWANQueueAttributes" />
+        <xsd:attribute name="name" type="xsd:string" use="optional">
+             <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Optionally specifies the GemFire gateway sender id. By default this value is the bean id or a generated value if an inner bean.
+                  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
     <!-- -->
     <xsd:element name="gateway-sender">

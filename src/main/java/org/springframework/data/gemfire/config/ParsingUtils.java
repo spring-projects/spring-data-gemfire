@@ -284,6 +284,8 @@ abstract class ParsingUtils {
 		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", attrBuilder);
 		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", attrBuilder);
 		result |= parseExpiration(element, "entry-tti", "entryIdleTimeout", attrBuilder);
+		result |= parseCustomExpiration(parserContext, element,"custom-entry-ttl","customEntryTimeToLive",attrBuilder);
+		result |= parseCustomExpiration(parserContext, element,"custom-entry-tti","customEntryIdleTimeout",attrBuilder);
 
 		if (result) {
 			// turn on statistics
@@ -419,6 +421,20 @@ abstract class ParsingUtils {
 		expirationAttributes.addConstructorArgValue(expirationTime);
 		expirationAttributes.addConstructorArgValue(action);
 		attrBuilder.addPropertyValue(propertyName, expirationAttributes.getBeanDefinition());
+
+		return true;
+	}
+	
+	private static boolean parseCustomExpiration(ParserContext parserContext, Element rootElement, String elementName, String propertyName,
+			BeanDefinitionBuilder attrBuilder) {
+		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
+
+		if (expirationElement == null)
+			return false;
+		
+		Object customExpiry = parseRefOrSingleNestedBeanDeclaration(parserContext, expirationElement, attrBuilder);
+
+		attrBuilder.addPropertyValue(propertyName, customExpiry);
 
 		return true;
 	}
