@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -39,6 +40,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.EvictionAction;
@@ -47,6 +49,7 @@ import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
@@ -99,6 +102,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		testReplicaDataOptions();
 		testPartitionDataOptions();
 		testEntryTtl();
+		testCustomExpiry();
 	}
 
 	private void testDiskStore() {
@@ -170,4 +174,39 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(400, regionTTI.getTimeout());
 		assertEquals(ExpirationAction.INVALIDATE, regionTTI.getAction());
 	}
+	
+
+	@SuppressWarnings("rawtypes") 
+	private void testCustomExpiry() throws Exception {
+		assertTrue(context.containsBean("replicated-data-custom-expiry"));
+		RegionFactoryBean fb = context.getBean("&replicated-data-custom-expiry", RegionFactoryBean.class);
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		
+		assertNotNull(attrs.getCustomEntryIdleTimeout());
+		assertNotNull(attrs.getCustomEntryTimeToLive());
+		
+		assertTrue(attrs.getCustomEntryIdleTimeout() instanceof TestCustomExpiry);
+		assertTrue(attrs.getCustomEntryTimeToLive() instanceof TestCustomExpiry);
+	}
+	
+	public static class TestCustomExpiry<K,V> implements CustomExpiry<K,V> {
+		/* (non-Javadoc)
+		 * @see com.gemstone.gemfire.cache.CacheCallback#close()
+		 */
+		@Override
+		public void close() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.gemstone.gemfire.cache.CustomExpiry#getExpiry(com.gemstone.gemfire.cache.Region.Entry)
+		 */
+		@Override
+		public ExpirationAttributes getExpiry(Entry<K, V> entry) {
+			return null;
+		}
+		
+	}
+	
 }
