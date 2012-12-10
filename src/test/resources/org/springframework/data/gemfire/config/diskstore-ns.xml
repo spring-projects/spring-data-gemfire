@@ -28,9 +28,9 @@
         <gfe:disk-dir location="${location}" max-size="${maxSize}"/>
     </gfe:disk-store>
  
-<!--     <gfe:partitioned-region id="partitioned-data-with-timeout" disk-store-ref="diskStore1" persistent="true"> -->
-<!--         <gfe:entry-ttl timeout="${ttl}" action="DESTROY"/> -->
-<!--     </gfe:partitioned-region> -->
+    <gfe:partitioned-region id="partitioned-data-with-timeout" disk-store-ref="diskStore1" persistent="true">
+        <gfe:entry-ttl timeout="${ttl}" action="DESTROY"/>
+    </gfe:partitioned-region>
 	
 	<gfe:replicated-region id="replicated-data" close="true" destroy="false" disk-store-ref="diskStore1">
 		<gfe:region-ttl timeout="${ttl}" action="DESTROY"/>
@@ -41,6 +41,13 @@
 		
 		<gfe:eviction type="ENTRY_COUNT" threshold="50" action="OVERFLOW_TO_DISK"/>
 	</gfe:replicated-region>
+	
+	<gfe:replicated-region id="replicated-data-custom-expiry" close="true" destroy="false">
+		<gfe:custom-entry-ttl ref="customExpiry"/> 
+		<gfe:custom-entry-tti>
+			<bean class="org.springframework.data.gemfire.config.DiskStoreAndEvictionRegionParsingTest.TestCustomExpiry"/>
+		</gfe:custom-entry-tti>
+	</gfe:replicated-region>
  	
 	<gfe:partitioned-region id="partition-data" persistent="true" disk-store-ref="ds2">
 		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="LOCAL_DESTROY">
@@ -50,8 +57,10 @@
 		</gfe:eviction>
 	</gfe:partitioned-region>
     
-        <gfe:disk-store id="ds2" queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
+    <gfe:disk-store id="ds2" queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
             <gfe:disk-dir location="./" max-size="1"/>
     </gfe:disk-store>
+    
+    <bean id="customExpiry" class="org.springframework.data.gemfire.config.DiskStoreAndEvictionRegionParsingTest.TestCustomExpiry"/>
  
 </beans>
