@@ -15,11 +15,19 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
 import java.util.Collections;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.mapping.Regions;
+import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.gemfire.repository.sample.PersonRepository;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
@@ -29,6 +37,9 @@ import org.springframework.test.context.ContextConfiguration;
  */
 @ContextConfiguration("../config/repo-context.xml")
 public class GemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRepositoryFactoryIntegrationTests {
+
+	@Autowired
+	ApplicationContext context;
 
 	@Override
 	protected PersonRepository getRepository(Regions regions) {
@@ -43,5 +54,16 @@ public class GemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRep
 
 		GemfireRepositoryFactory factory = new GemfireRepositoryFactory((Iterable) Collections.emptySet(), null);
 		factory.getRepository(PersonRepository.class);
+	}
+
+	/**
+	 * @see SGF-140
+	 */
+	@Test
+	public void exposesPersistentProperty() {
+
+		Repositories repositories = new Repositories(context);
+		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(Person.class);
+		assertThat(entity, is(notNullValue()));
 	}
 }
