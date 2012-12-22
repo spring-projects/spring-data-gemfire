@@ -127,7 +127,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 		PersistentEntityParameterValueProvider<GemfirePersistentProperty> provider = new PersistentEntityParameterValueProvider<GemfirePersistentProperty>(
 				entity, propertyValueProvider, null);
-		provider.setSpELEvaluator(new DefaultSpELExpressionEvaluator(reader, context));
+		//provider.setSpELEvaluator(new DefaultSpELExpressionEvaluator(reader, context));
 
 		Object instance = instantiator.createInstance(entity, provider);
 
