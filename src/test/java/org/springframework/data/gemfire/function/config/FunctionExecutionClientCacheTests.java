@@ -13,19 +13,27 @@
 package org.springframework.data.gemfire.function.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.data.gemfire.function.execution.GemfireOnServerFunctionTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.distributed.DistributedMember;
 
 /**
  * @author David Turanski
@@ -47,6 +55,9 @@ public class FunctionExecutionClientCacheTests {
 		assertEquals(pool.getServers().get(0), cache.getDefaultPool().getServers().get(0));
 		
 		context.getBean("r1",Region.class);
+		
+		GemfireOnServerFunctionTemplate template = context.getBean(GemfireOnServerFunctionTemplate.class);
+		assertTrue(template.getResultCollector() instanceof MyResultCollector);
 	}
 	
 }
@@ -61,8 +72,60 @@ public class FunctionExecutionClientCacheTests {
 )
 @Configuration
 class TestClientCacheConfig {
-	
+	@Bean
+	MyResultCollector myResultCollector() {
+		return new MyResultCollector();
+	}
 }
 
+@SuppressWarnings("rawtypes")
+class MyResultCollector implements ResultCollector {
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, java.lang.Object)
+	 */
+	@Override
+	public void addResult(DistributedMember arg0, Object arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#clearResults()
+	 */
+	@Override
+	public void clearResults() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#endResults()
+	 */
+	@Override
+	public void endResults() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#getResult()
+	 */
+	@Override
+	public Object getResult() throws FunctionException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#getResult(long, java.util.concurrent.TimeUnit)
+	 */
+	@Override
+	public Object getResult(long arg0, TimeUnit arg1) throws FunctionException, InterruptedException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+}
 
 

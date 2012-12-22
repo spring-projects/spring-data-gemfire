@@ -55,7 +55,6 @@ public class GemfireFunctionProxyFactoryBeanTests {
 		
 	
 		GemfireFunctionProxyFactoryBean proxy = new GemfireFunctionProxyFactoryBean(IFoo.class,functionOperations); 	
-		proxy.setFunctionId(IFoo.class.getName());
 		
 		MethodInvocation invocation = new TestInvocation(IFoo.class).withMethodNameAndArgTypes("oneArg",String.class);
 	 
@@ -75,13 +74,12 @@ public class GemfireFunctionProxyFactoryBeanTests {
 		
 		
 		GemfireFunctionProxyFactoryBean proxy = new GemfireFunctionProxyFactoryBean(IFoo.class, functionOperations); 	
-		proxy.setFunctionId(IFoo.class.getName());
-		 
+	
 		MethodInvocation invocation = new TestInvocation(IFoo.class).withMethodNameAndArgTypes("collections",List.class);
 	 
 		List results = Arrays.asList(new Integer[]{1,2,3});
 		
-		when(functionOperations.execute(IFoo.class.getName() + ".collections",invocation.getArguments())).thenReturn(results);
+		when(functionOperations.execute("collections",invocation.getArguments())).thenReturn(results);
 		 
 		Object result = proxy.invoke(invocation);
 		assertTrue(result instanceof List);

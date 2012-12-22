@@ -37,7 +37,7 @@ public class GemfireOnServerFunctionTemplate  extends AbstractFunctionTemplate {
 	}
  
 	@Override
-	protected FunctionExecution getFunctionExecution() {
+	protected AbstractFunctionExecution getFunctionExecution() {
 		 if (this.pool == null) {
 			 return new ServerFunctionExecution(this.cache);
 		 }

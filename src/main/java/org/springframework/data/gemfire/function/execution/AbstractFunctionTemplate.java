@@ -17,6 +17,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
 
 /**
  * 
@@ -29,40 +30,38 @@ abstract class AbstractFunctionTemplate  implements GemfireFunctionOperations {
 	protected Log log = LogFactory.getLog(this.getClass());
 	 
 	protected long timeout;
+	protected volatile ResultCollector<?, ?> resultCollector;
 	
 	@Override
 	public <T> Iterable<T> execute(Function function, Object... args) {
-		 FunctionExecution functionExecution = getFunctionExecution()
+		 AbstractFunctionExecution functionExecution = getFunctionExecution()
 				 .setArgs(args)
-				 .setFunction(function)
-				 .setTimeout(timeout);
+				 .setFunction(function);
 		 return execute(functionExecution);
 	}
 
 	@Override
 	public <T> T executeAndExtract(Function function, Object... args) {
-		 FunctionExecution functionExecution = getFunctionExecution()
+		 AbstractFunctionExecution functionExecution = getFunctionExecution()
 				 .setArgs(args)
-				 .setFunction(function)
-				 .setTimeout(timeout);
+				 .setFunction(function);
+		 		
 		return executeAndExtract(functionExecution);		
 	}
 
 	@Override
 	public <T> Iterable<T> execute(String functionId, Object... args) {
-		FunctionExecution functionExecution = getFunctionExecution()
+		AbstractFunctionExecution functionExecution = getFunctionExecution()
 				 .setArgs(args)
-				 .setFunctionId(functionId)
-				 .setTimeout(timeout);
+				 .setFunctionId(functionId);
 		 return execute(functionExecution);		 
 	}
 	 
 	@Override
 	public <T> T executeAndExtract(String functionId, Object... args) {
-		 FunctionExecution functionExecution = getFunctionExecution()
+		 AbstractFunctionExecution functionExecution = getFunctionExecution()
 				 .setArgs(args)
-				 .setFunctionId(functionId)
-				 .setTimeout(timeout);
+				 .setFunctionId(functionId);
 		return executeAndExtract(functionExecution);		
 	}
 
@@ -73,13 +72,15 @@ abstract class AbstractFunctionTemplate  implements GemfireFunctionOperations {
 	}
 	 
 	
-	protected <T> Iterable<T> execute(FunctionExecution execution) {
-		 execution.setTimeout(timeout);
+	protected <T> Iterable<T> execute(AbstractFunctionExecution execution) {
+		 execution.setTimeout(timeout)
+		 .setResultCollector(resultCollector);
 		 return execution.execute();
 	}
 	
-	protected <T> T executeAndExtract(FunctionExecution execution) {
-		 execution.setTimeout(timeout);
+	protected <T> T executeAndExtract(AbstractFunctionExecution execution) {
+		 execution.setTimeout(timeout)
+		 .setResultCollector(resultCollector);
 		 return execution.executeAndExtract();
 	}
 	
@@ -87,5 +88,13 @@ abstract class AbstractFunctionTemplate  implements GemfireFunctionOperations {
 		this.timeout = timeout;
 	}
 	
-	protected abstract FunctionExecution getFunctionExecution();
+	public void setResultCollector(ResultCollector<?,?> resultCollector) {
+		this.resultCollector = resultCollector;
+	}
+	
+	public ResultCollector<?,?> getResultCollector() {
+		return this.resultCollector;
+	}
+	
+	protected abstract AbstractFunctionExecution getFunctionExecution();
 }

@@ -41,7 +41,7 @@ abstract class FunctionExecutionMethodMetadata<T extends MethodMetadata > {
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 				T mmd = newMetadataInstance(method);
 				if (mmd.getFunctionId() == null) {
-					mmd.setFunctionId(serviceInterface.getName() + "." + method.getName());
+					mmd.setFunctionId(method.getName());
 				}
 			 
 				methodMetadata.put(method, mmd);

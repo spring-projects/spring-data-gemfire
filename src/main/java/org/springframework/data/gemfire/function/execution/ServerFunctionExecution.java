@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * @author David Turanski
  *
  */
-public class ServerFunctionExecution extends FunctionExecution {
+public class ServerFunctionExecution extends AbstractFunctionExecution {
 	
 
 	private RegionService regionService;

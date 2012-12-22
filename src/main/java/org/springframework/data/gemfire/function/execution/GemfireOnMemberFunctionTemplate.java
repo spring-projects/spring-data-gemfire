@@ -41,7 +41,7 @@ public class GemfireOnMemberFunctionTemplate  extends AbstractFunctionTemplate {
 	}
 	
 		
-	protected FunctionExecution getFunctionExecution() {
+	protected AbstractFunctionExecution getFunctionExecution() {
 		if (distributedMember == null && groups == null) {
 			return new DefaultMemberFunctionExecution();
 		} else if (distributedMember == null) {

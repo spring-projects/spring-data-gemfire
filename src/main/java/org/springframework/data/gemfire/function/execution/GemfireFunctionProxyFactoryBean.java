@@ -22,12 +22,11 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.gemfire.function.config.FunctionId;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionService;
 
 /**
  * A proxy Factory Bean for all non-region function execution interfaces
@@ -35,7 +34,7 @@ import com.gemstone.gemfire.cache.execute.FunctionException;
  * @author David Turanski
  *
  */
-public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, MethodInterceptor, BeanClassLoaderAware, InitializingBean {
+public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, MethodInterceptor, BeanClassLoaderAware {
 
 	protected volatile ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
@@ -45,7 +44,7 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 
 	private volatile boolean initialized;
 
-	protected String functionId;
+	//protected String functionId;
 
 	protected Log logger = LogFactory.getLog(this.getClass());
 
@@ -123,20 +122,6 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 		this.serviceProxy = proxyFactory.getProxy(this.beanClassLoader);
 		this.initialized = true;
 	}
-	
-	protected String annotatedFunctionId(Method method) {
-		FunctionId functionIdAnnotation = method.getAnnotation(FunctionId.class);
-		return (functionIdAnnotation == null) ? null: functionIdAnnotation.value();  
-	}
-	
-
-	/**
-	 * Optional to set a default function Id for a single method interface with no {code}@FunctionId{code} annotations
-	 * @param functionId
-	 */
-	public void setFunctionId(String functionId) {
-		this.functionId = functionId;
-	}
 
 	/*
 	 * Match the result to the declared return type
@@ -163,17 +148,5 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 			}
 		}
 		return result;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (this.functionId != null) {
-		   if (this.methodMetadata.isSingletonInterface()) {
-			   this.methodMetadata.getSingletonMethodMetada().setFunctionId(this.functionId);
-		   }
-		}
 	}
 }

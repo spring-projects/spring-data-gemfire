@@ -20,6 +20,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 /**
  * Base class for function execution bean definition builders
  * @author David Turanski
@@ -54,16 +55,18 @@ abstract class AbstractFunctionExecutionBeanDefinitionBuilder {
 		BeanDefinitionBuilder functionTemplateBuilder = getGemfireOperationsBeanDefinitionBuilder(registry);
 		functionTemplateBuilder.setLazyInit(true);
 		
+		String resultCollectorRef = (String)configuration.getAttribute("resultCollector");
+		if (StringUtils.hasText(resultCollectorRef)){
+			functionTemplateBuilder.addPropertyReference("resultCollector",resultCollectorRef);
+		}
+		
 		AbstractBeanDefinition functionTemplate = functionTemplateBuilder
 				.getBeanDefinition();
 		
 		String functionTemplateName = BeanDefinitionReaderUtils.registerWithGeneratedName(functionTemplate, registry);
 		
 		builder.addConstructorArgReference(functionTemplateName);
-		
-	 
-		builder.addPropertyValue("functionId", (String)configuration.getAttribute("id")); 
- 
+		 
 		return builder.getBeanDefinition(); 
 	}	
 	 

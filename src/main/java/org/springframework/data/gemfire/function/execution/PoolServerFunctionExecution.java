@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * @author David Turanski
  *
  */
-public class PoolServerFunctionExecution extends FunctionExecution implements InitializingBean {
+public class PoolServerFunctionExecution extends AbstractFunctionExecution implements InitializingBean {
 	
 
 	private Pool pool;

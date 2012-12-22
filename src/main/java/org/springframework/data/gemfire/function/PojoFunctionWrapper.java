@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -57,7 +56,7 @@ public class PojoFunctionWrapper implements Function {
 		
 		this.functionArgumentResolver = new FunctionContextInjectingArgumentResolver(method);
 		
-		this.id = StringUtils.hasText(id) ? id : ClassUtils.getQualifiedMethodName(method);
+		this.id = StringUtils.hasText(id) ? id : method.getName();
 		this.target = target;
 		this.method = method;
 

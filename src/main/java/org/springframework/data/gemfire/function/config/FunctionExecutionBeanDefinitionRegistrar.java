@@ -69,6 +69,7 @@ public class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefin
 			if (!StringUtils.hasLength(beanName)) {
 				beanName = BeanDefinitionReaderUtils.generateBeanName(beanDefinition, registry);
 			}
+			
 			AbstractFunctionExecutionBeanDefinitionBuilder builder = FunctionExecutionBeanDefinitionBuilderFactory
 					.newInstance(new FunctionExecutionConfiguration(beanDefinition, functionExecutionAnnotation));
 

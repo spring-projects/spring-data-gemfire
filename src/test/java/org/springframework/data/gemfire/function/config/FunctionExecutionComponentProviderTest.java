@@ -31,41 +31,43 @@ import org.springframework.data.gemfire.function.config.one.TestFunctionExecutio
  *
  */
 public class FunctionExecutionComponentProviderTest {
-	
-   @Test 
-   public void testDiscovery() throws ClassNotFoundException {
-	   List<TypeFilter> includeFilters = new ArrayList<TypeFilter>();
-	   FunctionExecutionComponentProvider provider = new FunctionExecutionComponentProvider(includeFilters,AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes());
-	   Set<BeanDefinition> candidates = provider.findCandidateComponents(this.getClass().getPackage().getName()+".one");
-	   
-	   ScannedGenericBeanDefinition bd = null;
-	   
-	   for (BeanDefinition candidate: candidates) {
-		   if (candidate.getBeanClassName().equals(TestFunctionExecution.class.getName())) {
-			   bd = (ScannedGenericBeanDefinition)candidate;
-		   }
-	   }
-	   
-	   assertNotNull(bd);
-	
-   }
-   
-   @Test 
-   public void testExcludeFilter() throws ClassNotFoundException {
-	   List<TypeFilter> includeFilters = new ArrayList<TypeFilter>();
-	   FunctionExecutionComponentProvider provider = new FunctionExecutionComponentProvider(includeFilters,AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes());
-	   
-	   provider.addExcludeFilter(new AssignableTypeFilter(TestFunctionExecution.class));	   
-	   
-	   Set<BeanDefinition> candidates = provider.findCandidateComponents(this.getClass().getPackage().getName()+".one");
-	   
-	   for (BeanDefinition candidate: candidates) {
-		   if (candidate.getBeanClassName().equals(TestFunctionExecution.class.getName())) {
-			 fail(TestFunctionExecution.class.getName() + " not excluded");
-		   }
-	   }
-   }   
+
+	@Test
+	public void testDiscovery() throws ClassNotFoundException {
+		List<TypeFilter> includeFilters = new ArrayList<TypeFilter>();
+		FunctionExecutionComponentProvider provider = new FunctionExecutionComponentProvider(includeFilters,
+				AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes());
+		Set<BeanDefinition> candidates = provider.findCandidateComponents(this.getClass().getPackage().getName()
+				+ ".one");
+
+		ScannedGenericBeanDefinition bd = null;
+
+		for (BeanDefinition candidate : candidates) {
+			if (candidate.getBeanClassName().equals(TestFunctionExecution.class.getName())) {
+				bd = (ScannedGenericBeanDefinition) candidate;
+			}
+		}
+
+		assertNotNull(bd);
+
+	}
+
+	@Test
+	public void testExcludeFilter() throws ClassNotFoundException {
+		List<TypeFilter> includeFilters = new ArrayList<TypeFilter>();
+		FunctionExecutionComponentProvider provider = new FunctionExecutionComponentProvider(includeFilters,
+				AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes());
+
+		provider.addExcludeFilter(new AssignableTypeFilter(TestFunctionExecution.class));
+
+		Set<BeanDefinition> candidates = provider.findCandidateComponents(this.getClass().getPackage().getName()
+				+ ".one");
+
+		for (BeanDefinition candidate : candidates) {
+			if (candidate.getBeanClassName().equals(TestFunctionExecution.class.getName())) {
+				fail(TestFunctionExecution.class.getName() + " not excluded");
+			}
+		}
+	}
 
 }
-
-

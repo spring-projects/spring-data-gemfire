@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * @author David Turanski
  *
  */
-public class GroupMemberFunctionExecution extends FunctionExecution {
+public class GroupMemberFunctionExecution extends AbstractFunctionExecution {
 	
 	private final String groups[];
 

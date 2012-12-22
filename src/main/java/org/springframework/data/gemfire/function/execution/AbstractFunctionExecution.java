@@ -30,61 +30,57 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 
 /**
  * Base class for * Creating a GemFire {@link Execution} using {@link FunctionService}
+ * Protected setters support method chaining
  * @author  David Turanski
  */
 
-public abstract class FunctionExecution {
+abstract class AbstractFunctionExecution {
 	protected final Log logger = LogFactory.getLog(this.getClass());
 	
-	private volatile ResultCollector<?, ?> collector;
+	private volatile ResultCollector<?, ?> resultCollector;
 	private Object[] args;
 	private  Function function;
 	private  String functionId;
 	private long timeout;
 
-	public FunctionExecution(Function function, Object... args) {
+	public AbstractFunctionExecution(Function function, Object... args) {
 		Assert.notNull(function,"function cannot be null");
 		this.function  = function;
 		this.functionId = function.getId();
 		this.args = args;
 	}
 	
-	public FunctionExecution(String functionId, Object... args) {
+	public AbstractFunctionExecution(String functionId, Object... args) {
 		Assert.isTrue(StringUtils.hasLength(functionId),"functionId cannot be null or empty");
 		this.functionId  = functionId;
 		this.args = args;
 	}
 	
-	protected FunctionExecution() {
-		 
+	AbstractFunctionExecution() {
+	}
+	
+	ResultCollector<?, ?> getCollector() {
+		return resultCollector;
 	}
 
-	
-	
-	public ResultCollector<?, ?> getCollector() {
-		return collector;
-	}
-
-	public Object[] getArgs() {
+	Object[] getArgs() {
 		return args;
 	}
 
-	public String getFunctionId() {
+	String getFunctionId() {
 		return functionId;
 	}
 	
-	public Function getFunction() {
+	Function getFunction() {
 		return function;
 	}
- 
-	public void setCollector(ResultCollector<?,?> collector) {
-		this.collector = collector;
-	} 
 	
-
+	long getTimeout() {
+		return timeout;
+	}	
 		
 	@SuppressWarnings("unchecked")
-	public <T> Iterable<T> execute() {
+	<T> Iterable<T> execute() {
 		Execution execution = this.getExecution();
 		if (getKeys() != null) {
 			execution = execution.withFilter(getKeys());
@@ -93,22 +89,24 @@ public abstract class FunctionExecution {
 			execution = execution.withCollector(getCollector());
 		}
 		
-		ResultCollector<?,?> resultsCollector = null;
+		ResultCollector<?,?> resultCollector = null;
 		
 		execution = execution.withArgs(getArgs());
 		
 		if (isRegisteredFunction()){
 			
-			resultsCollector =  (ResultCollector<?,?>) execution.execute(functionId);
+			resultCollector =  (ResultCollector<?,?>) execution.execute(functionId);
 		} else {
-			resultsCollector = (ResultCollector<?,?>) execution.execute(function);
+			resultCollector = (ResultCollector<?,?>) execution.execute(function);
 		}
+		
+		logger.debug("ResultsCollector:" + resultCollector.getClass().getName());
 		
 		Iterable<T> results = null;
 		
 		if (this.timeout > 0 ){
 			try {
-				results= (Iterable<T>)resultsCollector.getResult(this.timeout, TimeUnit.MILLISECONDS);
+				results= (Iterable<T>)resultCollector.getResult(this.timeout, TimeUnit.MILLISECONDS);
 			}
 			catch (FunctionException e) {
 				throw new RuntimeException(e);
@@ -118,14 +116,14 @@ public abstract class FunctionExecution {
 			}
 		} else {
 			 
-			results =  (Iterable<T>) resultsCollector.getResult();
+			results =  (Iterable<T>) resultCollector.getResult();
 		}
 		
 		return replaceSingletonNullCollectionWithEmptyList(results);
 		
 	}
 	
-	public <T> T executeAndExtract() {
+	<T> T executeAndExtract() {
 		Iterable<T> results = this.execute();
 		if (results == null || !results.iterator().hasNext()) {
 			return null;
@@ -136,17 +134,17 @@ public abstract class FunctionExecution {
 	
 	protected abstract Execution getExecution();
 	
-	protected FunctionExecution setFunctionId(String functionId) {
+	protected AbstractFunctionExecution setFunctionId(String functionId) {
 		this.functionId = functionId;
 		return this;
 	}
 	
-	protected FunctionExecution setFunction(Function function) {
+	protected AbstractFunctionExecution setFunction(Function function) {
 		this.function = function;
 		return this;
 	}
 	
-	protected FunctionExecution setArgs(Object... args) {
+	protected AbstractFunctionExecution setArgs(Object... args) {
 		this.args = args;
 		return this;
 	}
@@ -155,14 +153,16 @@ public abstract class FunctionExecution {
 		return null;
 	}
 		
-	public FunctionExecution setTimeout(long timeout) {
+	protected AbstractFunctionExecution setTimeout(long timeout) {
 		this.timeout = timeout;
 		return this;
 	}
+	
+	protected AbstractFunctionExecution setResultCollector(ResultCollector<?,?> resultCollector) {
+		this.resultCollector = resultCollector;
+		return this;
+	}
 
-	public long getTimeout() {
-		return timeout;
-	}	
 
 	/**
 	 * @return

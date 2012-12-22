@@ -95,7 +95,7 @@ public class FunctionExecutionTests {
 	
 	 
 	
-	private void verifyfunctionExecution(FunctionExecution functionExecution) {
+	private void verifyfunctionExecution(AbstractFunctionExecution functionExecution) {
 		Iterable<String> results = functionExecution
 		.setArgs("1","2","3")
 		.setFunctionId("echoFunction")

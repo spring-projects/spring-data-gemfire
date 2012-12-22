@@ -22,7 +22,7 @@ import org.springframework.data.gemfire.function.config.OnServer;
  * @author David Turanski
  *
  */
-@OnServer(id="testClientOnServerFunction",pool="gemfirePool")
+@OnServer(id="testClientOnServerFunction",pool="gemfirePool",resultCollector="myResultCollector")
 public interface TestClientOnServerFunction {
 	   @FunctionId("f1")
 	   public String getString(Object arg1, @Filter Set<Object> keys) ;

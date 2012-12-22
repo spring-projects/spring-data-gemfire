@@ -11,7 +11,7 @@
 	
 	<gfe:client-region id="r1" pool-name="gemfirePool" />
 	
-	<gfe:pool id="gemfirePool">
+	<gfe:pool id="gemfirePool" >
 		<gfe:server host="localhost" port="12345"/>
 	</gfe:pool>
 	

@@ -66,7 +66,7 @@ public class GemfireOnRegionFunctionTemplate  extends AbstractFunctionTemplate i
 	}
 
 	@Override
-	protected FunctionExecution getFunctionExecution() {		 
+	protected AbstractFunctionExecution getFunctionExecution() {		 
 		return new RegionFunctionExecution(this.region);
 	}
 

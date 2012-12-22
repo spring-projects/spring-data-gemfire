@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * @author David Turanski
  *
  */
-public class PoolServersFunctionExecution extends FunctionExecution {
+public class PoolServersFunctionExecution extends AbstractFunctionExecution {
 	
 
 	private final Pool pool;

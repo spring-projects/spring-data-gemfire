@@ -26,7 +26,6 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.data.gemfire.function.execution.FunctionExecution;
 import org.springframework.util.Assert;
 
 /**
@@ -68,7 +67,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 	/**
 	 * Custom extension of {@link #addIncludeFilter(TypeFilter)} to extend the added {@link TypeFilter}. For the
 	 * {@link TypeFilter} handed we'll have two filters registered: one additionally enforcing the
-	 * {@link FunctionExecutionDefinition} annotation, the other one forcing the extension of {@link FunctionExecution}.
+	 * {@link FunctionExecutionDefinition} annotation, the other one forcing the extension of {@link AbstractFunctionExecution}.
 	 * 
 	 * @see ClassPathScanningCandidateComponentProvider#addIncludeFilter(TypeFilter)
 	 */

@@ -27,11 +27,14 @@ import java.lang.annotation.Target;
 public @interface OnMembers {
 	
 	/**
-	 * The bean name and also the default name of the registered function, if single method on the interface.
-	 * If multiple methods declared use the (@link FunctionId) annotation on each method
-	 * @return the function id
+	 * The bean name 
      */
 	String id() default "";
+	
+	/**
+	 * Optional ResultCollector bean reference
+	 */
+	String resultCollector() default "";
 	
 	//TODO SpEL expression for DistributedMembers?
 	

@@ -19,7 +19,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * @author David Turanski
  *
  */
-public class AllMembersFunctionExecution extends FunctionExecution {
+public class AllMembersFunctionExecution extends AbstractFunctionExecution {
 	
   	@Override
 	protected Execution getExecution() {

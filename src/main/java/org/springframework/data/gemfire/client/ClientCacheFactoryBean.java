@@ -72,6 +72,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			if (pdxReadSerialized != null) {
 				factory.setPdxReadSerialized(pdxReadSerialized);
 			}
+			
 		}
 	}
 

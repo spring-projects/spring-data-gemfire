@@ -28,8 +28,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface GemfireFunction {
 	/**
-	 * The name of the registered function. If not provided the fully qualified method name will be used,
-	 * e.g., 'com.example.SomeClass.someMethod'
+	 * The name of the registered function. If not provided the simple method name will be used
 	 * @return the function id
      */
 	String id() default "";

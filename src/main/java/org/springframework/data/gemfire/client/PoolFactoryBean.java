@@ -179,7 +179,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 					.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
 			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
 			poolFactory.setThreadLocalConnections(threadLocalConnections);
-
+		 
 			pool = poolFactory.create(name);
 		}
 	}

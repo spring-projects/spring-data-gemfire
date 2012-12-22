@@ -43,21 +43,21 @@ public class AnnotationDrivenFunctionsTest {
 	@Test
 	public void testAnnotatedFunctions() {
 	
-		assertTrue(FunctionService.isRegistered(FooFunction.class.getName()+".foo"));
+		assertTrue(FunctionService.isRegistered("foo"));
 		
-		Function function = FunctionService.getFunction(FooFunction.class.getName()+".foo");
+		Function function = FunctionService.getFunction("foo");
 		assertFalse(function.isHA());
 		assertFalse(function.optimizeForWrite());
 		assertFalse(function.hasResult());
 		
-		assertTrue(FunctionService.isRegistered(FooFunction.class.getName()+".bar"));
-		function = FunctionService.getFunction(FooFunction.class.getName()+".bar");
+		assertTrue(FunctionService.isRegistered("bar"));
+		function = FunctionService.getFunction("bar");
 		assertTrue(function.isHA());
 		assertFalse(function.optimizeForWrite());
 		assertTrue(function.hasResult());
 		
-		assertTrue(FunctionService.isRegistered("foo"));
-		function = FunctionService.getFunction("foo");
+		assertTrue(FunctionService.isRegistered("foo2"));
+		function = FunctionService.getFunction("foo2");
 		assertTrue(function.isHA());
 		assertTrue(function.optimizeForWrite());
 		assertTrue(function.hasResult());
@@ -84,7 +84,7 @@ public class AnnotationDrivenFunctionsTest {
 	
 	@Component
 	public static class Foo2Function {
-		@GemfireFunction(id="foo", HA=true,optimizeForWrite=true)
+		@GemfireFunction(id="foo2", HA=true,optimizeForWrite=true)
 		public List<String> foo (Object someVal, @RegionData Map<?,?> region, Object someOtherValue) {
 			return null;
 		}
