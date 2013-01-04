@@ -27,7 +27,6 @@ import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BeanWrapper;
-import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
@@ -127,8 +126,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 		PersistentEntityParameterValueProvider<GemfirePersistentProperty> provider = new PersistentEntityParameterValueProvider<GemfirePersistentProperty>(
 				entity, propertyValueProvider, null);
-		provider.setSpELEvaluator(new DefaultSpELExpressionEvaluator(reader, context));
-
+	
 		Object instance = instantiator.createInstance(entity, provider);
 
 		final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper
