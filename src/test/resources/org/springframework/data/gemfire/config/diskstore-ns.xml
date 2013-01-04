@@ -32,7 +32,7 @@
         <gfe:entry-ttl timeout="${ttl}" action="DESTROY"/>
     </gfe:partitioned-region>
 	
-	<gfe:replicated-region id="replicated-data" close="true" destroy="false" disk-store-ref="diskStore1">
+	<gfe:replicated-region id="replicated-data" close="true" destroy="false" disk-store-ref="diskStore1" persistent="false">
 		<gfe:region-ttl timeout="${ttl}" action="DESTROY"/>
 		<gfe:region-tti timeout="400" action="INVALIDATE"/>
 

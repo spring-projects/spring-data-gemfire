@@ -159,8 +159,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		if (diskStoreName != null) {
 			regionFactory.setDiskStoreName(diskStoreName);
-			Assert.isTrue(!isNotPersistent(), "it is invalid to specify a disk store if 'persistent' is set to false.");
-			persistent = true;
 		}
 
 		resolveDataPolicy(regionFactory, persistent, dataPolicy);
