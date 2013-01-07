@@ -1,0 +1,890 @@
+package org.springframework.data.gemfire.test;
+import static org.mockito.Mockito.*;
+ 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.naming.Context;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.Declarable;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.GatewayException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionExistsException;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
+import com.gemstone.gemfire.cache.control.ResourceManager;
+import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexExistsException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.IndexNameConflictException;
+import com.gemstone.gemfire.cache.query.IndexType;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.RegionNotFoundException;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
+import com.gemstone.gemfire.cache.util.BridgeServer;
+import com.gemstone.gemfire.cache.util.Gateway;
+import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
+import com.gemstone.gemfire.cache.util.GatewayHub;
+import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
+import com.gemstone.gemfire.cache.wan.GatewayReceiver;
+import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.pdx.PdxInstance;
+import com.gemstone.gemfire.pdx.PdxInstanceFactory;
+import com.gemstone.gemfire.pdx.PdxSerializer;
+public class StubCache implements Cache {
+
+	private Properties properties;
+	
+	private DistributedSystem distributedSystem;
+
+	private CacheTransactionManager cacheTransactionManager;
+
+	private boolean copyOnRead;
+
+	private Declarable initializer;
+
+	private Context jndiContext;
+
+	private LogWriter logWriter;
+
+	private String name;
+
+	private String pdxDiskStore;
+
+	private boolean pdxIgnoreUnreadFields;
+
+	private boolean pdxPersistent;
+
+	private boolean pdxReadSerialized;
+
+	private PdxSerializer pdxSerializer;
+
+	private ResourceManager resourceManager;
+
+	private LogWriter securityLogger;
+
+	private boolean closed;
+
+	private GatewayConflictResolver gatewayConflictResolver;
+
+	private List<GatewayHub> gatewayHubs;
+
+	private Set<GatewayReceiver> gatewayReceivers;
+
+	private Set<GatewaySender> gatewaySenders;
+
+	private int lockLease;
+
+	private int lockTimeout;
+
+	private int messageSyncInterval;
+
+	private int searchTimeout;
+
+	private boolean server;
+
+	private HashMap<String, Region> allRegions;
+
+	public StubCache(){
+		this.allRegions = new HashMap<String,Region>();
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#createDiskStoreFactory()
+	 */
+	@Override
+	public DiskStoreFactory createDiskStoreFactory() {
+		return new StubDiskStore();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#findDiskStore(java.lang.String)
+	 */
+	@Override
+	public DiskStore findDiskStore(String name) {
+		return StubDiskStore.diskStores.get(name);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getCacheTransactionManager()
+	 */
+	@Override
+	public CacheTransactionManager getCacheTransactionManager() {
+		if (cacheTransactionManager == null) {
+			cacheTransactionManager = new StubCacheTransactionMananger();
+		}
+		return cacheTransactionManager;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getCopyOnRead()
+	 */
+	@Override
+	public boolean getCopyOnRead() {
+		return this.copyOnRead;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getDistributedSystem()
+	 */
+	@Override
+	public DistributedSystem getDistributedSystem() {
+		if (distributedSystem == null) {
+			distributedSystem = mockDistributedSystem();
+		
+		}
+		return distributedSystem;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getInitializer()
+	 */
+	@Override
+	public Declarable getInitializer() {
+		return this.initializer;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getInitializerProps()
+	 */
+	@Override
+	public Properties getInitializerProps() {
+		return this.properties;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getJNDIContext()
+	 */
+	@Override
+	public Context getJNDIContext() {
+		return this.jndiContext;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getLogger()
+	 */
+	@Override
+	public LogWriter getLogger() {
+		return this.logWriter;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getName()
+	 */
+	@Override
+	public String getName() {
+		return this.properties == null? null: (String)this.properties.get("name");
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxDiskStore()
+	 */
+	@Override
+	public String getPdxDiskStore() {
+		return this.pdxDiskStore;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxIgnoreUnreadFields()
+	 */
+	@Override
+	public boolean getPdxIgnoreUnreadFields() {
+		return this.pdxIgnoreUnreadFields;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxPersistent()
+	 */
+	@Override
+	public boolean getPdxPersistent() {
+		return this.pdxPersistent;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxReadSerialized()
+	 */
+	@Override
+	public boolean getPdxReadSerialized() {
+		return this.pdxReadSerialized;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxSerializer()
+	 */
+	@Override
+	public PdxSerializer getPdxSerializer() {
+		return this.pdxSerializer;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getRegionAttributes(java.lang.String)
+	 */
+	@Override
+	public <K, V> RegionAttributes<K, V> getRegionAttributes(String region) {
+		return allRegions().get(region).getAttributes();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getResourceManager()
+	 */
+	@Override
+	public ResourceManager getResourceManager() {
+		return this.resourceManager;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#getSecurityLogger()
+	 */
+	@Override
+	public LogWriter getSecurityLogger() {
+		return this.securityLogger;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#listRegionAttributes()
+	 */
+	@Override
+	public <K, V> Map<String, RegionAttributes<K, V>> listRegionAttributes() {
+		Map<String, RegionAttributes<K, V>> attributes = new HashMap<String, RegionAttributes<K, V>>();
+		for (Entry<String, Region> entry: allRegions().entrySet()) {
+			attributes.put(entry.getKey(), entry.getValue().getAttributes());
+		}
+		return attributes;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#loadCacheXml(java.io.InputStream)
+	 */
+	@Override
+	public void loadCacheXml(InputStream is) throws TimeoutException, CacheWriterException, GatewayException,
+			RegionExistsException {
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#setCopyOnRead(boolean)
+	 */
+	@Override
+	public void setCopyOnRead(boolean arg0) {
+		this.copyOnRead = arg0;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.GemFireCache#setRegionAttributes(java.lang.String, com.gemstone.gemfire.cache.RegionAttributes)
+	 */
+	@Override
+	public <K, V> void setRegionAttributes(String region, RegionAttributes<K, V> attributes) {
+		RegionFactory<K,V> rf = new MockRegionFactory<K, V>(this).createMockRegionFactory(attributes);
+		rf.create(region);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.RegionService#close()
+	 */
+	@Override
+	public void close() {
+		this.closed = true;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.RegionService#createPdxEnum(java.lang.String, java.lang.String, int)
+	 */
+	@Override
+	public PdxInstance createPdxEnum(String arg0, String arg1, int arg2) {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.RegionService#createPdxInstanceFactory(java.lang.String)
+	 */
+	@Override
+	public PdxInstanceFactory createPdxInstanceFactory(String arg0) {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.RegionService#getCancelCriterion()
+	 */
+	@Override
+	public CancelCriterion getCancelCriterion() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.RegionService#getQueryService()
+	 */
+	@Override
+	public QueryService getQueryService() {
+		QueryService qs = null;
+		try {
+			qs =  mockQueryService();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		return qs;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.RegionService#getRegion(java.lang.String)
+	 */
+	@Override
+	public <K, V> Region<K, V> getRegion(String name) {
+		return allRegions().get(name);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.RegionService#isClosed()
+	 */
+	@Override
+	public boolean isClosed() {
+		return this.closed;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.RegionService#rootRegions()
+	 */
+	@Override
+	public Set<Region<?, ?>> rootRegions() {
+		Set<Region<?,?>> rootRegions = new HashSet<Region<?,?>>();
+		for (String key: allRegions().keySet()) {
+			if (!key.contains("/")) {
+				rootRegions.add(allRegions().get(key));
+			}
+		}
+		return rootRegions;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#addBridgeServer()
+	 */
+	@Override
+	@Deprecated
+	public BridgeServer addBridgeServer() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#addCacheServer()
+	 */
+	@Override
+	public CacheServer addCacheServer() {
+		return mockCacheServer();
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#addGatewayHub(java.lang.String, int)
+	 */
+	@Override
+	public GatewayHub addGatewayHub(String name, int port) {
+		return mockGatewayHub();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#close(boolean)
+	 */
+	@Override
+	@Deprecated
+	public void close(boolean arg0) {
+		this.closed = true;
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createAsyncEventQueueFactory()
+	 */
+	@Override
+	public AsyncEventQueueFactory createAsyncEventQueueFactory() {
+		return new StubAsyncEventQueueFactory();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createGatewayReceiverFactory()
+	 */
+	@Override
+	public GatewayReceiverFactory createGatewayReceiverFactory() {
+		return new StubGatewayReceiverFactory();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createGatewaySenderFactory()
+	 */
+	@Override
+	public GatewaySenderFactory createGatewaySenderFactory() {
+		return new StubGatewaySenderFactory();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createRegion(java.lang.String, com.gemstone.gemfire.cache.RegionAttributes)
+	 */
+	@Override
+	@Deprecated
+	public <K, V> Region<K, V> createRegion(String arg0, RegionAttributes<K, V> arg1) throws RegionExistsException,
+			TimeoutException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory()
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <K, V> RegionFactory<K, V> createRegionFactory() {
+		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createRegionFactory();
+		return regionFactory;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionShortcut)
+	 */
+	@Override
+	public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortCut) {
+		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createRegionFactory();
+		return regionFactory;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(java.lang.String)
+	 */
+	@Override
+	public <K, V> RegionFactory<K, V> createRegionFactory(String arg0) {
+		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createRegionFactory();
+		return regionFactory;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionAttributes)
+	 */
+	@Override
+	public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
+		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createMockRegionFactory(regionAttributes);
+		return regionFactory;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createVMRegion(java.lang.String, com.gemstone.gemfire.cache.RegionAttributes)
+	 */
+	@Override
+	@Deprecated
+	public <K, V> Region<K, V> createVMRegion(String arg0, RegionAttributes<K, V> arg1) throws RegionExistsException,
+			TimeoutException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getAdminMembers()
+	 */
+	@Override
+	public Set<DistributedMember> getAdminMembers() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getAsyncEventQueue(java.lang.String)
+	 */
+	@Override
+	public AsyncEventQueue getAsyncEventQueue(String name) {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getAsyncEventQueues()
+	 */
+	@Override
+	public Set<AsyncEventQueue> getAsyncEventQueues() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getBridgeServers()
+	 */
+	@Override
+	@Deprecated
+	public List<CacheServer> getBridgeServers() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getCacheServers()
+	 */
+	@Override
+	public List<CacheServer> getCacheServers() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getGatewayConflictResolver()
+	 */
+	@Override
+	public GatewayConflictResolver getGatewayConflictResolver() {
+		return this.gatewayConflictResolver;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHub()
+	 */
+	@Override
+	@Deprecated
+	public GatewayHub getGatewayHub() {
+		return mockGatewayHub();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHub(java.lang.String)
+	 */
+	@Override
+	public GatewayHub getGatewayHub(String name) {
+		return mockGatewayHub();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHubs()
+	 */
+	@Override
+	public List<GatewayHub> getGatewayHubs() {
+		return this.gatewayHubs;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getGatewayReceivers()
+	 */
+	@Override
+	public Set<GatewayReceiver> getGatewayReceivers() {
+		return this.gatewayReceivers;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getGatewaySender(java.lang.String)
+	 */
+	@Override
+	public GatewaySender getGatewaySender(String name) {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getGatewaySenders()
+	 */
+	@Override
+	public Set<GatewaySender> getGatewaySenders() {
+		return this.gatewaySenders;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getLockLease()
+	 */
+	@Override
+	public int getLockLease() {
+		return this.lockLease;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getLockTimeout()
+	 */
+	@Override
+	public int getLockTimeout() {
+		return this.lockTimeout;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getLoggerI18n()
+	 */
+	@Override
+	@Deprecated
+	public LogWriterI18n getLoggerI18n() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getMembers()
+	 */
+	@Override
+	public Set<DistributedMember> getMembers() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getMembers(com.gemstone.gemfire.cache.Region)
+	 */
+	@Override
+	public Set<DistributedMember> getMembers(Region arg0) {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getMessageSyncInterval()
+	 */
+	@Override
+	public int getMessageSyncInterval() {
+		return this.messageSyncInterval;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getSearchTimeout()
+	 */
+	@Override
+	public int getSearchTimeout() {
+		return this.searchTimeout;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getSecurityLoggerI18n()
+	 */
+	@Override
+	@Deprecated
+	public LogWriterI18n getSecurityLoggerI18n() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#getSnapshotService()
+	 */
+	@Override
+	public CacheSnapshotService getSnapshotService() {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#isServer()
+	 */
+	@Override
+	public boolean isServer() {
+		return this.server;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#readyForEvents()
+	 */
+	@Override
+	@Deprecated
+	public void readyForEvents() {
+		// TODO Auto-generated method stub	
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#setGatewayConflictResolver(com.gemstone.gemfire.cache.util.GatewayConflictResolver)
+	 */
+	@Override
+	public void setGatewayConflictResolver(GatewayConflictResolver arg0) {
+		this.gatewayConflictResolver = arg0;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#setGatewayHub(java.lang.String, int)
+	 */
+	@Override
+	@Deprecated
+	public GatewayHub setGatewayHub(String arg0, int arg1) {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#setIsServer(boolean)
+	 */
+	@Override
+	public void setIsServer(boolean arg0) {
+		this.server = arg0;
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#setLockLease(int)
+	 */
+	@Override
+	public void setLockLease(int arg0) {
+		this.lockLease = arg0;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#setLockTimeout(int)
+	 */
+	@Override
+	public void setLockTimeout(int arg0) {
+		this.lockTimeout = arg0;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#setMessageSyncInterval(int)
+	 */
+	@Override
+	public void setMessageSyncInterval(int arg0) {
+		this.messageSyncInterval = arg0;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#setSearchTimeout(int)
+	 */
+	@Override
+	public void setSearchTimeout(int arg0) {
+		this.searchTimeout = arg0;
+	}
+	
+	/**
+	 * @return
+	 */
+	DistributedSystem mockDistributedSystem() {
+		DistributedSystem ds = mock(DistributedSystem.class);
+		DistributedMember dm = mockDistributedMember();
+		when(ds.getName()).thenAnswer(new Answer<String>() {
+			@Override
+			public String answer(InvocationOnMock invocation) throws Throwable {
+				return getName();
+			}		
+		});
+		when(ds.getDistributedMember()).thenReturn(dm);
+		return ds;
+	}
+	
+	DistributedMember mockDistributedMember() {
+		DistributedMember dm = mock(DistributedMember.class);
+		when(dm.getHost()).thenReturn("mockDistributedMember.host");
+		when(dm.getName()).thenReturn("mockDistributedMember");
+		return dm;
+	}
+	
+	/**
+	 * @return
+	 */
+	CacheServer mockCacheServer() {		
+		return new StubCacheServer();
+	}
+	
+	GatewayHub mockGatewayHub() {
+		final Gateway gw = mock(Gateway.class);
+		final GatewayQueueAttributes queueAttributes= mock(GatewayQueueAttributes.class);
+	    when(gw.getQueueAttributes()).thenReturn(queueAttributes);
+		GatewayHub gwh = mock(GatewayHub.class);
+		when(gwh.addGateway(anyString(),anyInt())).thenAnswer(new Answer<Gateway>() {
+
+			@Override
+			public Gateway answer(InvocationOnMock invocation) throws Throwable {
+				// TODO Auto-generated method stub
+				return gw;
+			}
+			
+		});
+		return gwh;
+	}
+	
+	QueryService mockQueryService() throws RegionNotFoundException, IndexInvalidException, IndexNameConflictException, IndexExistsException, UnsupportedOperationException {
+		 
+		QueryService qs = mock(QueryService.class);
+		
+		when(qs.getIndexes()).thenReturn(new ArrayList<Index>());
+		 
+		
+		when(qs.createIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>(){
+			@Override
+			public Index answer(InvocationOnMock invocation) throws Throwable {
+				String indexName = (String)invocation.getArguments()[0];
+				String indexedExpression = (String)invocation.getArguments()[1];
+				String fromClause = (String)invocation.getArguments()[2];
+				return mockIndex(indexName, null, indexedExpression, fromClause, null, null);
+			}
+		});
+		when(qs.createIndex(anyString(), anyString(),anyString(),anyString())).thenAnswer(new Answer<Index>(){
+			@Override
+			public Index answer(InvocationOnMock invocation) throws Throwable {
+				String indexName = (String)invocation.getArguments()[0];
+				String indexedExpression = (String)invocation.getArguments()[1];
+				String fromClause = (String)invocation.getArguments()[2];
+				 
+				return mockIndex(indexName, null, indexedExpression, fromClause, null, null);
+			}
+		});
+		
+		when(qs.createIndex(anyString(), any(IndexType.class), anyString(), anyString())).thenAnswer(new Answer<Index>(){
+			@Override
+			public Index answer(InvocationOnMock invocation) throws Throwable {
+				String indexName = (String)invocation.getArguments()[0];
+				IndexType type = (IndexType)invocation.getArguments()[1];
+				String indexedExpression = (String)invocation.getArguments()[2];
+				String fromClause = (String)invocation.getArguments()[3];
+				
+				return mockIndex(indexName, type, indexedExpression, null, fromClause, null);
+			}
+		});
+		
+		
+		
+		when(qs.createIndex(anyString(), any(IndexType.class),anyString(), anyString(), anyString())).thenAnswer(new Answer<Index>(){
+			@Override
+			public Index answer(InvocationOnMock invocation) throws Throwable {
+				String indexName = (String)invocation.getArguments()[0];
+				IndexType type = (IndexType)invocation.getArguments()[1];
+				String indexedExpression = (String)invocation.getArguments()[2];
+				String fromClause = (String)invocation.getArguments()[3];
+				String imports = (String)invocation.getArguments()[4];
+				return mockIndex(indexName, type, indexedExpression, null, fromClause, imports);
+			}
+		});
+		
+		 
+		return qs;
+	}
+	
+	Index mockIndex(String indexName, IndexType indexType,String indexedExpression, String regionPath, String fromClause, String imports){
+		Index idx = mock(Index.class);
+		when(idx.getFromClause()).thenReturn(fromClause);
+		when(idx.getIndexedExpression()).thenReturn(indexedExpression);
+		when(idx.getName()).thenReturn(indexName);
+		when(idx.getType()).thenReturn(indexType);
+		
+		
+		if (fromClause != null && fromClause.length() >= 2) {
+			Region region = mock(Region.class);
+			String name = fromClause.substring(1).split(" ")[0];
+			when(region.getName()).thenReturn(name);
+			when(idx.getRegion()).thenReturn(region);
+		}
+		return idx;
+	}
+	
+	public Map<String,Region> allRegions() {
+		return this.allRegions;
+	}
+	
+	GatewaySender mockGatewaySender(String id, int remoteId) {
+		GatewaySender gwSender = mock(GatewaySender.class);
+		when(gwSender.getId()).thenReturn(id);
+		when(gwSender.getRemoteDSId()).thenReturn(remoteId);
+		return gwSender;
+	}
+
+	/**
+	 * @param props
+	 */
+	public void setProperties(Properties props) {
+		this.properties = props;
+	}
+	
+}

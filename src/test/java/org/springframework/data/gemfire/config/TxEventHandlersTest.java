@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.config;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
 import javax.annotation.Resource;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -37,7 +39,7 @@ import com.gemstone.gemfire.cache.TransactionWriterException;
  * @author David Turanski
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(GemfireTestRunner.class)
 @ContextConfiguration("tx-listeners-and-writers.xml")
 public class TxEventHandlersTest {
 	@Autowired
@@ -52,19 +54,16 @@ public class TxEventHandlersTest {
 	@Resource(name = "gemfireCache")
 	Cache cache;
 
-	@SuppressWarnings("rawtypes")
-	@Resource(name = "local")
-	Region local;
+	 
 
 	@Test
 	public void test() throws Exception {
-		cache.getCacheTransactionManager().begin();
-		local.put("hello", "world");
-		cache.getCacheTransactionManager().commit();
-		assertEquals("txListener1", txListener1.value);
-		assertEquals("txListener2", txListener2.value);
-		assertEquals("txWriter", txWriter.value);
-
+		 
+		TransactionListener[] listeners = cache.getCacheTransactionManager().getListeners();
+		assertEquals(2,listeners.length);
+		assertSame(txListener1,listeners[0]);
+		assertSame(txListener2,listeners[1]);
+		assertSame(txWriter,cache.getCacheTransactionManager().getWriter());
 	}
 
 	public static class TestListener implements TransactionListener, BeanNameAware {

@@ -113,6 +113,7 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 		}
 		
 		diskStore = diskStoreFactory.create(name == null ? DiskStoreFactory.DEFAULT_DISK_STORE_NAME : name);
+		Assert.notNull(diskStore);
 	}
 
 	public void setCache(GemFireCache cache) {

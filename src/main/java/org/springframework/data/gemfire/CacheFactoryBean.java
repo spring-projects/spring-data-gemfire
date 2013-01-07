@@ -40,17 +40,16 @@ import org.springframework.util.CollectionUtils;
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.datasource.ConfigProperty;
 import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
 import com.gemstone.gemfire.pdx.PdxSerializable;
@@ -74,7 +73,8 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @author David Turanski
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
-		FactoryBean<GemFireCache>, PersistenceExceptionTranslator {
+		FactoryBean<Cache>, PersistenceExceptionTranslator {
+	
 	/**
 	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
 	 * 
@@ -106,34 +106,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			}
 			if (pdxReadSerialized != null) {
 				factory.setPdxReadSerialized(pdxReadSerialized);
-			}
-		}
-	}
-
-	private class InternalCacheOptions implements Runnable {
-		private final GemFireCacheImpl cacheImpl;
-
-		InternalCacheOptions(GemFireCache cache) {
-			this.cacheImpl = (GemFireCacheImpl) cache;
-		}
-
-		@Override
-		public void run() {
-			if (lockLease != null) {
-				cacheImpl.setLockLease(lockLease);
-			}
-			if (lockTimeout != null) {
-				cacheImpl.setLockTimeout(lockTimeout);
-			}
-			if (searchTimeout != null) {
-				cacheImpl.setSearchTimeout(searchTimeout);
-			}
-			if (messageSyncInterval != null) {
-				cacheImpl.setMessageSyncInterval(messageSyncInterval);
-			}
-
-			if (gatewayConflictResolver != null) {
-				cacheImpl.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
 			}
 		}
 	}
@@ -214,7 +186,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	protected GemFireCache cache;
+	protected Cache cache;
 
 	protected Resource cacheXml;
 
@@ -283,7 +255,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			// first look for open caches
 			String msg = null;
 			try {
-				cache = fetchCache();
+				cache =(Cache)fetchCache();
 				msg = "Retrieved existing";
 			} catch (CacheClosedException ex) {
 
@@ -300,14 +272,29 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 				}
 
 				// fall back to cache creation
-				cache = createCache(factory);
+				cache = (Cache)createCache(factory);
 				msg = "Created";
 			}
 			if (this.copyOnRead != null) {
 				cache.setCopyOnRead(this.copyOnRead);
 			}
+			
+			if (lockLease != null) {
+				cache.setLockLease(lockLease);
+			}
+			if (lockTimeout != null) {
+				cache.setLockTimeout(lockTimeout);
+			}
+			if (searchTimeout != null) {
+				cache.setSearchTimeout(searchTimeout);
+			}
+			if (messageSyncInterval != null) {
+				cache.setMessageSyncInterval(messageSyncInterval);
+			}
 
-			applyInternalCacheOptions();
+			if (gatewayConflictResolver != null) {
+				cache.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
+			}
 
 			DistributedSystem system = cache.getDistributedSystem();
 			DistributedMember member = system.getDistributedMember();
@@ -402,21 +389,17 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			new PdxOptions((CacheFactory) factory).run();
 		}
 	}
-
-	protected void applyInternalCacheOptions() {
-		new InternalCacheOptions(cache).run();
-	}
-
+	
 	protected Object createFactory(Properties props) {
 		return new CacheFactory(props);
 	}
 
 	protected GemFireCache fetchCache() {
-		return CacheFactory.getAnyInstance();
+		return (cache == null)? CacheFactory.getAnyInstance(): cache;
 	}
 
 	protected GemFireCache createCache(Object factory) {
-		return ((CacheFactory) factory).create();
+		return (cache == null)? ((CacheFactory) factory).create() : cache;
 	}
 
 	@Override
@@ -456,13 +439,13 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	@Override
-	public GemFireCache getObject() throws Exception {
+	public Cache getObject() throws Exception {
 		init();
 		return cache;
 	}
 
 	@Override
-	public Class<? extends GemFireCache> getObjectType() {
+	public Class<? extends Cache> getObjectType() {
 		return (cache != null ? cache.getClass() : Cache.class);
 	}
 
@@ -571,7 +554,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	/**
 	 * @return the beanFactory
 	 */
-	protected BeanFactory getBeanFactory() {
+	public BeanFactory getBeanFactory() {
 		return beanFactory;
 	}
 
@@ -579,7 +562,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * 
 	 * @param copyOnRead
 	 */
-	public void setCopyOnRead(boolean copyOnRead) {
+	public void setCopyOnRead(Boolean copyOnRead) {
 		this.copyOnRead = copyOnRead;
 	}
 
@@ -587,7 +570,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * 
 	 * @param lockTimeout
 	 */
-	public void setLockTimeout(int lockTimeout) {
+	public void setLockTimeout(Integer lockTimeout) {
 		this.lockTimeout = lockTimeout;
 	}
 
@@ -595,7 +578,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * 
 	 * @param lockLease
 	 */
-	public void setLockLease(int lockLease) {
+	public void setLockLease(Integer lockLease) {
 		this.lockLease = lockLease;
 	}
 
@@ -603,7 +586,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * 
 	 * @param messageSyncInterval
 	 */
-	public void setMessageSyncInterval(int messageSyncInterval) {
+	public void setMessageSyncInterval(Integer messageSyncInterval) {
 		this.messageSyncInterval = messageSyncInterval;
 	}
 
@@ -611,7 +594,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * 
 	 * @param searchTimeout
 	 */
-	public void setSearchTimeout(int searchTimeout) {
+	public void setSearchTimeout(Integer searchTimeout) {
 		this.searchTimeout = searchTimeout;
 	}
 
@@ -673,4 +656,154 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		this.jndiDataSources = jndiDataSources;
 	}
 
+	/**
+	 * @return the cacheXml
+	 */
+	public Resource getCacheXml() {
+		return cacheXml;
+	}
+
+	/**
+	 * @return the properties
+	 */
+	public Properties getProperties() {
+		return properties;
+	}
+
+	/**
+	 * @return the beanClassLoader
+	 */
+	public ClassLoader getBeanClassLoader() {
+		return beanClassLoader;
+	}
+
+	/**
+	 * @return the beanName
+	 */
+	public String getBeanName() {
+		return beanName;
+	}
+
+	/**
+	 * @return the pdxSerializer
+	 */
+	public Object getPdxSerializer() {
+		return pdxSerializer;
+	}
+
+	/**
+	 * @return the pdxPersistent
+	 */
+	public Boolean getPdxPersistent() {
+		return pdxPersistent;
+	}
+
+	/**
+	 * @return the pdxReadSerialized
+	 */
+	public Boolean getPdxReadSerialized() {
+		return pdxReadSerialized;
+	}
+
+	/**
+	 * @return the pdxIgnoreUnreadFields
+	 */
+	public Boolean getPdxIgnoreUnreadFields() {
+		return pdxIgnoreUnreadFields;
+	}
+
+	/**
+	 * @return the pdxDiskStoreName
+	 */
+	public String getPdxDiskStoreName() {
+		return pdxDiskStoreName;
+	}
+
+	/**
+	 * @return the copyOnRead
+	 */
+	public Boolean getCopyOnRead() {
+		return copyOnRead;
+	}
+
+	/**
+	 * @return the lockTimeout
+	 */
+	public Integer getLockTimeout() {
+		return lockTimeout;
+	}
+
+	/**
+	 * @return the lockLease
+	 */
+	public Integer getLockLease() {
+		return lockLease;
+	}
+
+	/**
+	 * @return the messageSyncInterval
+	 */
+	public Integer getMessageSyncInterval() {
+		return messageSyncInterval;
+	}
+
+	/**
+	 * @return the searchTimeout
+	 */
+	public Integer getSearchTimeout() {
+		return searchTimeout;
+	}
+
+	/**
+	 * @return the transactionListeners
+	 */
+	public List<TransactionListener> getTransactionListeners() {
+		return transactionListeners;
+	}
+
+	/**
+	 * @return the transactionWriter
+	 */
+	public TransactionWriter getTransactionWriter() {
+		return transactionWriter;
+	}
+
+	/**
+	 * @return the evictionHeapPercentage
+	 */
+	public Float getEvictionHeapPercentage() {
+		return evictionHeapPercentage;
+	}
+
+	/**
+	 * @return the criticalHeapPercentage
+	 */
+	public Float getCriticalHeapPercentage() {
+		
+		return criticalHeapPercentage;
+	}
+
+	/**
+	 * @return the dynamicRegionSupport
+	 */
+	public DynamicRegionSupport getDynamicRegionSupport() {
+		return dynamicRegionSupport;
+	}
+
+	/**
+	 * @return the jndiDataSources
+	 */
+	public List<JndiDataSource> getJndiDataSources() {
+		return jndiDataSources;
+	}
+
+	/**
+	 * @return the gatewayConflictResolver
+	 */
+	public Object getGatewayConflictResolver() {
+		return gatewayConflictResolver;
+	}
+	public GemfireBeanFactoryLocator getBeanFactoryLocator() {
+		return factoryLocator;
+	}
 }

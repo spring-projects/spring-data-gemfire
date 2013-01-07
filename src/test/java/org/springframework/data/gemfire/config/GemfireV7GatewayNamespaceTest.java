@@ -31,13 +31,19 @@ import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
 import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
+import org.springframework.test.context.ContextConfiguration;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -59,38 +65,11 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @author David Turanski
  * 
  */
-public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest implements BeanPostProcessor {
-	 
-	@Override
-	protected String location() {
-		return "/org/springframework/data/gemfire/config/gateway-v7-ns.xml";
-	}
+@RunWith(GemfireTestRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/config/gateway-v7-ns.xml")
+public class GemfireV7GatewayNamespaceTest  {
 	
-	@Override
-	protected void configureContext() {
-		ctx.getBeanFactory().addBeanPostProcessor(this);
-	}
-
-	@Before
-	@Override
-	public void createCtx() {
-		if (ParsingUtils.GEMFIRE_VERSION.startsWith("7")) {
-			super.createCtx();
-		}
-	}
-
-	/*
-	 * Faster this way
-	 */
-	@Test
-	public void test() throws Exception {
-		if (ctx != null) {
-			testGatewaySender();
-			testInnerGatewaySender();
-			testInnerGatewayReceiver();
-			testAsyncEventQueue();
-		}
-	}
+	@Autowired ConfigurableApplicationContext ctx;
 
 	@AfterClass
 	public static void tearDown() {
@@ -108,7 +87,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest impleme
 	/**
 	 * 
 	 */
-	private void testAsyncEventQueue() {
+	@Test
+	public void testAsyncEventQueue() {
 		AsyncEventQueue aseq = ctx.getBean("async-event-queue", AsyncEventQueue.class);
 		assertEquals(10, aseq.getBatchSize());
 		assertTrue(aseq.isPersistent());
@@ -116,7 +96,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest impleme
 		assertEquals(50, aseq.getMaximumQueueMemory());
 	}
 
-	private void testGatewaySender() throws Exception {
+	@Test
+	public void testGatewaySender() throws Exception {
 		GatewaySenderFactoryBean gwsfb = ctx.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
 		Cache cache = TestUtils.readField("cache", gwsfb);
 		assertNotNull(cache);
@@ -138,16 +119,12 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest impleme
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testInnerGatewaySender() throws Exception {
+	@Test
+	public void testInnerGatewaySender() throws Exception {
 		Region<?, ?> region = ctx.getBean("region-inner-gateway-sender", Region.class);
 		GatewaySender gws = ctx.getBean("gateway-sender", GatewaySender.class);
 		assertNotNull(region.getAttributes().getGatewaySenderIds());
 		assertEquals(2, region.getAttributes().getGatewaySenderIds().size());
-
-//		// Isolate the inner gateway
-//		Set<String> gatewaySenders = region.getAttributes().getGatewaySenderIds();
-//		assertTrue(gatewaySenders.remove(gws));
-//		gatewaySenders.remove(gws);
 
 		RegionFactoryBean rfb = ctx.getBean("&region-inner-gateway-sender", RegionFactoryBean.class);
 		Object[] gwsenders = TestUtils.readField("gatewaySenders", rfb);
@@ -179,7 +156,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest impleme
 		assertEquals(3000, gws.getSocketReadTimeout());
 	}
 
-	private void testInnerGatewayReceiver() {
+	@Test
+	public void testInnerGatewayReceiver() {
 		GatewayReceiver gwr = ctx.getBean("gateway-receiver", GatewayReceiver.class);
 		assertEquals(12345, gwr.getStartPort());
 		assertEquals(23456, gwr.getEndPort());
@@ -253,249 +231,6 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest impleme
 		}
 
 	}
-	
-	
-	public static class StubAsyncEventQueueFactory  implements AsyncEventQueueFactory {
-		
-		private AsyncEventListener listener;
-	
-		private AsyncEventQueue asyncEventQueue = mock(AsyncEventQueue.class);
-		
-		private boolean persistent;
-		private int maxQueueMemory;
-		private String diskStoreName;
-		private int batchSize;
 
-		private String name;
-		
-		@Override
-		public AsyncEventQueue create(String name, AsyncEventListener listener) {
-			this.name = name;
-			this.listener = listener;
-			
-			when(asyncEventQueue.getAsyncEventListener()).thenReturn(this.listener);
-			when(asyncEventQueue.getBatchSize()).thenReturn(this.batchSize);
-			when(asyncEventQueue.getDiskStoreName()).thenReturn(this.diskStoreName);
-			when(asyncEventQueue.isPersistent()).thenReturn(this.persistent);
-			when(asyncEventQueue.getId()).thenReturn(this.name);
-			when(asyncEventQueue.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
-			return this.asyncEventQueue;
-		}
-
-		@Override
-		public AsyncEventQueueFactory setBatchSize(int batchSize) {
-			this.batchSize = batchSize;
-			return this;
-		}
-
-		@Override
-		public AsyncEventQueueFactory setDiskStoreName(String diskStoreName) {
-			this.diskStoreName = diskStoreName;
-			return this;
-		}
-
-		@Override
-		public AsyncEventQueueFactory setMaximumQueueMemory(int maxQueueMemory) {
-			this.maxQueueMemory = maxQueueMemory;
-			return this;
-		}
-
-		@Override
-		public AsyncEventQueueFactory setPersistent(boolean persistent) {
-			this.persistent = persistent;
-			return this;
-		}
-
-		@Override
-		public AsyncEventQueueFactory setParallel(boolean arg0) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	}
-	
-	public static class StubGWSenderFactory implements GatewaySenderFactory {
-		
-		private GatewaySender gatewaySender = mock(GatewaySender.class);	
-		
-		private int alertThreshold;
-		private boolean batchConflationEnabled;
-		private int batchSize;
-		private int batchTimeInterval;
-		private String diskStoreName;
-		private boolean diskSynchronous;
-		private int dispatcherThreads;
-		private boolean manualStart;
-		private int maxQueueMemory;
-		private OrderPolicy orderPolicy;
-		private boolean parallel;
-		private boolean persistenceEnabled;
-		private int socketBufferSize;
-		private int socketReadTimeout;
-		private List<GatewayEventFilter> eventFilters;
-		private List<GatewayTransportFilter> transportFilters;
-
-		private String name;
-
-		private int remoteSystemId;
-		
-		public StubGWSenderFactory() {
-			this.eventFilters = new ArrayList<GatewayEventFilter>();
-			this.transportFilters = new ArrayList<GatewayTransportFilter>();
-	
-		}
-		
-		@Override
-		public GatewaySenderFactory addGatewayEventFilter(GatewayEventFilter filter) {
-			eventFilters.add(filter);
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory addGatewayTransportFilter(GatewayTransportFilter filter) {
-			transportFilters.add(filter);
-			return this;
-		}
-
-		@Override
-		public GatewaySender create(String name, int remoteSystemId) {
-			this.name = name;
-			this.remoteSystemId = remoteSystemId;
-			when(gatewaySender.getId()).thenReturn(this.name);
-			when(gatewaySender.getRemoteDSId()).thenReturn(this.remoteSystemId);
-			when(gatewaySender.getAlertThreshold()).thenReturn(this.alertThreshold);
-			when(gatewaySender.getBatchSize()).thenReturn(this.batchSize);
-			when(gatewaySender.getBatchTimeInterval()).thenReturn(this.batchTimeInterval);
-			when(gatewaySender.getDiskStoreName()).thenReturn(this.diskStoreName);
-			when(gatewaySender.getDispatcherThreads()).thenReturn(this.dispatcherThreads);
-			when(gatewaySender.getGatewayEventFilters()).thenReturn(this.eventFilters);
-			when(gatewaySender.getGatewayTransportFilters()).thenReturn(this.transportFilters);
-			when(gatewaySender.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
-			when(gatewaySender.getOrderPolicy()).thenReturn(this.orderPolicy);
-			when(gatewaySender.getSocketBufferSize()).thenReturn(this.socketBufferSize);
-			when(gatewaySender.getSocketReadTimeout()).thenReturn(this.socketReadTimeout);
-			when(gatewaySender.isManualStart()).thenReturn(this.manualStart);
-			when(gatewaySender.isBatchConflationEnabled()).thenReturn(this.batchConflationEnabled);
-			when(gatewaySender.isDiskSynchronous()).thenReturn(this.diskSynchronous);
-			when(gatewaySender.isParallel()).thenReturn(this.parallel);
-			when(gatewaySender.isPersistenceEnabled()).thenReturn(this.persistenceEnabled);
-			return gatewaySender;
-		}
-
-		@Override
-		public GatewaySenderFactory removeGatewayEventFilter(GatewayEventFilter filter) {
-			gatewaySender.removeGatewayEventFilter(filter);
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setAlertThreshold(int alertThreshold) {
-			this.alertThreshold = alertThreshold;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setBatchConflationEnabled(boolean batchConflationEnabled) {
-			this.batchConflationEnabled = batchConflationEnabled;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setBatchSize(int batchSize) {
-			this.batchSize = batchSize;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setBatchTimeInterval(int batchTimeInterval) {
-			this.batchTimeInterval = batchTimeInterval;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setDiskStoreName(String diskStoreName) {
-			this.diskStoreName = diskStoreName;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setDiskSynchronous(boolean diskSynchronous) {
-			this.diskSynchronous = diskSynchronous;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setDispatcherThreads(int dispatcherThreads) {
-			this.dispatcherThreads = dispatcherThreads;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setManualStart(boolean manualStart) {
-			this.manualStart = manualStart;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setMaximumQueueMemory(int maxQueueMemory) {
-			this.maxQueueMemory = maxQueueMemory;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setOrderPolicy(OrderPolicy orderPolicy) {
-			this.orderPolicy = orderPolicy;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setParallel(boolean parallel) {
-			this.parallel = parallel;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setPersistenceEnabled(boolean persistenceEnabled) {
-			this.persistenceEnabled = persistenceEnabled;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setSocketBufferSize(int socketBufferSize) {
-			this.socketBufferSize = socketBufferSize;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory setSocketReadTimeout(int socketReadTimeout) {
-			this.socketReadTimeout = socketReadTimeout;
-			return this;
-		}
-
-		@Override
-		public GatewaySenderFactory removeGatewayTransportFilter(
-				GatewayTransportFilter arg0) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	}
-
-
-	/*
-	 * This mocks out the WAN components which are disabled in the developer edition
-	 */
-	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if (bean instanceof GatewaySenderFactoryBean) {
-			((GatewaySenderFactoryBean)bean).setFactory(new StubGWSenderFactory());
-		}
-		if (bean instanceof AsyncEventQueueFactoryBean) {
-			((AsyncEventQueueFactoryBean)bean).setFactory(new StubAsyncEventQueueFactory());
-		}
-		return bean;
-	}
-
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {	
-		return bean;
-	}
+ 
 }

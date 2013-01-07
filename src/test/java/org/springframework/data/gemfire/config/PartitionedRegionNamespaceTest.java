@@ -30,8 +30,8 @@ import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.SimplePartitionResolver;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
@@ -43,28 +43,24 @@ import com.gemstone.gemfire.cache.partition.PartitionListener;
 
 /**
  * @author Costin Leau
+ * @author David Turanski
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(GemfireTestRunner.class)
 @ContextConfiguration("partitioned-ns.xml")
 public class PartitionedRegionNamespaceTest {
 
 	@Autowired
 	private ApplicationContext context;
 
+	
 	@Test
-	public void testAll() throws Exception {
-		testBasicPartition();
-		testComplexPartition();
-		testPartitionOptions();
-		testFixedPartition();
-	}
-
-	private void testBasicPartition() throws Exception {
+	public void testBasicPartition() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testPartitionOptions() throws Exception {
+	@Test
+	public void testPartitionOptions() throws Exception {
 		assertTrue(context.containsBean("options"));
 		RegionFactoryBean fb = context.getBean("&options",
 				RegionFactoryBean.class);
@@ -84,7 +80,8 @@ public class PartitionedRegionNamespaceTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testComplexPartition() throws Exception {
+	@Test
+	public void testComplexPartition() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		RegionFactoryBean fb = context.getBean("&complex",
 				RegionFactoryBean.class);
@@ -108,6 +105,7 @@ public class PartitionedRegionNamespaceTest {
 	}
 
 	@SuppressWarnings("rawtypes")
+	@Test
 	public void testFixedPartition() throws Exception {
 		RegionFactoryBean fb = context.getBean("&fixed",
 				RegionFactoryBean.class);

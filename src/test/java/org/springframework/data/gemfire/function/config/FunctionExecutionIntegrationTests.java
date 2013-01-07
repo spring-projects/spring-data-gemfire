@@ -29,12 +29,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Region;
-
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 /**
  * @author David Turanski
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(GemfireTestRunner.class)
 @ContextConfiguration(classes={TestConfig.class})
 public class FunctionExecutionIntegrationTests {
 	@Autowired

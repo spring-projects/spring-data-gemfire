@@ -96,7 +96,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		return ClientCacheFactory.getAnyInstance();
 	}
 	
-	Properties getProperties() {
+	public Properties getProperties() {
 		return this.properties;
 	}
 

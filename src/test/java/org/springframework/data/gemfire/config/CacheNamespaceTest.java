@@ -25,12 +25,16 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
-import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -41,23 +45,13 @@ import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
 /**
  * @author Costin Leau
  */
-public class CacheNamespaceTest extends RecreatingContextTest {
-
-	@Override
-	protected String location() {
-		return "org/springframework/data/gemfire/config/cache-ns.xml";
-	}
-
+@RunWith(GemfireTestRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/config/cache-ns.xml")
+public class CacheNamespaceTest{
+	@Autowired ApplicationContext ctx;
+	
 	@Test
-	public void testAll() throws Exception {
-		testBasicCache();
-		testNamedCache();
-		testCacheWithXml();
-		testHeapTunedCache();
-		testCacheWithGatewayConflictResolver();
-	}
-
-	private void testBasicCache() throws Exception {
+	public void testBasicCache() throws Exception {
 		assertTrue(ctx.containsBean("gemfireCache"));
 		//Check alias is registered
 		assertTrue(ctx.containsBean("gemfire-cache"));
@@ -67,14 +61,16 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		assertNull(TestUtils.readField("properties", cfb));
 	}
 
-	private void testNamedCache() throws Exception {
+	@Test
+	public void testNamedCache() throws Exception {
 		assertTrue(ctx.containsBean("cache-with-name"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache-with-name");
 		assertNull(TestUtils.readField("cacheXml", cfb));
 		assertNull(TestUtils.readField("properties", cfb));
 	}
 
-	private void testCacheWithXml() throws Exception {
+	@Test
+	public void testCacheWithXml() throws Exception {
 		assertTrue(ctx.containsBean("cache-with-xml"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&cache-with-xml");
 		Resource res = TestUtils.readField("cacheXml", cfb);
@@ -86,7 +82,8 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 
 	}
 
-	private void testCacheWithGatewayConflictResolver() {
+	@Test
+	public void testCacheWithGatewayConflictResolver() {
 		Cache cache = ctx.getBean("cache-with-conflict-resolver", Cache.class);
 		assertNotNull(cache.getGatewayConflictResolver());
 		assertTrue(cache.getGatewayConflictResolver() instanceof TestConflictResolver);
@@ -97,7 +94,6 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		assertTrue(ctx.containsBean("no-bl"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&no-bl");
 
-		assertThat((Boolean) ReflectionTestUtils.getField(cfb, "useBeanFactoryLocator"), is(false));
 		assertThat(ReflectionTestUtils.getField(cfb, "factoryLocator"), is(nullValue()));
 
 		GemfireBeanFactoryLocator locator = new GemfireBeanFactoryLocator();
@@ -126,7 +122,8 @@ public class CacheNamespaceTest extends RecreatingContextTest {
 		assertEquals("gemfire-client-cache.xml", res.getFilename());
 	}
 
-	private void testHeapTunedCache() throws Exception {
+	@Test
+	public void testHeapTunedCache() throws Exception {
 		assertTrue(ctx.containsBean("heap-tuned-cache"));
 		CacheFactoryBean cfb = (CacheFactoryBean) ctx.getBean("&heap-tuned-cache");
 		Float chp = (Float) TestUtils.readField("criticalHeapPercentage", cfb);

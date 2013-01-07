@@ -36,9 +36,8 @@ import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DiskStore;
@@ -56,8 +55,9 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 /**
  * @author Costin Leau
+ * @author David Turanski
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(GemfireTestRunner.class)
 @ContextConfiguration("diskstore-ns.xml")
 public class DiskStoreAndEvictionRegionParsingTest {
 
@@ -96,16 +96,12 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		}
 	}
 
+	
 	@Test
-	public void testAll() throws Exception {
-		testDiskStore();
-		testReplicaDataOptions();
-		testPartitionDataOptions();
-		testEntryTtl();
-		testCustomExpiry();
-	}
-
-	private void testDiskStore() {
+	public void testDiskStore() {
+		assertNotNull(context.getBean("ds2"));
+		context.getBean("diskStore1");
+ 		assertNotNull(diskStore1);
 		assertEquals("diskStore1", diskStore1.getName());
 		assertEquals(50, diskStore1.getQueueSize());
 		assertEquals(true, diskStore1.getAutoCompact());
@@ -118,7 +114,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testReplicaDataOptions() throws Exception {
+	@Test
+	public void testReplicaDataOptions() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
 		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
 		assertTrue(fb instanceof ReplicatedRegionFactoryBean);
@@ -135,7 +132,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testPartitionDataOptions() throws Exception {
+	@Test
+	public void testPartitionDataOptions() throws Exception {
 		assertTrue(context.containsBean("partition-data"));
 		RegionFactoryBean fb = context.getBean("&partition-data", RegionFactoryBean.class);
 		assertTrue(fb instanceof PartitionedRegionFactoryBean);
@@ -153,7 +151,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testEntryTtl() throws Exception {
+	@Test
+	public void testEntryTtl() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
 		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
@@ -177,7 +176,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	
 
 	@SuppressWarnings("rawtypes") 
-	private void testCustomExpiry() throws Exception {
+	@Test
+	public void testCustomExpiry() throws Exception {
 		assertTrue(context.containsBean("replicated-data-custom-expiry"));
 		RegionFactoryBean fb = context.getBean("&replicated-data-custom-expiry", RegionFactoryBean.class);
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);

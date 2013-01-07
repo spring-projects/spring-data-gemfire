@@ -34,8 +34,8 @@ import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.Interest;
 import org.springframework.data.gemfire.client.RegexInterest;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
@@ -52,21 +52,12 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
  * @author Costin Leau
  * @author David Turanski
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(GemfireTestRunner.class)
 @ContextConfiguration("client-ns.xml")
 public class ClientRegionNamespaceTest {
 
 	@Autowired
 	private ApplicationContext context;
-
-	@Test
-	public void testAll() throws Exception {
-		testBasicClient();
-		testBeanNames();
-		testPublishingClient();
-		testPersistent();
-		testOverflowToDisk();
-	}
 
 	@AfterClass
 	public static void tearDown() {
@@ -82,16 +73,19 @@ public class ClientRegionNamespaceTest {
 		}
 	}
 
-	private void testBasicClient() throws Exception {
+	@Test
+	public void testBasicClient() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 
-	private void testBeanNames() throws Exception {
+	@Test
+	public void testBeanNames() throws Exception {
 		assertTrue(ObjectUtils.isEmpty(context.getAliases("publisher")));
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testPublishingClient() throws Exception {
+	@Test
+	public void testPublishingClient() throws Exception {
 		assertTrue(context.containsBean("empty"));
 		ClientRegionFactoryBean fb = context.getBean("&empty", ClientRegionFactoryBean.class);
 		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", fb));
@@ -124,7 +118,8 @@ public class ClientRegionNamespaceTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testPersistent() throws Exception {
+	@Test
+	public void testPersistent() throws Exception {
 		assertTrue(context.containsBean("persistent"));
 		Region region = context.getBean("persistent", Region.class);
 		RegionAttributes attrs = region.getAttributes();
@@ -133,7 +128,8 @@ public class ClientRegionNamespaceTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testOverflowToDisk() throws Exception {
+	@Test
+	public void testOverflowToDisk() throws Exception {
 		assertTrue(context.containsBean("overflow"));
 		ClientRegionFactoryBean fb = context.getBean("&overflow", ClientRegionFactoryBean.class);
 		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", fb));

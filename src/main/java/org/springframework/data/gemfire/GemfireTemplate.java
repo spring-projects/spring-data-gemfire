@@ -255,8 +255,8 @@ public class GemfireTemplate extends GemfireAccessor {
 			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
 				QueryService queryService = lookupQueryService(region);
 				Query q = queryService.newQuery(query);
-				Object result = q.execute(params);
-				if (result instanceof SelectResults) {
+ 				Object result = q.execute(params);
+ 				if (result instanceof SelectResults) {
 					return (SelectResults<E>) result;
 				}
 				throw new InvalidDataAccessApiUsageException(
@@ -310,7 +310,6 @@ public class GemfireTemplate extends GemfireAccessor {
 				&& Scope.LOCAL.equals(region.getAttributes().getScope())) {
 			return ((ClientCache) region.getRegionService()).getLocalQueryService();
 		}
-
 		return region.getRegionService().getQueryService();
 	}
 

@@ -19,7 +19,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import org.springframework.data.gemfire.RecreatingContextTest;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.datasource.GemFireBasicDataSource;
@@ -27,13 +31,13 @@ import com.gemstone.gemfire.internal.datasource.GemFireBasicDataSource;
 /**
  * @author David Turanski
  * 
+ * This test requires a real cache
  */
-public class JndiBindingsTest extends RecreatingContextTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/config/jndi-binding-ns.xml")
+public class JndiBindingsTest {
 
-	@Override
-	protected String location() {
-		return "org/springframework/data/gemfire/config/jndi-binding-ns.xml";
-	}
+	 @Autowired ApplicationContext ctx;
 
 	@Test
 	public void testJndiBindings() throws Exception {

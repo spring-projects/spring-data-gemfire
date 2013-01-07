@@ -9,9 +9,6 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
-	<!-- as there can be only one cache per VM -->
-
 	<gfe:cache>
         <gfe:transaction-listener ref="txListener1"/>
         <gfe:transaction-listener ref="txListener2"/>
@@ -27,7 +24,4 @@
     <bean id="txListener1" class="org.springframework.data.gemfire.config.TxEventHandlersTest.TestListener"/>
     <bean id="txListener2" class="org.springframework.data.gemfire.config.TxEventHandlersTest.TestListener"/>
     <bean id="txWriter" class="org.springframework.data.gemfire.config.TxEventHandlersTest.TestWriter"/>
-
-    <gfe:local-region id="local"/>
-
 </beans>

@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -34,7 +35,7 @@ import com.gemstone.gemfire.cache.query.IndexType;
  * 
  * @author Costin Leau
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(GemfireTestRunner.class)
 @ContextConfiguration("index-ns.xml")
 public class IndexNamespaceTest {
 
@@ -52,12 +53,7 @@ public class IndexNamespaceTest {
 	}
 
 	@Test
-	public void testAll() throws Exception {
-		testBasicIndex();
-		testComplexIndex();
-	}
-
-	private void testBasicIndex() throws Exception {
+	public void testBasicIndex() throws Exception {
 		Index idx = (Index) context.getBean("simple");
 
 		assertEquals("/test-index", idx.getFromClause());
@@ -67,7 +63,8 @@ public class IndexNamespaceTest {
 		assertEquals(IndexType.FUNCTIONAL, idx.getType());
 	}
 
-	private void testComplexIndex() throws Exception {
+	@Test
+	public void testComplexIndex() throws Exception {
 		Index idx = (Index) context.getBean("complex");
 
 		assertEquals("/test-index tsi", idx.getFromClause());

@@ -19,6 +19,11 @@ package org.springframework.data.gemfire;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.test.context.ContextConfiguration;
 
 import com.gemstone.gemfire.cache.Cache;
 
@@ -30,12 +35,11 @@ import com.gemstone.gemfire.cache.Cache;
  * 
  * @author Costin Leau
  */
-public class CacheIntegrationTest extends RecreatingContextTest {
+@RunWith(GemfireTestRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/basic-cache.xml")
+public class CacheIntegrationTest {
 
-	@Override
-	protected String location() {
-		return "org/springframework/data/gemfire/basic-cache.xml";
-	}
+	@Autowired ApplicationContext ctx;
 
 	@Test
 	public void testBasicCache() throws Exception {

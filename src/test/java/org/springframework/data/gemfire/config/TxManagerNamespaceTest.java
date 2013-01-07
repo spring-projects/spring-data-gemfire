@@ -20,18 +20,22 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.GemfireTransactionManager;
 import org.springframework.data.gemfire.RecreatingContextTest;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.test.context.ContextConfiguration;
 
 /**
  * @author Costin Leau
  */
-public class TxManagerNamespaceTest extends RecreatingContextTest {
+@RunWith(GemfireTestRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/config/tx-ns.xml")
+public class TxManagerNamespaceTest {
 
-	@Override
-	protected String location() {
-		return "org/springframework/data/gemfire/config/tx-ns.xml";
-	}
+	@Autowired ApplicationContext ctx;
 
 	@Test
 	public void testBasicCache() throws Exception {

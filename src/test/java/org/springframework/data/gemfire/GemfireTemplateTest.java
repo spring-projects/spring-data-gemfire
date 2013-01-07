@@ -18,53 +18,74 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.StubCache;
+import org.springframework.data.gemfire.test.MockRegionFactory;
+import org.springframework.test.context.ContextConfiguration;
 
+import com.gemstone.gemfire.cache.query.FunctionDomainException;
+import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
+import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.TypeMismatchException;
 
 /**
  * @author Costin Leau
  */
-public class GemfireTemplateTest extends RecreatingContextTest {
+@RunWith(GemfireTestRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/basic-template.xml")
+public class GemfireTemplateTest /*extends RecreatingContextTest*/ {
 
 	private static final String MULTI_QUERY = "select * from /simple";
 
 	private static final String SINGLE_QUERY = "(select * from /simple).size";
-
-	@Override
-	protected String location() {
-		return "org/springframework/data/gemfire/basic-template.xml";
-	}
-
-	@Test
-	public void testAll() throws Exception {
-		testFind();
-		testFindUnique();
+	
+	@Autowired GemfireTemplate template;
+	
+	@SuppressWarnings("rawtypes")
+	@Before 
+	public void setUp() throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
+		QueryService querySevice = MockRegionFactory.mockQueryService();
+		Query singleQuery = mock(Query.class);
+		when(singleQuery.execute(any(Object[].class))).thenReturn(0);
+		Query multipleQuery = mock(Query.class);
+	 	
+		SelectResults selectResults = mock(SelectResults.class);
+		when(multipleQuery.execute(any(Object[].class))).thenReturn(selectResults);
+		
+		when(querySevice.newQuery(SINGLE_QUERY)).thenReturn(singleQuery);
+		when(querySevice.newQuery(MULTI_QUERY)).thenReturn(multipleQuery);
 	}
 
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void testFindMultiException() throws Exception {
-		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
-		template.find(SINGLE_QUERY);
+  		template.find(SINGLE_QUERY);
 	}
 
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void testFindMultiOne() throws Exception {
-		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
-		template.findUnique(MULTI_QUERY);
+ 		template.findUnique(MULTI_QUERY);
 	}
-
-	private void testFind() throws Exception {
-		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
-		SelectResults<Object> find = template.find(MULTI_QUERY);
+	
+	@Test
+	public void testFind() throws Exception {
+ 		SelectResults<Object> find = template.find(MULTI_QUERY);
 		assertNotNull(find);
 	}
-
-	private void testFindUnique() throws Exception {
-		GemfireTemplate template = ctx.getBean("template", GemfireTemplate.class);
-		Integer find = template.findUnique(SINGLE_QUERY);
+	
+	@Test
+	public void testFindUnique() throws Exception {
+ 		Integer find = template.findUnique(SINGLE_QUERY);
 		assertEquals(find, Integer.valueOf(0));
 	}
 

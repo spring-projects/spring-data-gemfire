@@ -20,7 +20,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.RecreatingContextTest;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.test.context.ContextConfiguration;
 
 import com.gemstone.gemfire.cache.LossAction;
 import com.gemstone.gemfire.cache.MembershipAttributes;
@@ -32,12 +37,11 @@ import com.gemstone.gemfire.distributed.Role;
  * @author David Turanski
  * 
  */
-public class MembershipAttributesTest extends RecreatingContextTest {
+@RunWith(GemfireTestRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/config/membership-attributes-ns.xml")
+public class MembershipAttributesTest {
 
-	@Override
-	protected String location() {
-		return "org/springframework/data/gemfire/config/membership-attributes-ns.xml";
-	}
+    @Autowired ApplicationContext ctx;
 
 	@Test
 	public void testMembershipAttributes() {

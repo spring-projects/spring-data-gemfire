@@ -8,7 +8,7 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd" default-lazy-init="true">
 
-	<gfe:cache/>
+	<gfe:cache use-bean-factory-locator="false"/>
 	<gfe:replicated-region id="region-with-gateway" enable-gateway="true" hub-id="gateway-hub"/>
     <gfe:gateway-hub id="gateway-hub" manual-start="true">
         <gfe:gateway gateway-id="gateway">

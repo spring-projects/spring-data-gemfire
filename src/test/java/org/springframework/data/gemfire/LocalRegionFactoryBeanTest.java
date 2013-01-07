@@ -36,6 +36,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 			@Override
 			public void verify() {
 				Region region = regionFactoryBean.getRegion();
+				assertNotNull(region);
 				assertEquals(DataPolicy.DEFAULT, region.getAttributes().getDataPolicy());
 			}
 

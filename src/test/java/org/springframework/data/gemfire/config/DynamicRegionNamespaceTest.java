@@ -24,21 +24,27 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 
 import org.junit.Test;
-import org.springframework.data.gemfire.RecreatingContextTest;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
 
 /**
  * @author David Turanski
+ * 
+ * This requires a real cache
  */
-public class DynamicRegionNamespaceTest extends RecreatingContextTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/config/dynamic-region-ns.xml")
+public class DynamicRegionNamespaceTest {
 
-	@Override
-	protected String location() {
-		return "org/springframework/data/gemfire/config/dynamic-region-ns.xml";
-	}
-
+	@Autowired ApplicationContext ctx;
+	
 	@Test
 	public void testBasicCache() throws Exception {
 		DynamicRegionFactory drf = DynamicRegionFactory.get();

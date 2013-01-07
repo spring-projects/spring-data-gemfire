@@ -114,7 +114,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			AttributesFactory.validateAttributes(attributes);
 
 		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes) : c
-				.<K, V> createRegionFactory());
+				.<K, V> createRegionFactory());	
 
 		if (hubId != null) {
 			enableGateway = enableGateway == null ? true : enableGateway;

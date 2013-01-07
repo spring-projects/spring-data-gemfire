@@ -22,10 +22,16 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.data.gemfire.wan.GatewayHubFactoryBean;
 import org.springframework.data.gemfire.wan.GatewayProxy;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -37,22 +43,14 @@ import com.gemstone.gemfire.cache.util.GatewayHub;
  * @author David Turanski
  * 
  */
-public class GemfireV6GatewayNamespaceTest extends RecreatingContextTest {
-	@Override
-	protected String location() {
-		return "/org/springframework/data/gemfire/config/gateway-v6-ns.xml";
-	}
-
-	/*
-	 * Faster this way
-	 */
+@RunWith(GemfireTestRunner.class)
+@ContextConfiguration("/org/springframework/data/gemfire/config/gateway-v6-ns.xml")
+public class GemfireV6GatewayNamespaceTest {
+	
+	@Autowired ApplicationContext ctx;
+	 
 	@Test
-	public void test() throws Exception {
-		testGatewayHubFactoryBean();
-		testGatewaysInGemfire();
-	}
-
-	private void testGatewayHubFactoryBean() throws Exception {
+	public void testGatewayHubFactoryBean() throws Exception {
 		GatewayHubFactoryBean gwhfb = ctx.getBean("&gateway-hub", GatewayHubFactoryBean.class);
 		List<GatewayProxy> gateways = TestUtils.readField("gateways", gwhfb);
 		assertNotNull(gateways);
@@ -79,7 +77,8 @@ public class GemfireV6GatewayNamespaceTest extends RecreatingContextTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testGatewaysInGemfire() {
+	@Test 
+	public void testGatewaysInGemfire() {
 		Cache cache = ctx.getBean("gemfireCache", Cache.class);
 		GatewayHub gwh = cache.getGatewayHub("gateway-hub");
 		assertNotNull(gwh);

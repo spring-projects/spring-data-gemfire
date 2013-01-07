@@ -18,9 +18,9 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,8 +29,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -42,28 +42,22 @@ import com.gemstone.gemfire.cache.Scope;
 /**
  * @author Costin Leau
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(GemfireTestRunner.class)
 @ContextConfiguration("local-ns.xml")
 public class LocalRegionNamespaceTest {
 
 	@Autowired
 	private ApplicationContext context;
+ 
 
 	@Test
-	public void testAll() throws Exception {
-		testBasicLocal();
-		testComplexLocal();
-		testLocalWithAttributes();
-		testPublishingLocal();
-		testRegionLookup();
-	}
-
-	private void testBasicLocal() throws Exception {
+	public void testBasicLocal() throws Exception {
 		assertTrue(context.containsBean("simple"));
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testPublishingLocal() throws Exception {
+	@Test
+	public void testPublishingLocal() throws Exception {
 		assertTrue(context.containsBean("pub"));
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);
 		assertNull(TestUtils.readField("dataPolicy", fb));
@@ -74,7 +68,8 @@ public class LocalRegionNamespaceTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testComplexLocal() throws Exception {
+	@Test
+	public void testComplexLocal() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
 		CacheListener[] listeners = TestUtils.readField("cacheListeners", fb);
@@ -87,7 +82,8 @@ public class LocalRegionNamespaceTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testLocalWithAttributes() throws Exception {
+	@Test
+	public void testLocalWithAttributes() throws Exception {
 		assertTrue(context.containsBean("local-with-attributes"));
 		Region region = context.getBean("local-with-attributes", Region.class);
 		RegionAttributes attrs = region.getAttributes();
@@ -100,9 +96,11 @@ public class LocalRegionNamespaceTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testRegionLookup() throws Exception {
+	@Test
+	public void testRegionLookup() throws Exception {
 		Cache cache = context.getBean(Cache.class);
 		Region existing = cache.createRegionFactory().create("existing");
+		
 		assertTrue(context.containsBean("lookup"));
 		RegionLookupFactoryBean lfb = context.getBean("&lookup", RegionLookupFactoryBean.class);
 		assertEquals("existing", TestUtils.readField("name", lfb));
