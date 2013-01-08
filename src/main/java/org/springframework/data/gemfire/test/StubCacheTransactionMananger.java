@@ -17,16 +17,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.util.CollectionUtils;
-
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.TransactionEvent;
 import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.TransactionWriterException;
-import com.sun.tools.javac.code.Attribute.Array;
+
 
 /**
  * @author David Turanski
