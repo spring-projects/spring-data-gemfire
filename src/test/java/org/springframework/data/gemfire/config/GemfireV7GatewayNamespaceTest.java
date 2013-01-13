@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2012 the original author or authors.
+ * Copyright 2010-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,11 @@ package org.springframework.data.gemfire.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -35,28 +32,26 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
 import org.springframework.data.gemfire.test.GemfireTestRunner;
-import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
 import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
@@ -65,11 +60,29 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @author David Turanski
  * 
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/config/gateway-v7-ns.xml")
-public class GemfireV7GatewayNamespaceTest  {
-	
-	@Autowired ConfigurableApplicationContext ctx;
+
+public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.RecreatingContextTest#location()
+	 */
+	@Override
+	protected String location() {
+		return "/org/springframework/data/gemfire/config/gateway-v7-ns.xml";
+	}
+
+	@Override
+	protected void configureContext() {
+		ctx.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
+	}
+
+	@Before
+	@Override
+	public void createCtx() {
+		if (ParsingUtils.GEMFIRE_VERSION.startsWith("7")) {
+			super.createCtx();
+		}
+	}
 
 	@AfterClass
 	public static void tearDown() {
@@ -128,7 +141,7 @@ public class GemfireV7GatewayNamespaceTest  {
 
 		RegionFactoryBean rfb = ctx.getBean("&region-inner-gateway-sender", RegionFactoryBean.class);
 		Object[] gwsenders = TestUtils.readField("gatewaySenders", rfb);
-		gws = (GatewaySender)gwsenders[0];
+		gws = (GatewaySender) gwsenders[0];
 		List<GatewayEventFilter> eventFilters = gws.getGatewayEventFilters();
 		assertNotNull(eventFilters);
 		assertEquals(1, eventFilters.size());
@@ -177,7 +190,7 @@ public class GemfireV7GatewayNamespaceTest  {
 		@Override
 		public void afterAcknowledgement(GatewayQueueEvent arg0) {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
@@ -232,5 +245,4 @@ public class GemfireV7GatewayNamespaceTest  {
 
 	}
 
- 
 }

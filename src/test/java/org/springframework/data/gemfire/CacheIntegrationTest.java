@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2012 the original author or authors.
+ * Copyright 2010-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ package org.springframework.data.gemfire;
 
 import junit.framework.Assert;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 
@@ -40,15 +42,16 @@ import com.gemstone.gemfire.cache.Cache;
 public class CacheIntegrationTest {
 
 	@Autowired ApplicationContext ctx;
+	Cache cache;
 
 	@Test
 	public void testBasicCache() throws Exception {
-		ctx.getBean("default-cache");
+		cache = ctx.getBean("default-cache",Cache.class);
 	}
 
 	@Test
 	public void testCacheWithProps() throws Exception {
-		Cache cache = ctx.getBean("cache-with-props", Cache.class);
+		cache = ctx.getBean("cache-with-props", Cache.class);
 		// the name property seems to be ignored
 		Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
 		Assert.assertEquals("cache-with-props", cache.getName());
@@ -56,7 +59,7 @@ public class CacheIntegrationTest {
 
 	@Test
 	public void testNamedCache() throws Exception {
-		Cache cache = ctx.getBean("named-cache", Cache.class);
+		cache = ctx.getBean("named-cache", Cache.class);
 		Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
 		Assert.assertEquals("cache-with-props", cache.getName());
 	}
@@ -64,5 +67,10 @@ public class CacheIntegrationTest {
 	@Test
 	public void testCacheWithXml() throws Exception {
 		ctx.getBean("cache-with-xml", Cache.class);
+	}
+	
+	@After
+	public void tearDown() {
+		if (cache!=null) cache.close();
 	}
 }

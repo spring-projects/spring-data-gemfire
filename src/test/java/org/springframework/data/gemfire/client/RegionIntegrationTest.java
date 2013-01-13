@@ -69,21 +69,16 @@ public class RegionIntegrationTest {
 	@Autowired
 	private ApplicationContext ctx;
 
+	
 	@Test
-	public void testAll() throws Exception {
-		testBasicRegion();
-		testExistingRegion();
-		testRegionWithListeners();
-		testRegionAttributes();
-	}
-
-	private void testBasicRegion() throws Exception {
+	public void testBasicRegion() throws Exception {
 		@SuppressWarnings("rawtypes")
 		Region region = ctx.getBean("basic", Region.class);
 		assertEquals("basic", region.getName());
 	}
 
-	private void testExistingRegion() throws Exception {
+	@Test
+	public void testExistingRegion() throws Exception {
 		@SuppressWarnings("rawtypes")
 		Region region = ctx.getBean("root", Region.class);
 		// the name property seems to be ignored
@@ -91,7 +86,8 @@ public class RegionIntegrationTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testRegionWithListeners() throws Exception {
+	@Test
+	public void testRegionWithListeners() throws Exception {
 		Region region = ctx.getBean("listeners", Region.class);
 		assertEquals("listeners", region.getName());
 		CacheListener[] listeners = region.getAttributes().getCacheListeners();
@@ -114,7 +110,8 @@ public class RegionIntegrationTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void testRegionAttributes() throws Exception {
+	@Test
+	public void testRegionAttributes() throws Exception {
 		Region region = ctx.getBean("attr-region", Region.class);
 		assertEquals("attr-region", region.getName());
 		RegionAttributes attr = region.getAttributes();

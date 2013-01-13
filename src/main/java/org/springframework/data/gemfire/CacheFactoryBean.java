@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2012 the original author or authors.
+ * Copyright 2010-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,11 @@ import org.springframework.util.CollectionUtils;
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
@@ -297,6 +297,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			}
 
 			DistributedSystem system = cache.getDistributedSystem();
+			
 			DistributedMember member = system.getDistributedMember();
 			log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@"
 					+ member.getHost() + "]");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.gemfire.test.GemfireTestRunner;
-import org.springframework.data.gemfire.test.StubCache;
 import org.springframework.data.gemfire.test.MockRegionFactory;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -44,7 +44,7 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
  */
 @RunWith(GemfireTestRunner.class)
 @ContextConfiguration("/org/springframework/data/gemfire/basic-template.xml")
-public class GemfireTemplateTest /*extends RecreatingContextTest*/ {
+public class GemfireTemplateTest  {
 
 	private static final String MULTI_QUERY = "select * from /simple";
 
@@ -55,6 +55,7 @@ public class GemfireTemplateTest /*extends RecreatingContextTest*/ {
 	@SuppressWarnings("rawtypes")
 	@Before 
 	public void setUp() throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
+		//Only applies if Mocks are enabled
 		QueryService querySevice = MockRegionFactory.mockQueryService();
 		Query singleQuery = mock(Query.class);
 		when(singleQuery.execute(any(Object[].class))).thenReturn(0);

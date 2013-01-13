@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2012 the original author or authors.
+ * Copyright 2010-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	@Override
-	protected void doInit() {
+	protected void doInit() throws Exception {
 		GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
 		if (!CollectionUtils.isEmpty(transportFilters)) {
 			for (GatewayTransportFilter transportFilter : transportFilters) {
@@ -88,6 +88,9 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 		}
 
 		gatewayReceiver = gatewayReceiverFactory.create();
+		 
+		gatewayReceiver.start();
+		 
 	}
 
 	public void setGatewayReceiver(GatewayReceiver gatewayReceiver) {

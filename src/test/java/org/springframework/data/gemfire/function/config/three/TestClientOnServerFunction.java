@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -25,6 +25,7 @@ import org.springframework.data.gemfire.function.config.OnServer;
 @OnServer(id="testClientOnServerFunction",pool="gemfirePool",resultCollector="myResultCollector")
 public interface TestClientOnServerFunction {
 	   @FunctionId("f1")
+	   //TODO: @Filter is not valid here since not @OnRegion
 	   public String getString(Object arg1, @Filter Set<Object> keys) ;
 	   
 	   @FunctionId("f2")

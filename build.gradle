@@ -30,6 +30,7 @@ apply plugin: 'docbook-reference'
 test {
     forkEvery = 1
     systemProperties['gemfire.disableShutdownHook'] = 'true'
+    systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
 }
 
 // Common dependencies
