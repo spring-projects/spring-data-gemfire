@@ -10,37 +10,35 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.fork;
+package org.springframework.data.gemfire.config;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.gemfire.ForkUtil;
+
+import com.gemstone.gemfire.cache.Cache;
 
 /**
  * @author David Turanski
  *
  */
-public class SpringCacheServerProcess {
-	public static void main(String[] args) {
-		ConfigurableApplicationContext ctx = null;
-		try {
-			ctx = new ClassPathXmlApplicationContext(args[0]);
-			ForkUtil.createControlFile(SpringCacheServerProcess.class.getName());
-	 
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-			System.out.println("Waiting for shutdown");
-			bufferedReader.readLine();
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(1);
-		} finally {
-			if (ctx != null) {
-				ctx.close();
-			}
-		}
+
+public class MultipleCacheTest {
+	@Test
+	public void testMultipleCaches() {
+		String resourcePath = "/org/springframework/data/gemfire/config/MultipleCacheTest-context.xml";
+		
+		ConfigurableApplicationContext ctx1 = new ClassPathXmlApplicationContext(resourcePath);
+		ConfigurableApplicationContext ctx2 = new ClassPathXmlApplicationContext(resourcePath);
+		Cache cache1 = ctx1.getBean(Cache.class);
+		Cache cache2 = ctx2.getBean(Cache.class);
+		assertSame(cache1,cache2);
+		ctx1.close();
+		ctx2.close();
+		assertFalse(cache1.isClosed());
 	}
 }

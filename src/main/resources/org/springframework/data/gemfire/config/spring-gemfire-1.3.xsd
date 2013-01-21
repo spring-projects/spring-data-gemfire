@@ -239,6 +239,15 @@ JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more informa
             ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="close" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Determines if the cache should be closed when the application context is closed. This value is 
+true by default but should be set to false if deploying multiple applications in a jvm that share the 
+same cache instance.
+            ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
     <!-- -->
     <xsd:element name="cache">

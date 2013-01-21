@@ -201,6 +201,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected String beanName;
 
 	protected boolean useBeanFactoryLocator = true;
+	
+	protected boolean close = true;
 
 	// PDX options
 	protected Object pdxSerializer;
@@ -405,6 +407,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	@Override
 	public void destroy() throws Exception {
+		if (!close) {
+			return;
+		}
 		if (cache != null && !cache.isClosed()) {
 			cache.close();
 		}
@@ -613,6 +618,14 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setCriticalHeapPercentage(Float criticalHeapPercentage) {
 		this.criticalHeapPercentage = criticalHeapPercentage;
+	}
+	
+	/**
+	 * 
+	 * @param close set to false if destroy() should not close the cache
+	 */
+	public void setClose(boolean close) {
+		this.close = close;
 	}
 
 	/**

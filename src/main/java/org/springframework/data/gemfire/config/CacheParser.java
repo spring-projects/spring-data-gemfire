@@ -67,6 +67,7 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "search-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "critical-heap-percentage");
 		ParsingUtils.setPropertyValue(element, builder, "eviction-heap-percentage");
+		ParsingUtils.setPropertyValue(element, builder, "close");
 
 		List<Element> txListeners = DomUtils.getChildElementsByTagName(element, "transaction-listener");
 		if (!CollectionUtils.isEmpty(txListeners)) {
