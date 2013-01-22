@@ -26,12 +26,12 @@ public class GemfireOnServersFunctionTemplate  extends AbstractFunctionTemplate 
 	private final Pool pool;
 
   
-	GemfireOnServersFunctionTemplate (RegionService cache) {
+	public GemfireOnServersFunctionTemplate (RegionService cache) {
 		this.cache = cache;
 		this.pool = null;
 	}
 	
-	GemfireOnServersFunctionTemplate (Pool pool) {
+	public GemfireOnServersFunctionTemplate (Pool pool) {
 		this.pool = pool;
 		this.cache = null;
 	}
