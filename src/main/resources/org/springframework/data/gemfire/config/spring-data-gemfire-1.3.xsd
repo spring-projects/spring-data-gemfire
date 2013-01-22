@@ -3,6 +3,7 @@
 xmlns:tool="http://www.springframework.org/schema/tool" 
 xmlns:repository="http://www.springframework.org/schema/data/repository" 
 xmlns:context="http://www.springframework.org/schema/context"
+xmlns:gfe="http://www.springframework.org/schema/gemfire"
 targetNamespace="http://www.springframework.org/schema/data/gemfire" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.3">
 	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
 	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
@@ -85,5 +86,58 @@ targetNamespace="http://www.springframework.org/schema/data/gemfire" elementForm
 		</xsd:annotation>
 		<xsd:union memberTypes="xsd:string"/>
 	</xsd:simpleType>
-	<!-- -->
+	<!-- DataSource -->
+	
+	<xsd:element name="datasource">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+Defines a connection from a Cache client to a set of GemFire Cache Servers.
+			]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:choice minOccurs="1" maxOccurs="1">
+                <xsd:element name="locator" type="gfe:connectionType"
+                    minOccurs="1" maxOccurs="unbounded" />
+                <xsd:element name="server" type="gfe:connectionType"
+                    minOccurs="1" maxOccurs="unbounded" />
+            </xsd:choice>
+           
+            <xsd:attribute name="free-connection-timeout"
+                type="xsd:string" use="optional" />
+            <xsd:attribute name="idle-timeout" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="load-conditioning-interval"
+                type="xsd:string" use="optional" />
+            <xsd:attribute name="max-connections" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="min-connections" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="multi-user-authentication"
+                type="xsd:string" use="optional" />
+            <xsd:attribute name="ping-interval" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="pr-single-hop-enabled"
+                type="xsd:string" use="optional" />
+            <xsd:attribute name="read-timeout" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="retry-attempts" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="server-group" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="socket-buffer-size" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="statistic-interval" type="xsd:string"
+                use="optional" />
+            <xsd:attribute name="subscription-ack-interval"
+                type="xsd:string" use="optional" />
+            <xsd:attribute name="subscription-enabled"
+                type="xsd:string" use="optional" />
+            <xsd:attribute name="subscription-message-tracking-timeout"
+                type="xsd:string" use="optional" />
+            <xsd:attribute name="subscription-redundancy"
+                type="xsd:string" use="optional" />
+            <xsd:attribute name="thread-local-connections"
+                type="xsd:string" use="optional" />
+        </xsd:complexType>
+    </xsd:element>
 </xsd:schema>

@@ -37,5 +37,6 @@ class GemfireDataNamespaceHandler extends NamespaceHandlerSupport {
 		RepositoryConfigurationExtension extension = new GemfireRepositoryConfigurationExtension();
 		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(extension));
 		registerBeanDefinitionParser("function-executions", new FunctionExecutionBeanDefinitionParser());
+		registerBeanDefinitionParser("datasource", new GemfireDataSourceParser());
 	}
 }
