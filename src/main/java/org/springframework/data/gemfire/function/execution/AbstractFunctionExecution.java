@@ -100,7 +100,9 @@ abstract class AbstractFunctionExecution {
 			resultCollector = (ResultCollector<?,?>) execution.execute(function);
 		}
 		
-		logger.debug("ResultsCollector:" + resultCollector.getClass().getName());
+		if (logger.isDebugEnabled()) {
+			logger.debug("using ResultsCollector:" + resultCollector.getClass().getName());
+		}
 		
 		Iterable<T> results = null;
 		

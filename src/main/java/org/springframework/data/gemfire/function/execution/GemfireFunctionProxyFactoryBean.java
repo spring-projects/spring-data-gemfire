@@ -68,9 +68,9 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 
 
 
-	protected Iterable<?> invokeFunction(Method method, Object[] args) {
+	protected Object invokeFunction(Method method, Object[] args) {
 		MethodMetadata mmd = this.methodMetadata.getMethodMetadata(method);
-		return this.gemfireFunctionOperations.execute(mmd.getFunctionId(), args);
+		return this.gemfireFunctionOperations.executeAndExtract(mmd.getFunctionId(), args);
 	}
 
 	@Override
@@ -89,9 +89,7 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 			logger.debug("invoking method " + invocation.getMethod().getName());
 		}
 
-		Iterable<?> results = invokeFunction(invocation.getMethod(), invocation.getArguments());
-
-		return extractResult(results, invocation.getMethod().getReturnType());
+		return invokeFunction(invocation.getMethod(), invocation.getArguments());
 	}
 
 

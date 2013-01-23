@@ -12,9 +12,11 @@
  */
 package org.springframework.data.gemfire.function;
 
- 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -22,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
-
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
@@ -37,7 +38,7 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
  * @author David Turanski
  *
  */
- 
+
 @SuppressWarnings("serial")
 public class PojoFunctionWrapper implements Function {
 
@@ -45,25 +46,26 @@ public class PojoFunctionWrapper implements Function {
 
 	private volatile boolean HA;
 	private volatile boolean optimizeForWrite;
-	private final boolean hasResult;
+	private volatile boolean hasResult;
 	private final Object target;
 	private final Method method;
 	private final String id;
+	private volatile int batchSize;
 
 	private final FunctionArgumentResolver functionArgumentResolver;
 
 	public PojoFunctionWrapper(Object target, Method method, String id) {
-		
+
 		this.functionArgumentResolver = new FunctionContextInjectingArgumentResolver(method);
-		
+
 		this.id = StringUtils.hasText(id) ? id : method.getName();
 		this.target = target;
 		this.method = method;
 
 		this.HA = false;
-		
+
 		this.hasResult = !(method.getReturnType().equals(void.class));
-				
+
 		this.optimizeForWrite = false;
 	}
 
@@ -94,23 +96,29 @@ public class PojoFunctionWrapper implements Function {
 	public void setOptimizeForWrite(boolean optimizeForWrite) {
 		this.optimizeForWrite = optimizeForWrite;
 	}
-	
+
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
+
+	public void setHasResult(boolean hasResult) {
+		this.hasResult = hasResult;
+	}
+
 	//@Override
 	public void execute(FunctionContext functionContext) {
-		
+
 		Object[] args = this.functionArgumentResolver.resolveFunctionArguments(functionContext);
 
-	 
 		Object result = null;
 
 		result = invokeTargetMethod(args);
-		
+
 		if (hasResult()) {
 			sendResults(functionContext.getResultSender(), result);
 		}
 	}
 
- 
 	protected final Object invokeTargetMethod(Object[] args) {
 
 		if (logger.isDebugEnabled()) {
@@ -126,31 +134,16 @@ public class PojoFunctionWrapper implements Function {
 		return (Object) ReflectionUtils.invokeMethod(method, target, (Object[]) args);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void sendResults(ResultSender<Object> resultSender, Object result) {
 		if (result == null) {
 			resultSender.lastResult(null);
 			return;
 		}
-	 
-		List<Object> results = null;
-		
-		if (ObjectUtils.isArray(result)) {
-			results = Arrays.asList((Object[]) result);
-		
-		} else if (List.class.isAssignableFrom(result.getClass())) {
-			results = (List<Object>) result;
-		}
 
-		if (results != null) {
-			int i = 0;
-			for (Object item : results) {
-				if (i++ < results.size() - 1) {
-					resultSender.sendResult(item);
-				} else {
-					resultSender.lastResult(item);
-				}
-			}
+		if (ObjectUtils.isArray(result)) {	
+			new BatchingResultSender(batchSize, resultSender).sendArrayResults(result);
+		} else if (Iterable.class.isAssignableFrom(result.getClass())) {
+			new BatchingResultSender(batchSize, resultSender).sendResults((Iterable<?>) result);
 		} else {
 			resultSender.lastResult(result);
 		}
