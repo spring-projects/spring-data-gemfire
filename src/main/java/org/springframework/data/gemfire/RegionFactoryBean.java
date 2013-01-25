@@ -24,7 +24,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.wan.SmartLifecycleGatewaySender;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -425,8 +424,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			synchronized (gatewaySenders) {
 				for (Object obj : gatewaySenders) {
-					SmartLifecycleGatewaySender gws = (SmartLifecycleGatewaySender) obj;
-					if (gws.isAutoStartup() && !gws.isRunning()) {
+					GatewaySender gws = (GatewaySender) obj;
+					if (!gws.isManualStart() && !gws.isRunning()) {
 							gws.start();
 					}
 				}
@@ -443,7 +442,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			synchronized (gatewaySenders) {
 				for (Object obj : gatewaySenders) {
-				  SmartLifecycleGatewaySender gws = (SmartLifecycleGatewaySender) obj;
+				 GatewaySender gws = (GatewaySender) obj;
 					gws.stop();
 				 }
 			}
@@ -483,5 +482,4 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		stop();
 		callback.run();
 	}
-
 }
