@@ -2144,12 +2144,11 @@ The name of the index bean definition. If property 'name' is not set, it will be
 					]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
-            <xsd:attribute name="type" use="optional"
-                default="FUNCTIONAL">
+            <xsd:attribute name="type" use="optional">
                 <xsd:simpleType>
                     <xsd:restriction base="xsd:string">
-                        <xsd:enumeration value="FUNCTIONAL" />
-                        <xsd:enumeration value="PRIMARY_KEY" />
+                        <xsd:enumeration value="HASH" />
+                        <xsd:enumeration value="PRIMARY_KEY"/>
                     </xsd:restriction>
                 </xsd:simpleType>
             </xsd:attribute>
@@ -2164,7 +2163,13 @@ The name of the index.
             <xsd:attribute name="expression" type="xsd:string"
                 use="required" />
             <xsd:attribute name="from" type="xsd:string"
-                use="required" />
+                use="required">
+                <xsd:annotation>
+                    <xsd:documentation><![CDATA[
+Corresponds to the regionPath parameter in createIndex methods.
+					]]></xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
             <xsd:attribute name="imports" type="xsd:string"
                 use="optional" />
             <xsd:attribute name="override" type="xsd:string"

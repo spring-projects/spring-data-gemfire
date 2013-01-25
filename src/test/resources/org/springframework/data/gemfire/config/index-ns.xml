@@ -17,7 +17,7 @@
 	
 	<gfe:index id="simple" expression="status" from="/test-index"/>
 	
-	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/test-index tsi" type="PRIMARY_KEY" imports="import java.util"/>
+	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/test-index tsi" type="HASH" imports="import java.util"/>
 	
 	<gfe:cache />
 	

@@ -25,8 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.test.GemfireTestRunner;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexType;
@@ -71,6 +69,6 @@ public class IndexNamespaceTest {
 		assertEquals("tsi.name", idx.getIndexedExpression());
 		assertEquals("complex-index", idx.getName());
 		assertEquals(name, idx.getRegion().getName());
-		assertEquals(IndexType.PRIMARY_KEY, idx.getType());
+		assertEquals(IndexType.HASH, idx.getType());
 	}
 }
