@@ -2407,49 +2407,42 @@ THREAD:Indicates that events will be parallelized based on the event's originati
             ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="parallel" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
-Specifies whether all VMs need to distribute events to remote site. In this case only the events originating in a particular VM will be dispatched in order.
-            ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
     </xsd:complexType>
     <!-- -->
     <xsd:attributeGroup name="commonWANQueueAttributes">
-        <xsd:attribute name="batch-size" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
+    	<xsd:attribute name="batch-size" type="xsd:string"
+    		use="optional">
+    		<xsd:annotation>
+    			<xsd:documentation><![CDATA[
 Specifies the batch size
             ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="persistent" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
+    		</xsd:annotation>
+    	</xsd:attribute>
+    	<xsd:attribute name="persistent" type="xsd:string"
+    		use="optional">
+    		<xsd:annotation>
+    			<xsd:documentation><![CDATA[
 Specifies whether persistence is enabled: true or false(default)
             ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="disk-store-ref" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
+    		</xsd:annotation>
+    	</xsd:attribute>
+    	<xsd:attribute name="disk-store-ref" type="xsd:string"
+    		use="optional">
+    		<xsd:annotation>
+    			<xsd:documentation><![CDATA[
 Indicates the id of disk store to use for persistence
             ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="maximum-queue-memory" type="xsd:string"
-            use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[
+    		</xsd:annotation>
+    	</xsd:attribute>
+    	<xsd:attribute name="maximum-queue-memory" type="xsd:string"
+    		use="optional">
+    		<xsd:annotation>
+    			<xsd:documentation><![CDATA[
 Specifies the maximum memory in MB to allocate for the queue
             ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
+    		</xsd:annotation>
+    	</xsd:attribute>
+    	<xsd:attribute name="parallel" type="xsd:string"></xsd:attribute>
     </xsd:attributeGroup>
     <!-- -->
     <xsd:complexType name="gatewayReceiverType">
@@ -2615,26 +2608,31 @@ The id of the cache - default is gemfireCache
     <!-- -->
     <xsd:element name="async-event-queue">
         <xsd:complexType>
-            <xsd:complexContent>
-                <xsd:extension base="baseAsyncEventQueueType">
-                    <xsd:attribute name="id" type="xsd:string"
-                        use="required">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
+        	<xsd:complexContent>
+        		<xsd:extension base="baseAsyncEventQueueType">
+        			<xsd:attribute name="id" type="xsd:string"
+        				use="required">
+        				<xsd:annotation>
+        					<xsd:documentation><![CDATA[
 The id of this bean definition.
                     ]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="cache-ref" type="xsd:string"
-                        use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
+        				</xsd:annotation>
+        			</xsd:attribute>
+        			<xsd:attribute name="cache-ref" type="xsd:string"
+        				use="optional">
+        				<xsd:annotation>
+        					<xsd:documentation><![CDATA[
 The id of the cache - default is gemfireCache
                   ]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:extension>
-            </xsd:complexContent>
+        				</xsd:annotation>
+        			</xsd:attribute>
+        			<!--
+        			<xsd:attribute name="parallel" default="false"
+        				type="xsd:string">
+        			</xsd:attribute>
+        			 -->
+        		</xsd:extension>
+        	</xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
 

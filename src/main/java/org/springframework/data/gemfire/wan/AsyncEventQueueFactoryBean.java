@@ -45,6 +45,8 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	private Boolean persistent;
 
 	private String diskStoreRef;
+	
+	private Boolean parallel;
 
 	/**
 	 * 
@@ -87,9 +89,11 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			Assert.isTrue(persistent, "specifying a disk store requires persistent property to be true");
 			asyncEventQueueFactory.setDiskStoreName(diskStoreRef);
 		}
-
 		if (maximumQueueMemory != null) {
 			asyncEventQueueFactory.setMaximumQueueMemory(maximumQueueMemory);
+		}
+		if( parallel != null ){
+			asyncEventQueueFactory.setParallel( parallel );
 		}
 
 		asyncEventQueue = asyncEventQueueFactory.create(getName(), asyncEventListener);
@@ -117,5 +121,9 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
+	}
+	
+	public void setParallel(Boolean parallel){
+		this.parallel = parallel;
 	}
 }
