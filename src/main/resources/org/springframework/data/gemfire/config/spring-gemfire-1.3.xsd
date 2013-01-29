@@ -2442,7 +2442,13 @@ Specifies the maximum memory in MB to allocate for the queue
             ]]></xsd:documentation>
     		</xsd:annotation>
     	</xsd:attribute>
-    	<xsd:attribute name="parallel" type="xsd:string"></xsd:attribute>
+    	<xsd:attribute name="parallel" type="xsd:string">
+    	<xsd:annotation>
+                <xsd:documentation><![CDATA[
+                A value of "false" or "true" that specifies the type of queue GemFire creates, serial or parallel.
+            ]]></xsd:documentation>
+            </xsd:annotation>
+    	</xsd:attribute>
     </xsd:attributeGroup>
     <!-- -->
     <xsd:complexType name="gatewayReceiverType">
@@ -2626,11 +2632,6 @@ The id of the cache - default is gemfireCache
                   ]]></xsd:documentation>
         				</xsd:annotation>
         			</xsd:attribute>
-        			<!--
-        			<xsd:attribute name="parallel" default="false"
-        				type="xsd:string">
-        			</xsd:attribute>
-        			 -->
         		</xsd:extension>
         	</xsd:complexContent>
         </xsd:complexType>
