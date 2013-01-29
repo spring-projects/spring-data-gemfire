@@ -105,10 +105,11 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		AsyncEventQueue aseq = ctx.getBean("async-event-queue", AsyncEventQueue.class);
 		assertEquals(10, aseq.getBatchSize());
 		assertTrue(aseq.isPersistent());
+		assertTrue(aseq.isParallel());
 		assertEquals("diskstore", aseq.getDiskStoreName());
 		assertEquals(50, aseq.getMaximumQueueMemory());
 	}
-
+	
 	@Test
 	public void testGatewaySender() throws Exception {
 		GatewaySenderFactoryBean gwsfb = ctx.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
