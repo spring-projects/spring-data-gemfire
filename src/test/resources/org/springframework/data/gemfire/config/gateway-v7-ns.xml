@@ -37,7 +37,7 @@
     </gfe:partitioned-region>
     
     <gfe:async-event-queue id="async-event-queue" batch-size="10" persistent="true" disk-store-ref="diskstore" 
-    maximum-queue-memory="50">
+    maximum-queue-memory="50" parallel="true">
         <gfe:async-event-listener>
           <bean class="org.springframework.data.gemfire.config.GemfireV7GatewayNamespaceTest.TestAsyncEventListener"/>
         </gfe:async-event-listener>
