@@ -9,4 +9,5 @@
 	<gfe:cache-server/>
 	<gfe:replicated-region id="r1"/>
 	<gfe:replicated-region id="r2"/>
+	<gfe:replicated-region id="simple"/>
 </beans>

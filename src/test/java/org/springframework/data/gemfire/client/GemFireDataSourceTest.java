@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.fork.SpringCacheServerProcess;
+import org.springframework.data.gemfire.repository.sample.Person;
+import org.springframework.data.gemfire.repository.sample.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -54,11 +56,21 @@ public class GemFireDataSourceTest {
 	public void testServerDataSource() {
 		Cache cache = ctx.getBean("gemfireCache",Cache.class);
 		Pool pool = ctx.getBean("gemfirePool",Pool.class);
-		PoolFactoryBean pfb = ctx.getBean("&gemfirePool",PoolFactoryBean.class);
-		Region<Object,Object> r1 = ctx.getBean("r1",Region.class);
-		r1.put("hello","world");
-		assertEquals("world",r1.get("hello"));
-		
+		String regions[] = ctx.getBeanNamesForType(Region.class);
+		List<String> regionList = Arrays.asList(regions);
+		assertTrue(regionList.contains("r1"));
+		assertTrue(regionList.contains("r2"));
+		assertTrue(regionList.contains("simple"));
+	}
+	
+ 
+	@Test
+	public void testRepositoryCreated() {
+		PersonRepository repo = ctx.getBean(PersonRepository.class);
+		Person dave = new Person(1L,"Dave","Mathhews");
+		repo.save(dave);
+		Person saved  = repo.findOne(1L);
+		assertEquals("Dave",saved.getFirstname());
 	}
 	
 	@AfterClass
