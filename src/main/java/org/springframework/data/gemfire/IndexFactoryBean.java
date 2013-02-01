@@ -16,12 +16,11 @@
 
 package org.springframework.data.gemfire;
 
-import java.util.Collection;
-
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.RegionService;
@@ -29,12 +28,7 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
-import com.springsource.vfabric.licensing.log.Logger;
 
 /**
  * Factory bean for easy declarative creation of GemFire Indexes.
@@ -48,8 +42,11 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	private String poolName;
 	private RegionService cache;
 	private String beanName;
-	private String name, expression, from, imports;
-	private IndexType type = IndexType.FUNCTIONAL;
+	private String name;
+	private String expression;
+	private String from;
+	private String imports;
+	private String type;
 	private boolean override = true;
 
 	public void afterPropertiesSet() throws Exception {
@@ -67,7 +64,13 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 
 		Assert.notNull(queryService, "Query service required for index creation");
 		Assert.hasText(expression, "Index expression is required");
-		Assert.hasText(from, "Index from clause is required");
+		Assert.hasText(from, "Index from clause (regionPath) is required");
+
+		if (StringUtils.hasText(type)) {
+			if (type.equalsIgnoreCase("KEY") || type.equalsIgnoreCase("PRIMARY_KEY")) {
+				Assert.isNull(imports, "The imports property is not supported for a key index");
+			}
+		}
 
 		String indexName = StringUtils.hasText(name) ? name : beanName;
 
@@ -76,41 +79,59 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 		index = createIndex(queryService, indexName);
 	}
 
-	private Index createIndex(QueryService queryService, String indexName) throws Exception  {
-		Collection<Index> indexes = queryService.getIndexes();
+	private Index createIndex(QueryService queryService, String indexName) throws Exception {
 
-		Index old = null;
+		Index existingIndex = null;
 
-		for (Index index : indexes) {
-			if (indexName.equals(index.getName())) {
-				if (!override) {
-					return index;
-				}
-				old = index;
-				break;
+		for (Index idx : queryService.getIndexes()) {
+			if (idx.getName().equals(indexName)) {
+				existingIndex = idx;
+ 				break;
 			}
 		}
-
-		if (old != null) {
-			// compare indices
-			if (from.equals(old.getFromClause()) && expression.equals(old.getIndexedExpression())
-					&& type.equals(old.getType())) {
-				return index;
+		if (existingIndex != null) {
+			if (!override) {
+				return existingIndex;
+			} else {
+				queryService.removeIndex(existingIndex);
 			}
 		}
 
 		Index index = null;
 		try {
-		if (StringUtils.hasText(imports)) {
-			index = queryService.createIndex(indexName, type, expression, from, imports);
+			if ("KEY".equalsIgnoreCase(type) || "PRIMARY_KEY".equalsIgnoreCase(type)) {
+
+				index = queryService.createKeyIndex(indexName, expression, from);
+
+			} else if ("HASH".equalsIgnoreCase(type)) {
+				if (StringUtils.hasText(imports)) {
+					index = queryService.createHashIndex(indexName, expression, from, imports);	
+				} else {
+					index = queryService.createHashIndex(indexName, expression, from);
+				}
+			} else {
+				if (StringUtils.hasText(imports)) {
+					index = queryService.createIndex(indexName, expression, from, imports);
+				} else {
+					index = queryService.createIndex(indexName, expression, from);
+				}
+			}
+			return index;
+
+		} catch (IndexExistsException e) {
+			for (Index idx : queryService.getIndexes()) {
+				if (idx.getName().equals(indexName)) {
+					return idx;
+				}
+			}
+		} catch (Exception e) {
+			if (existingIndex != null) {
+				if (CollectionUtils.isEmpty(queryService.getIndexes())
+						|| !queryService.getIndexes().contains(existingIndex)) {
+					queryService.getIndexes().add(existingIndex);
+				}
+			}
 		}
-		else {
-			index = queryService.createIndex(indexName, type, expression, from);
-		}
-		
-	} catch (IndexExistsException e) {
-		 // This is ok
-	}  
 
 		return index;
 	}
@@ -189,7 +210,7 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	/**
 	 * @param type the type to set
 	 */
-	public void setType(IndexType type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 

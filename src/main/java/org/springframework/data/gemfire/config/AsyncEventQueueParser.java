@@ -49,6 +49,12 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
 		ParsingUtils.setPropertyValue(element, builder, "disk-store-ref");
+		
+		String diskStoreRef = element.getAttribute("disk-store-ref");
+		if (StringUtils.hasText(diskStoreRef)) {
+			builder.addDependsOn(diskStoreRef);
+		}
+		
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
 		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);

@@ -21,6 +21,7 @@ package org.springframework.data.gemfire.function.execution;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.AccessibleObject;
@@ -49,7 +50,6 @@ public class GemfireFunctionProxyFactoryBeanTests {
 		functionOperations = mock(GemfireFunctionOperations.class);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void testInvokeAndExtractWithAnnotatedFunctionId() throws Throwable {
 		
@@ -58,17 +58,17 @@ public class GemfireFunctionProxyFactoryBeanTests {
 		
 		MethodInvocation invocation = new TestInvocation(IFoo.class).withMethodNameAndArgTypes("oneArg",String.class);
 	 
-		List results = Arrays.asList(new Integer[]{1});
+		int results = 1;
 		
-		when(functionOperations.execute("oneArg",invocation.getArguments())).thenReturn(results);
-		 
+		when(functionOperations.executeAndExtract("oneArg",invocation.getArguments())).thenReturn(results);
 		Object result = proxy.invoke(invocation);
-		assertTrue(result instanceof Integer);
-		assertEquals(new Integer(1),result);		
+		verify(functionOperations).executeAndExtract("oneArg",invocation.getArguments()); 
+		assertTrue(result.getClass().getName(), result instanceof Integer);
+		assertEquals(1,result);		
 	}
 	
 	 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testInvoke() throws Throwable {
 		
@@ -79,9 +79,9 @@ public class GemfireFunctionProxyFactoryBeanTests {
 	 
 		List results = Arrays.asList(new Integer[]{1,2,3});
 		
-		when(functionOperations.execute("collections",invocation.getArguments())).thenReturn(results);
-		 
+		when(functionOperations.executeAndExtract("collections",invocation.getArguments())).thenReturn(results);
 		Object result = proxy.invoke(invocation);
+		verify(functionOperations).executeAndExtract("collections",invocation.getArguments()); ; 
 		assertTrue(result instanceof List);
 		assertEquals(3,((List<?>)result).size());		
 	}

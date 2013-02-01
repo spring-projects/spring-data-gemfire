@@ -51,8 +51,24 @@ public abstract class GemfireFunctionUtils {
 		if (attributes.containsKey("HA")) {
 			function.setHA((Boolean) attributes.get("HA"));
 		}
+		
 		if (attributes.containsKey("optimizeForWrite")) {
 			function.setOptimizeForWrite((Boolean) attributes.get("optimizeForWrite"));
+		}
+		
+		if (attributes.containsKey("batchSize")) {
+			int batchSize = (Integer) attributes.get("batchSize");
+			Assert.isTrue(batchSize >= 0, String.format("batchSize must be a non-negative value %s.%s",
+					target.getClass().getName(), method.getName()));
+			function.setBatchSize(batchSize);
+		}
+		
+		if (attributes.containsKey("hasResult")) {
+			boolean hasResult = (Boolean)attributes.get("hasResult");
+			//Only set if true
+			if (hasResult) {
+				function.setHasResult(hasResult);
+			}
 		}
 
 		if (FunctionService.isRegistered(function.getId())) {
@@ -63,6 +79,7 @@ public abstract class GemfireFunctionUtils {
 				FunctionService.unregisterFunction(function.getId());
 			}
 		}
+		
 		if (!FunctionService.isRegistered(function.getId())) {
 			FunctionService.registerFunction(function);
 			if (log.isDebugEnabled()) {
@@ -70,7 +87,7 @@ public abstract class GemfireFunctionUtils {
 			}
 		} else {
 			if (log.isDebugEnabled()) {
-				log.debug("function already registered " + function.getId());
+				log.debug("function " + function.getId()+ "is already registered");
 			}
 		}
 	}

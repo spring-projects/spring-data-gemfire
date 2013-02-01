@@ -40,4 +40,13 @@ public @interface GemfireFunction {
 	 * is the function optimized for write operations
 	 */
 	boolean optimizeForWrite() default false;
+	/**
+	 * controls the maximum number of results sent at one time
+	 */
+	int batchSize() default 0;
+	/**
+	 * normally follows the method return type, i.e., false if void, true otherwise. This allows overriding 
+	 * a void method which uses the resultSender directly.
+	 */
+	boolean hasResult() default false;
 }

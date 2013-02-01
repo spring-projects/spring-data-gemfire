@@ -808,7 +808,7 @@ public class StubCache implements Cache {
 				String indexName = (String)invocation.getArguments()[0];
 				String indexedExpression = (String)invocation.getArguments()[1];
 				String fromClause = (String)invocation.getArguments()[2];
-				return mockIndex(indexName, null, indexedExpression, fromClause, null, null);
+				return mockIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause, null);
 			}
 		});
 		when(qs.createIndex(anyString(), anyString(),anyString(),anyString())).thenAnswer(new Answer<Index>(){
@@ -817,42 +817,49 @@ public class StubCache implements Cache {
 				String indexName = (String)invocation.getArguments()[0];
 				String indexedExpression = (String)invocation.getArguments()[1];
 				String fromClause = (String)invocation.getArguments()[2];
+				String imports = (String)invocation.getArguments()[3];
+				return mockIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause, imports);
+			}
+		});
+		
+		when(qs.createKeyIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>(){
+			@Override
+			public Index answer(InvocationOnMock invocation) throws Throwable {
+				String indexName = (String)invocation.getArguments()[0];
+				String indexedExpression = (String)invocation.getArguments()[1];
+				String fromClause = (String)invocation.getArguments()[2];
 				 
-				return mockIndex(indexName, null, indexedExpression, fromClause, null, null);
+				return mockIndex(indexName, IndexType.PRIMARY_KEY, indexedExpression, fromClause, null);
 			}
 		});
 		
-		when(qs.createIndex(anyString(), any(IndexType.class), anyString(), anyString())).thenAnswer(new Answer<Index>(){
+		when(qs.createHashIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>(){
 			@Override
 			public Index answer(InvocationOnMock invocation) throws Throwable {
 				String indexName = (String)invocation.getArguments()[0];
-				IndexType type = (IndexType)invocation.getArguments()[1];
-				String indexedExpression = (String)invocation.getArguments()[2];
-				String fromClause = (String)invocation.getArguments()[3];
-				
-				return mockIndex(indexName, type, indexedExpression, null, fromClause, null);
+				String indexedExpression = (String)invocation.getArguments()[1];
+				String fromClause = (String)invocation.getArguments()[2];
+				 
+				return mockIndex(indexName, IndexType.HASH, indexedExpression, fromClause, null);
 			}
 		});
 		
-		
-		
-		when(qs.createIndex(anyString(), any(IndexType.class),anyString(), anyString(), anyString())).thenAnswer(new Answer<Index>(){
+		when(qs.createHashIndex(anyString(), anyString(),anyString(),anyString())).thenAnswer(new Answer<Index>(){
 			@Override
 			public Index answer(InvocationOnMock invocation) throws Throwable {
 				String indexName = (String)invocation.getArguments()[0];
-				IndexType type = (IndexType)invocation.getArguments()[1];
-				String indexedExpression = (String)invocation.getArguments()[2];
-				String fromClause = (String)invocation.getArguments()[3];
-				String imports = (String)invocation.getArguments()[4];
-				return mockIndex(indexName, type, indexedExpression, null, fromClause, imports);
+				String indexedExpression = (String)invocation.getArguments()[1];
+				String fromClause = (String)invocation.getArguments()[2];
+				String imports = (String)invocation.getArguments()[3];
+				 
+				return mockIndex(indexName, IndexType.HASH, indexedExpression, fromClause,  imports);
 			}
 		});
-		
 		 
 		return qs;
 	}
 	
-	Index mockIndex(String indexName, IndexType indexType,String indexedExpression, String regionPath, String fromClause, String imports){
+	Index mockIndex(String indexName, IndexType indexType,String indexedExpression, String fromClause, String imports){
 		Index idx = mock(Index.class);
 		when(idx.getFromClause()).thenReturn(fromClause);
 		when(idx.getIndexedExpression()).thenReturn(indexedExpression);

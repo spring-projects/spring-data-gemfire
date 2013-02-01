@@ -143,7 +143,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 				PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType()); 
 				Object value = null;
 				if (customSerializer != null) {
-					System.out.println("using custom serializer");
 					value = customSerializer.fromData(persistentProperty.getType(), reader);
 				} else {
 					value = reader.readField(persistentProperty.getName());

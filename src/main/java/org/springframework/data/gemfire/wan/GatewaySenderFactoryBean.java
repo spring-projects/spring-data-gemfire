@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.wan;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -33,7 +34,8 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @author David Turanski
  * 
  */
-public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>  {
+public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>
+implements SmartLifecycle {
 	private static List<String> validOrderPolicyValues = Arrays.asList("KEY", "PARTITION", "THREAD");
 
 	private GatewaySender gatewaySender;
@@ -82,12 +84,12 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	@Override
 	public GatewaySender getObject() throws Exception {
-		return new SmartLifecycleGatewaySender(gatewaySender, !manualStart);
+		return gatewaySender;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return SmartLifecycleGatewaySender.class;
+		return GatewaySender.class;
 	}
 
 	@Override
@@ -232,5 +234,56 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	public void setSocketReadTimeout(Integer socketReadTimeout) {
 		this.socketReadTimeout = socketReadTimeout;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Lifecycle#start()
+	 */
+	@Override
+	public synchronized void start() {
+		if (!gatewaySender.isRunning()){
+			gatewaySender.start();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Lifecycle#stop()
+	 */
+	@Override
+	public void stop() {
+		gatewaySender.stop();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Lifecycle#isRunning()
+	 */
+	@Override
+	public boolean isRunning() {
+		return gatewaySender.isRunning();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Phased#getPhase()
+	 */
+	@Override
+	public int getPhase() {
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.SmartLifecycle#isAutoStartup()
+	 */
+	@Override
+	public boolean isAutoStartup() {
+		return !manualStart;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.SmartLifecycle#stop(java.lang.Runnable)
+	 */
+	@Override
+	public void stop(Runnable callback) {
+		stop();
+		callback.run();
 	}
 }

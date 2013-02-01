@@ -102,7 +102,7 @@ public class FunctionIntegrationTests {
 		assertEquals(2,map.get("two").intValue());
 		assertEquals(3,map.get("three").intValue());
 		
-		result = template.execute("collections",Arrays.asList(new Integer[]{1,2,3,4,5}));
+		result = template.executeAndExtract("collections",Arrays.asList(new Integer[]{1,2,3,4,5}));
 		assertTrue(result.getClass().getName(),result instanceof List);
  	 
 		List<?> list = (List<?>)result;
@@ -111,7 +111,13 @@ public class FunctionIntegrationTests {
 			assertEquals(i,list.get(i-1));
 		}
 	}
-
+	
+	@Test 
+	public void testArrayReturnTypes() {
+		GemfireOnRegionOperations template = new GemfireOnRegionFunctionTemplate(region);
+		Object result = template.executeAndExtract("arrays",new int[]{1,2,3,4,5});
+		assertTrue(result.getClass().getName(),result instanceof int[]);
+	}
 	/*
 	 * This gets wrapped in a GemFire Function and registered on the forked server.
 	 */
@@ -143,5 +149,10 @@ public class FunctionIntegrationTests {
 			}
 			return new HashMap<String, Integer>(dataSet);
 		}
+	    
+	    @GemfireFunction(id="arrays",batchSize=2)  
+	    	public int[] collections(int[] args) {
+				return args;
+	    }
 	}
 }
