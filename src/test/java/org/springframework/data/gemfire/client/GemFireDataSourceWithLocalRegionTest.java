@@ -41,8 +41,8 @@ import com.gemstone.gemfire.cache.client.Pool;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/client/datasource-client.xml")
-public class GemFireDataSourceTest {
+@ContextConfiguration("/org/springframework/data/gemfire/client/datasource-client-with-regions.xml")
+public class GemFireDataSourceWithLocalRegionTest {
 	@Autowired 
 	ApplicationContext ctx;
 	
@@ -52,30 +52,16 @@ public class GemFireDataSourceTest {
 				+ "/org/springframework/data/gemfire/client/datasource-server.xml");
 	}
 	
-	@SuppressWarnings("unused")
+	 
 	@Test
-	public void testServerDataSource() {
-		Cache cache = ctx.getBean("gemfireCache",Cache.class);
-		Pool pool = ctx.getBean("gemfirePool",Pool.class);
-		String regions[] = ctx.getBeanNamesForType(Region.class);
-		List<String> regionList = Arrays.asList(regions);
-		assertTrue(regionList.contains("r1"));
-		assertTrue(regionList.contains("r2"));
-		assertTrue(regionList.contains("simple"));
-		
-		Region<?,?> simple = ctx.getBean("simple", Region.class);
-		assertEquals(DataPolicy.EMPTY, simple.getAttributes().getDataPolicy());
+	public void testRegionDefinitionNotOverridden() {
+		 Region<?,?> simple = ctx.getBean("simple",Region.class);
+		 assertEquals(DataPolicy.NORMAL,
+				 simple.getAttributes().getDataPolicy());
 	}
 	
  
-	@Test
-	public void testRepositoryCreated() {
-		PersonRepository repo = ctx.getBean(PersonRepository.class);
-		Person dave = new Person(1L,"Dave","Mathhews");
-		repo.save(dave);
-		Person saved  = repo.findOne(1L);
-		assertEquals("Dave",saved.getFirstname());
-	}
+	 
 	
 	@AfterClass
 	public static void cleanUp() {

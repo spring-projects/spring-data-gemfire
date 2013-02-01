@@ -12,18 +12,13 @@
  */
 package org.springframework.data.gemfire.config;
 
-import javax.management.Attribute;
-
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.client.GemfireDataSourcePostProcessor;
-import org.springframework.util.Assert;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
 /**
