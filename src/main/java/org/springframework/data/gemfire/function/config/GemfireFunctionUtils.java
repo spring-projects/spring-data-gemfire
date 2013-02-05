@@ -51,20 +51,22 @@ public abstract class GemfireFunctionUtils {
 		if (attributes.containsKey("HA")) {
 			function.setHA((Boolean) attributes.get("HA"));
 		}
-		
+
 		if (attributes.containsKey("optimizeForWrite")) {
 			function.setOptimizeForWrite((Boolean) attributes.get("optimizeForWrite"));
 		}
-		
+
 		if (attributes.containsKey("batchSize")) {
 			int batchSize = (Integer) attributes.get("batchSize");
-			Assert.isTrue(batchSize >= 0, String.format("batchSize must be a non-negative value %s.%s",
-					target.getClass().getName(), method.getName()));
+			Assert.isTrue(
+					batchSize >= 0,
+					String.format("batchSize must be a non-negative value %s.%s", target.getClass().getName(),
+							method.getName()));
 			function.setBatchSize(batchSize);
 		}
-		
+
 		if (attributes.containsKey("hasResult")) {
-			boolean hasResult = (Boolean)attributes.get("hasResult");
+			boolean hasResult = (Boolean) attributes.get("hasResult");
 			//Only set if true
 			if (hasResult) {
 				function.setHasResult(hasResult);
@@ -79,7 +81,7 @@ public abstract class GemfireFunctionUtils {
 				FunctionService.unregisterFunction(function.getId());
 			}
 		}
-		
+
 		if (!FunctionService.isRegistered(function.getId())) {
 			FunctionService.registerFunction(function);
 			if (log.isDebugEnabled()) {
@@ -87,11 +89,11 @@ public abstract class GemfireFunctionUtils {
 			}
 		} else {
 			if (log.isDebugEnabled()) {
-				log.debug("function " + function.getId()+ "is already registered");
+				log.debug("function " + function.getId() + "is already registered");
 			}
 		}
 	}
-	
+
 	/**
 	 * Determine the order position of a an annotated method parameter
 	 * 
@@ -100,26 +102,37 @@ public abstract class GemfireFunctionUtils {
 	 * @param requiredTypes an array of valid parameter types for the annotation
 	 * @return the parameter position or -1 if the annotated parameter is not found
 	 */
-	public static int getAnnotationParameterPosition(Method method, Class<?> targetAnnotationType, Class<?>[] requiredTypes) {
+	public static int getAnnotationParameterPosition(Method method, Class<?> targetAnnotationType,
+			Class<?>[] requiredTypes) {
 		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		if (parameterAnnotations.length > 0) {
 			int position = -1;
 			Class<?>[] paramTypes = method.getParameterTypes();
-			
+
 			List<Class<?>> requiredTypesList = Arrays.asList(requiredTypes);
 
-			
 			for (int i = 0; i < parameterAnnotations.length; i++) {
 				Annotation[] annotations = parameterAnnotations[i];
 				if (annotations.length > 0) {
 					for (Annotation annotation : annotations) {
 						if (annotation.annotationType().equals(targetAnnotationType)) {
-							Assert.state(position < 0, String.format("Method %s signature cannot contain more than one parameter annotated with type %s"
-									,method.getName(),targetAnnotationType.getName()));
-							Assert.isTrue(requiredTypesList.contains(paramTypes[i]), String.format(
-									"Parameter annotated with %s must be one of type %s in method %s", targetAnnotationType.getName(),
+							Assert.state(
+									position < 0,
+									String.format(
+											"Method %s signature cannot contain more than one parameter annotated with type %s",
+											method.getName(), targetAnnotationType.getName()));
+							boolean isRequiredType = false;
+							for (Class<?> requiredType: requiredTypesList) {
+								if (requiredType.isAssignableFrom(paramTypes[i])) {
+									isRequiredType = true;
+									break;
+								}
+							}
+							Assert.isTrue(isRequiredType, String.format(
+									"Parameter of type %s annotated with %s must be assignable from one of type %s in method %s",
+									paramTypes[i], targetAnnotationType.getName(),
 									StringUtils.arrayToCommaDelimitedString(requiredTypes), method.getName()));
-							position =  i;
+							position = i;
 						}
 
 					}

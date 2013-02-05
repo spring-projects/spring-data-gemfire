@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
+import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
  
 
@@ -40,7 +41,8 @@ public class FunctionContextInjectingArgumentResolver extends DefaultFunctionArg
 	
 	private final int regionParameterPosition;
 	private final int filterParameterPosition;
-	private final int functionContextParameterPosition; 
+	private final int functionContextParameterPosition;
+	private final int resultSenderParameterPosition;
 	private final Method method;
 	
 	public FunctionContextInjectingArgumentResolver(Method method) {
@@ -62,13 +64,13 @@ public class FunctionContextInjectingArgumentResolver extends DefaultFunctionArg
 			 tempRegionParameterPosition = regionTypeParameterPosition;
 		 } 
 		 
-		 regionParameterPosition = tempRegionParameterPosition;                 
+		 regionParameterPosition = tempRegionParameterPosition;
 		 filterParameterPosition = GemfireFunctionUtils.getAnnotationParameterPosition(method, Filter.class, new Class[]{Set.class});
 		 functionContextParameterPosition = getArgumentTypePosition(method,FunctionContext.class);
-		 
+		 resultSenderParameterPosition = getArgumentTypePosition(method,ResultSender.class);
 		
 		if (regionParameterPosition >=0  && filterParameterPosition >=0) {
-		 	Assert.state(regionParameterPosition != filterParameterPosition, "region parameter and filter parameter must be different");
+			Assert.state(regionParameterPosition != filterParameterPosition, "region parameter and filter parameter must be different");
 		} 
 		
 	 }
@@ -91,12 +93,15 @@ public class FunctionContextInjectingArgumentResolver extends DefaultFunctionArg
 			args = ArrayUtils.insert(args, functionContextParameterPosition, functionContext);
 		  }
 		  
+		  if (this.resultSenderParameterPosition >=0 ) {
+			  args = ArrayUtils.insert(args, resultSenderParameterPosition, functionContext.getResultSender());
+		  }
+
 		}
 		
 		Assert.isTrue(args.length == method.getParameterTypes().length, 
 				String.format("wrong number of arguments for method %s. Expected :%d, actual: %d", method.getName(),
 						method.getParameterTypes().length, args.length));
-
 		
 		return args;
 
