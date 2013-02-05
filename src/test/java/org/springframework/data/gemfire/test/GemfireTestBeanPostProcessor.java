@@ -34,12 +34,12 @@ public class GemfireTestBeanPostProcessor implements BeanPostProcessor {
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof CacheFactoryBean) {
-			logger.info("replacing " + beanName+ " definition to mock GemFire components" );
 			
 			bean = (bean instanceof ClientCacheFactoryBean)? 
 					new MockClientCacheFactoryBean((ClientCacheFactoryBean)bean):
 					new MockCacheFactoryBean((CacheFactoryBean)bean);
-			
+			logger.info(String.format("replacing '%s' definition with type %s",
+					beanName, bean.getClass().getName())); 
 		}
 		else if (bean instanceof CacheServerFactoryBean) {
 			((CacheServerFactoryBean)bean).setCache(new StubCache());

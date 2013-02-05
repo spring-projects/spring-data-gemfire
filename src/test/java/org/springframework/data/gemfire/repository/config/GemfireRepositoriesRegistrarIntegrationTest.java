@@ -25,7 +25,7 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.gemfire.repository.sample.PersonRepository;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.data.gemfire.test.MockCacheFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -39,8 +39,8 @@ import com.gemstone.gemfire.cache.Region;
  * 
  * @author Oliver Gierke
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(initializers=GemfireTestApplicationContextInitializer.class)
 public class GemfireRepositoriesRegistrarIntegrationTest {
 
 	@Configuration

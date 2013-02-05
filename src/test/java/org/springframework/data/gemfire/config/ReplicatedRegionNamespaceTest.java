@@ -29,8 +29,9 @@ import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -43,8 +44,9 @@ import com.gemstone.gemfire.cache.Scope;
  * @author Costin Leau
  * @author David Turanski
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("replicated-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="replicated-ns.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class ReplicatedRegionNamespaceTest {
 
 	@Autowired

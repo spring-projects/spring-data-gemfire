@@ -27,9 +27,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.data.gemfire.test.MockRegionFactory;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
@@ -42,8 +43,9 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
 /**
  * @author Costin Leau
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/basic-template.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/org/springframework/data/gemfire/basic-template.xml",
+initializers=GemfireTestApplicationContextInitializer.class)
 public class GemfireTemplateTest  {
 
 	private static final String MULTI_QUERY = "select * from /simple";

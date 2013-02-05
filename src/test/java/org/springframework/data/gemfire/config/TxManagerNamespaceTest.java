@@ -24,15 +24,16 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.GemfireTransactionManager;
-import org.springframework.data.gemfire.RecreatingContextTest;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Costin Leau
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/config/tx-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/org/springframework/data/gemfire/config/tx-ns.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class TxManagerNamespaceTest {
 
 	@Autowired ApplicationContext ctx;

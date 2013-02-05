@@ -25,13 +25,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.data.gemfire.wan.GatewayHubFactoryBean;
 import org.springframework.data.gemfire.wan.GatewayProxy;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -43,8 +42,9 @@ import com.gemstone.gemfire.cache.util.GatewayHub;
  * @author David Turanski
  * 
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/config/gateway-v6-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/org/springframework/data/gemfire/config/gateway-v6-ns.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class GemfireV6GatewayNamespaceTest {
 	
 	@Autowired ApplicationContext ctx;

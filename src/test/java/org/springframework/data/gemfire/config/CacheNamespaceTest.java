@@ -33,8 +33,9 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -45,8 +46,9 @@ import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
 /**
  * @author Costin Leau
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/config/cache-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/org/springframework/data/gemfire/config/cache-ns.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class CacheNamespaceTest{
 	@Autowired ApplicationContext ctx;
 	

@@ -15,8 +15,8 @@
  */
 package org.springframework.data.gemfire.config;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
 import javax.annotation.Resource;
 
@@ -24,12 +24,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.TransactionEvent;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
@@ -39,8 +38,9 @@ import com.gemstone.gemfire.cache.TransactionWriterException;
  * @author David Turanski
  * 
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("tx-listeners-and-writers.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="tx-listeners-and-writers.xml",
+		initializers=GemfireTestApplicationContextInitializer.class)
 public class TxEventHandlersTest {
 	@Autowired
 	TestListener txListener1;

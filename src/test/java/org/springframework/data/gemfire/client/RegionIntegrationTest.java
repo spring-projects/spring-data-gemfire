@@ -27,8 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -44,8 +45,9 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
  * @author Costin Leau
  * @author David Turanski
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration(locations = { "basic-region.xml" })
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = { "basic-region.xml" },
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class RegionIntegrationTest {
 
 	private static class CacheList<K, V> extends CacheListenerAdapter<K, V> {

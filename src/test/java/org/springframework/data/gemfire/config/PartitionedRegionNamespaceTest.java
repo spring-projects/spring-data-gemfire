@@ -30,8 +30,9 @@ import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.SimplePartitionResolver;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
@@ -45,8 +46,9 @@ import com.gemstone.gemfire.cache.partition.PartitionListener;
  * @author Costin Leau
  * @author David Turanski
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("partitioned-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="partitioned-ns.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class PartitionedRegionNamespaceTest {
 
 	@Autowired

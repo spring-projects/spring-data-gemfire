@@ -22,8 +22,9 @@ import javax.annotation.Resource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -33,8 +34,9 @@ import com.gemstone.gemfire.cache.client.ClientCache;
  * @author David Turanski
  *
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("client-cache.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="client-cache.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class ClientCacheTest {
 	@Resource(name="challengeQuestionsRegion")
 	Region<?,?> region;

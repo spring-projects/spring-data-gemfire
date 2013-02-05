@@ -23,16 +23,18 @@ import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.function.config.two.TestOnRegionFunction;
 import org.springframework.data.gemfire.function.execution.GemfireOnRegionFunctionTemplate;
 import org.springframework.data.gemfire.function.execution.OnRegionFunctionProxyFactoryBean;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import com.gemstone.gemfire.cache.Region;
 
 /**
  * @author David Turanski
  *
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(initializers=GemfireTestApplicationContextInitializer.class)
 public class XmlConfiguredFunctionExecutionIntegrationTests {
 	@Autowired
 	ApplicationContext context;	

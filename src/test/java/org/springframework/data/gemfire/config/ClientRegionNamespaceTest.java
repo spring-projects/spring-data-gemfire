@@ -34,8 +34,9 @@ import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.Interest;
 import org.springframework.data.gemfire.client.RegexInterest;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
@@ -52,8 +53,9 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
  * @author Costin Leau
  * @author David Turanski
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("client-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="client-ns.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class ClientRegionNamespaceTest {
 
 	@Autowired

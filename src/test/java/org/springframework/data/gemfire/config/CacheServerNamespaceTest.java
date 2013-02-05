@@ -23,8 +23,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
 
@@ -33,8 +34,9 @@ import com.gemstone.gemfire.cache.server.CacheServer;
  * @author Costin Leau
  * @author David Turanski
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/config/server-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/org/springframework/data/gemfire/config/server-ns.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class CacheServerNamespaceTest {
 
 	@Autowired ApplicationContext ctx;

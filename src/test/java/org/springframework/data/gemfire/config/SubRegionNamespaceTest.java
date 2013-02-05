@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.SubRegionFactoryBean;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -39,8 +39,9 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * @author David Turanski
  */
 @SuppressWarnings("deprecation")
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("subregion-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="subregion-ns.xml",
+initializers=GemfireTestApplicationContextInitializer.class)
 public class SubRegionNamespaceTest {
 
 	@Autowired

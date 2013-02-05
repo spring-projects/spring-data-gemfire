@@ -23,8 +23,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexType;
@@ -32,9 +34,11 @@ import com.gemstone.gemfire.cache.query.IndexType;
 /**
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
-@RunWith(GemfireTestRunner.class)
-@ContextConfiguration("index-ns.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="index-ns.xml",
+	initializers=GemfireTestApplicationContextInitializer.class)
 public class IndexNamespaceTest {
 
 	private final String name = "test-index";

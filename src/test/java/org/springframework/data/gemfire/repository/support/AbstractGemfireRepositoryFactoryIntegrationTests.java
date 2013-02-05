@@ -35,7 +35,6 @@ import org.springframework.data.gemfire.repository.sample.PersonRepository;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Region;
-import org.springframework.data.gemfire.test.GemfireTestRunner;
 /**
  * Integration test for {@link GemfireRepositoryFactory}.
  * 
