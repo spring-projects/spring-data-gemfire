@@ -46,7 +46,7 @@ abstract class AbstractFunctionTemplate  implements GemfireFunctionOperations {
 				 .setArgs(args)
 				 .setFunction(function);
 		 		
-		return executeAndExtract(functionExecution);		
+		return this.<T>executeAndExtract(functionExecution);		
 	}
 
 	@Override
@@ -62,7 +62,7 @@ abstract class AbstractFunctionTemplate  implements GemfireFunctionOperations {
 		 AbstractFunctionExecution functionExecution = getFunctionExecution()
 				 .setArgs(args)
 				 .setFunctionId(functionId);
-		return executeAndExtract(functionExecution);		
+		return this.<T>executeAndExtract(functionExecution);		
 	}
 
 	@Override
@@ -81,7 +81,7 @@ abstract class AbstractFunctionTemplate  implements GemfireFunctionOperations {
 	protected <T> T executeAndExtract(AbstractFunctionExecution execution) {
 		 execution.setTimeout(timeout)
 		 .setResultCollector(resultCollector);
-		 return execution.executeAndExtract();
+		 return execution.<T>executeAndExtract();
 	}
 	
 	public void setTimeout(long timeout) {
