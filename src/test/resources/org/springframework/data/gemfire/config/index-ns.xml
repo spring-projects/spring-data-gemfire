@@ -15,7 +15,7 @@
 	<!-- as there can be only one cache per VM -->
 	
 	
-	<gfe:index id="simple" expression="status" from="/test-index"/>
+	<gfe:index id="simple" expression="status" from="/test-index" type="FUNCTIONAL"/>
 	
 	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/test-index tsi" type="HASH" imports="import java.util"/>
 	

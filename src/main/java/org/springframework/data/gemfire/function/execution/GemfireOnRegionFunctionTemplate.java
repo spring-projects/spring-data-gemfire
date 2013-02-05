@@ -58,7 +58,7 @@ public class GemfireOnRegionFunctionTemplate  extends AbstractFunctionTemplate i
 	
 	@Override
 	public <T> T executeAndextract(String functionId, Set<?> keys, Object... args) {
-		return executeAndExtract(new RegionFunctionExecution(region)
+		return this.<T> executeAndExtract(new RegionFunctionExecution(region)
 				.setKeys(keys)
 				.setFunctionId(functionId)
 				.setTimeout(timeout)

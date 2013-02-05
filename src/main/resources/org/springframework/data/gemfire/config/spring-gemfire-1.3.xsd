@@ -2149,6 +2149,7 @@ The name of the index bean definition. If property 'name' is not set, it will be
                     <xsd:restriction base="xsd:string">
                         <xsd:enumeration value="HASH" />
                         <xsd:enumeration value="PRIMARY_KEY"/>
+                        <xsd:enumeration value="FUNCTIONAL"/>
                     </xsd:restriction>
                 </xsd:simpleType>
             </xsd:attribute>
