@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.data.gemfire.function.annotation.EnableGemfireFunctionExecutions;
 import org.springframework.data.gemfire.function.execution.GemfireOnServerFunctionTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;

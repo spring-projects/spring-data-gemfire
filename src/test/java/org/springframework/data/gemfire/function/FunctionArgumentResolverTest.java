@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.springframework.data.gemfire.function.config.Filter;
-import org.springframework.data.gemfire.function.config.RegionData;
+import org.springframework.data.gemfire.function.annotation.Filter;
+import org.springframework.data.gemfire.function.annotation.RegionData;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionContext;

@@ -18,9 +18,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.data.gemfire.function.config.Filter;
-import org.springframework.data.gemfire.function.config.GemfireFunctionUtils;
-import org.springframework.data.gemfire.function.config.RegionData;
+import org.springframework.data.gemfire.function.annotation.Filter;
+import org.springframework.data.gemfire.function.annotation.RegionData;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.util.Assert;
 

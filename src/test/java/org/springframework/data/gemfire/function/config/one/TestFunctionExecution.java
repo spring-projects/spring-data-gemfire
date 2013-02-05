@@ -14,9 +14,9 @@ package org.springframework.data.gemfire.function.config.one;
 
 import java.util.Set;
 
-import org.springframework.data.gemfire.function.config.Filter;
-import org.springframework.data.gemfire.function.config.FunctionId;
-import org.springframework.data.gemfire.function.config.OnMember;
+import org.springframework.data.gemfire.function.annotation.Filter;
+import org.springframework.data.gemfire.function.annotation.FunctionId;
+import org.springframework.data.gemfire.function.annotation.OnMember;
 
 @OnMember
 public interface TestFunctionExecution {

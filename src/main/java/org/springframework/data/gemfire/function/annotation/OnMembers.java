@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.config;
+package org.springframework.data.gemfire.function.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,14 +18,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare an interface as a GemFire OnMember Function Execution
- * 
+ * Annotation to declare an interface as a GemFire OnMembers Function Execution
  * @author David Turanski
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface OnMember {
+public @interface OnMembers {
 	
 	/**
 	 * The bean name 
@@ -37,7 +36,7 @@ public @interface OnMember {
 	 */
 	String resultCollector() default "";
 	
-	//TODO SpEL expression for DistributedMember?
+	//TODO SpEL expression for DistributedMembers?
 	
 	/**
 	 *  groups

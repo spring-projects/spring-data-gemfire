@@ -15,8 +15,8 @@ package org.springframework.data.gemfire.function.execution;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import org.springframework.data.gemfire.function.config.Filter;
-import org.springframework.data.gemfire.function.config.GemfireFunctionUtils;
+import org.springframework.data.gemfire.function.GemfireFunctionUtils;
+import org.springframework.data.gemfire.function.annotation.Filter;
 
  
 

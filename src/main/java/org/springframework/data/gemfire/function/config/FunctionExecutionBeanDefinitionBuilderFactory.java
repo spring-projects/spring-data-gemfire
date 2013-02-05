@@ -12,6 +12,12 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import org.springframework.data.gemfire.function.annotation.OnMember;
+import org.springframework.data.gemfire.function.annotation.OnMembers;
+import org.springframework.data.gemfire.function.annotation.OnRegion;
+import org.springframework.data.gemfire.function.annotation.OnServer;
+import org.springframework.data.gemfire.function.annotation.OnServers;
+
 /**
  * 
  * Maps the annotation type to the corresponding function execution bean definition builder

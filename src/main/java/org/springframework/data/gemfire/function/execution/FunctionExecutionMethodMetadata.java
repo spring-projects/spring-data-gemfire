@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.data.gemfire.function.config.FunctionId;
+import org.springframework.data.gemfire.function.annotation.FunctionId;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 

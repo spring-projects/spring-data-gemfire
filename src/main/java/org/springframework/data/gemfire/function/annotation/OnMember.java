@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.config;
+package org.springframework.data.gemfire.function.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,16 +18,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare an interface as a GemFire OnRegion Function Execution
+ * Annotation to declare an interface as a GemFire OnMember Function Execution
+ * 
  * @author David Turanski
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface OnRegion {
-
+public @interface OnMember {
+	
 	/**
-	 * The bean name
+	 * The bean name 
      */
 	String id() default "";
 	
@@ -36,9 +37,10 @@ public @interface OnRegion {
 	 */
 	String resultCollector() default "";
 	
+	//TODO SpEL expression for DistributedMember?
+	
 	/**
-	 * The reference to the bean id of the region
-	 * @return the region id
+	 *  groups
 	 */
-	String region(); 
+	String groups() default "";
 }

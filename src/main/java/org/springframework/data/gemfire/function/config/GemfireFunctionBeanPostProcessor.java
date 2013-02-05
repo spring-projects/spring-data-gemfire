@@ -19,6 +19,8 @@ import java.util.Map;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.gemfire.function.GemfireFunctionUtils;
+import org.springframework.data.gemfire.function.annotation.GemfireFunction;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 

@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.config;
+package org.springframework.data.gemfire.function.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,13 +19,15 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * Used to inject a set of cache keys into a function execution,  The annotated parameter must be of type
- * {@link Set}. This is used by the function invocation to specify a set of keys of interest and also to define 
- * an additional parameter on the function implementation method containing the filter.   
+ * Used to inject Region data into a function execution. The annotated parameter must be of type
+ * {@link Map}. The contents depends on the region configuration (for a partitioned region, this will
+ * contain only entries for the local partition)
+ * and any filters configured for the function context.  
+ * 
  * @author David Turanski
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER})
-public @interface Filter {
+public @interface RegionData {
 }

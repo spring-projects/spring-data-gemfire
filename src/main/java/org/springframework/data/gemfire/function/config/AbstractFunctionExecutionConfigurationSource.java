@@ -24,6 +24,11 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.gemfire.function.annotation.OnMember;
+import org.springframework.data.gemfire.function.annotation.OnMembers;
+import org.springframework.data.gemfire.function.annotation.OnRegion;
+import org.springframework.data.gemfire.function.annotation.OnServer;
+import org.springframework.data.gemfire.function.annotation.OnServers;
 
 /**
  * Annotation based configuration source for function executions

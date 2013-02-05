@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.config;
+package org.springframework.data.gemfire.function.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,16 +18,33 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 
- * Used to inject Region data into a function execution. The annotated parameter must be of type
- * {@link Map}. The contents depends on the region configuration (for a partitioned region, this will
- * contain only entries for the local partition)
- * and any filters configured for the function context.  
- * 
+ * Annotation to declare an interface as a GemFire OnServer Function Execution
  * @author David Turanski
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER})
-public @interface RegionData {
+@Target({ElementType.TYPE})
+public @interface OnServer {
+	
+	/**
+	 * The bean name
+     */
+	String id() default "";
+	
+	/**
+	 * Optional ResultCollector bean reference
+	 */
+	String resultCollector() default "";
+	
+	/**
+	 * The pool bean id (optional)
+	 * @return
+	 */
+
+	String pool() default "";
+	/**
+	 *  A reference to the cache
+	 */
+	String cache() default "";
+	
 }

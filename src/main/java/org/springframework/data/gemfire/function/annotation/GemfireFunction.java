@@ -10,30 +10,43 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.config;
+package org.springframework.data.gemfire.function.annotation;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Import;
-
 /**
  * 
- * Enables Gemfire annotated function implementations. Causes the container to 
- * discover any beans that are annotated with {code} @GemfireFunction {code}, wrap them in 
- * a {@link PojoFunctionWrapper}, and register them with the cache.
+ * Used to declare a concrete method as a GemFire function implementation
  * 
  * @author David Turanski
  *
  */
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
-@Import(GemfireFunctionPostBeanProcessorRegistrar.class)
-public @interface EnableGemfireFunctions {
+@Target({ElementType.METHOD})
+public @interface GemfireFunction {
+	/**
+	 * The name of the registered function. If not provided the simple method name will be used
+	 * @return the function id
+     */
+	String id() default "";
+	/**
+	 * is the function HA - highly available
+	 */
+	boolean HA() default false;
+	/**
+	 * is the function optimized for write operations
+	 */
+	boolean optimizeForWrite() default false;
+	/**
+	 * controls the maximum number of results sent at one time
+	 */
+	int batchSize() default 0;
+	/**
+	 * normally follows the method return type, i.e., false if void, true otherwise. This allows overriding 
+	 * a void method which uses the resultSender directly.
+	 */
+	boolean hasResult() default false;
 }

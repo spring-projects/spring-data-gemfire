@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.config;
+package org.springframework.data.gemfire.function.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,34 +19,13 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * Used to declare a concrete method as a GemFire function implementation
- * 
+ * Used to inject a set of cache keys into a function execution,  The annotated parameter must be of type
+ * {@link Set}. This is used by the function invocation to specify a set of keys of interest and also to define 
+ * an additional parameter on the function implementation method containing the filter.   
  * @author David Turanski
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-public @interface GemfireFunction {
-	/**
-	 * The name of the registered function. If not provided the simple method name will be used
-	 * @return the function id
-     */
-	String id() default "";
-	/**
-	 * is the function HA - highly available
-	 */
-	boolean HA() default false;
-	/**
-	 * is the function optimized for write operations
-	 */
-	boolean optimizeForWrite() default false;
-	/**
-	 * controls the maximum number of results sent at one time
-	 */
-	int batchSize() default 0;
-	/**
-	 * normally follows the method return type, i.e., false if void, true otherwise. This allows overriding 
-	 * a void method which uses the resultSender directly.
-	 */
-	boolean hasResult() default false;
+@Target({ElementType.PARAMETER})
+public @interface Filter {
 }

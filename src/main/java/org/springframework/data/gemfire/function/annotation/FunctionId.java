@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.config;
+package org.springframework.data.gemfire.function.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,32 +18,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare an interface as a GemFire OnServers Function Execution
+ * Annotation to bind an interface method to a GemFire function id
  * @author David Turanski
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface OnServers {
-	
+@Target({ElementType.METHOD})
+public @interface FunctionId {
 	/**
-	 * The bean name 
+	 * The name of the registered function
+	 * @return the function id
      */
-	String id() default "";
-	
-	/**
-	 * Optional ResultCollector bean reference
-	 */
-	String resultCollector() default "";
-	
-	/**
-	 * The pool bean name (optional)
-	 * @return
-	 */
-	String pool() default "";
-	
-	/**
-	 *  A reference to the cache
-	 */
-	String cache() default "gemfireCache";
+	String value();
 }
