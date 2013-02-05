@@ -23,6 +23,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.springframework.util.StringUtils;
+
 
 /**
  * Utility for forking Java processes.
@@ -35,32 +37,55 @@ public class ForkUtil {
 	
 	
 
-	public static OutputStream cloneJVM(String arguments) {
+	private static OutputStream cloneJVM(String arguments) {
 		String cp = System.getProperty("java.class.path");
 		String home = System.getProperty("java.home");
 
 		Process proc = null;
 		String sp = System.getProperty("file.separator");
 		String java = home + sp + "bin" + sp + "java";
-		String argCp = " -cp " + cp;
-		 
-
-		String cmd = java + argCp + " " + arguments;
+		
+		String[] args = arguments.split("\\s+");
+		String[] cmd = new String[args.length + 3];
+		cmd[0]=java;
+		cmd[1]="-cp";
+		cmd[2]=cp;
+		for (int i=3; i< cmd.length; i++) {
+			cmd[i] = args[i-3];
+		}
+		
 		try {
-			//ProcessBuilder builder = new ProcessBuilder(cmd, argCp, argClass);
-			//builder.redirectErrorStream(true);
-			proc = Runtime.getRuntime().exec(cmd);
+ 			proc = Runtime.getRuntime().exec(cmd);
 		} catch (IOException ioe) {
-			throw new IllegalStateException("Cannot start command " + cmd, ioe);
+			System.out.println("[FORK-ERROR] " + ioe.getMessage());
+			throw new IllegalStateException("Cannot start command " + StringUtils.arrayToDelimitedString(cmd," "), ioe);
 		}
 
-		System.out.println("Started fork from command\n" + cmd);
+		System.out.println("Started fork from command\n" + StringUtils.arrayToDelimitedString(cmd," "));
 		final Process p = proc;
 
 		final BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		final BufferedReader er = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 		final AtomicBoolean run = new AtomicBoolean(true);
 
-		Thread reader = new Thread(new Runnable() {
+	new Thread(new Runnable() {
+			public void run() {
+				try {
+					String line = null;
+					do {
+						while ((line = er.readLine()) != null) {
+							System.out.println("[FORK-ERROR] " + line);
+						}
+						Thread.sleep(200);
+					} while (run.get());
+				} catch (Exception ex) {
+					// ignore and exit
+				}
+			}
+		}).start();
+		 
+		
+		 new Thread(new Runnable() {
 
 			public void run() {
 				try {
@@ -75,9 +100,7 @@ public class ForkUtil {
 					// ignore and exit
 				}
 			}
-		});
-
-		reader.start();
+		}).start();
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override

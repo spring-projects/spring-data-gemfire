@@ -53,8 +53,8 @@ public class FunctionIntegrationTests {
 	
 	@BeforeClass
 	public static void startUp() throws Exception {
-		ForkUtil.startCacheServer(SpringCacheServerProcess.class.getName() + " " 
-				+ "  /org/springframework/data/gemfire/function/execution/FunctionIntegrationTests-server-context.xml");
+		ForkUtil.startCacheServer(SpringCacheServerProcess.class.getName() + 
+		 " /org/springframework/data/gemfire/function/execution/FunctionIntegrationTests-server-context.xml");
 	}
 
 	@AfterClass

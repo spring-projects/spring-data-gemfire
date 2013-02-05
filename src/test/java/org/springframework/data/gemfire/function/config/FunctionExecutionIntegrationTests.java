@@ -22,7 +22,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.function.annotation.EnableGemfireFunctionExecutions;
 import org.springframework.data.gemfire.function.config.two.TestOnRegionFunction;
 import org.springframework.data.gemfire.function.execution.GemfireOnRegionFunctionTemplate;
 import org.springframework.data.gemfire.function.execution.OnRegionFunctionProxyFactoryBean;

@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.annotation;
+package org.springframework.data.gemfire.function.config;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,7 +21,6 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.gemfire.function.config.FunctionExecutionBeanDefinitionRegistrar;
 
 /**
  * Enables classpath scanning for interfaces annotated as GemFire function executions (function invocations).

@@ -27,7 +27,6 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.data.gemfire.function.annotation.EnableGemfireFunctionExecutions;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
