@@ -64,7 +64,7 @@ dependencies {
     testCompile("javax.annotation:jsr250-api:1.0", optional)
 
     // Spring Data
-    compile "org.springframework.data:spring-data-commons-core:${springDataCommonsVersion}"
+    compile "org.springframework.data:spring-data-commons:${springDataCommonsVersion}"
 	//
 	testCompile "cglib:cglib:${cglibVersion}"
 	testCompile "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
