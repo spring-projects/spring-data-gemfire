@@ -17,7 +17,6 @@ package org.springframework.data.gemfire.test;
  *
  */
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 import org.junit.Test;
 
 import com.gemstone.gemfire.cache.Region;

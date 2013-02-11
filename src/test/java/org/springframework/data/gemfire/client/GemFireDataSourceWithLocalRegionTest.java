@@ -12,10 +12,7 @@
  */
 package org.springframework.data.gemfire.client;
 
-import static org.junit.Assert.*;
-
-import java.util.Arrays;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -25,16 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.fork.SpringCacheServerProcess;
-import org.springframework.data.gemfire.repository.sample.Person;
-import org.springframework.data.gemfire.repository.sample.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.Pool;
 
 /**
  * @author David Turanski

@@ -43,7 +43,6 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 * @param regions must not be {@literal null}.
 	 * @param context must not be {@literal null}.
 	 */
-	@SuppressWarnings("unchecked")
 	public Regions(Iterable<Region<?, ?>> regions, MappingContext<? extends GemfirePersistentEntity<?>, ?> context) {
 
 		Assert.notNull(regions);

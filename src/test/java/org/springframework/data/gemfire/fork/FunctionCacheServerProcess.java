@@ -82,6 +82,7 @@ public class FunctionCacheServerProcess {
 		bufferedReader.readLine();
 	}
 	
+	@SuppressWarnings("serial")
 	static class ServerFunction extends FunctionAdapter {
 		 
 		/* (non-Javadoc)
@@ -104,6 +105,7 @@ public class FunctionCacheServerProcess {
  
 	}
 	
+	@SuppressWarnings("serial")
 	static class EchoFunction extends FunctionAdapter {
 		 
 		/* (non-Javadoc)

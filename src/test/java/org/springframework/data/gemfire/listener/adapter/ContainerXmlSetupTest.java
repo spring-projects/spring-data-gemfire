@@ -63,6 +63,7 @@ public class ContainerXmlSetupTest {
 		assertEquals(3, cqs.length);
 		assertEquals(3, pcqs.length);
 		ForkUtil.sendSignal();
-		Thread.sleep(3000);
+		ctx.close();
+		
 	}
 }

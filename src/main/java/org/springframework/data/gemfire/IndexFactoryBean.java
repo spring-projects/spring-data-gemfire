@@ -24,8 +24,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.QueryService;
@@ -34,12 +33,12 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * Factory bean for easy declarative creation of GemFire Indexes.
  * 
  * @author Costin Leau
+ * @author David Turanski
  */
 public class IndexFactoryBean implements InitializingBean, BeanNameAware, FactoryBean<Index> {
 
 	private Index index;
 	private QueryService queryService;
-	private String poolName;
 	private RegionService cache;
 	private String beanName;
 	private String name;
@@ -52,14 +51,10 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	public void afterPropertiesSet() throws Exception {
 		if (queryService == null) {
 			if (cache != null) {
+				Assert.isTrue(!ClientCache.class.isAssignableFrom(cache.getClass()),
+						"You cannot create an index from a client cache");
 				queryService = cache.getQueryService();
 			}
-		}
-
-		if (queryService != null && StringUtils.hasText(poolName)) {
-			Pool pool = PoolManager.find(poolName);
-			Assert.notNull(pool, "No pool named [" + poolName + "] found");
-			queryService = pool.getQueryService();
 		}
 
 		Assert.notNull(queryService, "Query service required for index creation");
@@ -82,7 +77,7 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	private Index createIndex(QueryService queryService, String indexName) throws Exception {
 
 		Index existingIndex = null;
-
+		
 		for (Index idx : queryService.getIndexes()) {
 			if (idx.getName().equals(indexName)) {
 				existingIndex = idx;
@@ -154,7 +149,7 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	 * @param cache cache used for creating indexes.
 	 */
 	public void setCache(RegionService cache) {
-		this.queryService = cache.getQueryService();
+		this.cache = cache;
 	}
 
 	/**
@@ -164,15 +159,6 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	 */
 	public void setQueryService(QueryService service) {
 		this.queryService = service;
-	}
-
-	/**
-	 * Sets the beanName of the {@link Pool} used for used for creating indexes.
-	 * 
-	 * @param poolName the beanName of the pool used for creating indexes.
-	 */
-	public void setPoolName(String poolName) {
-		this.poolName = poolName;
 	}
 
 	public void setBeanName(String name) {

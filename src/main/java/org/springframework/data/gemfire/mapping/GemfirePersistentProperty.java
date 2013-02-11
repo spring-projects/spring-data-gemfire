@@ -52,14 +52,4 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 	protected Association<GemfirePersistentProperty> createAssociation() {
 		return new Association<GemfirePersistentProperty>(this, null);
 	}
-
-	@Override
-	public boolean isAssociation() {
-		return field.isAnnotationPresent(RegionRef.class) || super.isAssociation();
-	}
-
-	public RegionRef geRegionRef() {
-		return getField().getAnnotation(RegionRef.class);
-	}
-
 }

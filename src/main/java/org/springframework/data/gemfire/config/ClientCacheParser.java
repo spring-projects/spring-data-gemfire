@@ -42,7 +42,7 @@ class ClientCacheParser extends CacheParser {
 
 	@Override
 	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
-        ParsingUtils.setPropertyValue(element, dynamicRegionSupport, "pool-name");    
+        ParsingUtils.setPropertyValue(element, dynamicRegionSupport, "pool-name");
 		
 	}
 }

@@ -485,11 +485,12 @@ public class MockRegionFactory<K,V>   {
 		return regionFactory;
 	}
 	
-	 RegionFactory createRegionFactory() {
+	 @SuppressWarnings("rawtypes")
+	RegionFactory createRegionFactory() {
 		return createMockRegionFactory();
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Region mockRegion(String name) {
 		RegionService regionService = mockRegionService();
 		Region region = mock(Region.class);
@@ -527,7 +528,6 @@ public class MockRegionFactory<K,V>   {
 		
 		when(region.createSubregion(anyString(),any(RegionAttributes.class))).thenAnswer(new Answer<Region>() {
 
-			@SuppressWarnings("rawtypes")
 			@Override
 			public Region answer(InvocationOnMock invocation) throws Throwable {
 				String name = (String)invocation.getArguments()[0];

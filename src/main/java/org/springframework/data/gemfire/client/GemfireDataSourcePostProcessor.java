@@ -19,7 +19,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.function.execution.GemfireFunctionOperations;
 import org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate;
-import org.springframework.data.gemfire.repository.support.ListRegionsOnServerFunction;
+import org.springframework.data.gemfire.support.ListRegionsOnServerFunction;
 import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.Region;

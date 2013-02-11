@@ -28,10 +28,12 @@ import org.springframework.data.gemfire.GemfireTemplate;
  */
 public class GemfireDaoSupportTests extends TestCase {
 
+	@SuppressWarnings("rawtypes")
 	public void testGemfireDaoSupportWithTemplate() throws Exception {
 		GemfireTemplate template = new GemfireTemplate();
 		final List test = new ArrayList();
 		GemfireDaoSupport dao = new GemfireDaoSupport() {
+			@SuppressWarnings("unchecked")
 			protected void initDao() {
 				test.add("test");
 			}

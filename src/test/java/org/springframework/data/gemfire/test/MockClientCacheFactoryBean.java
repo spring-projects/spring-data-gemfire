@@ -14,10 +14,8 @@ package org.springframework.data.gemfire.test;
 
 import java.util.Properties;
 
-import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 
 /**

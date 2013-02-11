@@ -247,6 +247,7 @@ public class StubCache implements Cache {
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.GemFireCache#getRegionAttributes(java.lang.String)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> RegionAttributes<K, V> getRegionAttributes(String region) {
 		return allRegions().get(region).getAttributes();
@@ -271,6 +272,7 @@ public class StubCache implements Cache {
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.GemFireCache#listRegionAttributes()
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public <K, V> Map<String, RegionAttributes<K, V>> listRegionAttributes() {
 		Map<String, RegionAttributes<K, V>> attributes = new HashMap<String, RegionAttributes<K, V>>();
@@ -355,6 +357,7 @@ public class StubCache implements Cache {
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.RegionService#getRegion(java.lang.String)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> Region<K, V> getRegion(String name) {
 		return allRegions().get(name);
@@ -466,6 +469,7 @@ public class StubCache implements Cache {
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionShortcut)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortCut) {
 		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createRegionFactory();
@@ -475,6 +479,7 @@ public class StubCache implements Cache {
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(java.lang.String)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> RegionFactory<K, V> createRegionFactory(String arg0) {
 		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createRegionFactory();
@@ -635,6 +640,7 @@ public class StubCache implements Cache {
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#getMembers(com.gemstone.gemfire.cache.Region)
 	 */
+	@SuppressWarnings({"rawtypes"})
 	@Override
 	public Set<DistributedMember> getMembers(Region arg0) {
 		throw new UnsupportedOperationException();
@@ -859,6 +865,7 @@ public class StubCache implements Cache {
 		return qs;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	Index mockIndex(String indexName, IndexType indexType,String indexedExpression, String fromClause, String imports){
 		Index idx = mock(Index.class);
 		when(idx.getFromClause()).thenReturn(fromClause);
@@ -876,6 +883,7 @@ public class StubCache implements Cache {
 		return idx;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public Map<String,Region> allRegions() {
 		return this.allRegions;
 	}

@@ -25,7 +25,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 
 /**
@@ -119,32 +118,5 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 		ProxyFactory proxyFactory = new ProxyFactory(serviceInterface, this);
 		this.serviceProxy = proxyFactory.getProxy(this.beanClassLoader);
 		this.initialized = true;
-	}
-
-	/*
-	 * Match the result to the declared return type
-	 */
-	private Object extractResult(Iterable<?> results, Class<?> returnType) {
-		Object result = null;
-		if (results != null) {
-			if (Iterable.class.isAssignableFrom(returnType)) {
-				result = results;
-			} else {
-				int nonNullItems = 0;
-				for (Object obj : results) {
-					if (obj != null) {
-						if (++nonNullItems > 1) {
-							throw new FunctionException("multiple results found for single valued return type");
-						} else {
-							result = obj;
-						}
-					}
-				}
-			}
-			if (logger.isDebugEnabled()) {
-				logger.debug("returning result as " + result.getClass().getName());
-			}
-		}
-		return result;
 	}
 }

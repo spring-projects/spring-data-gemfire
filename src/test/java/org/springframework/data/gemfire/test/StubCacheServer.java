@@ -262,7 +262,7 @@ public class StubCacheServer implements CacheServer {
 	 */
 	@Override
 	public void setLoadProbe(ServerLoadProbe loadProbe) {
-		this.serverLoadProbe = serverLoadProbe;
+		this.serverLoadProbe = loadProbe;
 	}
 
 	/* (non-Javadoc)

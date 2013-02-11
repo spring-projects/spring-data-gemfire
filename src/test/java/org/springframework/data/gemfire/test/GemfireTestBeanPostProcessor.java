@@ -20,8 +20,6 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 
-import com.gemstone.gemfire.cache.Cache;
-
 /**
  * @author David Turanski
  *
