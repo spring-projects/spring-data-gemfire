@@ -26,6 +26,7 @@ import org.w3c.dom.Element;
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author Lyndon Adams
  */
 class ClientCacheParser extends CacheParser {
 
@@ -37,12 +38,12 @@ class ClientCacheParser extends CacheParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, parserContext, builder);
-		//ParsingUtils.setPropertyValue(element, builder, "pool-name","poolName",GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+		ParsingUtils.setPropertyValue(element, builder, "pool-name","poolName",GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+		ParsingUtils.setPropertyValue(element, builder, "ready-for-events"); 
 	}
 
 	@Override
 	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
-        ParsingUtils.setPropertyValue(element, dynamicRegionSupport, "pool-name");    
-		
+        ParsingUtils.setPropertyValue(element, dynamicRegionSupport, "pool-name");      
 	}
 }

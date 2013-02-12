@@ -22,6 +22,7 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 
 /**
  * @author David Turanski
+ * @author Lyndon Adams
  *
  */
 public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
@@ -58,6 +59,7 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 			this.searchTimeout = cacheFactoryBean.getSearchTimeout();
 			this.transactionListeners = cacheFactoryBean.getTransactionListeners();
 			this.transactionWriter = cacheFactoryBean.getTransactionWriter();
+			this.readyForEvents = cacheFactoryBean.getReadyForEvents();
 		}
 	}
  
