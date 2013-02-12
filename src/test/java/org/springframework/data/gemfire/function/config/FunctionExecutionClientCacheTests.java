@@ -40,36 +40,33 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes={TestClientCacheConfig.class})
+@ContextConfiguration(classes = { TestClientCacheConfig.class })
 public class FunctionExecutionClientCacheTests {
 	@Autowired
 	ApplicationContext context;
-	
+
 	@Test
-	public void testContextCreated() throws Exception {    
-	  
-		ClientCache cache = context.getBean("gemfireCache",ClientCache.class);
-		Pool pool = context.getBean("gemfirePool",Pool.class);
+	public void testContextCreated() throws Exception {
+
+		ClientCache cache = context.getBean("gemfireCache", ClientCache.class);
+		Pool pool = context.getBean("gemfirePool", Pool.class);
 		assertEquals("gemfirePool", pool.getName());
 		assertEquals(1, cache.getDefaultPool().getServers().size());
 		assertEquals(pool.getServers().get(0), cache.getDefaultPool().getServers().get(0));
-		
-		context.getBean("r1",Region.class);
-		
+
+		context.getBean("r1", Region.class);
+
 		GemfireOnServerFunctionTemplate template = context.getBean(GemfireOnServerFunctionTemplate.class);
 		assertTrue(template.getResultCollector() instanceof MyResultCollector);
 	}
-	
+
 }
 
-
 @ImportResource("/org/springframework/data/gemfire/function/config/FunctionExecutionCacheClientTests-context.xml")
-@EnableGemfireFunctionExecutions (basePackages = "org.springframework.data.gemfire.function.config.three",
- excludeFilters = {
-		/*@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnRegion.class),
-		@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnServer.class)*/
-		}
-)
+@EnableGemfireFunctionExecutions(basePackages = "org.springframework.data.gemfire.function.config.three", excludeFilters = {
+/*@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnRegion.class),
+@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnServer.class)*/
+})
 @Configuration
 class TestClientCacheConfig {
 	@Bean
@@ -87,7 +84,7 @@ class MyResultCollector implements ResultCollector {
 	@Override
 	public void addResult(DistributedMember arg0, Object arg1) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -96,7 +93,7 @@ class MyResultCollector implements ResultCollector {
 	@Override
 	public void clearResults() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -105,7 +102,7 @@ class MyResultCollector implements ResultCollector {
 	@Override
 	public void endResults() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -125,7 +122,5 @@ class MyResultCollector implements ResultCollector {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 }
-
-

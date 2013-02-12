@@ -32,6 +32,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
+
 /**
  * @author David Turanski
  *
@@ -41,30 +42,29 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 public class AnnotationDrivenFunctionsTest {
 	@Autowired
 	ApplicationContext applicationContext;
-	
+
 	@Test
 	public void testAnnotatedFunctions() {
-	
+
 		assertTrue(FunctionService.isRegistered("foo"));
-		
+
 		Function function = FunctionService.getFunction("foo");
 		assertFalse(function.isHA());
 		assertFalse(function.optimizeForWrite());
 		assertFalse(function.hasResult());
-		
+
 		assertTrue(FunctionService.isRegistered("bar"));
 		function = FunctionService.getFunction("bar");
 		assertTrue(function.isHA());
 		assertFalse(function.optimizeForWrite());
 		assertTrue(function.hasResult());
-		
+
 		assertTrue(FunctionService.isRegistered("foo2"));
 		function = FunctionService.getFunction("foo2");
 		assertTrue(function.isHA());
 		assertTrue(function.optimizeForWrite());
 		assertTrue(function.hasResult());
-		
-		
+
 		assertTrue(FunctionService.isRegistered("injectFilter"));
 		function = FunctionService.getFunction("injectFilter");
 		assertTrue(function.isHA());
@@ -75,26 +75,26 @@ public class AnnotationDrivenFunctionsTest {
 	@Component
 	public static class FooFunction {
 		@GemfireFunction
-		public void foo () {
+		public void foo() {
 		}
-		
-		@GemfireFunction(HA=true,optimizeForWrite=false)
-		public String bar () {
+
+		@GemfireFunction(HA = true, optimizeForWrite = false)
+		public String bar() {
 			return null;
 		}
 	}
-	
+
 	@Component
 	public static class Foo2Function {
-		@GemfireFunction(id="foo2", HA=true,optimizeForWrite=true)
-		public List<String> foo (Object someVal, @RegionData Map<?,?> region, Object someOtherValue) {
+		@GemfireFunction(id = "foo2", HA = true, optimizeForWrite = true)
+		public List<String> foo(Object someVal, @RegionData Map<?, ?> region, Object someOtherValue) {
 			return null;
 		}
-		
-		@GemfireFunction(id="injectFilter", HA=true,optimizeForWrite=true)
-		public List<String> injectFilter (@Filter Set<?> keySet) {
+
+		@GemfireFunction(id = "injectFilter", HA = true, optimizeForWrite = true)
+		public List<String> injectFilter(@Filter Set<?> keySet) {
 			return null;
 		}
 	}
-	
+
 }

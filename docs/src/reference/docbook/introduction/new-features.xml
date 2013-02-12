@@ -16,7 +16,7 @@
      project. 
   </note>
 
-  <section>
+  <section id="new-in-1-2-1">
     <title>New in the 1.2.1 Release</title>
 
     <itemizedlist>
@@ -26,6 +26,20 @@
     </itemizedlist>
   </section>
 
+  <section id="new-in-1-3-0">
+  	<title>New in the 1.3.0.Release</title>
+  	<itemizedlist>
+  		<listitem>
+  			<para>Annotation support for GemFire functions. It is now possible to declare and register functions written as POJOs with annotations.
+  			In addition function executions are defined as annotated interfaces, similar to the way Spring Data repositories work. See <xref
+        linkend="gemfire-function-annotations"/></para>
+  		</listitem>
+  		<listitem>
+  			<para>A <emphasis>datasource</emphasis> tag has been added to the <emphasis>gfe-data</emphasis> XML namespace. This simplifies establishing 
+	a basic client connection to a Cache cluster.</para>
+  		</listitem>
+  	</itemizedlist>
+  </section>
   <section id="new-in-1-2-0">
     <title>New in the 1.2.0 Release</title>
 
