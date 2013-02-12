@@ -27,6 +27,9 @@
     <para><xref linkend="gemfire-repositories"/> describes how to create and
     use GemFire Repositories using Spring Data</para>
 
+    <para><xref linkend="function-annotations"/> describes how to create and
+    use GemFire Functions using Spring Data</para>
+
     <para><xref linkend="samples"/> describes the samples provided with the
     distribution to illustrate the various features available in Spring
     GemFire.</para>

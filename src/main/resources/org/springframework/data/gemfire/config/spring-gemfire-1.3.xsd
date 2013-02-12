@@ -322,18 +322,26 @@ Defines a GemFire Client Cache instance used for creating or retrieving 'regions
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexType>
-            <xsd:complexContent>
-                <xsd:extension base="cacheBaseType">
-                    <xsd:attribute name="pool-name" type="xsd:string"
-                        use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
+        	<xsd:complexContent>
+        		<xsd:extension base="cacheBaseType">
+        			<xsd:attribute name="pool-name" type="xsd:string"
+        				use="optional">
+        				<xsd:annotation>
+        					<xsd:documentation><![CDATA[
 The name of the pool used by this client.
 							]]></xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:extension>
-            </xsd:complexContent>
+        				</xsd:annotation>
+        			</xsd:attribute>
+        			<xsd:attribute name="ready-for-events"
+        				type="xsd:string" use="optional" default="false">
+        				<xsd:annotation>
+                    <xsd:documentation><![CDATA[
+Notifies the server that this durable client is ready to receive updates.
+					]]></xsd:documentation>
+                </xsd:annotation>
+        			</xsd:attribute>
+        		</xsd:extension>
+        	</xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
     <!-- -->

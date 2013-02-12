@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -38,6 +39,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * configuration of the generic cache).
  * 
  * @author Costin Leau
+ * @author Lyndon Adams
  */
 public class ClientCacheFactoryBean extends CacheFactoryBean {
 
@@ -78,12 +80,22 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 
 	private String poolName;
 	private Pool pool;
+	
+	protected Boolean readyForEvents = false;
 
 	@Override
 	protected GemFireCache createCache(Object factory) {
 		ClientCacheFactory ccf = (ClientCacheFactory) factory;
 		initializePool(ccf);
-		return ccf.create();
+		
+		// Now create the cache
+		GemFireCache cache = ccf.create();
+		
+		// Register for events after pool/regions been created and iff non-durable client
+		readyForEvents();
+		
+		// Return the cache
+		return cache;
 	}
 
 	@Override
@@ -177,6 +189,20 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	/**
+	 * Inform cluster client cache is ready to receive events.
+	 */
+	private void readyForEvents(){
+		ClientCache clientCache = ClientCacheFactory.getAnyInstance();
+		if( readyForEvents != null && readyForEvents.booleanValue() && !clientCache.isClosed()){
+			try {
+				clientCache.readyForEvents();
+			}catch(IllegalStateException ex){
+				// Cannot be called for a non-durable client so exception is throw
+			}
+		}
+	}
+	
+	/**
 	 * Sets the pool name used by this client.
 	 * 
 	 * @param poolName
@@ -186,6 +212,19 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		this.poolName = poolName;
 	}
 
+	/**
+	 * Set the readyForEvents event flag.
+	 * 
+	 * @param readyForEvents
+	 */
+	public void setReadyForEvents(Boolean readyForEvents){
+		this.readyForEvents = readyForEvents;
+	}
+	
+	public Boolean getReadyForEvents(){
+		return this.readyForEvents;
+	}
+	
 	/**
 	 * Sets the pool used by this client.
 	 * 
@@ -202,4 +241,5 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			new PdxOptions((ClientCacheFactory) factory).run();
 		}
 	}
+
 }
