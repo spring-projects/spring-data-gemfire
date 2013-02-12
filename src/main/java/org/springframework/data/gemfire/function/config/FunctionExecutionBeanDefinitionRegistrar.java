@@ -31,7 +31,7 @@ import org.springframework.util.StringUtils;
  * @author David Turanski
  *
  */
-public class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
 	
 	/* (non-Javadoc)
 	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry)

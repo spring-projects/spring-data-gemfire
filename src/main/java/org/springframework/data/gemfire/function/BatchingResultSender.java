@@ -27,9 +27,9 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
  * Sends collection results using a {@link ResultSender} in chunks determined by batchSize
  * 
  * @author David Turanski
- *
+ * @since 1.3.0
  */
-public class BatchingResultSender  {
+class BatchingResultSender  {
 	private final int batchSize;
 	private ResultSender<Object> resultSender;
 	

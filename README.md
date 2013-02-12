@@ -68,7 +68,8 @@ dependencies {
 }
 ~~~~~
 
-Latest GA release is _1.2.1.RELEASE_    
+Latest GA release is _1.2.1.RELEASE_
+Latest Milestone release is _1.3.0.M1_    
 Latest nightly build is _1.3.0.BUILD-SNAPSHOT_
 
 

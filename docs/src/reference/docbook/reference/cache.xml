@@ -294,7 +294,7 @@
     to use a different pool.</para>
 
     <para>Pools can be defined through the <literal>pool</literal> element;
-    The client side <literal>pool</literal>s can be used to configure
+    The client side <literal>pool</literal> can be used to configure
     connectivity to the server for individual entities or for the entire
     cache. For example, to customize the default pool used by
     <literal>client-cache</literal>, one needs to define a pool and wire it to
@@ -308,6 +308,10 @@
  &lt;/gfe:pool&gt;
 &lt;/beans&gt;</programlisting>
   </section>
+
+  <para>The &lt;client-cache&gt; tag also includes a <literal>ready-for-events</literal>
+  attribute. If set to <literal>true</literal>, the client cache initialization will include
+  <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/client/ClientCache.html#readyForEvents()">ClientCache.readyForEvents()</ulink>. </para>
 
   <para>Client side configuration is covered in more detail in <xref
   linkend="bootstrap:region:client"/>.</para>

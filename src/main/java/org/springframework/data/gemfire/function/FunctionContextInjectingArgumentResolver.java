@@ -32,9 +32,10 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 
 /**
  * @author David Turanski
+ * @since 1.3.0
  *
  */
-public class FunctionContextInjectingArgumentResolver extends DefaultFunctionArgumentResolver {
+class FunctionContextInjectingArgumentResolver extends DefaultFunctionArgumentResolver {
 	
 	private static Log logger = LogFactory.getLog(FunctionContextInjectingArgumentResolver.class);
 	

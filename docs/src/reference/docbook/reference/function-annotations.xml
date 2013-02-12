@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter>
+<chapter id="function-annotations">
   <title>Annotation Support for Function Execution</title>
 
   <section>
@@ -9,7 +9,7 @@
 
     <para>Spring Data GemFire 1.3.0 introduces annotation support to simplify
     working with <ulink
-    url="?http://pubs.vmware.com/vfabricNoSuite/index.jsp?topic=/com.vmware.vfabric.gemfire.7.0/developing/function_exec/chapter_overview.html??">GemFire
+    url="http://pubs.vmware.com/vfabricNoSuite/index.jsp?topic=/com.vmware.vfabric.gemfire.7.0/developing/function_exec/chapter_overview.html??">GemFire
     function execution</ulink>. The GemFire API provides classes to implement
     and register <ulink
     url="https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/execute/Function.html">Functions</ulink>
@@ -69,7 +69,7 @@
   <section>
     <title>Implementing a Function</title>
 
-    <para>Using Gemfire APIs, the FunctionContext provides a runtime
+    <para>Using GemFire APIs, the FunctionContext provides a runtime
     invocation context including the client's calling arguments and a
     ResultSender interface to send results back to the client. Additionally,
     if the function is executed on a Region, the FunctionContext is an
@@ -103,7 +103,7 @@
     signature similar to the following. Let's ignore the return type for the
     moment:</para>
 
-    <para><programlisting>public Object method1(String s1, int i2) {...}
+    <para><programlisting language="java">public Object method1(String s1, int i2) {...}
 public Object method2(Map&lt;?,?&gt; data, String s1, int i2) {...}
 public Object method3(String s1, Map&lt;?,?&gt;data, int i2) {...}
 public Object method4(String s1, Map&lt;?,?&gt; data, Set&lt;?&gt; filter, int i2) {...}
@@ -127,7 +127,7 @@ public void method6(FunctionContest fc);</programlisting>The general rule is
       <para>The following example illustrates how annotations are used to
       expose a POJO as a GemFire function:</para>
 
-      <para><programlisting>@Component 
+      <para><programlisting language="java">@Component 
 public class MyFunctions {
    @GemfireFunction
    public String function1(String s1, @RegionData Map&lt;?,?&gt; data, int i2) { ... } 
@@ -209,7 +209,7 @@ public class MyFunctions {
     </section>
   </section>
 
-  <section>
+  <section id="function-execution">
     <title>Executing a Function</title>
 
     <para>A process invoking a remote function needs to provide calling
@@ -289,7 +289,7 @@ public interface FunctionExecution {
     simply wire your interface into a bean that will invoke the function:
     </para>
 
-    <programlisting>@Component
+    <programlisting language="java">@Component
  public class MyApp {
 
     @Autowired FunctionExecution functionExecution;
@@ -304,7 +304,7 @@ public interface FunctionExecution {
     example GemfireOnRegionFunctionTemplate creates an onRegion execution. For
     example:</para>
 
-    <para><programlisting>Set&lt;?,?&gt; myFilter = getFilter();
+    <para><programlisting language="java">Set&lt;?,?&gt; myFilter = getFilter();
 Region&lt;?,?&gt; myRegion = getRegion();
 GemfireOnRegionOperations template = new GemfireOnRegionFunctionTemplate(myRegion);
 String result = template.executeAndExtract("someFunction",myFilter,"hello","world",1234);</programlisting>Internally,

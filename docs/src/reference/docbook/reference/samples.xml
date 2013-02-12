@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="samples">
+<chapter version="5.0" xml:id="samples" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns5="http://www.w3.org/2000/svg"
+         xmlns:ns4="http://www.w3.org/1999/xhtml"
+         xmlns:ns3="http://www.w3.org/1998/Math/MathML"
+         xmlns:ns="http://docbook.org/ns/docbook">
   <title>Sample Applications</title>
 
-  <para>The Spring Data GemFire project includes one sample application. Named
-  "Hello World", the sample demonstrates how to configure and use GemFire
-  inside a Spring application. At runtime, the sample offers a
+  <para><note>
+      Sample applications are now maintained in the 
+
+      <ulink
+      url="https://github.com/SpringSource/spring-gemfire-examples">Spring
+      Data GemFire Examples</ulink>
+
+       repository.
+    </note></para>
+
+  <para>The Spring Data GemFire project also includes one sample application.
+  Named "Hello World", the sample demonstrates how to configure and use
+  GemFire inside a Spring application. At runtime, the sample offers a
   <emphasis>shell</emphasis> to the user allowing him to run various commands
   against the grid. It provides an excellent starting point for users
   unfamiliar with the essential components or the Spring and GemFire
   concepts.</para>
-  
-  <para>
-  Additional sample applications may be found in the <ulink url="https://github.com/SpringSource/spring-gemfire-examples">Spring Data GemFire Examples</ulink> repository.
-  </para>
 
   <para>The sample is bundled with the distribution and is Maven-based. One
   can easily import them into any Maven-aware IDE (such as SpringSource <ulink
@@ -30,12 +42,15 @@
 
     <note>
       <title>Running under Linux</title>
-      <para>If you experience networking problems when starting GemFire or the samples,
-      try adding the following system property <literal>java.net.preferIPv4Stack=true</literal>
-      to the command line (insert <literal>-Djava.net.preferIPv4Stack=true</literal>).
-      For an alternative (global) fix especially on Ubuntu see
-      this <ulink url="https://jira.springsource.org/browse/SGF-28">link</ulink></para>
+
+      <para>If you experience networking problems when starting GemFire or the
+      samples, try adding the following system property
+      <literal>java.net.preferIPv4Stack=true</literal> to the command line
+      (insert <literal>-Djava.net.preferIPv4Stack=true</literal>). For an
+      alternative (global) fix especially on Ubuntu see this <ulink
+      url="https://jira.springsource.org/browse/SGF-28">link</ulink></para>
     </note>
+
     <section id="samples:hello-world:start-stop">
       <title>Starting and stopping the sample</title>
 

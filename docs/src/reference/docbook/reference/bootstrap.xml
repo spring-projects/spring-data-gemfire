@@ -24,7 +24,7 @@
     <title>Advantages of using Spring over GemFire
     <literal>cache.xml</literal></title>
 
-    <para xmlns="">As of release 1.2.0, Spring Data Gemfire's XML namespace
+    <para xmlns="">As of release 1.2.0, Spring Data GemFire's XML namespace
     supports full configuration of the data grid. In fact, the Spring
     namespace is considered the preferred way to configure GemFire. GemFire
     will continue to support <filename>cache.xml</filename> for legacy
@@ -56,7 +56,7 @@
   <section id="bootstrap:namespace">
     <title>Using the Core Spring Data GemFire Namespace</title>
 
-    <para>To simplify configuration, Spring Data Gemfire provides a dedicated
+    <para>To simplify configuration, Spring Data GemFire provides a dedicated
     XML namespace for configuring core GemFire components. It is also possible
     to configure the beans directly through Springs standard &lt;bean&gt;
     definition. However, as of Spring Data GemFire 1.2.0, all bean properties
@@ -162,6 +162,8 @@
   </section>
 
   <xi:include href="cache.xml"/>
+
+  <xi:include href="data-access.xml"/>
 
   <xi:include href="region.xml"/>
 

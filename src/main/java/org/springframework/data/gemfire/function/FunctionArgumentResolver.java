@@ -17,8 +17,9 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 /**
  * Strategy Interface for resolving function invocation arguments, given a {@link FunctionContext}
  * @author David Turanski
+ * @since 1.3.0
  *
  */
-public interface FunctionArgumentResolver {
-	public Object[] resolveFunctionArguments(FunctionContext functionContext);
+interface FunctionArgumentResolver {
+	Object[] resolveFunctionArguments(FunctionContext functionContext);
 }

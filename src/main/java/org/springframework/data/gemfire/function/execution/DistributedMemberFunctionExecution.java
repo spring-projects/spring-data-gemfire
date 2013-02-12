@@ -22,7 +22,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * @author David Turanski
  *
  */
-public class DistributedMemberFunctionExecution extends AbstractFunctionExecution {
+class DistributedMemberFunctionExecution extends AbstractFunctionExecution {
 	
 
 	private final DistributedMember distributedMember;

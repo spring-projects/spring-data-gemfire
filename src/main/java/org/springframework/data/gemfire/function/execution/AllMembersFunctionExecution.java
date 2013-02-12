@@ -16,10 +16,11 @@ import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 
 /**
+ * A FunctionExecution wrapper for onMembers execution
  * @author David Turanski
- *
+ * @since 1.3.0
  */
-public class AllMembersFunctionExecution extends AbstractFunctionExecution {
+class AllMembersFunctionExecution extends AbstractFunctionExecution {
 	
   	@Override
 	protected Execution getExecution() {

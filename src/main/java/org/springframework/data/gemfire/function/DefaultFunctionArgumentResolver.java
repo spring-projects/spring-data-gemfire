@@ -16,9 +16,10 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 
 /**
  * @author David Turanski
+ * @since 1.3.0
  *
  */
-public class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
+class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.FunctionArgumentResolver#resolveFunctionArguments(com.gemstone.gemfire.cache.execute.FunctionContext)
