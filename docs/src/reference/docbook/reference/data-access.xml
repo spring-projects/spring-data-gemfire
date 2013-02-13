@@ -21,7 +21,7 @@
     <title>An Easy Way to Connect to GemFire </title>
 
     <para>For many applications, A basic connection to a GemFire grid, using
-    default values is sufficient. Spring Data GemFire's &lt;datasource&gt; tag
+    default values is sufficient. Spring Data GemFire's <tag>&lt;datasource&gt;</tag> tag
     provides a simple way to access data. The data source creates a client
     cache and connection pool. In addition, it will query the member servers
     for all existing root regions and create a proxy (empty) client region for
@@ -31,17 +31,18 @@
    &lt;locator host="somehost" port="1234"/&gt;
 &lt;/gfe-data:datasource&gt;</programlisting>
 
-    <para>The datasource tag is synactically similar to <tag>&lt;gfe:pool&gt;.
+    <para>The datasource tag is synactically similar to <tag>&lt;gfe:pool&gt;</tag>.
     It may be configured with one or more locator or server tags to connect to
     an existing data grid. Additionally, all attributes available to configure
     a pool are supported. This configuration will automatically create
     ClientRegion beans for each region defined on members connected to the
     locator, so they may be seamlessly referenced by Spring Data mapping
     annotations, GemfireTemplate, and wired into application
-    classes.</tag></para>
+    classes.</para>
 
-    <para><tag>Of course, you can explicitly configure client regions. For
-    example, if you want to cache data in local memory: </tag><programlisting
+    <para>Of course, you can explicitly configure client regions. For
+    example, if you want to cache data in local memory:
+    <programlisting
     language="xml">&lt;gfe-data:datasource&gt;
    &lt;locator host="somehost" port="1234"/&gt;
 &lt;/gfe-data:datasource&gt;
