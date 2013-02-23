@@ -80,12 +80,8 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 	protected abstract PersonRepository getRepository(Regions regions);
 
 	@Test
-	public void foo() {
-		assertResultsFound(repository.findByFirstnameAnnotated("Dave"), dave);
-	}
-
-	@Test
 	public void executesAnnotatedInQueryMethodCorrectly() {
+		assertResultsFound(repository.findByFirstnameAnnotated("Dave"), dave);
 		assertResultsFound(repository.findByFirstnamesAnnotated(Arrays.asList("Carter", "Dave")), carter, dave);
 	}
 

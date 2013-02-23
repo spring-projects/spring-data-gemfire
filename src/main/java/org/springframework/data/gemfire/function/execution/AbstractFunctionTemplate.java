@@ -46,7 +46,7 @@ abstract class AbstractFunctionTemplate  implements GemfireFunctionOperations {
 				 .setArgs(args)
 				 .setFunction(function);
 		 		
-		return this.<T>executeAndExtract(functionExecution);		
+		return this.<T> executeAndExtract(functionExecution);		
 	}
 
 	@Override
