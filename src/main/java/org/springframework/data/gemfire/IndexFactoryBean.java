@@ -51,8 +51,6 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	public void afterPropertiesSet() throws Exception {
 		if (queryService == null) {
 			if (cache != null) {
-				Assert.isTrue(!ClientCache.class.isAssignableFrom(cache.getClass()),
-						"You cannot create an index from a client cache");
 				queryService = cache.getQueryService();
 			}
 		}
