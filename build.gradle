@@ -52,15 +52,16 @@ dependencies {
     runtime("antlr:antlr:2.7.7")
     runtime("commons-modeler:commons-modeler:2.0.1")
 
-    //Test Framework
-    compile "org.mockito:mockito-core:$mockitoVersion"
-    compile "org.springframework:spring-test:$springVersion"
-    compile "junit:junit-dep:$junitVersion"
+   
+    
     
     // Testing
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testCompile "org.springframework:spring-test:$springVersion"
+    testCompile "junit:junit-dep:$junitVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
-    testCompile("javax.annotation:jsr250-api:1.0", optional)
+    testCompile "javax.annotation:jsr250-api:1.0", optional
 
     // Spring Data
     compile "org.springframework.data:spring-data-commons:${springDataCommonsVersion}"
