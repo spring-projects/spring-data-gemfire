@@ -32,27 +32,35 @@ public class GemfireDataSourceParser extends AbstractBeanDefinitionParser {
 	 */
 	@Override
 	protected AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
-	    
+
 		AbstractBeanDefinition poolDefinition = (AbstractBeanDefinition) new PoolParser().parse(element, parserContext);
-       MutablePropertyValues poolProps = poolDefinition.getPropertyValues();
-		
+		MutablePropertyValues poolProps = poolDefinition.getPropertyValues();
+
 		poolProps.add("name", GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+		if (!element.hasAttribute("subscription-enabled")) {
+			poolProps.add("subscriptionEnabled", true);
+		}
 		
-		parserContext.getRegistry().registerBeanDefinition(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME,poolDefinition);
-		
-		AbstractBeanDefinition clientCacheDefinition = (AbstractBeanDefinition)new ClientCacheParser().parse(element, parserContext);
+		parserContext.getRegistry().registerBeanDefinition(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, poolDefinition);
+
+		AbstractBeanDefinition clientCacheDefinition = (AbstractBeanDefinition) new ClientCacheParser().parse(element,
+				parserContext);
 
 		MutablePropertyValues props = clientCacheDefinition.getPropertyValues();
 		
+
 		props.add("pool", poolDefinition);
-		
+
 		clientCacheDefinition.setPropertyValues(props);
-		
-		parserContext.getRegistry().registerBeanDefinition(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME,clientCacheDefinition);
-		
-		System.out.println("registered " + GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME+ ":" + clientCacheDefinition.getBeanClassName());
-		
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(GemfireDataSourcePostProcessor.class);
+
+		parserContext.getRegistry().registerBeanDefinition(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME,
+				clientCacheDefinition);
+
+		System.out.println("registered " + GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME + ":"
+				+ clientCacheDefinition.getBeanClassName());
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder
+				.genericBeanDefinition(GemfireDataSourcePostProcessor.class);
 		builder.addConstructorArgReference(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 		BeanDefinitionReaderUtils.registerWithGeneratedName(builder.getBeanDefinition(), parserContext.getRegistry());
 		return null;

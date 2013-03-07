@@ -100,13 +100,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public Collection<T> findAll() {
-		return template.execute(new GemfireCallback<Collection<T>>() {
-			@Override
-			@SuppressWarnings({ "rawtypes", "unchecked" })
-			public Collection<T> doInGemfire(Region region) {
-				return region.values();
-			}
-		});
+		SelectResults<T> results = template.find("select * from " + template.getRegion().getFullPath());
+		return (Collection<T>)results.asList();
 	}
 
 	/*
