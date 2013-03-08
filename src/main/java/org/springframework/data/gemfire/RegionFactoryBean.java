@@ -250,47 +250,33 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 				if (!region.getRegionService().isClosed()) {
 					try {
 						region.close();
+						region = null;
 					} catch (CacheClosedException cce) {
 						// nothing to see folks, move on.
 					}
 				}
-			} else if (destroy) {
+				
+			} if (destroy) {
 				region.destroyRegion();
+				region = null;
 			}
 		}
-		region = null;
 	}
 
 	/**
 	 * Indicates whether the region referred by this factory bean, will be
-	 * destroyed on shutdown (default false). Note: destroy and close are
-	 * mutually exclusive. Enabling one will automatically disable the other.
-	 * 
-	 * @param destroy whether or not to destroy the region
-	 * 
-	 * @see #setClose(boolean)
+	 * destroyed on shutdown (default false).
 	 */
 	public void setDestroy(boolean destroy) {
 		this.destroy = destroy;
-
-		if (destroy) {
-			close = false;
-		}
 	}
 
 	/**
 	 * Indicates whether the region referred by this factory bean, will be
-	 * closed on shutdown (default true). Note: destroy and close are mutually
-	 * exclusive. Enabling one will automatically disable the other.
-	 * 
-	 * @param close whether to close or not the region
-	 * @see #setDestroy(boolean)
+	 * closed on shutdown (default true).
 	 */
 	public void setClose(boolean close) {
 		this.close = close;
-		if (close) {
-			destroy = false;
-		}
 	}
 
 	/**

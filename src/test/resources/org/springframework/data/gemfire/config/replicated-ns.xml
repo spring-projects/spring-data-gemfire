@@ -10,7 +10,7 @@
 
 	<gfe:cache />
 	
-	<gfe:replicated-region id="simple" />
+	<gfe:replicated-region id="simple" close="false" />
 	
 	<gfe:replicated-region id="pub" name="publisher"/>
 	

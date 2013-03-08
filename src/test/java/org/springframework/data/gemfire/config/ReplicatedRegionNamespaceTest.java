@@ -55,6 +55,8 @@ public class ReplicatedRegionNamespaceTest {
 	@Test
 	public void testBasicReplica() throws Exception {
 		assertTrue(context.containsBean("simple"));
+		RegionFactoryBean fb = context.getBean("&simple", RegionFactoryBean.class);
+		assertEquals(false ,(Boolean)TestUtils.readField("close", fb));
 	}
 
 	@SuppressWarnings("rawtypes")
