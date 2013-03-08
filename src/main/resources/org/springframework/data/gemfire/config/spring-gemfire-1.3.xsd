@@ -2419,45 +2419,45 @@ THREAD:Indicates that events will be parallelized based on the event's originati
     </xsd:complexType>
     <!-- -->
     <xsd:attributeGroup name="commonWANQueueAttributes">
-    	<xsd:attribute name="batch-size" type="xsd:string"
-    		use="optional">
-    		<xsd:annotation>
-    			<xsd:documentation><![CDATA[
+    		<xsd:attribute name="batch-size" type="xsd:string"
+    			use="optional">
+    			<xsd:annotation>
+    				<xsd:documentation><![CDATA[
 Specifies the batch size
-            ]]></xsd:documentation>
-    		</xsd:annotation>
-    	</xsd:attribute>
-    	<xsd:attribute name="persistent" type="xsd:string"
-    		use="optional">
-    		<xsd:annotation>
-    			<xsd:documentation><![CDATA[
+            	]]></xsd:documentation>
+    			</xsd:annotation>
+    		</xsd:attribute>
+    		<xsd:attribute name="persistent" type="xsd:string"
+    			use="optional">
+    			<xsd:annotation>
+    				<xsd:documentation><![CDATA[
 Specifies whether persistence is enabled: true or false(default)
-            ]]></xsd:documentation>
-    		</xsd:annotation>
-    	</xsd:attribute>
-    	<xsd:attribute name="disk-store-ref" type="xsd:string"
-    		use="optional">
-    		<xsd:annotation>
-    			<xsd:documentation><![CDATA[
+            	]]></xsd:documentation>
+    			</xsd:annotation>
+    		</xsd:attribute>
+    		<xsd:attribute name="disk-store-ref" type="xsd:string"
+    			use="optional">
+    			<xsd:annotation>
+    				<xsd:documentation><![CDATA[
 Indicates the id of disk store to use for persistence
-            ]]></xsd:documentation>
-    		</xsd:annotation>
-    	</xsd:attribute>
-    	<xsd:attribute name="maximum-queue-memory" type="xsd:string"
-    		use="optional">
-    		<xsd:annotation>
-    			<xsd:documentation><![CDATA[
+            	]]></xsd:documentation>
+    			</xsd:annotation>
+    		</xsd:attribute>
+    		<xsd:attribute name="maximum-queue-memory" type="xsd:string"
+    			use="optional">
+    			<xsd:annotation>
+    				<xsd:documentation><![CDATA[
 Specifies the maximum memory in MB to allocate for the queue
-            ]]></xsd:documentation>
-    		</xsd:annotation>
-    	</xsd:attribute>
-    	<xsd:attribute name="parallel" type="xsd:string">
-    	<xsd:annotation>
+            	]]></xsd:documentation>
+ 	   		</xsd:annotation>
+    		</xsd:attribute>
+    		<xsd:attribute name="parallel" type="xsd:string">
+    		<xsd:annotation>
                 <xsd:documentation><![CDATA[
                 A value of "false" or "true" that specifies the type of queue GemFire creates, serial or parallel.
             ]]></xsd:documentation>
             </xsd:annotation>
-    	</xsd:attribute>
+    		</xsd:attribute>
     </xsd:attributeGroup>
     <!-- -->
     <xsd:complexType name="gatewayReceiverType">
@@ -2591,6 +2591,48 @@ use inner bean declarations.
                 <xsd:documentation><![CDATA[
 Optionally specifies the GemFire async event queue id. By default this value is the bean id or a generated value if an inner bean.
                   ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="batch-conflation-enabled" type="xsd:string" use="optional">
+             <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Optionally specifies whether to conflate queued events (true or false)
+ (only available in Gemfire 7.0.1 + )
+                  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="batch-time-interval" type="xsd:string" use="optional">
+             <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Specifies the maximum time interval that can elapse before a partial batch is sent from a the AsyncEventQueue
+ (only available in Gemfire 7.0.1 + )
+                  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="disk-synchronous" type="xsd:string" use="optional">
+             <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Specifies if disk writes should be synchronous (true or false) (only available in Gemfire 7.0.1 + )
+                  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute> 
+        <xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional">
+             <xsd:annotation>
+                <xsd:documentation><![CDATA[
+Specifies the number of dispatcher threads to use (only available in Gemfire 7.0.1 + )
+                  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+       <xsd:attribute name="order-policy" type="xsd:string"
+            use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[
+(Only available in GemFire 7.0.1 + )
+Specifies the order policy - This only applies if parallel is enabled:
+KEY: Indicates that events will be parallelized based on the event's key,
+PARTITION:Indicates that events will be parallelized based on the event's: partition (using the PartitionResolver)
+THREAD:Indicates that events will be parallelized based on the event's originating member and thread
+            ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attributeGroup ref="commonWANQueueAttributes" />

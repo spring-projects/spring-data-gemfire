@@ -89,9 +89,6 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		}
 	}
 
-	/**
-	 * 
-	 */
 	@Test
 	public void testAsyncEventQueue() {
 		AsyncEventQueue aseq = ctx.getBean("async-event-queue", AsyncEventQueue.class);
@@ -100,8 +97,12 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertTrue(aseq.isParallel());
 		assertEquals("diskstore", aseq.getDiskStoreName());
 		assertEquals(50, aseq.getMaximumQueueMemory());
+		assertEquals(3, aseq.getBatchTimeInterval());
+		assertEquals(OrderPolicy.KEY, aseq.getOrderPolicy());
+		assertEquals(true, aseq.isDiskSynchronous());
+		assertEquals(true, aseq.isBatchConflationEnabled());
 	}
-	
+
 	@Test
 	public void testGatewaySender() throws Exception {
 		GatewaySenderFactoryBean gwsfb = ctx.getBean("&gateway-sender", GatewaySenderFactoryBean.class);

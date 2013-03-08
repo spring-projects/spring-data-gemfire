@@ -15,6 +15,9 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
@@ -22,6 +25,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+import com.gemstone.gemfire.cache.util.Gateway;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
@@ -29,6 +33,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
  * 
  */
 public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<AsyncEventQueue> {
+	private static List<String> validOrderPolicyValues = Arrays.asList("KEY", "PARTITION", "THREAD");
 
 	public void setDiskStoreRef(String diskStoreRef) {
 		this.diskStoreRef = diskStoreRef;
@@ -40,13 +45,23 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	private Integer batchSize;
 
+	private Integer dispatcherThreads;
+
+	private Integer batchTimeInterval;
+
 	private Integer maximumQueueMemory;
 
 	private Boolean persistent;
 
 	private String diskStoreRef;
-	
+
 	private Boolean parallel;
+
+	private Boolean diskSynchronous;
+
+	private String orderPolicy;
+
+	private Boolean batchConflationEnabled;
 
 	/**
 	 * 
@@ -71,29 +86,58 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	@Override
 	protected void doInit() {
 		Assert.notNull(asyncEventListener, "AsyncEventListener cannot be null");
+
 		AsyncEventQueueFactory asyncEventQueueFactory = null;
 		if (this.factory == null) {
 			asyncEventQueueFactory = cache.createAsyncEventQueueFactory();
 		} else {
-			asyncEventQueueFactory = (AsyncEventQueueFactory)factory;
+			asyncEventQueueFactory = (AsyncEventQueueFactory) factory;
 		}
-		
-		if (persistent != null) {
-			asyncEventQueueFactory.setPersistent(persistent);
-		}
-		if (batchSize != null) {
-			asyncEventQueueFactory.setBatchSize(batchSize);
-		}
+
 		if (diskStoreRef != null) {
 			persistent = (persistent == null) ? Boolean.TRUE : persistent;
 			Assert.isTrue(persistent, "specifying a disk store requires persistent property to be true");
 			asyncEventQueueFactory.setDiskStoreName(diskStoreRef);
 		}
+		if (diskSynchronous != null) {
+			persistent = (persistent == null) ? Boolean.TRUE : persistent;
+			Assert.isTrue(persistent, "specifying a disk synchronous requires persistent property to be true");
+			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
+		}
+		if (persistent != null) {
+			asyncEventQueueFactory.setPersistent(persistent);
+		}
+
+		if (batchSize != null) {
+			asyncEventQueueFactory.setBatchSize(batchSize);
+		}
+
+		if (batchTimeInterval != null) {
+			asyncEventQueueFactory.setBatchTimeInterval(batchTimeInterval);
+		}
+
+		if (batchConflationEnabled != null) {
+			asyncEventQueueFactory.setBatchConflationEnabled(batchConflationEnabled);
+		}
+
+		if (dispatcherThreads != null) {
+			asyncEventQueueFactory.setDispatcherThreads(dispatcherThreads);
+		}
+
 		if (maximumQueueMemory != null) {
 			asyncEventQueueFactory.setMaximumQueueMemory(maximumQueueMemory);
 		}
-		if( parallel != null ){
-			asyncEventQueueFactory.setParallel( parallel );
+
+		if (parallel != null) {
+			asyncEventQueueFactory.setParallel(parallel);
+		}
+		
+		if (orderPolicy != null) {
+			Assert.isTrue(parallel, "specifying an order policy requires the parallel property to be true");
+
+			Assert.isTrue(validOrderPolicyValues.contains(orderPolicy.toUpperCase()), "The value of order policy:'"
+					+ orderPolicy + "' is invalid");
+			asyncEventQueueFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
 
 		asyncEventQueue = asyncEventQueueFactory.create(getName(), asyncEventListener);
@@ -104,8 +148,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		if (!cache.isClosed()) {
 			try {
 				asyncEventListener.close();
-			}
-			catch (CacheClosedException cce) {
+			} catch (CacheClosedException cce) {
 				// nothing to see folks, move on.
 			}
 		}
@@ -122,8 +165,58 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
 	}
-	
-	public void setParallel(Boolean parallel){
+
+	public void setParallel(Boolean parallel) {
 		this.parallel = parallel;
+	}
+
+	/**
+	 * @param validOrderPolicyValues the validOrderPolicyValues to set
+	 */
+	public static void setValidOrderPolicyValues(List<String> validOrderPolicyValues) {
+		AsyncEventQueueFactoryBean.validOrderPolicyValues = validOrderPolicyValues;
+	}
+
+	/**
+	 * @param asyncEventQueue the asyncEventQueue to set
+	 */
+	public void setAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
+		this.asyncEventQueue = asyncEventQueue;
+	}
+
+	/**
+	 * @param dispatcherThreads the dispatcherThreads to set
+	 */
+	public void setDispatcherThreads(Integer dispatcherThreads) {
+		this.dispatcherThreads = dispatcherThreads;
+	}
+
+	/**
+	 * @param batchTimeInterval
+	 */
+	public void setBatchTimeInterval(Integer batchTimeInterval) {
+		this.batchTimeInterval = batchTimeInterval;
+	}
+
+	/**
+	 * 
+	 * @param batchConflationEnabled
+	 */
+	public void setBatchConflationEnabled(Boolean batchConflationEnabled) {
+		this.batchConflationEnabled = batchConflationEnabled;
+	}
+
+	/**
+	 * @param diskSynchronous
+	 */
+	public void setDiskSynchronous(Boolean diskSynchronous) {
+		this.diskSynchronous = diskSynchronous;
+	}
+
+	/**
+	 * @param orderPolicy
+	 */
+	public void setOrderPolicy(String orderPolicy) {
+		this.orderPolicy = orderPolicy;
 	}
 }

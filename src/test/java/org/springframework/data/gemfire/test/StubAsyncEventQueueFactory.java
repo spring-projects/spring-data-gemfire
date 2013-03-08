@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
+import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
 
 /**
  * @author David Turanski
@@ -81,5 +82,31 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 	public AsyncEventQueueFactory setParallel(boolean parallel) {
 		this.parallel = parallel;
 		return this;
+	}
+
+	//The following added in 7.0.1
+	public AsyncEventQueueFactory setBatchConflationEnabled(boolean arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public AsyncEventQueueFactory setBatchTimeInterval(int arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public AsyncEventQueueFactory setDiskSynchronous(boolean arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public AsyncEventQueueFactory setDispatcherThreads(int arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public AsyncEventQueueFactory setOrderPolicy(OrderPolicy arg0) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

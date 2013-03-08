@@ -57,6 +57,16 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
+		
+		if (ParsingUtils.GEMFIRE_VERSION.compareTo("7.0.1") >= 0 ) {
+			ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
+			ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
+			ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
+			ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
+			ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
+			ParsingUtils.setPropertyValue(element, builder, "order-policy");
+		}
+
 		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
 
 		if (!StringUtils.hasText(element.getAttribute(NAME_ATTRIBUTE))) {
