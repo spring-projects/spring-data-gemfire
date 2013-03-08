@@ -39,6 +39,16 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 
 	private boolean parallel;
 
+	private boolean diskSynchronous;
+
+	private boolean batchConflationEnabled;
+
+	private int dispatcherThreads;
+
+	private OrderPolicy orderPolicy;
+
+	private int batchTimeInterval;
+
 	@Override
 	public AsyncEventQueue create(String name, AsyncEventListener listener) {
 		this.name = name;
@@ -51,6 +61,11 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		when(asyncEventQueue.getId()).thenReturn(this.name);
 		when(asyncEventQueue.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
 		when(asyncEventQueue.isParallel()).thenReturn(this.parallel);
+		when(asyncEventQueue.isBatchConflationEnabled()).thenReturn(this.batchConflationEnabled);
+		when(asyncEventQueue.isDiskSynchronous()).thenReturn(this.diskSynchronous);
+		when(asyncEventQueue.getBatchTimeInterval()).thenReturn(this.batchTimeInterval);
+		when(asyncEventQueue.getOrderPolicy()).thenReturn(this.orderPolicy);
+		when(asyncEventQueue.getDispatcherThreads()).thenReturn(this.dispatcherThreads);
 		return this.asyncEventQueue;
 	}
 
@@ -86,27 +101,27 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 
 	//The following added in 7.0.1
 	public AsyncEventQueueFactory setBatchConflationEnabled(boolean arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		this.batchConflationEnabled = arg0;
+		return this;
 	}
 
 	public AsyncEventQueueFactory setBatchTimeInterval(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		this.batchTimeInterval = arg0;
+		return this;
 	}
 
 	public AsyncEventQueueFactory setDiskSynchronous(boolean arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		this.diskSynchronous = arg0;
+		return this;
 	}
 
 	public AsyncEventQueueFactory setDispatcherThreads(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		this.dispatcherThreads = arg0;
+		return this;
 	}
 
 	public AsyncEventQueueFactory setOrderPolicy(OrderPolicy arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		this.orderPolicy = arg0;
+		return this;
 	}
 }
