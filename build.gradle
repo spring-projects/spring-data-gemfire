@@ -49,8 +49,8 @@ dependencies {
 	compile "org.springframework:spring-aop:$springVersion"
 	compile 'org.aspectj:aspectjweaver:1.7.2'
 	compile 'org.aspectj:aspectjrt:1.7.2'
-	runtime 'org.codehaus.jackson:jackson-core-asl:1.9.12'
-	runtime 'org.codehaus.jackson:jackson-mapper-asl:1.9.12'
+	compile 'org.codehaus.jackson:jackson-core-asl:1.9.12'
+	compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.12'
 
     // GemFire
     compile("com.gemstone.gemfire:gemfire:$gemfireVersion")
