@@ -602,22 +602,19 @@ After the destroy, this region object can not be used any more and any attempt t
 RegionDestroyedException.
 
 Default is false, meaning that regions are not destroyed.
-
-Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
 						]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="close" type="xsd:string"
-                    default="true">
+                    default="false">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
 Indicates whether the defined region should be closed or not at shutdown. Close performs a local destroy but leaves behind the region
 disk files. Additionally it notifies the listeners and callbacks.
 
-Default is true, meaning the regions are closed.
+Default is false
 
 Note: Regions are automatically closed when cache closes.
-Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.				
 						]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>

@@ -140,4 +140,35 @@ Defines a connection from a Cache client to a set of GemFire Cache Servers.
                 type="xsd:string" use="optional" />
         </xsd:complexType>
     </xsd:element>
+    <xsd:element name="json-region-autoproxy">
+         <xsd:annotation>
+            <xsd:documentation><![CDATA[
+Enables A Spring AOP proxy to perform automatic conversion to and from JSON for appropriate region operations
+			]]></xsd:documentation>
+        </xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="region-refs" use="optional" type="xsd:string">
+				<xsd:annotation>
+            		<xsd:documentation><![CDATA[
+A comma delimited string of region names to include for JSON conversion. By default all regions are included.
+				]]></xsd:documentation>
+        			</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="pretty-print" use="optional" type="xsd:string">
+				<xsd:annotation>
+            		<xsd:documentation><![CDATA[
+A boolean value to specify whether returned JSON strings are pretty printed, false by default.
+				]]></xsd:documentation>
+        			</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="convert-returned-collections" use="optional" type="xsd:string">
+				<xsd:annotation>
+            		<xsd:documentation><![CDATA[
+A boolean value to specify whether Collections returned by Region.getAll(), Region.values() should be converted from the 
+native GemFire PdxInstance type. True, by default but will incur significant overhead for large collections.
+				]]></xsd:documentation>
+        			</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+    </xsd:element>
 </xsd:schema>

@@ -251,7 +251,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 					try {
 						region.close();
 						region = null;
-					} catch (CacheClosedException cce) {
+					} catch (Exception cce) {
 						// nothing to see folks, move on.
 					}
 				}
