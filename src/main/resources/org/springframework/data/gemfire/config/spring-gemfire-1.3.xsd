@@ -974,6 +974,24 @@ up to date copy of the data.
         <xsd:complexContent>
             <xsd:extension base="baseRegionType">
                 <xsd:sequence minOccurs="1" maxOccurs="1">
+                     <xsd:element name="subscription" minOccurs="0"
+                    	maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+Subscription policy for the replicated region.
+                                ]]></xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                                    <xsd:attribute name="type"
+                                        type="subscriptionPolicyType" fixed="ALL">
+                                        <xsd:annotation>
+                                            <xsd:documentation><![CDATA[
+The action to take when performing subscription.
+                                                ]]></xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                        </xsd:complexType>
+                    </xsd:element>
                     <xsd:element name="eviction" minOccurs="0"
                         maxOccurs="1">
                         <xsd:annotation>
@@ -1075,6 +1093,24 @@ Defines a GemFire local region instance. Each local region is scoped only to the
         <xsd:complexContent>
             <xsd:extension base="baseRegionType">
                 <xsd:sequence minOccurs="1" maxOccurs="1">
+                     <xsd:element name="subscription" minOccurs="0"
+                    	maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+Subscription policy for the replicated region.
+                                ]]></xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                                    <xsd:attribute name="type"
+                                        type="subscriptionPolicyType" fixed="ALL">
+                                        <xsd:annotation>
+                                            <xsd:documentation><![CDATA[
+The action to take when performing subscription.
+                                                ]]></xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                        </xsd:complexType>
+                    </xsd:element>
                     <xsd:element name="eviction" minOccurs="0"
                         maxOccurs="1">
                         <xsd:annotation>
@@ -1226,6 +1262,24 @@ Specifies the number of buckets to allocate to the fixed partition
                     		</xsd:annotation>                   		
                     		</xsd:attribute>
                     	</xsd:complexType>
+                    </xsd:element>
+                     <xsd:element name="subscription" minOccurs="0"
+                    	maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+Subscription policy for the replicated region.
+                                ]]></xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                                    <xsd:attribute name="type"
+                                        type="subscriptionPolicyType" fixed="ALL">
+                                        <xsd:annotation>
+                                            <xsd:documentation><![CDATA[
+The action to take when performing subscription.
+                                                ]]></xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                        </xsd:complexType>
                     </xsd:element>                    
                     <xsd:element name="eviction" minOccurs="0"
                         maxOccurs="1">
@@ -1249,7 +1303,25 @@ The action to take when performing eviction.
                                 </xsd:extension>
                             </xsd:complexContent>
                         </xsd:complexType>
-                    </xsd:element>
+                    </xsd:element>                    
+                     <xsd:element name="subscription" minOccurs="0"
+                    	maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+Subscription policy for the replicated region.
+                                ]]></xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                                    <xsd:attribute name="type"
+                                        type="subscriptionPolicyType" fixed="ALL">
+                                        <xsd:annotation>
+                                            <xsd:documentation><![CDATA[
+The action to take when performing subscription.
+                                                ]]></xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                        </xsd:complexType>
+                    </xsd:element>                    
                 </xsd:sequence>
                 <xsd:attributeGroup ref="distributedRegionAttributes" />
                 <xsd:attribute name="copies" use="optional"
@@ -1499,6 +1571,38 @@ Note: this option is not compatible with replicated regions (as it render the re
 The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to 
 reclaim memory.
 							]]></xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="subscriptionPolicyType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ALL">
+                <xsd:annotation>
+                    <xsd:documentation><![CDATA[
+This subscriber is interested in all data. More specifically operations done in this cache and distributed operations done in remote caches.
+When combined with DataPolicy.EMPTY this region will receive events for every distributed operation but will not store the data.
+
+When combined with DataPolicy.NORMAL or DataPolicy.PRELOADED this region will accept Region.create(Object, Object) operations done remotely. Without the ALL interest policy, NORMAL and PRELOADED ignore creates that the region does not have an existing entry for.
+
+When combined with the replication policies this interest has no effect.
+
+When combined with DataPolicy.PARTITION this interest policy causes cache listeners to be notified of changes regardless of the physical location of the data affected. That is, a listener in a VM using this policy will receive notification of all changes to the partitioned region.
+							]]></xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="CACHE_CONTENT">
+                <xsd:annotation>
+                    <xsd:documentation><![CDATA[
+This subscriber is interested in data that is already in its cache. More specifically operations done in this cache and distributed operations done in remote caches.
+When combined with DataPolicy.EMPTY this region will never receive events for distributed operations since its content is always empty. It will continue to get events for operations done locally.
+
+When combined with DataPolicy.NORMAL or DataPolicy.PRELOADED this region will accept remote operations done to entries it already has in its cache.
+
+When combined with the replication policies * this interest has no effect.
+
+When combined with DataPolicy.PARTITION this interest policy causes cache listeners to be notified in the VM holding the affected data. That is, listeners are only notified if the affected* key-value pair is in the same process as the listener.							]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:enumeration>
         </xsd:restriction>

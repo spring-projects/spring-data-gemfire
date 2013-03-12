@@ -9,5 +9,5 @@
 	 <gfe:client-region data-policy="NORMAL" name="ChallengeQuestions" id="challengeQuestionsRegion"/>
 	 <gfe:pool>
 	 	<gfe:locator host="localhost" port="1234"/>
-	 </gfe:pool>
+	 </gfe:pool>	 
 </beans>

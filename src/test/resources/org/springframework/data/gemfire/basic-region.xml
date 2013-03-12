@@ -12,4 +12,5 @@
             <property name="cache" ref="gemfireCache"/>
             <property name="dataPolicy" value="REPLICATE_PERSISTENT"/>
         </bean>
+        
 </beans>

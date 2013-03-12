@@ -119,6 +119,7 @@ abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
 		}
 
 		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
+		ParsingUtils.parseSubscription(parserContext, element, attrBuilder);
 		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
 		ParsingUtils.parseMembershipAttributes(parserContext, element, attrBuilder);
 
