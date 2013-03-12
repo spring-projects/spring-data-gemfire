@@ -947,39 +947,24 @@ up to date copy of the data.
 		</xsd:annotation>
 		<xsd:complexContent>
 			<xsd:extension base="baseRegionType">
-				<xsd:sequence minOccurs="1" maxOccurs="1">
-				
-				
+				<xsd:sequence>
 					<xsd:element name="subscription" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Subscription policy for the replicated region.
-                                ]]></xsd:documentation>
-						</xsd:annotation>						
+							]]></xsd:documentation>
+						</xsd:annotation>
 						<xsd:complexType>
-							<xsd:complexContent>
-								<xsd:extension base="subscriptionType">
-									<xsd:attribute name="type" type="subscriptionPolicyType"
-										fixed="ALL">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[
-The action to take when performing subscription.
-                                                ]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-								</xsd:extension>
-							</xsd:complexContent>
+							<xsd:attribute name="type" type="subscriptionPolicyType"/>
 						</xsd:complexType>
 					</xsd:element>
-					
-					
+
 					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Eviction policy for the replicated region.
                                 ]]></xsd:documentation>
 						</xsd:annotation>
-						
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
@@ -995,8 +980,7 @@ The action to take when performing eviction.
 							</xsd:complexContent>
 						</xsd:complexType>
 					</xsd:element>
-					
-					
+
 					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:sequence>
 				<xsd:attributeGroup ref="distributedRegionAttributes" />
@@ -1074,29 +1058,6 @@ Defines a GemFire local region instance. Each local region is scoped only to the
 		<xsd:complexContent>
 			<xsd:extension base="baseRegionType">
 				<xsd:sequence minOccurs="1" maxOccurs="1">
-				
-					<xsd:element name="subscription" minOccurs="0" maxOccurs="1">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Subscription policy for the replicated region.
-                                ]]></xsd:documentation>
-						</xsd:annotation>						
-						<xsd:complexType>
-							<xsd:complexContent>
-								<xsd:extension base="subscriptionType">
-									<xsd:attribute name="type" type="subscriptionPolicyType"
-										fixed="ALL">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[
-The action to take when performing subscription.
-                                                ]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-								</xsd:extension>
-							</xsd:complexContent>
-						</xsd:complexType>
-					</xsd:element>
-					
 					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
@@ -1162,7 +1123,7 @@ The name of the region definition.
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
-	<xsd:element name="local-region" type="localRegionType" />
+	<xsd:element name="local-region" type="localRegionType"/>
 	<!-- -->
 	<xsd:complexType name="basePartitionedRegionType">
 		<xsd:annotation>
@@ -1217,7 +1178,7 @@ is created or any bucket in a partitioned region becomes primary
 						<xsd:annotation>
 							<xsd:documentation
 								source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
- Create a fixed partition with the given attributes. Required for a FixedPartitionResolver.                   			
+ Create a fixed partition with the given attributes. Required for a FixedPartitionResolver.
                     		]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:complexType>
@@ -1226,7 +1187,7 @@ is created or any bucket in a partitioned region becomes primary
 								<xsd:annotation>
 									<xsd:documentation
 										source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
-Specifies the fixed partition name                   			
+Specifies the fixed partition name
                     		]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:attribute>
@@ -1235,7 +1196,7 @@ Specifies the fixed partition name
 								<xsd:annotation>
 									<xsd:documentation
 										source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
-Specifies if this member is primary for this partition                  			
+Specifies if this member is primary for this partition
                     		]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:attribute>
@@ -1243,7 +1204,7 @@ Specifies if this member is primary for this partition
 								<xsd:annotation>
 									<xsd:documentation
 										source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
-Specifies the number of buckets to allocate to the fixed partition                   			
+Specifies the number of buckets to allocate to the fixed partition
                     		]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:attribute>
@@ -1252,22 +1213,11 @@ Specifies the number of buckets to allocate to the fixed partition
 					<xsd:element name="subscription" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-Subscription policy for the replicated region.
-                                ]]></xsd:documentation>
-						</xsd:annotation>						
+Subscription policy for the partitioned region. 
+                                 ]]></xsd:documentation>
+						</xsd:annotation>
 						<xsd:complexType>
-							<xsd:complexContent>
-								<xsd:extension base="subscriptionType">
-									<xsd:attribute name="type" type="subscriptionPolicyType"
-										fixed="ALL">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[
-The action to take when performing subscription.
-                                                ]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-								</xsd:extension>
-							</xsd:complexContent>
+							<xsd:attribute name="type" type="subscriptionPolicyType"/>
 						</xsd:complexType>
 					</xsd:element>
 					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
@@ -1285,27 +1235,6 @@ Eviction policy for the partitioned region.
 											<xsd:documentation><![CDATA[
 The action to take when performing eviction.
 												]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-								</xsd:extension>
-							</xsd:complexContent>
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="subscription" minOccurs="0" maxOccurs="1">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Subscription policy for the replicated region.
-                                ]]></xsd:documentation>
-						</xsd:annotation>						
-						<xsd:complexType>
-							<xsd:complexContent>
-								<xsd:extension base="subscriptionType">
-									<xsd:attribute name="type" type="subscriptionPolicyType"
-										fixed="ALL">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[
-The action to take when performing subscription.
-                                                ]]></xsd:documentation>
 										</xsd:annotation>
 									</xsd:attribute>
 								</xsd:extension>
@@ -1561,30 +1490,6 @@ reclaim memory.
 		</xsd:restriction>
 	</xsd:simpleType>
 
-<xsd:complexType name="subscriptionType">
-		<xsd:attribute name="type" default="ALL">
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="ALL">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="CONTENT_CACHE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					
-				</xsd:restriction>
-			</xsd:simpleType>
-		</xsd:attribute>
-	</xsd:complexType>
-	
 	<xsd:simpleType name="subscriptionPolicyType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="ALL">
