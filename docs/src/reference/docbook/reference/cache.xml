@@ -117,6 +117,7 @@
         pdx-read-serialized="false"
         message-sync-interval="1"
         search-timeout="300"
+        close="false"
     &gt;
      <co id="gfe#transaction#listener"/>&lt;gfe:transaction-listener ref="myTransactionListener"/&gt; 
 

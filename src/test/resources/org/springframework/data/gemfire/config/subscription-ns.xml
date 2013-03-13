@@ -7,18 +7,18 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
-        
+
 		<gfe:cache/>
         <gfe:replicated-region id="replicALL">
 			<gfe:subscription type="ALL"/>	
         </gfe:replicated-region>
-        
+
         <gfe:partitioned-region id="partCACHE_CONTENT">
         	<gfe:subscription type="CACHE_CONTENT"/>
         	<gfe:eviction threshold="70"/>
         </gfe:partitioned-region>
-        
-        
+
+
         <gfe:partitioned-region id="partDEFAULT">
         	<gfe:subscription/>
         </gfe:partitioned-region>

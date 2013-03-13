@@ -125,9 +125,7 @@
       <title>Common Region Attributes</title>
 
       <para>The following table(s) list attributes available for various
-      region types: 
-      <table
-          id="bootstrap:region:common:attributes:table">
+      region types: <table id="bootstrap:region:common:attributes:table">
           <title>Common Region Attributes</title>
 
           <tgroup cols="3">
@@ -163,7 +161,7 @@
                 <entry>close</entry>
 
                 <entry spanname="values">
-                  <emphasis>boolean, default:true</emphasis>
+                  <emphasis>boolean, default:false (Note: The default was true prior to 1.3.0)</emphasis>
                 </entry>
 
                 <entry spanname="description">Indicates whether the region
@@ -499,7 +497,17 @@
     <para>This is discussed further in <xref
     linkend="bootstrap-diskstore"/></para>
   </section>
+ <section id="bootstrap:region:subscription">
+    <title>Subscription Interest Policy</title>
 
+    <para>GemFire allows configuration of subscriptions to control <ulink url="http://pubs.vmware.com//vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/events/configure_p2p_event_messaging.html">peer to peer event handling</ulink>.
+    Spring Data GemFire provides a <tag>&lt;gfe:subscription/&gt;</tag> to set the interest policy on replicated and partitioned regions to either <literal>ALL</literal> or <literal>CACHE_CONTENT</literal>.
+    </para>
+
+    <programlisting language="xml">&lt;gfe:partitioned-region id="subscription-partition"&gt;
+     &lt;gfe:subscription type="CACHE_CONTENT"/&gt;
+&lt;/gfe:partitioned-region&gt;</programlisting>
+  </section>
   <section id="bootstrap:region:eviction">
     <title>Data Eviction and Overflowing</title>
 
@@ -782,7 +790,7 @@ and a nested resolver declaration  --&gt;
     client region while the latter defines connection pools to be used/shared
     by the various client regions.</para>
 
-    <para>Below is a typical client region configuration:</para>
+    <para>Below is a typical client region configuration:G</para>
 
     <programlisting language="xml">&lt;!-- client region using the default client-cache pool --&gt;
 &lt;gfe:client-region id="simple"&gt;
@@ -846,5 +854,31 @@ and a nested resolver declaration  --&gt;
       are received - refer to the GemFire documentation for more
       details.</para>
     </section>
+  </section>
+
+  <section id="bootstrap:region:json">
+    <title>JSON Support</title>
+
+    <para>Gemfire 7.0 introduced support for caching JSON documents with OQL
+    query support. These are stored internally as <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/pdx/PdxInstance.html">PdxInstance</ulink> types using the
+    <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/pdx/JSONFormatter.html">JSONFormatter</ulink> to perform conversion to and from JSON strings. Spring Data
+    GemFire provides a <tag>&lt;gfe-data:json-region-autoproxy/&gt;</tag> tag to enable a
+    <ulink url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/#aop-introduction">Spring AOP</ulink> component to advise appropropriate region operations, effectively 
+    encapsulating the JSONFormatter, allowing your application to work directly
+    with JSON strings. In addition, Java objects written to JSON configured regions will
+    be automatically converted to JSON using the Jackson ObjectMapper. Reading these values will return a JSON string. 
+    </para>
+    <para>
+    By default, <tag>&lt;gfe-data:json-region-autoproxy/&gt;</tag> will perform the conversion on all regions. To apply this feature to selected regions, provide a comma delimited list of
+    their ids via the <literal>region-refs</literal> attribute. Other attributes include a
+    <literal>pretty-print</literal> flag (false by default) and <literal>convert-returned-collections</literal>. By default the results of region
+    operations getAll() and values() will be converted for configured
+    regions. This is done by creating a parallel structure in local memory. This can incur significant overhead for large collections. Set this
+    flag to false to disable automatic conversion for these operation. 
+    <note>Certain region operations, specifically those that use GemFire's proprietary Region.Entry such as entries(boolean), entrySet(boolean) and getEntry()
+    type are not targeted for AOP advice. In addition, the entrySet() method which returns a Set&lt;java.util.Map.Entry&lt;?,?&gt;&gt; is not affected.</note>
+    </para>
+    <para>This feature also works with seamlessly with GemfireTemplate operations, currently native QueryService operations are not supported.
+    </para>
   </section>
 </section>

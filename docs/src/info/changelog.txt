@@ -1,11 +1,12 @@
 SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
-Changes in version 1.3.0.RELEASE (2013-02-15)
+Changes in version 1.3.0.RELEASE (2013-03-14)
+---------------------------------------------
 General
 * Added annotation support for GemFire functions
 * Added 'datasource' element to gfe-data namespace to simplify client connection
-
+* Added support for JSON
 See [release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?projectId=10462&version=13300)
 
 Changes in version 1.2.1.RELEASE (2012-10-26)

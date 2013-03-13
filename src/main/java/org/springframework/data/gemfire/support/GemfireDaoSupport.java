@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.support;
 
 import org.springframework.dao.support.DaoSupport;
+import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.Assert;
 
@@ -37,7 +38,7 @@ import com.gemstone.gemfire.cache.Region;
  */
 public class GemfireDaoSupport extends DaoSupport {
 
-	private GemfireTemplate gemfireTemplate;
+	private GemfireOperations gemfireTemplate;
 
 	/**
 	 * Sets the GemFire Region to be used by this DAO.
@@ -57,7 +58,7 @@ public class GemfireDaoSupport extends DaoSupport {
 	 * @return the new GemfireTemplate instance
 	 * @see #setRegion
 	 */
-	protected GemfireTemplate createGemfireTemplate(Region<?, ?> region) {
+	protected GemfireOperations createGemfireTemplate(Region<?, ?> region) {
 		return new GemfireTemplate(region);
 	}
 
@@ -66,7 +67,7 @@ public class GemfireDaoSupport extends DaoSupport {
 	 * as an alternative to specifying a GemFire {@link Region}.
 	 * @see #setRegion
 	 */
-	public final void setGemfireTemplate(GemfireTemplate gemfireTemplate) {
+	public final void setGemfireTemplate(GemfireOperations gemfireTemplate) {
 		this.gemfireTemplate = gemfireTemplate;
 	}
 
@@ -74,7 +75,7 @@ public class GemfireDaoSupport extends DaoSupport {
 	 * Return the GemfireTemplate for this DAO, pre-initialized
 	 * with the Region or set explicitly.
 	 */
-	public final GemfireTemplate getGemfireTemplate() {
+	public final GemfireOperations getGemfireTemplate() {
 		return gemfireTemplate;
 	}
 

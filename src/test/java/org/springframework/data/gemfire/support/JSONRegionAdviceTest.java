@@ -24,14 +24,16 @@ import javax.annotation.Resource;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * @author David Turanski
@@ -40,17 +42,28 @@ import com.gemstone.gemfire.cache.Region;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class JSONRegionAdviceTest {
+	@SuppressWarnings("rawtypes")
 	@Resource(name="someRegion")
 	private Region region;
+	
+	@Autowired
+	GemfireOperations template;
+	
 	@Test
 	public void testPutString() {
 		String json = "{\"hello\":\"world\"}";
+		
 		region.put("key",json);
+		Object result = region.put("key",json);
+		assertEquals(json,result);
+		
 		region.create("key2",json);
+		
 		System.out.println(region.get("key"));
 		assertEquals(json,region.get("key"));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testPutAll() {
 	Map<String,String> map = new HashMap<String,String>();
@@ -69,6 +82,32 @@ public class JSONRegionAdviceTest {
 		region.put("dave",dave);
 		String json = (String)region.get("dave");
 		assertEquals(json,"{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",json);
+		Object result = region.put("dave",dave);
+		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",result);
+	}
+	
+	@Test
+	public void testTemplateFindUnique() {
+		Person dave = new Person(1L,"Dave","Turanski");
+		region.put("dave",dave);
+		String json = (String) template.findUnique("Select * from /someRegion where firstname=$1","Dave");
+		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",json);
+	}
+	
+	@Test
+	public void testTemplateFind() {
+		Person dave = new Person(1L,"Dave","Turanski");
+		region.put("dave",dave);
+		SelectResults<String> results =  template.find("Select * from /someRegion where firstname=$1","Dave");
+		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",results.iterator().next());
+	}
+	
+	@Test
+	public void testTemplateQuery() {
+		Person dave = new Person(1L,"Dave","Turanski");
+		region.put("dave",dave);
+		SelectResults<String> results =  template.query("firstname='Dave'");
+		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",results.iterator().next());
 	}
 
 }

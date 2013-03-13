@@ -55,7 +55,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * 
  * @author Costin Leau
  */
-public class GemfireTemplate extends GemfireAccessor {
+public class GemfireTemplate extends GemfireAccessor implements GemfireOperations {
 
 	private boolean exposeNativeRegion = false;
 
@@ -96,6 +96,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		return this.exposeNativeRegion;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#containsKey(java.lang.Object)
+	 */
+	@Override
 	public boolean containsKey(final Object key) {
 		return execute(new GemfireCallback<Boolean>() {
  			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
@@ -104,6 +108,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#containsKeyOnServer(java.lang.Object)
+	 */
+	@Override
 	public boolean containsKeyOnServer(final Object key) {
 		return execute(new GemfireCallback<Boolean>() {
 			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
@@ -112,6 +120,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#containsValue(java.lang.Object)
+	 */
+	@Override
 	public boolean containsValue(final Object value) {
 		return execute(new GemfireCallback<Boolean>() {
 			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
@@ -120,6 +132,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#containsValueForKey(java.lang.Object)
+	 */
+	@Override
 	public boolean containsValueForKey(final Object key) {
 		return execute(new GemfireCallback<Boolean>() {
 			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
@@ -128,6 +144,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#create(K, V)
+	 */
+	@Override
 	public <K, V> void create(final K key, final V value) {
 		execute(new GemfireCallback<Object>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -138,6 +158,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#get(K)
+	 */
+	@Override
 	public <K, V> V get(final K key) {
 		return execute(new GemfireCallback<V>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -147,6 +171,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#put(K, V)
+	 */
+	@Override
 	public <K, V> V put(final K key, final V value) {
 		return execute(new GemfireCallback<V>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -156,6 +184,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#putIfAbsent(K, V)
+	 */
+	@Override
 	public <K, V> V putIfAbsent(final K key, final V value) {
 		return execute(new GemfireCallback<V>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -165,6 +197,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#remove(K)
+	 */
+	@Override
 	public <K, V> V remove(final K key) {
 		return execute(new GemfireCallback<V>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -174,6 +210,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#replace(K, V)
+	 */
+	@Override
 	public <K, V> V replace(final K key, final V value) {
 		return execute(new GemfireCallback<V>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -183,6 +223,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#replace(K, V, V)
+	 */
+	@Override
 	public <K, V> boolean replace(final K key, final V oldValue, final V newValue) {
 		return execute(new GemfireCallback<Boolean>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -192,6 +236,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#getAll(java.util.Collection)
+	 */
+	@Override
 	public <K, V> Map<K, V> getAll(final Collection<?> keys) {
 		return execute(new GemfireCallback<Map<K, V>>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -201,6 +249,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#putAll(java.util.Map)
+	 */
+	@Override
 	public <K, V> void putAll(final Map<? extends K, ? extends V> map) {
 		execute(new GemfireCallback<Object>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -211,17 +263,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
-	/**
-	 * Shortcut for {@link Region#query(String)} method. Filters the values of this region using the predicate given as a string with the syntax of the WHERE clause of the query language. 
-	 * The predefined variable this may be used inside the predicate to denote the current element being filtered. 
-	 * This method evaluates the passed in where clause and returns results. It is supported on servers as well as clients. 
-	 * When executed on a client, this method always runs on the server and returns results. 
-	 * When invoking this method from the client, applications can pass in a where clause or a complete query. 
-
-	 * @see Region#query(String)
-	 * @param query A query language boolean query predicate. 
-	 * @return A SelectResults containing the values of this Region that match the predicate. 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#query(java.lang.String)
 	 */
+	@Override
 	public <E> SelectResults<E> query(final String query) {
 		return execute(new GemfireCallback<SelectResults<E>>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -231,23 +276,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
-	/**
-	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return multiple results; for queries that return only one
-	 * element use {@link #findUnique(String, Object...)}.
-	 * <p/>
-	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
-	 * 
-	 * <p/>Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
-	 * is being used.
-	 * 
-	 * @see QueryService#newQuery(String)
-	 * @see Query#execute(Object[])
-	 * @see SelectResults
-	 * @param query GemFire query
-	 * @param params Values that are bound to parameters (such as $1) in this query. 
-	 * @return A {@link SelectResults} instance holding the objects matching the query
-	 * @throws InvalidDataAccessApiUsageException in case the query returns a single result (not a {@link SelectResults}).
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#find(java.lang.String, java.lang.Object)
 	 */
+	@Override
 	public <E> SelectResults<E> find(final String query, final Object... params)
 			throws InvalidDataAccessApiUsageException {
 		return execute(new GemfireCallback<SelectResults<E>>() {
@@ -265,22 +297,10 @@ public class GemfireTemplate extends GemfireAccessor {
 		});
 	}
 
-	/**
-	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return a single result; for queries that return multiple
-	 * elements use {@link #find(String, Object...)}.
-	 * <p/>
-	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
-	 * 
-	 * <p/>Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
-	 * is being used.
-	 * 
-	 * @see QueryService#newQuery(String)
-	 * @see Query#execute(Object[])
-	 * @param query GemFire query
-	 * @param params Values that are bound to parameters (such as $1) in this query.
-	 * @return The (single) object that represents the result of the query.
-	 * @throws InvalidDataAccessApiUsageException in case the query returns multiple objects (through {@link SelectResults}). 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#findUnique(java.lang.String, java.lang.Object)
 	 */
+	@Override
 	public <T> T findUnique(final String query, final Object... params) throws InvalidDataAccessApiUsageException {
 		return execute(new GemfireCallback<T>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -289,8 +309,13 @@ public class GemfireTemplate extends GemfireAccessor {
 				Query q = queryService.newQuery(query);
 				Object result = q.execute(params);
 				if (result instanceof SelectResults) {
-					throw new InvalidDataAccessApiUsageException(
+					SelectResults<T> selectResults = (SelectResults<T>)result;
+					if (selectResults.asList().size() == 1) {
+						result = selectResults.iterator().next();
+					} else {
+						throw new InvalidDataAccessApiUsageException(
 							"Result object returned from GemfireCallback isn't unique: [" + result + "]");
+					}
 				}
 				return (T) result;
 			}
@@ -314,19 +339,18 @@ public class GemfireTemplate extends GemfireAccessor {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#execute(org.springframework.data.gemfire.GemfireCallback)
+	 */
+	@Override
 	public <T> T execute(GemfireCallback<T> action) throws DataAccessException {
 		return execute(action, isExposeNativeRegion());
 	}
 
-	/**
-	 * Execute the action specified by the given action object within a
-	 * Region.
-	 * @param action callback object that specifies the Gemfire action
-	 * @param exposeNativeRegion whether to expose the native
-	 * GemFire region to callback code
-	 * @return a result object returned by the action, or <code>null</code>
-	 * @throws org.springframework.dao.DataAccessException in case of GemFire errors
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#execute(org.springframework.data.gemfire.GemfireCallback, boolean)
 	 */
+	@Override
 	public <T> T execute(GemfireCallback<T> action, boolean exposeNativeRegion) throws DataAccessException {
 		Assert.notNull(action, "Callback object must not be null");
 		try {

@@ -26,9 +26,12 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.CollectionUtils;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.internal.ResultsBag;
 import com.gemstone.gemfire.pdx.JSONFormatter;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
@@ -84,7 +87,6 @@ public class JSONRegionAdvice {
 			+ "execution(* com.gemstone.gemfire.cache.Region.putIfAbsent(..)) ||"
 			+ "execution(* com.gemstone.gemfire.cache.Region.replace(..))")
 	public Object put(ProceedingJoinPoint pjp) {
-		System.out.println("intercepted " + pjp.getSignature().getName());
 
 		boolean JSONRegion = isIncludedSONRegion(pjp.getTarget());
 		Object retVal = null;
@@ -94,6 +96,8 @@ public class JSONRegionAdvice {
 				Object val = newArgs[1];
 				newArgs[1] = convertArgumentToPdxInstance(val);
 				retVal = pjp.proceed(newArgs);
+				log.debug("converting " + retVal + " to JSON string");
+				retVal = convertPdxInstanceToJSONString(retVal);
 			} else {
 				retVal = pjp.proceed();
 			}
@@ -128,22 +132,22 @@ public class JSONRegionAdvice {
 	}
 
 	@Around("execution(* com.gemstone.gemfire.cache.Region.get(..)) "
-			+ "|| execution(* com.gemstone.gemfire.cache.Region.selectValue(..))")
+			+ "|| execution(* com.gemstone.gemfire.cache.Region.selectValue(..))"
+			+ "|| execution(* com.gemstone.gemfire.cache.Region.remove(..))")
 	public Object get(ProceedingJoinPoint pjp) {
 		Object retVal = null;
 		try {
 			if (isIncludedSONRegion(pjp.getTarget())) {
 				retVal = pjp.proceed();
 				log.debug("converting " + retVal + " to JSON string");
-				return convertPdxInstanceToJSONString(retVal);
+				retVal =  convertPdxInstanceToJSONString(retVal);
 			} else {
-				return pjp.proceed();
+				retVal =  pjp.proceed();
 			}
 		} catch (Throwable t) {
 			handleThrowable(t);
 		}
 		return retVal;
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -185,6 +189,35 @@ public class JSONRegionAdvice {
 		}
 		return result;
 	}
+	
+	@Around("execution(* org.springframework.data.gemfire.GemfireOperations.find(..)) " + 
+			"|| execution(* org.springframework.data.gemfire.GemfireOperations.findUnique(..)) " + 
+			"|| execution(* org.springframework.data.gemfire.GemfireOperations.query(..))")
+	public Object templateQuery(ProceedingJoinPoint pjp) {
+		GemfireTemplate template = (GemfireTemplate) pjp.getTarget();
+		boolean jsonRegion = isIncludedSONRegion(template.getRegion());
+		Object retVal = null;
+		try {
+			if (jsonRegion) {
+				retVal = pjp.proceed();
+				if (retVal instanceof SelectResults && convertReturnedCollections ) {
+					ResultsBag resultsBag = new ResultsBag();
+					for (Object obj: (SelectResults<?>)retVal) {
+						resultsBag.add(convertPdxInstanceToJSONString(obj));
+					}
+					retVal = resultsBag;
+				} else {
+					retVal = convertPdxInstanceToJSONString(retVal);
+				}
+			} else {
+				retVal = pjp.proceed();
+			}
+		} catch (Throwable t) {
+			handleThrowable(t);
+		}
+		return retVal;
+	}
+
 
 	private PdxInstance convertArgumentToPdxInstance(Object value) {
 		PdxInstance val = null;
@@ -220,9 +253,9 @@ public class JSONRegionAdvice {
 		Object result = retVal;
 		if (retVal != null && retVal instanceof PdxInstance) {
 			result = JSONFormatter.toJSON((PdxInstance) retVal);
-		}
-		if (!prettyPrint) {
-			result = flattenString(result);
+			if (!prettyPrint) {
+				result = flattenString(result);
+			}
 		}
 		return result;
 	}

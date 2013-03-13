@@ -20,6 +20,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 
 /**
@@ -30,7 +31,7 @@ public class GemfireDaoSupportTests extends TestCase {
 
 	@SuppressWarnings("rawtypes")
 	public void testGemfireDaoSupportWithTemplate() throws Exception {
-		GemfireTemplate template = new GemfireTemplate();
+		GemfireOperations template = new GemfireTemplate();
 		final List test = new ArrayList();
 		GemfireDaoSupport dao = new GemfireDaoSupport() {
 			@SuppressWarnings("unchecked")

@@ -52,7 +52,7 @@ public class GemfireTemplateTest  {
 
 	private static final String SINGLE_QUERY = "(select * from /simple).size";
 	
-	@Autowired GemfireTemplate template;
+	@Autowired GemfireOperations template;
 	
 	@SuppressWarnings("rawtypes")
 	@Before 

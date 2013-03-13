@@ -17,7 +17,7 @@
   </note>
 
   <section id="new-in-1-3-0">
-    <title>New in the 1.3.0.Release</title>
+    <title>New in the 1.3.0 Release</title>
 
     <itemizedlist>
       <listitem>
@@ -29,9 +29,25 @@
       </listitem>
 
       <listitem>
-        <para>A <tag>&lt;datasource&gt;</tag> tag has been added to the
+        <para>We have added a <tag>&lt;datasource&gt;</tag> tag to the
         <emphasis>gfe-data</emphasis> XML namespace. This simplifies
-        establishing a basic client <link linkend="data-access:datasource">connection</link> to a GemFire data grid.</para>
+        establishing a basic client <link
+        linkend="data-access:datasource">connection</link> to a GemFire data
+        grid.</para>
+      </listitem>
+
+      <listitem>
+        <para>To <link linkend="bootstrap:region:json">support JSON</link> features introduced in GemFire 7.0, we have
+        added a ,<tag>&lt;json-region-autoproxy&gt;</tag> tag to the <emphasis>gfe-data</emphasis> XML
+        namespace, enabling Spring AOP to perform the necessary conversions
+        automatically on region operations.</para>
+      </listitem>
+
+      <listitem>
+        <para>Upgraded to GemFire 7.0.1 and added namespace support for new AsyncEventQueue attributes</para>
+      </listitem>
+      <listitem>
+        <para>Added support for setting subscription interest policy on regions</para>
       </listitem>
     </itemizedlist>
   </section>

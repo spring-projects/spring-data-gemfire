@@ -22,6 +22,9 @@
 	<!-- 	<bean class="org.springframework.data.gemfire.support.JSONRegionAdvice" /> -->
 
 	<gfe:cache properties-ref="props"/>
-	<gfe:replicated-region id="someRegion" />
-
+	<gfe:replicated-region id="someRegion"/>
+	
+	<bean id="template" class="org.springframework.data.gemfire.GemfireTemplate">
+		<constructor-arg ref="someRegion"/>
+	</bean>
 </beans>
