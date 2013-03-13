@@ -18,8 +18,12 @@ package org.springframework.data.gemfire.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.ManagedSet;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -61,9 +65,16 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 		}
 
 
-		ParsingUtils.setPropertyValue(element, builder, "phase", "phase");
-		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
+		ParsingUtils.setPropertyValue(element, builder, "phase");
+		ParsingUtils.setPropertyValue(element, builder, "pool-name");
 
+		// Register the Id if one has been provided.
+		String id = element.getAttribute("id");
+		if( StringUtils.hasText(id)) {
+			//BeanDefinitionHolder holder = new BeanDefinitionHolder(builder.getBeanDefinition(), id, null);
+			//BeanDefinitionReaderUtils.registerBeanDefinition(holder,  parserContext.getRegistry());
+		}
+		
 		postProcess(builder, element);
 
 		// parse nested listeners
@@ -72,7 +83,7 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 		if (!listDefs.isEmpty()) {
 			ManagedSet<BeanDefinition> listeners = new ManagedSet<BeanDefinition>(listDefs.size());
 			for (Element listElement : listDefs) {
-				listeners.add(parseListener(listElement));
+				listeners.add(parseListener(listElement, parserContext, builder));
 			}
 
 			builder.addPropertyValue("queryListeners", listeners);
@@ -81,7 +92,7 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 
 	@Override
 	protected boolean isEligibleAttribute(String attributeName) {
-		return (!"phase".equals(attributeName));
+		return (!"phase".equals(attributeName) | !"id".equals(attributeName));
 	}
 
 	/**
@@ -90,8 +101,8 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 	 * @param element
 	 * @return
 	 */
-	private BeanDefinition parseListener(Element element) {
-
+	private BeanDefinition parseListener(Element element, ParserContext parserContext, BeanDefinitionBuilder definition) {
+		
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ContinuousQueryListenerAdapter.class);
 		builder.addConstructorArgReference(element.getAttribute("ref"));
 
@@ -106,7 +117,7 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 		if (StringUtils.hasText(attr)) {
 			defBuilder.addConstructorArgValue(attr);
 		}
-
+		
 		defBuilder.addConstructorArgValue(element.getAttribute("query"));
 		defBuilder.addConstructorArgValue(builder.getBeanDefinition());
 
@@ -117,9 +128,9 @@ class GemfireListenerContainerParser extends AbstractSimpleBeanDefinitionParser 
 
 		return defBuilder.getBeanDefinition();
 	}
-
+	
 	@Override
 	protected boolean shouldGenerateId() {
-		return true;
+		return false;
 	}
 }
