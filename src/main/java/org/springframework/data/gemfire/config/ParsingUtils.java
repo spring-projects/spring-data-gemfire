@@ -48,6 +48,7 @@ import com.gemstone.gemfire.cache.Scope;
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author Lyndon Adams
  */
 abstract class ParsingUtils {
 	
@@ -256,6 +257,36 @@ abstract class ParsingUtils {
 		attrBuilder.addPropertyValue("evictionAttributes", evictionDefBuilder.getBeanDefinition());
 		return true;
 	}
+	
+	/**
+	 * Parses the subscription sub-element. Populates the given attribute factory
+	 * with the proper attributes.
+	 * 
+	 * @author Lyndon Adams
+	 * @param parserContext
+	 * @param element
+	 * @param attrBuilder
+	 * @return true if parsing actually occured, false otherwise
+	 */
+	static boolean parseSubscription(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
+		Element subscriptionElement = DomUtils.getChildElementByTagName(element, "subscription");
+
+		if (subscriptionElement == null)
+			return false;
+
+		BeanDefinitionBuilder subscriptionDefBuilder = BeanDefinitionBuilder
+				.genericBeanDefinition(SubscriptionAttributesFactoryBean.class);
+
+		// do manual conversion since the enum is not public
+		String attr = subscriptionElement.getAttribute("type");
+		if (StringUtils.hasText(attr)) {
+			subscriptionDefBuilder.addPropertyValue("type", SubscriptionType.valueOf(attr.toUpperCase()));
+		}
+
+		attrBuilder.addPropertyValue("subscriptionAttributes", subscriptionDefBuilder.getBeanDefinition());
+		return true;
+	}
+	
 
 	static void parseTransportFilters(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		Element transportFilterElement = DomUtils.getChildElementByTagName(element, "transport-filter");
