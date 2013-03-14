@@ -277,7 +277,7 @@ public class ContinuousQueryListenerContainer implements InitializingBean, Dispo
 			logger.warn("Execution of JMS event listener failed, and no ErrorHandler has been set.", ex);
 		}
 	}
-
+	
 	public void setBeanName(String name) {
 		this.beanName = name;
 	}

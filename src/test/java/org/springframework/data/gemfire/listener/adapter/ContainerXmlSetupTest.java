@@ -24,6 +24,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.gemfire.ForkUtil;
+import org.springframework.data.gemfire.listener.ContinuousQueryDefinition;
+import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -56,6 +58,9 @@ public class ContainerXmlSetupTest {
 
 		Cache cache = ctx.getBean("gemfireCache", Cache.class);
 		Pool pool = ctx.getBean("client", Pool.class);
+		
+		// Test getting container listener bean by ID
+		ctx.getBean("testContainerId");
 
 		CqQuery[] cqs = cache.getQueryService().getCqs();
 		CqQuery[] pcqs = pool.getQueryService().getCqs();
