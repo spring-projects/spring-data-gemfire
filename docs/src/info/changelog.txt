@@ -7,7 +7,8 @@ General
 * Added annotation support for GemFire functions
 * Added 'datasource' element to gfe-data namespace to simplify client connection
 * Added support for JSON
-See [release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?projectId=10462&version=13300)
+See [1.3.0.M1 release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?projectId=10462&version=13300)
+See [1.3.0 release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?projectId=10462&version=14023)
 
 Changes in version 1.2.1.RELEASE (2012-10-26)
 ---------------------------------------------
