@@ -24,7 +24,7 @@
 	 
 	<task:executor id="testTaskExecutor" />
 	 			
-	<gfe:cq-listener-container cache="gemfireCache" pool-name="client">
+	<gfe:cq-listener-container id="testContainerId" cache="gemfireCache" pool-name="client">
 		<!-- default handle method -->
 		<gfe:listener ref="testBean1" query="SELECT * from /test-cq"/>
 		<gfe:listener ref="testBean1" query="SELECT * from /test-cq" name="test-bean-1" method="handleQuery"/>

@@ -2016,21 +2016,29 @@ The name of the bean defining the GemFire cache (by default 'gemfireCache').
 			<xsd:documentation><![CDATA[
 Container for continuous query listeners. All listeners will be hosted by the same container.
 	      ]]></xsd:documentation>
-			<xsd:appinfo>
-				<tool:annotation>
-					<tool:exports
-						type="org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="listener" type="listenerType"
-					minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-			<xsd:attribute name="cache" type="xsd:string" default="gemfireCache">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports
+                        type="org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer" />
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="listener" type="listenerType"
+                    minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string" use="optional">
+                        <xsd:annotation>
+                                <xsd:documentation><![CDATA[
+The id of the listener (optional)
+                                    ]]></xsd:documentation>
+                            </xsd:annotation>
+         </xsd:attribute>
+            <xsd:attribute name="cache" type="xsd:string"
+                default="gemfireCache">
+                <xsd:annotation>
+                    <xsd:documentation><![CDATA[
 A reference (by name) to the GemFire cache bean. Default is "gemfireCache".
 	          ]]></xsd:documentation>
 					<xsd:appinfo>
