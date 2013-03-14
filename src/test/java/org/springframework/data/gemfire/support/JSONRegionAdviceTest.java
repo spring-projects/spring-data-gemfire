@@ -24,6 +24,7 @@ import javax.annotation.Resource;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,10 @@ public class JSONRegionAdviceTest {
 	@Autowired
 	GemfireOperations template;
 	
+	@Before
+	public void setUp() {
+		region.clear();
+	}
 	@Test
 	public void testPutString() {
 		String json = "{\"hello\":\"world\"}";

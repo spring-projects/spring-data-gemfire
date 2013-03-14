@@ -25,7 +25,7 @@
 	<task:executor id="testTaskExecutor" />
 	 			
 	<gfe:cq-listener-container id="testContainerId" cache="gemfireCache" pool-name="client">
-		<!-- default handle method -->	
+		<!-- default handle method -->
 		<gfe:listener ref="testBean1" query="SELECT * from /test-cq"/>
 		<gfe:listener ref="testBean1" query="SELECT * from /test-cq" name="test-bean-1" method="handleQuery"/>
 		<gfe:listener ref="testBean2" query="SELECT * from /test-cq" durable="false"/>
@@ -33,7 +33,7 @@
 	
 	<bean id="testBean1" class="org.springframework.data.gemfire.listener.GemfireMDP"/>
 	<bean id="testBean2" class="org.springframework.data.gemfire.listener.ThrowableEventListener"/>
-		
+	
 	<bean id="handler" class="org.springframework.data.gemfire.listener.StubErrorHandler"/>
 	
 </beans>
