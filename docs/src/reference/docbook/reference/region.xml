@@ -878,7 +878,7 @@ and a nested resolver declaration  --&gt;
     <note>Certain region operations, specifically those that use GemFire's proprietary Region.Entry such as entries(boolean), entrySet(boolean) and getEntry()
     type are not targeted for AOP advice. In addition, the entrySet() method which returns a Set&lt;java.util.Map.Entry&lt;?,?&gt;&gt; is not affected.</note>
     </para>
-    <para>This feature also works with seamlessly with GemfireTemplate operations, currently native QueryService operations are not supported.
+    <para>This feature also works with seamlessly with GemfireTemplate operations, provided that the template is declared as a Spring bean. Currently native QueryService operations are not supported.
     </para>
   </section>
 </section>
