@@ -44,6 +44,7 @@ import com.gemstone.gemfire.cache.Region;
  * for Gemfire.
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
 public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
@@ -164,7 +165,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 				String namedQueryName = queryMethod.getNamedQueryName();
 				if (namedQueries.hasQuery(namedQueryName)) {
 					return new StringBasedGemfireRepositoryQuery(namedQueries.getQuery(namedQueryName), queryMethod,
-							template);
+							template,false);
 				}
 
 				return new PartTreeGemfireRepositoryQuery(queryMethod, template);

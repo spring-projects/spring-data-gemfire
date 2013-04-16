@@ -32,11 +32,13 @@ import com.gemstone.gemfire.cache.query.internal.ResultsBag;
  * {@link GemfireRepositoryQuery} using plain {@link String} based OQL queries.
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
 public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
 	private static final String INVALID_EXECUTION = "Paging and modifying queries are not supported!";
 
+	private final boolean isCountProjection;
 	private final QueryString query;
 	private final GemfireQueryMethod method;
 	private final GemfireTemplate template;
@@ -49,7 +51,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @param template must not be {@literal null}.
 	 */
 	public StringBasedGemfireRepositoryQuery(GemfireQueryMethod method, GemfireTemplate template) {
-		this(method.getAnnotatedQuery(), method, template);
+		this(method.getAnnotatedQuery(), method, template, null);
 	}
 
 	/**
@@ -61,7 +63,8 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @param method must not be {@literal null}.
 	 * @param template must not be {@literal null}.
 	 */
-	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod method, GemfireTemplate template) {
+	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod method, GemfireTemplate template,
+			Boolean isCountProjection) {
 
 		super(method);
 
@@ -70,6 +73,11 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		this.query = new QueryString(StringUtils.hasText(query) ? query : method.getAnnotatedQuery());
 		this.method = method;
 		this.template = template;
+		if (isCountProjection == null && StringUtils.hasText(method.getAnnotatedQuery())) {
+			this.isCountProjection = method.getAnnotatedQuery().toLowerCase().contains("count(*)");
+		} else {
+			this.isCountProjection = isCountProjection;
+		}
 
 		if (method.isPageQuery() || method.isModifyingQuery()) {
 			throw new IllegalStateException(INVALID_EXECUTION);
@@ -96,7 +104,6 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		if (method.isCollectionQuery()) {
 			return result;
 		} else if (method.isQueryForEntity()) {
-
 			if (result.isEmpty()) {
 				return null;
 			} else if (result.size() == 1) {
@@ -104,9 +111,16 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 			} else {
 				throw new IncorrectResultSizeDataAccessException(1, result.size());
 			}
+		} else if (isCountProjection) {
+			int count = (Integer) result.iterator().next();
 
+			if (long.class.isAssignableFrom(method.getReturnedObjectType())) {
+				return (long) count;
+			} else {
+				return count;
+			}
 		} else {
-			throw new IllegalStateException(INVALID_EXECUTION);
+			throw new IllegalStateException("Unsupported query: " + query.toString());
 		}
 	}
 
@@ -129,5 +143,13 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		}
 
 		return source.getClass().isArray() ? CollectionUtils.arrayToList(source) : Collections.singleton(source);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.repository.query.GemfireRepositoryQuery#isCountQuery()
+	 */
+	@Override
+	protected boolean isCountQuery() {
+		return this.isCountProjection;
 	}
 }

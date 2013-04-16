@@ -16,11 +16,13 @@
 package org.springframework.data.gemfire.repository.query;
 
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
+import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
 
 /**
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
 class QueryBuilder {
 
@@ -33,8 +35,8 @@ class QueryBuilder {
 		this.query = source;
 	}
 
-	public QueryBuilder(GemfirePersistentEntity<?> entity) {
-		this(String.format("SELECT * FROM /%s %s", entity.getRegionName(), DEFAULT_ALIAS));
+	public QueryBuilder(GemfirePersistentEntity<?> entity, PartTree tree) {
+		this(String.format(tree.isCountProjection()? "SELECT count(*) FROM /%s %s":"SELECT * FROM /%s %s", entity.getRegionName(), DEFAULT_ALIAS));
 	}
 
 	public QueryString create(Predicate predicate) {

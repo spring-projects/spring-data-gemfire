@@ -30,6 +30,7 @@ import com.gemstone.gemfire.cache.Region;
  * Value object to work with OQL query strings.
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
 class QueryString {
 
@@ -56,7 +57,18 @@ class QueryString {
 	 * @param domainClass must not be {@literal null}.
 	 */
 	public QueryString(Class<?> domainClass) {
-		this(String.format("SELECT * FROM /%s", domainClass.getSimpleName()));
+		this(domainClass, false);
+	}
+
+	/**
+	 * Creates a {@literal SELECT} query for the given domain class.
+	 * 
+	 * @param domainClass must not be {@literal null}.
+	 * @param isCountQuery indicates if this is a count query
+	 */
+	public QueryString(Class<?> domainClass, boolean isCountQuery) {
+		this(String
+				.format(isCountQuery ? "SELECT count(*) FROM /%s" : "SELECT * FROM /%s", domainClass.getSimpleName()));
 	}
 
 	/**
@@ -66,7 +78,7 @@ class QueryString {
 	 * @param region must not be {@literal null}.
 	 * @return
 	 */
-	public QueryString forRegion(Class<?> domainClass, Region<?, ?> region) {		
+	public QueryString forRegion(Class<?> domainClass, Region<?, ?> region) {
 		return new QueryString(query.replaceAll(REGION_PATTERN, region.getName()));
 	}
 

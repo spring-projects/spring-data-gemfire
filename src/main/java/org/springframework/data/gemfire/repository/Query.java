@@ -31,4 +31,5 @@ import java.lang.annotation.Target;
 public @interface Query {
 
 	String value() default "";
+
 }

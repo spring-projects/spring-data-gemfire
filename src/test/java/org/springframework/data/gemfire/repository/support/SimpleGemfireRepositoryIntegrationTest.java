@@ -55,21 +55,20 @@ public class SimpleGemfireRepositoryIntegrationTest {
 
 	@Autowired
 	GemfireTemplate template;
-	
-	@Resource(name="simple")
-	Region<?,?> simpleRegion;
+
+	@Resource(name = "simple")
+	Region<?, ?> simpleRegion;
 
 	SimpleGemfireRepository<Person, Long> repository;
-	
- 
+
 	RegionClearListener regionClearListener;
 
 	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() {
+		simpleRegion.clear();
 		regionClearListener = new RegionClearListener();
 		simpleRegion.getAttributesMutator().addCacheListener(regionClearListener);
-		
 		EntityInformation<Person, Long> information = new ReflectionEntityInformation<Person, Long>(Person.class);
 		repository = new SimpleGemfireRepository<Person, Long>(template, information);
 	}
@@ -91,7 +90,7 @@ public class SimpleGemfireRepositoryIntegrationTest {
 		assertThat(repository.findOne(person.id), is(nullValue()));
 		assertThat(repository.findAll().size(), is(0));
 	}
-	
+
 	@Test
 	public void testDeleteAllFiresClearEvent() {
 		assertFalse(regionClearListener.eventFired);
@@ -106,7 +105,8 @@ public class SimpleGemfireRepositoryIntegrationTest {
 
 		template.put(1L, person);
 
-		SelectResults<Person> persons = template.find("SELECT * FROM /simple s WHERE s.firstname = $1", person.firstname);
+		SelectResults<Person> persons = template.find("SELECT * FROM /simple s WHERE s.firstname = $1",
+				person.firstname);
 
 		assertThat(persons.size(), is(1));
 		assertThat(persons.iterator().next(), is(person));
@@ -127,10 +127,11 @@ public class SimpleGemfireRepositoryIntegrationTest {
 		assertThat(result, hasItems(carter, leroi));
 		assertThat(result, not(hasItems(dave)));
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public static class RegionClearListener extends CacheListenerAdapter {
 		public boolean eventFired;
+
 		@Override
 		public void afterRegionClear(RegionEvent ev) {
 			eventFired = true;

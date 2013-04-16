@@ -17,15 +17,16 @@ package org.springframework.data.gemfire.repository.sample;
 
 import java.util.Collection;
 
+import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
 /**
  * Sample repository interface managing {@link Person}s.
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
-public interface PersonRepository extends CrudRepository<Person, Long> {
+public interface PersonRepository extends GemfireRepository<Person, Long> {
 
 	@Query("SELECT * FROM /Person p WHERE p.firstname = $1")
 	Collection<Person> findByFirstnameAnnotated(String firstname);
@@ -52,4 +53,11 @@ public interface PersonRepository extends CrudRepository<Person, Long> {
 	Collection<Person> findByLastnameEndingWith(String lastname);
 
 	Collection<Person> findByFirstnameContaining(String firstname);
+
+	long countByFirstname(String firstname);
+
+	int countByLastname(String lastname);
+
+	@Query("SELECT count(*) FROM /Person p WHERE p.firstname = $1")
+	int countFirstNameManual(String firstName);
 }

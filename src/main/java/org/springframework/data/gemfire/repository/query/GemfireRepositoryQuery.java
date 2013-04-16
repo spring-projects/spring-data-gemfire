@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
  * Base class for GemFire specific {@link RepositoryQuery} implementations.
  * 
  * @author Oliver Gierke
+ * @author David Turanski
  */
 abstract class GemfireRepositoryQuery implements RepositoryQuery {
 
@@ -47,4 +48,6 @@ abstract class GemfireRepositoryQuery implements RepositoryQuery {
 	public QueryMethod getQueryMethod() {
 		return this.queryMethod;
 	}
+	
+	protected abstract boolean isCountQuery();
 }
