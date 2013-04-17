@@ -23,4 +23,9 @@
             <gfe:gateway-endpoint port="2345" host="host2" endpoint-id="endpoint2"/>
         </gfe:gateway>
     </gfe:gateway-hub>
+ 
+ <!-- SGF-169 -->   
+    <gfe:gateway-hub id="uniDirectionalHub" manual-start="true" port="22222" startup-policy="none">
+	</gfe:gateway-hub>
+ 
 </beans>

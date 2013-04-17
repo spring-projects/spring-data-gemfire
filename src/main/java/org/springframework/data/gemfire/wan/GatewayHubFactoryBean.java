@@ -84,7 +84,7 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 		}
 
 		Assert.notNull(cache.getGatewayHub(name));
-		
+
 		if (bindAddress != null) {
 			gatewayHub.setBindAddress(bindAddress);
 		}
@@ -102,6 +102,49 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 		if (maximumTimeBetweenPings != null) {
 			gatewayHub.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
 		}
+		
+		if (!CollectionUtils.isEmpty(gateways)) {
+			configureGateways();
+		}
+		
+		if (gatewayHub.getManualStart() == false) {
+			try {
+				gatewayHub.start();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	public void setPort(Integer port) {
+		this.port = port;
+	}
+
+	public void setBindAddress(String bindAddress) {
+		this.bindAddress = bindAddress;
+	}
+
+	public void setMaximumTimeBetweenPings(Integer maximumTimeBetweenPings) {
+		this.maximumTimeBetweenPings = maximumTimeBetweenPings;
+	}
+
+	public void setSocketBufferSize(Integer socketBufferSize) {
+		this.socketBufferSize = socketBufferSize;
+	}
+
+	public void setStartupPolicy(String startupPolicy) {
+		this.startupPolicy = startupPolicy;
+	}
+
+	public void setManualStart(Boolean manualStart) {
+		this.manualStart = manualStart;
+	}
+
+	public void setGateways(List<GatewayProxy> gateways) {
+		this.gateways = gateways;
+	}
+	
+	private void configureGateways() {
 		for (GatewayProxy gateway : gateways) {
 			Gateway gw = gatewayHub.addGateway(
 					gateway.getId(),
@@ -118,8 +161,8 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 				}
 			}
 			if (gateway.getOrderPolicy() != null) {
-				Assert.isTrue(validOrderPolicyValues.contains(gateway.getOrderPolicy()), "The value of order policy:'"
-						+ gateway.getOrderPolicy() + "' is invalid");
+				Assert.isTrue(validOrderPolicyValues.contains(gateway.getOrderPolicy()),
+						"The value of order policy:'" + gateway.getOrderPolicy() + "' is invalid");
 				gw.setOrderPolicy(OrderPolicy.valueOf(gateway.getOrderPolicy()));
 			}
 			if (gateway.getSocketBufferSize() != null) {
@@ -157,40 +200,5 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 				}
 			}
 		}
-		if (gatewayHub.getManualStart() == false) {
-			try {
-				gatewayHub.start();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	public void setPort(Integer port) {
-		this.port = port;
-	}
-
-	public void setBindAddress(String bindAddress) {
-		this.bindAddress = bindAddress;
-	}
-
-	public void setMaximumTimeBetweenPings(Integer maximumTimeBetweenPings) {
-		this.maximumTimeBetweenPings = maximumTimeBetweenPings;
-	}
-
-	public void setSocketBufferSize(Integer socketBufferSize) {
-		this.socketBufferSize = socketBufferSize;
-	}
-
-	public void setStartupPolicy(String startupPolicy) {
-		this.startupPolicy = startupPolicy;
-	}
-
-	public void setManualStart(Boolean manualStart) {
-		this.manualStart = manualStart;
-	}
-
-	public void setGateways(List<GatewayProxy> gateways) {
-		this.gateways = gateways;
 	}
 }
