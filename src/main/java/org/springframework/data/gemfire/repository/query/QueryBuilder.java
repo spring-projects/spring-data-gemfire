@@ -35,8 +35,8 @@ class QueryBuilder {
 		this.query = source;
 	}
 
-	public QueryBuilder(GemfirePersistentEntity<?> entity, PartTree tree) {
-		this(String.format(tree.isCountProjection()? "SELECT count(*) FROM /%s %s":"SELECT * FROM /%s %s", entity.getRegionName(), DEFAULT_ALIAS));
+	public QueryBuilder(GemfirePersistentEntity<?> entity) {
+		this(String.format("SELECT * FROM /%s %s", entity.getRegionName(), DEFAULT_ALIAS));
 	}
 
 	public QueryString create(Predicate predicate) {

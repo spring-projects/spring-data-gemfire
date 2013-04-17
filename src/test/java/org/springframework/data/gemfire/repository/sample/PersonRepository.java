@@ -53,11 +53,4 @@ public interface PersonRepository extends GemfireRepository<Person, Long> {
 	Collection<Person> findByLastnameEndingWith(String lastname);
 
 	Collection<Person> findByFirstnameContaining(String firstname);
-
-	long countByFirstname(String firstname);
-
-	int countByLastname(String lastname);
-
-	@Query("SELECT count(*) FROM /Person p WHERE p.firstname = $1")
-	int countFirstNameManual(String firstName);
 }

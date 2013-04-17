@@ -48,6 +48,4 @@ abstract class GemfireRepositoryQuery implements RepositoryQuery {
 	public QueryMethod getQueryMethod() {
 		return this.queryMethod;
 	}
-	
-	protected abstract boolean isCountQuery();
 }

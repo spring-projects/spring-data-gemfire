@@ -65,7 +65,7 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		QueryString query = new GemfireQueryCreator(tree, method.getPersistentEntity()).createQuery(parameterAccessor
 				.getSort());
 
-		RepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery(query.toString(), method, template,isCountQuery());
+		RepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery(query.toString(), method, template);
 
 		return repositoryQuery.execute(prepareStringParameters(parameters));
 	}
@@ -101,13 +101,5 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		}
 
 		return result;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.repository.query.GemfireRepositoryQuery#isCountQuery()
-	 */
-	@Override
-	protected boolean isCountQuery() {
-		return this.tree.isCountProjection();
 	}
 }

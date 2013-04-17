@@ -47,7 +47,7 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 
 		super(tree);
 
-		this.query = new QueryBuilder(entity,tree);
+		this.query = new QueryBuilder(entity);
 		this.indexes = new IndexProvider();
 	}
 

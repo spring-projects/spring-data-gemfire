@@ -165,7 +165,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 				String namedQueryName = queryMethod.getNamedQueryName();
 				if (namedQueries.hasQuery(namedQueryName)) {
 					return new StringBasedGemfireRepositoryQuery(namedQueries.getQuery(namedQueryName), queryMethod,
-							template,false);
+							template);
 				}
 
 				return new PartTreeGemfireRepositoryQuery(queryMethod, template);
