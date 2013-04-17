@@ -23,51 +23,46 @@ import com.gemstone.gemfire.cache.execute.Function;
  * @author David Turanski
  *
  */
-public class GemfireOnRegionFunctionTemplate  extends AbstractFunctionTemplate implements GemfireOnRegionOperations {
-	
+public class GemfireOnRegionFunctionTemplate extends AbstractFunctionTemplate implements GemfireOnRegionOperations {
+
 	private Region<?, ?> region;
-	 	
+
 	/**
 	 *  
 	 * @param region
 	 */
-	public GemfireOnRegionFunctionTemplate(Region<?,?> region) {
-		 Assert.notNull(region, "Region cannot be null");
-		 this.region = region;
-	}
- 	
-	
- 	@Override
-	public <T> Iterable<T> execute(Function function, Set<?> keys, Object... args) {
-		return execute(new RegionFunctionExecution(region)
-				.setKeys(keys)
-				.setFunction(function)
-				.setTimeout(timeout)
-				.setArgs(args) );
-	}
-	
-	
-	@Override
-	public <T> Iterable<T> execute(String functionId,  Set<?> keys, Object... args) {
-		return execute(new RegionFunctionExecution(region)
-				.setKeys(keys)
-				.setFunctionId(functionId)
-				.setTimeout(timeout)
-				.setArgs(args)  );
-	}
-	
-	@Override
-	public <T> T executeAndextract(String functionId, Set<?> keys, Object... args) {
-		return this.<T> executeAndExtract(new RegionFunctionExecution(region)
-				.setKeys(keys)
-				.setFunctionId(functionId)
-				.setTimeout(timeout)
-				.setArgs(args) );
+	public GemfireOnRegionFunctionTemplate(Region<?, ?> region) {
+		Assert.notNull(region, "Region cannot be null");
+		this.region = region;
 	}
 
 	@Override
-	protected AbstractFunctionExecution getFunctionExecution() {		 
+	public <T> Iterable<T> execute(Function function, Set<?> keys, Object... args) {
+		return execute(new RegionFunctionExecution(region).setKeys(keys).setFunction(function).setTimeout(timeout)
+				.setArgs(args));
+	}
+
+	@Override
+	public <T> Iterable<T> execute(String functionId, Set<?> keys, Object... args) {
+		return execute(new RegionFunctionExecution(region).setKeys(keys).setFunctionId(functionId).setTimeout(timeout)
+				.setArgs(args));
+	}
+
+	@Override
+	public <T> T executeAndextract(String functionId, Set<?> keys, Object... args) {
+		return this.<T> executeAndExtract(new RegionFunctionExecution(region).setKeys(keys).setFunctionId(functionId)
+				.setTimeout(timeout).setArgs(args));
+	}
+
+	@Override
+	protected AbstractFunctionExecution getFunctionExecution() {
 		return new RegionFunctionExecution(this.region);
+	}
+
+	@Override
+	public void executeWithNoResult(String functionId, Set<?> keys, Object... args) {
+		execute(new RegionFunctionExecution(region).setKeys(keys).setFunctionId(functionId).setTimeout(timeout)
+				.setArgs(args), false);
 	}
 
 }

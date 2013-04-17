@@ -50,6 +50,13 @@ public interface GemfireFunctionOperations {
 	public abstract <T> Iterable<T> execute(String functionId, Object... args);
 	
 	/**
+	 * Execute a function registered with an ID with no return value
+	 * @param functionId the function ID
+	 * @param args the calling arguments
+	 */
+	public void executeWithNoResult(String functionId, Object... args);
+	
+	/**
 	 * Execute a function registered with an ID and with an expected singleton result
 	 * @param functionId the function ID
 	 * @param args the calling arguments

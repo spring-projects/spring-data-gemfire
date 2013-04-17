@@ -70,6 +70,14 @@ public class FunctionIntegrationTests {
 	}
 	
 	@Test
+	public void testVoidReturnType() {
+		GemfireOnRegionOperations template = new GemfireOnRegionFunctionTemplate(region);
+		//Either way should work but the first one traps an exception if there is a result. 
+		template.execute("noResult");
+		template.executeWithNoResult("noResult");
+	}
+	
+	@Test
 	public void testOnRegionFunctionExecution() {
 		
 		GemfireOnRegionOperations template = new GemfireOnRegionFunctionTemplate(region);
@@ -118,6 +126,8 @@ public class FunctionIntegrationTests {
 		Object result = template.executeAndExtract("arrays",new int[]{1,2,3,4,5});
 		assertTrue(result.getClass().getName(),result instanceof int[]);
 	}
+	
+
 	/*
 	 * This gets wrapped in a GemFire Function and registered on the forked server.
 	 */
@@ -151,8 +161,13 @@ public class FunctionIntegrationTests {
 		}
 	    
 	    @GemfireFunction(id="arrays",batchSize=2)  
-	    	public int[] collections(int[] args) {
+	    public int[] collections(int[] args) {
 				return args;
+	    }
+	    
+	    @GemfireFunction
+	    public void noResult() {
+	    	
 	    }
 	}
 }

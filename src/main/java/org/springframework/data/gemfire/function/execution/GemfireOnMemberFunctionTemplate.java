@@ -50,5 +50,4 @@ public class GemfireOnMemberFunctionTemplate  extends AbstractFunctionTemplate {
 		}  
 		return new DistributedMemberFunctionExecution(this.distributedMember);
 	}
-	
 }

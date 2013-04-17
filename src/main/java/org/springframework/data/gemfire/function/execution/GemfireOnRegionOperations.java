@@ -25,6 +25,7 @@ public interface GemfireOnRegionOperations extends GemfireFunctionOperations {
 
 	public abstract <T> Iterable<T> execute(String functionId, Set<?> keys, Object... args);
 	public abstract <T> Iterable<T> execute(Function function, Set<?> keys, Object... args);
+	public abstract void executeWithNoResult(String functionId, Set<?> keys, Object... args);
 	public abstract <T> T executeAndextract(String functionId, Set<?> keys, Object... args);
 
 }
