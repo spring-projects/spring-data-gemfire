@@ -147,16 +147,15 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 			throw new NoTransactionException(
 					"No transaction associated with the current thread; are there multiple transaction managers ?", ex);
 		}
-		catch (TransactionException ex) {
+		
+		catch (com.gemstone.gemfire.cache.TransactionException ex) {
 			throw new GemfireTransactionCommitException("Unexpected failure on commit of Cache local transaction", ex);
 		}
 	}
 
 	@Override
 	protected void doRollback(DefaultTransactionStatus status) throws TransactionException {
-		// CacheTransactionObject txObject = (CacheTransactionObject)
-		// status.getTransaction();
-		if (status.isDebug()) {
+ 		if (status.isDebug()) {
 			logger.debug("Rolling back Cache local transaction for [" + cache + "]");
 		}
 		try {
