@@ -59,9 +59,9 @@ public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttr
 	public void setColocatedWith(String colocatedRegionFullPath) {
 		paf.setColocatedWith(colocatedRegionFullPath);
 	}
-	
+
 	public void setFixedPartitionAttributes(List<FixedPartitionAttributes> fixedPartitionAttributes) {
-		for (FixedPartitionAttributes fpa: fixedPartitionAttributes) {
+		for (FixedPartitionAttributes fpa : fixedPartitionAttributes) {
 			paf.addFixedPartitionAttributes(fpa);
 		}
 	}

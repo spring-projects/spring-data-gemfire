@@ -4,15 +4,21 @@
 	xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
 	<gfe:cache />
 	
+	<context:property-placeholder properties-ref="props"/>
+	<util:properties id="props">
+		<prop key="totalBuckets">4</prop>
+	</util:properties>
 	<gfe:partitioned-region id="simple" />
 	
-	<gfe:partitioned-region id="options" copies="1" total-buckets="4" name="redundant" close="true" destroy="false" statistics="true">
+	<gfe:partitioned-region id="options" copies="1" total-buckets="${totalBuckets}" name="redundant" close="true" destroy="false" statistics="true">
 		<gfe:partition-resolver>
 			<bean class="org.springframework.data.gemfire.SimplePartitionResolver"/>
 		</gfe:partition-resolver>

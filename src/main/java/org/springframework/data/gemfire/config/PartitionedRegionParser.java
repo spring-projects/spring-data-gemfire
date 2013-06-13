@@ -30,6 +30,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.management.internal.cli.parser.ParserUtils;
+
 /**
  * Parser for &lt;partitioned-region;gt; definitions.
  * 
@@ -59,43 +61,14 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		// partition attributes
 		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder
 				.genericBeanDefinition(PartitionAttributesFactoryBean.class);
-
-		String attr = element.getAttribute("colocated-with");
-
-		if (StringUtils.hasText(attr)) {
-			parAttrBuilder.addPropertyValue("colocatedWith", attr);
-		}
-
-		attr = element.getAttribute("local-max-memory");
-		if (StringUtils.hasText(attr)) {
-			parAttrBuilder.addPropertyValue("localMaxMemory", Integer.valueOf(attr));
-		}
-
-		attr = element.getAttribute("copies");
-		if (StringUtils.hasText(attr)) {
-			parAttrBuilder.addPropertyValue("redundantCopies", Integer.valueOf(attr));
-		}
-
-		attr = element.getAttribute("recovery-delay");
-		if (StringUtils.hasText(attr)) {
-			parAttrBuilder.addPropertyValue("recoveryDelay", Long.valueOf(attr));
-		}
-
-		attr = element.getAttribute("startup-recovery-delay");
-
-		if (StringUtils.hasText(attr)) {
-			parAttrBuilder.addPropertyValue("startupRecoveryDelay", Long.valueOf(attr));
-		}
-
-		attr = element.getAttribute("total-max-memory");
-		if (StringUtils.hasText(attr)) {
-			parAttrBuilder.addPropertyValue("totalMaxMemory", Long.valueOf(attr));
-		}
-
-		attr = element.getAttribute("total-buckets");
-		if (StringUtils.hasText(attr)) {
-			parAttrBuilder.addPropertyValue("totalNumBuckets", Integer.valueOf(attr));
-		}
+		
+		ParsingUtils.setPropertyValue(element, parAttrBuilder, "colocated-with");
+		ParsingUtils.setPropertyValue(element, parAttrBuilder, "local-max-memory");
+		ParsingUtils.setPropertyValue(element, parAttrBuilder, "copies","redundantCopies");
+		ParsingUtils.setPropertyValue(element, parAttrBuilder, "recovery-delay");
+		ParsingUtils.setPropertyValue(element, parAttrBuilder, "startup-recovery-delay");
+		ParsingUtils.setPropertyValue(element, parAttrBuilder, "total-max-memory");
+		ParsingUtils.setPropertyValue(element, parAttrBuilder, "total-buckets","totalNumBuckets");
 		//
 		Element subElement = DomUtils.getChildElementByTagName(element, "partition-resolver");
 		// parse nested partition resolver element
