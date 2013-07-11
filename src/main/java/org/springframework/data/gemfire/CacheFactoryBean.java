@@ -241,8 +241,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected Object gatewayConflictResolver;
 
 	private void init() throws Exception {
-		// initialize locator
-		if (useBeanFactoryLocator) {
+
+		if (useBeanFactoryLocator && factoryLocator == null) {
 			factoryLocator = new GemfireBeanFactoryLocator();
 			factoryLocator.setBeanFactory(beanFactory);
 			factoryLocator.setBeanName(beanName);

@@ -34,27 +34,23 @@ import com.gemstone.gemfire.cache.Region;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
 public class XmlConfiguredFunctionExecutionIntegrationTests {
 	@Autowired
-	ApplicationContext context;	
-	
+	ApplicationContext context;
+
 	@Test
 	public void testProxyFactoryBeanCreated() throws Exception {
-		OnRegionFunctionProxyFactoryBean factoryBean = (OnRegionFunctionProxyFactoryBean)context.getBean("&testFunction");
-		Class<?> serviceInterface = TestUtils.readField("serviceInterface",factoryBean);
+		OnRegionFunctionProxyFactoryBean factoryBean = (OnRegionFunctionProxyFactoryBean) context
+				.getBean("&testFunction");
+		Class<?> serviceInterface = TestUtils.readField("serviceInterface", factoryBean);
 		assertEquals(serviceInterface, TestOnRegionFunction.class);
-		
-		Region<?,?> r1 = context.getBean("r1",Region.class);
-		
-		GemfireOnRegionFunctionTemplate template = TestUtils.readField("gemfireFunctionOperations",factoryBean);
-		
-		assertSame(r1, TestUtils.readField("region",template));
+
+		Region<?, ?> r1 = context.getBean("r1", Region.class);
+
+		GemfireOnRegionFunctionTemplate template = TestUtils.readField("gemfireFunctionOperations", factoryBean);
+
+		assertSame(r1, TestUtils.readField("region", template));
 	}
-	
+
 }
-
-
- 
-
-
