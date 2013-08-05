@@ -7,4 +7,5 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<gfe:cache use-bean-factory-locator="false" close="false"/>
+	<gfe:replicated-region id="region"/>
 </beans>

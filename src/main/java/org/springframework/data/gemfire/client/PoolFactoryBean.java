@@ -188,8 +188,9 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 			if (!pool.isDestroyed()) {
 				pool.releaseThreadLocalConnection();
 				pool.destroy(keepAlive);
-				if (log.isDebugEnabled())
+				if (log.isDebugEnabled()) {
 					log.debug("Destroyed pool '" + name + "'...");
+				}
 			}
 		}
 	}

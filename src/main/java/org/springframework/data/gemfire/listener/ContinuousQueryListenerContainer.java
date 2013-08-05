@@ -274,7 +274,7 @@ public class ContinuousQueryListenerContainer implements InitializingBean, Dispo
 			this.errorHandler.handleError(ex);
 		}
 		else if (logger.isWarnEnabled()) {
-			logger.warn("Execution of JMS event listener failed, and no ErrorHandler has been set.", ex);
+			logger.warn("Execution of the CQ event listener failed, and no ErrorHandler has been set.", ex);
 		}
 	}
 	

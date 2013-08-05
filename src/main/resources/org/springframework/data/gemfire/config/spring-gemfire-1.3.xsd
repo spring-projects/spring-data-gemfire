@@ -1874,6 +1874,8 @@ The name of the pool definition (by default "gemfirePool").]]></xsd:documentatio
 				use="optional" />
 			<xsd:attribute name="load-conditioning-interval" type="xsd:string"
 				use="optional" />
+			<xsd:attribute name="keep-alive" type="xsd:string"
+				use="optional" />
 			<xsd:attribute name="max-connections" type="xsd:string"
 				use="optional" />
 			<xsd:attribute name="min-connections" type="xsd:string"
