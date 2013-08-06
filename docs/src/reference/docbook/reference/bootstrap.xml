@@ -78,7 +78,7 @@
     <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans xmlns="http://www.springframework.org/schema/beans"
   xmlxsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xml<co id="gfe#ns#prefix"/>gfe="http://www.springframework.org/schema/gemfire"<co
+  xmlns:<co id="gfe#ns#prefix"/>gfe="http://www.springframework.org/schema/gemfire"<co
         id="gfe#ns#uri"/>
   xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -127,12 +127,13 @@
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans xmlns="<co id="gfe#default-ns#prefix"/>http://www.springframework.org/schema/gemfire"
     xmlxsi="http://www.w3.org/2001/XMLSchema-instance"
- xml<co id="gfe#default-ns#beans-prefix"/>beans="http://www.springframework.org/schema/beans"
+ <co id="gfe#default-ns#beans-prefix"/>
+ xmlns:beans="http://www.springframework.org/schema/beans"
  xsi:schemaLocation="
      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
      http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"&gt;
      
-    <co id="gfe#default-ns#beans-example"/>&lt;beabean id ... &gt;
+    <co id="gfe#default-ns#beans-example"/>&lt;beans:bean id ... &gt;
  
     <co id="gfe#default-ns#gfe-example"/>&lt;cache ...&gt;
 
