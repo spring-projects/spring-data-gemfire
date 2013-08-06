@@ -45,5 +45,5 @@ public @interface OnServers {
 	/**
 	 *  A reference to the cache
 	 */
-	String cache() default "gemfireCache";
+	String cache() default "";
 }

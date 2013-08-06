@@ -32,36 +32,32 @@ abstract class ServerBasedExecutionBeanDefinitionBuilder extends AbstractFunctio
 		super(configuration);
 	}
 
-	 
- 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getGemfireOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
 	protected BeanDefinitionBuilder getGemfireOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
-		
-		BeanDefinitionBuilder functionTemplateBuilder = BeanDefinitionBuilder.genericBeanDefinition(getGemfireOperationsClass());
-		
-		String pool = (String)configuration.getAttribute("pool");
-		String cache = (String)configuration.getAttribute("cache");
-		
-		Assert.state(!(StringUtils.hasText(pool) && StringUtils.hasText(cache)),
-				String.format("invalid configuration for interface %s. Cannot specify both 'pool' and 'cache'",
-						configuration.getFunctionExecutionInterface().getName())); 
-		
+
+		BeanDefinitionBuilder functionTemplateBuilder = BeanDefinitionBuilder
+				.genericBeanDefinition(getGemfireOperationsClass());
+
+		String pool = (String) configuration.getAttribute("pool");
+		String cache = (String) configuration.getAttribute("cache");
+
+		Assert.state(!(StringUtils.hasText(pool) && StringUtils.hasText(cache)), String.format(
+				"invalid configuration for interface %s. Cannot specify both 'pool' and 'cache'", configuration
+						.getFunctionExecutionInterface().getName()));
+
 		if (StringUtils.hasText(pool)) {
-			
 			functionTemplateBuilder.addConstructorArgReference(pool);
 		} else {
 			if (!StringUtils.hasText(cache)) {
 				cache = GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME;
 			}
-			
 			functionTemplateBuilder.addConstructorArgReference(cache);
 		}
 		return functionTemplateBuilder;
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getFunctionProxyFactoryBeanClass()
