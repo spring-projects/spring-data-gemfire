@@ -17,6 +17,8 @@ package org.springframework.data.gemfire;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.CollectionUtils;
@@ -29,14 +31,17 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * 
  */
 public class FunctionServiceFactoryBean implements FactoryBean<FunctionService>, InitializingBean {
-	static FunctionService functionService;
-
+	private static FunctionService functionService;
+	private static Log logger = LogFactory.getLog(FunctionServiceFactoryBean.class);
 	private List<Function> functions;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (!CollectionUtils.isEmpty(functions)) {
 			for (Function function : functions) {
+				if (logger.isInfoEnabled()) {
+					logger.info("registering function with ID: " + function.getId());
+				}
 				FunctionService.registerFunction(function);
 			}
 		}
