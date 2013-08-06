@@ -118,6 +118,7 @@
         message-sync-interval="1"
         search-timeout="300"
         close="false"
+        lazy-init="true"
     &gt;
      <co id="gfe#transaction#listener"/>&lt;gfe:transaction-listener ref="myTransactionListener"/&gt; 
 
@@ -136,6 +137,10 @@
         information regarding anything shown in this example, please consult
         the GemFire product <ulink
         url="http://www.vmware.com/support/pubs/vfabric-gemfire.html">documentation</ulink></para>
+        <para>The <literal>close</literal> attribute determines if the cache should be closed when the Spring application context is closed.
+        The default is <literal>true</literal> however for cases in which multiple application contexts use the cache (common in web applications), set this value to <literal>false</literal>.</para>
+        <para>The <literal>lazy-init</literal> attribute determines if the cache should be initialized before another bean references it.
+        The default is <literal>true</literal> however in some cases it may be convenient to set this value to <literal>false</literal>.</para>
       </callout>
 
       <callout arearefs="gfe#transaction#listener">

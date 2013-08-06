@@ -30,6 +30,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -72,9 +73,66 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @author Costin Leau
  * @author David Turanski
  */
-public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, DisposableBean,
-		FactoryBean<Cache>, PersistenceExceptionTranslator {
-	
+public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, InitializingBean,
+		DisposableBean, FactoryBean<Cache>, PersistenceExceptionTranslator {
+	protected final Log log = LogFactory.getLog(getClass());
+
+	protected Cache cache;
+
+	protected Resource cacheXml;
+
+	protected Properties properties;
+
+	protected ClassLoader beanClassLoader;
+
+	protected GemfireBeanFactoryLocator factoryLocator;
+
+	protected BeanFactory beanFactory;
+
+	protected String beanName;
+
+	protected boolean useBeanFactoryLocator = true;
+
+	protected boolean close = true;
+
+	// PDX options
+	protected Object pdxSerializer;
+
+	protected Boolean pdxPersistent;
+
+	protected Boolean pdxReadSerialized;
+
+	protected Boolean pdxIgnoreUnreadFields;
+
+	protected String pdxDiskStoreName;
+
+	protected Boolean copyOnRead;
+
+	protected Integer lockTimeout;
+
+	protected Integer lockLease;
+
+	protected Integer messageSyncInterval;
+
+	protected Integer searchTimeout;
+
+	protected List<TransactionListener> transactionListeners;
+
+	protected TransactionWriter transactionWriter;
+
+	protected Float evictionHeapPercentage;
+
+	protected Float criticalHeapPercentage;
+
+	protected DynamicRegionSupport dynamicRegionSupport;
+
+	protected List<JndiDataSource> jndiDataSources;
+
+	// Defined this way for backward compatibility
+	protected Object gatewayConflictResolver;
+
+	protected boolean lazyInitialize = true;
+
 	/**
 	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
 	 * 
@@ -184,62 +242,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 	}
 
-	protected final Log log = LogFactory.getLog(getClass());
-
-	protected Cache cache;
-
-	protected Resource cacheXml;
-
-	protected Properties properties;
-
-	protected ClassLoader beanClassLoader;
-
-	protected GemfireBeanFactoryLocator factoryLocator;
-
-	protected BeanFactory beanFactory;
-
-	protected String beanName;
-
-	protected boolean useBeanFactoryLocator = true;
-	
-	protected boolean close = true;
-
-	// PDX options
-	protected Object pdxSerializer;
-
-	protected Boolean pdxPersistent;
-
-	protected Boolean pdxReadSerialized;
-
-	protected Boolean pdxIgnoreUnreadFields;
-
-	protected String pdxDiskStoreName;
-
-	protected Boolean copyOnRead;
-
-	protected Integer lockTimeout;
-
-	protected Integer lockLease;
-
-	protected Integer messageSyncInterval;
-
-	protected Integer searchTimeout;
-
-	protected List<TransactionListener> transactionListeners;
-
-	protected TransactionWriter transactionWriter;
-
-	protected Float evictionHeapPercentage;
-
-	protected Float criticalHeapPercentage;
-
-	protected DynamicRegionSupport dynamicRegionSupport;
-
-	protected List<JndiDataSource> jndiDataSources;
-
-	// Defined this way for backward compatibility
-	protected Object gatewayConflictResolver;
-
 	private void init() throws Exception {
 
 		if (useBeanFactoryLocator && factoryLocator == null) {
@@ -257,7 +259,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			// first look for open caches
 			String msg = null;
 			try {
-				cache =(Cache)fetchCache();
+				cache = (Cache) fetchCache();
 				msg = "Retrieved existing";
 			} catch (CacheClosedException ex) {
 
@@ -274,13 +276,13 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 				}
 
 				// fall back to cache creation
-				cache = (Cache)createCache(factory);
+				cache = (Cache) createCache(factory);
 				msg = "Created";
 			}
 			if (this.copyOnRead != null) {
 				cache.setCopyOnRead(this.copyOnRead);
 			}
-			
+
 			if (lockLease != null) {
 				cache.setLockLease(lockLease);
 			}
@@ -299,7 +301,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			}
 
 			DistributedSystem system = cache.getDistributedSystem();
-			
+
 			DistributedMember member = system.getDistributedMember();
 			log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@"
 					+ member.getHost() + "]");
@@ -392,17 +394,17 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			new PdxOptions((CacheFactory) factory).run();
 		}
 	}
-	
+
 	protected Object createFactory(Properties props) {
 		return new CacheFactory(props);
 	}
 
 	protected GemFireCache fetchCache() {
-		return (cache == null)? CacheFactory.getAnyInstance(): cache;
+		return (cache == null) ? CacheFactory.getAnyInstance() : cache;
 	}
 
 	protected GemFireCache createCache(Object factory) {
-		return (cache == null)? ((CacheFactory) factory).create() : cache;
+		return (cache == null) ? ((CacheFactory) factory).create() : cache;
 	}
 
 	@Override
@@ -619,7 +621,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public void setCriticalHeapPercentage(Float criticalHeapPercentage) {
 		this.criticalHeapPercentage = criticalHeapPercentage;
 	}
-	
+
 	/**
 	 * 
 	 * @param close set to false if destroy() should not close the cache
@@ -668,6 +670,13 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
 		this.jndiDataSources = jndiDataSources;
+	}
+
+	/**
+	 * @param lazyInitialize set to false to force cache initialization if no other bean references it
+	 */
+	public void setLazyInitialize(boolean lazyInitialize) {
+		this.lazyInitialize = lazyInitialize;
 	}
 
 	/**
@@ -793,7 +802,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * @return the criticalHeapPercentage
 	 */
 	public Float getCriticalHeapPercentage() {
-		
+
 		return criticalHeapPercentage;
 	}
 
@@ -817,7 +826,28 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public Object getGatewayConflictResolver() {
 		return gatewayConflictResolver;
 	}
+
+	/**
+	 * @return the beanFactoryLocator
+	 */
 	public GemfireBeanFactoryLocator getBeanFactoryLocator() {
 		return factoryLocator;
+	}
+
+	/**
+	 * return lazyInitialize
+	 */
+	public boolean isLazyInitialize() {
+		return lazyInitialize;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (!lazyInitialize) {
+			init();
+		}
 	}
 }

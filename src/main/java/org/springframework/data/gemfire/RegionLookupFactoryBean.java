@@ -49,14 +49,15 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 		Assert.notNull(cache, "Cache property must be set");
 		name = (!StringUtils.hasText(name) ? beanName : name);
 		Assert.hasText(name, "Name (or beanName) property must be set");
+		synchronized (cache) {
+			region = cache.getRegion(name);
+			if (region != null) {
+				log.info("Retrieved region [" + name + "] from cache");
+			}
 
-		region = cache.getRegion(name);
-		if (region != null) {
-			log.info("Retrieved region [" + name + "] from cache");
-		}
-
-		else {
-			region = lookupFallback(cache, name);
+			else {
+				region = lookupFallback(cache, name);
+			}
 		}
 	}
 

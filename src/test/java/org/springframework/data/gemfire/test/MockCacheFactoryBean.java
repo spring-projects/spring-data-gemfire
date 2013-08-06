@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.GemFireCache;
  *
  */
 public class MockCacheFactoryBean extends CacheFactoryBean {
-	 
+
 	public MockCacheFactoryBean() {
 		this.cache = new StubCache();
 		this.useBeanFactoryLocator = false;
@@ -59,6 +59,7 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 			this.transactionListeners = cacheFactoryBean.getTransactionListeners();
 			this.transactionWriter = cacheFactoryBean.getTransactionWriter();
 			this.properties = cacheFactoryBean.getProperties();
+			this.lazyInitialize = cacheFactoryBean.isLazyInitialize();
 		}
 	}
 	
