@@ -486,70 +486,69 @@ use inner bean declarations.
 							</xsd:attribute>
 						</xsd:complexType>
 					</xsd:element>
-					<xsd:element name="membership-attributes" minOccurs="0"
-						maxOccurs="1">
+					<xsd:element name="region-ttl" type="expirationType"
+						minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Configures a Region to require one or more membership roles to be present in the system for reliable access to the Region
-                        ]]></xsd:documentation>
+							<xsd:documentation><![CDATA[[
+Time to live configuration for the region itself. Default: no expiration.
+							]]></xsd:documentation>
 						</xsd:annotation>
-						<xsd:complexType>
-							<xsd:attribute name="required-roles" type="xsd:string"
-								use="required">
-								<xsd:annotation>
-									<xsd:documentation><![CDATA[
-A comma delimited list of required role names
-                           ]]></xsd:documentation>
-								</xsd:annotation>
-							</xsd:attribute>
-							<xsd:attribute name="loss-action" type="xsd:string"
-								use="optional">
-								<xsd:annotation>
-									<xsd:documentation><![CDATA[
-Specifies the behavior when one or more required roles are missing:
-(full-access, limited-access, no-access, or reconnect)
-                           ]]></xsd:documentation>
-								</xsd:annotation>
-							</xsd:attribute>
-							<xsd:attribute name="resumption-action" type="xsd:string"
-								use="optional">
-								<xsd:annotation>
-									<xsd:documentation><![CDATA[
-Specifies how the region is affected by resumption of reliability
-when one or more missing required roles is restored to the distributed membership (none or reinitialize)
-                           ]]></xsd:documentation>
-								</xsd:annotation>
-							</xsd:attribute>
-						</xsd:complexType>
 					</xsd:element>
-					<xsd:choice minOccurs="0" maxOccurs="unbounded">
-						<xsd:element name="gateway-sender" type="baseGatewaySenderType" />
-						<xsd:element name="gateway-sender-ref">
-							<xsd:complexType>
-								<xsd:attribute name="bean" type="xsd:string" use="optional">
-									<xsd:annotation>
-										<xsd:documentation><![CDATA[
-The name of the gateway sender bean referred by this declaration. Used as a convenience method. If no reference exists,
-use inner bean declarations.
-                               ]]></xsd:documentation>
-									</xsd:annotation>
-								</xsd:attribute>
-							</xsd:complexType>
+					<xsd:element name="region-tti" type="expirationType"
+						minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[[
+Time to idle (or idle timeout) configuration for the region itself. Default: no expiration.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+
+					<xsd:choice>
+						<xsd:element name="entry-ttl" type="expirationType"
+							minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[[
+Time to live configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<xsd:element name="custom-entry-ttl" type="customExpirationType"
+							minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:appinfo>
+									<tool:annotation>
+										<tool:exports type="com.gemstone.gemfire.cache.CustomExpiry" />
+									</tool:annotation>
+								</xsd:appinfo>
+								<xsd:documentation><![CDATA[[
+CustomExpiry time to live configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+							</xsd:annotation>
 						</xsd:element>
 					</xsd:choice>
-					<xsd:choice minOccurs="0" maxOccurs="unbounded">
-						<xsd:element name="async-event-queue" type="baseAsyncEventQueueType" />
-						<xsd:element name="async-event-queue-ref">
-							<xsd:complexType>
-								<xsd:attribute name="bean" type="xsd:string" use="optional">
-									<xsd:annotation>
-										<xsd:documentation><![CDATA[
-The name of the gateway sender bean referred by this declaration. Used as a convenience method. If no reference exists,
-use inner bean declarations.
-                               ]]></xsd:documentation>
-									</xsd:annotation>
-								</xsd:attribute>
-							</xsd:complexType>
+
+					<xsd:choice>
+						<xsd:element name="entry-tti" type="expirationType"
+							minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[[
+Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="custom-entry-tti" type="customExpirationType"
+							minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:appinfo>
+									<tool:annotation>
+										<tool:exports type="com.gemstone.gemfire.cache.CustomExpiry" />
+									</tool:annotation>
+								</xsd:appinfo>
+								<xsd:documentation><![CDATA[[
+CustomExpiry Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+							</xsd:annotation>
 						</xsd:element>
 					</xsd:choice>
 				</xsd:sequence>
@@ -584,6 +583,24 @@ Indicates the id of the disk store to use for persistence or overflow.
 
 Note this attribute only applies if a disk store is configured for this region.
 						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="load-factor" type="xsd:string"
+					default="0.75">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[[
+Together with the initial-capacity region attribute, sets the initial parameters on the underlying java.util.ConcurrentHashMap
+used for storing region entries. This must be a floating point number between 0 and 1, inclusive.
+							]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="cloning-enabled" type="xsd:string"
+					default="true">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[[
+Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a
+clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.
+							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="destroy" type="xsd:string"
@@ -653,35 +670,7 @@ The fully qualified class name of the expected value type
 								]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="index-update-type" use="optional"
-					default="synchronous">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
- Specifies whether region indexes are maintained synchronously with region modifications, or asynchronously in a background thread.
-								]]></xsd:documentation>
-					</xsd:annotation>
-					<xsd:simpleType>
-						<xsd:restriction base="xsd:string">
-							<xsd:enumeration value="asynchronous" />
-							<xsd:enumeration value="synchronous" />
-						</xsd:restriction>
-					</xsd:simpleType>
-				</xsd:attribute>
-				<xsd:attribute name="enable-gateway" type="xsd:string"
-					use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
- Specifies if WAN gateway communications are enabled for this region (true or false) (Deprecated since Gemfire v 7.0)
-                                ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="hub-id" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
- Specifies if WAN gateway hub id if enable-gateway is true. (Deprecated since Gemfire v 7.0)
-                                ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
+
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -742,89 +731,100 @@ arbitrarily pick one.
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element name="region-ttl" type="expirationType"
-						minOccurs="0" maxOccurs="1">
+					<xsd:element name="membership-attributes" minOccurs="0"
+						maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation><![CDATA[[
-Time to live configuration for the region itself. Default: no expiration.
-							]]></xsd:documentation>
+							<xsd:documentation><![CDATA[
+Configures a Region to require one or more membership roles to be present in the system for reliable access to the Region
+                        ]]></xsd:documentation>
 						</xsd:annotation>
+						<xsd:complexType>
+							<xsd:attribute name="required-roles" type="xsd:string"
+								use="required">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+A comma delimited list of required role names
+                           ]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:attribute>
+							<xsd:attribute name="loss-action" type="xsd:string"
+								use="optional">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+Specifies the behavior when one or more required roles are missing:
+(full-access, limited-access, no-access, or reconnect)
+                           ]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:attribute>
+							<xsd:attribute name="resumption-action" type="xsd:string"
+								use="optional">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+Specifies how the region is affected by resumption of reliability
+when one or more missing required roles is restored to the distributed membership (none or reinitialize)
+                           ]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:attribute>
+						</xsd:complexType>
 					</xsd:element>
-					<xsd:element name="region-tti" type="expirationType"
-						minOccurs="0" maxOccurs="1">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[[
-Time to idle (or idle timeout) configuration for the region itself. Default: no expiration.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:element>
-
-					<xsd:choice>
-						<xsd:element name="entry-ttl" type="expirationType"
-							minOccurs="0" maxOccurs="1">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[[
-Time to live configuration for the region entries. Default: no expiration.
-							]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:element>
-
-						<xsd:element name="custom-entry-ttl" type="customExpirationType"
-							minOccurs="0" maxOccurs="1">
-							<xsd:annotation>
-								<xsd:appinfo>
-									<tool:annotation>
-										<tool:exports type="com.gemstone.gemfire.cache.CustomExpiry" />
-									</tool:annotation>
-								</xsd:appinfo>
-								<xsd:documentation><![CDATA[[
-CustomExpiry time to live configuration for the region entries. Default: no expiration.
-							]]></xsd:documentation>
-							</xsd:annotation>
+					<xsd:choice minOccurs="0" maxOccurs="unbounded">
+						<xsd:element name="gateway-sender" type="baseGatewaySenderType" />
+						<xsd:element name="gateway-sender-ref">
+							<xsd:complexType>
+								<xsd:attribute name="bean" type="xsd:string" use="optional">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[
+The name of the gateway sender bean referred by this declaration. Used as a convenience method. If no reference exists,
+use inner bean declarations.
+                               ]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+							</xsd:complexType>
 						</xsd:element>
 					</xsd:choice>
-
-					<xsd:choice>
-						<xsd:element name="entry-tti" type="expirationType"
-							minOccurs="0" maxOccurs="1">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[[
-Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
-							]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:element>
-						<xsd:element name="custom-entry-tti" type="customExpirationType"
-							minOccurs="0" maxOccurs="1">
-							<xsd:annotation>
-								<xsd:appinfo>
-									<tool:annotation>
-										<tool:exports type="com.gemstone.gemfire.cache.CustomExpiry" />
-									</tool:annotation>
-								</xsd:appinfo>
-								<xsd:documentation><![CDATA[[
-CustomExpiry Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
-							]]></xsd:documentation>
-							</xsd:annotation>
+					<xsd:choice minOccurs="0" maxOccurs="unbounded">
+						<xsd:element name="async-event-queue" type="baseAsyncEventQueueType" />
+						<xsd:element name="async-event-queue-ref">
+							<xsd:complexType>
+								<xsd:attribute name="bean" type="xsd:string" use="optional">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[
+The name of the gateway sender bean referred by this declaration. Used as a convenience method. If no reference exists,
+use inner bean declarations.
+                               ]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+							</xsd:complexType>
 						</xsd:element>
 					</xsd:choice>
-
 				</xsd:sequence>
-				<xsd:attribute name="load-factor" type="xsd:string"
-					default="0.75">
+								<xsd:attribute name="index-update-type" use="optional"
+					default="synchronous">
 					<xsd:annotation>
-						<xsd:documentation><![CDATA[[
-Together with the initial-capacity region attribute, sets the initial parameters on the underlying java.util.ConcurrentHashMap
-used for storing region entries. This must be a floating point number between 0 and 1, inclusive.
-							]]></xsd:documentation>
+						<xsd:documentation><![CDATA[
+ Specifies whether region indexes are maintained synchronously with region modifications, or asynchronously in a background thread.
+								]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="asynchronous" />
+							<xsd:enumeration value="synchronous" />
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="enable-gateway" type="xsd:string"
+					use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+ Specifies if WAN gateway communications are enabled for this region (true or false) (Deprecated since Gemfire v 7.0)
+                                ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="cloning-enabled" type="xsd:string"
-					default="true">
+				<xsd:attribute name="hub-id" type="xsd:string" use="optional">
 					<xsd:annotation>
-						<xsd:documentation><![CDATA[[
-Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a
-clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.
-							]]></xsd:documentation>
+						<xsd:documentation><![CDATA[
+ Specifies if WAN gateway hub id if enable-gateway is true. (Deprecated since Gemfire v 7.0)
+                                ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 			</xsd:extension>
@@ -956,14 +956,15 @@ up to date copy of the data.
 		<xsd:complexContent>
 			<xsd:extension base="baseRegionType">
 				<xsd:sequence>
-					<xsd:element name="subscription" minOccurs="0" maxOccurs="1">
+					<xsd:element name="subscription" minOccurs="0"
+						maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Subscription policy for the replicated region.
 							]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:complexType>
-							<xsd:attribute name="type" type="subscriptionPolicyType"/>
+							<xsd:attribute name="type" type="subscriptionPolicyType" />
 						</xsd:complexType>
 					</xsd:element>
 
@@ -1131,7 +1132,7 @@ The name of the region definition.
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
-	<xsd:element name="local-region" type="localRegionType"/>
+	<xsd:element name="local-region" type="localRegionType" />
 	<!-- -->
 	<xsd:complexType name="basePartitionedRegionType">
 		<xsd:annotation>
@@ -1218,14 +1219,15 @@ Specifies the number of buckets to allocate to the fixed partition
 							</xsd:attribute>
 						</xsd:complexType>
 					</xsd:element>
-					<xsd:element name="subscription" minOccurs="0" maxOccurs="1">
+					<xsd:element name="subscription" minOccurs="0"
+						maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Subscription policy for the partitioned region. 
                                  ]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:complexType>
-							<xsd:attribute name="type" type="subscriptionPolicyType"/>
+							<xsd:attribute name="type" type="subscriptionPolicyType" />
 						</xsd:complexType>
 					</xsd:element>
 					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
@@ -1882,8 +1884,7 @@ The name of the pool definition (by default "gemfirePool").]]></xsd:documentatio
 				use="optional" />
 			<xsd:attribute name="load-conditioning-interval" type="xsd:string"
 				use="optional" />
-			<xsd:attribute name="keep-alive" type="xsd:string"
-				use="optional" />
+			<xsd:attribute name="keep-alive" type="xsd:string" use="optional" />
 			<xsd:attribute name="max-connections" type="xsd:string"
 				use="optional" />
 			<xsd:attribute name="min-connections" type="xsd:string"
@@ -2026,29 +2027,28 @@ The name of the bean defining the GemFire cache (by default 'gemfireCache').
 			<xsd:documentation><![CDATA[
 Container for continuous query listeners. All listeners will be hosted by the same container.
 	      ]]></xsd:documentation>
-            <xsd:appinfo>
-                <tool:annotation>
-                    <tool:exports
-                        type="org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer" />
-                </tool:annotation>
-            </xsd:appinfo>
-        </xsd:annotation>
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element name="listener" type="listenerType"
-                    minOccurs="0" maxOccurs="unbounded" />
-            </xsd:sequence>
-            <xsd:attribute name="id" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                                <xsd:documentation><![CDATA[
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports
+						type="org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="listener" type="listenerType"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+			<xsd:attribute name="id" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
 The id of the listener (optional)
                                     ]]></xsd:documentation>
-                            </xsd:annotation>
-         </xsd:attribute>
-            <xsd:attribute name="cache" type="xsd:string"
-                default="gemfireCache">
-                <xsd:annotation>
-                    <xsd:documentation><![CDATA[
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="cache" type="xsd:string" default="gemfireCache">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
 A reference (by name) to the GemFire cache bean. Default is "gemfireCache".
 	          ]]></xsd:documentation>
 					<xsd:appinfo>

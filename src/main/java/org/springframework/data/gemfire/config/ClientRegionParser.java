@@ -91,13 +91,18 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 		boolean overwriteDataPolicy = false;
 
 		overwriteDataPolicy |= ParsingUtils.parseEviction(parserContext, element, attrBuilder);
-
+		ParsingUtils.parseStatistics(element, attrBuilder);
+		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
+		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
+		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, attrBuilder);
+		
 		if (!frozenDataPolicy && overwriteDataPolicy) {
 			builder.addPropertyValue("dataPolicy", DataPolicy.NORMAL);
 		}
 
-		// add partition/overflow settings as attributes
 		builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
+		
+		
 
 		ManagedList<Object> interests = new ManagedList<Object>();
 

@@ -93,7 +93,7 @@ public class ClientRegionNamespaceTest {
 		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", fb));
 	}
 
-	// @Test
+	@Test
 	@SuppressWarnings("rawtypes")
 	public void testComplexClient() throws Exception {
 		assertTrue(context.containsBean("complex"));
@@ -102,21 +102,10 @@ public class ClientRegionNamespaceTest {
 		assertFalse(ObjectUtils.isEmpty(listeners));
 		assertEquals(2, listeners.length);
 		assertSame(listeners[0], context.getBean("c-listener"));
-		Interest[] ints = TestUtils.readField("interests", fb);
-		assertEquals(2, ints.length);
-
-		// key interest
-		Interest keyInt = ints[0];
-		assertTrue((Boolean) TestUtils.readField("durable", keyInt));
-		assertEquals(InterestResultPolicy.KEYS, TestUtils.readField("policy", keyInt));
-		// assertEquals(Object.class, TestUtils.readField("key",
-		// keyInt).getClass());
-
-		// regex interest
-		RegexInterest regexInt = (RegexInterest) ints[1];
-		assertFalse((Boolean) TestUtils.readField("durable", regexInt));
-		assertEquals(InterestResultPolicy.KEYS_VALUES, TestUtils.readField("key", regexInt));
-		assertEquals(".*", TestUtils.readField("key", regexInt));
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		assertEquals(500, attrs.getEntryTimeToLive().getTimeout());
+		assertEquals(0.5f,attrs.getLoadFactor(),0.001);
+		assertEquals(5, attrs.getEvictionAttributes().getMaximum());
 	}
 
 	@SuppressWarnings("rawtypes")
