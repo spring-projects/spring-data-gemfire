@@ -1,8 +1,27 @@
 SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
+Changes in Version 1.3.2 (2013-08-06)
+--------------------------------------
+General
+
+* This is a patch release to address bugs and minor enhancements
+see [1.3.2 release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?version=14219&projectId=10462)
+** Bug
+    * [SGF-168] - Race condition when using Spring data gemfire with tc Server parallel deployment
+    * [SGF-176] - Missing Functionality: time to live and entry idle time on a local client region
+    * [SGF-185] - @OnServers fails when pool attribute is set - cannot specify both pool and cache
+    * [SGF-186] - BeanFactoryLocator reports cache already exists when ClientCache, Pool, and Functions are configured
+    * [SGF-188] - Documentation mistake
+    * [SGF-189] - Spring Gemfire does not allow persistence for a local region even though this is supported in Gemfire
+    * [SGF-192] - client region ignores destroy and close settings
+
+** Improvement
+    * [SGF-180] - If nothing references the cache bean it doesn't get initialized
+    * [SGF-183] - Little or no logging in Spring Gemfire
+
 Changes in version 1.3.1.RELEASE(2013-04-18)
-Bug
+** Bug
     * [SGF-159] - isRollbackOnCommitFailure flag is ignored by GemfireTransactionManager when transaction fails.
     * [SGF-169] - Unidirectional Gateway hubs cannot be created and fail with an exception
     * [SGF-173] - Function Execution throws exception on void return. 
@@ -10,6 +29,7 @@ Bug
 
 Changes in version 1.3.0.RELEASE (2013-03-14)
 ---------------------------------------------
+
 General
 * Added annotation support for GemFire functions
 * Added 'datasource' element to gfe-data namespace to simplify client connection
@@ -19,12 +39,14 @@ See [1.3.0 release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?
 
 Changes in version 1.2.1.RELEASE (2012-10-26)
 ---------------------------------------------
+
 General
 * Upgraded to GemFire 7.0
 * Added support for GemFire 7.0 WAN Configuration
 
 Changes in version 1.2.0.RELEASE (2012-08-15)
 ---------------------------------------------
+
 General
 * Added support for Spring Data repositories
 * The Spring Data GemFire project, formerly Spring GemFire, is now a component of the Spring Data project
