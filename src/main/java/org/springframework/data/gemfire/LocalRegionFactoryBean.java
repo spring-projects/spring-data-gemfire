@@ -15,6 +15,8 @@
  */
 package org.springframework.data.gemfire;
 
+import org.springframework.util.Assert;
+
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
@@ -27,11 +29,6 @@ public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	@Override
 	public void setScope(Scope scope) {
 		throw new UnsupportedOperationException("setScope() is not allowed for Local Regions");
-	}
-
-	@Override
-	public void setPersistent(boolean persistent) {
-		throw new UnsupportedOperationException("setPersistent() is not allowed for Local Regions");
 	}
 
 	@Override
@@ -51,6 +48,7 @@ public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 				regionFactory.setDataPolicy(DataPolicy.PRELOADED);
 			}
 			else if ("EMPTY".equals(dataPolicy)) {
+				Assert.isTrue(persistent == null || !persistent, "Cannot have persistence on an empty region");
 				regionFactory.setDataPolicy(DataPolicy.EMPTY);
 			}
 			else {

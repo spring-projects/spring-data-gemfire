@@ -109,4 +109,12 @@ public class LocalRegionNamespaceTest {
 		assertEquals("existing", TestUtils.readField("name", lfb));
 		assertEquals(existing, context.getBean("lookup"));
 	}
+	
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void testLocalPersistent() {
+		Region region = context.getBean("persistent", Region.class);
+		RegionAttributes attrs = region.getAttributes();
+		assertTrue(attrs.getDataPolicy().withPersistence());
+	}
 }
