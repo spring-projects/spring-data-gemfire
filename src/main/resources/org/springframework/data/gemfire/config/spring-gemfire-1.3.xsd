@@ -603,6 +603,14 @@ clone of the value and then the clone is saved to the cache. When false, the val
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<xsd:attribute name="concurrency-checks-enabled" type="xsd:string"
+					default="true">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[[
+Indicates whether concurrency checks (versioning) are enabled for the region
+							]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="destroy" type="xsd:string"
 					default="false">
 					<xsd:annotation>

@@ -57,6 +57,8 @@ public class ReplicatedRegionNamespaceTest {
 		assertTrue(context.containsBean("simple"));
 		RegionFactoryBean fb = context.getBean("&simple", RegionFactoryBean.class);
 		assertEquals(false ,(Boolean)TestUtils.readField("close", fb));
+		RegionAttributes attrs = TestUtils.readField("attributes", fb);
+		assertFalse(attrs.getConcurrencyChecksEnabled());
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -69,6 +71,7 @@ public class ReplicatedRegionNamespaceTest {
 		assertEquals("publisher", TestUtils.readField("name", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		assertFalse(attrs.getPublisher());
+		assertTrue(attrs.getConcurrencyChecksEnabled());
 	}
 
 	@SuppressWarnings("rawtypes")
