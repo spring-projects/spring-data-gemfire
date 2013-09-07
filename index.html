@@ -1,0 +1,95 @@
+---
+# The name of your project
+title: Spring Data Gemfire
+
+badges:
+
+  # Specify your project's twitter handle, if any. Delete if none.
+  #twitter: SpringData
+
+  # Customize your project's badges. Delete any entries that do not apply.
+  custom:
+    - name: Source (GitHub)
+      url:  https://github.com/spring-projects/spring-data-gemfire
+      icon: github
+
+    - name: Issues (JIRA)
+      url:  http://jira.springsource.org/browse/SGF
+      icon: tracking
+
+    - name: CI (Bamboo)
+      url:  https://build.springsource.org/browse/SGF
+      icon: ci
+
+    - name: Forum
+      url:  http://forum.spring.io/forum/spring-projects/data/gemfire
+      icon: forum
+
+    - name: StackOverflow
+      url:  http://stackoverflow.com/questions/tagged/spring-data-gemfire
+      icon: stackoverflow
+
+  #  - name: Metrics (SonarQube)
+  #    url:  https://sonar.springsource.org/dashboard/index/org.springframework.data:spring-data-jpa
+  #    icon: metrics
+
+---
+<!DOCTYPE HTML>
+<html lang="en-US">
+
+<!-- Specify the parent of this project (or delete if none) to influence the rendering of the breadcrumb -->
+{% capture parent_link %}
+[Spring Data]({{ site.projects_site_url }}/spring-data)
+{% endcapture %}
+
+
+{% capture billboard_description %}
+
+**PROJECT DESCRIPTION** The primary goal of the Spring Data GemFire project is to make it easier to build highly scalable Spring-powered applications using [Pivotal GemFire](http://gopivotal.com/pivotal-products/pivotal-data-fabric/pivotal-gemfire) as a distributed data management platform.
+
+{% endcapture %}
+
+{% capture main_content %}
+
+Spring Data GemFire brings the full power of the Spring framework to your GemFire applications.
+
+## Features
+
+* XML namespace support to [create and configure GemFire resources declaratively with Spring](http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/bootstrap.html)
+* [Spring Data Repositories backed by GemFire](http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/gemfire-repositories.html)
+* [Annotatations for Function Executions](http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/function-annotations.html)
+* Continuous Query Support
+* SpringSource ToolSuite Spring Project Templates for GemFire
+
+<span id="quick-start"></span>
+## Quick Start
+
+{% include download_widget.md %}
+
+{% endcapture %}
+
+{% capture related_resources %}
+
+### Sample Projects
+
+* [Spring Data Gemfire Examples](https://github.com/springsource/spring-gemfire-examples)
+
+### Getting Started Guides
+
+* [Accessing Data with Spring Data GemFire](https://spring.io/guides/gs/accessing-data-gemfire/)
+* [Caching Data with Spring Data GemFire](https://spring.io/guides/gs/caching-gemfire/)
+### Tutorials
+
+* 
+
+### Additional Resources
+
+* [GemFire Product Documentation](https://www.vmware.com/support/pubs/vfabric-gemfire.html)
+* [GemFire API](https://www.vmware.com/support/pubs/vfabric-apiref.html#gemfireapi)
+* [Spring Data Book](http://shop.oreilly.com/product/0636920024767.do)
+
+{% endcapture %}
+
+
+{% include project_page.html %}
+</html>
