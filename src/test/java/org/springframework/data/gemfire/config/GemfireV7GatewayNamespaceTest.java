@@ -48,9 +48,9 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * This test is only valid for GF 7.0 and above
- * 
+ *
  * @author David Turanski
- * 
+ *
  */
 
 public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
@@ -148,7 +148,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
 
 		assertEquals(1, gws.getRemoteDSId());
-		assertEquals(true, gws.isManualStart());
+		assertEquals(false, gws.isManualStart());
+        assertEquals(true,gws.isRunning());
 		assertEquals(10, gws.getAlertThreshold());
 		assertEquals(11, gws.getBatchSize());
 		assertEquals(3000, gws.getBatchTimeInterval());

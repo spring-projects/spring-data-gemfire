@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.wan;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -32,7 +33,7 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 /**
  * FactoryBean for creating a GemFire {@link GatewaySender}.
  * @author David Turanski
- * 
+ *
  */
 public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>
 implements SmartLifecycle {
@@ -75,7 +76,7 @@ implements SmartLifecycle {
 	private Integer socketReadTimeout;
 
 	/**
-	 * 
+	 *
 	 * @param cache the Gemfire cache
 	 */
 	public GatewaySenderFactoryBean(Cache cache) {
@@ -153,9 +154,9 @@ implements SmartLifecycle {
 		if (dispatcherThreads != null) {
 			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
 		}
-	 
+
 		gatewaySenderFactory.setManualStart(true);
-		 
+
 		if (maximumQueueMemory != null) {
 			gatewaySenderFactory.setMaximumQueueMemory(maximumQueueMemory);
 		}
@@ -165,7 +166,9 @@ implements SmartLifecycle {
 		if (socketReadTimeout != null) {
 			gatewaySenderFactory.setSocketReadTimeout(socketReadTimeout);
 		}
-		gatewaySender = gatewaySenderFactory.create(getName(), remoteDistributedSystemId);
+		GatewaySenderWrapper wrapper = new GatewaySenderWrapper(gatewaySenderFactory.create(getName(), remoteDistributedSystemId));
+        wrapper.setManualStart(manualStart);
+        gatewaySender = wrapper;
 	}
 
 	public void setRemoteDistributedSystemId(int remoteDistributedSystemId) {

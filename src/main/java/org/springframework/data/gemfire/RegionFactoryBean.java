@@ -24,6 +24,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.wan.GatewaySenderWrapper;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -47,12 +48,12 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * Base class for FactoryBeans used to create GemFire {@link Region}s. Will try
  * to first locate the region (by name) and, in case none if found, proceed to
  * creating one using the given settings.
- * 
+ *
  * Note that this factory bean allows for very flexible creation of GemFire
  * {@link Region}. For "client" regions however, see
  * {@link ClientRegionFactoryBean} which offers easier configuration and
  * defaults.
- * 
+ *
  * @author Costin Leau
  * @author David Turanski
  */
@@ -113,7 +114,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			AttributesFactory.validateAttributes(attributes);
 
 		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes) : c
-				.<K, V> createRegionFactory());	
+				.<K, V> createRegionFactory());
 
 		if (hubId != null) {
 			enableGateway = enableGateway == null ? true : enableGateway;
@@ -223,7 +224,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * of this factory bean during the initialization process. The object is
 	 * already initialized and configured by the factory bean before this method
 	 * is invoked.
-	 * 
+	 *
 	 * @param attrFactory attribute factory
 	 * @deprecated as of GemFire 6.5, the use of {@link AttributesFactory} has
 	 * been deprecated
@@ -236,7 +237,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Post-process the region object for this factory bean during the
 	 * initialization process. The object is already initialized and configured
 	 * by the factory bean before this method is invoked.
-	 * 
+	 *
 	 * @param region
 	 */
 	protected void postProcess(Region<K, V> region) {
@@ -255,7 +256,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 						// nothing to see folks, move on.
 					}
 				}
-				
+
 			} if (destroy) {
 				region.destroyRegion();
 				region = null;
@@ -283,7 +284,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Sets the snapshots used for loading a newly <i>created</i> region. That
 	 * is, the snapshot will be used <i>only</i> when a new region is created -
 	 * if the region already exists, no loading will be performed.
-	 * 
+	 *
 	 * @see #setName(String)
 	 * @param snapshot the snapshot to set
 	 */
@@ -295,7 +296,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Sets the cache listeners used for the region used by this factory. Used
 	 * only when a new region is created.Overrides the settings specified
 	 * through {@link #setAttributes(RegionAttributes)}.
-	 * 
+	 *
 	 * @param cacheListeners the cacheListeners to set on a newly created region
 	 */
 	public void setCacheListeners(CacheListener<K, V>[] cacheListeners) {
@@ -306,7 +307,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Sets the cache loader used for the region used by this factory. Used only
 	 * when a new region is created.Overrides the settings specified through
 	 * {@link #setAttributes(RegionAttributes)}.
-	 * 
+	 *
 	 * @param cacheLoader the cacheLoader to set on a newly created region
 	 */
 	public void setCacheLoader(CacheLoader<K, V> cacheLoader) {
@@ -317,7 +318,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Sets the cache writer used for the region used by this factory. Used only
 	 * when a new region is created. Overrides the settings specified through
 	 * {@link #setAttributes(RegionAttributes)}.
-	 * 
+	 *
 	 * @param cacheWriter the cacheWriter to set on a newly created region
 	 */
 	public void setCacheWriter(CacheWriter<K, V> cacheWriter) {
@@ -327,7 +328,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	/**
 	 * Sets the region scope. Used only when a new region is created. Overrides
 	 * the settings specified through {@link #setAttributes(RegionAttributes)}.
-	 * 
+	 *
 	 * @see Scope
 	 * @param scope the region scope
 	 */
@@ -357,7 +358,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * 
+	 *
 	 * @param gatewaySenders defined as Object for backward compatibility with
 	 * Gemfire 6
 	 */
@@ -366,7 +367,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * 
+	 *
 	 * @param asyncEventQueues defined as Object for backward compatibility with
 	 * Gemfire 6
 	 */
@@ -386,7 +387,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Sets the region attributes used for the region used by this factory.
 	 * Allows maximum control in specifying the region settings. Used only when
 	 * a new region is created.
-	 * 
+	 *
 	 * @param attributes the attributes to set on a newly created region
 	 */
 	public void setAttributes(RegionAttributes<K, V> attributes) {
@@ -406,12 +407,14 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	@Override
 	public void start() {
-		
+
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			synchronized (gatewaySenders) {
 				for (Object obj : gatewaySenders) {
 					GatewaySender gws = (GatewaySender) obj;
+                    System.out.println("manual start = " + gws.isManualStart());
 					if (!gws.isManualStart() && !gws.isRunning()) {
+                        System.out.println("starting ...");
 							gws.start();
 					}
 				}

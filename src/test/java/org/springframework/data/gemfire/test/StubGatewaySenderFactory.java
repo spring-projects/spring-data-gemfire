@@ -1,35 +1,41 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
 package org.springframework.data.gemfire.test;
 
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * @author David Turanski
  *
  */
 public class StubGatewaySenderFactory implements GatewaySenderFactory {
-	
+
 	private int alertThreshold;
 	private boolean batchConflationEnabled;
 	private int batchSize;
@@ -48,6 +54,8 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 	private List<GatewayTransportFilter> transportFilters;
 
 	private String name;
+
+    private boolean running = true;
 
 	private int remoteSystemId;
 
@@ -92,6 +100,18 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 		when(gatewaySender.isDiskSynchronous()).thenReturn(this.diskSynchronous);
 		when(gatewaySender.isParallel()).thenReturn(this.parallel);
 		when(gatewaySender.isPersistenceEnabled()).thenReturn(this.persistenceEnabled);
+        doAnswer(new Answer<Void>() {
+            public Void answer(InvocationOnMock invocation) {
+                running = true;
+               return null;
+            }
+        }).when(gatewaySender).start();
+        when(gatewaySender.isRunning()).thenAnswer(new Answer<Boolean>(){
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                return running;
+            }
+        });
 		return gatewaySender;
 	}
 
