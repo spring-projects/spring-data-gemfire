@@ -412,10 +412,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			synchronized (gatewaySenders) {
 				for (Object obj : gatewaySenders) {
 					GatewaySender gws = (GatewaySender) obj;
-                    System.out.println("manual start = " + gws.isManualStart());
 					if (!gws.isManualStart() && !gws.isRunning()) {
-                        System.out.println("starting ...");
-							gws.start();
+						gws.start();
 					}
 				}
 			}
