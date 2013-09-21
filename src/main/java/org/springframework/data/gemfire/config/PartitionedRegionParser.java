@@ -25,12 +25,9 @@ import org.springframework.data.gemfire.FixedPartitionAttributesFactoryBean;
 import org.springframework.data.gemfire.PartitionAttributesFactoryBean;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-import org.springframework.util.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
-
-import com.gemstone.gemfire.management.internal.cli.parser.ParserUtils;
 
 /**
  * Parser for &lt;partitioned-region;gt; definitions.
@@ -40,6 +37,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.ParserUtils;
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 class PartitionedRegionParser extends AbstractRegionParser {
 	@Override
@@ -57,19 +55,19 @@ class PartitionedRegionParser extends AbstractRegionParser {
 				.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
 		super.doParseCommonRegionConfiguration(element, parserContext, builder, attrBuilder, subRegion);
-		//
+
 		// partition attributes
 		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder
 				.genericBeanDefinition(PartitionAttributesFactoryBean.class);
-		
-		ParsingUtils.setPropertyValue(element, parAttrBuilder, "colocated-with");
+
+		ParsingUtils.setPropertyReference(element, parAttrBuilder, "colocated-with-ref", "colocatedWith");
 		ParsingUtils.setPropertyValue(element, parAttrBuilder, "local-max-memory");
 		ParsingUtils.setPropertyValue(element, parAttrBuilder, "copies","redundantCopies");
 		ParsingUtils.setPropertyValue(element, parAttrBuilder, "recovery-delay");
 		ParsingUtils.setPropertyValue(element, parAttrBuilder, "startup-recovery-delay");
 		ParsingUtils.setPropertyValue(element, parAttrBuilder, "total-max-memory");
 		ParsingUtils.setPropertyValue(element, parAttrBuilder, "total-buckets","totalNumBuckets");
-		//
+
 		Element subElement = DomUtils.getChildElementByTagName(element, "partition-resolver");
 		// parse nested partition resolver element
 		if (subElement != null) {
