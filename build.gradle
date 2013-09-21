@@ -11,6 +11,7 @@ description = 'Spring Data GemFire'
 group = 'org.springframework.data'
 
 repositories {
+  mavenLocal()
   maven { url "http://repo.springsource.org/libs-snapshot" }
   maven { url "http://repo.springsource.org/plugins-release"}
   maven { url "http://dist.gemstone.com.s3.amazonaws.com/maven/release"}

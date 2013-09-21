@@ -24,6 +24,7 @@ import org.springframework.beans.factory.InitializingBean;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionResolver;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 
 /**
@@ -33,8 +34,9 @@ import com.gemstone.gemfire.cache.partition.PartitionListener;
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({ "unused", "unchecked", "rawtypes" })
 public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttributes>, InitializingBean {
 
 	private final com.gemstone.gemfire.cache.PartitionAttributesFactory paf = new com.gemstone.gemfire.cache.PartitionAttributesFactory();
@@ -56,8 +58,8 @@ public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttr
 		return false;
 	}
 
-	public void setColocatedWith(String colocatedRegionFullPath) {
-		paf.setColocatedWith(colocatedRegionFullPath);
+	public void setColocatedWith(Region colocatedWithRegion) {
+		paf.setColocatedWith(colocatedWithRegion.getName());
 	}
 
 	public void setFixedPartitionAttributes(List<FixedPartitionAttributes> fixedPartitionAttributes) {
@@ -105,6 +107,6 @@ public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttr
 				paf.addPartitionListener(listener);
 			}
 		}
-
 	}
+
 }

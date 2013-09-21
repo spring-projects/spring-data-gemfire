@@ -1275,11 +1275,10 @@ redundancy. Each copy provides extra backup at the expense of extra storages.
 						</xsd:restriction>
 					</xsd:simpleType>
 				</xsd:attribute>
-				<xsd:attribute name="colocated-with" type="xsd:string"
-					use="optional">
+				<xsd:attribute name="colocated-with-ref" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The name of the partitioned region with which this newly created partitioned region is colocated.
+The ID of the partitioned region with which this newly created partitioned region is colocated.
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
