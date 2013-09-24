@@ -9,7 +9,7 @@
 	<gfe:cache/>
 
 	<!-- NOTE the order of Region bean definitions is important in reproducing the issue in JIRA 195 -->
-	<gfe:partitioned-region id="colocatedRegion" name="Colocated" colocated-with-ref="sourceRegion"/>
+	<gfe:partitioned-region id="colocatedRegion" name="Colocated" colocated-with="Source"/>
 	<gfe:partitioned-region id="sourceRegion" name="Source"/>
 
 </beans>
