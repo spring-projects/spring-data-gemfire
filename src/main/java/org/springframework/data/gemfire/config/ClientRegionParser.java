@@ -39,15 +39,17 @@ import com.gemstone.gemfire.cache.DataPolicy;
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
-class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
+class ClientRegionParser extends AbstractRegionParser {
+
 	@Override
 	protected Class<?> getRegionFactoryClass() {
 		return ClientRegionFactoryBean.class;
 	}
 
 	@Override
-	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
 		// set scope
@@ -129,6 +131,14 @@ class ClientRegionParser extends AliasReplacingBeanDefinitionParser {
 		if (!subElements.isEmpty()) {
 			builder.addPropertyValue("interests", interests);
 		}
+	}
+
+	@Override
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+			boolean subRegion) {
+		throw new UnsupportedOperationException(String.format(
+			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, subRegion:boolean) is not supported on %1$s",
+			getClass().getName()));
 	}
 
 	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {

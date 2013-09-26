@@ -24,7 +24,9 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedArray;
+import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.SubRegionFactoryBean;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -35,11 +37,23 @@ import org.w3c.dom.Element;
  * 
  * @author David Turanski
  */
-abstract class AbstractRegionParser extends AliasReplacingBeanDefinitionParser {
+abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
+
 	protected final Log log = LogFactory.getLog(getClass());
 
 	@Override
-	protected void doParseInternal(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected Class<?> getBeanClass(Element element) {
+		return (isSubRegion(element) ? SubRegionFactoryBean.class : getRegionFactoryClass());
+	}
+
+	protected abstract Class<?> getRegionFactoryClass();
+
+	protected boolean isSubRegion(Element element) {
+		return element.getParentNode().getLocalName().endsWith("region");
+	}
+
+	@Override
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 		boolean subRegion = isSubRegion(element);
 
