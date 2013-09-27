@@ -25,23 +25,23 @@ import org.springframework.data.gemfire.FixedPartitionAttributesFactoryBean;
 import org.springframework.data.gemfire.PartitionAttributesFactoryBean;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-import org.springframework.util.StringUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.management.internal.cli.parser.ParserUtils;
-
 /**
  * Parser for &lt;partitioned-region;gt; definitions.
- * 
+ *
  * To avoid eager evaluations, the region attributes are declared as a nested
  * definition.
- * 
+ *
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 class PartitionedRegionParser extends AbstractRegionParser {
+
 	@Override
 	protected Class<?> getRegionFactoryClass() {
 		return PartitionedRegionFactoryBean.class;
@@ -53,41 +53,40 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			boolean subRegion) {
 		super.doParse(element, builder);
 
-		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
-				.genericBeanDefinition(RegionAttributesFactoryBean.class);
+		BeanDefinitionBuilder regionAttributesBuilder = (subRegion ? builder
+			: BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class));
 
-		super.doParseCommonRegionConfiguration(element, parserContext, builder, attrBuilder, subRegion);
-		//
-		// partition attributes
-		BeanDefinitionBuilder parAttrBuilder = BeanDefinitionBuilder
-				.genericBeanDefinition(PartitionAttributesFactoryBean.class);
-		
-		ParsingUtils.setPropertyValue(element, parAttrBuilder, "colocated-with");
-		ParsingUtils.setPropertyValue(element, parAttrBuilder, "local-max-memory");
-		ParsingUtils.setPropertyValue(element, parAttrBuilder, "copies","redundantCopies");
-		ParsingUtils.setPropertyValue(element, parAttrBuilder, "recovery-delay");
-		ParsingUtils.setPropertyValue(element, parAttrBuilder, "startup-recovery-delay");
-		ParsingUtils.setPropertyValue(element, parAttrBuilder, "total-max-memory");
-		ParsingUtils.setPropertyValue(element, parAttrBuilder, "total-buckets","totalNumBuckets");
-		//
+		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder, subRegion);
+
+		BeanDefinitionBuilder partitionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			PartitionAttributesFactoryBean.class);
+
+		parseColocatedWith(element, builder, partitionAttributesBuilder, "colocated-with");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "local-max-memory");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "copies","redundantCopies");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "recovery-delay");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "startup-recovery-delay");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-max-memory");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-buckets","totalNumBuckets");
+
 		Element subElement = DomUtils.getChildElementByTagName(element, "partition-resolver");
 		// parse nested partition resolver element
 		if (subElement != null) {
-			parAttrBuilder.addPropertyValue("partitionResolver",
-					parsePartitionResolver(parserContext, subElement, builder));
+			partitionAttributesBuilder.addPropertyValue("partitionResolver",
+				parsePartitionResolver(parserContext, subElement, builder));
 		}
 
 		subElement = DomUtils.getChildElementByTagName(element, "partition-listener");
-		// parse nested partition resolver element
+		// parse nested partition listener element
 		if (subElement != null) {
-			parAttrBuilder.addPropertyValue("partitionListeners",
-					parsePartitionListeners(parserContext, subElement, builder));
+			partitionAttributesBuilder.addPropertyValue("partitionListeners",
+				parsePartitionListeners(parserContext, subElement, builder));
 		}
-		
+
 		List<Element> fixedPartitions = DomUtils.getChildElementsByTagName(element, "fixed-partition");
-		if (! CollectionUtils.isEmpty(fixedPartitions)){
-			
-		    @SuppressWarnings("rawtypes")
+
+		if (!CollectionUtils.isEmpty(fixedPartitions)){
+			@SuppressWarnings("rawtypes")
 			ManagedList fixedPartitionAttributes = new ManagedList();
 			for (Element fp: fixedPartitions) {
 				BeanDefinitionBuilder fpaBuilder = BeanDefinitionBuilder.genericBeanDefinition(FixedPartitionAttributesFactoryBean.class);
@@ -96,14 +95,31 @@ class PartitionedRegionParser extends AbstractRegionParser {
 				ParsingUtils.setPropertyValue(fp, fpaBuilder, "primary");
 				fixedPartitionAttributes.add(fpaBuilder.getBeanDefinition());
 			}
-			parAttrBuilder.addPropertyValue("fixedPartitionAttributes", fixedPartitionAttributes);
+			partitionAttributesBuilder.addPropertyValue("fixedPartitionAttributes", fixedPartitionAttributes);
 		}
 
-		// // add partition attributes attributes
-		attrBuilder.addPropertyValue("partitionAttributes", parAttrBuilder.getBeanDefinition());
-		// add partition/overflow settings as attributes
+		// add partition attributes to region attributes
+		regionAttributesBuilder.addPropertyValue("partitionAttributes", partitionAttributesBuilder.getBeanDefinition());
+		// add partition/overflow settings as attributes to Region (via PartitionRegionFactoryBean -> RegionFactoryBean)
 		if (!subRegion) {
-			builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
+			builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
+		}
+	}
+
+	private void parseColocatedWith(Element element, BeanDefinitionBuilder regionBuilder,
+			BeanDefinitionBuilder partitionAttributesBuilder, String attributeName) {
+		// NOTE rather than using a dependency (with depends-on) we could also set the colocatedWith property of the
+		// PartitionAttributesFactoryBean with a reference to the Region "this" Partitioned Region will be colocated
+		// with, where the colocated-with attribute refers to the the bean name/alias of the other, depended on Region
+		// providing that the Region's name is also a bean alias of the bean definition.
+		//ParsingUtils.setPropertyReference(element, partitionAttributesBuilder, attributeName, "colocatedWith");
+
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, attributeName);
+
+		String colocatedWithBeanAlias = element.getAttribute(attributeName);
+
+		if (StringUtils.hasText(colocatedWithBeanAlias)) {
+			regionBuilder.addDependsOn(colocatedWithBeanAlias);
 		}
 	}
 
@@ -115,4 +131,5 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			BeanDefinitionBuilder builder) {
 		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}
+
 }
