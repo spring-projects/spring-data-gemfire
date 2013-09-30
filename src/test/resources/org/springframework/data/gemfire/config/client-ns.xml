@@ -10,12 +10,12 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<gfe:client-cache />
-	
-	<gfe:client-region id="simple" />
-	
+
+	<gfe:client-region id="simple" name="SimpleRegion"/>
+
 	<gfe:client-region id="empty" pool-name="gemfire-pool" name="publisher" data-policy="empty" close="true" destroy="false"/>
-	
-	<gfe:client-region id="complex" pool-name="gemfire-pool" close="true" destroy="false" load-factor="0.5" statistics="true">
+
+	<gfe:client-region id="complex" name="ComplexRegion" pool-name="gemfire-pool" close="true" destroy="false" load-factor="0.5" statistics="true">
 		<gfe:cache-listener>
 			<ref bean="c-listener"/>
 			<bean class="org.springframework.data.gemfire.SimpleCacheListener"/>
@@ -23,20 +23,20 @@
 		<gfe:entry-ttl action="INVALIDATE" timeout="500"/>
 		<gfe:eviction threshold="5"/>
 	</gfe:client-region>
-	
+
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
-	
+
 	<gfe:pool id="gemfire-pool" subscription-enabled="false">
 		<gfe:locator host="localhost" port="40403"/>
 	</gfe:pool>
 
-	<gfe:client-region id="persistent" pool-name="gemfire-pool" persistent="true" disk-store-ref="diskStore" disk-synchronous="true"/>
- 
-     <gfe:disk-store id="diskStore" queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
-            <gfe:disk-dir location="./" max-size="1"/>
-     </gfe:disk-store>
-	
-	<gfe:client-region id="overflow" pool-name="gemfire-pool" disk-store-ref="diskStore">
+	<gfe:client-region id="persistent" name="PersistentRegion" pool-name="gemfire-pool" persistent="true" disk-store-ref="diskStore" disk-synchronous="true"/>
+
+	<gfe:disk-store id="diskStore" queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
+		<gfe:disk-dir location="./" max-size="1"/>
+	</gfe:disk-store>
+
+	<gfe:client-region id="overflow" name="OverflowRegion" pool-name="gemfire-pool" disk-store-ref="diskStore">
 		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="OVERFLOW_TO_DISK">
 			<gfe:object-sizer>
 				<bean class="org.springframework.data.gemfire.SimpleObjectSizer"/>

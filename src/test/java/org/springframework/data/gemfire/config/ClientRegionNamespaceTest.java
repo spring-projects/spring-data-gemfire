@@ -32,8 +32,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.client.Interest;
-import org.springframework.data.gemfire.client.RegexInterest;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -44,7 +42,6 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
@@ -82,7 +79,11 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testBeanNames() throws Exception {
-		assertTrue(ObjectUtils.isEmpty(context.getAliases("publisher")));
+		assertTrue(context.containsBean("SimpleRegion"));
+		assertTrue(context.containsBean("publisher"));
+		assertTrue(context.containsBean("ComplexRegion"));
+		assertTrue(context.containsBean("PersistentRegion"));
+		assertTrue(context.containsBean("OverflowRegion"));
 	}
 
 	@SuppressWarnings("rawtypes")
