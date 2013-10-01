@@ -60,7 +60,7 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 						+ parent.getRegionService());
 			}
 			else {
-				log.debug("creating subregion of [" + parent.getFullPath() + "] with name " + regionName);
+				log.debug("creating subregion of [" + ( parent.getFullPath() == null ? parent.getName() : parent.getFullPath()) + "] with name " + regionName);
 				this.subRegion = this.parent.createSubregion(regionName, create());
 			}
 		}
@@ -86,7 +86,7 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 	 * @param name
 	 */
 	public void setName(String name) {
-		this.name = name;
+        this.name = name;
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 	 * @param parent
 	 */
 	public void setParent(Region<?, ?> parent) {
-		this.parent = parent;
+        this.parent = parent;
 	}
 
 	/**

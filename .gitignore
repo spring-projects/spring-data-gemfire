@@ -2,6 +2,7 @@
 target
 bin
 build
+out
 .gradle
 .springBeans
 pom.xml
