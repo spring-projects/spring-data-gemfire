@@ -47,12 +47,21 @@ public class SubRegionNamespaceTest {
 	@Autowired
 	private ApplicationContext context;
 
-	
+    @SuppressWarnings("rawtypes")
+    @Test
+    public void testNestedRegionsCreated() {
+        Cache cache = context.getBean(Cache.class);
+        assertNotNull(cache.getRegion("parent"));
+        assertNotNull(cache.getRegion("/parent/child"));
+        assertNotNull(cache.getRegion("/parent/child/grandchild"));
+    }
 
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void testNestedReplicatedRegions() {
-		Region parent = context.getBean("parent", Region.class);
+        Region parent = null;
+		parent = context.getBean("parent", Region.class);
+        Cache cache = context.getBean(Cache.class);
 		Region child = context.getBean("/parent/child", Region.class);
 		Region grandchild = context.getBean("/parent/child/grandchild", Region.class);
 		assertNotNull(child);
@@ -70,15 +79,13 @@ public class SubRegionNamespaceTest {
 		Cache cache = context.getBean(Cache.class);
 
 		Region parent = context.getBean("replicatedParent", Region.class);
-		parent.createSubregion("lookupChild", new AttributesFactory().create());
 
-		Region child = context.getBean("/replicatedParent/lookupChild", Region.class);
-		Region grandchild = context.getBean("/replicatedParent/lookupChild/partitionedGrandchild", Region.class);
+		Region child = context.getBean("/replicatedParent/replicatedChild", Region.class);
+		Region grandchild = context.getBean("/replicatedParent/replicatedChild/partitionedGrandchild", Region.class);
 		assertNotNull(child);
-		assertEquals("/replicatedParent/lookupChild", child.getFullPath());
-		assertSame(child, parent.getSubregion("lookupChild"));
+		assertEquals("/replicatedParent/replicatedChild", child.getFullPath());
 
-		assertEquals("/replicatedParent/lookupChild/partitionedGrandchild", grandchild.getFullPath());
+		assertEquals("/replicatedParent/replicatedChild/partitionedGrandchild", grandchild.getFullPath());
 		assertSame(grandchild, child.getSubregion("partitionedGrandchild"));
 
 	}

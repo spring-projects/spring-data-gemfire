@@ -16,12 +16,10 @@
 
 package org.springframework.data.gemfire.config;
 
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
@@ -32,12 +30,19 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Base class for all Region Parsers
- * 
+ *
  * @author David Turanski
  */
 abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
+
+
+    private final Map<String,Element> subRegionElements = new HashMap<String, Element>();
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -56,54 +61,11 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 		boolean subRegion = isSubRegion(element);
-
-		doParseRegion(element, parserContext, builder, subRegion);
-
-		if (subRegion) {
-			builder.addPropertyValue("parent", parserContext.getContainingBeanDefinition().getAttribute("parent"));
-			builder.addPropertyValue("regionName", element.getAttribute(NAME_ATTRIBUTE));
-		}
+        doParseRegion(element, parserContext, builder, subRegion);
 	}
 
 	protected abstract void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion);
-
-	protected void doParseSubRegion(Element element, Element subElement, ParserContext parserContext,
-			BeanDefinitionBuilder builder, boolean subRegion) {
-
-		String regionPath = null;
-		String parentBeanName = null;
-		if (subRegion) {
-			parentBeanName = parserContext.getContainingBeanDefinition().getAttribute("regionPath").toString();
-		}
-		else {
-			parentBeanName = getRegionNameFromElement(element);
-		}
-		regionPath = StringUtils.arrayToDelimitedString(new String[] { parentBeanName,
-				getRegionNameFromElement(subElement) }, "/");
-		if (!regionPath.startsWith("/")) {
-			regionPath = "/" + regionPath;
-		}
-		/*
-		 * The Region parser needs some context to handle recursion correctly
-		 */
-		builder.getBeanDefinition().setAttribute("parent",
-				new BeanDefinitionHolder(builder.getBeanDefinition(), parentBeanName));
-		builder.getBeanDefinition().setAttribute("regionPath", regionPath);
-
-		// Make recursive call
-		BeanDefinition subRegionDef = this.parseSubRegion(subElement, parserContext, builder);
-		// TODO: Is there a better work-around?
-		/*
-		 * This setting prevents the BF from generating a name for this been
-		 */
-		subRegionDef.setScope(BeanDefinition.SCOPE_PROTOTYPE);
-
-		if (log.isDebugEnabled()) {
-			log.debug("registering subregion as " + regionPath);
-		}
-		this.registerBeanDefinition(new BeanDefinitionHolder(subRegionDef, regionPath), parserContext.getRegistry());
-	}
 
 	protected void doParseCommonRegionConfiguration(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder, BeanDefinitionBuilder attrBuilder, boolean subRegion) {
@@ -117,7 +79,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 		// add attributes
 		ParsingUtils.setPropertyValue(element, builder, "name");
-		
+
 		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, attrBuilder);
 		ParsingUtils.parseStatistics(element, attrBuilder);
 		ParsingUtils.setPropertyValue(element, attrBuilder, "publisher");
@@ -179,10 +141,17 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 				builder.addPropertyValue("cacheWriter",
 						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
 			}
-			else if (subElement.getLocalName().endsWith("region")) {
-				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
-			}
 		}
+
+        if (!subRegion) {
+            Map<String,Element> allSubRegionElements =  new HashMap<String, Element>();
+            findSubregionElements(element,getRegionNameFromElement(element),allSubRegionElements);
+                if (!CollectionUtils.isEmpty(allSubRegionElements)) {
+                    for (Map.Entry<String,Element> entry: allSubRegionElements.entrySet()) {
+                        parseSubRegion(entry.getValue(),parserContext,entry.getKey());
+                    }
+                }
+        }
 
 	}
 
@@ -200,14 +169,48 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element,
-				builder.getBeanDefinition());
-		return beanDefinition;
+	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, String regionPath) {
+        element.setAttribute("id", regionPath);
+        String regionName = getRegionNameFromElement(element);
+        element.setAttribute("name", regionPath);
+        BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element);
+        String parentBeanName =   getParentPathForSubRegion(regionPath);
+        beanDefinition.getPropertyValues().add("parent",new RuntimeBeanReference(parentBeanName));
+        beanDefinition.getPropertyValues().add("regionName",regionName);
+        return beanDefinition;
 	}
 
 	private String getRegionNameFromElement(Element element) {
 		String name = element.getAttribute(NAME_ATTRIBUTE);
 		return StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE);
 	}
+
+    private String buildPathForSubRegion(String parentName, String regionName) {
+        String regionPath = StringUtils.arrayToDelimitedString(new String[] { parentName,
+               regionName }, "/");
+        if (!regionPath.startsWith("/")) {
+            regionPath = "/" + regionPath;
+        }
+        return regionPath;
+    }
+
+    private String getParentPathForSubRegion(String regionPath) {
+        int index = regionPath.lastIndexOf("/");
+        String parentPath =  regionPath.substring(0,index);
+        if (parentPath.lastIndexOf("/") == 0) {
+            parentPath = parentPath.substring(1);
+        }
+        return parentPath;
+    }
+
+
+    private void findSubregionElements(Element parent, String parentPath, Map<String,Element> allSubregionElements) {
+        for (Element element : DomUtils.getChildElements(parent)) {
+            if (element.getLocalName().endsWith("region")) {
+               String regionPath = buildPathForSubRegion(parentPath, getRegionNameFromElement(element));
+               allSubregionElements.put(regionPath,element);
+               findSubregionElements(element,regionPath,allSubregionElements);
+            }
+        }
+    }
 }

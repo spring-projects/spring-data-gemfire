@@ -27,7 +27,7 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;lookup-region;gt; definitions.
- * 
+ *
  * @author Costin Leau
  * @author David Turanski
  */
@@ -47,15 +47,6 @@ class LookupRegionParser extends AbstractRegionParser {
 		}
 		else {
 			builder.addPropertyValue("lookupOnly", true);
-		}
-
-		// parse nested elements
-		List<Element> subElements = DomUtils.getChildElements(element);
-		for (Element subElement : subElements) {
-			String name = subElement.getLocalName();
-			if (name.endsWith("region")) {
-				doParseSubRegion(element, subElement, parserContext, builder, subRegion);
-			}
 		}
 	}
 
