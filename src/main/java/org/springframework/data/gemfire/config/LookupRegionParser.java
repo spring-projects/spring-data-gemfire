@@ -16,13 +16,10 @@
 
 package org.springframework.data.gemfire.config;
 
-import java.util.List;
-
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.util.StringUtils;
-import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -32,6 +29,11 @@ import org.w3c.dom.Element;
  * @author David Turanski
  */
 class LookupRegionParser extends AbstractRegionParser {
+
+	@Override
+	protected Class<?> getRegionFactoryClass() {
+		return RegionLookupFactoryBean.class;
+	}
 
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
@@ -50,8 +52,4 @@ class LookupRegionParser extends AbstractRegionParser {
 		}
 	}
 
-	@Override
-	protected Class<?> getRegionFactoryClass() {
-		return RegionLookupFactoryBean.class;
-	}
 }

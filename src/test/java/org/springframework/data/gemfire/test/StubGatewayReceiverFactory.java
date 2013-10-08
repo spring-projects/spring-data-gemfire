@@ -12,14 +12,15 @@
  */
 package org.springframework.data.gemfire.test;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author David Turanski
@@ -33,6 +34,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	private List<GatewayTransportFilter> gatewayTransportFilters = new ArrayList<GatewayTransportFilter>();
 	private int maximumTimeBetweenPings;
 	private int socketBufferSize;
+	private String hostnameForClients;
 
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setStartPort(int)
@@ -98,6 +100,16 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setHostnameForClients(String)
+	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiver#getHost
+	 */
+	//@Override
+	public GatewayReceiverFactory setHostnameForClients(final String name) {
+		this.hostnameForClients = name;
+		return this;
+	}
+
+	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#create()
 	 */
 	@Override
@@ -109,6 +121,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 		when(gatewayReceiver.getMaximumTimeBetweenPings()).thenReturn(this.maximumTimeBetweenPings);
 		when(gatewayReceiver.getSocketBufferSize()).thenReturn(this.socketBufferSize);
 		when(gatewayReceiver.getStartPort()).thenReturn(this.startPort);
+		when(gatewayReceiver.getHost()).thenReturn(this.hostnameForClients);
 		 
 		return gatewayReceiver;
 	}

@@ -16,6 +16,10 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -30,19 +34,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Base class for all Region Parsers
  *
  * @author David Turanski
  */
 abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
-
-
-    private final Map<String,Element> subRegionElements = new HashMap<String, Element>();
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -143,15 +140,15 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			}
 		}
 
-        if (!subRegion) {
-            Map<String,Element> allSubRegionElements =  new HashMap<String, Element>();
-            findSubregionElements(element,getRegionNameFromElement(element),allSubRegionElements);
-                if (!CollectionUtils.isEmpty(allSubRegionElements)) {
-                    for (Map.Entry<String,Element> entry: allSubRegionElements.entrySet()) {
-                        parseSubRegion(entry.getValue(),parserContext,entry.getKey());
-                    }
-                }
-        }
+		if (!subRegion) {
+			Map<String, Element> allSubRegionElements = new HashMap<String, Element>();
+			findSubregionElements(element, getRegionNameFromElement(element), allSubRegionElements);
+			if (!CollectionUtils.isEmpty(allSubRegionElements)) {
+				for (Map.Entry<String, Element> entry : allSubRegionElements.entrySet()) {
+					parseSubRegion(entry.getValue(), parserContext, entry.getKey());
+				}
+			}
+		}
 
 	}
 
@@ -170,47 +167,49 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, String regionPath) {
-        element.setAttribute("id", regionPath);
-        String regionName = getRegionNameFromElement(element);
-        element.setAttribute("name", regionPath);
-        BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element);
-        String parentBeanName =   getParentPathForSubRegion(regionPath);
-        beanDefinition.getPropertyValues().add("parent",new RuntimeBeanReference(parentBeanName));
-        beanDefinition.getPropertyValues().add("regionName",regionName);
-        return beanDefinition;
+		String parentBeanName = getParentPathForSubRegion(regionPath);
+		String regionName = getRegionNameFromElement(element); // do before 'renaming' the element, below
+
+		element.setAttribute("id", regionPath);
+		element.setAttribute("name", regionPath);
+
+		BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element);
+		beanDefinition.getPropertyValues().add("parent", new RuntimeBeanReference(parentBeanName));
+		beanDefinition.getPropertyValues().add("regionName", regionName);
+
+		return beanDefinition;
 	}
 
 	private String getRegionNameFromElement(Element element) {
 		String name = element.getAttribute(NAME_ATTRIBUTE);
-		return StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE);
+		return (StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE));
 	}
 
     private String buildPathForSubRegion(String parentName, String regionName) {
-        String regionPath = StringUtils.arrayToDelimitedString(new String[] { parentName,
-               regionName }, "/");
+        String regionPath = StringUtils.arrayToDelimitedString(new String[] { parentName, regionName }, "/");
         if (!regionPath.startsWith("/")) {
             regionPath = "/" + regionPath;
         }
         return regionPath;
     }
 
-    private String getParentPathForSubRegion(String regionPath) {
-        int index = regionPath.lastIndexOf("/");
-        String parentPath =  regionPath.substring(0,index);
-        if (parentPath.lastIndexOf("/") == 0) {
-            parentPath = parentPath.substring(1);
-        }
-        return parentPath;
-    }
+	private String getParentPathForSubRegion(String regionPath) {
+		int index = regionPath.lastIndexOf("/");
+		String parentPath = regionPath.substring(0, index);
+		if (parentPath.lastIndexOf("/") == 0) {
+			parentPath = parentPath.substring(1);
+		}
+		return parentPath;
+	}
 
+	private void findSubregionElements(Element parent, String parentPath, Map<String, Element> allSubregionElements) {
+		for (Element element : DomUtils.getChildElements(parent)) {
+			if (element.getLocalName().endsWith("region")) {
+				String regionPath = buildPathForSubRegion(parentPath, getRegionNameFromElement(element));
+				allSubregionElements.put(regionPath, element);
+				findSubregionElements(element, regionPath, allSubregionElements);
+			}
+		}
+	}
 
-    private void findSubregionElements(Element parent, String parentPath, Map<String,Element> allSubregionElements) {
-        for (Element element : DomUtils.getChildElements(parent)) {
-            if (element.getLocalName().endsWith("region")) {
-               String regionPath = buildPathForSubRegion(parentPath, getRegionNameFromElement(element));
-               allSubregionElements.put(regionPath,element);
-               findSubregionElements(element,regionPath,allSubregionElements);
-            }
-        }
-    }
 }
