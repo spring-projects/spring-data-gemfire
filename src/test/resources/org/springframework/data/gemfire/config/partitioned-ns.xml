@@ -11,19 +11,20 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
 	<gfe:cache />
-	
+
 	<context:property-placeholder properties-ref="props"/>
 	<util:properties id="props">
 		<prop key="totalBuckets">4</prop>
+        <prop key="copies">1</prop>
 	</util:properties>
 	<gfe:partitioned-region id="simple" />
-	
-	<gfe:partitioned-region id="options" copies="1" total-buckets="${totalBuckets}" name="redundant" close="true" destroy="false" statistics="true">
+
+	<gfe:partitioned-region id="options" copies="${copies}" total-buckets="${totalBuckets}" name="redundant" close="true" destroy="false" statistics="true">
 		<gfe:partition-resolver>
 			<bean class="org.springframework.data.gemfire.SimplePartitionResolver"/>
 		</gfe:partition-resolver>
 	</gfe:partitioned-region>
-	
+
 	<gfe:partitioned-region id="complex" local-max-memory="20">
 		<gfe:cache-listener>
 			<ref bean="c-listener"/>
@@ -35,15 +36,15 @@
             <bean class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest.TestPartitionListener"/>
         </gfe:partition-listener>
 	</gfe:partitioned-region>
-	
+
 	<gfe:partitioned-region id="fixed">
 		<gfe:fixed-partition partition-name="p1" primary="true" num-buckets="3"/>
 		<gfe:fixed-partition partition-name="p2"/>
 		<gfe:fixed-partition partition-name="p3" primary="true"/>
 	</gfe:partitioned-region>
-	
+
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
 	<bean id="c-loader" class="org.springframework.data.gemfire.SimpleCacheLoader"/>
 	<bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>
-	
+
 </beans>
