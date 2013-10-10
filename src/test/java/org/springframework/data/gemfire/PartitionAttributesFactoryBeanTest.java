@@ -16,8 +16,10 @@
 
 package org.springframework.data.gemfire;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
@@ -69,6 +71,20 @@ public class PartitionAttributesFactoryBeanTest {
 		assertEquals(60000l, partitionAttributes.getStartupRecoveryDelay());
 		assertEquals(8192l, partitionAttributes.getTotalMaxMemory());
 		assertEquals(42, partitionAttributes.getTotalNumBuckets());
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testValidationOnRedundantCopiesWhenExceedsBound() throws Exception {
+		PartitionAttributesFactoryBean partitionAttributesFactoryBean = new PartitionAttributesFactoryBean();
+		partitionAttributesFactoryBean.setRedundantCopies(4);
+		partitionAttributesFactoryBean.getObject();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testValidationOnRedundantCopiesWhenPrecedesBound() throws Exception {
+		PartitionAttributesFactoryBean partitionAttributesFactoryBean = new PartitionAttributesFactoryBean();
+		partitionAttributesFactoryBean.setRedundantCopies(-1);
+		partitionAttributesFactoryBean.getObject();
 	}
 
 }
