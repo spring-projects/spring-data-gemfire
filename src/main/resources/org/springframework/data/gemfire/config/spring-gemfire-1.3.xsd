@@ -65,7 +65,7 @@ Inner bean definition of the gateway conflict resolver.
 					<xsd:attribute name="ref" type="xsd:string" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The name of the gateway conflict resolver bean referred by this declaration. Used as a convenience method. If no reference exists, 
+The name of the gateway conflict resolver bean referred by this declaration. Used as a convenience method. If no reference exists,
 use inner bean declarations.
                                     ]]></xsd:documentation>
 						</xsd:annotation>
@@ -119,8 +119,8 @@ Configures a data source to be bound to a JNDI context for use with Gemfire tran
 			use="optional" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Controls whether entry value retrieval methods return direct references to the entry value objects in the cache (false) 
-or copies of the objects (true).           
+Controls whether entry value retrieval methods return direct references to the entry value objects in the cache (false)
+or copies of the objects (true).
                 ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -173,7 +173,7 @@ domain classes which are added to the cache in portable data exchange (PDX) form
 				<xsd:documentation><![CDATA[
 Sets the name of the disk store to use for PDX meta data. When serializing objects in the PDX format,
 the type definitions are persisted to disk. This setting controls which disk store is used for that persistence.
-If not set, the metadata will go in the default disk store. 
+If not set, the metadata will go in the default disk store.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -190,7 +190,7 @@ If you are using a WAN gateway, or persistent regions, you should leave this set
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Sets the object preference to PdxInstance type. When a cached object that was serialized as a PDX is read from the cache 
+Sets the object preference to PdxInstance type. When a cached object that was serialized as a PDX is read from the cache
 a PdxInstance will be returned instead of the actual domain class. The PdxInstance is an interface that provides run time
 access to the fields of a PDX without deserializing the entire PDX. The PdxInstance implementation is a light weight wrapper
 that simply refers to the raw bytes of the PDX that are kept in the cache. Using this method applications can choose to
@@ -238,8 +238,8 @@ JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more informa
 		<xsd:attribute name="close" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Determines if the cache should be closed when the application context is closed. This value is 
-true by default but should be set to false if deploying multiple applications in a jvm that share the 
+Determines if the cache should be closed when the application context is closed. This value is
+true by default but should be set to false if deploying multiple applications in a jvm that share the
 same cache instance.
             ]]></xsd:documentation>
 			</xsd:annotation>
@@ -389,7 +389,7 @@ across concurrent threads in the same VM, whether or not transactions are used.
 				minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-Inner bean definition. The nested declaration serves as an alternative to bean references (using 
+Inner bean definition. The nested declaration serves as an alternative to bean references (using
 both in the same definition) is illegal.
 					]]></xsd:documentation>
 				</xsd:annotation>
@@ -479,7 +479,7 @@ Inner bean definition of the cache listener.
 							<xsd:attribute name="ref" type="xsd:string" use="optional">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-The name of the cache listener bean referred by this declaration. Used as a convenience method. If no reference exists, 
+The name of the cache listener bean referred by this declaration. Used as a convenience method. If no reference exists,
 use inner bean declarations.
 									]]></xsd:documentation>
 								</xsd:annotation>
@@ -556,13 +556,13 @@ CustomExpiry Time to idle (or idle timeout) configuration for the region entries
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether the defined region is persistent. GemFire ensures that all the data you put into a region that
- is configured for persistence will be written to disk in a way that it can be recovered the next time you create the 
-region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart 
+ is configured for persistence will be written to disk in a way that it can be recovered the next time you create the
+region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart
 of GemFire.
 
-Default is false, meaning the regions are not persisted. 
+Default is false, meaning the regions are not persisted.
 
-Note: Persistence for partitioned regions is supported only from GemFire 6.5 onwards.						
+Note: Persistence for partitioned regions is supported only from GemFire 6.5 onwards.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -616,7 +616,7 @@ Indicates whether concurrency checks (versioning) are enabled for the region
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether the defined region should be destroyed or not at shutdown. Destroy cascades to all entries and subregions.
-After the destroy, this region object can not be used any more and any attempt to use this region object will get 
+After the destroy, this region object can not be used any more and any attempt to use this region object will get
 RegionDestroyedException.
 
 Default is false, meaning that regions are not destroyed.
@@ -1231,7 +1231,7 @@ Specifies the number of buckets to allocate to the fixed partition
 						maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-Subscription policy for the partitioned region. 
+Subscription policy for the partitioned region.
                                  ]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:complexType>
@@ -1261,19 +1261,13 @@ The action to take when performing eviction.
 					</xsd:element>
 				</xsd:sequence>
 				<xsd:attributeGroup ref="distributedRegionAttributes" />
-				<xsd:attribute name="copies" use="optional" default="0">
+				<xsd:attribute name="copies" use="optional" default="0" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The number of copies for each partition for high-availability. By default, no copies are created meaning there is no
+The number of copies (0-3) for each partition for high-availability. By default, no copies are created meaning there is no
 redundancy. Each copy provides extra backup at the expense of extra storages.
 						]]></xsd:documentation>
 					</xsd:annotation>
-					<xsd:simpleType>
-						<xsd:restriction base="xsd:byte">
-							<xsd:minInclusive value="0" />
-							<xsd:maxInclusive value="3" />
-						</xsd:restriction>
-					</xsd:simpleType>
 				</xsd:attribute>
 				<xsd:attribute name="colocated-with" type="xsd:string"
 					use="optional">
@@ -1306,14 +1300,14 @@ Note: This setting must be the same in all processes using the region.
 					use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The total number of hash buckets to be used by the region in all processes. 
+The total number of hash buckets to be used by the region in all processes.
 
 A bucket is the smallest unit of data management in a partitioned region. Entries are stored in buckets and buckets may
  move from one VM to another. Buckets may also have copies, depending on redundancy to provide high availability in the
   face of VM failure.
 The number of buckets should be prime and as a rough guide at the least four times the number of partition VMs. However
 , there is significant overhead to managing a bucket, particularly for higher values of redundancy.
- 
+
 Note: This setting must be the same in all processes using the region.
 							]]></xsd:documentation>
 					</xsd:annotation>
@@ -1371,7 +1365,7 @@ The name of the region definition.
 		<xsd:attribute name="timeout" type="xsd:string" default="0">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The amount of time before the expiration action takes place. Defaults to zero (which means never timeout). 
+The amount of time before the expiration action takes place. Defaults to zero (which means never timeout).
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -1381,7 +1375,7 @@ The amount of time before the expiration action takes place. Defaults to zero (w
 					<xsd:enumeration value="INVALIDATE">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-When the region or cached object expires, it is invalidated. 
+When the region or cached object expires, it is invalidated.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:enumeration>
@@ -1426,7 +1420,7 @@ Inner bean definition of the CustomExpiry.
 		<xsd:attribute name="ref" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the CustomExpiry bean referred by this declaration. Used as a convenience method. If no reference exists, 
+The name of the CustomExpiry bean referred by this declaration. Used as a convenience method. If no reference exists,
 use inner bean declarations.
 		   ]]></xsd:documentation>
 			</xsd:annotation>
@@ -1493,14 +1487,14 @@ performed.
 					<xsd:documentation><![CDATA[
 The LRU (least-recently-used) region entries is locally destroyed.
 
-Note: this option is not compatible with replicated regions (as it render the replica region incomplete).  
+Note: this option is not compatible with replicated regions (as it render the replica region incomplete).
 							]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="OVERFLOW_TO_DISK">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to 
+The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to
 reclaim memory.
 							]]></xsd:documentation>
 				</xsd:annotation>
@@ -1549,7 +1543,7 @@ When combined with DataPolicy.PARTITION this interest policy causes cache listen
 							<xsd:documentation><![CDATA[
 Directory on the file system for storing data.
 
-Note: the directory must already exist.						
+Note: the directory must already exist.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
@@ -1581,8 +1575,8 @@ Indicates whether or not the operation logs are automatically compacted or not. 
 			default="1024">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this 
-amount of file space will be immediately reserved. 
+Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this
+amount of file space will be immediately reserved.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -1590,8 +1584,8 @@ amount of file space will be immediately reserved.
 			default="1000">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Sets the number of milliseconds that can elapse before unwritten data is written to disk. 
-It is considered only for asynchronous writing. 
+Sets the number of milliseconds that can elapse before unwritten data is written to disk.
+It is considered only for asynchronous writing.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -1599,7 +1593,7 @@ It is considered only for asynchronous writing.
 			default="0">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been 
+The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been
 queued async ops will begin blocking until some of the queued ops have been flushed to disk.
 Considered only for asynchronous writing.
 				]]></xsd:documentation>
@@ -1683,9 +1677,9 @@ which it receives its data. The client can hold some data locally or forward all
 							<xsd:element name="key-interest">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-Key based interest. If the key is a List, then all the keys in the List will be registered. The key can also be the 
-special token 'ALL_KEYS', which will register interest in all keys in the region. In effect, this will cause an update 
-to any key in this region in the CacheServer to be pushed to the client. 
+Key based interest. If the key is a List, then all the keys in the List will be registered. The key can also be the
+special token 'ALL_KEYS', which will register interest in all keys in the region. In effect, this will cause an update
+to any key in this region in the CacheServer to be pushed to the client.
 									]]></xsd:documentation>
 								</xsd:annotation>
 								<xsd:complexType>
@@ -1705,7 +1699,7 @@ Inner bean definition of the client key interest.
 												use="optional">
 												<xsd:annotation>
 													<xsd:documentation><![CDATA[
-The name of the client key interest bean referred by this declaration. Used as a convenience method. If no reference exists, 
+The name of the client key interest bean referred by this declaration. Used as a convenience method. If no reference exists,
 use the inner bean declaration.
 													]]></xsd:documentation>
 												</xsd:annotation>
@@ -1717,7 +1711,7 @@ use the inner bean declaration.
 							<xsd:element name="regex-interest">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-Regular expression based interest. If the pattern is '.*' then all keys of any type will be pushed to the client. 
+Regular expression based interest. If the pattern is '.*' then all keys of any type will be pushed to the client.
 									]]></xsd:documentation>
 								</xsd:annotation>
 								<xsd:complexType>
@@ -1759,10 +1753,10 @@ The data policy for this client. Can be either 'EMPTY' or 'NORMAL' (the default)
 configured for this region, this parameter will be ignored.
 
 EMPTY - causes data to never be stored in local memory. The region will always appear empty. It can be used to for zero
- footprint producers that only want to distribute their data to others and for zero footprint consumers that only want 
+ footprint producers that only want to distribute their data to others and for zero footprint consumers that only want
  to see events.
-NORMAL - causes data that this region is interested in to be stored in local memory. It allows the contents in this 
-cache to differ from other caches.  
+NORMAL - causes data that this region is interested in to be stored in local memory. It allows the contents in this
+cache to differ from other caches.
  							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
@@ -1803,14 +1797,14 @@ The ClientRegionShortcut for this region. Allows easy initialization of the regi
 		<xsd:attribute name="host" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The host name or ip address of the connection.				
+The host name or ip address of the connection.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="port">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The port number of the connection (between 1 and 65535 inclusive).				
+The port number of the connection (between 1 and 65535 inclusive).
 				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
@@ -1832,7 +1826,7 @@ Indicates whether or not the registered interest is durable or not. Default is f
 			default="KEYS_VALUES">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The result policy for this interest. Can be one of 'KEYS' or 'KEYS_VALUES' (the default) or 'NONE'. 
+The result policy for this interest. Can be one of 'KEYS' or 'KEYS_VALUES' (the default) or 'NONE'.
 
 KEYS - Initializes the local cache with the keys satisfying the request.
 KEYS-VALUES - initializes the local cache with the keys and current values satisfying the request.
@@ -1851,7 +1845,7 @@ NONE -  Does not initialize the local cache.
 			use="optional" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Indicates whether values are received with create and update events on keys of interest (true) 
+Indicates whether values are received with create and update events on keys of interest (true)
 or only invalidations are received and the value will be received on the next get instead (false).
 Default is true.
 				]]></xsd:documentation>
@@ -1945,7 +1939,7 @@ Note: In order to instantiate a cacheserver, a GemFire cache needs to be avaialb
 					maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The client subscription configuration that is used to control a clients use of server resources towards notification queues.				
+The client subscription configuration that is used to control a clients use of server resources towards notification queues.
 				]]></xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
@@ -2007,7 +2001,7 @@ The port number of the server.
 				default="">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The server groups that this server will be a member of given as a comma separated values list.				
+The server groups that this server will be a member of given as a comma separated values list.
 				]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -2114,7 +2108,7 @@ Required.
 		<xsd:attribute name="query" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The query for the GemFire continuous query. 
+The query for the GemFire continuous query.
 	        ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2129,14 +2123,14 @@ interface or provide a method named 'handleEvent'.
 		<xsd:attribute name="name" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the resulting GemFire continuous query. Useful for monitoring and statistics querying. 
+The name of the resulting GemFire continuous query. Useful for monitoring and statistics querying.
 	        ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="durable" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Whether the resulting GemFire continuous query is durable or not. 
+Whether the resulting GemFire continuous query is durable or not.
 	        ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2706,7 +2700,7 @@ Inner bean definition of the remote function.
 						<xsd:attribute name="ref" type="xsd:string" use="optional">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[
-The name of the remote function bean referred by this declaration. Used as a convenience method. If no reference exists, 
+The name of the remote function bean referred by this declaration. Used as a convenience method. If no reference exists,
 use inner bean declarations.
                                     ]]></xsd:documentation>
 							</xsd:annotation>
