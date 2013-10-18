@@ -195,21 +195,27 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * @param dataPolicy requested data policy
 	 */
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
-		if (dataPolicy == null) {
-			if (isPersistent()) {
-				regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-			} else {
-				regionFactory.setDataPolicy(DataPolicy.DEFAULT);
-			}
-			return;
+		if (dataPolicy != null) {
+			regionFactory.setDataPolicy(convertAndValidate(dataPolicy));
+		}
+		else {
+			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.DEFAULT);
+		}
+	}
+
+	private DataPolicy convertAndValidate(final String dataPolicy) {
+		final DataPolicy dataPolicyType = new DataPolicyConverter().convert(dataPolicy);
+
+		Assert.notNull(dataPolicyType, String.format("Data policy %1$s is invalid", dataPolicy));
+
+		if (dataPolicyType.withPersistence()) {
+			// NOTE isNotPersistent means the user explicitly set the persistent attribute for the Region to false,
+			// and this conflicts with the Data Policy (via the that was set by the user, which indicates persistence.
+			Assert.isTrue(!isNotPersistent(), String.format("Data policy %1$s is invalid when persistent is false",
+				dataPolicy));
 		}
 
-		DataPolicy dp = new DataPolicyConverter().convert(dataPolicy);
-		Assert.notNull(dp, "Data policy " + dataPolicy + " is invalid");
-		if (dp.withPersistence()) {
-			Assert.isTrue(!isNotPersistent(), "Data policy " + dataPolicy + " is invalid when persistent is false");
-		}
-		regionFactory.setDataPolicy(dp);
+		return dataPolicyType;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -343,7 +349,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	/**
 	 * Sets the dataPolicy as a String. Required to support property
 	 * placeholders
-	 * @param dataPolicy the dataPolicy name (NORMAL, PRELOADED, etc)
+	 * @param dataPolicyName the dataPolicy name (NORMAL, PRELOADED, etc)
 	 */
 	public void setDataPolicy(String dataPolicyName) {
 		this.dataPolicy = dataPolicyName;
