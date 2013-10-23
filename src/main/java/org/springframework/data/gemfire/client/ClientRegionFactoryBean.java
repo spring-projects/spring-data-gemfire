@@ -31,6 +31,8 @@ import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
@@ -42,102 +44,92 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 /**
- * Client extension for GemFire regions.
- * 
+ * Client extension for GemFire Regions.
+ * <p/>
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements BeanFactoryAware,
 		DisposableBean {
 
 	private static final Log log = LogFactory.getLog(ClientRegionFactoryBean.class);
 
+	private boolean close = false;
 	private boolean destroy = false;
 
-	private boolean close = true;
-
-	private Resource snapshot;
-
-	private CacheListener<K, V> cacheListeners[];
-
-	private Interest<K>[] interests;
-
-	private String poolName;
-
 	private BeanFactory beanFactory;
+
+	private CacheListener<K, V>[] cacheListeners;
+
+	private CacheLoader<K, V> cacheLoader;
+
+	private CacheWriter<K, V> cacheWriter;
 
 	private ClientRegionShortcut shortcut = null;
 
 	private DataPolicy dataPolicy;
 
+	private Interest<K>[] interests;
+
 	private RegionAttributes<K, V> attributes;
 
-	private Region<K, V> region;
-
-	private String diskStoreName;
+	private Resource snapshot;
 
 	private String dataPolicyName;
+	private String diskStoreName;
+	private String poolName;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
-		region = getRegion();
-		postProcess(region);
+		postProcess(getRegion());
 	}
 
 	@Override
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
-		Assert.isTrue(cache instanceof ClientCache, "Unable to create regions from " + cache);
-		ClientCache c = (ClientCache) cache;
+		Assert.isTrue(cache instanceof ClientCache, String.format("Unable to create regions from %1$s", cache));
 
+		// TODO reference to an internal GemFire class!
 		if (cache instanceof GemFireCacheImpl) {
 			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required");
 		}
-		
-		Assert.isTrue(!(StringUtils.hasText(dataPolicyName) && dataPolicy != null), "Only one of 'dataPolicy' or 'dataPolicyName' can be set");
-		
-		
+
+		Assert.isTrue(!(StringUtils.hasText(dataPolicyName) && dataPolicy != null),
+			"Only one of 'dataPolicy' or 'dataPolicyName' can be set");
+
 		if (StringUtils.hasText(dataPolicyName)) {
 			dataPolicy = new DataPolicyConverter().convert(dataPolicyName);
 			Assert.notNull(dataPolicy, "Data policy " + dataPolicyName + " is invalid");
 		}
 
 		// first look at shortcut
-		ClientRegionShortcut s = null;
+		ClientRegionShortcut shortcut = this.shortcut;
 
 		if (shortcut == null) {
 			if (dataPolicy != null) {
 				if (DataPolicy.EMPTY.equals(dataPolicy)) {
-					s = ClientRegionShortcut.PROXY;
-				}
-				else if (DataPolicy.PERSISTENT_REPLICATE.equals(dataPolicy)) {
-					s = ClientRegionShortcut.LOCAL_PERSISTENT;
+					shortcut = ClientRegionShortcut.PROXY;
 				}
 				else if (DataPolicy.NORMAL.equals(this.dataPolicy)) {
-					s = ClientRegionShortcut.CACHING_PROXY;
+					shortcut = ClientRegionShortcut.CACHING_PROXY;
+				}
+				else if (DataPolicy.PERSISTENT_REPLICATE.equals(dataPolicy)) {
+					shortcut = ClientRegionShortcut.LOCAL_PERSISTENT;
 				}
 				else {
-					s = ClientRegionShortcut.LOCAL;
+					shortcut = ClientRegionShortcut.LOCAL;
 				}
 			}
 			else {
-				s = ClientRegionShortcut.LOCAL;
+				shortcut = ClientRegionShortcut.LOCAL;
 			}
 		}
-		else {
-			s = shortcut;
-		}
 
-		ClientRegionFactory<K, V> factory = c.createClientRegionFactory(s);
+		ClientRegionFactory<K, V> factory = ((ClientCache) cache).createClientRegionFactory(shortcut);
 
 		// map the attributes onto the client
 		if (attributes != null) {
-			CacheListener<K, V>[] listeners = attributes.getCacheListeners();
-			if (!ObjectUtils.isEmpty(listeners)) {
-				for (CacheListener<K, V> listener : listeners) {
-					factory.addCacheListener(listener);
-				}
-			}
 			factory.setCloningEnabled(attributes.getCloningEnabled());
 			factory.setConcurrencyLevel(attributes.getConcurrencyLevel());
 			factory.setCustomEntryIdleTimeout(attributes.getCustomEntryIdleTimeout());
@@ -157,11 +149,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			factory.setValueConstraint(attributes.getValueConstraint());
 		}
 
-		if (!ObjectUtils.isEmpty(cacheListeners)) {
-			for (CacheListener<K, V> listener : cacheListeners) {
-				factory.addCacheListener(listener);
-			}
-		}
+		addCacheListeners(factory);
 
 		if (StringUtils.hasText(poolName)) {
 			// try to eagerly initialize the pool name, if defined as a bean
@@ -173,7 +161,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			}
 
 			factory.setPoolName(poolName);
-		} else {
+		}
+		else {
 			Pool pool = beanFactory.getBean(Pool.class);
 			factory.setPoolName(pool.getName());
 		}
@@ -182,35 +171,71 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			factory.setDiskStoreName(diskStoreName);
 		}
 
-		Region<K, V> reg = factory.create(regionName);
+		Region<K, V> clientRegion = factory.create(regionName);
 		log.info("Created new cache region [" + regionName + "]");
+
 		if (snapshot != null) {
-			reg.loadSnapshot(snapshot.getInputStream());
+			clientRegion.loadSnapshot(snapshot.getInputStream());
 		}
 
-		return reg;
+		return clientRegion;
+	}
+
+	private void addCacheListeners(ClientRegionFactory<K, V> factory) {
+		if (attributes != null) {
+			CacheListener<K, V>[] listeners = attributes.getCacheListeners();
+
+			if (!ObjectUtils.isEmpty(listeners)) {
+				for (CacheListener<K, V> listener : listeners) {
+					factory.addCacheListener(listener);
+				}
+			}
+		}
+
+		if (!ObjectUtils.isEmpty(cacheListeners)) {
+			for (CacheListener<K, V> listener : cacheListeners) {
+				factory.addCacheListener(listener);
+			}
+		}
 	}
 
 	protected void postProcess(Region<K, V> region) {
+		registerInterests(region);
+		setCacheLoader(region);
+		setCacheWriter(region);
+	}
+
+	private void registerInterests(final Region<K, V> region) {
 		if (!ObjectUtils.isEmpty(interests)) {
 			for (Interest<K> interest : interests) {
 				if (interest instanceof RegexInterest) {
-					// do the cast since it's safe
 					region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(),
-							interest.isDurable(), interest.isReceiveValues());
+						interest.isDurable(), interest.isReceiveValues());
 				}
 				else {
 					region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable(),
-							interest.isReceiveValues());
+						interest.isReceiveValues());
 				}
 			}
+		}
+	}
+
+	private void setCacheLoader(Region<K, V> region) {
+		if (cacheLoader != null) {
+			region.getAttributesMutator().setCacheLoader(this.cacheLoader);
+		}
+	}
+
+	private void setCacheWriter(Region<K, V> region) {
+		if (cacheWriter != null) {
+			region.getAttributesMutator().setCacheWriter(this.cacheWriter);
 		}
 	}
 
 	@Override
 	public void destroy() throws Exception {
 		Region<K, V> region = getObject();
-		// unregister interests
+
 		try {
 			if (region != null && !ObjectUtils.isEmpty(interests)) {
 				for (Interest<K> interest : interests) {
@@ -222,9 +247,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 					}
 				}
 			}
-			// should not really happen since interests are validated at
-			// start/registration
 		}
+		// NOTE AdminRegion, LocalDataSet, Proxy Region and RegionCreation all throw UnsupportedOperationException;
+		// however, should not really happen since Interests are validated at start/registration
 		catch (UnsupportedOperationException ex) {
 			log.warn("Cannot unregister cache interests", ex);
 		}
@@ -235,16 +260,16 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 					try {
 						region.close();
 					}
-					catch (CacheClosedException cce) {
-						// nothing to see folks, move on.
+					catch (CacheClosedException ignore) {
 					}
 				}
 			}
+			// TODO I think Region.close and Region.destroyRegion are mutually exclusive; thus, 1 operation (e.g. close)
+			// does not cancel the other (i.e. destroy). This should just be if, not else if.
 			else if (destroy) {
 				region.destroyRegion();
 			}
 		}
-		region = null;
 	}
 
 	@Override
@@ -294,42 +319,44 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * recommended way for creating clients since it covers all the major
 	 * scenarios with minimal configuration.
 	 * 
-	 * @param shortcut
+	 * @param shortcut the ClientRegionShortcut to use.
 	 */
 	public void setShortcut(ClientRegionShortcut shortcut) {
 		this.shortcut = shortcut;
 	}
 
+	final boolean isDestroy() {
+		return destroy;
+	}
+
 	/**
-	 * Indicates whether the region referred by this factory bean, will be
+	 * Indicates whether the region referred by this factory bean will be
 	 * destroyed on shutdown (default false). Note: destroy and close are
 	 * mutually exclusive. Enabling one will automatically disable the other.
-	 * 
+	 * <p/>
 	 * @param destroy whether or not to destroy the region
-	 * 
 	 * @see #setClose(boolean)
 	 */
 	public void setDestroy(boolean destroy) {
 		this.destroy = destroy;
+		this.close = (this.close && !destroy); // retain previous value iff destroy is false;
+	}
 
-		if (destroy) {
-			close = false;
-		}
+	final boolean isClose() {
+		return close;
 	}
 
 	/**
 	 * Indicates whether the region referred by this factory bean, will be
 	 * closed on shutdown (default true). Note: destroy and close are mutually
 	 * exclusive. Enabling one will automatically disable the other.
-	 * 
+	 * <p/>
 	 * @param close whether to close or not the region
 	 * @see #setDestroy(boolean)
 	 */
 	public void setClose(boolean close) {
 		this.close = close;
-		if (close) {
-			destroy = false;
-		}
+		this.destroy = (this.destroy && !close); // retain previous value iff close is false.
 	}
 
 	/**
@@ -353,6 +380,26 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 */
 	public void setCacheListeners(CacheListener<K, V>[] cacheListeners) {
 		this.cacheListeners = cacheListeners;
+	}
+
+	/**
+	 * Sets the CacheLoader used to load data local to the client's Region on cache misses.
+	 * <p/>
+	 * @param cacheLoader a GemFire CacheLoader used to load data into the client Region.
+	 * @see com.gemstone.gemfire.cache.CacheLoader
+	 */
+	public void setCacheLoader(CacheLoader<K, V> cacheLoader) {
+		this.cacheLoader = cacheLoader;
+	}
+
+	/**
+	 * Sets the CacheWriter used to perform a synchronous write-behind when data is put into the client's Region.
+	 * <p/>
+	 * @param cacheWriter the GemFire CacheWriter used to perform synchronous write-behinds on put ops.
+	 * @see com.gemstone.gemfire.cache.CacheWriter
+	 */
+	public void setCacheWriter(CacheWriter<K, V> cacheWriter) {
+		this.cacheWriter = cacheWriter;
 	}
 
 	/**
@@ -395,4 +442,5 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	public void setAttributes(RegionAttributes<K, V> attributes) {
 		this.attributes = attributes;
 	}
+
 }
