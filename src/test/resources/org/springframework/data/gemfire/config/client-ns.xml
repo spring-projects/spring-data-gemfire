@@ -43,5 +43,14 @@
 			</gfe:object-sizer>
 		</gfe:eviction>
 	</gfe:client-region>
-	
+
+	<gfe:client-region id="loadWithWrite" name="LoadedWriterRegion" shortcut="LOCAL">
+		<gfe:cache-loader>
+			<bean class="org.springframework.data.gemfire.config.ClientRegionNamespaceTest$TestCacheLoader"/>
+		</gfe:cache-loader>
+		<gfe:cache-writer>
+			<bean class="org.springframework.data.gemfire.config.ClientRegionNamespaceTest$TestCacheWriter"/>
+		</gfe:cache-writer>
+	</gfe:client-region>
+
 </beans>

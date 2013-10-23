@@ -15,7 +15,10 @@
  */
 package org.springframework.data.gemfire.client;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -27,14 +30,18 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 
+/**
+ * @author David Turanski
+ * @author John Blum
+ */
 public class ClientRegionFactoryBeanTest {
 
 	@Test
-	public void testLookupFallbackFailingToUseProvidedShortcut()
-			throws Exception {
+	public void testLookupFallbackFailingToUseProvidedShortcut() throws Exception {
 		ClientRegionFactoryBean<Object, Object> fb = new ClientRegionFactoryBean<Object, Object>();
+
 		fb.setShortcut(ClientRegionShortcut.CACHING_PROXY);
-		
+
 		Pool pool = Mockito.mock(Pool.class);
 		
 		BeanFactory beanFactory = Mockito.mock(BeanFactory.class);
@@ -47,11 +54,8 @@ public class ClientRegionFactoryBeanTest {
 		ClientCache cache = Mockito.mock(ClientCache.class);
 
 		@SuppressWarnings("unchecked")
-		ClientRegionFactory<Object, Object> factory = Mockito
-				.mock(ClientRegionFactory.class);
-		Mockito.when(
-				cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY))
-				.thenReturn(factory);
+		ClientRegionFactory<Object, Object> factory = Mockito.mock(ClientRegionFactory.class);
+		Mockito.when(cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)).thenReturn(factory);
 
 		@SuppressWarnings("unchecked")
 		Region<Object, Object> region = Mockito.mock(Region.class);
@@ -61,4 +65,54 @@ public class ClientRegionFactoryBeanTest {
 
 		assertSame(region, result);
 	}
+
+	@Test
+	public void testCloseDestroySettings() {
+		final ClientRegionFactoryBean<Object, Object> factory = new ClientRegionFactoryBean<Object, Object>();
+
+		assertNotNull(factory);
+		assertFalse(factory.isClose());
+		assertFalse(factory.isDestroy());
+
+		factory.setClose(false);
+
+		assertFalse(factory.isClose());
+		assertFalse(factory.isDestroy()); // when destroy is false it remains false even when setClose(false) is called
+
+		factory.setClose(true);
+
+		assertTrue(factory.isClose()); // calling setClose(true) should set close to true
+		assertFalse(factory.isDestroy());
+
+		factory.setDestroy(false);
+
+		assertTrue(factory.isClose()); // calling setDestroy(false) should have no affect on close
+		assertFalse(factory.isDestroy());
+
+		factory.setDestroy(true);
+
+		assertFalse(factory.isClose()); // setting destroy to true should set close to false
+		assertTrue(factory.isDestroy()); // calling setDestroy(true) should set destroy to true
+
+		factory.setClose(false);
+
+		assertFalse(factory.isClose());
+		assertTrue(factory.isDestroy()); // calling setClose(false) should have no affect on destroy
+
+		factory.setDestroy(false);
+
+		assertFalse(factory.isClose()); // setting destroy back to false should have no affect on close
+		assertFalse(factory.isDestroy());
+
+		factory.setDestroy(true);
+
+		assertFalse(factory.isClose());
+		assertTrue(factory.isDestroy());
+
+		factory.setClose(true);
+
+		assertTrue(factory.isClose());
+		assertFalse(factory.isDestroy()); // setting close to true should set destroy to false
+	}
+
 }

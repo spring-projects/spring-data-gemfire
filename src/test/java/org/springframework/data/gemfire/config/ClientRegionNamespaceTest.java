@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -38,21 +39,27 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheLoaderException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 /**
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="client-ns.xml",
+@ContextConfiguration(locations="/org/springframework/data/gemfire/config/client-ns.xml",
 	initializers=GemfireTestApplicationContextInitializer.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 public class ClientRegionNamespaceTest {
 
 	@Autowired
@@ -60,9 +67,7 @@ public class ClientRegionNamespaceTest {
 
 	@AfterClass
 	public static void tearDown() {
-
 		for (String name : new File(".").list(new FilenameFilter() {
-
 			@Override
 			public boolean accept(File dir, String name) {
 				return name.startsWith("BACKUP");
@@ -94,8 +99,8 @@ public class ClientRegionNamespaceTest {
 		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", fb));
 	}
 
-	@Test
 	@SuppressWarnings("rawtypes")
+	@Test
 	public void testComplexClient() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		ClientRegionFactoryBean fb = context.getBean("&complex", ClientRegionFactoryBean.class);
@@ -135,4 +140,33 @@ public class ClientRegionNamespaceTest {
 		ObjectSizer sizer = evicAttr.getObjectSizer();
 		assertEquals(SimpleObjectSizer.class, sizer.getClass());
 	}
+
+	@Test
+	public void testClientRegionWithCacheLoaderAndCacheWriter() throws Exception {
+		assertTrue(context.containsBean("loadWithWrite"));
+
+		ClientRegionFactoryBean factory = context.getBean("&loadWithWrite", ClientRegionFactoryBean.class);
+
+		assertNotNull(factory);
+		assertEquals(ClientRegionShortcut.LOCAL, TestUtils.readField("shortcut", factory));
+		assertTrue(TestUtils.readField("cacheLoader", factory) instanceof TestCacheLoader);
+		assertTrue(TestUtils.readField("cacheWriter", factory) instanceof TestCacheWriter);
+	}
+
+	@SuppressWarnings("unused")
+	public static final class TestCacheLoader implements CacheLoader<Object, Object> {
+
+		@Override
+		public Object load(final LoaderHelper<Object, Object> helper) throws CacheLoaderException {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public void close() {
+		}
+	}
+
+	public static final class TestCacheWriter extends CacheWriterAdapter<Object, Object> {
+	}
+
 }

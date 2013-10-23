@@ -20,15 +20,10 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanMetadataAttribute;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.support.ManagedList;
-import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
-import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
 import org.springframework.util.StringUtils;
@@ -44,21 +39,18 @@ import com.gemstone.gemfire.cache.ResumptionAction;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
- * Various minor utility used by the parser.
- * 
+ * Various minor utilities used by the parser.
+ * <p/>
  * @author Costin Leau
  * @author David Turanski
  * @author Lyndon Adams
+ * @author John Blum
  */
 abstract class ParsingUtils {
-	
+
 	private static Log log = LogFactory.getLog(ParsingUtils.class);
 
-	final static String GEMFIRE_VERSION = CacheFactory.getVersion();
-
-	private static final String ALIASES_KEY = ParsingUtils.class.getName() + ":aliases";
-
-
+	static final String GEMFIRE_VERSION = CacheFactory.getVersion();
 
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
 			String propertyName, Object defaultValue) {
@@ -91,35 +83,6 @@ abstract class ParsingUtils {
 	}
 
 	/**
-	 * Utility for parsing bean aliases. Normally parsed by
-	 * AbstractBeanDefinitionParser however due to the attribute clash (bean
-	 * uses 'name' for aliases while region use it to indicate their name), the
-	 * parser needs to handle this differently by storing them as metadata which
-	 * gets deleted just before registration.
-	 * 
-	 * @param element
-	 * @param builder
-	 */
-	static void addBeanAliasAsMetadata(Element element, BeanDefinitionBuilder builder) {
-		String[] aliases = new String[0];
-		String name = element.getAttributeNS(BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI,
-				AbstractBeanDefinitionParser.NAME_ATTRIBUTE);
-
-		if (StringUtils.hasLength(name)) {
-			aliases = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(name));
-		}
-		BeanMetadataAttribute attr = new BeanMetadataAttribute(ALIASES_KEY, aliases);
-		attr.setSource(element);
-		builder.getRawBeanDefinition().addMetadataAttribute(attr);
-	}
-
-	static BeanDefinitionHolder replaceBeanAliasAsMetadata(BeanDefinitionHolder holder) {
-		BeanDefinition beanDefinition = holder.getBeanDefinition();
-		return new BeanDefinitionHolder(beanDefinition, holder.getBeanName(),
-				(String[]) beanDefinition.removeAttribute(ALIASES_KEY));
-	}
-
-	/**
 	 * Utility method handling parsing of nested definition of the type:
 	 * 
 	 * <pre>
@@ -134,32 +97,28 @@ abstract class ParsingUtils {
 	 *   </tag>
 	 * </pre>
 	 * 
-	 * @param element
-	 * @return
+	 * @param element the XML element.
+	 * @return Bean reference or nested Bean definition.
 	 */
 	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder builder) {
 		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, "ref", false);
 	}
 
-	static Object getBeanReference(ParserContext parserContext, Element element) {
-		return getBeanReference(parserContext, element, "ref");
-	}
+	static Object getBeanReference(ParserContext parserContext, Element element, String refAttributeName) {
+		String refAttributeValue = element.getAttribute(refAttributeName);
 
-	static Object getBeanReference(ParserContext parserContext, Element element, String refAttrName) {
-		String attr = element.getAttribute(refAttrName);
-		boolean hasRef = StringUtils.hasText(attr);
-
-		// check nested declarations
+		// check nested bean declarations
 		List<Element> childElements = DomUtils.getChildElements(element);
 
-		if (hasRef) {
+		if (StringUtils.hasText(refAttributeValue)) {
 			if (!childElements.isEmpty()) {
-				parserContext.getReaderContext().error(
-						"either use the '" + refAttrName + "' attribute or a nested bean declaration for '"
-								+ element.getLocalName() + "' element, but not both", element);
+				parserContext.getReaderContext().error(String.format(
+					"Use either the '%1$s' attribute or a nested bean declaration for '%2$s' element, but not both",
+						refAttributeName, element.getLocalName()), element);
 			}
-			return new RuntimeBeanReference(attr);
+
+			return new RuntimeBeanReference(refAttributeValue);
 		}
 		else {
 			return null;
@@ -183,91 +142,93 @@ abstract class ParsingUtils {
 	}
 
 	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
-			BeanDefinitionBuilder builder, String refAttrName) {
-		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, refAttrName, false);
+			BeanDefinitionBuilder builder, String refAttributeName) {
+		return parseRefOrNestedBeanDeclaration(parserContext, element, builder, refAttributeName, false);
 	}
 
 	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
-			BeanDefinitionBuilder builder, String refAttrName, boolean single) {
-		Object beanRef = getBeanReference(parserContext, element, refAttrName);
-		if (beanRef != null) {
-			return beanRef;
+			BeanDefinitionBuilder builder, String refAttributeName, boolean single) {
+		Object beanReference = getBeanReference(parserContext, element, refAttributeName);
+
+		if (beanReference != null) {
+			return beanReference;
 		}
 
 		// check nested declarations
 		List<Element> childElements = DomUtils.getChildElements(element);
 
-		// nested parse nested bean definition
+		// parse nested bean definition
 		if (childElements.size() == 1) {
 			return parserContext.getDelegate().parsePropertySubElement(childElements.get(0),
 					builder.getRawBeanDefinition());
 		}
 		else {
+			// TODO also triggered when there are no child elements; need to change the message...
 			if (single) {
-				parserContext.getReaderContext().error(
-						"the element '" + element.getLocalName()
-								+ "' does not support multiple nested bean definitions", element);
+				parserContext.getReaderContext().error(String.format(
+					"The element '%1$s' does not support multiple nested bean definitions",
+						element.getLocalName()), element);
 			}
 		}
 
 		ManagedList<Object> list = new ManagedList<Object>();
 
-		for (Element el : childElements) {
-			list.add(parserContext.getDelegate().parsePropertySubElement(el, builder.getRawBeanDefinition()));
+		for (Element childElement : childElements) {
+			list.add(parserContext.getDelegate().parsePropertySubElement(childElement, builder.getRawBeanDefinition()));
 		}
 
 		return list;
 	}
 
 	/**
-	 * Parses the eviction sub-element. Populates the given attribute factory
-	 * with the proper attributes.
-	 * 
-	 * @param parserContext
-	 * @param element
-	 * @param attrBuilder
-	 * @return true if parsing actually occured, false otherwise
+	 * Parses the eviction sub-element. Populates the given attribute factory with the proper attributes.
+	 * <p/>
+	 * @param parserContext the context used for parsing the XML document.
+	 * @param element the XML elements being parsed.
+	 * @param attributesBuilder the Region Attributes builder.
+	 * @return true if parsing actually occurred, false otherwise.
 	 */
-	static boolean parseEviction(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
+	static boolean parseEviction(ParserContext parserContext, Element element, BeanDefinitionBuilder attributesBuilder) {
 		Element evictionElement = DomUtils.getChildElementByTagName(element, "eviction");
 
-		if (evictionElement == null)
-			return false;
+		if (evictionElement != null) {
+			BeanDefinitionBuilder evictionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+				EvictionAttributesFactoryBean.class);
 
-		BeanDefinitionBuilder evictionDefBuilder = BeanDefinitionBuilder
-				.genericBeanDefinition(EvictionAttributesFactoryBean.class);
+			setPropertyValue(evictionElement, evictionAttributesBuilder, "action");
+			setPropertyValue(evictionElement, evictionAttributesBuilder, "threshold");
 
-		// do manual conversion since the enum is not public
-		String attr = evictionElement.getAttribute("type");
-		if (StringUtils.hasText(attr)) {
-			evictionDefBuilder.addPropertyValue("type", EvictionType.valueOf(attr.toUpperCase()));
+			String evictionType = evictionElement.getAttribute("type");
+
+			if (StringUtils.hasText(evictionType)) {
+				evictionAttributesBuilder.addPropertyValue("type", EvictionType.valueOf(evictionType.toUpperCase()));
+			}
+
+			Element objectSizerElement = DomUtils.getChildElementByTagName(evictionElement, "object-sizer");
+
+			if (objectSizerElement != null) {
+				Object sizer = parseRefOrNestedBeanDeclaration(parserContext, objectSizerElement,
+					evictionAttributesBuilder);
+				evictionAttributesBuilder.addPropertyValue("ObjectSizer", sizer);
+			}
+
+			attributesBuilder.addPropertyValue("evictionAttributes", evictionAttributesBuilder.getBeanDefinition());
+
+			return true;
 		}
 
-		setPropertyValue(evictionElement, evictionDefBuilder, "threshold");
-		setPropertyValue(evictionElement, evictionDefBuilder, "action");
-
-		// get object sizer (if declared)
-		Element objectSizerElement = DomUtils.getChildElementByTagName(evictionElement, "object-sizer");
-
-		if (objectSizerElement != null) {
-			Object sizer = parseRefOrNestedBeanDeclaration(parserContext, objectSizerElement, evictionDefBuilder);
-			evictionDefBuilder.addPropertyValue("ObjectSizer", sizer);
-		}
-
-		attrBuilder.addPropertyValue("evictionAttributes", evictionDefBuilder.getBeanDefinition());
-		return true;
+	    return false;
 	}
 	
 	/**
-	 * Parses the subscription sub-element. Populates the given attribute factory
-	 * with the proper attributes.
-	 * 
-	 * @author Lyndon Adams
-	 * @param parserContext
-	 * @param element
-	 * @param attrBuilder
-	 * @return true if parsing actually occured, false otherwise
+	 * Parses the subscription sub-element. Populates the given attribute factory with the proper attributes.
+	 * <p/>
+	 * @param parserContext the context used while parsing the XML document.
+	 * @param element the XML element being parsed.
+	 * @param attrBuilder the Region Attributes builder.
+	 * @return true if parsing actually occurred, false otherwise.
 	 */
+	@SuppressWarnings("unused")
 	static boolean parseSubscription(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
 		Element subscriptionElement = DomUtils.getChildElementByTagName(element, "subscription");
 
@@ -301,23 +262,23 @@ abstract class ParsingUtils {
 	}
 
 	/**
-	 * Parses the expiration sub-elements. Populates the given attribute factory
-	 * with proper attributes.
-	 * 
-	 * @param parserContext
-	 * @param element
-	 * @param attrBuilder
-	 * @return
+	 * Parses the expiration sub-elements. Populates the given attribute factory with proper attributes.
+	 * <p/>
+	 * @param parserContext the context used while parsing the XML document.
+	 * @param element the XML element being parsed.
+	 * @param attrBuilder the Region Attributes builder.
+	 * @return a boolean indicating whether Region expiration attributes were specified.
 	 */
 	static boolean parseExpiration(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
-		boolean result = false;
-		result |= parseExpiration(element, "region-ttl", "regionTimeToLive", attrBuilder);
+		boolean result = parseExpiration(element, "region-ttl", "regionTimeToLive", attrBuilder);
+
 		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", attrBuilder);
 		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", attrBuilder);
 		result |= parseExpiration(element, "entry-tti", "entryIdleTimeout", attrBuilder);
 		result |= parseCustomExpiration(parserContext, element,"custom-entry-ttl","customEntryTimeToLive",attrBuilder);
 		result |= parseCustomExpiration(parserContext, element,"custom-entry-tti","customEntryIdleTimeout",attrBuilder);
 
+		// TODO why?
 		if (result) {
 			// turn on statistics
 			attrBuilder.addPropertyValue("statisticsEnabled", Boolean.TRUE);

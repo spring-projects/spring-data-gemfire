@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<gfe:client-cache/>
+
+	<gfe:pool>
+		<gfe:server host="localhost" port="54321"/>
+	</gfe:pool>
+
+	<bean id="localCacheLoader" class="org.springframework.data.gemfire.client.ClientRegionWithCacheLoaderWriterTest$LocalAppDataCacheLoader"/>
+	<bean id="localCacheWriter" class="org.springframework.data.gemfire.client.ClientRegionWithCacheLoaderWriterTest$LocalAppDataCacheWriter"/>
+
+	<gfe:client-region id="localAppDataRegion" name="LocalAppData" shortcut="LOCAL">
+		<gfe:cache-loader>
+			<ref bean="localCacheLoader"/>
+		</gfe:cache-loader>
+		<gfe:cache-writer>
+			<ref bean="localCacheWriter"/>
+		</gfe:cache-writer>
+	</gfe:client-region>
+
+</beans>
