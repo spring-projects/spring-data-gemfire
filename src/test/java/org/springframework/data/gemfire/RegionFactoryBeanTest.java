@@ -17,17 +17,26 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
+import org.junit.Test;
 import org.springframework.data.gemfire.support.AbstractRegionFactoryBeanTest;
 
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
 
 /**
  * @author David Turanski
- * 
+ * @author John Blum
  */
+@SuppressWarnings("unchecked")
 public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
+
+	private final RegionFactoryBean factoryBean = new RegionFactoryBean();
 
 	@SuppressWarnings("rawtypes")
 	private RegionFactoryBeanConfig defaultConfig() {
@@ -77,8 +86,8 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 			@Override
 			public void verify() {
 				assertNotNull(this.exception);
-				assertEquals("Data policy persistent_replicate is invalid when persistent is false",
-						exception.getMessage());
+				assertEquals("Data Policy 'PERSISTENT_REPLICATE' is invalid when persistent is false.",
+					exception.getMessage());
 			}
 		};
 	}
@@ -89,4 +98,118 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		addRFBConfig(persistent());
 		addRFBConfig(invalidPersistence());
 	}
+
+	protected RegionFactory<?, ?> createMockRegionFactory() {
+		return mock(RegionFactory.class);
+	}
+
+	@Test
+	public void testResolveDataPolicyWithPersistentUnspecifiedAndDataPolicyUnspecified() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.resolveDataPolicy(mockRegionFactory, null, null);
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.DEFAULT));
+	}
+
+	@Test
+	public void testResolveDataPolicyWhenNotPersistentAndDataPolicyUnspecified() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.setPersistent(false);
+		factoryBean.resolveDataPolicy(mockRegionFactory, false, null);
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.DEFAULT));
+	}
+
+	@Test
+	public void testResolveDataPolicyWhenPersistentAndDataPolicyUnspecified() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.setPersistent(true);
+		factoryBean.resolveDataPolicy(mockRegionFactory, true, null);
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveDataPolicyWithInvalidDataPolicyName() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		try {
+			factoryBean.setPersistent(true);
+			factoryBean.resolveDataPolicy(mockRegionFactory, true, "CSV");
+		}
+		catch (IllegalArgumentException e) {
+			assertEquals("Data Policy 'CSV' is invalid.", e.getMessage());
+			throw e;
+		}
+		finally {
+			verify(mockRegionFactory, never()).setDataPolicy(null);
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.DEFAULT));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
+		}
+	}
+
+	@Test
+	public void testResolveDataPolicyWithPersistentUnspecifiedAndNormalDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.resolveDataPolicy(mockRegionFactory, null, "NORMAL");
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.NORMAL));
+	}
+
+	@Test
+	public void testResolveDataPolicyWhenNotPersistentUnspecifiedAndPreloadedDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.setPersistent(false);
+		factoryBean.resolveDataPolicy(mockRegionFactory, false, "PRELOADED");
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PRELOADED));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveDataPolicyWhenPersistentAndPersistentEmptyDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		try {
+			factoryBean.setPersistent(true);
+			factoryBean.resolveDataPolicy(mockRegionFactory, true, "EMPTY");
+		}
+		catch (IllegalArgumentException e) {
+			assertEquals("Data Policy 'EMPTY' is invalid when persistent is true.", e.getMessage());
+			throw e;
+		}
+		finally {
+			verify(mockRegionFactory, never()).setDataPolicy(null);
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.DEFAULT));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.EMPTY));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
+		}
+	}
+
+	@Test
+	public void testResolveDataPolicyWithPersistentUnspecifiedAndPersistentPartitionedDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.resolveDataPolicy(mockRegionFactory, null, "PERSISTENT_PARTITION");
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PERSISTENT_PARTITION));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveDataPolicyWhenNotPersistentAndPersistentPartitionedDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		try {
+			factoryBean.setPersistent(false);
+			factoryBean.resolveDataPolicy(mockRegionFactory, false, "PERSISTENT_PARTITION");
+		}
+		catch (IllegalArgumentException e) {
+			assertEquals("Data Policy 'PERSISTENT_PARTITION' is invalid when persistent is false.", e.getMessage());
+			throw e;
+		}
+		finally {
+			verify(mockRegionFactory, never()).setDataPolicy(null);
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.DEFAULT));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.PERSISTENT_PARTITION));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
+		}
+	}
+
+	@Test
+	public void testResolveDataPolicyWhenPersistentAndPersistentPartitionedDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.setPersistent(true);
+		factoryBean.resolveDataPolicy(mockRegionFactory, true, "PERSISTENT_PARTITION");
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PERSISTENT_PARTITION));
+	}
+
 }
