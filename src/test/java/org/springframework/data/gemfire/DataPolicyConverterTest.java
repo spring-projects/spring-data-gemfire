@@ -24,14 +24,14 @@ import com.gemstone.gemfire.cache.DataPolicy;
 
 /**
  * @author David Turanski
- * 
+ * @author John Blum
  */
 public class DataPolicyConverterTest {
 
 	private final DataPolicyConverter converter = new DataPolicyConverter();
 
 	protected int getDataPolicyEnumerationSize() {
-		for (byte ordinal = 0; true; ordinal++) {
+		for (byte ordinal = 0; ordinal < Byte.MAX_VALUE; ordinal++) {
 			try {
 				DataPolicy.fromOrdinal(ordinal);
 			}
@@ -39,6 +39,9 @@ public class DataPolicyConverterTest {
 				return ordinal;
 			}
 		}
+
+		throw new IndexOutOfBoundsException("The size of the Data Policy enumeration could not be determined"
+			+ " because the ordinal based on Byte.MAX_VALUE was exhausted!");
 	}
 
 	@Test
@@ -63,4 +66,5 @@ public class DataPolicyConverterTest {
 		assertNull(converter.convert("invalid"));
 		assertNull(converter.convert(null));
 	}
+
 }

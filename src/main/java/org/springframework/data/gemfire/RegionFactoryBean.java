@@ -24,14 +24,12 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.wan.GatewaySenderWrapper;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
@@ -56,20 +54,19 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  *
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean, SmartLifecycle {
 
-	private boolean autoStartup = true;
-
-	private boolean running;
-
 	protected final Log log = LogFactory.getLog(getClass());
 
-	private boolean destroy = false;
-
+	private boolean autoStartup = true;
 	private boolean close = true;
+	private boolean destroy = false;
+	private boolean running;
 
-	private Resource snapshot;
+	private Boolean enableGateway;
+	private Boolean persistent;
 
 	private CacheListener<K, V> cacheListeners[];
 
@@ -77,31 +74,23 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	private CacheWriter<K, V> cacheWriter;
 
-	private Object gatewaySenders[];
-
-	private Object asyncEventQueues[];
+	private Object[] asyncEventQueues;
+	private Object[] gatewaySenders;
 
 	private RegionAttributes<K, V> attributes;
 
+	private Resource snapshot;
+
 	private Scope scope;
 
-	private Boolean persistent;
-
-	private Boolean enableGateway;
-
-	private String hubId;
-
-	private String diskStoreName;
-
 	private String dataPolicy;
-
-	private Region<K, V> region;
+	private String diskStoreName;
+	private String hubId;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
-		region = getRegion();
-		postProcess(region);
+		postProcess(getRegion());
 	}
 
 	@Override
@@ -110,11 +99,12 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		Cache c = (Cache) cache;
 
-		if (attributes != null)
+		if (attributes != null) {
 			AttributesFactory.validateAttributes(attributes);
+		}
 
-		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes) : c
-				.<K, V> createRegionFactory());
+		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes) :
+			c.<K, V> createRegionFactory());
 
 		if (hubId != null) {
 			enableGateway = enableGateway == null ? true : enableGateway;
@@ -122,12 +112,14 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 			regionFactory.setGatewayHubId(hubId);
 		}
+
 		if (enableGateway != null) {
 			if (enableGateway) {
 				Assert.notNull(hubId, "enableGateway requires the hubId property to be true");
 			}
 			regionFactory.setEnableGateway(enableGateway);
 		}
+
 		if (!ObjectUtils.isEmpty(cacheListeners)) {
 			for (CacheListener<K, V> listener : cacheListeners) {
 				regionFactory.addCacheListener(listener);
@@ -135,9 +127,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		}
 
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			Assert.isTrue(
-					hubId == null,
-					"It is invalid to configure a region with both a hubId and gatewaySenders. Note that the enableGateway and hubId properties are deprecated since Gemfire 7.0");
+			Assert.isTrue(hubId == null, "It is invalid to configure a region with both a hubId and gatewaySenders."
+				+ " Note that the enableGateway and hubId properties are deprecated since Gemfire 7.0");
 			for (Object gatewaySender : gatewaySenders) {
 				regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId());
 			}
@@ -169,60 +160,56 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		if (attributes != null) {
 			Assert.state(!attributes.isLockGrantor() || scope.isGlobal(),
-					"Lock grantor only applies to a global scoped region");
+				"Lock grantor only applies to a global scoped region");
 		}
+
 		// get underlying AttributesFactory
 		postProcess(findAttrFactory(regionFactory));
 
-		Region<K, V> reg = regionFactory.create(regionName);
+		Region<K, V> region = regionFactory.create(regionName);
 		log.info("Created new cache region [" + regionName + "]");
+
 		if (snapshot != null) {
-			reg.loadSnapshot(snapshot.getInputStream());
+			region.loadSnapshot(snapshot.getInputStream());
 		}
 
 		if (attributes != null && attributes.isLockGrantor()) {
-			reg.becomeLockGrantor();
+			region.becomeLockGrantor();
 		}
 
-		return reg;
+		return region;
 	}
 
 	/**
-	 * This validates the configured data policy and may override it, taking
-	 * into account the persistent attribute and constraints for the region type
-	 * @param regionFactory
-	 * @param persistent
-	 * @param dataPolicy requested data policy
+	 * Validates the configured Data Policy and may override it, taking into account the 'persistent' attribute
+	 * and constraints for the Region type.
+	 * <p/>
+	 * @param regionFactory the GemFire RegionFactory used to created the Local Region.
+	 * @param persistent a boolean value indicating whether the Local Region should persist it's data.
+	 * @param dataPolicy requested Data Policy as set by the user in the Spring GemFire configuration meta-data.
+	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 * @see com.gemstone.gemfire.cache.RegionFactory
 	 */
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
 		if (dataPolicy != null) {
-			regionFactory.setDataPolicy(convertAndValidate(dataPolicy));
+			DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
+
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
+
+			regionFactory.setDataPolicy(resolvedDataPolicy);
 		}
 		else {
 			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.DEFAULT);
 		}
 	}
 
-	private DataPolicy convertAndValidate(final String dataPolicy) {
-		final DataPolicy dataPolicyType = new DataPolicyConverter().convert(dataPolicy);
-
-		Assert.notNull(dataPolicyType, String.format("Data policy %1$s is invalid", dataPolicy));
-
-		if (dataPolicyType.withPersistence()) {
-			// NOTE isNotPersistent means the user explicitly set the persistent attribute for the Region to false,
-			// and this conflicts with the Data Policy (via the that was set by the user, which indicates persistence.
-			Assert.isTrue(!isNotPersistent(), String.format("Data policy %1$s is invalid when persistent is false",
-				dataPolicy));
-		}
-
-		return dataPolicyType;
-	}
-
 	@SuppressWarnings("unchecked")
 	private AttributesFactory<K, V> findAttrFactory(RegionFactory<K, V> regionFactory) {
-		Field attrField = ReflectionUtils.findField(RegionFactory.class, "attrsFactory", AttributesFactory.class);
-		ReflectionUtils.makeAccessible(attrField);
-		return (AttributesFactory<K, V>) ReflectionUtils.getField(attrField, regionFactory);
+		Field attrsFactoryField = ReflectionUtils.findField(RegionFactory.class, "attrsFactory",
+			AttributesFactory.class);
+		ReflectionUtils.makeAccessible(attrsFactoryField);
+		return (AttributesFactory<K, V>) ReflectionUtils.getField(attrsFactoryField, regionFactory);
 	}
 
 	/**
@@ -252,30 +239,20 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	@Override
 	public void destroy() throws Exception {
-		if (region != null) {
+		if (getRegion() != null) {
 			if (close) {
-				if (!region.getRegionService().isClosed()) {
+				if (!getRegion().getRegionService().isClosed()) {
 					try {
-						region.close();
-						region = null;
+						getRegion().close();
 					} catch (Exception cce) {
 						// nothing to see folks, move on.
 					}
 				}
 
 			} if (destroy) {
-				region.destroyRegion();
-				region = null;
+				getRegion().destroyRegion();
 			}
 		}
-	}
-
-	/**
-	 * Indicates whether the region referred by this factory bean, will be
-	 * destroyed on shutdown (default false).
-	 */
-	public void setDestroy(boolean destroy) {
-		this.destroy = destroy;
 	}
 
 	/**
@@ -284,6 +261,14 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	public void setClose(boolean close) {
 		this.close = close;
+	}
+
+	/**
+	 * Indicates whether the region referred by this factory bean, will be
+	 * destroyed on shutdown (default false).
+	 */
+	public void setDestroy(boolean destroy) {
+		this.destroy = destroy;
 	}
 
 	/**
@@ -400,12 +385,54 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		this.attributes = attributes;
 	}
 
-	protected boolean isPersistent() {
-		return persistent != null && persistent;
+	/**
+	 * Validates that the settings for Data Policy and the 'persistent' attribute in <gfe:*-region/> elements
+	 * are compatible.
+	 * <p/>
+	 * @param resolvedDataPolicy the GemFire Data Policy resolved form the Spring GemFire XML namespace configuration
+	 * meta-data.
+	 * @see #isPersistent()
+	 * @see #isNotPersistent()
+	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 */
+	protected void assertDataPolicyAndPersistentAttributesAreCompatible(final DataPolicy resolvedDataPolicy) {
+		final boolean persistentNotSpecified = (this.persistent == null);
+
+		if (resolvedDataPolicy.withPersistence()) {
+			Assert.isTrue(persistentNotSpecified || isPersistent(), String.format(
+				"Data Policy '%1$s' is invalid when persistent is false.", resolvedDataPolicy));
+		}
+		else {
+			// NOTE otherwise, the Data Policy is with persistence, so...
+			Assert.isTrue(persistentNotSpecified || isNotPersistent(), String.format(
+				"Data Policy '%1$s' is invalid when persistent is true.", resolvedDataPolicy));
+		}
 	}
 
+	/**
+	 * Returns true when the user explicitly specified a value for the persistent attribute and it is true.  If the
+	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
+	 * and will be determined by the Data Policy.
+	 * <p/>
+	 * @return true when the user specified an explicit value for the persistent attribute and it is true;
+	 * false otherwise.
+	 * @see #isNotPersistent()
+	 */
+	protected boolean isPersistent() {
+		return Boolean.TRUE.equals(persistent);
+	}
+
+	/**
+	 * Returns true when the user explicitly specified a value for the persistent attribute and it is false.  If the
+	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
+	 * and will be determined by the Data Policy.
+	 * <p/>
+	 * @return true when the user specified an explicit value for the persistent attribute and it is false;
+	 * false otherwise.
+	 * @see #isPersistent()
+	 */
 	protected boolean isNotPersistent() {
-		return persistent != null && !persistent;
+		return Boolean.FALSE.equals(persistent);
 	}
 
 	/* (non-Javadoc)
@@ -413,12 +440,11 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	@Override
 	public void start() {
-
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			synchronized (gatewaySenders) {
 				for (Object obj : gatewaySenders) {
 					GatewaySender gws = (GatewaySender) obj;
-					if (!gws.isManualStart() && !gws.isRunning()) {
+					if (!(gws.isManualStart() || gws.isRunning())) {
 						gws.start();
 					}
 				}
@@ -435,9 +461,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			synchronized (gatewaySenders) {
 				for (Object obj : gatewaySenders) {
-				 GatewaySender gws = (GatewaySender) obj;
-					gws.stop();
-				 }
+					((GatewaySender) obj).stop();
+				}
 			}
 		}
 		this.running = false;
@@ -475,4 +500,5 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		stop();
 		callback.run();
 	}
+
 }
