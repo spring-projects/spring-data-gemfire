@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire;
 
 import org.springframework.core.convert.converter.Converter;
@@ -24,54 +25,50 @@ import com.gemstone.gemfire.cache.DataPolicy;
  * 
  */
 public class DataPolicyConverter implements Converter<String, DataPolicy> {
-	private static enum Policy {
-		EMPTY, DEFAULT, NORMAL, PERSISTENT_PARTITION, PERSISTENT_REPLICATE, PRELOADED, REPLICATE;
-		public DataPolicy toDataPolicy() {
-			DataPolicy dataPolicy = null;
-			switch (this) {
-			case EMPTY:
-				dataPolicy = DataPolicy.EMPTY;
-				break;
-			case DEFAULT:
-				dataPolicy = DataPolicy.DEFAULT;
-				break;
-			case NORMAL:
-				dataPolicy = DataPolicy.NORMAL;
-				break;
-			case PERSISTENT_PARTITION:
-				dataPolicy = DataPolicy.PERSISTENT_PARTITION;
-				break;
-			case PERSISTENT_REPLICATE:
-				dataPolicy = DataPolicy.PERSISTENT_REPLICATE;
-				break;
-			case PRELOADED:
-				dataPolicy = DataPolicy.PRELOADED;
-				break;
-			case REPLICATE:
-				dataPolicy = DataPolicy.REPLICATE;
-				break;
-			}
-			return dataPolicy;
+
+	static enum Policy {
+		DEFAULT, EMPTY, NORMAL, PRELOADED, PARTITION, PERSISTENT_PARTITION, REPLICATE, PERSISTENT_REPLICATE;
+
+		private static String toUpperCase(String value) {
+			return (value == null ? null : value.toUpperCase());
 		}
 
 		public static Policy getValue(String value) {
-			Policy policy = null;
 			try {
-				policy = valueOf(value);
+				return valueOf(toUpperCase(value));
 			}
 			catch (Exception e) {
+				return null;
 			}
-			return policy;
 		}
-	};
+
+		public DataPolicy toDataPolicy() {
+			switch (this) {
+				case EMPTY:
+					return DataPolicy.EMPTY;
+				case NORMAL:
+					return DataPolicy.NORMAL;
+				case PRELOADED:
+					return DataPolicy.PRELOADED;
+				case PARTITION :
+					return DataPolicy.PARTITION;
+				case PERSISTENT_PARTITION:
+					return DataPolicy.PERSISTENT_PARTITION;
+				case REPLICATE:
+					return DataPolicy.REPLICATE;
+				case PERSISTENT_REPLICATE:
+					return DataPolicy.PERSISTENT_REPLICATE;
+				case DEFAULT:
+				default:
+					return DataPolicy.DEFAULT;
+			}
+		}
+	}
 
 	@Override
-	public DataPolicy convert(String source) {
-		if (source == null) {
-			return null;
-		}
-		source = source.toUpperCase();
-		return Policy.getValue(source) == null ? null : Policy.getValue(source).toDataPolicy();
+	public DataPolicy convert(String policyValue) {
+		Policy policy = Policy.getValue(policyValue);
+		return (policy == null ? null : policy.toDataPolicy());
 	}
 
 }

@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.client;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -42,93 +40,56 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 /**
- * Client extension for GemFire regions.
- * 
+ * Client extension for GemFire Regions.
+ * <p/>
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements BeanFactoryAware,
 		DisposableBean {
 
-	private static final Log log = LogFactory.getLog(ClientRegionFactoryBean.class);
-
+	private boolean close = true;
 	private boolean destroy = false;
 
-	private boolean close = true;
-
-	private Resource snapshot;
-
-	private CacheListener<K, V> cacheListeners[];
-
-	private Interest<K>[] interests;
-
-	private String poolName;
-
 	private BeanFactory beanFactory;
+
+	private Boolean persistent;
+
+	private CacheListener<K, V>[] cacheListeners;
 
 	private ClientRegionShortcut shortcut = null;
 
 	private DataPolicy dataPolicy;
 
+	private Interest<K>[] interests;
+
 	private RegionAttributes<K, V> attributes;
 
-	private Region<K, V> region;
+	private Resource snapshot;
 
 	private String diskStoreName;
-
-	private String dataPolicyName;
+	private String poolName;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
-		region = getRegion();
-		postProcess(region);
+		postProcess(getRegion());
 	}
 
 	@Override
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		Assert.isTrue(cache instanceof ClientCache, "Unable to create regions from " + cache);
-		ClientCache c = (ClientCache) cache;
 
+		// TODO use of GemFire internal class!
 		if (cache instanceof GemFireCacheImpl) {
-			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required");
+			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required.");
 		}
-		
-		Assert.isTrue(!(StringUtils.hasText(dataPolicyName) && dataPolicy != null), "Only one of 'dataPolicy' or 'dataPolicyName' can be set");
-		
-		
-		if (StringUtils.hasText(dataPolicyName)) {
-			dataPolicy = new DataPolicyConverter().convert(dataPolicyName);
-			Assert.notNull(dataPolicy, "Data policy " + dataPolicyName + " is invalid");
-		}
+
+		final ClientCache clientCache = (ClientCache) cache;
 
 		// first look at shortcut
-		ClientRegionShortcut s = null;
-
-		if (shortcut == null) {
-			if (dataPolicy != null) {
-				if (DataPolicy.EMPTY.equals(dataPolicy)) {
-					s = ClientRegionShortcut.PROXY;
-				}
-				else if (DataPolicy.PERSISTENT_REPLICATE.equals(dataPolicy)) {
-					s = ClientRegionShortcut.LOCAL_PERSISTENT;
-				}
-				else if (DataPolicy.NORMAL.equals(this.dataPolicy)) {
-					s = ClientRegionShortcut.CACHING_PROXY;
-				}
-				else {
-					s = ClientRegionShortcut.LOCAL;
-				}
-			}
-			else {
-				s = ClientRegionShortcut.LOCAL;
-			}
-		}
-		else {
-			s = shortcut;
-		}
-
-		ClientRegionFactory<K, V> factory = c.createClientRegionFactory(s);
+		ClientRegionFactory<K, V> factory = clientCache.createClientRegionFactory(resolveClientRegionShortcut());
 
 		// map the attributes onto the client
 		if (attributes != null) {
@@ -173,7 +134,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			}
 
 			factory.setPoolName(poolName);
-		} else {
+		}
+		else {
 			Pool pool = beanFactory.getBean(Pool.class);
 			factory.setPoolName(pool.getName());
 		}
@@ -182,26 +144,63 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			factory.setDiskStoreName(diskStoreName);
 		}
 
-		Region<K, V> reg = factory.create(regionName);
+		Region<K, V> region = factory.create(regionName);
 		log.info("Created new cache region [" + regionName + "]");
+
 		if (snapshot != null) {
-			reg.loadSnapshot(snapshot.getInputStream());
+			region.loadSnapshot(snapshot.getInputStream());
 		}
 
-		return reg;
+		return region;
+	}
+
+	protected ClientRegionShortcut resolveClientRegionShortcut() {
+		ClientRegionShortcut resolvedShortcut = this.shortcut;
+
+		if (resolvedShortcut == null) {
+			if (this.dataPolicy != null) {
+				assertDataPolicyAndPersistentAttributeAreCompatible(this.dataPolicy);
+
+				if (DataPolicy.EMPTY.equals(this.dataPolicy)) {
+					resolvedShortcut = ClientRegionShortcut.PROXY;
+				}
+				else if (DataPolicy.NORMAL.equals(this.dataPolicy)) {
+					resolvedShortcut = ClientRegionShortcut.CACHING_PROXY;
+				}
+				else if (DataPolicy.PERSISTENT_REPLICATE.equals(this.dataPolicy)) {
+					resolvedShortcut = ClientRegionShortcut.LOCAL_PERSISTENT;
+				}
+				else {
+					// NOTE the Data Policy validation is based on the ClientRegionShortcut initialization logic
+					// in com.gemstone.gemfire.internal.cache.GemFireCacheImpl.initializeClientRegionShortcuts
+					throw new IllegalArgumentException(String.format(
+						"Data Policy '%1$s' is invalid for Client Regions.", this.dataPolicy));
+				}
+			}
+			else {
+				resolvedShortcut = (isPersistent() ? ClientRegionShortcut.LOCAL_PERSISTENT
+					: ClientRegionShortcut.LOCAL);
+			}
+
+		}
+
+		// NOTE the ClientRegionShortcut and Persistent attribute will be compatible if the shortcut was derived from
+		// the Data Policy.
+		assertClientRegionShortcutAndPersistentAttributeAreCompatible(resolvedShortcut);
+
+		return resolvedShortcut;
 	}
 
 	protected void postProcess(Region<K, V> region) {
 		if (!ObjectUtils.isEmpty(interests)) {
 			for (Interest<K> interest : interests) {
 				if (interest instanceof RegexInterest) {
-					// do the cast since it's safe
 					region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(),
-							interest.isDurable(), interest.isReceiveValues());
+						interest.isDurable(), interest.isReceiveValues());
 				}
 				else {
 					region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable(),
-							interest.isReceiveValues());
+						interest.isReceiveValues());
 				}
 			}
 		}
@@ -247,6 +246,20 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		region = null;
 	}
 
+	/**
+	 * Sets the region attributes used for the region used by this factory.
+	 * Allows maximum control in specifying the region settings. Used only when
+	 * a new region is created. Note that using this method allows for advanced
+	 * customization of the region - while it provides a lot of flexibility,
+	 * note that it's quite easy to create misconfigured regions (especially in
+	 * a client/server scenario).
+	 *
+	 * @param attributes the attributes to set on a newly created region
+	 */
+	public void setAttributes(RegionAttributes<K, V> attributes) {
+		this.attributes = attributes;
+	}
+
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
@@ -270,23 +283,23 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the pool name used by this client.
-	 * 
-	 * @param poolName
-	 */
-	public void setPoolName(String poolName) {
-		Assert.hasText(poolName, "pool name is required");
-		this.poolName = poolName;
-	}
-
-	/**
 	 * Sets the pool used by this client.
-	 * 
+	 *
 	 * @param pool
 	 */
 	public void setPool(Pool pool) {
 		Assert.notNull(pool, "pool cannot be null");
 		setPoolName(pool.getName());
+	}
+
+	/**
+	 * Sets the pool name used by this client.
+	 *
+	 * @param poolName
+	 */
+	public void setPoolName(String poolName) {
+		Assert.hasText(poolName, "pool name is required");
+		this.poolName = poolName;
 	}
 
 	/**
@@ -355,23 +368,77 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		this.cacheListeners = cacheListeners;
 	}
 
+	protected void assertClientRegionShortcutAndPersistentAttributeAreCompatible(final ClientRegionShortcut resolvedShortcut) {
+		final boolean persistentNotSpecified = (this.persistent == null);
+
+		if (ClientRegionShortcut.LOCAL_PERSISTENT.equals(resolvedShortcut)
+				|| ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW.equals(resolvedShortcut)) {
+			Assert.isTrue(persistentNotSpecified || isPersistent(), String.format(
+				"Client Region Shortcut '%1$s' is invalid when persistent is false.", resolvedShortcut));
+		}
+		else {
+			Assert.isTrue(persistentNotSpecified || isNotPersistent(), String.format(
+				"Client Region Shortcut '%1$s' is invalid when persistent is true.", resolvedShortcut));
+		}
+	}
 	/**
-	 * Sets the data policy. Used only when a new region is created.
-	 * 
-	 * @param dataPolicy the region data policy
+	 * Validates that the settings for Data Policy and the 'persistent' attribute in <gfe:*-region/> elements
+	 * are compatible.
+	 * <p/>
+	 * @param resolvedDataPolicy the GemFire Data Policy resolved form the Spring GemFire XML namespace configuration
+	 * meta-data.
+	 * @see #isPersistent()
+	 * @see #isNotPersistent()
+	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 */
+	protected void assertDataPolicyAndPersistentAttributeAreCompatible(final DataPolicy resolvedDataPolicy) {
+		final boolean persistentNotSpecified = (this.persistent == null);
+
+		if (resolvedDataPolicy.withPersistence()) {
+			Assert.isTrue(persistentNotSpecified || isPersistent(), String.format(
+				"Data Policy '%1$s' is invalid when persistent is false.", resolvedDataPolicy));
+		}
+		else {
+			// NOTE otherwise, the Data Policy is with persistence, so...
+			Assert.isTrue(persistentNotSpecified || isNotPersistent(), String.format(
+				"Data Policy '%1$s' is invalid when persistent is true.", resolvedDataPolicy));
+		}
+	}
+
+	/**
+	 * Sets the Data Policy. Used only when a new Region is created.
+	 * <p/>
+	 * @param dataPolicy the client Region's Data Policy.
+	 * @see com.gemstone.gemfire.cache.DataPolicy
 	 */
 	public void setDataPolicy(DataPolicy dataPolicy) {
 		this.dataPolicy = dataPolicy;
 	}
-	
+
 	/**
-	 * An alternative way to set the data policy as a string. Useful for 
-	 * property placeholders, etc.
-	 * 
-	 * @param dataPolicyName
+	 * An alternate way to set the Data Policy, using the String name of the enumerated value.
+	 * <p/>
+	 * @param dataPolicyName the enumerated value String name of the Data Policy.
+	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 * @see #setDataPolicy(com.gemstone.gemfire.cache.DataPolicy)
+	 * @deprecated use setDataPolicy(:DataPolicy) instead.
 	 */
 	public void setDataPolicyName(String dataPolicyName) {
-		this.dataPolicyName = dataPolicyName;
+		final DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicyName);
+		Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicyName));
+		setDataPolicy(resolvedDataPolicy);
+	}
+
+	protected boolean isPersistent() {
+		return Boolean.TRUE.equals(persistent);
+	}
+
+	protected boolean isNotPersistent() {
+		return Boolean.FALSE.equals(persistent);
+	}
+
+	public void setPersistent(final boolean persistent) {
+		this.persistent = persistent;
 	}
 
 	/**
@@ -382,17 +449,4 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		this.diskStoreName = diskStoreName;
 	}
 
-	/**
-	 * Sets the region attributes used for the region used by this factory.
-	 * Allows maximum control in specifying the region settings. Used only when
-	 * a new region is created. Note that using this method allows for advanced
-	 * customization of the region - while it provides a lot of flexibility,
-	 * note that it's quite easy to create misconfigured regions (especially in
-	 * a client/server scenario).
-	 * 
-	 * @param attributes the attributes to set on a newly created region
-	 */
-	public void setAttributes(RegionAttributes<K, V> attributes) {
-		this.attributes = attributes;
-	}
 }

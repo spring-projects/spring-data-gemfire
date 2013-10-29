@@ -29,14 +29,11 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-
 /**
- * Parser for &lt;client-region;gt; definitions.
- * 
- * To avoid eager evaluations, the region interests are declared as nested
- * definition.
- * 
+ * Parser for &lt;client-region;gt; bean definitions.
+ * <p/>
+ * To avoid eager evaluations, the region interests are declared as nested definition.
+ * <p/>
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
@@ -52,84 +49,69 @@ class ClientRegionParser extends AbstractRegionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
-		// set scope
-		// since the user can define both client and p2p regions
-		// setting the cache/DS to a be 'loner' isn't feasible
-		// so to prevent both client and p2p communication in the region,
-		// the scope is fixed to local
+		validateDataPolicyShortcutMutualExclusion(element, parserContext);
+
+		String cacheRefAttributeValue = element.getAttribute("cache-ref");
+
+		builder.addPropertyReference("cache", (StringUtils.hasText(cacheRefAttributeValue) ? cacheRefAttributeValue
+			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+
+		ParsingUtils.setPropertyValue(element, builder, "close");
+		ParsingUtils.setPropertyValue(element, builder, "destroy");
 		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicyName");
 		ParsingUtils.setPropertyValue(element, builder, "name");
+		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name");
 		ParsingUtils.setPropertyValue(element, builder, "shortcut");
 
-		// set the persistent policy
-		String attr = element.getAttribute("persistent");
+		String diskStoreRefAttributeValue = element.getAttribute("disk-store-ref");
 
-		boolean frozenDataPolicy = false;
-
-		if (Boolean.parseBoolean(attr)) {
-			// check first for GemFire 6.5
-			builder.addPropertyValue("dataPolicy", DataPolicy.PERSISTENT_REPLICATE);
-			frozenDataPolicy = true;
-		}
-
-		attr = element.getAttribute("cache-ref");
-		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
-		ParsingUtils.setPropertyValue(element, builder, "close");
-		ParsingUtils.setPropertyValue(element, builder, "destroy");
-		// eviction + overflow attributes
-		// client attributes
-		BeanDefinitionBuilder attrBuilder = BeanDefinitionBuilder
-				.genericBeanDefinition(RegionAttributesFactoryBean.class);
-
-		ParsingUtils.parseStatistics(element, attrBuilder);
-
-		if (StringUtils.hasText(element.getAttribute("disk-store-ref"))) {
+		if (StringUtils.hasText(diskStoreRefAttributeValue)) {
 			ParsingUtils.setPropertyValue(element, builder, "disk-store-ref", "diskStoreName");
-			builder.addDependsOn(element.getAttribute("disk-store-ref"));
+			builder.addDependsOn(diskStoreRefAttributeValue);
 		}
 
-		boolean overwriteDataPolicy = false;
+		// Client RegionAttributes for overflow/eviction, expiration and statistics
+		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			RegionAttributesFactoryBean.class);
 
-		overwriteDataPolicy |= ParsingUtils.parseEviction(parserContext, element, attrBuilder);
-		ParsingUtils.parseStatistics(element, attrBuilder);
-		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
-		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
-		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, attrBuilder);
-		
-		if (!frozenDataPolicy && overwriteDataPolicy) {
-			builder.addPropertyValue("dataPolicy", DataPolicy.NORMAL);
-		}
+		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
+		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
 
-		builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
-		
-		
+		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
 		ManagedList<Object> interests = new ManagedList<Object>();
 
 		// parse nested declarations
 		List<Element> subElements = DomUtils.getChildElements(element);
 
-		// parse nested cache-listener elements
 		for (Element subElement : subElements) {
 			String name = subElement.getLocalName();
 
 			if ("cache-listener".equals(name)) {
-				builder.addPropertyValue("cacheListeners", parseCacheListener(parserContext, subElement, builder));
+				builder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(
+					parserContext, subElement, builder));
 			}
-
 			else if ("key-interest".equals(name)) {
-				interests.add(parseKeyInterest(parserContext, subElement));
+				interests.add(parseKeyInterest(subElement, parserContext));
 			}
-
 			else if ("regex-interest".equals(name)) {
-				interests.add(parseRegexInterest(parserContext, subElement));
+				interests.add(parseRegexInterest(subElement));
 			}
 		}
 
-		if (!subElements.isEmpty()) {
+		if (!interests.isEmpty()) {
 			builder.addPropertyValue("interests", interests);
+		}
+	}
+
+	private void validateDataPolicyShortcutMutualExclusion(final Element element, final ParserContext parserContext) {
+		if (element.hasAttribute("data-policy") && element.hasAttribute("shortcut")) {
+			parserContext.getReaderContext().error(String.format(
+				"Only one of [data-policy, shortcut] may be specified with element '%1$s'.", element.getTagName()),
+					element);
 		}
 	}
 
@@ -137,36 +119,33 @@ class ClientRegionParser extends AbstractRegionParser {
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 		throw new UnsupportedOperationException(String.format(
-			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, subRegion:boolean) is not supported on %1$s",
-			getClass().getName()));
+			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, :boolean) is not supported on %1$s",
+				getClass().getName()));
 	}
 
-	private Object parseCacheListener(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
-	}
-
-	private Object parseKeyInterest(ParserContext parserContext, Element subElement) {
+	private Object parseKeyInterest(Element keyInterestElement, ParserContext parserContext) {
 		BeanDefinitionBuilder keyInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(Interest.class);
-		parseCommonInterestAttr(subElement, keyInterestBuilder);
 
-		Object key = ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, keyInterestBuilder,
-				"key-ref");
-		keyInterestBuilder.addConstructorArgValue(key);
+		parseCommonInterestAttributes(keyInterestElement, keyInterestBuilder);
+		keyInterestBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext,
+			keyInterestElement, keyInterestBuilder, "key-ref"));
+
 		return keyInterestBuilder.getBeanDefinition();
 	}
 
-	private Object parseRegexInterest(ParserContext parserContext, Element subElement) {
+	private Object parseRegexInterest(Element regexInterestElement) {
 		BeanDefinitionBuilder regexInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegexInterest.class);
 
-		parseCommonInterestAttr(subElement, regexInterestBuilder);
-		ParsingUtils.setPropertyValue(subElement, regexInterestBuilder, "pattern", "key");
+		parseCommonInterestAttributes(regexInterestElement, regexInterestBuilder);
+		ParsingUtils.setPropertyValue(regexInterestElement, regexInterestBuilder, "pattern", "key");
 
 		return regexInterestBuilder.getBeanDefinition();
 	}
 
-	private void parseCommonInterestAttr(Element element, BeanDefinitionBuilder builder) {
+	private void parseCommonInterestAttributes(Element element, BeanDefinitionBuilder builder) {
 		ParsingUtils.setPropertyValue(element, builder, "durable", "durable");
 		ParsingUtils.setPropertyValue(element, builder, "result-policy", "policy");
 		ParsingUtils.setPropertyValue(element, builder, "receive-values", "receiveValues");
 	}
+
 }

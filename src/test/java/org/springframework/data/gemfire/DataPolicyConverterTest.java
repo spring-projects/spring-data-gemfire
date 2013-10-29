@@ -24,15 +24,47 @@ import com.gemstone.gemfire.cache.DataPolicy;
 
 /**
  * @author David Turanski
- * 
+ * @author John Blum
  */
 public class DataPolicyConverterTest {
-	DataPolicyConverter converter = new DataPolicyConverter();
+
+	private final DataPolicyConverter converter = new DataPolicyConverter();
+
+	protected int getDataPolicyEnumerationSize() {
+		for (byte ordinal = 0; ordinal < Byte.MAX_VALUE; ordinal++) {
+			try {
+				DataPolicy.fromOrdinal(ordinal);
+			}
+			catch (Exception e) {
+				return ordinal;
+			}
+		}
+
+		throw new IndexOutOfBoundsException("The size of the Data Policy enumeration could not be determined"
+			+ " because the ordinal based on Byte.MAX_VALUE was exhausted!");
+	}
 
 	@Test
-	public void test() {
+	public void testPolicyToDataPolicy() {
+		// exclude DEFAULT
+		assertEquals(getDataPolicyEnumerationSize(), DataPolicyConverter.Policy.values().length - 1);
+		assertEquals(DataPolicy.EMPTY, DataPolicyConverter.Policy.EMPTY.toDataPolicy());
+		assertEquals(DataPolicy.NORMAL, DataPolicyConverter.Policy.NORMAL.toDataPolicy());
+		assertEquals(DataPolicy.PRELOADED, DataPolicyConverter.Policy.PRELOADED.toDataPolicy());
+		assertEquals(DataPolicy.PARTITION, DataPolicyConverter.Policy.PARTITION.toDataPolicy());
+		assertEquals(DataPolicy.PERSISTENT_PARTITION, DataPolicyConverter.Policy.PERSISTENT_PARTITION.toDataPolicy());
+		assertEquals(DataPolicy.REPLICATE, DataPolicyConverter.Policy.REPLICATE.toDataPolicy());
+		assertEquals(DataPolicy.PERSISTENT_REPLICATE, DataPolicyConverter.Policy.PERSISTENT_REPLICATE.toDataPolicy());
+		assertEquals(DataPolicy.DEFAULT, DataPolicyConverter.Policy.DEFAULT.toDataPolicy());
+	}
+
+	@Test
+	public void testConvert() {
 		assertEquals(DataPolicy.EMPTY, converter.convert("empty"));
+		assertEquals(DataPolicy.PARTITION, converter.convert("Partition"));
+		assertEquals(DataPolicy.PERSISTENT_REPLICATE, converter.convert("PERSISTENT_REPLICATE"));
 		assertNull(converter.convert("invalid"));
 		assertNull(converter.convert(null));
 	}
+
 }

@@ -124,7 +124,6 @@ public class ClientRegionNamespaceTest {
 	public void testOverflowToDisk() throws Exception {
 		assertTrue(context.containsBean("overflow"));
 		ClientRegionFactoryBean fb = context.getBean("&overflow", ClientRegionFactoryBean.class);
-		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
 		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evicAttr.getAction());

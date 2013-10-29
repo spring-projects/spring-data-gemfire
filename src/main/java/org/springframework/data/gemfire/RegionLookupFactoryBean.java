@@ -39,16 +39,19 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	private String beanName;
 	private GemFireCache cache;
-	private String name;
 
 	private Region<K, V> region;
 
+	private String beanName;
+	private String name;
+
 	public void afterPropertiesSet() throws Exception {
 		Assert.notNull(cache, "Cache property must be set");
+
 		name = (!StringUtils.hasText(name) ? beanName : name);
 		Assert.hasText(name, "Name (or beanName) property must be set");
+
 		synchronized (cache) {
 			region = cache.getRegion(name);
 			if (region != null) {
@@ -116,4 +119,5 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	protected Region<K, V> getRegion() {
 		return region;
 	}
+
 }
