@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.config;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -58,7 +59,7 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
 		
-		if (ParsingUtils.GEMFIRE_VERSION.compareTo("7.0.1") >= 0 ) {
+		if (GemfireUtils.GEMFIRE_VERSION.compareTo("7.0.1") >= 0 ) {
 			ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
 			ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
 			ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");

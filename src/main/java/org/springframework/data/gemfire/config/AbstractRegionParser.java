@@ -28,6 +28,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.SubRegionFactoryBean;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -100,14 +101,14 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		String hubId = element.getAttribute("hub-id");
 		// Factory will enable gateway if it is not set and hub-id is set.
 		if (StringUtils.hasText(enableGateway)) {
-			if (ParsingUtils.isGemfireV7OrAbove()) {
+			if (GemfireUtils.isGemfireVersion7OrAbove()) {
 				log.warn("'enable-gateway' is deprecated since Gemfire 7.0");
 			}
 		}
 		ParsingUtils.setPropertyValue(element, builder, "enable-gateway");
 
 		if (StringUtils.hasText(hubId)) {
-			if (ParsingUtils.isGemfireV7OrAbove()) {
+			if (GemfireUtils.isGemfireVersion7OrAbove()) {
 				log.warn("'hub-id' is deprecated since Gemfire 7.0");
 			}
 			if (!CollectionUtils.isEmpty(DomUtils.getChildElementsByTagName(element, "gateway-sender"))) {

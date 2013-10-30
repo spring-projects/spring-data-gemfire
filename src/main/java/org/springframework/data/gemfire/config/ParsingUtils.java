@@ -20,22 +20,17 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanMetadataAttribute;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.support.ManagedList;
-import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
-import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.LossAction;
@@ -49,16 +44,11 @@ import com.gemstone.gemfire.cache.Scope;
  * @author Costin Leau
  * @author David Turanski
  * @author Lyndon Adams
+ * @author John Blum
  */
 abstract class ParsingUtils {
-	
-	private static Log log = LogFactory.getLog(ParsingUtils.class);
 
-	final static String GEMFIRE_VERSION = CacheFactory.getVersion();
-
-	private static final String ALIASES_KEY = ParsingUtils.class.getName() + ":aliases";
-
-
+	private static final Log log = LogFactory.getLog(ParsingUtils.class);
 
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
 			String propertyName, Object defaultValue) {
@@ -88,35 +78,6 @@ abstract class ParsingUtils {
 		if (StringUtils.hasText(attr)) {
 			builder.addPropertyReference(propertyName, attr);
 		}
-	}
-
-	/**
-	 * Utility for parsing bean aliases. Normally parsed by
-	 * AbstractBeanDefinitionParser however due to the attribute clash (bean
-	 * uses 'name' for aliases while region use it to indicate their name), the
-	 * parser needs to handle this differently by storing them as metadata which
-	 * gets deleted just before registration.
-	 * 
-	 * @param element
-	 * @param builder
-	 */
-	static void addBeanAliasAsMetadata(Element element, BeanDefinitionBuilder builder) {
-		String[] aliases = new String[0];
-		String name = element.getAttributeNS(BeanDefinitionParserDelegate.BEANS_NAMESPACE_URI,
-				AbstractBeanDefinitionParser.NAME_ATTRIBUTE);
-
-		if (StringUtils.hasLength(name)) {
-			aliases = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(name));
-		}
-		BeanMetadataAttribute attr = new BeanMetadataAttribute(ALIASES_KEY, aliases);
-		attr.setSource(element);
-		builder.getRawBeanDefinition().addMetadataAttribute(attr);
-	}
-
-	static BeanDefinitionHolder replaceBeanAliasAsMetadata(BeanDefinitionHolder holder) {
-		BeanDefinition beanDefinition = holder.getBeanDefinition();
-		return new BeanDefinitionHolder(beanDefinition, holder.getBeanName(),
-				(String[]) beanDefinition.removeAttribute(ALIASES_KEY));
 	}
 
 	/**
@@ -349,7 +310,7 @@ abstract class ParsingUtils {
 		
 		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
 		if (StringUtils.hasText(concurrencyChecksEnabled)) {
-			if (!ParsingUtils.isGemfireV7OrAbove()) {
+			if (!GemfireUtils.isGemfireVersion7OrAbove()) {
 				log.warn("'concurrency-checks-enabled' is only available in Gemfire 7.0 or above");
 			} else {
 				ParsingUtils.setPropertyValue(element, attrBuilder, "concurrency-checks-enabled");
@@ -387,20 +348,13 @@ abstract class ParsingUtils {
 	}
 
 	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
-		if (!isGemfireV7OrAbove()) {
+		if (!GemfireUtils.isGemfireVersion7OrAbove()) {
 			String messagePrefix = (attributeName == null) ? "element '" + elementName + "'" : "attribute '"
 					+ attributeName + " of element '" + elementName + "'";
 			parserContext.getReaderContext().error(
-					messagePrefix + " requires Gemfire version 7 or later. The current version is " + GEMFIRE_VERSION,
+					messagePrefix + " requires Gemfire version 7 or later. The current version is " + GemfireUtils.GEMFIRE_VERSION,
 					null);
 		}
-	}
-	
-	static boolean isGemfireV7OrAbove() {
-		
-		int version = Integer.parseInt(GEMFIRE_VERSION.substring(0,1));
-		return version >= 7;
-		
 	}
 
 	static void parseScope(Element element, BeanDefinitionBuilder builder) {

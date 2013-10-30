@@ -15,13 +15,10 @@
  */
 package org.springframework.data.gemfire;
 
-import java.util.concurrent.ConcurrentMap;
-
 import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 
 /**
@@ -49,7 +46,7 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 		}
 		else if (isPersistent()) {
 			// first, check the presence of GemFire 6.5 or Higher
-			Assert.isTrue(isGemFireVersion65orHigher(), String.format(
+			Assert.isTrue(GemfireUtils.isGemfireVersion65OrAbove(), String.format(
 				"Can define Persistent Partitioned Regions only from GemFire 6.5 onwards; current version is [%1$s]",
 					CacheFactory.getVersion()));
 			regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
@@ -57,10 +54,6 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 		else {
 			regionFactory.setDataPolicy(DataPolicy.PARTITION);
 		}
-	}
-
-	private boolean isGemFireVersion65orHigher() {
-		return ConcurrentMap.class.isAssignableFrom(Region.class);
 	}
 
 }

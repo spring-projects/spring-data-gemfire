@@ -55,7 +55,7 @@ public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
 		DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
 
-		Assert.isTrue(resolvedDataPolicy != null || (resolvedDataPolicy == null && !StringUtils.hasText(dataPolicy)),
+		Assert.isTrue(resolvedDataPolicy != null || !StringUtils.hasText(dataPolicy),
 			String.format("Data Policy '%1$s' is invalid.", dataPolicy));
 
 		if (resolvedDataPolicy == null || DataPolicy.NORMAL.equals(resolvedDataPolicy)) {

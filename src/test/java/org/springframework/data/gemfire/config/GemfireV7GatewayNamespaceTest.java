@@ -28,6 +28,7 @@ import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
@@ -71,7 +72,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	@Before
 	@Override
 	public void createCtx() {
-		if (ParsingUtils.GEMFIRE_VERSION.startsWith("7")) {
+		if (GemfireUtils.GEMFIRE_VERSION.startsWith("7")) {
 			super.createCtx();
 		}
 	}
