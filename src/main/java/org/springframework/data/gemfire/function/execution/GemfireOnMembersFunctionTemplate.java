@@ -14,7 +14,6 @@ package org.springframework.data.gemfire.function.execution;
 
 import java.util.Set;
 
-
 import com.gemstone.gemfire.distributed.DistributedMember;
 
 /**
@@ -26,17 +25,17 @@ public class GemfireOnMembersFunctionTemplate  extends AbstractFunctionTemplate 
 	private final Set<DistributedMember> distributedMembers;
     private final String[] groups;
   
-	GemfireOnMembersFunctionTemplate (Set<DistributedMember> distributedMembers) {
+	public GemfireOnMembersFunctionTemplate (Set<DistributedMember> distributedMembers) {
 		this.distributedMembers = distributedMembers;
 		this.groups = null;
 	}
 	
-	GemfireOnMembersFunctionTemplate (String[] groups) {
+	public GemfireOnMembersFunctionTemplate (String[] groups) {
 		this.distributedMembers = null;
 		this.groups = groups;
 	}
 	
-	GemfireOnMembersFunctionTemplate () {
+	public GemfireOnMembersFunctionTemplate () {
 		this.distributedMembers = null;
 		this.groups = null;
 	}
