@@ -26,11 +26,11 @@ import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.LossAction;
@@ -48,9 +48,7 @@ import com.gemstone.gemfire.cache.Scope;
  */
 abstract class ParsingUtils {
 
-	private static Log log = LogFactory.getLog(ParsingUtils.class);
-
-	static final String GEMFIRE_VERSION = CacheFactory.getVersion();
+	private static final Log log = LogFactory.getLog(ParsingUtils.class);
 
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
 			String propertyName, Object defaultValue) {
@@ -310,7 +308,7 @@ abstract class ParsingUtils {
 		
 		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
 		if (StringUtils.hasText(concurrencyChecksEnabled)) {
-			if (!ParsingUtils.isGemfireV7OrAbove()) {
+			if (!GemfireUtils.isGemfireVersion7OrAbove()) {
 				log.warn("'concurrency-checks-enabled' is only available in Gemfire 7.0 or above");
 			} else {
 				ParsingUtils.setPropertyValue(element, attrBuilder, "concurrency-checks-enabled");
@@ -348,20 +346,13 @@ abstract class ParsingUtils {
 	}
 
 	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
-		if (!isGemfireV7OrAbove()) {
+		if (!GemfireUtils.isGemfireVersion7OrAbove()) {
 			String messagePrefix = (attributeName == null) ? "element '" + elementName + "'" : "attribute '"
 					+ attributeName + " of element '" + elementName + "'";
 			parserContext.getReaderContext().error(
-					messagePrefix + " requires Gemfire version 7 or later. The current version is " + GEMFIRE_VERSION,
+					messagePrefix + " requires Gemfire version 7 or later. The current version is " + GemfireUtils.GEMFIRE_VERSION,
 					null);
 		}
-	}
-	
-	static boolean isGemfireV7OrAbove() {
-		
-		int version = Integer.parseInt(GEMFIRE_VERSION.substring(0,1));
-		return version >= 7;
-		
 	}
 
 	static void parseScope(Element element, BeanDefinitionBuilder builder) {

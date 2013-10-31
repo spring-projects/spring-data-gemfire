@@ -29,10 +29,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-
 /**
- * Parser for &lt;client-region;gt; definitions.
+ * Parser for &lt;client-region;gt; bean definitions.
  * <p/>
  * To avoid eager evaluations, the region interests are declared as nested definition.
  * <p/>
@@ -51,54 +49,37 @@ class ClientRegionParser extends AbstractRegionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
-		String cacheRefAttribute = element.getAttribute("cache-ref");
+		validateDataPolicyShortcutMutualExclusion(element, parserContext);
 
-		builder.addPropertyReference("cache", (StringUtils.hasText(cacheRefAttribute) ? cacheRefAttribute
+		String cacheRefAttributeValue = element.getAttribute("cache-ref");
+
+		builder.addPropertyReference("cache", (StringUtils.hasText(cacheRefAttributeValue) ? cacheRefAttributeValue
 			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 
 		ParsingUtils.setPropertyValue(element, builder, "close");
 		ParsingUtils.setPropertyValue(element, builder, "destroy");
 		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicyName");
 		ParsingUtils.setPropertyValue(element, builder, "name");
+		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name");
 		ParsingUtils.setPropertyValue(element, builder, "shortcut");
 
 		parseDiskStoreAttribute(element, builder);
 
-		boolean dataPolicyFrozen = false;
-
-		// TODO why is the DataPolicy determined in the ClientRegionParser and not in the ClientRegionFactoryBean when evaluating the configuration settings?
-		// set the persistent policy
-		if (Boolean.parseBoolean(element.getAttribute("persistent"))) {
-			builder.addPropertyValue("dataPolicy", DataPolicy.PERSISTENT_REPLICATE);
-			dataPolicyFrozen = true;
-		}
-
-		// eviction + expiration + overflow + optional client region attributes
+		// Client RegionAttributes for overflow/eviction, expiration and statistics
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			RegionAttributesFactoryBean.class);
 
-		boolean overwriteDataPolicy = ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
-
 		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
-		// NOTE parsing 'expiration' attributes must happen after parsing the user-defined setting for 'statistics'
-		// in GemFire this attribute corresponds to the RegionAttributes 'statistics-enabled' setting).  If the user
-		// configured expiration settings (any?), then statistics must be enabled, regardless if the user explicitly
-		// disabled them.
+		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
-
-		// TODO understand why this determination is not made in the FactoryBean?
-		if (!dataPolicyFrozen && overwriteDataPolicy) {
-			builder.addPropertyValue("dataPolicy", DataPolicy.NORMAL);
-		}
 
 		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 		ManagedList<Object> interests = new ManagedList<Object>();
 
-		// parse nested elements
 		for (Element subElement : subElements) {
 			String subElementLocalName = subElement.getLocalName();
 
@@ -115,20 +96,19 @@ class ClientRegionParser extends AbstractRegionParser {
 					parserContext, subElement, builder));
 			}
 			else if ("key-interest".equals(subElementLocalName)) {
-				interests.add(parseKeyInterest(parserContext, subElement));
+				interests.add(parseKeyInterest(subElement, parserContext));
 			}
 			else if ("regex-interest".equals(subElementLocalName)) {
-				interests.add(parseRegexInterest(parserContext, subElement));
+				interests.add(parseRegexInterest(subElement));
 			}
 		}
 
-		// TODO is adding an 'interests' property really based on whether there are "sub-elements", or should it be based on whether there are "interests" (as in 'key-interest' and 'regex-interest')?
-		if (!subElements.isEmpty()) {
+		if (!interests.isEmpty()) {
 			builder.addPropertyValue("interests", interests);
 		}
 	}
 
-	private void parseDiskStoreAttribute(Element element, BeanDefinitionBuilder builder) {
+	private void parseDiskStoreAttribute(final Element element, final BeanDefinitionBuilder builder) {
 		String diskStoreRefAttribute = element.getAttribute("disk-store-ref");
 
 		if (StringUtils.hasText(diskStoreRefAttribute)) {
@@ -137,32 +117,37 @@ class ClientRegionParser extends AbstractRegionParser {
 		}
 	}
 
+	private void validateDataPolicyShortcutMutualExclusion(final Element element, final ParserContext parserContext) {
+		if (element.hasAttribute("data-policy") && element.hasAttribute("shortcut")) {
+			parserContext.getReaderContext().error(String.format(
+				"Only one of [data-policy, shortcut] may be specified with element '%1$s'.", element.getTagName()),
+					element);
+		}
+	}
+
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 		throw new UnsupportedOperationException(String.format(
-			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, subRegion:boolean) is not supported on %1$s",
-			getClass().getName()));
+			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, :boolean) is not supported on %1$s",
+				getClass().getName()));
 	}
 
-	private Object parseKeyInterest(ParserContext parserContext, Element subElement) {
+	private Object parseKeyInterest(Element keyInterestElement, ParserContext parserContext) {
 		BeanDefinitionBuilder keyInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(Interest.class);
 
-		parseCommonInterestAttributes(subElement, keyInterestBuilder);
-
-		Object key = ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, keyInterestBuilder,
-			"key-ref");
-
-		keyInterestBuilder.addConstructorArgValue(key);
+		parseCommonInterestAttributes(keyInterestElement, keyInterestBuilder);
+		keyInterestBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext,
+			keyInterestElement, keyInterestBuilder, "key-ref"));
 
 		return keyInterestBuilder.getBeanDefinition();
 	}
 
-	private Object parseRegexInterest(ParserContext parserContext, Element subElement) {
+	private Object parseRegexInterest(Element regexInterestElement) {
 		BeanDefinitionBuilder regexInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegexInterest.class);
 
-		parseCommonInterestAttributes(subElement, regexInterestBuilder);
-		ParsingUtils.setPropertyValue(subElement, regexInterestBuilder, "pattern", "key");
+		parseCommonInterestAttributes(regexInterestElement, regexInterestBuilder);
+		ParsingUtils.setPropertyValue(regexInterestElement, regexInterestBuilder, "pattern", "key");
 
 		return regexInterestBuilder.getBeanDefinition();
 	}

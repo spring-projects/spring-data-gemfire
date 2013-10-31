@@ -22,32 +22,35 @@ import com.gemstone.gemfire.cache.RegionFactory;
 
 /**
  * @author David Turanski
- * 
+ * @author John Blum
  */
 public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
+
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
-		DataPolicy dp = null;
 		if (dataPolicy != null) {
-			dataPolicy = dataPolicy.toUpperCase();
-			if ("EMPTY".equals(dataPolicy)) {
-				Assert.isTrue(persistent == null || !persistent, "Cannot have persistence on an empty region");
-				dp = DataPolicy.EMPTY;
+			DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
+
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+
+			// Validate that the data-policy and persistent attributes are compatible when specified!
+			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
+
+			if (DataPolicy.EMPTY.equals(resolvedDataPolicy)) {
+				resolvedDataPolicy = DataPolicy.EMPTY;
 			}
 			else {
-				dp = new DataPolicyConverter().convert(dataPolicy);
-				Assert.notNull(dp, "Data policy " + dataPolicy + " is invalid");
-				Assert.isTrue(dp.withReplication(), "Data policy " + dataPolicy
-						+ " is invalid or unsupported in replicated regions");
-				if (isPersistent()) {
-					Assert.isTrue(dp.withPersistence(), "Data policy " + dataPolicy
-							+ " is invalid when persistent is false");
-				}
+				// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
+				// configuration meta-data element for Region (i.e. <gfe:replicated-region .../>)!
+				Assert.isTrue(resolvedDataPolicy.withReplication(), String.format("" +
+					"Data Policy '%1$s' is not supported in Replicated Regions.", resolvedDataPolicy));
 			}
+
+			regionFactory.setDataPolicy(resolvedDataPolicy);
 		}
 		else {
-			dp = (isPersistent()) ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE;
+			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE);
 		}
-		regionFactory.setDataPolicy(dp);
 	}
+
 }
