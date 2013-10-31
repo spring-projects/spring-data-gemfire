@@ -108,6 +108,22 @@ class ClientRegionParser extends AbstractRegionParser {
 		}
 	}
 
+	@Override
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+		boolean subRegion) {
+		throw new UnsupportedOperationException(String.format(
+			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, :boolean) is not supported on %1$s",
+			getClass().getName()));
+	}
+
+	private void validateDataPolicyShortcutMutualExclusion(final Element element, final ParserContext parserContext) {
+		if (element.hasAttribute("data-policy") && element.hasAttribute("shortcut")) {
+			parserContext.getReaderContext().error(String.format(
+				"Only one of [data-policy, shortcut] may be specified with element '%1$s'.", element.getTagName()),
+				element);
+		}
+	}
+
 	private void parseDiskStoreAttribute(final Element element, final BeanDefinitionBuilder builder) {
 		String diskStoreRefAttribute = element.getAttribute("disk-store-ref");
 
@@ -115,22 +131,6 @@ class ClientRegionParser extends AbstractRegionParser {
 			builder.addPropertyValue("diskStoreName", diskStoreRefAttribute);
 			builder.addDependsOn(diskStoreRefAttribute);
 		}
-	}
-
-	private void validateDataPolicyShortcutMutualExclusion(final Element element, final ParserContext parserContext) {
-		if (element.hasAttribute("data-policy") && element.hasAttribute("shortcut")) {
-			parserContext.getReaderContext().error(String.format(
-				"Only one of [data-policy, shortcut] may be specified with element '%1$s'.", element.getTagName()),
-					element);
-		}
-	}
-
-	@Override
-	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
-			boolean subRegion) {
-		throw new UnsupportedOperationException(String.format(
-			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, :boolean) is not supported on %1$s",
-				getClass().getName()));
 	}
 
 	private Object parseKeyInterest(Element keyInterestElement, ParserContext parserContext) {

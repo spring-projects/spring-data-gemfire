@@ -189,6 +189,16 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		return resolvedShortcut;
 	}
 
+	/**
+	 * Validates that the settings for ClientRegionShortcut and the 'persistent' attribute in <gfe:*-region/> elements
+	 * are compatible.
+	 * <p/>
+	 * @param resolvedShortcut the GemFire ClientRegionShortcut resolved form the Spring GemFire XML namespace
+	 * configuration meta-data.
+	 * @see #isPersistent()
+	 * @see #isNotPersistent()
+	 * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+	 */
 	protected void assertClientRegionShortcutAndPersistentAttributeAreCompatible(final ClientRegionShortcut resolvedShortcut) {
 		final boolean persistentNotSpecified = (this.persistent == null);
 
