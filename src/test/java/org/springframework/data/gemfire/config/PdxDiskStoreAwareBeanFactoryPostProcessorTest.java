@@ -21,12 +21,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -34,19 +37,24 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.DiskStoreFactoryBean;
-import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
-import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
+
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 
 /**
  * The PdxDiskStoreAwareBeanFactoryPostProcessorTest class is a test suite of test cases testing the functionality
  * of the PdxDiskStoreAwareBeanFactoryPostProcessor class.
  * <p/>
  * @author John Blum
- * @see org.mockito.Mockito
  * @see org.junit.Test
+ * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.config.PdxDiskStoreAwareBeanFactoryPostProcessor
  * @since 1.3.3
  */
@@ -63,17 +71,48 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorTest {
 		return (array == null || array.length == 0);
 	}
 
+	protected static boolean isBeanType(final BeanDefinition beanDefinition, final Class beanType) {
+		return (beanDefinition instanceof AbstractBeanDefinition
+			&& ((AbstractBeanDefinition) beanDefinition).hasBeanClass()
+			&& beanType.isAssignableFrom(((AbstractBeanDefinition) beanDefinition).getBeanClass()));
+	}
+
 	protected ConfigurableListableBeanFactory createMockBeanFactory(final Map<String, BeanDefinition> beanDefinitions) {
 		final ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
 
 		when(mockBeanFactory.getBeanDefinitionNames()).thenReturn(toStringArray(beanDefinitions.keySet()));
 
+		when(mockBeanFactory.getBeanNamesForType(isA(Class.class))).then(new Answer<String[]>() {
+			@Override
+			public String[] answer(final InvocationOnMock invocation) throws Throwable {
+				Object[] arguments = invocation.getArguments();
+
+				assertNotNull(arguments);
+				assertTrue(arguments.length == 1);
+				assertTrue(arguments[0] instanceof Class);
+
+				Class beanType = (Class) arguments[0];
+
+				List<String> beanNames = new ArrayList<String>(beanDefinitions.size());
+
+				for (Map.Entry<String, BeanDefinition> entry : beanDefinitions.entrySet()) {
+					BeanDefinition beanDefinition = entry.getValue();
+
+					if (isBeanType(beanDefinition, beanType)) {
+						beanNames.add(entry.getKey());
+					}
+				}
+
+				return toStringArray(beanNames);
+			}
+		});
+
 		when(mockBeanFactory.getBeanDefinition(anyString())).then(new Answer<BeanDefinition>() {
 			@Override
 			public BeanDefinition answer(final InvocationOnMock invocation) throws Throwable {
-				final Object[] arguments = invocation.getArguments();
+				Object[] arguments = invocation.getArguments();
 				assertNotNull(arguments);
-				assertTrue(arguments.length > 0);
+				assertTrue(arguments.length == 1);
 				return beanDefinitions.get(String.valueOf(arguments[0]));
 			}
 		});
@@ -115,40 +154,71 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorTest {
 		return createBeanDefinitionBuilder(CacheFactoryBean.class).getBeanDefinition();
 	}
 
-	protected BeanDefinition defineDiskStore(String... dependencies) {
-		return createBeanDefinitionBuilder(DiskStoreFactoryBean.class, dependencies).getBeanDefinition();
-	}
+	protected BeanDefinition defineAsyncEventQueue(Boolean persistent, String... dependencies) {
+		BeanDefinitionBuilder builder = createBeanDefinitionBuilder(AsyncEventQueue.class, dependencies);
 
-	protected BeanDefinition defineRegion(Class beanClass, boolean persistent, String... dependencies) {
-		BeanDefinitionBuilder builder = createBeanDefinitionBuilder(beanClass, dependencies);
-		builder.addPropertyValue("persistent", persistent);
+		if (persistent != null) {
+			builder.addPropertyValue("persistent", persistent.toString());
+		}
+
 		return builder.getBeanDefinition();
 	}
 
-	protected BeanDefinition definePartitionedRegion(boolean persistent, String... dependencies) {
-		return defineRegion(PartitionedRegionFactoryBean.class, persistent, dependencies);
+	protected BeanDefinition defineDiskStore(String... dependencies) {
+		return createBeanDefinitionBuilder(DiskStore.class, dependencies).getBeanDefinition();
 	}
 
-	protected BeanDefinition defineReplicatedRegion(boolean persistent, String... dependencies) {
-		return defineRegion(ReplicatedRegionFactoryBean.class, persistent, dependencies);
+	protected BeanDefinition defineRegion(Class beanClass, Boolean persistent, DataPolicy dataPolicy,
+			RegionShortcut shortcut, String... dependencies) {
+		BeanDefinitionBuilder builder = createBeanDefinitionBuilder(beanClass, dependencies);
+
+		if (persistent != null) {
+			builder.addPropertyValue("persistent", persistent.toString());
+		}
+
+		if (dataPolicy != null) {
+			builder.addPropertyValue("dataPolicy", dataPolicy.toString());
+		}
+
+		if (shortcut != null) {
+			builder.addPropertyValue("shortcut", shortcut.toString());
+		}
+
+		return builder.getBeanDefinition();
+	}
+
+	protected BeanDefinition definePartitionedRegion(Boolean persistent, DataPolicy dataPolicy, RegionShortcut shortcut,
+			String... dependencies) {
+		return defineRegion(PartitionedRegion.class, persistent, dataPolicy, shortcut, dependencies);
+	}
+
+	protected BeanDefinition defineReplicatedRegion(Boolean persistent, DataPolicy dataPolicy, RegionShortcut shortcut,
+			String... dependencies) {
+		return defineRegion(Region.class, persistent, dataPolicy, shortcut, dependencies);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreatePdxDiskStoreAwareBeanFactoryPostProcessorWithBlankDiskStoreName() {
+		new PdxDiskStoreAwareBeanFactoryPostProcessor("  ");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreatePdxDiskStoreAwareBeanFactoryPostProcessorWithEmptyDiskStoreName() {
+		new PdxDiskStoreAwareBeanFactoryPostProcessor("");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreatePdxDiskStoreAwareBeanFactoryPostProcessorWithNullDiskStoreName() {
+		new PdxDiskStoreAwareBeanFactoryPostProcessor(null);
 	}
 
 	@Test
 	public void testInitializedPdxDiskStoreAwareBeanFactoryPostProcessor() {
-		final PdxDiskStoreAwareBeanFactoryPostProcessor postProcessor =
+		PdxDiskStoreAwareBeanFactoryPostProcessor postProcessor =
 			new PdxDiskStoreAwareBeanFactoryPostProcessor("testPdxDiskStoreName");
 
 		assertNotNull(postProcessor);
 		assertEquals("testPdxDiskStoreName", postProcessor.getPdxDiskStoreName());
-
-		postProcessor.setPdxDiskStoreName("mockPdxDiskStoreName");
-
-		assertEquals("mockPdxDiskStoreName", postProcessor.getPdxDiskStoreName());
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void testUninitializedPdxDiskStoreAwareBeanFactoryPostProcessor() {
-		new PdxDiskStoreAwareBeanFactoryPostProcessor().getPdxDiskStoreName();
 	}
 
 	@Test
@@ -159,15 +229,22 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorTest {
 		beanDefinitions.put("gemfireCache", defineCache());
 		beanDefinitions.put("pdxDiskStore", defineDiskStore());
 		beanDefinitions.put("someOtherBean", defineBean("org.company.app.domain.SomeOtherBean"));
+		beanDefinitions.put("queue1", defineAsyncEventQueue(null, "someOtherBean"));
 		beanDefinitions.put("overflowDiskStore", defineDiskStore());
-		beanDefinitions.put("region1", defineReplicatedRegion(NOT_PERSISTENT, "overflowDiskStore"));
-		beanDefinitions.put("region2DiskStore", defineDiskStore("someBean"));
-		beanDefinitions.put("region2", defineReplicatedRegion(PERSISTENT, "region2DiskStore"));
-		beanDefinitions.put("colocatedRegion", definePartitionedRegion(NOT_PERSISTENT, "residentRegion",
+		beanDefinitions.put("region1", defineReplicatedRegion(NOT_PERSISTENT, null, RegionShortcut.REPLICATE_OVERFLOW,
 			"overflowDiskStore"));
+		beanDefinitions.put("region2DiskStore", defineDiskStore("someBean"));
+		beanDefinitions.put("region2", defineReplicatedRegion(PERSISTENT, null, null, "region2DiskStore"));
+		beanDefinitions.put("colocatedRegion", definePartitionedRegion(null, DataPolicy.PARTITION,
+			RegionShortcut.PARTITION_REDUNDANT_OVERFLOW, "residentRegion", "overflowDiskStore"));
 		beanDefinitions.put("residentRegionDiskStore", defineDiskStore("someBean", "yetAnotherBean"));
-		beanDefinitions.put("residentRegion", definePartitionedRegion(PERSISTENT, "residentRegionDiskStore"));
+		beanDefinitions.put("residentRegion", definePartitionedRegion(PERSISTENT, null, null,
+			"residentRegionDiskStore"));
 		beanDefinitions.put("yetAnotherBean", defineBean("org.company.app.domain.YetAnotherBean", "someBean"));
+		beanDefinitions.put("queue2", defineAsyncEventQueue(PERSISTENT));
+		beanDefinitions.put("region3", definePartitionedRegion(PERSISTENT, null, RegionShortcut.PARTITION_PERSISTENT));
+		beanDefinitions.put("region4", definePartitionedRegion(null, DataPolicy.PERSISTENT_PARTITION, null, "queue2"));
+		beanDefinitions.put("region5", defineReplicatedRegion(null, null, RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW));
 
 		final ConfigurableListableBeanFactory mockBeanFactory = createMockBeanFactory(beanDefinitions);
 
@@ -180,6 +257,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorTest {
 		assertTrue(isEmpty(beanDefinitions.get("gemfireCache").getDependsOn()));
 		assertTrue(isEmpty(beanDefinitions.get("pdxDiskStore").getDependsOn()));
 		assertTrue(isEmpty(beanDefinitions.get("someOtherBean").getDependsOn()));
+		assertDependencies(beanDefinitions.get("queue1"), "someOtherBean");
 		assertDependencies(beanDefinitions.get("overflowDiskStore"), "pdxDiskStore");
 		assertDependencies(beanDefinitions.get("region1"), "overflowDiskStore");
 		assertDependencies(beanDefinitions.get("region2DiskStore"), "pdxDiskStore", "someBean");
@@ -188,6 +266,10 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorTest {
 		assertDependencies(beanDefinitions.get("residentRegionDiskStore"), "pdxDiskStore", "someBean", "yetAnotherBean");
 		assertDependencies(beanDefinitions.get("residentRegion"), "pdxDiskStore", "residentRegionDiskStore");
 		assertDependencies(beanDefinitions.get("yetAnotherBean"), "someBean");
+		assertDependencies(beanDefinitions.get("queue2"), "pdxDiskStore");
+		assertDependencies(beanDefinitions.get("region3"), "pdxDiskStore");
+		assertDependencies(beanDefinitions.get("region4"), "pdxDiskStore", "queue2");
+		assertDependencies(beanDefinitions.get("region5"), "pdxDiskStore");
 	}
 
 }
