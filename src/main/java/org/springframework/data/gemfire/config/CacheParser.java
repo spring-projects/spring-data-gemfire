@@ -21,6 +21,7 @@ import java.util.List;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
@@ -52,10 +53,11 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
+
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
 		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
 		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer-ref", "pdxSerializer");
-		ParsingUtils.setPropertyValue(element, builder, "pdx-disk-store", "pdxDiskStoreName");
+		parsePdxDiskStore(element, parserContext, builder);
 		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
 		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized");
 		ParsingUtils.setPropertyValue(element, builder, "pdx-ignore-unread-fields");
@@ -101,6 +103,29 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 		parseDynamicRegionFactory(element, builder);
 		parseJndiBindings(element, builder);
+	}
+
+	private void parsePdxDiskStore(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		ParsingUtils.setPropertyValue(element, builder, "pdx-disk-store", "pdxDiskStoreName");
+
+		final String pdxDiskStoreName = element.getAttribute("pdx-disk-store");
+
+		if (!StringUtils.isEmpty(pdxDiskStoreName)) {
+			registerPdxDiskStoreAwareBeanFactoryPostProcessor(parserContext, pdxDiskStoreName);
+		}
+	}
+
+	private void registerPdxDiskStoreAwareBeanFactoryPostProcessor(ParserContext parserContext, String pdxDiskStoreName) {
+		BeanDefinitionReaderUtils.registerWithGeneratedName(
+			createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(pdxDiskStoreName),
+				parserContext.getRegistry());
+	}
+
+	private AbstractBeanDefinition createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(String pdxDiskStoreName) {
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
+			PdxDiskStoreAwareBeanFactoryPostProcessor.class);
+		builder.addConstructorArgValue(pdxDiskStoreName);
+		return builder.getBeanDefinition();
 	}
 
 	private void parseDynamicRegionFactory(Element element, BeanDefinitionBuilder builder) {

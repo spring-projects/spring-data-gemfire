@@ -53,6 +53,7 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 			this.pdxDiskStoreName = cacheFactoryBean.getPdxDiskStoreName();
 			this.pdxIgnoreUnreadFields = cacheFactoryBean.getPdxIgnoreUnreadFields();
 			this.pdxPersistent = cacheFactoryBean.getPdxPersistent();
+			this.pdxReadSerialized = cacheFactoryBean.getPdxReadSerialized();
 			this.pdxSerializer = cacheFactoryBean.getPdxSerializer();
 			this.properties = cacheFactoryBean.getProperties();
 			this.searchTimeout = cacheFactoryBean.getSearchTimeout();
