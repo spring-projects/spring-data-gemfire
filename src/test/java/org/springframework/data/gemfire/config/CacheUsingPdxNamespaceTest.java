@@ -20,14 +20,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
@@ -55,23 +52,15 @@ public class CacheUsingPdxNamespaceTest {
 	@Autowired
 	private ApplicationContext context;
 
-	protected PdxDiskStoreAwareBeanFactoryPostProcessor getPdxDiskStoreAwareBeanFactoryPostProcessor(AbstractApplicationContext context) {
-		for (BeanFactoryPostProcessor postProcessor : context.getBeanFactoryPostProcessors()) {
-			if (postProcessor instanceof PdxDiskStoreAwareBeanFactoryPostProcessor) {
-				return (PdxDiskStoreAwareBeanFactoryPostProcessor) postProcessor;
-			}
-		}
-
-		return null;
-	}
-
 	@Test
 	public void testApplicationContextHasPdxDiskStoreAwareBeanFactoryPostProcessor() {
-		assumeTrue(context instanceof AbstractApplicationContext);
+		PdxDiskStoreAwareBeanFactoryPostProcessor postProcessor = context.getBean(
+			PdxDiskStoreAwareBeanFactoryPostProcessor.class);
 
-		final PdxDiskStoreAwareBeanFactoryPostProcessor postProcessor = getPdxDiskStoreAwareBeanFactoryPostProcessor(
-			(AbstractApplicationContext) context);
-
+		// NOTE the postProcessor reference will not be null as the ApplicationContext.getBean(:Class) method (getting
+		// a bean by Class type) will throw a NoSuchBeanDefinitionException if no bean of type
+		// PdxDiskStoreAwareBeanFactoryPostProcessor could be found, or throw a NoUniqueBeanDefinitionException if
+		// our PdxDiskStoreAwareBeanFactoryPostProcessor bean is not unique!
 		assertNotNull(postProcessor);
 		assertEquals("pdxStore", postProcessor.getPdxDiskStoreName());
 	}
