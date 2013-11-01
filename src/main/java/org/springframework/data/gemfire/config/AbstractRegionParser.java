@@ -52,8 +52,8 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	protected abstract Class<?> getRegionFactoryClass();
 
 	protected boolean isSubRegion(Element element) {
-		return (element.getParentNode().getLocalName() != null
-			&& element.getParentNode().getLocalName().endsWith("region"));
+		String localName = element.getParentNode().getLocalName();
+		return (localName != null && localName.endsWith("region"));
 	}
 
 	@Override
