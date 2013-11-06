@@ -20,57 +20,59 @@ import java.util.List;
 
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.util.Gateway;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
+ * <p/>
  * @author David Turanski
- * 
+ * @author John Blum
  */
 public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<AsyncEventQueue> {
+
 	private static List<String> validOrderPolicyValues = Arrays.asList("KEY", "PARTITION", "THREAD");
 
-	public void setDiskStoreRef(String diskStoreRef) {
-		this.diskStoreRef = diskStoreRef;
-	}
-
-	private final AsyncEventListener asyncEventListener;
+	private AsyncEventListener asyncEventListener;
 
 	private AsyncEventQueue asyncEventQueue;
 
-	private Integer batchSize;
-
-	private Integer dispatcherThreads;
-
-	private Integer batchTimeInterval;
-
-	private Integer maximumQueueMemory;
-
+	private Boolean batchConflationEnabled;
+	private Boolean diskSynchronous;
+	private Boolean parallel;
 	private Boolean persistent;
 
+	private Integer batchSize;
+	private Integer batchTimeInterval;
+	private Integer dispatcherThreads;
+	private Integer maximumQueueMemory;
+
 	private String diskStoreRef;
-
-	private Boolean parallel;
-
-	private Boolean diskSynchronous;
-
 	private String orderPolicy;
 
-	private Boolean batchConflationEnabled;
+	/**
+	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
+	 * <p/>
+	 * @param cache the GemFire Cache reference.
+	 * @see #AsyncEventQueueFactoryBean(com.gemstone.gemfire.cache.Cache, com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener)
+	 */
+	public AsyncEventQueueFactoryBean(Cache cache) {
+		this(cache, null);
+	}
 
 	/**
-	 * 
-	 * @param cache the gemfire cache
+	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
+	 * <p/>
+	 * @param cache the GemFire Cache reference.
 	 * @param asyncEventListener required {@link AsyncEventListener}
 	 */
 	public AsyncEventQueueFactoryBean(Cache cache, AsyncEventListener asyncEventListener) {
 		super(cache);
-		this.asyncEventListener = asyncEventListener;
+		setAsyncEventListener(asyncEventListener);
 	}
 
 	@Override
@@ -85,25 +87,23 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	@Override
 	protected void doInit() {
-		Assert.notNull(asyncEventListener, "AsyncEventListener cannot be null");
+		Assert.notNull(this.asyncEventListener, "The AsyncEventListener cannot be null.");
 
-		AsyncEventQueueFactory asyncEventQueueFactory = null;
-		if (this.factory == null) {
-			asyncEventQueueFactory = cache.createAsyncEventQueueFactory();
-		} else {
-			asyncEventQueueFactory = (AsyncEventQueueFactory) factory;
-		}
+		AsyncEventQueueFactory asyncEventQueueFactory = (this.factory != null ? (AsyncEventQueueFactory) factory
+			: cache.createAsyncEventQueueFactory());
 
 		if (diskStoreRef != null) {
 			persistent = (persistent == null) ? Boolean.TRUE : persistent;
-			Assert.isTrue(persistent, "specifying a disk store requires persistent property to be true");
+			Assert.isTrue(persistent, "Specifying a 'disk store' requires the persistent property to be true.");
 			asyncEventQueueFactory.setDiskStoreName(diskStoreRef);
 		}
+
 		if (diskSynchronous != null) {
 			persistent = (persistent == null) ? Boolean.TRUE : persistent;
-			Assert.isTrue(persistent, "specifying a disk synchronous requires persistent property to be true");
+			Assert.isTrue(persistent, "Specifying 'disk synchronous' requires the persistent property to be true.");
 			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
 		}
+
 		if (persistent != null) {
 			asyncEventQueueFactory.setPersistent(persistent);
 		}
@@ -135,23 +135,34 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		if (orderPolicy != null) {
 			Assert.isTrue(parallel, "specifying an order policy requires the parallel property to be true");
 
-			Assert.isTrue(validOrderPolicyValues.contains(orderPolicy.toUpperCase()), "The value of order policy:'"
-					+ orderPolicy + "' is invalid");
+			Assert.isTrue(validOrderPolicyValues.contains(orderPolicy.toUpperCase()), String.format(
+				"The value of order policy:'$1%s'' is invalid.", orderPolicy));
+
 			asyncEventQueueFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
 
-		asyncEventQueue = asyncEventQueueFactory.create(getName(), asyncEventListener);
+		asyncEventQueue = asyncEventQueueFactory.create(getName(), this.asyncEventListener);
 	}
 
 	@Override
 	public void destroy() throws Exception {
 		if (!cache.isClosed()) {
 			try {
-				asyncEventListener.close();
-			} catch (CacheClosedException cce) {
-				// nothing to see folks, move on.
+				this.asyncEventListener.close();
+			}
+			catch (CacheClosedException ignore) {
 			}
 		}
+	}
+
+	public final void setAsyncEventListener(AsyncEventListener listener) {
+		Assert.state(this.asyncEventQueue == null,
+			"Setting an AsyncEventListener is not allowed once the AsyncEventQueue has been created.");
+		this.asyncEventListener = listener;
+	}
+
+	public void setDiskStoreRef(String diskStoreRef) {
+		this.diskStoreRef = diskStoreRef;
 	}
 
 	public void setBatchSize(Integer batchSize) {
@@ -219,4 +230,5 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	public void setOrderPolicy(String orderPolicy) {
 		this.orderPolicy = orderPolicy;
 	}
+
 }
