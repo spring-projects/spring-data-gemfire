@@ -29,8 +29,9 @@ import org.w3c.dom.Element;
 
 /**
  * Namespace parser for "cache-server" element.
- * 
+ * <p/>
  * @author Costin Leau
+ * @author John Blum
  */
 class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -41,7 +42,7 @@ class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
-			throws BeanDefinitionStoreException {
+		throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
 		if (!StringUtils.hasText(name)) {
 			name = "gemfireServer";
@@ -52,35 +53,38 @@ class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 	@Override
 	protected boolean isEligibleAttribute(Attr attribute, ParserContext parserContext) {
 		return super.isEligibleAttribute(attribute, parserContext) && !"groups".equals(attribute.getName())
-				&& !"cache-ref".equals(attribute.getName());
+			&& !"cache-ref".equals(attribute.getName());
 	}
 
 	@Override
 	protected void postProcess(BeanDefinitionBuilder builder, Element element) {
+		String cacheRefAttribute = element.getAttribute("cache-ref");
 
-		String attr = element.getAttribute("cache-ref");
-		// add cache reference (fallback to default if nothing is specified)
-		builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+		builder.addPropertyReference("cache", (StringUtils.hasText(cacheRefAttribute) ? cacheRefAttribute
+			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 
-		attr = element.getAttribute("groups");
-		if (StringUtils.hasText(attr)) {
-			builder.addPropertyValue("serverGroups", StringUtils.commaDelimitedListToStringArray(attr));
+		String groupsAttribute = element.getAttribute("groups");
+
+		if (StringUtils.hasText(groupsAttribute)) {
+			builder.addPropertyValue("serverGroups", StringUtils.commaDelimitedListToStringArray(groupsAttribute));
 		}
 
 		parseSubscription(builder, element);
 	}
 
 	private void parseSubscription(BeanDefinitionBuilder builder, Element element) {
-		Element subConfig = DomUtils.getChildElementByTagName(element, "subscription-config");
-		if (subConfig == null) {
-			return;
-		}
+		Element subscriptionConfigElement = DomUtils.getChildElementByTagName(element, "subscription-config");
 
-		ParsingUtils.setPropertyValue(subConfig, builder, "capacity", "subscriptionCapacity");
-		ParsingUtils.setPropertyValue(subConfig, builder, "disk-store", "subscriptionDiskStore");
-		String attr = element.getAttribute("eviction-type");
-		if (StringUtils.hasText(attr)) {
-			builder.addPropertyValue("subscriptionEvictionPolicy", attr.toUpperCase());
+		if (subscriptionConfigElement != null) {
+			ParsingUtils.setPropertyValue(subscriptionConfigElement, builder, "capacity", "subscriptionCapacity");
+			ParsingUtils.setPropertyValue(subscriptionConfigElement, builder, "disk-store", "subscriptionDiskStore");
+
+			String evictionTypeAttribute = subscriptionConfigElement.getAttribute("eviction-type");
+
+			if (StringUtils.hasText(evictionTypeAttribute)) {
+				builder.addPropertyValue("subscriptionEvictionPolicy", evictionTypeAttribute.toUpperCase());
+			}
 		}
 	}
+
 }

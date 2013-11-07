@@ -24,8 +24,8 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.SmartLifecycle;
-import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.InterestRegistrationListener;
@@ -35,43 +35,50 @@ import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
  * FactoryBean for easy creation and configuration of GemFire {@link CacheServer} instances.
- * 
+ * <p/>
  * @author Costin Leau
+ * @author John Blum
  */
 public class CacheServerFactoryBean implements FactoryBean<CacheServer>, InitializingBean, DisposableBean,
-		SmartLifecycle {
+	SmartLifecycle {
 
 	private boolean autoStartup = true;
-
-	private int port = CacheServer.DEFAULT_PORT;
-	private int maxConnections = CacheServer.DEFAULT_MAX_CONNECTIONS;
-	private int maxThreads = CacheServer.DEFAULT_MAX_THREADS;
 	private boolean notifyBySubscription = CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION;
-	private int socketBufferSize = CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
-	private int maxTimeBetweenPings = CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
-	private int maxMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
-	private int messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
-	private String[] serverGroups = CacheServer.DEFAULT_GROUPS;
-	private ServerLoadProbe serverLoadProbe = CacheServer.DEFAULT_LOAD_PROBE;
-	private long loadPollInterval = CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
-	private String bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
-	private String hostNameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
-	private Set<InterestRegistrationListener> listeners = Collections.emptySet();
 
-	private SubscriptionEvictionPolicy evictionPolicy = SubscriptionEvictionPolicy.valueOf(ClientSubscriptionConfig.DEFAULT_EVICTION_POLICY.toUpperCase());
+	private int maxConnections = CacheServer.DEFAULT_MAX_CONNECTIONS;
+	private int maxMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
+	private int maxThreads = CacheServer.DEFAULT_MAX_THREADS;
+	private int maxTimeBetweenPings = CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
+	private int messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
+	private int port = CacheServer.DEFAULT_PORT;
+	private int socketBufferSize = CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
 	private int subscriptionCapacity = ClientSubscriptionConfig.DEFAULT_CAPACITY;
-	private Resource subscriptionDiskStore;
+
+	private long loadPollInterval = CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
 
 	private Cache cache;
+
 	private CacheServer cacheServer;
 
+	private ServerLoadProbe serverLoadProbe = CacheServer.DEFAULT_LOAD_PROBE;
+
+	private Set<InterestRegistrationListener> listeners = Collections.emptySet();
+
+	private String bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
+	private String hostNameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
+	private String subscriptionDiskStore;
+
+	private String[] serverGroups = CacheServer.DEFAULT_GROUPS;
+
+	private SubscriptionEvictionPolicy subscriptionEvictionPolicy = SubscriptionEvictionPolicy.valueOf(
+		ClientSubscriptionConfig.DEFAULT_EVICTION_POLICY.toUpperCase());
 
 	public CacheServer getObject() {
 		return cacheServer;
 	}
 
 	public Class<?> getObjectType() {
-		return ((this.cacheServer != null) ? cacheServer.getClass() : CacheServer.class);
+		return (this.cacheServer != null ? cacheServer.getClass() : CacheServer.class);
 	}
 
 	public boolean isSingleton() {
@@ -79,7 +86,7 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 	}
 
 	public void afterPropertiesSet() throws IOException {
-		Assert.notNull(cache, "cache is required");
+		Assert.notNull(cache, "A GemFire Cache is required.");
 
 		cacheServer = cache.addCacheServer();
 		cacheServer.setBindAddress(bindAddress);
@@ -100,12 +107,14 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 			cacheServer.registerInterestRegistrationListener(listener);
 		}
 
-		// client config
 		ClientSubscriptionConfig config = cacheServer.getClientSubscriptionConfig();
+
 		config.setCapacity(subscriptionCapacity);
-		config.setEvictionPolicy(evictionPolicy.name().toLowerCase());
-		if (subscriptionDiskStore != null)
-			config.setDiskStoreName(subscriptionDiskStore.getFile().getCanonicalPath());
+		config.setEvictionPolicy(subscriptionEvictionPolicy.name().toLowerCase());
+
+		if (StringUtils.hasText(subscriptionDiskStore)) {
+			config.setDiskStoreName(subscriptionDiskStore);
+		}
 	}
 
 	public void destroy() {
@@ -128,7 +137,7 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 	}
 
 	public boolean isRunning() {
-		return (cacheServer != null ? cacheServer.isRunning() : false);
+		return (cacheServer != null && cacheServer.isRunning());
 	}
 
 	public void start() {
@@ -210,10 +219,10 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 	}
 
 	/**
-	 * @param evictionPolicy the evictionPolicy to set
+	 * @param evictionPolicy the subscriptionEvictionPolicy to set
 	 */
 	public void setSubscriptionEvictionPolicy(SubscriptionEvictionPolicy evictionPolicy) {
-		this.evictionPolicy = evictionPolicy;
+		this.subscriptionEvictionPolicy = evictionPolicy;
 	}
 
 	/**
@@ -223,7 +232,8 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		this.subscriptionCapacity = subscriptionCapacity;
 	}
 
-	public void setSubscriptionDiskStore(Resource resource) {
-		this.subscriptionDiskStore = resource;
+	public void setSubscriptionDiskStore(String diskStoreName) {
+		this.subscriptionDiskStore = diskStoreName;
 	}
+
 }
