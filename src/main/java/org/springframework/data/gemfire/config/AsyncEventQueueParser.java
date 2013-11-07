@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author David Turanski
- * 
+ * @author John Blum
  */
 public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 
@@ -38,28 +38,29 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		builder.setLazyInit(false);
-		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
-		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext,
-				asyncEventListenerElement, builder);
 
-		String cacheName = !StringUtils.hasText(element.getAttribute("cache-ref")) ? GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME
-				: element.getAttribute("cache-ref");
+		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
+
+		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext,
+			asyncEventListenerElement, builder);
+
+		builder.addPropertyValue("asyncEventListener", asyncEventListener);
+
+		String cacheRefAttribute = element.getAttribute("cache-ref");
+
+		String cacheName = (StringUtils.hasText(cacheRefAttribute) ? cacheRefAttribute
+			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 
 		builder.addConstructorArgReference(cacheName);
-		builder.addConstructorArgValue(asyncEventListener);
+
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
-		ParsingUtils.setPropertyValue(element, builder, "disk-store-ref");
-		
-		String diskStoreRef = element.getAttribute("disk-store-ref");
-		if (StringUtils.hasText(diskStoreRef)) {
-			builder.addDependsOn(diskStoreRef);
-		}
-		
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
-		
-		if (GemfireUtils.GEMFIRE_VERSION.compareTo("7.0.1") >= 0 ) {
+
+		parseDiskStore(element, builder);
+
+		if (GemfireUtils.GEMFIRE_VERSION.compareTo("7.0.1") >= 0) {
 			ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
 			ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
 			ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
@@ -87,4 +88,15 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 			}
 		}
 	}
+
+	private void parseDiskStore(final Element element, final BeanDefinitionBuilder builder) {
+		ParsingUtils.setPropertyValue(element, builder, "disk-store-ref");
+
+		String diskStoreRef = element.getAttribute("disk-store-ref");
+
+		if (StringUtils.hasText(diskStoreRef)) {
+			builder.addDependsOn(diskStoreRef);
+		}
+	}
+
 }
