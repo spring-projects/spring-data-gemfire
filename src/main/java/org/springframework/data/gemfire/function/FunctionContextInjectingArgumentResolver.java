@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
- 
 
 /**
  * @author David Turanski
@@ -36,77 +35,83 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
  *
  */
 class FunctionContextInjectingArgumentResolver extends DefaultFunctionArgumentResolver {
-	
+
 	private static Log logger = LogFactory.getLog(FunctionContextInjectingArgumentResolver.class);
-	
+
 	private final int regionParameterPosition;
 	private final int filterParameterPosition;
 	private final int functionContextParameterPosition;
 	private final int resultSenderParameterPosition;
 	private final Method method;
-	
+
 	public FunctionContextInjectingArgumentResolver(Method method) {
-		 
-		 this.method = method;
-		 int annotatedRegionDataParameterPosition = GemfireFunctionUtils.getAnnotationParameterPosition(method, RegionData.class, new Class[]{Map.class});
-		 int regionTypeParameterPosition = getArgumentTypePosition(method,Region.class);
-		
-		 if (annotatedRegionDataParameterPosition >=0 && regionTypeParameterPosition >= 0) {
-			Assert.isTrue(annotatedRegionDataParameterPosition == regionTypeParameterPosition, 
-					String.format("Function method signature for method %s cannot contain an @RegionData parameter and a different Region type parameter", method.getName()));
-		 }
-		 
-		 int tempRegionParameterPosition = -1;
-					
-		 if (annotatedRegionDataParameterPosition >=0 ) {
-			tempRegionParameterPosition =  annotatedRegionDataParameterPosition;
-		 } else if (regionTypeParameterPosition >=0) {
-			 tempRegionParameterPosition = regionTypeParameterPosition;
-		 } 
-		 
-		 regionParameterPosition = tempRegionParameterPosition;
-		 filterParameterPosition = GemfireFunctionUtils.getAnnotationParameterPosition(method, Filter.class, new Class[]{Set.class});
-		 functionContextParameterPosition = getArgumentTypePosition(method,FunctionContext.class);
-		 resultSenderParameterPosition = getArgumentTypePosition(method,ResultSender.class);
-		
-		if (regionParameterPosition >=0  && filterParameterPosition >=0) {
-			Assert.state(regionParameterPosition != filterParameterPosition, "region parameter and filter parameter must be different");
-		} 
-		
-	 }
+
+		this.method = method;
+		int annotatedRegionDataParameterPosition = GemfireFunctionUtils.getAnnotationParameterPosition(method,
+				RegionData.class, new Class[] { Map.class });
+		int regionTypeParameterPosition = getArgumentTypePosition(method, Region.class);
+
+		if (annotatedRegionDataParameterPosition >= 0 && regionTypeParameterPosition >= 0) {
+			Assert.isTrue(
+					annotatedRegionDataParameterPosition == regionTypeParameterPosition,
+					String.format(
+							"Function method signature for method %s cannot contain an @RegionData parameter and a different Region type parameter",
+							method.getName()));
+		}
+
+		int tempRegionParameterPosition = -1;
+
+		if (annotatedRegionDataParameterPosition >= 0) {
+			tempRegionParameterPosition = annotatedRegionDataParameterPosition;
+		} else if (regionTypeParameterPosition >= 0) {
+			tempRegionParameterPosition = regionTypeParameterPosition;
+		}
+
+		regionParameterPosition = tempRegionParameterPosition;
+		filterParameterPosition = GemfireFunctionUtils.getAnnotationParameterPosition(method, Filter.class,
+				new Class[] { Set.class });
+		functionContextParameterPosition = getArgumentTypePosition(method, FunctionContext.class);
+		resultSenderParameterPosition = getArgumentTypePosition(method, ResultSender.class);
+
+		if (regionParameterPosition >= 0 && filterParameterPosition >= 0) {
+			Assert.state(regionParameterPosition != filterParameterPosition,
+					"region parameter and filter parameter must be different");
+		}
+
+	}
 
 	@Override
 	public Object[] resolveFunctionArguments(FunctionContext functionContext) {
-		
-		Object[] args = super.resolveFunctionArguments(functionContext);
-		
-		if (functionContext instanceof RegionFunctionContext) {
-		  if (this.regionParameterPosition >= 0) {
-			args =  ArrayUtils.insert(args, regionParameterPosition, getRegionForContext((RegionFunctionContext)functionContext));
-		  }
-		  
-		  if (this.filterParameterPosition >= 0) {
-			 args = ArrayUtils.insert(args, filterParameterPosition, ((RegionFunctionContext)functionContext).getFilter());
-		  }
-		  
-		  if (this.functionContextParameterPosition >= 0) {
-			args = ArrayUtils.insert(args, functionContextParameterPosition, functionContext);
-		  }
-		  
-		  if (this.resultSenderParameterPosition >=0 ) {
-			  args = ArrayUtils.insert(args, resultSenderParameterPosition, functionContext.getResultSender());
-		  }
 
+		Object[] args = super.resolveFunctionArguments(functionContext);
+
+		if (functionContext instanceof RegionFunctionContext) {
+			if (this.regionParameterPosition >= 0) {
+				args = ArrayUtils.insert(args, regionParameterPosition,
+						getRegionForContext((RegionFunctionContext) functionContext));
+			}
+
+			if (this.filterParameterPosition >= 0) {
+				args = ArrayUtils.insert(args, filterParameterPosition,
+						((RegionFunctionContext) functionContext).getFilter());
+			}
 		}
-		
-		Assert.isTrue(args.length == method.getParameterTypes().length, 
-				String.format("wrong number of arguments for method %s. Expected :%d, actual: %d", method.getName(),
-						method.getParameterTypes().length, args.length));
-		
+		if (this.functionContextParameterPosition >= 0) {
+			args = ArrayUtils.insert(args, functionContextParameterPosition, functionContext);
+		}
+
+		if (this.resultSenderParameterPosition >= 0) {
+			args = ArrayUtils.insert(args, resultSenderParameterPosition, functionContext.getResultSender());
+		}
+
+		Assert.isTrue(args.length == method.getParameterTypes().length, String.format(
+				"wrong number of arguments for method %s. Expected :%d, actual: %d", method.getName(),
+				method.getParameterTypes().length, args.length));
+
 		return args;
 
 	}
-	
+
 	/*
 	 * @param regionFunctionContext
 	 * @return
@@ -127,19 +132,20 @@ class FunctionContextInjectingArgumentResolver extends DefaultFunctionArgumentRe
 	}
 
 	private static int getArgumentTypePosition(Method method, Class<?> requiredType) {
- 		int position = -1;
- 		int i = 0;
-		for (Class<?> clazz: method.getParameterTypes()) {
+		int position = -1;
+		int i = 0;
+		for (Class<?> clazz : method.getParameterTypes()) {
 			if (requiredType.equals(clazz)) {
-				Assert.state(position < 0, String.format("Method %s signature cannot contain more than one parameter of type %s."
-						,method.getName(),requiredType.getName()));
+				Assert.state(
+						position < 0,
+						String.format("Method %s signature cannot contain more than one parameter of type %s.",
+								method.getName(), requiredType.getName()));
 				position = i;
 			}
 			i++;
 		}
 		return position;
-		
+
 	}
-	
-	
+
 }
