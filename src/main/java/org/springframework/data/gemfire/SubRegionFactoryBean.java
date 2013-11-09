@@ -21,50 +21,42 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 @SuppressWarnings("deprecation")
 /**
- * FactoryBean for creating a Gemfire Region as a subregion
+ * FactoryBean for creating a Gemfire Region as a sub-Region.
+ * <p/>
  * @author David Turanski
- *
+ * @author John Blum
  * @param <K> - Region Key Type
  * @param <V> - Region Value Type
  */
+// TODO why does this class extend the com.gemstone.gemfire.cache.AttributesFactory class?  AttributesFactory is deprecated!
 public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implements FactoryBean<Region<K, V>>,
 		InitializingBean {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	@SuppressWarnings("unused")
-	private String name;
-
-	private String regionName;
-
-	private Region<K, V> subRegion;
-
-	private Region<?, ?> parent;
-
 	private boolean lookupOnly;
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(parent, "parent region must not be null");
+	private CacheListener<K, V>[] cacheListeners;
 
-		this.subRegion = parent.getSubregion(regionName);
-		if (this.subRegion == null) {
-			if (lookupOnly) {
-				throw new BeanInitializationException("Cannot find region [" + regionName + "] in cache "
-						+ parent.getRegionService());
-			}
-			else {
-				log.debug("creating subregion of [" + ( parent.getFullPath() == null ? parent.getName() : parent.getFullPath()) + "] with name " + regionName);
-				this.subRegion = this.parent.createSubregion(regionName, create());
-			}
-		}
-	}
+	private Object[] asyncEventQueues;
+	private Object[] gatewaySenders;
+
+	private Region<?, ?> parentRegion;
+	private Region<K, V> subRegion;
+
+	@SuppressWarnings("unused")
+	private String name;
+	private String regionName;
 
 	@Override
 	public Region<K, V> getObject() throws Exception {
@@ -73,12 +65,88 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 
 	@Override
 	public Class<?> getObjectType() {
+		// TODO perhaps this should be 'return (subRegion != null ? subRegion.getClass() : Region.class);' for consistency.
 		return Region.class;
 	}
 
 	@Override
 	public boolean isSingleton() {
 		return true;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		Assert.notNull(parentRegion, "The parent Region cannot be null.");
+
+		this.subRegion = parentRegion.getSubregion(regionName);
+
+		if (this.subRegion == null) {
+			if (lookupOnly) {
+				throw new BeanInitializationException(String.format("Cannot find Region [%1$s] in Cache %2$s",
+					regionName, parentRegion.getRegionService()));
+			}
+			else {
+				log.debug(String.format("Creating sub-Region of [%1$s] with name [%2$s]...",
+					(parentRegion.getFullPath() != null ? parentRegion.getFullPath() : parentRegion.getName()),
+						regionName));
+
+				if (!ObjectUtils.isEmpty(asyncEventQueues)) {
+					for (Object asyncEventQueue : asyncEventQueues) {
+						addAsyncEventQueueId(((AsyncEventQueue) asyncEventQueue).getId());
+					}
+				}
+
+				if (!ObjectUtils.isEmpty(cacheListeners)) {
+					for (CacheListener<K, V> listener : cacheListeners) {
+						addCacheListener(listener);
+					}
+				}
+
+				if (!ObjectUtils.isEmpty(gatewaySenders)) {
+					for (Object gatewaySender : gatewaySenders) {
+						addGatewaySenderId(((GatewaySender) gatewaySender).getId());
+					}
+				}
+
+				this.subRegion = this.parentRegion.createSubregion(regionName, create());
+			}
+		}
+	}
+
+	/**
+	 *
+	 * @param asyncEventQueues defined as Object for backward compatibility with Gemfire 6.
+	 */
+	public void setAsyncEventQueues(Object[] asyncEventQueues) {
+		this.asyncEventQueues = asyncEventQueues;
+	}
+
+	/**
+	 * Sets the cache listeners used for the region used by this factory. Used
+	 * only when a new region is created.Overrides the settings specified
+	 * through {@link #setAttributes(com.gemstone.gemfire.cache.RegionAttributes)}.
+	 *
+	 * @param cacheListeners the cacheListeners to set on a newly created region
+	 */
+	public void setCacheListeners(CacheListener<K, V>[] cacheListeners) {
+		this.cacheListeners = cacheListeners;
+	}
+
+	/**
+	 *
+	 * @param gatewaySenders
+	 */
+	public void setGatewaySenders(Object[] gatewaySenders) {
+		this.gatewaySenders = gatewaySenders;
+	}
+
+	/**
+	 * Set to true if the subregion should already exist, e.g., specified by
+	 * &lt;lookup-region&gt;
+	 * @param lookupOnly
+	 */
+	public void setLookupOnly(boolean lookupOnly) {
+		this.lookupOnly = lookupOnly;
 	}
 
 	/**
@@ -102,16 +170,7 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 	 * @param parent
 	 */
 	public void setParent(Region<?, ?> parent) {
-        this.parent = parent;
-	}
-
-	/**
-	 * Set to true if the subregion should already exist, e.g., specified by
-	 * &lt;lookup-region&gt;
-	 * @param lookupOnly
-	 */
-	public void setLookupOnly(boolean lookupOnly) {
-		this.lookupOnly = lookupOnly;
+		this.parentRegion = parent;
 	}
 
 }
