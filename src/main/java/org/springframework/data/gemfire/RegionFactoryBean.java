@@ -68,7 +68,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	private Boolean enableGateway;
 	private Boolean persistent;
 
-	private CacheListener<K, V> cacheListeners[];
+	private CacheListener<K, V>[] cacheListeners;
 
 	private CacheLoader<K, V> cacheLoader;
 
