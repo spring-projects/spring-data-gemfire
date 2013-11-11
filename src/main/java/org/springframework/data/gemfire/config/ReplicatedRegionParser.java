@@ -29,23 +29,27 @@ import org.w3c.dom.Element;
  * @author David Turanski
  */
 class ReplicatedRegionParser extends AbstractRegionParser {
+
+	@Override
+	protected Class<?> getRegionFactoryClass() {
+		return ReplicatedRegionFactoryBean.class;
+	}
+
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 
 		ParsingUtils.parseScope(element, builder);
 
-		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
-				.genericBeanDefinition(RegionAttributesFactoryBean.class);
- 
-		super.doParseCommonRegionConfiguration(element, parserContext, builder, attrBuilder, subRegion);
+		BeanDefinitionBuilder regionAttributesFactoryBuilder = (subRegion ? builder
+			: BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class));
+
+		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesFactoryBuilder,
+			subRegion);
+
 		if (!subRegion) {
-			builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
+			builder.addPropertyValue("attributes", regionAttributesFactoryBuilder.getBeanDefinition());
 		}
 	}
 
-	@Override
-	protected Class<?> getRegionFactoryClass() {
-		return ReplicatedRegionFactoryBean.class;
-	}
 }

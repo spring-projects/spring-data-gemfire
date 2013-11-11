@@ -94,17 +94,17 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	@Override
-	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
-		Assert.isTrue(cache instanceof Cache, "Unable to create regions from " + cache);
+	protected Region<K, V> lookupFallback(GemFireCache gemfireCache, String regionName) throws Exception {
+		Assert.isTrue(gemfireCache instanceof Cache, "Unable to create Regions from " + gemfireCache);
 
-		Cache c = (Cache) cache;
+		Cache cache = (Cache) gemfireCache;
 
 		if (attributes != null) {
 			AttributesFactory.validateAttributes(attributes);
 		}
 
-		final RegionFactory<K, V> regionFactory = (attributes != null ? c.createRegionFactory(attributes) :
-			c.<K, V> createRegionFactory());
+		final RegionFactory<K, V> regionFactory = (attributes != null ? cache.createRegionFactory(attributes) :
+			cache.<K, V> createRegionFactory());
 
 		if (hubId != null) {
 			enableGateway = enableGateway == null ? true : enableGateway;
