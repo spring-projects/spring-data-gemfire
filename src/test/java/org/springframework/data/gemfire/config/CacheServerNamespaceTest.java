@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
  * @author David Turanski
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/org/springframework/data/gemfire/config/server-ns.xml",
+@ContextConfiguration(locations="server-ns.xml",
 	initializers=GemfireTestApplicationContextInitializer.class)
 public class CacheServerNamespaceTest {
 
