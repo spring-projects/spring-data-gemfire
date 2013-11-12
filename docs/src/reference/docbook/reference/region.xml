@@ -488,9 +488,9 @@
     </important>
 
     <para>Persistence may also be configured using the
-    <literal>data-policy</literal> attribute, set to one of <link
-    linkend="https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DataPolicy.html">GemFire's
-    data policy settings</link>. For instance...</para>
+    <literal>data-policy</literal> attribute, set to one of <ulink
+		url="https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DataPolicy.html">GemFire's
+    data policy settings</ulink>. For instance...</para>
 
     <para>
       <programlisting language="xml">&lt;gfe:partitioned-region id="persitent-partition" data-policy="PERSISTENT_PARTITION"/&gt;</programlisting>

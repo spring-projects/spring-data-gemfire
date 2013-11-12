@@ -42,10 +42,10 @@
 
     <para xmlns=""> For example, GemFire provides several callback interfaces
     such as <interfacename>
-        <literal xmlns="http://docbook.org/ns/docbook">CacheListener</literal>
-      </interfacename>, <interfacename>
-        <literal xmlns="http://docbook.org/ns/docbook">CacheWriter</literal>
-      </interfacename>, <interfacename>
+        <literal xmlns="http://docbook.org/ns/docbook">CacheListener, </literal>
+      </interfacename><interfacename>
+        <literal xmlns="http://docbook.org/ns/docbook">CacheWriter, </literal>
+      </interfacename>and<interfacename>
         <literal xmlns="http://docbook.org/ns/docbook">CacheLoader</literal>
       </interfacename> to allow developers to add custom event handlers. Using
     the Spring IoC container, these may configured as normal Spring beans and
