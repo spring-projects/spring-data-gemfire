@@ -368,7 +368,7 @@
         &lt;!-- nested cache listener declaration --&gt;
         &lt;bean class="some.pkg.AnotherSimpleCacheListener"/&gt;
     &lt;/gfe:cache-listener&gt;
-    
+
     &lt;bean id="c-listener" class="some.pkg.SimpleCacheListener"/&gt;
  &lt;/gfe:replicated-region&gt;
     </programlisting>The following example uses an alternate form of the
@@ -385,7 +385,7 @@
     &lt;gfe:replicated-region id="region-with-one listener"&gt;
         &lt;gfe:cache-listener ref="c-listener"/&gt;
     &lt;/gfe:replicated-region&gt;
- 
+
     &lt;bean id="c-listener" class="some.pkg.SimpleCacheListener"/&gt;
  &lt;/beans&gt;
     </programlisting></para>
@@ -447,15 +447,15 @@
       naturally declared as a child element of a region. The subregion's name
       attribute is the simple name. The above example might be configured as:
       <programlisting language="xml">&lt;beans&gt;
-    
+
     &lt;gfe:replicated-region name="Customer"&gt;
         &lt;gfe:replicated-region name="Address"/&gt;
     &lt;/gfe:replicated-region&gt;
-    
+
     &lt;gfe:replicated-region name="Employee"&gt;
         &lt;gfe:replicated-region name="Address"/&gt;
     &lt;/gfe:replicated-region&gt;
-    
+
 &lt;/beans&gt;</programlisting>Note that the <literal>
           <literal>id</literal>
         </literal> attribute is not permitted for a subregion. The subregions
@@ -661,7 +661,7 @@
     a quick example on setting up a partition region with 2 redundant
     copies:</para>
 
-    <programlisting language="xml">&lt;!-- bean definition named 'distributed-partition' backed by a region named 'redundant' with 2 copies 
+    <programlisting language="xml">&lt;!-- bean definition named 'distributed-partition' backed by a region named 'redundant' with 2 copies
 and a nested resolver declaration  --&gt;
 &lt;gfe:partitioned-region id="distributed-partition" copies="2" total-buckets="4" name="redundant"&gt;
     &lt;gfe:partition-resolver&gt;
@@ -861,7 +861,7 @@ and a nested resolver declaration  --&gt;
       <programlisting language="xml">&lt;gfe:client-region id="complex" pool-name="gemfire-pool"&gt;
     &lt;gfe:key-interest durable="true" result-policy="KEYS"&gt;
         &lt;bean id="key" class="java.lang.String"&gt;
-             &lt;constructor-arg value="someKey" /&gt; 
+             &lt;constructor-arg value="someKey" /&gt;
         &lt;/bean&gt;
     &lt;/gfe:key-interest&gt;
     &lt;gfe:regex-interest pattern=".*" receive-values="false"/&gt;
