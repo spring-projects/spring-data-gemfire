@@ -3,7 +3,10 @@
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
-        >
+         xmlns:ns5="http://www.w3.org/2000/svg"
+         xmlns:ns4="http://www.w3.org/1998/Math/MathML"
+         xmlns:ns3="http://www.w3.org/1999/xhtml"
+         xmlns:ns="http://docbook.org/ns/docbook">
   <title>Bootstrapping GemFire through the Spring Container</title>
 
   <para>Spring Data GemFire provides full configuration and initialization of
@@ -25,32 +28,41 @@
     <literal>cache.xml</literal></title>
 
     <para xmlns="">As of release 1.2.0, Spring Data GemFire's XML namespace
-    supports full configuration of the data grid. In fact, the Spring
-    namespace is considered the preferred way to configure GemFire. GemFire
-    will continue to support <filename>cache.xml</filename> for legacy
-    reasons, but you can now do everything in Spring XML and take advantage of
-    the many wonderful things Spring has to offer such as modular XML
-    configuration, property placeholders, SpEL, and environment profiles.
-    Behind the namespace, Spring Data GemFire makes extensive use of Spring's
-    <interfacename>FactoryBean</interfacename> pattern to simplify the
-    creation and initialization of GemFire components.</para>
+    supports full configuration of the data grid. In fact, the Spring Data
+    GemFire namespace is considered the preferred way to configure GemFire.
+    GemFire will continue to support native <filename>
+        <literal xmlns="http://docbook.org/ns/docbook">cache.xml</literal>
+      </filename> for legacy reasons, but you can now do everything in Spring
+    XML and take advantage of the many wonderful things Spring has to offer
+    such as modular XML configuration, property placeholders, SpEL, and
+    environment profiles. Behind the namespace, Spring Data GemFire makes
+    extensive use of Spring's <interfacename>FactoryBean</interfacename>
+    pattern to simplify the creation and initialization of GemFire
+    components.</para>
 
     <para xmlns=""> For example, GemFire provides several callback interfaces
-    such as <interfacename>CacheListener</interfacename>,
-    <interfacename>CacheWriter</interfacename>,
-    <interfacename>CacheLoader</interfacename> to allow developers to add
-    custom event handlers. Using the Spring IoC container, these may
-    configured as normal Spring beans and injected into GemFire components.
-    This is a significant improvement over cache.xml which provides relatively
-    limited configuration options and requires callbacks to implement
-    GemFire's <literal>Declarable</literal> interface (see <xref
-    linkend="apis:declarable" xmlns="http://docbook.org/ns/docbook"/> to see
-    how you can still use Declarables within Spring's DI container).</para>
+    such as <interfacename>
+        <literal xmlns="http://docbook.org/ns/docbook">CacheListener</literal>
+      </interfacename>, <interfacename>
+        <literal xmlns="http://docbook.org/ns/docbook">CacheWriter</literal>
+      </interfacename>, <interfacename>
+        <literal xmlns="http://docbook.org/ns/docbook">CacheLoader</literal>
+      </interfacename> to allow developers to add custom event handlers. Using
+    the Spring IoC container, these may configured as normal Spring beans and
+    injected into GemFire components. This is a significant improvement over
+    native <literal xmlns="http://docbook.org/ns/docbook">cache.xml</literal>
+    which provides relatively limited configuration options and requires
+    callbacks to implement GemFire's <literal>
+        <literal xmlns="http://docbook.org/ns/docbook">Declarable</literal>
+      </literal> interface (see <xref linkend="apis:declarable"
+    xmlns="http://docbook.org/ns/docbook"/> to see how you can still use
+    <literal xmlns="http://docbook.org/ns/docbook">Declarables</literal>
+    within Spring's DI container).</para>
 
     <para xmlns=""> In addition, IDEs such as the Spring Tool Suite (STS)
     provide excellent support for Spring XML namespaces, such as code
     completion, pop-up annotations, and real time validation, making them easy
-    to use. </para>
+    to use.</para>
   </section>
 
   <section id="bootstrap:namespace">
@@ -58,7 +70,7 @@
 
     <para>To simplify configuration, Spring Data GemFire provides a dedicated
     XML namespace for configuring core GemFire components. It is also possible
-    to configure the beans directly through Springs standard &lt;bean&gt;
+    to configure the beans directly through Spring's standard &lt;bean&gt;
     definition. However, as of Spring Data GemFire 1.2.0, all bean properties
     are exposed via the namespace so there is little benefit to using raw bean
     definitions. For more information about XML Schema-based configuration in
@@ -73,7 +85,7 @@
     </note>
 
     <para>To use the Spring Data GemFire namespace, simply declare it in your
-    Spring XML configuration:</para>
+    Spring XML configuration meta-data:</para>
 
     <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans xmlns="http://www.springframework.org/schema/beans"
@@ -193,7 +205,10 @@
     cache declaration but one can customize it accordingly or use a pool (if
     need be) - see the namespace schema for the full set of options.</para>
   </section>
-   <xi:include href="diskstore.xml"/>
-   <xi:include href="function.xml"/>
-   <xi:include href="gateway.xml"/>
+
+  <xi:include href="diskstore.xml"/>
+
+  <xi:include href="function.xml"/>
+
+  <xi:include href="gateway.xml"/>
 </chapter>

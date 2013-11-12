@@ -10,9 +10,9 @@
   <title>Configuring a GemFire Region</title>
 
   <para xmlns="">A region is required to store and retrieve data from the
-  cache. <interfacename>Region</interfacename> is an interface extends
-  <interfacename>java.util.map</interfacename> used to perform basic data
-  access using familiar key-value semantics. The
+  cache. <interfacename>Region</interfacename> is an interface extending
+  <interfacename>java.util.Map</interfacename> and enables basic data access
+  using familiar key-value semantics. The
   <interfacename>Region</interfacename> interface is wired into classes that
   require it so the actual region type is decoupled from the programming model
   . Typically each region is associated with one domain object, similar to a
@@ -42,11 +42,11 @@
     <listitem>
       <para><emphasis>Client</emphasis> - Technically a client region is a
       local region that acts as a proxy to a replicated or partitioned region
-      hosted on cache servers. It may hold data created or fetched locally,
-      alternately it can be empty. Local updates are synchronized to the cache
-      server. Also, a client region may subscribe to events in order to stay
-      synchronized with changes originating from remote processes that access
-      the same region.</para>
+      hosted on cache servers. It may hold data created or fetched locally.
+      Alternately, it can be empty. Local updates are synchronized to the
+      cache server. Also, a client region may subscribe to events in order to
+      stay synchronized with changes originating from remote processes that
+      access the same region.</para>
     </listitem>
   </itemizedlist>
 
@@ -60,10 +60,10 @@
   <section id="bootstrap:region:lookup">
     <title>Using an externally configured Region</title>
 
-    <para>For referencing Regions already configured through GemFire native
+    <para>For referencing regions already configured through GemFire native
     configuration, e.g., a <literal>cache.xml</literal> file, use the
     <literal>lookup-region</literal> element. Simply declare the target region
-    name with the<literal> name</literal> attribute; for example to declare a
+    name with the<literal> name</literal> attribute; for example, to declare a
     bean definition, named <literal>region-bean</literal> for an existing
     region named <literal>orders</literal> one can use the following
     definition:</para>
@@ -161,7 +161,8 @@
                 <entry>close</entry>
 
                 <entry spanname="values">
-                  <emphasis>boolean, default:false (Note: The default was true prior to 1.3.0)</emphasis>
+                  <emphasis>boolean, default:false (Note: The default was true
+                  prior to 1.3.0)</emphasis>
                 </entry>
 
                 <entry spanname="description">Indicates whether the region
@@ -358,7 +359,7 @@
       using the <literal>cache-listener</literal> element enclosed in a
       <literal>*-region</literal> element. In the example below, there are two
       <interfacename>CacheListener</interfacename>s declared. The first
-      references a top level named Spring bean; the second is an anonymous
+      references a top-level named Spring bean; the second is an anonymous
       inner bean definition. <programlisting language="xml">
 &lt;gfe:replicated-region id="region-with-listeners"&gt;
     &lt;gfe:cache-listener&gt;
@@ -370,7 +371,7 @@
     
     &lt;bean id="c-listener" class="some.pkg.SimpleCacheListener"/&gt;
  &lt;/gfe:replicated-region&gt;
-    </programlisting> The following example uses an alternate form of the
+    </programlisting>The following example uses an alternate form of the
       <literal>cache-listener</literal> element with a <literal>ref</literal>
       attribute. This allows for more concise configuration for a single cache
       listener. Note that the namespace only allows a single
@@ -418,9 +419,9 @@
       <literal>cache-writer</literal> elements to register these respective
       components for a region. A <interfacename>CacheLoader</interfacename> is
       invoked on a cache miss to allow an entry to be loaded from an external
-      source, a database for example. A
-      <interfacename>CacheWriter</interfacename> is invoked afer an entry is
-      created or updated,intended for synchronizing to an external data
+      data source, a database for example. A
+      <interfacename>CacheWriter</interfacename> is invoked after an entry is
+      created or updated, intended for synchronizing to an external data
       source. The difference is GemFire only supports at most a single
       instance of each for each region. However, either declaration style may
       be used. See <ulink
@@ -475,7 +476,7 @@
     region. This allows data to be recovered after a machine or process
     failure or after an orderly shutdown and restart of GemFire.</para>
 
-    <para>With Spring Data GemFire, to enable persistence, simply set the
+    <para>To enable persistence with Spring Data GemFire, simply set the
     <literal>persistent</literal> attribute to true:</para>
 
     <programlisting language="xml">&lt;gfe:partitioned-region id="persitent-partition" persistent="true"/&gt;</programlisting>
@@ -485,6 +486,21 @@
       onwards - configuring this option on a previous release will trigger an
       initialization exception.</para>
     </important>
+
+    <para>Persistence may also be configured using the
+    <literal>data-policy</literal> attribute, set to one of <link
+    linkend="https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DataPolicy.html">GemFire's
+    data policy settings</link>. For instance...</para>
+
+    <para>
+      <programlisting language="xml">&lt;gfe:partitioned-region id="persitent-partition" data-policy="PERSISTENT_PARTITION"/&gt;</programlisting>
+    </para>
+
+    <para>The data policy must match the region type and must also agree with
+    the <literal>persistent</literal> attribute if explicitly set. An
+    initialization exception will be thrown if, for instance, the
+    <literal>persistent</literal> attribute is set to false, yet a persistent
+    data policy was specified.</para>
 
     <para>When persisting regions, it is recommended to configure the storage
     through the <literal>disk-store</literal> element for maximum efficiency.
@@ -497,24 +513,28 @@
     <para>This is discussed further in <xref
     linkend="bootstrap-diskstore"/></para>
   </section>
- <section id="bootstrap:region:subscription">
+
+  <section id="bootstrap:region:subscription">
     <title>Subscription Interest Policy</title>
 
-    <para>GemFire allows configuration of subscriptions to control <ulink url="http://pubs.vmware.com//vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/events/configure_p2p_event_messaging.html">peer to peer event handling</ulink>.
-    Spring Data GemFire provides a <tag>&lt;gfe:subscription/&gt;</tag> to set the interest policy on replicated and partitioned regions to either <literal>ALL</literal> or <literal>CACHE_CONTENT</literal>.
-    </para>
+    <para>GemFire allows configuration of subscriptions to control <ulink
+    url="http://pubs.vmware.com//vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/events/configure_p2p_event_messaging.html">peer
+    to peer event handling</ulink>. Spring Data GemFire provides a
+    <tag>&lt;gfe:subscription/&gt;</tag> to set the interest policy on
+    replicated and partitioned regions to either <literal>ALL</literal> or
+    <literal>CACHE_CONTENT</literal>.</para>
 
     <programlisting language="xml">&lt;gfe:partitioned-region id="subscription-partition"&gt;
      &lt;gfe:subscription type="CACHE_CONTENT"/&gt;
 &lt;/gfe:partitioned-region&gt;</programlisting>
   </section>
+
   <section id="bootstrap:region:eviction">
     <title>Data Eviction and Overflowing</title>
 
     <para>Based on various constraints, each region can have an eviction
-    policy in place for <literal>evicting</literal> data from memory.
-    Currently, in GemFire eviction applies to the least recently used entry
-    (also known as <ulink
+    policy in place for evicting data from memory. Currently, in GemFire,
+    eviction applies to the least recently used entry (also known as <ulink
     url="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used">LRU</ulink>).
     Evicted entries are either destroyed or paged to disk (also known as
     <emphasis>overflow</emphasis>).</para>
@@ -537,9 +557,9 @@
       information.</para>
     </important>
 
-    <para>When configuring regions for oveflow, it is recommended to configure
-    the storage through the <literal>disk-store</literal> element for maximum
-    efficiency.</para>
+    <para>When configuring regions for overflow, it is recommended to
+    configure the storage through the <literal>disk-store</literal> element
+    for maximum efficiency.</para>
 
     <para>For a detailed description of eviction policies, see the GemFire
     documentation (such as <ulink
@@ -569,8 +589,8 @@
         The idle timeout counter for a region is reset whenever the idle
         timeout is reset for one of its entries.</para>
       </listitem>
-    </itemizedlist> <para> Each of these may be applied to the region itself
-  or entries in the region. Spring Data GemFire provides
+    </itemizedlist><para> Each of these may be applied to the region itself or
+  entries in the region. Spring Data GemFire provides
   <literal>&lt;region-ttl&gt;</literal>,
   <literal>&lt;region-tti&gt;</literal>, <literal>&lt;entry-ttl&gt;</literal>
   and <literal>&lt;entry-tti&gt;</literal> region child elements to specify
@@ -619,7 +639,7 @@
     <title>Partitioned Region</title>
 
     <para>Another region type supported out of the box by the Spring Data
-    GemFire namespace, is the partitioned region. To quote the GemFire
+    GemFire namespace is the partitioned region. To quote the GemFire
     docs:</para>
 
     <para>"A partitioned region is a region where data is divided between peer
@@ -790,7 +810,7 @@ and a nested resolver declaration  --&gt;
     client region while the latter defines connection pools to be used/shared
     by the various client regions.</para>
 
-    <para>Below is a typical client region configuration:G</para>
+    <para>Below is a typical client region configuration:</para>
 
     <programlisting language="xml">&lt;!-- client region using the default client-cache pool --&gt;
 &lt;gfe:client-region id="simple"&gt;
@@ -810,8 +830,9 @@ and a nested resolver declaration  --&gt;
 &lt;/gfe:pool&gt;</programlisting>
 
     <para>As with the other region types, <literal>client-region</literal>
-    supports <interfacename>CacheListener</interfacename>s (but not
-    CacheLoaders or CacheWriters). It also requires a connection
+    supports <interfacename>CacheListener</interfacename><literal>s</literal>
+    as well as a single <literal>CacheLoader</literal> or
+    <literal>CacheWriter</literal>. It also requires a connection
     <literal>pool</literal> for connecting to a server. Each client can have
     its own pool or they can share the same one.</para>
 
@@ -860,28 +881,43 @@ and a nested resolver declaration  --&gt;
     <title>JSON Support</title>
 
     <para>Gemfire 7.0 introduced support for caching JSON documents with OQL
-    query support. These are stored internally as <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/pdx/PdxInstance.html">PdxInstance</ulink> types using the
-    <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/pdx/JSONFormatter.html">JSONFormatter</ulink> to perform conversion to and from JSON strings. Spring Data
-    GemFire provides a <tag>&lt;gfe-data:json-region-autoproxy/&gt;</tag> tag to enable a
-    <ulink url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/#aop-introduction">Spring AOP</ulink> component to advise appropropriate region operations, effectively 
-    encapsulating the JSONFormatter, allowing your application to work directly
-    with JSON strings. In addition, Java objects written to JSON configured regions will
-    be automatically converted to JSON using the Jackson ObjectMapper. Reading these values will return a JSON string. 
-    </para>
-    <para>
-    By default, <tag>&lt;gfe-data:json-region-autoproxy/&gt;</tag> will perform the conversion on all regions. To apply this feature to selected regions, provide a comma delimited list of
-    their ids via the <literal>region-refs</literal> attribute. Other attributes include a
-    <literal>pretty-print</literal> flag (false by default) and <literal>convert-returned-collections</literal>. By default the results of region
-    operations getAll() and values() will be converted for configured
-    regions. This is done by creating a parallel structure in local memory. This can incur significant overhead for large collections. Set this
-    flag to false to disable automatic conversion for these operation. 
-    <note>Certain region operations, specifically those that use GemFire's proprietary Region.Entry such as entries(boolean), entrySet(boolean) and getEntry()
-    type are not targeted for AOP advice. In addition, the entrySet() method which returns a Set&lt;java.util.Map.Entry&lt;?,?&gt;&gt; is not affected.</note>
-    </para>
-     <programlisting language="xml">
+    query support. These are stored internally as <ulink
+    url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/pdx/PdxInstance.html">PdxInstance</ulink>
+    types using the <ulink
+    url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/pdx/JSONFormatter.html">JSONFormatter</ulink>
+    to perform conversion to and from JSON strings. Spring Data GemFire
+    provides a <tag>&lt;gfe-data:json-region-autoproxy/&gt;</tag> tag to
+    enable a <ulink
+    url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/#aop-introduction">Spring
+    AOP</ulink> component to advise appropropriate region operations,
+    effectively encapsulating the JSONFormatter, allowing your application to
+    work directly with JSON strings. In addition, Java objects written to JSON
+    configured regions will be automatically converted to JSON using the
+    Jackson ObjectMapper. Reading these values will return a JSON
+    string.</para>
+
+    <para>By default, <tag>&lt;gfe-data:json-region-autoproxy/&gt;</tag> will
+    perform the conversion on all regions. To apply this feature to selected
+    regions, provide a comma delimited list of their ids via the
+    <literal>region-refs</literal> attribute. Other attributes include a
+    <literal>pretty-print</literal> flag (false by default) and
+    <literal>convert-returned-collections</literal>. By default the results of
+    region operations getAll() and values() will be converted for configured
+    regions. This is done by creating a parallel structure in local memory.
+    This can incur significant overhead for large collections. Set this flag
+    to false to disable automatic conversion for these operation.
+    <note>Certain region operations, specifically those that use GemFire's
+    proprietary Region.Entry such as entries(boolean), entrySet(boolean) and
+    getEntry() type are not targeted for AOP advice. In addition, the
+    entrySet() method which returns a
+    Set&lt;java.util.Map.Entry&lt;?,?&gt;&gt; is not affected.</note></para>
+
+    <programlisting language="xml">
      &lt;gfe-data:json-region-autoproxy pretty-print="true" region-refs="myJsonRegion" convert-returned-collections="true"/&gt;
     </programlisting>
-    <para>This feature also works with seamlessly with GemfireTemplate operations, provided that the template is declared as a Spring bean. Currently native QueryService operations are not supported.
-    </para>
+
+    <para>This feature also works with seamlessly with GemfireTemplate
+    operations, provided that the template is declared as a Spring bean.
+    Currently native QueryService operations are not supported.</para>
   </section>
 </section>
