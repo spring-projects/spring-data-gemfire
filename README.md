@@ -68,8 +68,8 @@ dependencies {
 }
 ~~~~~
 
-Latest GA release is _1.3.2.RELEASE_
-Latest nightly build is _1.3.3.BUILD-SNAPSHOT_
+Latest GA release is _1.3.3.RELEASE_
+Latest nightly build is _1.4.0.BUILD-SNAPSHOT_
 
 
 * Configure a GemFire cache and Region (replicated, partitioned, client and so on):

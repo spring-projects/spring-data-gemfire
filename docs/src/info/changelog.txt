@@ -1,12 +1,41 @@
 SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
+
+Changes in Version 1.3.3 (2013-11-13)
+-------------------------------------
+General
+	* This is a maintenance/patch release to address bugs and other minor improvements.
+	* See [1.3.3 release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?projectId=10462&version=14257).
+Bugs
+	* [SGF-174] - DynamicRegion usage causes ApplicationContext to fail to load when using non-dynamic parent
+	* [SGF-178] - parent attribute causes endless loop in hashCode
+	* [SGF-194] - Nested region do not work
+	* [SGF-195] - colocated-with fails on partition region
+	* [SGF-197] - A Cache (Region) created using Spring configuration with persistent PDX keys fails to start.
+	* [SGF-198] - BeanCurrentlyInCreationException when injecting async-event-queue to a Gemfire replicated region
+	* [SGF-200] - Extra unnecessary directory for disk store created when an embedded sender starts up
+	* [SGF-203] - The treatment of 'persistence' is wrong.
+	* [SGF-211] - Property placeholders don't work for copies attribute on partitioned-region
+	* [SGF-216] - FunctionContextInjectingArgumentResolver only injects arguments for RegionFunctionContext
+	* [SGF-217] - When configuring CacheServer with a Disk Store (used for client subscription queue overflow), the Cache Server fails to start up with an error.
+	* [SGF-218] - The Eviction Policy on Client Subscription when configuring a GemFire Cache Server is not being properly set; always defaults to "NONE".
+	* [SGF-219] - Unable to register GemFire CacheListeners on SubRegions.
+	* [SGF-220] - Unable to register GemFire Gateway Senders on SubRegions.
+	* [SGF-221] - Unable to register GemFire Async Event Listeners on SubRegions.
+Improvements
+	* [SGF-214] - OnMembersFunctionExecutionTemplate constructors should be public
+New Features
+	* [SGF-193] - concurrency-checks-enabled is not supported in SGF.
+	* [SGF-206] - CacheLoader and CacheWriter are not supported on client local regions.
+
+
 Changes in Version 1.3.2 (2013-08-06)
 --------------------------------------
 General
-
 * This is a patch release to address bugs and minor enhancements
 see [1.3.2 release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?version=14219&projectId=10462)
+
 ** Bug
     * [SGF-168] - Race condition when using Spring data gemfire with tc Server parallel deployment
     * [SGF-176] - Missing Functionality: time to live and entry idle time on a local client region
@@ -29,7 +58,6 @@ Changes in version 1.3.1.RELEASE(2013-04-18)
 
 Changes in version 1.3.0.RELEASE (2013-03-14)
 ---------------------------------------------
-
 General
 * Added annotation support for GemFire functions
 * Added 'datasource' element to gfe-data namespace to simplify client connection
@@ -37,16 +65,16 @@ General
 See [1.3.0.M1 release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?projectId=10462&version=13300)
 See [1.3.0 release notes](https://jira.springsource.org/secure/ReleaseNote.jspa?projectId=10462&version=14023)
 
+
 Changes in version 1.2.1.RELEASE (2012-10-26)
 ---------------------------------------------
-
 General
 * Upgraded to GemFire 7.0
 * Added support for GemFire 7.0 WAN Configuration
 
+
 Changes in version 1.2.0.RELEASE (2012-08-15)
 ---------------------------------------------
-
 General
 * Added support for Spring Data repositories
 * The Spring Data GemFire project, formerly Spring GemFire, is now a component of the Spring Data project
@@ -77,9 +105,9 @@ Bug Fixes
 * [SGF-89] - Continuous query container fails when implementing the ContinuousQueryListener interface
 * [SGF-101] - The repository deleteAll() method only works for replicated regions
 
+
 Changes in version 1.1.2.RELEASE (2012-07-04)
 ---------------------------------------------
-
 General
 * Upgraded to GemFire 6.6.3
 
@@ -89,7 +117,6 @@ Package org.springframework.data.gemfire.config
 
 Changes in version 1.1.1.RELEASE (2012-03-20)
 ---------------------------------------------
-
 General
 * Upgraded to GemFire 6.6.2
 * Upgraded to Spring Framework 3.1.1 GA
@@ -106,14 +133,12 @@ Package org.springframework.data.gemfire.client
 
 Changes in version 1.1.0.RELEASE (2011-12-14)
 ---------------------------------------------
-
 General
 * Upgraded to Spring Framework 3.1 GA
 
 
 Changes in version 1.1.0.RC1 (2011-11-13)
 -----------------------------------------
-
 General
 * Upgraded to GemFire 6.6.1
 * Aligned Maven naming to Spring Data conventions (changed ids to 'org.springframework.data'/'spring-data-gemfire')
@@ -122,7 +147,6 @@ General
 
 Changes in version 1.1.0.M3 (2011-09-25)
 ----------------------------------------
-
 General
 * Upgraded to GemFire 6.6 GA
 * Introduced support for GemFire Indecies
@@ -139,7 +163,6 @@ Package org.springframework.data.gemfire.client
 
 Changes in version 1.1.0.M2 (2011-08-29)
 ----------------------------------------
-
 General
 * Introduced support for GemFire Continuous Query (CQ)
 * Introduced support for client cache
@@ -156,7 +179,6 @@ Package org.springframework.data.gemfire.server
 
 Changes in version 1.1.0.M1 (2011-07-20)
 ----------------------------------------
-
 General
 * Changed build system to Gradle
 * Added support for GemFire 6.6
