@@ -11,9 +11,9 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<gfe:cache />
-	
+
 	<bean id="bean1" class="org.springframework.data.gemfire.Init"/>
-	
+
 	<!-- Advanced example depicting various cache server configuration options -->
 	<gfe:cache-server id="advanced-config" auto-startup="true" bind-address="localhost" port="${gfe.port.6}"
 					  host-name-for-clients="localhost" groups="test-server" load-poll-interval="2000"
@@ -25,5 +25,4 @@
 
 	<context:property-placeholder location="classpath:port.properties" />
 
-	
 </beans>
