@@ -21,30 +21,38 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import static org.mockito.Mockito.*;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 public class StubCacheServer implements CacheServer {
+
 	private boolean isRunning;
+	private boolean notifyBySubscription;
+
+	private int maxConnections;
+	private int maximumMessageCount;
+	private int maximumTimeBetweenPings;
+	private int maxThreads;
+	private int messageTimeToLive;
 	private int port;
+	private int socketBufferSize;
+
+	private long loadPollInterval;
+
+	private ClientSession clientSession;
+
+	private ClientSubscriptionConfig clientSubscriptionConfig = mockClientSubscriptionConfig();
+
+	private Set<ClientSession> clientSessions;
+
+	private ServerLoadProbe serverLoadProbe;
+
 	private String bindAddress;
 	private String hostNameForClients;
-	private boolean notifyBySubscription;
-	private int socketBufferSize;
-	private int maximumTimeBetweenPings;
-	private int maxConnections;
-	private int maxThreads;
-	private int maximumMessageCount;
-	private int messageTimeToLive;
 	private String[] groups;
-	private ServerLoadProbe serverLoadProbe;
-	private long loadPollInterval;
-	private ClientSubscriptionConfig clientSubscriptionConfig = mockClientSubscriptionConfig();
-	private ClientSession clientSession;
-	private Set<ClientSession> clientSessions;
+
 		/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.server.CacheServer#getPort()
 	 */
@@ -339,14 +347,58 @@ public class StubCacheServer implements CacheServer {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	/**
-	 * @return
-	 */
+
 	 ClientSubscriptionConfig mockClientSubscriptionConfig() {
-		// TODO Auto-generated method stub
-		return mock(ClientSubscriptionConfig.class);
+		return new MockClientSubscriptionConfig();
 	}
-	
+
+	protected static class MockClientSubscriptionConfig implements ClientSubscriptionConfig {
+
+		private int capacity;
+
+		private String diskStoreName;
+		private String evictionPolicy;
+		private String overflowDirectory;
+
+		@Override
+		public int getCapacity() {
+			return capacity;
+		}
+
+		@Override
+		public void setCapacity(final int capacity) {
+			this.capacity = capacity;
+		}
+
+		@Override
+		public String getDiskStoreName() {
+			return diskStoreName;
+		}
+
+		@Override
+		public void setDiskStoreName(final String diskStoreName) {
+			this.diskStoreName = diskStoreName;
+		}
+
+		@Override
+		public String getEvictionPolicy() {
+			return evictionPolicy;
+		}
+
+		@Override
+		public void setEvictionPolicy(final String policy) {
+			this.evictionPolicy = policy;
+		}
+
+		@Override
+		public String getOverflowDirectory() {
+			return overflowDirectory;
+		}
+
+		@Override
+		public void setOverflowDirectory(final String overflowDirectory) {
+			this.overflowDirectory = overflowDirectory;
+		}
+	}
 
 }
