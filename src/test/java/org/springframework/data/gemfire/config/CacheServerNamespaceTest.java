@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -26,28 +27,57 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 
 /**
- * 
+ * The CacheServerNamespaceTest class is a test suite of test cases testing the functionality of the SDG XML namespace
+ * when configuring a GemFire Cache Servers and Client Subscription.
+ * <p/>
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
+ * @see org.junit.Test
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
+ * @see org.springframework.context.ApplicationContext
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see com.gemstone.gemfire.cache.server.CacheServer
+ * @see com.gemstone.gemfire.cache.server.ClientSubscriptionConfig
  */
+@ContextConfiguration(locations="server-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="server-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
 public class CacheServerNamespaceTest {
 
-	@Autowired ApplicationContext ctx;
+	@Autowired
+	private ApplicationContext context;
 
 	@Test
 	public void testBasicCacheServer() throws Exception {
-		CacheServer cacheServer = ctx.getBean("advanced-config", CacheServer.class);
-		assertTrue(cacheServer.isRunning());
-		assertEquals(1, cacheServer.getGroups().length);
-		assertEquals("test-server", cacheServer.getGroups()[0]);
-		assertEquals(22, cacheServer.getMaxConnections());
+		CacheServer cacheServer = context.getBean("advanced-config", CacheServer.class);
 
+		assertNotNull(cacheServer);
+		assertEquals(1, cacheServer.getGroups().length);
+		assertEquals("localhost", cacheServer.getBindAddress());
+		assertTrue(cacheServer.getPort() != 0);
+		assertEquals("localhost", cacheServer.getHostnameForClients());
+		assertEquals("test-server", cacheServer.getGroups()[0]);
+		assertEquals(2000l, cacheServer.getLoadPollInterval());
+		assertEquals(22, cacheServer.getMaxConnections());
+		assertEquals(16, cacheServer.getMaxThreads());
+		assertEquals(1000, cacheServer.getMaximumMessageCount());
+		assertEquals(30000, cacheServer.getMaximumTimeBetweenPings());
+		assertTrue(cacheServer.isRunning());
+
+		ClientSubscriptionConfig clientSubscriptionConfig = cacheServer.getClientSubscriptionConfig();
+
+		assertNotNull(clientSubscriptionConfig);
+		assertEquals(1000, clientSubscriptionConfig.getCapacity());
+		assertTrue("ENTRY".equalsIgnoreCase(clientSubscriptionConfig.getEvictionPolicy()));
+		assertTrue(String.format("Expected empty DiskStoreName; but was (%1$s)", clientSubscriptionConfig.getDiskStoreName()),
+			StringUtils.isEmpty(clientSubscriptionConfig.getDiskStoreName()));
 	}
+
 }
