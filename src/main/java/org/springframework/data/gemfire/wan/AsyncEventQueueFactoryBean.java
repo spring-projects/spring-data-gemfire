@@ -15,9 +15,6 @@
  */
 package org.springframework.data.gemfire.wan;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -49,7 +46,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	private Integer dispatcherThreads;
 	private Integer maximumQueueMemory;
 
-	private String diskStoreRef;
+	private String diskStoreReference;
 	private String orderPolicy;
 
 	/**
@@ -90,22 +87,6 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		AsyncEventQueueFactory asyncEventQueueFactory = (this.factory != null ? (AsyncEventQueueFactory) factory
 			: cache.createAsyncEventQueueFactory());
 
-		if (diskStoreRef != null) {
-			persistent = (persistent == null || persistent);
-			Assert.isTrue(persistent, "Specifying a 'disk store' requires the persistent property to be true.");
-			asyncEventQueueFactory.setDiskStoreName(diskStoreRef);
-		}
-
-		if (diskSynchronous != null) {
-			persistent = (persistent == null || persistent);
-			Assert.isTrue(persistent, "Specifying 'disk synchronous' requires the persistent property to be true.");
-			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
-		}
-
-		if (persistent != null) {
-			asyncEventQueueFactory.setPersistent(persistent);
-		}
-
 		if (batchSize != null) {
 			asyncEventQueueFactory.setBatchSize(batchSize);
 		}
@@ -123,6 +104,14 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			asyncEventQueueFactory.setDispatcherThreads(dispatcherThreads);
 		}
 
+		if (diskStoreReference != null) {
+			asyncEventQueueFactory.setDiskStoreName(diskStoreReference);
+		}
+
+		if (diskSynchronous != null) {
+			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
+		}
+
 		if (maximumQueueMemory != null) {
 			asyncEventQueueFactory.setMaximumQueueMemory(maximumQueueMemory);
 		}
@@ -136,6 +125,10 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 				"The value of Order Policy '$1%s' is invalid.", orderPolicy));
 
 			asyncEventQueueFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
+		}
+
+		if (persistent != null) {
+			asyncEventQueueFactory.setPersistent(persistent);
 		}
 
 		asyncEventQueue = asyncEventQueueFactory.create(getName(), this.asyncEventListener);
@@ -159,7 +152,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	public void setDiskStoreRef(String diskStoreRef) {
-		this.diskStoreRef = diskStoreRef;
+		this.diskStoreReference = diskStoreRef;
 	}
 
 	public void setBatchSize(Integer batchSize) {

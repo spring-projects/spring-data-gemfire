@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -82,6 +83,27 @@ public class GatewaySenderFactoryBeanTest {
 
 		if (dispatcherThreads != null) {
 			verify(mockGatewaySenderFactory).setDispatcherThreads(eq(dispatcherThreads));
+		}
+
+		String diskStoreReference = TestUtils.readField("diskStoreReference", factoryBean);
+
+		if (diskStoreReference != null) {
+			verify(mockGatewaySenderFactory).setDiskStoreName(eq(diskStoreReference));
+		}
+
+		Boolean diskSynchronous = TestUtils.readField("diskSynchronous", factoryBean);
+
+		if (diskSynchronous != null) {
+			verify(mockGatewaySenderFactory).setDiskSynchronous(eq(diskSynchronous));
+		}
+
+		Boolean persistent = TestUtils.readField("persistent", factoryBean);
+
+		if (persistent != null) {
+			verify(mockGatewaySenderFactory).setPersistenceEnabled(eq(persistent));
+		}
+		else {
+			verify(mockGatewaySenderFactory, never()).setPersistenceEnabled(true);
 		}
 	}
 
@@ -191,6 +213,49 @@ public class GatewaySenderFactoryBeanTest {
 		assertNotNull(gatewaySender);
 		assertEquals("g5", gatewaySender.getId());
 		assertEquals(42, gatewaySender.getRemoteDSId());
+	}
+
+	@Test
+	public void testGatewaySenderWithOverflowDiskStoreNoPersistence() throws Exception {
+		GatewaySenderFactory mockGatewaySenderFactory = createMockGatewaySenderFactory("g6", 51);
+
+		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(
+			createMockCacheWithGatewayInfrastructure(mockGatewaySenderFactory));
+
+		factoryBean.setName("g6");
+		factoryBean.setRemoteDistributedSystemId(51);
+		factoryBean.setPersistent(false);
+		factoryBean.setDiskStoreRef("queueOverflowDiskStore");
+		factoryBean.doInit();
+
+		verifyExpectations(factoryBean, mockGatewaySenderFactory);
+
+		GatewaySender gatewaySender = factoryBean.getObject();
+
+		assertNotNull(gatewaySender);
+		assertEquals("g6", gatewaySender.getId());
+		assertEquals(51, gatewaySender.getRemoteDSId());
+	}
+
+	@Test
+	public void testGatewaySenderWithDiskSynchronousSetPersistenceUnset() throws Exception {
+		GatewaySenderFactory mockGatewaySenderFactory = createMockGatewaySenderFactory("g7", 51);
+
+		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(
+			createMockCacheWithGatewayInfrastructure(mockGatewaySenderFactory));
+
+		factoryBean.setName("g7");
+		factoryBean.setRemoteDistributedSystemId(51);
+		factoryBean.setDiskSynchronous(true);
+		factoryBean.doInit();
+
+		verifyExpectations(factoryBean, mockGatewaySenderFactory);
+
+		GatewaySender gatewaySender = factoryBean.getObject();
+
+		assertNotNull(gatewaySender);
+		assertEquals("g7", gatewaySender.getId());
+		assertEquals(51, gatewaySender.getRemoteDSId());
 	}
 
 }
