@@ -15,7 +15,6 @@
  */
 package org.springframework.data.gemfire.wan;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.context.SmartLifecycle;
@@ -61,7 +60,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	private Integer socketBufferSize;
 	private Integer socketReadTimeout;
 
-	private String diskStoreRef;
+	private String diskStoreReference;
 	private String orderPolicy;
 
 	/**
@@ -89,24 +88,47 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		GatewaySenderFactory gatewaySenderFactory = (this.factory != null ? (GatewaySenderFactory) factory :
 			cache.createGatewaySenderFactory());
 
-		if (diskStoreRef != null) {
-			persistent = (persistent == null || persistent);
-			Assert.isTrue(persistent, "Specifying a disk store requires the persistent property to be true.");
-			gatewaySenderFactory.setDiskStoreName(diskStoreRef);
+		if (alertThreshold != null) {
+			gatewaySenderFactory.setAlertThreshold(alertThreshold);
+		}
+
+		if (batchSize != null) {
+			gatewaySenderFactory.setBatchSize(batchSize);
+		}
+
+		if (batchTimeInterval != null) {
+			gatewaySenderFactory.setBatchTimeInterval(batchTimeInterval);
+		}
+
+		if (diskStoreReference != null) {
+			gatewaySenderFactory.setDiskStoreName(diskStoreReference);
 		}
 
 		if (diskSynchronous != null) {
-			persistent = (persistent == null || persistent);
-			Assert.isTrue(persistent, "Specifying disk synchronous requires the persistent property to be true.");
 			gatewaySenderFactory.setDiskSynchronous(diskSynchronous);
 		}
 
-		if (persistent != null) {
-			gatewaySenderFactory.setPersistenceEnabled(persistent);
+		if (dispatcherThreads != null) {
+			Assert.isTrue(isSerialGatewaySender(),
+				"The number of Dispatcher Threads cannot be specified with a Parallel Gateway Sender Queue.");
+			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
 		}
 
-		parallel = Boolean.TRUE.equals(parallel);
-		gatewaySenderFactory.setParallel(parallel);
+		if (enableBatchConflation != null) {
+			gatewaySenderFactory.setBatchConflationEnabled(enableBatchConflation);
+		}
+
+		if (!CollectionUtils.isEmpty(eventFilters)) {
+			for (GatewayEventFilter eventFilter : eventFilters) {
+				gatewaySenderFactory.addGatewayEventFilter(eventFilter);
+			}
+		}
+
+		gatewaySenderFactory.setManualStart(true);
+
+		if (maximumQueueMemory != null) {
+			gatewaySenderFactory.setMaximumQueueMemory(maximumQueueMemory);
+		}
 
 		if (orderPolicy != null) {
 			Assert.isTrue(isSerialGatewaySender(), "Order Policy cannot be used with a Parallel Gateway Sender Queue.");
@@ -117,46 +139,21 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			gatewaySenderFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
 
-		if (!CollectionUtils.isEmpty(eventFilters)) {
-			for (GatewayEventFilter eventFilter : eventFilters) {
-				gatewaySenderFactory.addGatewayEventFilter(eventFilter);
-			}
+		gatewaySenderFactory.setParallel(isParallelGatewaySender());
+		gatewaySenderFactory.setPersistenceEnabled(isPersistent());
+
+		if (socketBufferSize != null) {
+			gatewaySenderFactory.setSocketBufferSize(socketBufferSize);
+		}
+
+		if (socketReadTimeout != null) {
+			gatewaySenderFactory.setSocketReadTimeout(socketReadTimeout);
 		}
 
 		if (!CollectionUtils.isEmpty(transportFilters)) {
 			for (GatewayTransportFilter transportFilter : transportFilters) {
 				gatewaySenderFactory.addGatewayTransportFilter(transportFilter);
 			}
-		}
-
-		if (alertThreshold != null) {
-			gatewaySenderFactory.setAlertThreshold(alertThreshold);
-		}
-		if (enableBatchConflation != null) {
-			gatewaySenderFactory.setBatchConflationEnabled(enableBatchConflation);
-		}
-		if (batchSize != null) {
-			gatewaySenderFactory.setBatchSize(batchSize);
-		}
-		if (batchTimeInterval != null) {
-			gatewaySenderFactory.setBatchTimeInterval(batchTimeInterval);
-		}
-		if (dispatcherThreads != null) {
-			Assert.isTrue(isSerialGatewaySender(),
-				"The number of Dispatcher Threads cannot be specified with a Parallel Gateway Sender Queue.");
-			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
-		}
-
-		gatewaySenderFactory.setManualStart(true);
-
-		if (maximumQueueMemory != null) {
-			gatewaySenderFactory.setMaximumQueueMemory(maximumQueueMemory);
-		}
-		if (socketBufferSize != null) {
-			gatewaySenderFactory.setSocketBufferSize(socketBufferSize);
-		}
-		if (socketReadTimeout != null) {
-			gatewaySenderFactory.setSocketReadTimeout(socketReadTimeout);
 		}
 
 		GatewaySenderWrapper wrapper = new GatewaySenderWrapper(gatewaySenderFactory.create(getName(),
@@ -194,7 +191,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	}
 
 	public void setDiskStoreRef(String diskStoreRef) {
-		this.diskStoreRef = diskStoreRef;
+		this.diskStoreReference = diskStoreRef;
 	}
 
 	public void setDiskSynchronous(Boolean diskSynchronous) {
@@ -231,6 +228,14 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
+	}
+
+	public boolean isNotPersistent() {
+		return !isPersistent();
+	}
+
+	public boolean isPersistent() {
+		return Boolean.TRUE.equals(this.persistent);
 	}
 
 	public void setSocketBufferSize(Integer socketBufferSize) {
