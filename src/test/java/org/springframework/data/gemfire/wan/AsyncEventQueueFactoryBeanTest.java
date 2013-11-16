@@ -23,6 +23,7 @@ import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +46,7 @@ import com.gemstone.gemfire.cache.util.Gateway;
  * @see org.springframework.data.gemfire.TestUtils
  * @see org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean
  * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener
  * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
  * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory
  * @since 1.3.3
@@ -89,6 +91,27 @@ public class AsyncEventQueueFactoryBeanTest {
 
 		if (dispatcherThreads != null) {
 			verify(mockAsyncEventQueueFactory).setDispatcherThreads(eq(dispatcherThreads));
+		}
+
+		String diskStoreReference = TestUtils.readField("diskStoreReference", factoryBean);
+
+		if (diskStoreReference != null) {
+			verify(mockAsyncEventQueueFactory).setDiskStoreName(eq(diskStoreReference));
+		}
+
+		Boolean diskSynchronous = TestUtils.readField("diskSynchronous", factoryBean);
+
+		if (diskSynchronous != null) {
+			verify(mockAsyncEventQueueFactory).setDiskSynchronous(eq(diskSynchronous));
+		}
+
+		Boolean persistent = TestUtils.readField("persistent", factoryBean);
+
+		if (persistent != null) {
+			verify(mockAsyncEventQueueFactory).setPersistent(eq(persistent));
+		}
+		else {
+			verify(mockAsyncEventQueueFactory, never()).setPersistent(true);
 		}
 	}
 
@@ -260,6 +283,47 @@ public class AsyncEventQueueFactoryBeanTest {
 
 		assertNotNull(eventQueue);
 		assertEquals("789", eventQueue.getId());
+	}
+
+	@Test
+	public void testAsyncEventQueueWithOverflowDiskStoreNoPersistence() throws Exception {
+		AsyncEventQueueFactory mockAsyncEventQueueFactory = createMockAsyncEventQueueFactory("123abc");
+
+		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
+			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
+
+		factoryBean.setName("123abc");
+		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setDiskStoreRef("queueOverflowDiskStore");
+		factoryBean.setPersistent(false);
+		factoryBean.doInit();
+
+		verifyExpectations(mockAsyncEventQueueFactory, factoryBean);
+
+		AsyncEventQueue evenQueue = factoryBean.getObject();
+
+		assertNotNull(evenQueue);
+		assertEquals("123abc", evenQueue.getId());
+	}
+
+	@Test
+	public void testAsyncEventQueueWithDiskSynchronousSetPersistenceUnset() throws Exception {
+		AsyncEventQueueFactory mockAsyncEventQueueFactory = createMockAsyncEventQueueFactory("12345");
+
+		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
+			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
+
+		factoryBean.setName("12345");
+		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setDiskSynchronous(true);
+		factoryBean.doInit();
+
+		verifyExpectations(mockAsyncEventQueueFactory, factoryBean);
+
+		AsyncEventQueue evenQueue = factoryBean.getObject();
+
+		assertNotNull(evenQueue);
+		assertEquals("12345", evenQueue.getId());
 	}
 
 }
