@@ -15,6 +15,9 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -33,6 +36,8 @@ import com.gemstone.gemfire.cache.Cache;
  */
 public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<T>, InitializingBean, BeanNameAware,
 		DisposableBean {
+
+	protected static final List<String> VALID_ORDER_POLICIES = Arrays.asList("KEY", "PARTITION", "THREAD");
 
 	protected Log log = LogFactory.getLog(getClass());
 

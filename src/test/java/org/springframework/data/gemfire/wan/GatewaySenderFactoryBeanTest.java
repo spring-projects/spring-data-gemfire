@@ -150,7 +150,7 @@ public class GatewaySenderFactoryBeanTest {
 	}
 
 	@Test
-	public void testSerialGatewaySenderWithOrderPolicy() throws Exception {
+	public void testSerialGatewaySenderWithDispatcherThreads() throws Exception {
 		GatewaySenderFactory mockGatewaySenderFactory = createMockGatewaySenderFactory("g4", 21);
 
 		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(

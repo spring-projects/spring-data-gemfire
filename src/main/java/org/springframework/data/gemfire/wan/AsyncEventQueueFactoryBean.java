@@ -35,8 +35,6 @@ import com.gemstone.gemfire.cache.util.Gateway;
  */
 public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<AsyncEventQueue> {
 
-	private static List<String> validOrderPolicyValues = Arrays.asList("KEY", "PARTITION", "THREAD");
-
 	private AsyncEventListener asyncEventListener;
 
 	private AsyncEventQueue asyncEventQueue;
@@ -60,7 +58,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	 * @param cache the GemFire Cache reference.
 	 * @see #AsyncEventQueueFactoryBean(com.gemstone.gemfire.cache.Cache, com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener)
 	 */
-	public AsyncEventQueueFactoryBean(Cache cache) {
+	public AsyncEventQueueFactoryBean(final Cache cache) {
 		this(cache, null);
 	}
 
@@ -70,7 +68,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	 * @param cache the GemFire Cache reference.
 	 * @param asyncEventListener required {@link AsyncEventListener}
 	 */
-	public AsyncEventQueueFactoryBean(Cache cache, AsyncEventListener asyncEventListener) {
+	public AsyncEventQueueFactoryBean(final Cache cache, final AsyncEventListener asyncEventListener) {
 		super(cache);
 		setAsyncEventListener(asyncEventListener);
 	}
@@ -93,13 +91,13 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			: cache.createAsyncEventQueueFactory());
 
 		if (diskStoreRef != null) {
-			persistent = (persistent == null) ? Boolean.TRUE : persistent;
+			persistent = (persistent == null || persistent);
 			Assert.isTrue(persistent, "Specifying a 'disk store' requires the persistent property to be true.");
 			asyncEventQueueFactory.setDiskStoreName(diskStoreRef);
 		}
 
 		if (diskSynchronous != null) {
-			persistent = (persistent == null) ? Boolean.TRUE : persistent;
+			persistent = (persistent == null || persistent);
 			Assert.isTrue(persistent, "Specifying 'disk synchronous' requires the persistent property to be true.");
 			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
 		}
@@ -121,6 +119,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		}
 
 		if (dispatcherThreads != null) {
+			Assert.isTrue(isSerialEventQueue(), "The number of Dispatcher Threads cannot be specified with a Parallel Event Queue.");
 			asyncEventQueueFactory.setDispatcherThreads(dispatcherThreads);
 		}
 
@@ -128,15 +127,13 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			asyncEventQueueFactory.setMaximumQueueMemory(maximumQueueMemory);
 		}
 
-		if (parallel != null) {
-			asyncEventQueueFactory.setParallel(parallel);
-		}
-		
-		if (orderPolicy != null) {
-			Assert.isTrue(parallel, "specifying an order policy requires the parallel property to be true");
+		asyncEventQueueFactory.setParallel(isParallelEventQueue());
 
-			Assert.isTrue(validOrderPolicyValues.contains(orderPolicy.toUpperCase()), String.format(
-				"The value of order policy:'$1%s'' is invalid.", orderPolicy));
+		if (orderPolicy != null) {
+			Assert.isTrue(isSerialEventQueue(), "Order Policy cannot be used with a Parallel Event Queue.");
+
+			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()), String.format(
+				"The value of Order Policy '$1%s' is invalid.", orderPolicy));
 
 			asyncEventQueueFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
@@ -181,11 +178,12 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		this.parallel = parallel;
 	}
 
-	/**
-	 * @param validOrderPolicyValues the validOrderPolicyValues to set
-	 */
-	public static void setValidOrderPolicyValues(List<String> validOrderPolicyValues) {
-		AsyncEventQueueFactoryBean.validOrderPolicyValues = validOrderPolicyValues;
+	public boolean isSerialEventQueue() {
+		return !isParallelEventQueue();
+	}
+
+	public boolean isParallelEventQueue() {
+		return Boolean.TRUE.equals(parallel);
 	}
 
 	/**
