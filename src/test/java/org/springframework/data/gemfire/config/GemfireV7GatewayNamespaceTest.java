@@ -16,6 +16,7 @@
 package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -95,7 +96,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		AsyncEventQueue aseq = ctx.getBean("async-event-queue", AsyncEventQueue.class);
 		assertEquals(10, aseq.getBatchSize());
 		assertTrue(aseq.isPersistent());
-		assertTrue(aseq.isParallel());
+		assertFalse(aseq.isParallel());
 		assertEquals("diskstore", aseq.getDiskStoreName());
 		assertEquals(50, aseq.getMaximumQueueMemory());
 		assertEquals(3, aseq.getBatchTimeInterval());
@@ -160,7 +161,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertEquals(50, gws.getMaximumQueueMemory());
 		assertEquals(OrderPolicy.THREAD, gws.getOrderPolicy());
 		assertTrue(gws.isPersistenceEnabled());
-		assertTrue(gws.isParallel());
+		assertFalse(gws.isParallel());
 		assertEquals(16536, gws.getSocketBufferSize());
 		assertEquals(3000, gws.getSocketReadTimeout());
 	}

@@ -15,6 +15,9 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -26,32 +29,35 @@ import org.springframework.util.Assert;
 import com.gemstone.gemfire.cache.Cache;
 
 /**
- * Base class for Gemfire WAN Gateway component factory beans
+ * Base class for GemFire WAN Gateway component factory beans.
+ * <p/>
  * @author David Turanski
- * 
+ * @author John Blum
  */
 public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<T>, InitializingBean, BeanNameAware,
 		DisposableBean {
-	protected Log log = LogFactory.getLog(this.getClass());
 
-	private String name;
+	protected static final List<String> VALID_ORDER_POLICIES = Arrays.asList("KEY", "PARTITION", "THREAD");
+
+	protected Log log = LogFactory.getLog(getClass());
 
 	protected final Cache cache;
 
 	protected Object factory;
 
 	private String beanName;
+	private String name;
 
-	protected AbstractWANComponentFactoryBean(Cache cache) {
+	protected AbstractWANComponentFactoryBean(final Cache cache) {
 		this.cache = cache;
 	}
 	
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public String getName() {
-		return name!=null ? name: beanName;
+		return (name != null ? name: beanName);
 	}
 
 	@Override

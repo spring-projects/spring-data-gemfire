@@ -23,7 +23,7 @@
         maximum-queue-memory="50"
         order-policy="THREAD"
         persistent="true"
-        parallel="true"
+        parallel="false"
         socket-buffer-size="16536"
         socket-read-timeout="3000">
             <gfe:event-filter>
@@ -41,7 +41,7 @@
     persistent="true"
     disk-store-ref="diskstore"
     maximum-queue-memory="50"
-    parallel="true"
+    parallel="false"
     batch-conflation-enabled="true"
     batch-time-interval="3"
     dispatcher-threads="4"

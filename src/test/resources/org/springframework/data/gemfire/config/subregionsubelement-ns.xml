@@ -11,7 +11,7 @@
 
 	<gfe:replicated-region id="Parent" persistent="false">
 		<gfe:replicated-region name="Child" persistent="false">
-			<gfe:async-event-queue name="testQueue" maximum-queue-memory="50" parallel="true" dispatcher-threads="4"
+			<gfe:async-event-queue name="testQueue" maximum-queue-memory="50" parallel="false" dispatcher-threads="4"
 								   order-policy="KEY">
 				<gfe:async-event-listener>
 					<bean class="org.springframework.data.gemfire.config.SubRegionSubElementNamespaceTest.TestNoOpAsyncEventListener"/>
