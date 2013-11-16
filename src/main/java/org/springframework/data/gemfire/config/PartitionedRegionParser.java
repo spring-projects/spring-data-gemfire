@@ -89,7 +89,8 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			@SuppressWarnings("rawtypes")
 			ManagedList fixedPartitionAttributes = new ManagedList();
 			for (Element fp: fixedPartitions) {
-				BeanDefinitionBuilder fpaBuilder = BeanDefinitionBuilder.genericBeanDefinition(FixedPartitionAttributesFactoryBean.class);
+				BeanDefinitionBuilder fpaBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+					FixedPartitionAttributesFactoryBean.class);
 				ParsingUtils.setPropertyValue(fp, fpaBuilder, "partition-name");
 				ParsingUtils.setPropertyValue(fp, fpaBuilder, "num-buckets");
 				ParsingUtils.setPropertyValue(fp, fpaBuilder, "primary");
@@ -123,7 +124,8 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		}
 	}
 
-	private Object parsePartitionResolver(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+	private Object parsePartitionResolver(ParserContext parserContext, Element subElement,
+			BeanDefinitionBuilder builder) {
 		return ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 

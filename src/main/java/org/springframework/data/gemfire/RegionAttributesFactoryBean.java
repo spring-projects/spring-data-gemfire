@@ -23,20 +23,15 @@ import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
- * Spring-friendly bean for creating {@link RegionAttributes}. Eliminates the
- * need of using a XML 'factory-method' tag.
- * 
+ * Spring-friendly bean for creating {@link RegionAttributes}. Eliminates the need of using
+ * a XML 'factory-method' tag.
+ * <p/>
  * @author Costin Leau
  */
 public class RegionAttributesFactoryBean extends AttributesFactory implements FactoryBean<RegionAttributes>,
 		InitializingBean {
 
 	private RegionAttributes attributes;
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		attributes = super.create();
-	}
 
 	@Override
 	public RegionAttributes getObject() throws Exception {
@@ -52,4 +47,10 @@ public class RegionAttributesFactoryBean extends AttributesFactory implements Fa
 	public boolean isSingleton() {
 		return true;
 	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		attributes = super.create();
+	}
+
 }
