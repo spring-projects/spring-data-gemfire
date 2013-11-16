@@ -38,8 +38,6 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>
 		implements SmartLifecycle {
 
-	private static final List<String> VALID_ORDER_POLICIES = Arrays.asList("KEY", "PARTITION", "THREAD");
-
 	private boolean manualStart = false;
 
 	private int remoteDistributedSystemId;
