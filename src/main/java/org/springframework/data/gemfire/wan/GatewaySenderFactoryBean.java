@@ -18,7 +18,6 @@ package org.springframework.data.gemfire.wan;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -31,55 +30,49 @@ import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
- * FactoryBean for creating a GemFire {@link GatewaySender}.
+ * FactoryBean for creating a parallel or serial GemFire {@link GatewaySender}.
+ * <p/>
  * @author David Turanski
- *
+ * @author John Blum
  */
 public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>
-implements SmartLifecycle {
-	private static List<String> validOrderPolicyValues = Arrays.asList("KEY", "PARTITION", "THREAD");
+		implements SmartLifecycle {
 
-	private GatewaySender gatewaySender;
+	private static final List<String> VALID_ORDER_POLICIES = Arrays.asList("KEY", "PARTITION", "THREAD");
+
+	private boolean manualStart = false;
 
 	private int remoteDistributedSystemId;
+
+	private GatewaySender gatewaySender;
 
 	private List<GatewayEventFilter> eventFilters;
 
 	private List<GatewayTransportFilter> transportFilters;
 
-	private Integer alertThreshold;
-
-	private Boolean enableBatchConflation;
-
-	private Integer batchSize;
-
-	private Integer batchTimeInterval;
-
-	private String diskStoreRef;
-
 	private Boolean diskSynchronous;
-
-	private Integer dispatcherThreads;
-
-	private boolean manualStart = false;
-
-	private Integer maximumQueueMemory;
-
-	private String orderPolicy;
-
+	private Boolean enableBatchConflation;
 	private Boolean parallel;
-
 	private Boolean persistent;
 
+	private Integer alertThreshold;
+	private Integer batchSize;
+	private Integer batchTimeInterval;
+	private Integer dispatcherThreads;
+	private Integer maximumQueueMemory;
 	private Integer socketBufferSize;
-
 	private Integer socketReadTimeout;
 
+	private String diskStoreRef;
+	private String orderPolicy;
+
 	/**
-	 *
-	 * @param cache the Gemfire cache
+	 * Constructs an instance of the GatewaySenderFactoryBean class initialized with a reference to the GemFire cache.
+	 * <p/>
+	 * @param cache the Gemfire cache reference.
+	 * @see com.gemstone.gemfire.cache.Cache
 	 */
-	public GatewaySenderFactoryBean(Cache cache) {
+	public GatewaySenderFactoryBean(final Cache cache) {
 		super(cache);
 	}
 
@@ -95,21 +88,18 @@ implements SmartLifecycle {
 
 	@Override
 	protected void doInit() {
-		GatewaySenderFactory gatewaySenderFactory = null;
-		if (this.factory == null) {
-			gatewaySenderFactory = cache.createGatewaySenderFactory();
-		} else {
-			gatewaySenderFactory = (GatewaySenderFactory)factory;
-		}
+		GatewaySenderFactory gatewaySenderFactory = (this.factory != null ? (GatewaySenderFactory) factory :
+			cache.createGatewaySenderFactory());
+
 		if (diskStoreRef != null) {
-			persistent = (persistent == null) ? Boolean.TRUE : persistent;
-			Assert.isTrue(persistent, "specifying a disk store requires persistent property to be true");
+			persistent = (persistent == null || persistent);
+			Assert.isTrue(persistent, "Specifying a disk store requires the persistent property to be true.");
 			gatewaySenderFactory.setDiskStoreName(diskStoreRef);
 		}
 
 		if (diskSynchronous != null) {
-			persistent = (persistent == null) ? Boolean.TRUE : persistent;
-			Assert.isTrue(persistent, "specifying a disk synchronous requires persistent property to be true");
+			persistent = (persistent == null || persistent);
+			Assert.isTrue(persistent, "Specifying disk synchronous requires the persistent property to be true.");
 			gatewaySenderFactory.setDiskSynchronous(diskSynchronous);
 		}
 
@@ -117,15 +107,15 @@ implements SmartLifecycle {
 			gatewaySenderFactory.setPersistenceEnabled(persistent);
 		}
 
-		parallel = (parallel == null) ? Boolean.FALSE : parallel;
-
+		parallel = Boolean.TRUE.equals(parallel);
 		gatewaySenderFactory.setParallel(parallel);
 
 		if (orderPolicy != null) {
-			Assert.isTrue(parallel, "specifying an order policy requires the parallel property to be true");
+			Assert.isTrue(isSerialGatewaySender(), "Order Policy cannot be used with a Parallel Gateway Sender Queue.");
 
-			Assert.isTrue(validOrderPolicyValues.contains(orderPolicy.toUpperCase()), "The value of order policy:'"
-					+ orderPolicy + "' is invalid");
+			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()),
+				String.format("The value for Order Policy '%1$s' is invalid.", orderPolicy));
+
 			gatewaySenderFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
 
@@ -134,11 +124,13 @@ implements SmartLifecycle {
 				gatewaySenderFactory.addGatewayEventFilter(eventFilter);
 			}
 		}
+
 		if (!CollectionUtils.isEmpty(transportFilters)) {
 			for (GatewayTransportFilter transportFilter : transportFilters) {
 				gatewaySenderFactory.addGatewayTransportFilter(transportFilter);
 			}
 		}
+
 		if (alertThreshold != null) {
 			gatewaySenderFactory.setAlertThreshold(alertThreshold);
 		}
@@ -152,6 +144,8 @@ implements SmartLifecycle {
 			gatewaySenderFactory.setBatchTimeInterval(batchTimeInterval);
 		}
 		if (dispatcherThreads != null) {
+			Assert.isTrue(isSerialGatewaySender(),
+				"The number of Dispatcher Threads cannot be specified with a Parallel Gateway Sender Queue.");
 			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
 		}
 
@@ -166,7 +160,9 @@ implements SmartLifecycle {
 		if (socketReadTimeout != null) {
 			gatewaySenderFactory.setSocketReadTimeout(socketReadTimeout);
 		}
-		GatewaySenderWrapper wrapper = new GatewaySenderWrapper(gatewaySenderFactory.create(getName(), remoteDistributedSystemId));
+
+		GatewaySenderWrapper wrapper = new GatewaySenderWrapper(gatewaySenderFactory.create(getName(),
+			remoteDistributedSystemId));
         wrapper.setManualStart(manualStart);
         gatewaySender = wrapper;
 	}
@@ -225,6 +221,14 @@ implements SmartLifecycle {
 
 	public void setParallel(Boolean parallel) {
 		this.parallel = parallel;
+	}
+
+	public boolean isSerialGatewaySender() {
+		return !isParallelGatewaySender();
+	}
+
+	public boolean isParallelGatewaySender() {
+		return Boolean.TRUE.equals(parallel);
 	}
 
 	public void setPersistent(Boolean persistent) {
@@ -289,4 +293,5 @@ implements SmartLifecycle {
 		stop();
 		callback.run();
 	}
+
 }
