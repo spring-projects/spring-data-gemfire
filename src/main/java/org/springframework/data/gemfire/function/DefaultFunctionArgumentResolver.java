@@ -16,21 +16,29 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 
 /**
  * @author David Turanski
+ * @author John Blum
  * @since 1.3.0
- *
  */
 class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
+
+	private static final Object[] EMPTY_ARRAY = new Object[0];
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.FunctionArgumentResolver#resolveFunctionArguments(com.gemstone.gemfire.cache.execute.FunctionContext)
 	 */
 	@Override
-	public Object[] resolveFunctionArguments(FunctionContext functionContext) {
+	public Object[] resolveFunctionArguments(final FunctionContext functionContext) {
+		return (isArray(functionContext.getArguments())) ? (Object[]) functionContext.getArguments()
+			: getArguments(functionContext);
+	}
 
-		Object[] args = (functionContext.getArguments().getClass().isArray()) ? (Object[]) functionContext
-				.getArguments() : new Object[] { functionContext.getArguments() };
-				
-		return args;
+	private boolean isArray(final Object value) {
+		return (value != null && value.getClass().isArray());
+	}
+
+	private Object[] getArguments(final FunctionContext context) {
+		final Object arguments = context.getArguments();
+		return (arguments != null ? new Object[] { arguments } : EMPTY_ARRAY);
 	}
 
 }

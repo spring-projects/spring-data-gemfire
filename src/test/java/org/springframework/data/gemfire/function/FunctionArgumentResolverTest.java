@@ -13,8 +13,8 @@
 package org.springframework.data.gemfire.function;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,8 +34,22 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
 
 /**
  * @author David Turanski
+ * @author John Blum
  */
 public class FunctionArgumentResolverTest {
+
+	@Test
+	public void testDefaultFunctionArgumentResolverNoArguments() {
+		FunctionArgumentResolver functionArgumentResolver = new DefaultFunctionArgumentResolver();
+		FunctionContext mockFunctionContext = mock(FunctionContext.class);
+
+		when(mockFunctionContext.getArguments()).thenReturn(null);
+
+		Object[] args = functionArgumentResolver.resolveFunctionArguments(mockFunctionContext);
+
+		assertNotNull(args);
+		assertEquals(0, args.length);
+	}
 
     @Test
     public void testDefaultFunctionArgumentResolverSingleArg() {
@@ -84,7 +98,6 @@ public class FunctionArgumentResolverTest {
         for (Object arg : args) {
             assertSame(originalArgs[i++], arg);
         }
-
     }
 
     @Test
@@ -112,7 +125,6 @@ public class FunctionArgumentResolverTest {
                 assertSame(region, arg);
             }
         }
-
     }
 
     @Test
@@ -132,7 +144,6 @@ public class FunctionArgumentResolverTest {
 
         assertEquals(1, args.length);
         assertSame(region, args[0]);
-
     }
 
     @Test
@@ -153,7 +164,6 @@ public class FunctionArgumentResolverTest {
         assertEquals(2, args.length);
         assertSame(region, args[0]);
         assertSame(originalArgs[0], args[1]);
-
     }
 
     @Test
@@ -226,67 +236,37 @@ public class FunctionArgumentResolverTest {
         assertSame(keys, args[1]);
     }
 
-    @Test
-    public void testMethodWithMultipleRegionData() throws SecurityException, NoSuchMethodException {
+	@Test(expected = IllegalStateException.class)
+	public void testMethodWithMultipleRegionData() throws SecurityException, NoSuchMethodException {
+		Method method = TestFunction.class.getDeclaredMethod("methodWithMultipleRegionData", Map.class, Map.class);
+		new FunctionContextInjectingArgumentResolver(method);
+	}
 
-        Method method = TestFunction.class.getDeclaredMethod("methodWithMultipleRegionData", Map.class, Map.class);
-
-        try {
-            new FunctionContextInjectingArgumentResolver(method);
-            fail("Should throw exception");
-        } catch (Exception e) {
-
-        }
-
-    }
-
-    @Test
+	@Test(expected = IllegalArgumentException.class)
     public void testMethodWithMultipleRegions() throws SecurityException, NoSuchMethodException {
-
         Method method = TestFunction.class.getDeclaredMethod("methodWithMultipleRegions", Region.class, Map.class);
-
-        try {
-            new FunctionContextInjectingArgumentResolver(method);
-            fail("Should throw exception");
-        } catch (Exception e) {
-
-        }
+		new FunctionContextInjectingArgumentResolver(method);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testMethodWithInvalidTypeForAnnotation() throws SecurityException, NoSuchMethodException {
-
         Method method = TestFunction.class.getDeclaredMethod("methodWithInvalidTypeForAnnotation", Region.class);
-
-        try {
-            new FunctionContextInjectingArgumentResolver(method);
-            fail("Should throw exception");
-        } catch (Exception e) {
-
-        }
+		new FunctionContextInjectingArgumentResolver(method);
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testMethodWithMultipleFunctionContext() throws SecurityException, NoSuchMethodException {
-
         Method method = TestFunction.class.getDeclaredMethod("methodWithMultipleFunctionContext",
-                FunctionContext.class, FunctionContext.class);
-
-        try {
-            new FunctionContextInjectingArgumentResolver(method);
-            fail("Should throw exception");
-        } catch (Exception e) {
-
-        }
+			FunctionContext.class, FunctionContext.class);
+		new FunctionContextInjectingArgumentResolver(method);
     }
 
     @Test
     public void testMethodWithFunctionContextAndResultSender() throws NoSuchMethodException {
-
         FunctionContext functionContext = mock(FunctionContext.class);
         ResultSender resultSender = mock(ResultSender.class);
         Method method = TestFunction.class.getDeclaredMethod("methodWithFunctionContextAndResultSender",
-                FunctionContext.class, ResultSender.class);
+			FunctionContext.class, ResultSender.class);
 
         FunctionArgumentResolver far = new FunctionContextInjectingArgumentResolver(method);
 
@@ -299,10 +279,11 @@ public class FunctionArgumentResolverTest {
         assertEquals(2, args.length);
         assertSame(functionContext, args[0]);
         assertSame(resultSender, args[1]);
-
     }
 
+	@SuppressWarnings("unused")
     static class TestFunction {
+
         public void methodWithNoSpecialArgs(String s1, int i1, boolean b1) {
         }
 
@@ -321,8 +302,7 @@ public class FunctionArgumentResolverTest {
         public void methodWithResultSender(@RegionData Map<?, ?> data, ResultSender<?> resultSender) {
         }
 
-        public void methodWithFilterAndRegion(@RegionData Map<String, Object> region, @Filter Set<String> keys,
-                                              Object arg) {
+        public void methodWithFilterAndRegion(@RegionData Map<String, Object> region, @Filter Set<String> keys, Object arg) {
         }
 
         //Invalid Method Signatures
@@ -341,6 +321,6 @@ public class FunctionArgumentResolverTest {
         public void methodWithFunctionContextAndResultSender(FunctionContext fc1, ResultSender<?> rs) {
 
         }
-
     }
+
 }
