@@ -31,12 +31,12 @@ import org.w3c.dom.Element;
  * @author David Turanski
  */
 class GemfireNamespaceHandler extends NamespaceHandlerSupport {
-	static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList("async-event-queue", "gateway-sender",
-			"gateway-receiver");
+
+	protected static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList("async-event-queue", "gateway-sender",
+		"gateway-receiver");
 
 	@Override
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-
 		boolean v7ElementsPresent = GEMFIRE7_ELEMENTS.contains(element.getLocalName());
 
 		if (v7ElementsPresent) {
@@ -49,24 +49,23 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 	@Override
 	public void init() {
 		registerBeanDefinitionParser("cache", new CacheParser());
-		registerBeanDefinitionParser("client-cache", new ClientCacheParser());
-		registerBeanDefinitionParser("lookup-region", new LookupRegionParser());
-		registerBeanDefinitionParser("replicated-region", new ReplicatedRegionParser());
-		registerBeanDefinitionParser("partitioned-region", new PartitionedRegionParser());
-		registerBeanDefinitionParser("local-region", new LocalRegionParser());
-		registerBeanDefinitionParser("client-region", new ClientRegionParser());
-		registerBeanDefinitionParser("pool", new PoolParser());
-		registerBeanDefinitionParser("index", new IndexParser());
-		registerBeanDefinitionParser("disk-store", new DiskStoreParser());
 		registerBeanDefinitionParser("cache-server", new CacheServerParser());
-		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());
-		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
+		registerBeanDefinitionParser("client-cache", new ClientCacheParser());
+		registerBeanDefinitionParser("client-region", new ClientRegionParser());
+		registerBeanDefinitionParser("lookup-region", new LookupRegionParser());
+		registerBeanDefinitionParser("local-region", new LocalRegionParser());
+		registerBeanDefinitionParser("partitioned-region", new PartitionedRegionParser());
+		registerBeanDefinitionParser("replicated-region", new ReplicatedRegionParser());
 		registerBeanDefinitionParser("async-event-queue", new AsyncEventQueueParser());
-		registerBeanDefinitionParser("gateway-sender", new GatewaySenderParser());
-		registerBeanDefinitionParser("gateway-receiver", new GatewayReceiverParser());
-		registerBeanDefinitionParser("function-service", new FunctionServiceParser());
-		// V6 WAN parsers
+		registerBeanDefinitionParser("disk-store", new DiskStoreParser());
 		registerBeanDefinitionParser("gateway-hub", new GatewayHubParser());
+		registerBeanDefinitionParser("gateway-receiver", new GatewayReceiverParser());
+		registerBeanDefinitionParser("gateway-sender", new GatewaySenderParser());
+		registerBeanDefinitionParser("index", new IndexParser());
+		registerBeanDefinitionParser("pool", new PoolParser());
 		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenBeanDefinitionParser());
+		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
+		registerBeanDefinitionParser("function-service", new FunctionServiceParser());
+		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());
 	}
 }

@@ -733,37 +733,33 @@ arbitrarily pick one.
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element name="membership-attributes" minOccurs="0"
-								 maxOccurs="1">
+					<xsd:element name="membership-attributes" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-Configures a Region to require one or more membership roles to be present in the system for reliable access to the Region
-                        ]]></xsd:documentation>
+Establishes reliability requirements and behavior for a region. Use this to configure the region to require one or more membership roles to be running in the system for reliable access to the region.
+                        	]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:complexType>
-							<xsd:attribute name="required-roles" type="xsd:string"
-										   use="required">
+							<xsd:attribute name="required-roles" type="xsd:string" use="required">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
 A comma delimited list of required role names
                            ]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:attribute>
-							<xsd:attribute name="loss-action" type="xsd:string"
-										   use="optional">
+							<xsd:attribute name="loss-action" type="xsd:string" default="no-access">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-Specifies the behavior when one or more required roles are missing:
-(full-access, limited-access, no-access, or reconnect)
+Set one of the following values to specify how access to the region is affected when one or more required roles are lost:
+(full-access, limited-access, no-access, or reconnect).
                            ]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:attribute>
-							<xsd:attribute name="resumption-action" type="xsd:string"
-										   use="optional">
+							<xsd:attribute name="resumption-action" type="xsd:string" default="reinitialize">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-Specifies how the region is affected by resumption of reliability
-when one or more missing required roles is restored to the distributed membership (none or reinitialize)
+Specifies how the region is affected by resumption of reliability when one or more missing required roles return to the distributed membership:
+(none or reinitialize).
                            ]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:attribute>

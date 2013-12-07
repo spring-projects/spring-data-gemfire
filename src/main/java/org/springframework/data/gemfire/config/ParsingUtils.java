@@ -183,10 +183,12 @@ abstract class ParsingUtils {
 	 * <p/>
 	 * @param parserContext the context used for parsing the XML document.
 	 * @param element the XML elements being parsed.
-	 * @param attributesBuilder the Region Attributes builder.
+	 * @param regionAttributesBuilder the Region Attributes builder.
 	 * @return true if parsing actually occurred, false otherwise.
 	 */
-	static boolean parseEviction(ParserContext parserContext, Element element, BeanDefinitionBuilder attributesBuilder) {
+	static boolean parseEviction(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder regionAttributesBuilder) {
+
 		Element evictionElement = DomUtils.getChildElementByTagName(element, "eviction");
 
 		if (evictionElement != null) {
@@ -210,7 +212,7 @@ abstract class ParsingUtils {
 				evictionAttributesBuilder.addPropertyValue("ObjectSizer", sizer);
 			}
 
-			attributesBuilder.addPropertyValue("evictionAttributes", evictionAttributesBuilder.getBeanDefinition());
+			regionAttributesBuilder.addPropertyValue("evictionAttributes", evictionAttributesBuilder.getBeanDefinition());
 
 			return true;
 		}
@@ -223,27 +225,32 @@ abstract class ParsingUtils {
 	 * <p/>
 	 * @param parserContext the context used while parsing the XML document.
 	 * @param element the XML element being parsed.
-	 * @param attrBuilder the Region Attributes builder.
+	 * @param regionAttributesBuilder the Region Attributes builder.
 	 * @return true if parsing actually occurred, false otherwise.
 	 */
 	@SuppressWarnings("unused")
-	static boolean parseSubscription(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
+	static boolean parseSubscription(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder regionAttributesBuilder) {
+
 		Element subscriptionElement = DomUtils.getChildElementByTagName(element, "subscription");
 
-		if (subscriptionElement == null)
-			return false;
+		if (subscriptionElement != null) {
+			BeanDefinitionBuilder subscriptionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+				SubscriptionAttributesFactoryBean.class);
 
-		BeanDefinitionBuilder subscriptionDefBuilder = BeanDefinitionBuilder
-				.genericBeanDefinition(SubscriptionAttributesFactoryBean.class);
+			// do manual conversion since the enum is not public
+			String type = subscriptionElement.getAttribute("type");
 
-		// do manual conversion since the enum is not public
-		String attr = subscriptionElement.getAttribute("type");
-		if (StringUtils.hasText(attr)) {
-			subscriptionDefBuilder.addPropertyValue("type", SubscriptionType.valueOf(attr.toUpperCase()));
+			if (StringUtils.hasText(type)) {
+				subscriptionAttributesBuilder.addPropertyValue("type", SubscriptionType.valueOf(type.toUpperCase()));
+			}
+
+			regionAttributesBuilder.addPropertyValue("subscriptionAttributes", subscriptionAttributesBuilder.getBeanDefinition());
+
+			return true;
 		}
 
-		attrBuilder.addPropertyValue("subscriptionAttributes", subscriptionDefBuilder.getBeanDefinition());
-		return true;
+		return false;
 	}
 	
 
@@ -284,85 +291,90 @@ abstract class ParsingUtils {
 		return result;
 	}
 
+	@SuppressWarnings("unused")
 	static void parseOptionalRegionAttributes(ParserContext parserContext, Element element,
-			BeanDefinitionBuilder attrBuilder) {
+			BeanDefinitionBuilder regionAttributesBuilder) {
+
 		if (!("partitioned-region".equals(element.getLocalName()))) {
-			setPropertyValue(element, attrBuilder, "persistent", "persistBackup");
+			setPropertyValue(element, regionAttributesBuilder, "persistent", "persistBackup");
 		}
-		setPropertyValue(element, attrBuilder, "ignore-jta", "ignoreJTA");
-		setPropertyValue(element, attrBuilder, "key-constraint");
-		setPropertyValue(element, attrBuilder, "value-constraint");
-		setPropertyValue(element, attrBuilder, "is-lock-grantor", "lockGrantor");
-		setPropertyValue(element, attrBuilder, "enable-subscription-conflation");
-		setPropertyValue(element, attrBuilder, "enable-async-conflation");
-		setPropertyValue(element, attrBuilder, "initial-capacity");
-		setPropertyValue(element, attrBuilder, "load-factor");
-		setPropertyValue(element, attrBuilder, "cloning-enabled");
-		setPropertyValue(element, attrBuilder, "concurrency-level");
-		setPropertyValue(element, attrBuilder, "multicast-enabled");
+
+		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
+		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
+		setPropertyValue(element, regionAttributesBuilder, "enable-async-conflation");
+		setPropertyValue(element, regionAttributesBuilder, "enable-subscription-conflation");
+		setPropertyValue(element, regionAttributesBuilder, "ignore-jta", "ignoreJTA");
+		setPropertyValue(element, regionAttributesBuilder, "initial-capacity");
+		setPropertyValue(element, regionAttributesBuilder, "is-lock-grantor", "lockGrantor");
+		setPropertyValue(element, regionAttributesBuilder, "key-constraint");
+		setPropertyValue(element, regionAttributesBuilder, "load-factor");
+		setPropertyValue(element, regionAttributesBuilder, "multicast-enabled");
+		setPropertyValue(element, regionAttributesBuilder, "value-constraint");
 
 		String indexUpdateType = element.getAttribute("index-update-type");
+
 		if (StringUtils.hasText(indexUpdateType)) {
-			attrBuilder.addPropertyValue("indexMaintenanceSynchronous", "synchronous".equals(indexUpdateType));
+			regionAttributesBuilder.addPropertyValue("indexMaintenanceSynchronous", "synchronous".equals(indexUpdateType));
 		}
-		
+
 		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
+
 		if (StringUtils.hasText(concurrencyChecksEnabled)) {
 			if (!GemfireUtils.isGemfireVersion7OrAbove()) {
-				log.warn("'concurrency-checks-enabled' is only available in Gemfire 7.0 or above");
-			} else {
-				ParsingUtils.setPropertyValue(element, attrBuilder, "concurrency-checks-enabled");
+				log.warn("Setting 'concurrency-checks-enabled' is only available in Gemfire 7.0 or above");
+			}
+			else {
+				ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
 			}
 		}
-		
-		
 	}
 
+	@SuppressWarnings("unused")
 	static void parseMembershipAttributes(ParserContext parserContext, Element element,
-			BeanDefinitionBuilder attrBuilder) {
+			BeanDefinitionBuilder regionAttributesBuilder) {
+
 		Element membershipAttributes = DomUtils.getChildElementByTagName(element, "membership-attributes");
+
 		if (membershipAttributes != null) {
-			String requiredRoles[] = StringUtils.commaDelimitedListToStringArray(membershipAttributes
-					.getAttribute("required-roles"));
-			String lossActionAttr = membershipAttributes.getAttribute("loss-action");
-			LossAction lossAction = StringUtils.hasText(lossActionAttr) ? LossAction.fromName(lossActionAttr
-					.toUpperCase().replace("-", "_")) : null;
-			String resumptionActionAttr = membershipAttributes.getAttribute("resumption-action");
-			ResumptionAction resumptionAction = StringUtils.hasText(resumptionActionAttr) ? ResumptionAction
-					.fromName(resumptionActionAttr.toUpperCase().replace("-", "_")) : null;
+			String[] requiredRoles = StringUtils.commaDelimitedListToStringArray(
+				membershipAttributes.getAttribute("required-roles"));
 
-			ManagedArray requiredRolesArray = new ManagedArray("java.lang.String", requiredRoles.length);
-			for (int i = 0; i < requiredRoles.length; i++) {
-				requiredRolesArray.add(requiredRoles[i]);
-			}
-			BeanDefinitionBuilder membershipAttributesBuilder = BeanDefinitionBuilder
-					.genericBeanDefinition(MembershipAttributes.class);
-			membershipAttributesBuilder.addConstructorArgValue(requiredRolesArray);
-			membershipAttributesBuilder.addConstructorArgValue(lossAction);
-			membershipAttributesBuilder.addConstructorArgValue(resumptionAction);
+			String lossActionValue = membershipAttributes.getAttribute("loss-action");
 
-			attrBuilder.addPropertyValue("membershipAttributes", membershipAttributesBuilder.getRawBeanDefinition());
+			LossAction lossAction = (StringUtils.hasText(lossActionValue)
+				? LossAction.fromName(lossActionValue.toUpperCase().replace("-", "_"))
+				: LossAction.NO_ACCESS);
+
+			String resumptionActionValue = membershipAttributes.getAttribute("resumption-action");
+
+			ResumptionAction resumptionAction = (StringUtils.hasText(resumptionActionValue)
+				? ResumptionAction.fromName(resumptionActionValue.toUpperCase().replace("-", "_"))
+				: ResumptionAction.REINITIALIZE);
+
+			regionAttributesBuilder.addPropertyValue("membershipAttributes",
+				new MembershipAttributes(requiredRoles, lossAction, resumptionAction));
 		}
 	}
 
 	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
 		if (!GemfireUtils.isGemfireVersion7OrAbove()) {
-			String messagePrefix = (attributeName == null) ? "element '" + elementName + "'" : "attribute '"
-					+ attributeName + " of element '" + elementName + "'";
+			String messagePrefix = (attributeName != null)
+				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
+				: String.format("Element '%1$s'", elementName);
 			parserContext.getReaderContext().error(
-					messagePrefix + " requires Gemfire version 7 or later. The current version is " + GemfireUtils.GEMFIRE_VERSION,
-					null);
+				String.format("%1$s requires GemFire version 7 or later. The current version is %2$s.",
+					messagePrefix, GemfireUtils.GEMFIRE_VERSION), null);
 		}
 	}
 
 	static void parseScope(Element element, BeanDefinitionBuilder builder) {
-		String scope = element.getAttribute("scope");
-		if (StringUtils.hasText(scope)) {
-			builder.addPropertyValue("scope", Scope.fromString(scope.toUpperCase().replace("-", "_")));
-		}
-		else {
-			builder.addPropertyValue("scope", Scope.DISTRIBUTED_ACK);
-		}
+		String scopeAttributeValue = element.getAttribute("scope");
+
+		Scope scope = (StringUtils.hasText(scopeAttributeValue)
+			? Scope.fromString(scopeAttributeValue.toUpperCase().replace("-", "_"))
+			: Scope.DISTRIBUTED_ACK);
+
+		builder.addPropertyValue("scope", scope);
 	}
 
 	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName,

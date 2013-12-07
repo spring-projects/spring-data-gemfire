@@ -16,7 +16,6 @@
 
 package org.springframework.data.gemfire.config;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -28,7 +27,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * bean definition with both data-policy and shortcut specified.
  * <p/>
  * @author John Blum
- * @see org.junit.Assert
+ * @see org.junit.Test
  * @since 1.3.3
  */
 public class ClientRegionUsingDataPolicyAndShortcutTest {

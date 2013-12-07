@@ -31,11 +31,10 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;partitioned-region;gt; definitions.
- *
- * To avoid eager evaluations, the region attributes are declared as a nested
- * definition.
- *
+ * Parser for &lt;partitioned-region;gt; bean definitions.
+ * <p/>
+ * To avoid eager evaluations, the region attributes are declared as a nested definition.
+ * <p/>
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
@@ -53,57 +52,57 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			boolean subRegion) {
 		super.doParse(element, builder);
 
-		BeanDefinitionBuilder regionAttributesBuilder = (subRegion ? builder
-			: BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class));
+		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			RegionAttributesFactoryBean.class);
 
 		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder, subRegion);
+
+		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
 		BeanDefinitionBuilder partitionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			PartitionAttributesFactoryBean.class);
 
 		parseColocatedWith(element, builder, partitionAttributesBuilder, "colocated-with");
-		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "local-max-memory");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "copies","redundantCopies");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "local-max-memory");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "recovery-delay");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "startup-recovery-delay");
-		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-max-memory");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-buckets","totalNumBuckets");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-max-memory");
 
-		Element subElement = DomUtils.getChildElementByTagName(element, "partition-resolver");
-		// parse nested partition resolver element
-		if (subElement != null) {
+		Element partitionResolverSubElement = DomUtils.getChildElementByTagName(element, "partition-resolver");
+
+		if (partitionResolverSubElement != null) {
 			partitionAttributesBuilder.addPropertyValue("partitionResolver",
-				parsePartitionResolver(parserContext, subElement, builder));
+				parsePartitionResolver(partitionResolverSubElement, parserContext, builder));
 		}
 
-		subElement = DomUtils.getChildElementByTagName(element, "partition-listener");
-		// parse nested partition listener element
-		if (subElement != null) {
+		Element partitionListenerSubElement = DomUtils.getChildElementByTagName(element, "partition-listener");
+
+		if (partitionListenerSubElement != null) {
 			partitionAttributesBuilder.addPropertyValue("partitionListeners",
-				parsePartitionListeners(parserContext, subElement, builder));
+				parsePartitionListeners(partitionListenerSubElement, parserContext, builder));
 		}
 
-		List<Element> fixedPartitions = DomUtils.getChildElementsByTagName(element, "fixed-partition");
+		List<Element> fixedPartitionSubElements = DomUtils.getChildElementsByTagName(element, "fixed-partition");
 
-		if (!CollectionUtils.isEmpty(fixedPartitions)){
+		if (!CollectionUtils.isEmpty(fixedPartitionSubElements)){
 			@SuppressWarnings("rawtypes")
 			ManagedList fixedPartitionAttributes = new ManagedList();
-			for (Element fp: fixedPartitions) {
-				BeanDefinitionBuilder fpaBuilder = BeanDefinitionBuilder.genericBeanDefinition(FixedPartitionAttributesFactoryBean.class);
-				ParsingUtils.setPropertyValue(fp, fpaBuilder, "partition-name");
-				ParsingUtils.setPropertyValue(fp, fpaBuilder, "num-buckets");
-				ParsingUtils.setPropertyValue(fp, fpaBuilder, "primary");
-				fixedPartitionAttributes.add(fpaBuilder.getBeanDefinition());
+
+			for (Element fixedPartition : fixedPartitionSubElements) {
+				BeanDefinitionBuilder fixedPartitionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+					FixedPartitionAttributesFactoryBean.class);
+				ParsingUtils.setPropertyValue(fixedPartition, fixedPartitionAttributesBuilder, "partition-name");
+				ParsingUtils.setPropertyValue(fixedPartition, fixedPartitionAttributesBuilder, "num-buckets");
+				ParsingUtils.setPropertyValue(fixedPartition, fixedPartitionAttributesBuilder, "primary");
+				fixedPartitionAttributes.add(fixedPartitionAttributesBuilder.getBeanDefinition());
 			}
+
 			partitionAttributesBuilder.addPropertyValue("fixedPartitionAttributes", fixedPartitionAttributes);
 		}
 
-		// add partition attributes to region attributes
 		regionAttributesBuilder.addPropertyValue("partitionAttributes", partitionAttributesBuilder.getBeanDefinition());
-		// add partition/overflow settings as attributes to Region (via PartitionRegionFactoryBean -> RegionFactoryBean)
-		if (!subRegion) {
-			builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
-		}
 	}
 
 	private void parseColocatedWith(Element element, BeanDefinitionBuilder regionBuilder,
@@ -123,11 +122,12 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		}
 	}
 
-	private Object parsePartitionResolver(ParserContext parserContext, Element subElement, BeanDefinitionBuilder builder) {
+	private Object parsePartitionResolver(Element subElement, ParserContext parserContext,
+			BeanDefinitionBuilder builder) {
 		return ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, builder);
 	}
 
-	private Object parsePartitionListeners(ParserContext parserContext, Element subElement,
+	private Object parsePartitionListeners(Element subElement, ParserContext parserContext,
 			BeanDefinitionBuilder builder) {
 		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
 	}

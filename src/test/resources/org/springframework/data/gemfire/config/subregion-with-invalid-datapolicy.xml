@@ -9,15 +9,10 @@
 
 	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
 
-	<gfe:pool>
-		<gfe:locator host="localhost" port="10334"/>
-	</gfe:pool>
+	<gfe:cache/>
 
-	<gfe:client-cache/>
-	<gfe:client-region id="localAppData" data-policy="NORMAL" shortcut="CACHING_PROXY"/>
-	<!--
-	<gfe:client-region id="localAppData" data-policy="NORMAL"/>
-	<gfe:client-region id="localAppData" shortcut="CACHING_PROXY"/>
-	-->
+	<gfe:replicated-region id="Parent" persistent="false" destroy="true">
+		<gfe:replicated-region name="Child" data-policy="PERSISTENT_PARTITION"/>
+	</gfe:replicated-region>
 
 </beans>

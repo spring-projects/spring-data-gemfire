@@ -77,6 +77,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	private Object[] asyncEventQueues;
 	private Object[] gatewaySenders;
 
+	private Region<?, ?> parent;
+
 	private RegionAttributes<K, V> attributes;
 
 	private Resource snapshot;
@@ -103,11 +105,11 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			AttributesFactory.validateAttributes(attributes);
 		}
 
-		final RegionFactory<K, V> regionFactory = (attributes != null ? cache.createRegionFactory(attributes) :
-			cache.<K, V> createRegionFactory());
+		RegionFactory<K, V> regionFactory = (attributes != null ? cache.createRegionFactory(attributes)
+			: cache.<K, V>createRegionFactory());
 
 		if (hubId != null) {
-			enableGateway = enableGateway == null ? true : enableGateway;
+			enableGateway = (enableGateway == null || enableGateway);
 			Assert.isTrue(enableGateway, "hubId requires the enableGateway property to be true");
 
 			regionFactory.setGatewayHubId(hubId);
@@ -115,20 +117,15 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		if (enableGateway != null) {
 			if (enableGateway) {
-				Assert.notNull(hubId, "enableGateway requires the hubId property to be true");
+				Assert.notNull(hubId, "The 'enableGateway' property requires the 'hubId' property to be set.");
 			}
 			regionFactory.setEnableGateway(enableGateway);
-		}
-
-		if (!ObjectUtils.isEmpty(cacheListeners)) {
-			for (CacheListener<K, V> listener : cacheListeners) {
-				regionFactory.addCacheListener(listener);
-			}
 		}
 
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			Assert.isTrue(hubId == null, "It is invalid to configure a region with both a hubId and gatewaySenders."
 				+ " Note that the enableGateway and hubId properties are deprecated since Gemfire 7.0");
+
 			for (Object gatewaySender : gatewaySenders) {
 				regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId());
 			}
@@ -137,6 +134,12 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (!ObjectUtils.isEmpty(asyncEventQueues)) {
 			for (Object asyncEventQueue : asyncEventQueues) {
 				regionFactory.addAsyncEventQueueId(((AsyncEventQueue) asyncEventQueue).getId());
+			}
+		}
+
+		if (!ObjectUtils.isEmpty(cacheListeners)) {
+			for (CacheListener<K, V> listener : cacheListeners) {
+				regionFactory.addCacheListener(listener);
 			}
 		}
 
@@ -164,10 +167,20 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		}
 
 		// get underlying AttributesFactory
-		postProcess(findAttrFactory(regionFactory));
+		postProcess(findAttributesFactory(regionFactory));
 
-		Region<K, V> region = regionFactory.create(regionName);
-		log.info("Created new cache region [" + regionName + "]");
+		Region<K, V> region = (this.parent != null ? regionFactory.createSubregion(parent, regionName)
+			: regionFactory.create(regionName));
+
+		if (log.isInfoEnabled()) {
+			if (parent != null) {
+				log.info(String.format("Created new Cache sub-Region [%1$s] under parent Region [%2$s].",
+					regionName, parent.getName()));
+			}
+			else {
+				log.info(String.format("Created new Cache Region [%1$s].", regionName));
+			}
+		}
 
 		if (snapshot != null) {
 			region.loadSnapshot(snapshot.getInputStream());
@@ -205,7 +218,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	@SuppressWarnings("unchecked")
-	private AttributesFactory<K, V> findAttrFactory(RegionFactory<K, V> regionFactory) {
+	private AttributesFactory<K, V> findAttributesFactory(RegionFactory<K, V> regionFactory) {
 		Field attrsFactoryField = ReflectionUtils.findField(RegionFactory.class, "attrsFactory",
 			AttributesFactory.class);
 		ReflectionUtils.makeAccessible(attrsFactoryField);
@@ -218,12 +231,13 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * already initialized and configured by the factory bean before this method
 	 * is invoked.
 	 *
-	 * @param attrFactory attribute factory
+	 * @param attributesFactory attribute factory
 	 * @deprecated as of GemFire 6.5, the use of {@link AttributesFactory} has
 	 * been deprecated
 	 */
 	@Deprecated
-	protected void postProcess(AttributesFactory<K, V> attrFactory) {
+	@SuppressWarnings("unused")
+	protected void postProcess(AttributesFactory<K, V> attributesFactory) {
 	}
 
 	/**
@@ -233,6 +247,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 *
 	 * @param region
 	 */
+	@SuppressWarnings("unused")
 	protected void postProcess(Region<K, V> region) {
 
 	}
@@ -244,15 +259,36 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 				if (!getRegion().getRegionService().isClosed()) {
 					try {
 						getRegion().close();
-					} catch (Exception cce) {
-						// nothing to see folks, move on.
+					}
+					catch (Exception ignore) {
 					}
 				}
 
-			} if (destroy) {
+			}
+			if (destroy) {
 				getRegion().destroyRegion();
 			}
 		}
+	}
+
+	/**
+	 *
+	 * @param asyncEventQueues defined as Object for backward compatibility with
+	 * Gemfire 6
+	 */
+	public void setAsyncEventQueues(Object[] asyncEventQueues) {
+		this.asyncEventQueues = asyncEventQueues;
+	}
+
+	/**
+	 * Sets the region attributes used for the region used by this factory.
+	 * Allows maximum control in specifying the region settings. Used only when
+	 * a new region is created.
+	 *
+	 * @param attributes the attributes to set on a newly created region
+	 */
+	public void setAttributes(RegionAttributes<K, V> attributes) {
+		this.attributes = attributes;
 	}
 
 	/**
@@ -261,26 +297,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	public void setClose(boolean close) {
 		this.close = close;
-	}
-
-	/**
-	 * Indicates whether the region referred by this factory bean, will be
-	 * destroyed on shutdown (default false).
-	 */
-	public void setDestroy(boolean destroy) {
-		this.destroy = destroy;
-	}
-
-	/**
-	 * Sets the snapshots used for loading a newly <i>created</i> region. That
-	 * is, the snapshot will be used <i>only</i> when a new region is created -
-	 * if the region already exists, no loading will be performed.
-	 *
-	 * @see #setName(String)
-	 * @param snapshot the snapshot to set
-	 */
-	public void setSnapshot(Resource snapshot) {
-		this.snapshot = snapshot;
 	}
 
 	/**
@@ -317,18 +333,11 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Sets the region scope. Used only when a new region is created. Overrides
-	 * the settings specified through {@link #setAttributes(RegionAttributes)}.
-	 *
-	 * @see Scope
-	 * @param scope the region scope
+	 * Indicates whether the region referred by this factory bean, will be
+	 * destroyed on shutdown (default false).
 	 */
-	public void setScope(Scope scope) {
-		this.scope = scope;
-	}
-
-	public void setPersistent(boolean persistent) {
-		this.persistent = persistent;
+	public void setDestroy(boolean destroy) {
+		this.destroy = destroy;
 	}
 
 	/**
@@ -348,6 +357,10 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		this.diskStoreName = diskStoreName;
 	}
 
+	public void setEnableGateway(boolean enableGateway) {
+		this.enableGateway = enableGateway;
+	}
+
 	/**
 	 *
 	 * @param gatewaySenders defined as Object for backward compatibility with
@@ -357,32 +370,39 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		this.gatewaySenders = gatewaySenders;
 	}
 
-	/**
-	 *
-	 * @param asyncEventQueues defined as Object for backward compatibility with
-	 * Gemfire 6
-	 */
-	public void setAsyncEventQueues(Object[] asyncEventQueues) {
-		this.asyncEventQueues = asyncEventQueues;
-	}
-
-	public void setEnableGateway(boolean enableGateway) {
-		this.enableGateway = enableGateway;
-	}
-
 	public void setHubId(String hubId) {
 		this.hubId = hubId;
 	}
 
+	public void setParent(Region<?, ?> parent) {
+		this.parent = parent;
+	}
+
+	public void setPersistent(boolean persistent) {
+		this.persistent = persistent;
+	}
+
 	/**
-	 * Sets the region attributes used for the region used by this factory.
-	 * Allows maximum control in specifying the region settings. Used only when
-	 * a new region is created.
+	 * Sets the region scope. Used only when a new region is created. Overrides
+	 * the settings specified through {@link #setAttributes(RegionAttributes)}.
 	 *
-	 * @param attributes the attributes to set on a newly created region
+	 * @see Scope
+	 * @param scope the region scope
 	 */
-	public void setAttributes(RegionAttributes<K, V> attributes) {
-		this.attributes = attributes;
+	public void setScope(Scope scope) {
+		this.scope = scope;
+	}
+
+	/**
+	 * Sets the snapshots used for loading a newly <i>created</i> region. That
+	 * is, the snapshot will be used <i>only</i> when a new region is created -
+	 * if the region already exists, no loading will be performed.
+	 *
+	 * @see #setName(String)
+	 * @param snapshot the snapshot to set
+	 */
+	public void setSnapshot(Resource snapshot) {
+		this.snapshot = snapshot;
 	}
 
 	/**

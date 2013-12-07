@@ -33,18 +33,18 @@ public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
 
-			// Validate that the data-policy and persistent attributes are compatible when specified!
-			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
-
 			if (DataPolicy.EMPTY.equals(resolvedDataPolicy)) {
 				resolvedDataPolicy = DataPolicy.EMPTY;
 			}
 			else {
 				// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
 				// configuration meta-data element for Region (i.e. <gfe:replicated-region .../>)!
-				Assert.isTrue(resolvedDataPolicy.withReplication(), String.format("" +
+				Assert.isTrue(resolvedDataPolicy.withReplication(), String.format(
 					"Data Policy '%1$s' is not supported in Replicated Regions.", resolvedDataPolicy));
 			}
+
+			// Validate that the data-policy and persistent attributes are compatible when specified!
+			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
 
 			regionFactory.setDataPolicy(resolvedDataPolicy);
 		}
