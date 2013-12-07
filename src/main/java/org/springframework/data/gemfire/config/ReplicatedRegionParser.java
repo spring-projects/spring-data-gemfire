@@ -24,9 +24,10 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;replicated-region;gt; definitions.
- * 
+ * <p/>
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 class ReplicatedRegionParser extends AbstractRegionParser {
 
@@ -41,15 +42,13 @@ class ReplicatedRegionParser extends AbstractRegionParser {
 
 		ParsingUtils.parseScope(element, builder);
 
-		BeanDefinitionBuilder regionAttributesFactoryBuilder = (subRegion ? builder
-			: BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class));
+		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			RegionAttributesFactoryBean.class);
 
-		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesFactoryBuilder,
+		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder,
 			subRegion);
 
-		if (!subRegion) {
-			builder.addPropertyValue("attributes", regionAttributesFactoryBuilder.getBeanDefinition());
-		}
+		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 	}
 
 }

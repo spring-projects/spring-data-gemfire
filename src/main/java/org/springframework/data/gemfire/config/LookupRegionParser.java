@@ -24,9 +24,10 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;lookup-region;gt; definitions.
- *
+ * <p/>
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 class LookupRegionParser extends AbstractRegionParser {
 
@@ -43,9 +44,9 @@ class LookupRegionParser extends AbstractRegionParser {
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 
 		if (!subRegion) {
-			String attr = element.getAttribute("cache-ref");
-			// add cache reference (fallback to default if nothing is specified)
-			builder.addPropertyReference("cache", (StringUtils.hasText(attr) ? attr : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+			String cacheRef = element.getAttribute("cache-ref");
+			builder.addPropertyReference("cache", (StringUtils.hasText(cacheRef) ? cacheRef
+				: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 		}
 		else {
 			builder.addPropertyValue("lookupOnly", true);

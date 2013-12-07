@@ -24,24 +24,31 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.SubRegionFactoryBean;
+import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
+import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
+ * The SubRegionNamespaceTest class is a test suite of test cases testing the contract and functionality of
+ * Region/SubRegion creation in a GemFire Cache.
+ * <p/>
  * @author David Turanski
+ * @author John Blum
+ * @see org.junit.Test
+ * @see org.junit.runner.RunWith
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  */
-@SuppressWarnings("deprecation")
+@ContextConfiguration(locations = "subregion-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="subregion-ns.xml",
-initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("deprecation")
 public class SubRegionNamespaceTest {
 
 	@Autowired
@@ -51,6 +58,7 @@ public class SubRegionNamespaceTest {
     @Test
     public void testNestedRegionsCreated() {
         Cache cache = context.getBean(Cache.class);
+
         assertNotNull(cache.getRegion("parent"));
         assertNotNull(cache.getRegion("/parent/child"));
         assertNotNull(cache.getRegion("/parent/child/grandchild"));
@@ -59,35 +67,31 @@ public class SubRegionNamespaceTest {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void testNestedReplicatedRegions() {
-        Region parent = null;
-		parent = context.getBean("parent", Region.class);
-        Cache cache = context.getBean(Cache.class);
+        Region parent = context.getBean("parent", Region.class);
 		Region child = context.getBean("/parent/child", Region.class);
 		Region grandchild = context.getBean("/parent/child/grandchild", Region.class);
+
 		assertNotNull(child);
 		assertEquals("/parent/child", child.getFullPath());
 		assertSame(child, parent.getSubregion("child"));
-
+		assertNotNull(grandchild);
 		assertEquals("/parent/child/grandchild", grandchild.getFullPath());
 		assertSame(grandchild, child.getSubregion("grandchild"));
-
 	}
 
-	@SuppressWarnings({ "unused", "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void testMixedNestedRegions() {
-		Cache cache = context.getBean(Cache.class);
-
 		Region parent = context.getBean("replicatedParent", Region.class);
-
 		Region child = context.getBean("/replicatedParent/replicatedChild", Region.class);
 		Region grandchild = context.getBean("/replicatedParent/replicatedChild/partitionedGrandchild", Region.class);
+
 		assertNotNull(child);
 		assertEquals("/replicatedParent/replicatedChild", child.getFullPath());
-
+		assertEquals(child, parent.getSubregion("replicatedChild"));
+		assertNotNull(grandchild);
 		assertEquals("/replicatedParent/replicatedChild/partitionedGrandchild", grandchild.getFullPath());
 		assertSame(grandchild, child.getSubregion("partitionedGrandchild"));
-
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -100,25 +104,29 @@ public class SubRegionNamespaceTest {
 		assertEquals("/parentWithSiblings/child2", child2.getFullPath());
 		assertSame(child1, parent.getSubregion("child1"));
 		assertSame(child2, parent.getSubregion("child2"));
-
 		Region grandchild1 = context.getBean("/parentWithSiblings/child1/grandChild11", Region.class);
 		assertEquals("/parentWithSiblings/child1/grandChild11", grandchild1.getFullPath());
 	}
 
-	@SuppressWarnings({ "unused", "rawtypes" })
+	@SuppressWarnings({ "rawtypes", "unused" })
 	@Test
 	public void testComplexNestedRegions() throws Exception {
 		Region parent = context.getBean("complexNested", Region.class);
 		Region child1 = context.getBean("/complexNested/child1", Region.class);
 		Region child2 = context.getBean("/complexNested/child2", Region.class);
-		Region grandchild1 = context.getBean("/complexNested/child1/grandChild11", Region.class);
+		Region grandchild11 = context.getBean("/complexNested/child1/grandChild11", Region.class);
 
-		SubRegionFactoryBean grandchild1fb = context.getBean("&/complexNested/child1/grandChild11",
-				SubRegionFactoryBean.class);
-		assertNotNull(grandchild1fb);
-		RegionAttributes attr = grandchild1fb.create();
-		assertNotNull(attr);
-		CacheLoader cl = attr.getCacheLoader();
-		assertNotNull(cl);
+		ReplicatedRegionFactoryBean grandchild11FactoryBean = context.getBean("&/complexNested/child1/grandChild11",
+			ReplicatedRegionFactoryBean.class);
+
+		assertNotNull(grandchild11FactoryBean);
+
+		CacheLoader expectedCacheLoader = TestUtils.readField("cacheLoader", grandchild11FactoryBean);
+
+		assertNotNull(expectedCacheLoader);
+
+		CacheLoader actualCacheLoader = grandchild11.getAttributes().getCacheLoader();
+
+		assertSame(expectedCacheLoader, actualCacheLoader);
 	}
 }

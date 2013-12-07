@@ -23,27 +23,28 @@ import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;local-region;gt; definitions.
- * 
+ * Parser for &lt;local-region;gt; bean definitions.
+ * <p/>
  * @author David Turanski
+ * @author John Blum
  */
 class LocalRegionParser extends AbstractRegionParser {
-	@Override
-	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
-			boolean subRegion) {
-
-		BeanDefinitionBuilder attrBuilder = subRegion ? builder : BeanDefinitionBuilder
-				.genericBeanDefinition(RegionAttributesFactoryBean.class);
-
-		super.doParseCommonRegionConfiguration(element, parserContext, builder, attrBuilder, subRegion);
-		if (!subRegion) {
-			builder.addPropertyValue("attributes", attrBuilder.getBeanDefinition());
-		}
-	}
 
 	@Override
 	protected Class<?> getRegionFactoryClass() {
 		return LocalRegionFactoryBean.class;
+	}
+
+	@Override
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+			boolean subRegion) {
+
+		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			RegionAttributesFactoryBean.class);
+
+		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder, subRegion);
+
+		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 	}
 
 }

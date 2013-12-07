@@ -42,19 +42,19 @@ import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
 import com.gemstone.gemfire.cache.query.QueryService;
+
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
-
 @SuppressWarnings("deprecation")
 public class MockRegionFactory<K,V>   {
-	
+
 	private static QueryService queryService =  mock(QueryService.class);
 	private static RegionService regionService = mock(RegionService.class);
-	
+
 	private AttributesFactory<K,V> attributesFactory;
-	
+
 	private final StubCache cache;
 
 	public MockRegionFactory(StubCache cache) {
@@ -64,50 +64,55 @@ public class MockRegionFactory<K,V>   {
 	public RegionFactory<K, V> createMockRegionFactory() {
 		return createMockRegionFactory(null);
 	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public  RegionFactory<K, V> createMockRegionFactory(RegionAttributes<K,V> attributes) {
-		attributesFactory  = attributes == null? 
-			new AttributesFactory<K,V>() :
-			new AttributesFactory<K,V>(attributes) ;
-			//Workaround for GemFire bug
-			if(attributes !=null) {
-				attributesFactory.setLockGrantor(attributes.isLockGrantor());
-			}
-	
-		final RegionFactory<K, V>  regionFactory = mock(RegionFactory.class);
-		
-		when(regionFactory.create(anyString())).thenAnswer(new Answer<Region>() {
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public RegionFactory<K, V> createMockRegionFactory(RegionAttributes<K,V> attributes) {
+		attributesFactory = (attributes != null ? new AttributesFactory<K,V>(attributes)
+			: new AttributesFactory<K,V>());
+
+		//Workaround for GemFire bug
+		if (attributes !=null) {
+			attributesFactory.setLockGrantor(attributes.isLockGrantor());
+		}
+
+		final RegionFactory<K, V> regionFactory = mock(RegionFactory.class);
+
+		when(regionFactory.create(anyString())).thenAnswer(new Answer<Region>() {
 			@Override
 			public Region answer(InvocationOnMock invocation) throws Throwable {
-				String name = (String)invocation.getArguments()[0];
+				String name = (String) invocation.getArguments()[0];
 				Region region = mockRegion(name);
 				cache.allRegions().put(name, region);
 				return region;
-			}});
-		
-		
-		when(regionFactory.createSubregion(any(Region.class),anyString())).thenAnswer(new Answer<Region>() {
+			}
+		});
 
+		when(regionFactory.createSubregion(any(Region.class),anyString())).thenAnswer(new Answer<Region>() {
 			@Override
 			public Region answer(InvocationOnMock invocation) throws Throwable {
-				Region parent = (Region)invocation.getArguments()[0];
-				String name = (String)invocation.getArguments()[1];
-				
-				String parentName = null;
+				Region parent = (Region) invocation.getArguments()[0];
+				String name = (String) invocation.getArguments()[1];
+				String parentRegionName = null;
+
 				for (String key: cache.allRegions().keySet()) {
 					if (cache.allRegions().get(key).equals(parent)) {
-						parentName = key;
+						parentRegionName = key;
 					}
 				}
-				String regionName = parentName.startsWith("/") ? parentName+"/"+name : "/"+parentName+"/"+ name;
-				Region subRegion = mockRegion(regionName);
-				cache.allRegions().put(regionName, subRegion);
+
+				assert parentRegionName != null : "The parent Region name was null!";
+
+				String subRegionName = (parentRegionName.startsWith("/") ? parentRegionName+"/"+name
+					: "/"+parentRegionName+"/"+ name);
+
+				Region subRegion = mockRegion(subRegionName);
+
+				cache.allRegions().put(subRegionName, subRegion);
+
 				return subRegion;
-			}});
-		
-		
+			}
+		});
+
 		when(regionFactory.setCacheLoader(any(CacheLoader.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -116,7 +121,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setCacheWriter(any(CacheWriter.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -125,8 +130,8 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-	    
-		
+
+
 		when(regionFactory.addAsyncEventQueueId(anyString())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -135,7 +140,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.addCacheListener(any(CacheListener.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -144,7 +149,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setEvictionAttributes(any(EvictionAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -153,7 +158,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setEntryIdleTimeout(any(ExpirationAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -171,7 +176,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setEntryTimeToLive(any(ExpirationAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -189,7 +194,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setRegionIdleTimeout(any(ExpirationAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -198,7 +203,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setRegionTimeToLive(any(ExpirationAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -207,7 +212,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setScope(any(Scope.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -216,7 +221,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setDataPolicy(any(DataPolicy.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -225,7 +230,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setEarlyAck(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -234,7 +239,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setMulticastEnabled(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -243,7 +248,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setPoolName(anyString())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -252,7 +257,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setEnableGateway(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -261,7 +266,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setEnableAsyncConflation(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -270,7 +275,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setEnableSubscriptionConflation(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -279,7 +284,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setKeyConstraint(any(Class.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -288,7 +293,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setValueConstraint(any(Class.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -297,7 +302,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setInitialCapacity(anyInt())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -307,7 +312,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setLoadFactor(anyInt())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -316,7 +321,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setConcurrencyLevel(anyInt())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -325,7 +330,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setConcurrencyChecksEnabled(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -334,7 +339,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setDiskWriteAttributes(any(DiskWriteAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -343,7 +348,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setDiskStoreName(anyString())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -352,7 +357,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setDiskSynchronous(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -361,7 +366,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setDiskDirs(any(File[].class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -370,7 +375,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setDiskDirsAndSizes(any(File[].class),any(int[].class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -380,7 +385,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setPartitionAttributes(any(PartitionAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -389,7 +394,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setMembershipAttributes(any(MembershipAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -398,7 +403,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setIndexMaintenanceSynchronous(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -407,7 +412,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setStatisticsEnabled(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -416,7 +421,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setIgnoreJTA(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -425,7 +430,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setLockGrantor(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -435,7 +440,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setSubscriptionAttributes(any(SubscriptionAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -444,7 +449,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setGatewayHubId(anyString())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -453,7 +458,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.setCloningEnabled(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -462,7 +467,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.addGatewaySenderId(anyString())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -471,7 +476,7 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
+
 		when(regionFactory.addAsyncEventQueueId(anyString())).thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -480,82 +485,80 @@ public class MockRegionFactory<K,V>   {
 				return regionFactory;
 			}
 		});
-		
-	
+
+
 		return regionFactory;
 	}
-	
-	 @SuppressWarnings("rawtypes")
+
+	@SuppressWarnings("rawtypes")
 	RegionFactory createRegionFactory() {
 		return createMockRegionFactory();
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Region mockRegion(String name) {
 		RegionService regionService = mockRegionService();
 		Region region = mock(Region.class);
-		when(region.getRegionService()).thenReturn(regionService);
-		
-		when(region.getAttributes()).thenAnswer(new Answer<RegionAttributes>() {
 
+		when(region.getRegionService()).thenReturn(regionService);
+
+		when(region.getAttributes()).thenAnswer(new Answer<RegionAttributes>() {
 			@Override
 			public RegionAttributes answer(InvocationOnMock invocation) throws Throwable {
-	
 				RegionAttributes attributes = attributesFactory.create();
-		
 				return attributes;
 			}
-			
 		});
-		when(region.getName()).thenReturn(name);
-		
-		when(region.getSubregion(anyString())).thenAnswer(new Answer<Region>() {
 
+		when(region.getFullPath()).thenReturn(name);
+		when(region.getName()).thenReturn(name);
+
+		when(region.getSubregion(anyString())).thenAnswer(new Answer<Region>() {
+			@Override
+			public Region answer(InvocationOnMock invocation) throws Throwable {
+				Region parent = (Region) invocation.getMock();
+
+				String parentRegionName = parent.getName();
+				String subRegionName = (String) invocation.getArguments()[0];
+				String subRegionPath = (parentRegionName.startsWith("/") ? parentRegionName+"/"+subRegionName
+					: "/"+parentRegionName+"/"+subRegionName);
+
+				Region region = cache.getRegion(subRegionPath);
+
+				return region;
+			}
+		});
+
+		when(region.createSubregion(anyString(), any(RegionAttributes.class))).thenAnswer(new Answer<Region>() {
 			@Override
 			public Region answer(InvocationOnMock invocation) throws Throwable {
 				String name = (String) invocation.getArguments()[0];
-				Region parent = (Region)invocation.getMock();
-				String parentName = parent.getName();
-				String regionName = parentName.startsWith("/") ? parentName+"/"+ name : 
-					"/"+parentName+"/"+ name;
+				RegionAttributes attributes = (RegionAttributes) invocation.getArguments()[1];
 
-				Region region =  cache.getRegion(regionName);
-				
-				return region;
-			}
-			
-		});
-		
-		when(region.createSubregion(anyString(),any(RegionAttributes.class))).thenAnswer(new Answer<Region>() {
-
-			@Override
-			public Region answer(InvocationOnMock invocation) throws Throwable {
-				String name = (String)invocation.getArguments()[0];
-				RegionAttributes attributes = (RegionAttributes)invocation.getArguments()[1];
-				
-				Region parent = (Region)invocation.getMock();
+				Region parent = (Region) invocation.getMock();
 				String parentName = parent.getName();
 				String regionName = parentName.startsWith("/") ? parentName+"/"+name : "/"+parentName+"/"+ name;
-				
+
 				Region subRegion = new MockRegionFactory(cache).createMockRegionFactory(attributes).create(regionName);
 				when(subRegion.getFullPath()).thenReturn(regionName);
-				
+
 				cache.allRegions().put(regionName, subRegion);
+
 				return subRegion;
-			}});
-		
+			}
+		});
+
 		return region;
 	}
-	
+
 	public static RegionService mockRegionService() {
-	
 		when(regionService.getQueryService()).thenReturn(queryService);
 		return regionService;
 	}
-	
+
 	public static QueryService mockQueryService() {
 		return queryService;
 	}
-	
-	
+
+
 }

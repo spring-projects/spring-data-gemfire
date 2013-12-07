@@ -29,16 +29,18 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 
-@SuppressWarnings("deprecation")
 /**
- * FactoryBean for creating a Gemfire Region as a sub-Region.
+ * FactoryBean for creating a Gemfire sub-Regions.
  * <p/>
  * @author David Turanski
  * @author John Blum
- * @param <K> - Region Key Type
- * @param <V> - Region Value Type
+ * @param <K> Region Key Type
+ * @param <V> Region Value Type
+ * @deprecated as Spring Data GemFire 1.4.0.  Use Region type specific FactoryBeans
+ * (e.g. ReplicatedRegionFactoryBean) instead.
  */
-// TODO why does this class extend the com.gemstone.gemfire.cache.AttributesFactory class?  AttributesFactory is deprecated!
+@Deprecated
+@SuppressWarnings("deprecation")
 public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implements FactoryBean<Region<K, V>>,
 		InitializingBean {
 

@@ -29,7 +29,6 @@ import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.GemfireUtils;
-import org.springframework.data.gemfire.SubRegionFactoryBean;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -46,7 +45,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return (isSubRegion(element) ? SubRegionFactoryBean.class : getRegionFactoryClass());
+		return getRegionFactoryClass();
 	}
 
 	protected abstract Class<?> getRegionFactoryClass();
@@ -67,45 +66,45 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			boolean subRegion);
 
 	protected void doParseCommonRegionConfiguration(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder, BeanDefinitionBuilder attrBuilder, boolean subRegion) {
+			BeanDefinitionBuilder builder, BeanDefinitionBuilder regionAttributesBuilder, boolean subRegion) {
+
+		String cacheRef = element.getAttribute("cache-ref");
+		String resolvedCacheRef = (StringUtils.hasText(cacheRef) ? cacheRef
+			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 
 		if (!subRegion) {
-			String cacheRef = element.getAttribute("cache-ref");
-			// add cache reference (fallback to default if nothing is specified)
-			builder.addPropertyReference("cache", (StringUtils.hasText(cacheRef) ? cacheRef : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+			builder.addPropertyReference("cache", resolvedCacheRef);
 			ParsingUtils.setPropertyValue(element, builder, "close");
 			ParsingUtils.setPropertyValue(element, builder, "destroy");
 		}
-		// add attributes
-		ParsingUtils.setPropertyValue(element, builder, "name");
 
-		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, attrBuilder);
-		ParsingUtils.parseStatistics(element, attrBuilder);
-		ParsingUtils.setPropertyValue(element, attrBuilder, "publisher");
-		if (!isSubRegion(element)) {
-			ParsingUtils.setPropertyValue(element, builder, "persistent");
-		}
-		// set the data policy
+		ParsingUtils.setPropertyValue(element, builder, "name");
 		ParsingUtils.setPropertyValue(element, builder, "data-policy");
+		ParsingUtils.setPropertyValue(element, builder, "persistent");
+		ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "publisher");
 
 		if (StringUtils.hasText(element.getAttribute("disk-store-ref"))) {
 			ParsingUtils.setPropertyValue(element, builder, "disk-store-ref", "diskStoreName");
 			builder.addDependsOn(element.getAttribute("disk-store-ref"));
 		}
 
-		ParsingUtils.parseExpiration(parserContext, element, attrBuilder);
-		ParsingUtils.parseSubscription(parserContext, element, attrBuilder);
-		ParsingUtils.parseEviction(parserContext, element, attrBuilder);
-		ParsingUtils.parseMembershipAttributes(parserContext, element, attrBuilder);
+		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
+		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseSubscription(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseMembershipAttributes(parserContext, element, regionAttributesBuilder);
 
 		String enableGateway = element.getAttribute("enable-gateway");
 		String hubId = element.getAttribute("hub-id");
+
 		// Factory will enable gateway if it is not set and hub-id is set.
 		if (StringUtils.hasText(enableGateway)) {
 			if (GemfireUtils.isGemfireVersion7OrAbove()) {
 				log.warn("'enable-gateway' is deprecated since Gemfire 7.0");
 			}
 		}
+
 		ParsingUtils.setPropertyValue(element, builder, "enable-gateway");
 
 		if (StringUtils.hasText(hubId)) {
@@ -117,16 +116,16 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 						element);
 			}
 		}
+
 		ParsingUtils.setPropertyValue(element, builder, "hub-id");
 
-		// Parse child elements
-
-	 	parseCollectionOfCustomSubElements(parserContext, element, builder,
-				"com.gemstone.gemfire.cache.wan.GatewaySender", "gateway-sender","gatewaySenders");
-		parseCollectionOfCustomSubElements(parserContext, element, builder,
-				"com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue", "async-event-queue", "asyncEventQueues");
+		parseCollectionOfCustomSubElements(element, parserContext, builder,
+			"com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue", "async-event-queue", "asyncEventQueues");
+		parseCollectionOfCustomSubElements(element, parserContext, builder,
+			"com.gemstone.gemfire.cache.wan.GatewaySender", "gateway-sender","gatewaySenders");
 
 		List<Element> subElements = DomUtils.getChildElements(element);
+
 		for (Element subElement : subElements) {
 			if (subElement.getLocalName().equals("cache-listener")) {
 				builder.addPropertyValue("cacheListeners",
@@ -143,43 +142,47 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 
 		if (!subRegion) {
-			Map<String, Element> allSubRegionElements = new HashMap<String, Element>();
-			findSubregionElements(element, getRegionNameFromElement(element), allSubRegionElements);
-			if (!CollectionUtils.isEmpty(allSubRegionElements)) {
-				for (Map.Entry<String, Element> entry : allSubRegionElements.entrySet()) {
-					parseSubRegion(entry.getValue(), parserContext, entry.getKey());
-				}
-			}
+			parseSubRegions(element, parserContext, resolvedCacheRef);
 		}
-
 	}
 
-	private void parseCollectionOfCustomSubElements(ParserContext parserContext, Element element,
-			BeanDefinitionBuilder builder, String className, String subElementName, String propertyName) {
-		List<Element> subElements = DomUtils.getChildElementsByTagName(element, new String[] { subElementName,
-				subElementName + "-ref" });
-		if (!CollectionUtils.isEmpty(subElements)) {
+	private void parseSubRegions(Element element, ParserContext parserContext, String resolvedCacheRef) {
+		Map<String, Element> allSubRegionElements = new HashMap<String, Element>();
 
+		findSubRegionElements(element, getRegionNameFromElement(element), allSubRegionElements);
+
+		if (!CollectionUtils.isEmpty(allSubRegionElements)) {
+			for (Map.Entry<String, Element> entry : allSubRegionElements.entrySet()) {
+				parseSubRegion(entry.getValue(), parserContext, entry.getKey(), resolvedCacheRef);
+			}
+		}
+	}
+
+	private void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,
+			BeanDefinitionBuilder builder, String className, String subElementName, String propertyName) {
+		List<Element> subElements = DomUtils.getChildElementsByTagName(element,
+			new String[] { subElementName, subElementName + "-ref" });
+
+		if (!CollectionUtils.isEmpty(subElements)) {
 			ManagedArray array = new ManagedArray(className, subElements.size());
+
 			for (Element subElement : subElements) {
 				array.add(ParsingUtils.parseRefOrNestedCustomElement(parserContext, subElement, builder));
 			}
+
 			builder.addPropertyValue(propertyName, array);
 		}
 	}
 
-	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, String regionPath) {
-		String parentBeanName = getParentPathForSubRegion(regionPath);
-		String regionName = getRegionNameFromElement(element); // do before 'renaming' the element, below
-
-		element.setAttribute("id", regionPath);
-		element.setAttribute("name", regionPath);
-
-		BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element);
-		beanDefinition.getPropertyValues().add("parent", new RuntimeBeanReference(parentBeanName));
-		beanDefinition.getPropertyValues().add("regionName", regionName);
-
-		return beanDefinition;
+	private void findSubRegionElements(Element parent, String parentPath, Map<String, Element> allSubRegionElements) {
+		for (Element element : DomUtils.getChildElements(parent)) {
+			if (element.getLocalName().endsWith("region")) {
+				String subRegionName = getRegionNameFromElement(element);
+				String subRegionPath = buildSubRegionPath(parentPath, subRegionName);
+				allSubRegionElements.put(subRegionPath, element);
+				findSubRegionElements(element, subRegionPath, allSubRegionElements);
+			}
+		}
 	}
 
 	private String getRegionNameFromElement(Element element) {
@@ -187,31 +190,39 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		return (StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE));
 	}
 
-    private String buildPathForSubRegion(String parentName, String regionName) {
-        String regionPath = StringUtils.arrayToDelimitedString(new String[] { parentName, regionName }, "/");
-        if (!regionPath.startsWith("/")) {
-            regionPath = "/" + regionPath;
-        }
-        return regionPath;
-    }
+	private String buildSubRegionPath(String parentName, String regionName) {
+		String regionPath = StringUtils.arrayToDelimitedString(new String[] { parentName, regionName }, "/");
+		if (!regionPath.startsWith("/")) {
+			regionPath = "/" + regionPath;
+		}
+		return regionPath;
+	}
 
-	private String getParentPathForSubRegion(String regionPath) {
+	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, String subRegionPath,
+			String cacheRef) {
+
+		String parentBeanName = getParentRegionPathFrom(subRegionPath);
+		String regionName = getRegionNameFromElement(element); // do before 'renaming' the element below
+
+		element.setAttribute("id", subRegionPath);
+		element.setAttribute("name", subRegionPath);
+
+		BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element);
+
+		beanDefinition.getPropertyValues().add("cache", new RuntimeBeanReference(cacheRef));
+		beanDefinition.getPropertyValues().add("parent", new RuntimeBeanReference(parentBeanName));
+		beanDefinition.getPropertyValues().add("regionName", regionName);
+
+		return beanDefinition;
+	}
+
+	private String getParentRegionPathFrom(String regionPath) {
 		int index = regionPath.lastIndexOf("/");
 		String parentPath = regionPath.substring(0, index);
 		if (parentPath.lastIndexOf("/") == 0) {
 			parentPath = parentPath.substring(1);
 		}
 		return parentPath;
-	}
-
-	private void findSubregionElements(Element parent, String parentPath, Map<String, Element> allSubregionElements) {
-		for (Element element : DomUtils.getChildElements(parent)) {
-			if (element.getLocalName().endsWith("region")) {
-				String regionPath = buildPathForSubRegion(parentPath, getRegionNameFromElement(element));
-				allSubregionElements.put(regionPath, element);
-				findSubregionElements(element, regionPath, allSubregionElements);
-			}
-		}
 	}
 
 }

@@ -29,11 +29,11 @@ import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * Simple FactoryBean for retrieving generic GemFire {@link Region}s. If the region doesn't exist, an exception is thrown.
- * 
- * For declaring and configuring new regions, see {@link RegionFactoryBean}.
- * 
+ * Simple FactoryBean for retrieving generic GemFire {@link Region}s. If the Region does not exist,
+ * an exception is thrown.  For declaring and configuring new regions, see {@link RegionFactoryBean}.
+ * <p/>
  * @author Costin Leau
+ * @author John Blum
  */
 public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>, InitializingBean, BeanNameAware {
 
@@ -45,21 +45,24 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 
 	private String beanName;
 	private String name;
+	private String regionName;
 
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(cache, "Cache property must be set");
+		Assert.notNull(cache, "The 'cache' property must be set.");
 
-		name = (StringUtils.hasText(name) ? name : beanName);
-		Assert.hasText(name, "The 'name' or 'beanName' property must be set.");
+		String regionName = (StringUtils.hasText(this.regionName) ? this.regionName
+			: (StringUtils.hasText(name) ? name : beanName));
+
+		Assert.hasText(regionName, "The 'regionName', 'name' or 'beanName' property must be set.");
 
 		synchronized (cache) {
-			region = cache.getRegion(name);
+			region = cache.getRegion(regionName);
 
 			if (region != null) {
-				log.info(String.format("Retrieved region [%1$s] from cache [%2$s].", name, cache.getName()));
+				log.info(String.format("Retrieved Region [%1$s] from Cache [%2$s].", regionName, cache.getName()));
 			}
 			else {
-				region = lookupFallback(cache, name);
+				region = lookupFallback(cache, regionName);
 			}
 		}
 	}
@@ -73,7 +76,8 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	 * @throws Exception
 	 */
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
-		throw new BeanInitializationException("Cannot find region [" + regionName + "] in cache " + cache);
+		throw new BeanInitializationException(String.format("Cannot find Region [%1$s] in Cache [%2$s].",
+			regionName, cache));
 	}
 
 	public Region<K, V> getObject() throws Exception {
@@ -88,32 +92,50 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 		return true;
 	}
 
+	/**
+	 * Sets the name of the Cache Region based on the bean 'id' attribute.  If no Region is found for the given name,
+	 * a new one will be created.
+	 * <p/>
+	 * @param name the name of this bean (Region) in the application context (bean factory).
+	 * @see org.springframework.beans.factory.BeanNameAware#setBeanName(String)
+	 */
 	public void setBeanName(String name) {
 		this.beanName = name;
 	}
 
 	/**
-	 * Sets the cache used for creating the region.
-	 * 
+	 * Sets a reference to the Cache used to create the Region.
+	 * <p/>
+	 * @param cache a reference to the Cache.
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 * @param cache the cache to set
+	 * @see com.gemstone.gemfire.cache.GemFireCache
 	 */
 	public void setCache(GemFireCache cache) {
 		this.cache = cache;
 	}
 
 	/**
-	 * Sets the name of the cache region. If no cache is found under
-	 * the given name, a new one will be created.
-	 * If no name is given, the beanName will be used. 
-	 * 
-	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
-	 * @see #setBeanName(String)
-	 * 
+	 * Sets the name of the Cache Region based on the bean 'name' attribute.  If no Region is found with the given name,
+	 * a new one will be created.  If no name is given, the value of the 'beanName' property will be used.
+	 * <p/>
 	 * @param name the region name
+	 * @see #setBeanName(String)
+	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * Sets the name of the Cache Region as expected by GemFire.  If no Region is found with the given name, a new one
+	 * will be created.  If no name is given, the value of the 'name' property will be used.
+	 * <p/>
+	 * @param regionName a String indicating the name of the Region in GemFire.
+	 * @see #setName(String)
+	 * @see com.gemstone.gemfire.cache.Region#getName()
+	 */
+	public void setRegionName(String regionName) {
+		this.regionName = regionName;
 	}
 
 	protected Region<K, V> getRegion() {

@@ -78,6 +78,7 @@ class ClientRegionParser extends AbstractRegionParser {
 		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
 		List<Element> subElements = DomUtils.getChildElements(element);
+
 		ManagedList<Object> interests = new ManagedList<Object>();
 
 		for (Element subElement : subElements) {
@@ -110,7 +111,7 @@ class ClientRegionParser extends AbstractRegionParser {
 
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
-		boolean subRegion) {
+			boolean subRegion) {
 		throw new UnsupportedOperationException(String.format(
 			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, :boolean) is not supported on %1$s",
 			getClass().getName()));
