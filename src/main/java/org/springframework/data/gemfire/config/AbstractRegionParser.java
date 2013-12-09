@@ -35,9 +35,10 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Base class for all Region Parsers
- *
+ * Abstract base class encapsulating functionality common to all Region Parsers.
+ * <p/>
  * @author David Turanski
+ * @author John Blum
  */
 abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
@@ -68,9 +69,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	protected void doParseCommonRegionConfiguration(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder, BeanDefinitionBuilder regionAttributesBuilder, boolean subRegion) {
 
-		String cacheRef = element.getAttribute("cache-ref");
-		String resolvedCacheRef = (StringUtils.hasText(cacheRef) ? cacheRef
-			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
 		if (!subRegion) {
 			builder.addPropertyReference("cache", resolvedCacheRef);
@@ -89,9 +88,9 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 
 		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseSubscription(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
 		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
-		ParsingUtils.parseSubscription(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseMembershipAttributes(parserContext, element, regionAttributesBuilder);
 
@@ -146,18 +145,6 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	private void parseSubRegions(Element element, ParserContext parserContext, String resolvedCacheRef) {
-		Map<String, Element> allSubRegionElements = new HashMap<String, Element>();
-
-		findSubRegionElements(element, getRegionNameFromElement(element), allSubRegionElements);
-
-		if (!CollectionUtils.isEmpty(allSubRegionElements)) {
-			for (Map.Entry<String, Element> entry : allSubRegionElements.entrySet()) {
-				parseSubRegion(entry.getValue(), parserContext, entry.getKey(), resolvedCacheRef);
-			}
-		}
-	}
-
 	private void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder, String className, String subElementName, String propertyName) {
 		List<Element> subElements = DomUtils.getChildElementsByTagName(element,
@@ -171,6 +158,18 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			}
 
 			builder.addPropertyValue(propertyName, array);
+		}
+	}
+
+	protected void parseSubRegions(Element element, ParserContext parserContext, String resolvedCacheRef) {
+		Map<String, Element> allSubRegionElements = new HashMap<String, Element>();
+
+		findSubRegionElements(element, getRegionNameFromElement(element), allSubRegionElements);
+
+		if (!CollectionUtils.isEmpty(allSubRegionElements)) {
+			for (Map.Entry<String, Element> entry : allSubRegionElements.entrySet()) {
+				parseSubRegion(entry.getValue(), parserContext, entry.getKey(), resolvedCacheRef);
+			}
 		}
 	}
 

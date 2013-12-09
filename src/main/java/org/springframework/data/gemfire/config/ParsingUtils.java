@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
@@ -39,7 +38,7 @@ import com.gemstone.gemfire.cache.ResumptionAction;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
- * Various minor utilities used by the parser.
+ * Utilities used by the Spring Data GemFire XML Namespace parsers.
  * <p/>
  * @author Costin Leau
  * @author David Turanski
@@ -271,22 +270,25 @@ abstract class ParsingUtils {
 	 * <p/>
 	 * @param parserContext the context used while parsing the XML document.
 	 * @param element the XML element being parsed.
-	 * @param attrBuilder the Region Attributes builder.
+	 * @param regionAttributesBuilder the Region Attributes builder.
 	 * @return a boolean indicating whether Region expiration attributes were specified.
 	 */
-	static boolean parseExpiration(ParserContext parserContext, Element element, BeanDefinitionBuilder attrBuilder) {
-		boolean result = parseExpiration(element, "region-ttl", "regionTimeToLive", attrBuilder);
+	static boolean parseExpiration(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder regionAttributesBuilder) {
 
-		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", attrBuilder);
-		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", attrBuilder);
-		result |= parseExpiration(element, "entry-tti", "entryIdleTimeout", attrBuilder);
-		result |= parseCustomExpiration(parserContext, element,"custom-entry-ttl","customEntryTimeToLive",attrBuilder);
-		result |= parseCustomExpiration(parserContext, element,"custom-entry-tti","customEntryIdleTimeout",attrBuilder);
+		boolean result = parseExpiration(element, "region-ttl", "regionTimeToLive", regionAttributesBuilder);
 
-		// TODO why?
+		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", regionAttributesBuilder);
+		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", regionAttributesBuilder);
+		result |= parseExpiration(element, "entry-tti", "entryIdleTimeout", regionAttributesBuilder);
+		result |= parseCustomExpiration(parserContext, element,"custom-entry-ttl","customEntryTimeToLive",
+			regionAttributesBuilder);
+		result |= parseCustomExpiration(parserContext, element,"custom-entry-tti","customEntryIdleTimeout",
+			regionAttributesBuilder);
+
 		if (result) {
 			// turn on statistics
-			attrBuilder.addPropertyValue("statisticsEnabled", Boolean.TRUE);
+			regionAttributesBuilder.addPropertyValue("statisticsEnabled", Boolean.TRUE);
 		}
 		return result;
 	}
@@ -314,7 +316,8 @@ abstract class ParsingUtils {
 		String indexUpdateType = element.getAttribute("index-update-type");
 
 		if (StringUtils.hasText(indexUpdateType)) {
-			regionAttributesBuilder.addPropertyValue("indexMaintenanceSynchronous", "synchronous".equals(indexUpdateType));
+			regionAttributesBuilder.addPropertyValue("indexMaintenanceSynchronous",
+				"synchronous".equals(indexUpdateType));
 		}
 
 		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
@@ -433,4 +436,9 @@ abstract class ParsingUtils {
 
 		return true;
 	}
+
+	static String resolveCacheReference(final String cacheRef) {
+		return (StringUtils.hasText(cacheRef) ? cacheRef : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+	}
+
 }

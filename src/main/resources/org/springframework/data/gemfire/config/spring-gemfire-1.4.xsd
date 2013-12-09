@@ -874,10 +874,11 @@ The name of the region definition.
 	<!-- -->
 	<xsd:group name="subRegionGroup">
 		<xsd:choice>
-			<xsd:element name="lookup-region" type="lookupSubRegionType" />
-			<xsd:element name="replicated-region" type="replicatedSubRegionType" />
-			<xsd:element name="partitioned-region" type="partitionedSubRegionType" />
-			<xsd:element name="local-region" type="localSubRegionType" />
+			<xsd:element name="lookup-region" type="lookupSubRegionType"/>
+			<xsd:element name="replicated-region" type="replicatedSubRegionType"/>
+			<xsd:element name="partitioned-region" type="partitionedSubRegionType"/>
+			<xsd:element name="local-region" type="localSubRegionType"/>
+			<xsd:element name="client-region" type="clientSubRegionType"/>
 		</xsd:choice>
 	</xsd:group>
 	<!-- -->
@@ -965,7 +966,6 @@ Subscription policy for the replicated region.
 							<xsd:attribute name="type" type="subscriptionPolicyType" />
 						</xsd:complexType>
 					</xsd:element>
-
 					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
@@ -987,10 +987,9 @@ The action to take when performing eviction.
 							</xsd:complexContent>
 						</xsd:complexType>
 					</xsd:element>
-
 					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:sequence>
-				<xsd:attributeGroup ref="distributedRegionAttributes" />
+				<xsd:attributeGroup ref="distributedRegionAttributes"/>
 				<xsd:attribute name="concurrency-level">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
@@ -1048,7 +1047,7 @@ The name of the region definition.
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
-	<xsd:element name="replicated-region" type="replicatedRegionType" />
+	<xsd:element name="replicated-region" type="replicatedRegionType"/>
 	<!-- -->
 	<xsd:complexType name="baseLocalRegionType">
 		<xsd:annotation>
@@ -1130,7 +1129,7 @@ The name of the region definition.
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
-	<xsd:element name="local-region" type="localRegionType" />
+	<xsd:element name="local-region" type="localRegionType"/>
 	<!-- -->
 	<xsd:complexType name="basePartitionedRegionType">
 		<xsd:annotation>
@@ -1348,8 +1347,7 @@ The name of the region definition.
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
-	<xsd:element name="partitioned-region" type="partitionedRegionType" />
-
+	<xsd:element name="partitioned-region" type="partitionedRegionType"/>
 	<!-- -->
 	<xsd:complexType name="expirationType">
 		<xsd:attribute name="timeout" type="xsd:string" default="0">
@@ -1394,7 +1392,6 @@ When the region or cached object expires, it is destroyed locally only. Not supp
 			</xsd:simpleType>
 		</xsd:attribute>
 	</xsd:complexType>
-
 	<!-- -->
 	<xsd:complexType name="customExpirationType">
 		<xsd:sequence>
@@ -1416,7 +1413,6 @@ use inner bean declarations.
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-
 	<!-- -->
 	<xsd:complexType name="evictionType">
 		<xsd:sequence minOccurs="0" maxOccurs="1">
@@ -1491,7 +1487,7 @@ reclaim memory.
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
-
+	<!-- -->
 	<xsd:simpleType name="subscriptionPolicyType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="ALL">
@@ -1646,7 +1642,7 @@ The name of the bean defining the GemFire cache (by default 'gemfireCache').
 	<!-- -->
 	<xsd:element name="disk-store" type="diskStoreType" />
 	<!-- -->
-	<xsd:element name="client-region">
+	<xsd:complexType name="baseClientRegionType">
 		<xsd:annotation>
 			<xsd:documentation
 				source="org.springframework.data.gemfire.client.ClientRegionFactoryBean"><![CDATA[
@@ -1659,12 +1655,10 @@ which it receives its data. The client can hold some data locally or forward all
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:complexContent>
-				<xsd:extension base="readOnlyRegionType">
-					<xsd:sequence>
-						<xsd:element name="cache-loader" type="beanDeclarationType"
-									 minOccurs="0" maxOccurs="1">
+		<xsd:complexContent>
+			<xsd:extension base="baseReadOnlyRegionType">
+				<xsd:sequence>
+					<xsd:element name="cache-loader" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
 The cache loader definition for this region. A cache loader allows data to be placed into a region.
@@ -1676,8 +1670,7 @@ The cache loader definition for this region. A cache loader allows data to be pl
 								</xsd:appinfo>
 							</xsd:annotation>
 						</xsd:element>
-						<xsd:element name="cache-writer" type="beanDeclarationType"
-									 minOccurs="0" maxOccurs="1">
+					<xsd:element name="cache-writer" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation source="com.gemstone.gemfire.cache.CacheWriter"><![CDATA[
 The cache writer definition for this region. A cache writer acts as a dedicated synchronous listener that is notified
@@ -1693,8 +1686,8 @@ arbitrarily pick one.
 								</xsd:appinfo>
 							</xsd:annotation>
 						</xsd:element>
-						<xsd:choice minOccurs="0" maxOccurs="unbounded">
-							<xsd:element name="key-interest">
+					<xsd:choice minOccurs="0" maxOccurs="unbounded">
+						<xsd:element name="key-interest">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
 Key based interest. If the key is a List, then all the keys in the List will be registered. The key can also be the
@@ -1728,7 +1721,7 @@ use the inner bean declaration.
 									</xsd:complexContent>
 								</xsd:complexType>
 							</xsd:element>
-							<xsd:element name="regex-interest">
+						<xsd:element name="regex-interest">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
 Regular expression based interest. If the pattern is '.*' then all keys of any type will be pushed to the client.
@@ -1742,8 +1735,8 @@ Regular expression based interest. If the pattern is '.*' then all keys of any t
 									</xsd:complexContent>
 								</xsd:complexType>
 							</xsd:element>
-						</xsd:choice>
-						<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
+					</xsd:choice>
+					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[
 Eviction policy for the partitioned region.
@@ -1764,8 +1757,9 @@ The action to take when performing eviction.
 								</xsd:complexContent>
 							</xsd:complexType>
 						</xsd:element>
-					</xsd:sequence>
-					<xsd:attribute name="data-policy" type="xsd:string"
+					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded"/>
+				</xsd:sequence>
+				<xsd:attribute name="data-policy" type="xsd:string"
 								   use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
@@ -1780,7 +1774,7 @@ cache to differ from other caches.
  							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="pool-name" type="xsd:string"
+				<xsd:attribute name="pool-name" type="xsd:string"
 								   use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
@@ -1788,7 +1782,7 @@ The name of the pool used by this client. If not set, a default pool (initialize
  							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="shortcut" use="optional">
+				<xsd:attribute name="shortcut" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 The ClientRegionShortcut for this region. Allows easy initialization of the region based on defaults.
@@ -1808,10 +1802,33 @@ The ClientRegionShortcut for this region. Allows easy initialization of the regi
 							</xsd:restriction>
 						</xsd:simpleType>
 					</xsd:attribute>
-				</xsd:extension>
-			</xsd:complexContent>
-		</xsd:complexType>
-	</xsd:element>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:complexType name="clientRegionType">
+		<xsd:complexContent>
+			<xsd:extension base="baseClientRegionType">
+				<xsd:attributeGroup ref="topLevelRegionAttributes" />
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:complexType name="clientSubRegionType">
+		<xsd:complexContent>
+			<xsd:extension base="baseClientRegionType">
+				<xsd:attribute name="name" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The name of the region definition.
+                        ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:element name="client-region" type="clientRegionType"/>
 	<!-- -->
 	<xsd:complexType name="connectionType">
 		<xsd:attribute name="host" type="xsd:string">

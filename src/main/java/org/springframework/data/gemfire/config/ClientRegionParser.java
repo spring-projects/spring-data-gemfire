@@ -46,18 +46,19 @@ class ClientRegionParser extends AbstractRegionParser {
 	}
 
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		super.doParse(element, builder);
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+			boolean subRegion) {
 
 		validateDataPolicyShortcutMutualExclusion(element, parserContext);
 
-		String cacheRefAttributeValue = element.getAttribute("cache-ref");
+		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
-		builder.addPropertyReference("cache", (StringUtils.hasText(cacheRefAttributeValue) ? cacheRefAttributeValue
-			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+		if (!subRegion) {
+			builder.addPropertyReference("cache", resolvedCacheRef);
+			ParsingUtils.setPropertyValue(element, builder, "close");
+			ParsingUtils.setPropertyValue(element, builder, "destroy");
+		}
 
-		ParsingUtils.setPropertyValue(element, builder, "close");
-		ParsingUtils.setPropertyValue(element, builder, "destroy");
 		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicyName");
 		ParsingUtils.setPropertyValue(element, builder, "name");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
@@ -72,8 +73,8 @@ class ClientRegionParser extends AbstractRegionParser {
 
 		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
-		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
 
 		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
@@ -107,14 +108,10 @@ class ClientRegionParser extends AbstractRegionParser {
 		if (!interests.isEmpty()) {
 			builder.addPropertyValue("interests", interests);
 		}
-	}
 
-	@Override
-	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
-			boolean subRegion) {
-		throw new UnsupportedOperationException(String.format(
-			"doParseRegion(:Element, :ParserContext, :BeanDefinitionBuilder, :boolean) is not supported on %1$s",
-			getClass().getName()));
+		if (!subRegion) {
+			parseSubRegions(element, parserContext, resolvedCacheRef);
+		}
 	}
 
 	private void validateDataPolicyShortcutMutualExclusion(final Element element, final ParserContext parserContext) {
@@ -134,6 +131,12 @@ class ClientRegionParser extends AbstractRegionParser {
 		}
 	}
 
+	private void parseCommonInterestAttributes(Element element, BeanDefinitionBuilder builder) {
+		ParsingUtils.setPropertyValue(element, builder, "durable", "durable");
+		ParsingUtils.setPropertyValue(element, builder, "result-policy", "policy");
+		ParsingUtils.setPropertyValue(element, builder, "receive-values", "receiveValues");
+	}
+
 	private Object parseKeyInterest(Element keyInterestElement, ParserContext parserContext) {
 		BeanDefinitionBuilder keyInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(Interest.class);
 
@@ -151,12 +154,6 @@ class ClientRegionParser extends AbstractRegionParser {
 		ParsingUtils.setPropertyValue(regexInterestElement, regexInterestBuilder, "pattern", "key");
 
 		return regexInterestBuilder.getBeanDefinition();
-	}
-
-	private void parseCommonInterestAttributes(Element element, BeanDefinitionBuilder builder) {
-		ParsingUtils.setPropertyValue(element, builder, "durable", "durable");
-		ParsingUtils.setPropertyValue(element, builder, "result-policy", "policy");
-		ParsingUtils.setPropertyValue(element, builder, "receive-values", "receiveValues");
 	}
 
 }
