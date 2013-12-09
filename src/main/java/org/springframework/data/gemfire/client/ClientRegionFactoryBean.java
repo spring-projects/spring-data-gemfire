@@ -50,6 +50,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * @author David Turanski
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements BeanFactoryAware,
 		DisposableBean {
 
@@ -74,6 +75,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	private Interest<K>[] interests;
 
+	private Region<?, ?> parent;
+
 	private RegionAttributes<K, V> attributes;
 
 	private Resource snapshot;
@@ -96,7 +99,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required.");
 		}
 
-		final ClientCache clientCache = (ClientCache) cache;
+		ClientCache clientCache = (ClientCache) cache;
 
 		ClientRegionFactory<K, V> factory = clientCache.createClientRegionFactory(resolveClientRegionShortcut());
 
@@ -142,8 +145,18 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			factory.setDiskStoreName(diskStoreName);
 		}
 
-		Region<K, V> clientRegion = factory.create(regionName);
-		log.info("Created new cache region [" + regionName + "]");
+		Region<K, V> clientRegion = (this.parent != null ? factory.createSubregion(parent, regionName)
+			: factory.create(regionName));
+
+		if (log.isInfoEnabled()) {
+			if (parent != null) {
+				log.info(String.format("Created new Client Cache sub-Region [%1$s] under parent Region [%2$s].",
+					regionName, parent.getName()));
+			}
+			else {
+				log.info(String.format("Created new Client Cache Region [%1$s].", regionName));
+			}
+		}
 
 		if (snapshot != null) {
 			clientRegion.loadSnapshot(snapshot.getInputStream());
@@ -479,6 +492,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		final DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicyName);
 		Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicyName));
 		setDataPolicy(resolvedDataPolicy);
+	}
+
+	public void setParent(Region<?, ?> parent) {
+		this.parent = parent;
 	}
 
 	protected boolean isPersistent() {

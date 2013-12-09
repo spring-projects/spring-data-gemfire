@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<gfe:client-cache/>
+
+	<gfe:pool>
+		<gfe:server host="localhost" port="54321"/>
+	</gfe:pool>
+
+	<gfe:client-region id="Parent" shortcut="PROXY">
+		<gfe:client-region name="Child" shortcut="PROXY"/>
+	</gfe:client-region>
+
+	<bean id="parentTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="Parent"/>
+
+	<bean id="childTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="/Parent/Child"/>
+
+</beans>

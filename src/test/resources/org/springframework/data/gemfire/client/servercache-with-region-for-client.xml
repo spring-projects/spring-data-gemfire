@@ -11,4 +11,8 @@
 	<gfe:cache-server auto-startup="true" port="54321"/>
 	<gfe:local-region id="localAppDataRegion" name="LocalAppData"/>
 
+	<gfe:replicated-region id="Parent" persistent="false">
+		<gfe:replicated-region name="Child" persistent="false"/>
+	</gfe:replicated-region>
+
 </beans>
