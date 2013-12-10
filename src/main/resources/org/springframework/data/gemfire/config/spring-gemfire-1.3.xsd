@@ -181,8 +181,8 @@ If not set, the metadata will go in the default disk store.
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Control whether the type metadata for PDX objects is persisted to disk. The default for this setting is true.
-If you are using a WAN gateway, or persistent regions, you should leave this set to true.
+Control whether the type metadata for PDX objects is persisted to disk.
+Set to true if you are using persistent regions, WAN gateways or GemFire's JSON support.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
