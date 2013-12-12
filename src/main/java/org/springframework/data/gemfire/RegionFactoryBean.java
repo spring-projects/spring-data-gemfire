@@ -77,8 +77,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	private Object[] asyncEventQueues;
 	private Object[] gatewaySenders;
 
-	private Region<?, ?> parent;
-
 	private RegionAttributes<K, V> attributes;
 
 	private Resource snapshot;
@@ -169,13 +167,13 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		// get underlying AttributesFactory
 		postProcess(findAttributesFactory(regionFactory));
 
-		Region<K, V> region = (this.parent != null ? regionFactory.createSubregion(parent, regionName)
+		Region<K, V> region = (getParent() != null ? regionFactory.createSubregion(getParent(), regionName)
 			: regionFactory.create(regionName));
 
 		if (log.isInfoEnabled()) {
-			if (parent != null) {
+			if (getParent() != null) {
 				log.info(String.format("Created new Cache sub-Region [%1$s] under parent Region [%2$s].",
-					regionName, parent.getName()));
+					regionName, getParent().getName()));
 			}
 			else {
 				log.info(String.format("Created new Cache Region [%1$s].", regionName));
@@ -249,7 +247,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	@SuppressWarnings("unused")
 	protected void postProcess(Region<K, V> region) {
-
 	}
 
 	@Override
@@ -372,10 +369,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	public void setHubId(String hubId) {
 		this.hubId = hubId;
-	}
-
-	public void setParent(Region<?, ?> parent) {
-		this.parent = parent;
 	}
 
 	public void setPersistent(boolean persistent) {
