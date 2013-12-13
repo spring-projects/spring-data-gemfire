@@ -2244,8 +2244,7 @@ The name of the pool used by the index. Used usually in client scenarios.
 	<!-- -->
 	<xsd:complexType name="jndiBindingType">
 		<xsd:sequence>
-			<xsd:element name="jndi-prop" type="configPropertyType"
-						 minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="jndi-prop" type="configPropertyType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Specifies a vendor-specific property
@@ -2256,24 +2255,16 @@ Specifies a vendor-specific property
 		<xsd:attribute name="jndi-name" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The JNDI name for this datasource. Will be prefixed with "java:/"
+The JNDI name for this DataSource. Will be prefixed with "java:/"
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="type" use="required">
+		<xsd:attribute name="type" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies the datasource implementation: ManagedDataSource,SimpleDataSource,PooledDataSource,XaPooledDataSource
+Specifies the DataSource implementation: ManagedDataSource, PooledDataSource, SimpleDataSource, or XAPooledDataSource.
             ]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="ManagedDataSource" />
-					<xsd:enumeration value="SimpleDataSource" />
-					<xsd:enumeration value="PooledDataSource" />
-					<xsd:enumeration value="XaPooledDataSource" />
-				</xsd:restriction>
-			</xsd:simpleType>
 		</xsd:attribute>
 		<xsd:attribute name="blocking-timeout-seconds" type="xsd:string"
 					   use="optional" />
@@ -2305,14 +2296,14 @@ Specifies the datasource implementation: ManagedDataSource,SimpleDataSource,Pool
 		<xsd:attribute name="key" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies The property key
+Specifies the property key.
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="type" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies a data type if other than java.lang.String
+Specifies the data type if other than java.lang.String.
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

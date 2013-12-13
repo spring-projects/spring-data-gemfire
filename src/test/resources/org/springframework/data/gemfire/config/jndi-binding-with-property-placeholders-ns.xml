@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="jndi-binding-settings">
+		<prop key="jndi.binding.name">testDataSource</prop>
+		<prop key="jndi.binding.type">XAPoolDataSource</prop>
+		<prop key="jndi.binding.blocking.timeout.seconds">60</prop>
+		<prop key="jndi.binding.conn.pooled.datasource.class">org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource</prop>
+		<prop key="jndi.binding.connection.url">jdbc:derby:testDataStore;create=true</prop>
+		<prop key="jndi.binding.idle.timeout.seconds">180</prop>
+		<prop key="jndi.binding.init.pool.size">10</prop>
+		<prop key="jndi.binding.jdbc.driver.class">org.apache.derby.jdbc.EmbeddedDriver</prop>
+		<prop key="jndi.binding.login.timeout.seconds">30</prop>
+		<prop key="jndi.binding.managed.connection.factory.class">org.apache.derby.jdbc.NonExistingManagedConnectionFactoryClass</prop>
+		<prop key="jndi.binding.max.pool.size">50</prop>
+		<prop key="jndi.binding.password">test123</prop>
+		<prop key="jndi.binding.transaction.type">XATransaction</prop>
+		<prop key="jndi.binding.user.name">masterdba</prop>
+		<prop key="jndi.binding.xa.datasource.class">org.apache.derby.jdbc.EmbeddedXADataSource</prop>
+		<prop key="jndi.prop.schema.name">testSchema</prop>
+		<prop key="jndi.prop.database.name">testDataStore</prop>
+		<prop key="jndi.prop.description">test</prop>
+		<prop key="jndi.prop.email">masterdba@xcompany.com</prop>
+		<prop key="jndi.prop.phone">501-555-1234</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="jndi-binding-settings"/>
+
+	<gfe:cache lazy-init="true">
+		<gfe:jndi-binding jndi-name="${jndi.binding.name}"
+						  type="${jndi.binding.type}"
+						  blocking-timeout-seconds="${jndi.binding.blocking.timeout.seconds}"
+						  conn-pooled-datasource-class="${jndi.binding.conn.pooled.datasource.class}"
+						  connection-url="${jndi.binding.connection.url}"
+						  idle-timeout-seconds="${jndi.binding.idle.timeout.seconds}"
+						  init-pool-size="${jndi.binding.init.pool.size}"
+						  jdbc-driver-class="${jndi.binding.jdbc.driver.class}"
+						  login-timeout-seconds="${jndi.binding.login.timeout.seconds}"
+						  managed-connection-factory-class="${jndi.binding.managed.connection.factory.class}"
+						  max-pool-size="${jndi.binding.max.pool.size}"
+						  password="${jndi.binding.password}"
+						  transaction-type="${jndi.binding.transaction.type}"
+						  user-name="${jndi.binding.user.name}"
+						  xa-datasource-class="${jndi.binding.xa.datasource.class}">
+			<gfe:jndi-prop key="schemaName">${jndi.prop.schema.name}</gfe:jndi-prop>
+			<gfe:jndi-prop key="databaseName">${jndi.prop.database.name}</gfe:jndi-prop>
+			<gfe:jndi-prop key="description">${jndi.prop.description}</gfe:jndi-prop>
+			<gfe:jndi-prop key="email">${jndi.prop.email}</gfe:jndi-prop>
+			<gfe:jndi-prop key="phone">${jndi.prop.phone}</gfe:jndi-prop>
+		</gfe:jndi-binding>
+	</gfe:cache>
+
+</beans>
