@@ -17,6 +17,8 @@
 package org.springframework.data.gemfire;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -43,7 +45,6 @@ import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.TransactionListener;
@@ -75,98 +76,55 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  */
 public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, InitializingBean,
 		DisposableBean, FactoryBean<Cache>, PersistenceExceptionTranslator {
+
+	protected static final List<String> VALID_JNDI_DATASOURCE_TYPE_NAMES = Collections.unmodifiableList(
+		Arrays.asList("ManagedDataSource", "PooledDataSource", "SimpleDataSource", "XAPooledDataSource"));
+
+	protected boolean close = true;
+	protected boolean lazyInitialize = true;
+	protected boolean useBeanFactoryLocator = true;
+
 	protected final Log log = LogFactory.getLog(getClass());
-
-	protected Cache cache;
-
-	protected Resource cacheXml;
-
-	protected Properties properties;
-
-	protected ClassLoader beanClassLoader;
-
-	protected GemfireBeanFactoryLocator factoryLocator;
 
 	protected BeanFactory beanFactory;
 
-	protected String beanName;
-
-	protected boolean useBeanFactoryLocator = true;
-
-	protected boolean close = true;
-
-	// PDX options
-	protected Object pdxSerializer;
-
+	protected Boolean copyOnRead;
+	protected Boolean pdxIgnoreUnreadFields;
 	protected Boolean pdxPersistent;
-
 	protected Boolean pdxReadSerialized;
 
-	protected Boolean pdxIgnoreUnreadFields;
+	protected Cache cache;
 
-	protected String pdxDiskStoreName;
-
-	protected Boolean copyOnRead;
-
-	protected Integer lockTimeout;
-
-	protected Integer lockLease;
-
-	protected Integer messageSyncInterval;
-
-	protected Integer searchTimeout;
-
-	protected List<TransactionListener> transactionListeners;
-
-	protected TransactionWriter transactionWriter;
-
-	protected Float evictionHeapPercentage;
-
-	protected Float criticalHeapPercentage;
+	protected ClassLoader beanClassLoader;
 
 	protected DynamicRegionSupport dynamicRegionSupport;
 
+	protected Float criticalHeapPercentage;
+	protected Float evictionHeapPercentage;
+
+	protected GemfireBeanFactoryLocator factoryLocator;
+
+	protected Integer lockLease;
+	protected Integer lockTimeout;
+	protected Integer messageSyncInterval;
+	protected Integer searchTimeout;
+
 	protected List<JndiDataSource> jndiDataSources;
+
+	protected List<TransactionListener> transactionListeners;
 
 	// Defined this way for backward compatibility
 	protected Object gatewayConflictResolver;
+	protected Object pdxSerializer;
 
-	protected boolean lazyInitialize = true;
+	protected Properties properties;
 
-	/**
-	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
-	 * 
-	 * @author Costin Leau
-	 */
+	protected Resource cacheXml;
 
-	private class PdxOptions implements Runnable {
+	protected String beanName;
+	protected String pdxDiskStoreName;
 
-		private final CacheFactory factory;
-
-		PdxOptions(CacheFactory factory) {
-			this.factory = factory;
-		}
-
-		@Override
-		public void run() {
-			if (pdxSerializer != null) {
-				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
-				factory.setPdxSerializer((PdxSerializer) pdxSerializer);
-			}
-			if (pdxDiskStoreName != null) {
-				factory.setPdxDiskStore(pdxDiskStoreName);
-			}
-			if (pdxIgnoreUnreadFields != null) {
-				factory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
-			}
-			if (pdxPersistent != null) {
-				factory.setPdxPersistent(pdxPersistent);
-			}
-			if (pdxReadSerialized != null) {
-				factory.setPdxReadSerialized(pdxReadSerialized);
-			}
-		}
-	}
+	protected TransactionWriter transactionWriter;
 
 	public static class DynamicRegionSupport {
 		private String diskDir;
@@ -221,9 +179,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	public static class JndiDataSource {
-		private Map<String, String> attributes;
 
 		private List<ConfigProperty> props;
+
+		private Map<String, String> attributes;
 
 		public Map<String, String> getAttributes() {
 			return attributes;
@@ -242,47 +201,80 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 	}
 
-	private void init() throws Exception {
+	/**
+	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
+	 *
+	 * @author Costin Leau
+	 */
+	private class PdxOptions implements Runnable {
 
+		private final CacheFactory factory;
+
+		PdxOptions(CacheFactory factory) {
+			this.factory = factory;
+		}
+
+		@Override
+		public void run() {
+			if (pdxSerializer != null) {
+				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
+				factory.setPdxSerializer((PdxSerializer) pdxSerializer);
+			}
+			if (pdxDiskStoreName != null) {
+				factory.setPdxDiskStore(pdxDiskStoreName);
+			}
+			if (pdxIgnoreUnreadFields != null) {
+				factory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
+			}
+			if (pdxPersistent != null) {
+				factory.setPdxPersistent(pdxPersistent);
+			}
+			if (pdxReadSerialized != null) {
+				factory.setPdxReadSerialized(pdxReadSerialized);
+			}
+		}
+	}
+
+	private void init() throws Exception {
 		if (useBeanFactoryLocator && factoryLocator == null) {
 			factoryLocator = new GemfireBeanFactoryLocator();
 			factoryLocator.setBeanFactory(beanFactory);
 			factoryLocator.setBeanName(beanName);
 			factoryLocator.afterPropertiesSet();
 		}
-		// use the bean class loader to load Declarable classes
-		Thread th = Thread.currentThread();
-		ClassLoader oldTCCL = th.getContextClassLoader();
+
+		final ClassLoader originalThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
 		try {
-			th.setContextClassLoader(beanClassLoader);
-			// first look for open caches
-			String msg = null;
+			String messagePrefix;
+
+			// use bean ClassLoader to load GemFire Declarable classes
+			Thread.currentThread().setContextClassLoader(beanClassLoader);
+
 			try {
 				cache = (Cache) fetchCache();
-				msg = "Retrieved existing";
-			} catch (CacheClosedException ex) {
-
+				messagePrefix = "Retrieved existing";
+			}
+			catch (CacheClosedException ex) {
 				initializeDynamicRegionFactory();
 
 				Object factory = createFactory(this.properties);
 
 				// GemFire 6.6 specific options
-				if (pdxSerializer != null || pdxPersistent != null || pdxReadSerialized != null
-						|| pdxIgnoreUnreadFields != null || pdxDiskStoreName != null) {
+				if (isPdxSettingsSpecified()) {
 					Assert.isTrue(ClassUtils.isPresent("com.gemstone.gemfire.pdx.PdxSerializer", beanClassLoader),
-							"Cannot set PDX options since GemFire 6.6 not detected");
+						"Cannot set PDX options since GemFire 6.6 not detected.");
 					applyPdxOptions(factory);
 				}
 
 				// fall back to cache creation
 				cache = (Cache) createCache(factory);
-				msg = "Created";
+				messagePrefix = "Created new";
 			}
+
 			if (this.copyOnRead != null) {
 				cache.setCopyOnRead(this.copyOnRead);
 			}
-
 			if (lockLease != null) {
 				cache.setLockLease(lockLease);
 			}
@@ -295,7 +287,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			if (messageSyncInterval != null) {
 				cache.setMessageSyncInterval(messageSyncInterval);
 			}
-
 			if (gatewayConflictResolver != null) {
 				cache.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
 			}
@@ -303,10 +294,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			DistributedSystem system = cache.getDistributedSystem();
 
 			DistributedMember member = system.getDistributedMember();
-			log.info("Connected to Distributed System [" + system.getName() + "=" + member.getId() + "@"
-					+ member.getHost() + "]");
 
-			log.info(msg + " GemFire v." + CacheFactory.getVersion() + " Cache [" + cache.getName() + "]");
+			log.info(String.format("Connected to Distributed System [%1$s] as Member [%2$s] on Host [%3$s].",
+				system.getName(), member.getId(), member.getHost()));
+
+			log.info(String.format("%1$s GemFire v.%2$s Cache [%3$s].", messagePrefix, CacheFactory.getVersion(),
+				cache.getName()));
 
 			// load/init cache.xml
 			if (cacheXml != null) {
@@ -321,16 +314,26 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			registerTransactionListeners();
 			registerTransactionWriter();
 			registerJndiDataSources();
-		} finally {
-			th.setContextClassLoader(oldTCCL);
+		}
+		finally {
+			Thread.currentThread().setContextClassLoader(originalThreadContextClassLoader);
 		}
 	}
 
-	private void registerJndiDataSources() {
-		if (jndiDataSources != null) {
-			for (JndiDataSource jndiDataSource : jndiDataSources) {
-				JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
-			}
+	private boolean isPdxSettingsSpecified() {
+		return (pdxSerializer != null || pdxPersistent != null || pdxReadSerialized != null
+			|| pdxIgnoreUnreadFields != null || pdxDiskStoreName != null);
+	}
+
+	/**
+	 * Sets the PDX properties for the given object. Note this is implementation
+	 * specific as it depends on the type of the factory passed in.
+	 *
+	 * @param factory
+	 */
+	protected void applyPdxOptions(Object factory) {
+		if (factory instanceof CacheFactory) {
+			new PdxOptions((CacheFactory) factory).run();
 		}
 	}
 
@@ -344,22 +347,15 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 	}
 
-	private void setHeapPercentages() {
-		if (criticalHeapPercentage != null) {
-			Assert.isTrue(criticalHeapPercentage > 0.0 && criticalHeapPercentage <= 100.0,
-					"invalid value specified for criticalHeapPercentage :" + criticalHeapPercentage
-							+ ". Must be > 0.0 and <= 100.0");
-			cache.getResourceManager().setCriticalHeapPercentage(criticalHeapPercentage);
-
+	/**
+	 * Register all declared transaction listeners
+	 */
+	protected void registerTransactionListeners() {
+		if (!CollectionUtils.isEmpty(transactionListeners)) {
+			for (TransactionListener transactionListener : transactionListeners) {
+				cache.getCacheTransactionManager().addListener(transactionListener);
+			}
 		}
-
-		if (evictionHeapPercentage != null) {
-			Assert.isTrue(evictionHeapPercentage > 0.0 && evictionHeapPercentage <= 100.0,
-					"invalid value specified for evictionHeapPercentage :" + evictionHeapPercentage
-							+ ". Must be > 0.0 and <= 100.0");
-			cache.getResourceManager().setEvictionHeapPercentage(evictionHeapPercentage);
-		}
-
 	}
 
 	/**
@@ -371,56 +367,64 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 	}
 
-	/**
-	 * Register all declared transaction listeners
-	 */
-	protected void registerTransactionListeners() {
-		if (!CollectionUtils.isEmpty(transactionListeners)) {
-			CacheTransactionManager txManager = cache.getCacheTransactionManager();
-			for (TransactionListener transactionListener : transactionListeners) {
-				txManager.addListener(transactionListener);
+	private void registerJndiDataSources() {
+		if (jndiDataSources != null) {
+			for (JndiDataSource jndiDataSource : jndiDataSources) {
+				validate(jndiDataSource);
+				JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
 			}
 		}
 	}
 
-	/**
-	 * Sets the PDX properties for the given object. Note this is implementation
-	 * specific as it depends on the type of the factory passed in.
-	 * 
-	 * @param factory
-	 */
-	protected void applyPdxOptions(Object factory) {
-		if (factory instanceof CacheFactory) {
-			new PdxOptions((CacheFactory) factory).run();
+	private void validate(final JndiDataSource jndiDataSource) {
+		Map<String, String> attributes = jndiDataSource.getAttributes();
+		String typeAttributeValue = attributes.get("type");
+		Assert.isTrue(VALID_JNDI_DATASOURCE_TYPE_NAMES.contains(typeAttributeValue),
+			String.format("The 'jndi-binding', 'type' [%1$s] is invalid; the 'type' must be one of %2$s.",
+				typeAttributeValue, VALID_JNDI_DATASOURCE_TYPE_NAMES));
+	}
+
+	private void setHeapPercentages() {
+		if (criticalHeapPercentage != null) {
+			Assert.isTrue(criticalHeapPercentage > 0.0 && criticalHeapPercentage <= 100.0,
+				String.format("Invalid value specified for 'criticalHeapPercentage' (%1$s). Must be > 0.0 and <= 100.0.",
+					criticalHeapPercentage));
+			cache.getResourceManager().setCriticalHeapPercentage(criticalHeapPercentage);
 		}
+
+		if (evictionHeapPercentage != null) {
+			Assert.isTrue(evictionHeapPercentage > 0.0 && evictionHeapPercentage <= 100.0,
+				String.format("Invalid value specified for 'evictionHeapPercentage' (%1$s). Must be > 0.0 and <= 100.0.",
+					evictionHeapPercentage));
+			cache.getResourceManager().setEvictionHeapPercentage(evictionHeapPercentage);
+		}
+	}
+
+	protected GemFireCache createCache(Object factory) {
+		return (cache != null ? cache : ((CacheFactory) factory).create());
+	}
+
+	protected GemFireCache fetchCache() {
+		return (cache != null ? cache : CacheFactory.getAnyInstance());
 	}
 
 	protected Object createFactory(Properties props) {
 		return new CacheFactory(props);
 	}
 
-	protected GemFireCache fetchCache() {
-		return (cache == null) ? CacheFactory.getAnyInstance() : cache;
-	}
-
-	protected GemFireCache createCache(Object factory) {
-		return (cache == null) ? ((CacheFactory) factory).create() : cache;
-	}
-
 	@Override
 	public void destroy() throws Exception {
-		if (!close) {
-			return;
-		}
-		if (cache != null && !cache.isClosed()) {
-			cache.close();
-		}
+		if (close) {
+			if (cache != null && !cache.isClosed()) {
+				cache.close();
+			}
 
-		cache = null;
+			cache = null;
 
-		if (factoryLocator != null) {
-			factoryLocator.destroy();
-			factoryLocator = null;
+			if (factoryLocator != null) {
+				factoryLocator.destroy();
+				factoryLocator = null;
+			}
 		}
 	}
 
@@ -665,11 +669,17 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * 
-	 * @param jndiDataSources
+	 * @param jndiDataSources the list of configured JndiDataSources to use with this Cache.
 	 */
 	public void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
 		this.jndiDataSources = jndiDataSources;
+	}
+
+	/**
+	 * @return the list of configured JndiDataSources.
+	 */
+	public List<JndiDataSource> getJndiDataSources() {
+		return jndiDataSources;
 	}
 
 	/**
@@ -811,13 +821,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public DynamicRegionSupport getDynamicRegionSupport() {
 		return dynamicRegionSupport;
-	}
-
-	/**
-	 * @return the jndiDataSources
-	 */
-	public List<JndiDataSource> getJndiDataSources() {
-		return jndiDataSources;
 	}
 
 	/**

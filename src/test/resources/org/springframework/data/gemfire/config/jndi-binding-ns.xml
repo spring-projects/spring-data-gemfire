@@ -1,23 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:p="http://www.springframework.org/schema/p" default-lazy-init="true"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
 
 	<gfe:cache>
-		<gfe:jndi-binding type="SimpleDataSource" jndi-name="SimpleDataSource"
-			jdbc-driver-class="org.apache.derby.jdbc.EmbeddedDriver"
-			init-pool-size="2" max-pool-size="7" idle-timeout-seconds="40"
-			blocking-timeout-seconds="40" login-timeout-seconds="60"
-			conn-pooled-datasource-class="org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource"
-			xa-datasource-class="org.apache.derby.jdbc.EmbeddedXADataSource"
-			user-name="mitul" password="83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a"
-			connection-url="jdbc:derby:newDB;create=true">
+		<gfe:jndi-binding jndi-name="SimpleDataSource"
+						  type="SimpleDataSource"
+						  blocking-timeout-seconds="40"
+						  conn-pooled-datasource-class="org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource"
+						  connection-url="jdbc:derby:newDB;create=true"
+						  idle-timeout-seconds="40"
+						  init-pool-size="2"
+						  jdbc-driver-class="org.apache.derby.jdbc.EmbeddedDriver"
+						  login-timeout-seconds="60"
+						  max-pool-size="7"
+						  password="83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a"
+						  user-name="mitul"
+						  xa-datasource-class="org.apache.derby.jdbc.EmbeddedXADataSource">
 			<gfe:jndi-prop key="description">hi</gfe:jndi-prop>
 			<gfe:jndi-prop key="databaseName">newDB</gfe:jndi-prop>
 		</gfe:jndi-binding>
 	</gfe:cache>
+
 </beans>
