@@ -170,33 +170,50 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 	private void parseJndiBindings(Element element, BeanDefinitionBuilder builder) {
 		List<Element> jndiBindings = DomUtils.getChildElementsByTagName(element, "jndi-binding");
+
 		if (!CollectionUtils.isEmpty(jndiBindings)) {
-			ManagedList<Object> jndiDataSources = new ManagedList<Object>();
-			ManagedMap<String, String> jndiAttributes = new ManagedMap<String, String>();
+			ManagedList<Object> jndiDataSources = new ManagedList<Object>(jndiBindings.size());
+
 			for (Element jndiBinding : jndiBindings) {
-				BeanDefinitionBuilder jndiDataSource = BeanDefinitionBuilder
-						.genericBeanDefinition(CacheFactoryBean.JndiDataSource.class);
-				NamedNodeMap nnm = jndiBinding.getAttributes();
-				for (int i = 0; i < nnm.getLength(); i++) {
-					Attr attr = (Attr) nnm.item(i);
-					jndiAttributes.put(attr.getLocalName(), attr.getValue());
+				BeanDefinitionBuilder jndiDataSource = BeanDefinitionBuilder.genericBeanDefinition(
+					CacheFactoryBean.JndiDataSource.class);
+
+				// NOTE 'jndi-name' and 'type' are required by the XSD so we should have at least 2 attributes.
+				NamedNodeMap attributes = jndiBinding.getAttributes();
+				ManagedMap<String, String> jndiAttributes = new ManagedMap<String, String>(attributes.getLength());
+
+				for (int index = 0, length = attributes.getLength(); index < length; index++) {
+					Attr attribute = (Attr) attributes.item(index);
+					jndiAttributes.put(attribute.getLocalName(), attribute.getValue());
 				}
+
 				jndiDataSource.addPropertyValue("attributes", jndiAttributes);
 
-				List<Element> jndiProps = DomUtils.getChildElementsByTagName(element, "jndi-prop");
+				List<Element> jndiProps = DomUtils.getChildElementsByTagName(jndiBinding, "jndi-prop");
+
 				if (!CollectionUtils.isEmpty(jndiProps)) {
-					ManagedList<ConfigProperty> props = new ManagedList<ConfigProperty>();
+					ManagedList<Object> props = new ManagedList<Object>(jndiProps.size());
+
 					for (Element jndiProp : jndiProps) {
 						String key = jndiProp.getAttribute("key");
-						String value = jndiProp.getNodeValue();
-						String type = StringUtils.hasText(jndiProp.getAttribute("type")) ? jndiProp
-								.getAttribute("type") : String.class.getName();
-						props.add(new ConfigProperty(key, value, type));
+						String type = jndiProp.getAttribute("type");
+						String value = jndiProp.getTextContent();
+
+						type = (StringUtils.hasText(type) ? type : String.class.getName());
+
+						props.add(BeanDefinitionBuilder.genericBeanDefinition(ConfigProperty.class)
+							.addConstructorArgValue(key)
+							.addConstructorArgValue(value)
+							.addConstructorArgValue(type)
+							.getBeanDefinition());
 					}
+
 					jndiDataSource.addPropertyValue("props", props);
 				}
+
 				jndiDataSources.add(jndiDataSource.getBeanDefinition());
 			}
+
 			builder.addPropertyValue("jndiDataSources", jndiDataSources);
 		}
 	}

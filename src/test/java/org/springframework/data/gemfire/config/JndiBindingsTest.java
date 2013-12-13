@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,22 +30,29 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.datasource.GemFireBasicDataSource;
 
 /**
- * @author David Turanski
- * 
  * This test requires a real cache
+ * <p/>
+ * @author David Turanski
+ * @author John Blum
  */
+@ContextConfiguration("jndi-binding-ns.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/config/jndi-binding-ns.xml")
+@SuppressWarnings("unused")
 public class JndiBindingsTest {
 
-	 @Autowired ApplicationContext ctx;
+	@Autowired
+	private Cache cache;
 
 	@Test
 	public void testJndiBindings() throws Exception {
-		Cache cache = ctx.getBean("gemfireCache", Cache.class);
-		assertNotNull(cache.getJNDIContext().lookup("java:/SimpleDataSource"));
-		GemFireBasicDataSource ds = (GemFireBasicDataSource) cache.getJNDIContext().lookup("java:/SimpleDataSource");
-		assertEquals("org.apache.derby.jdbc.EmbeddedDriver", ds.getJDBCDriver());
-		assertEquals(60, ds.getLoginTimeout());
+		Object dataSourceObject = cache.getJNDIContext().lookup("java:/SimpleDataSource");
+
+		assertTrue(dataSourceObject instanceof GemFireBasicDataSource);
+
+		GemFireBasicDataSource dataSource = (GemFireBasicDataSource) dataSourceObject;
+
+		assertEquals("org.apache.derby.jdbc.EmbeddedDriver", dataSource.getJDBCDriver());
+		assertEquals(60, dataSource.getLoginTimeout());
 	}
+
 }
