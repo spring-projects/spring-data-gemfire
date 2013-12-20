@@ -65,11 +65,15 @@ public class LookupSubRegionTest {
 
 		assertRegionExists("Accounts", "/Customers/Accounts", accounts);
 		assertFalse(context.containsBean("Customers/Accounts"));
+		assertFalse(context.containsBean("/Customers"));
+		assertFalse(context.containsBean("Customers"));
 
 		Region items = context.getBean("Customers/Accounts/Orders/Items", Region.class);
 
 		assertRegionExists("Items", "/Customers/Accounts/Orders/Items", items);
 		assertFalse(context.containsBean("/Customers/Accounts/Orders/Items"));
+		assertFalse(context.containsBean("/Customers/Accounts/Orders"));
+		assertFalse(context.containsBean("Customers/Accounts/Orders"));
 	}
 
 	@Test
