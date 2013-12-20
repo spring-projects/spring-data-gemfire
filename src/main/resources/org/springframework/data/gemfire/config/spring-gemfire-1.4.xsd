@@ -72,7 +72,6 @@ use inner bean declarations.
 					</xsd:attribute>
 				</xsd:complexType>
 			</xsd:element>
-
 			<xsd:element name="dynamic-region-factory" minOccurs="0"
 						 maxOccurs="1">
 				<xsd:annotation>
@@ -2335,19 +2334,25 @@ A gateway event filter for this gateway sender
 				</xsd:annotation>
 				<xsd:complexType>
 					<xsd:sequence>
-						<xsd:any namespace="##other" processContents="skip"
-								 minOccurs="0" maxOccurs="unbounded">
+						<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[
-Inner bean definition of the event filter
-                                        ]]></xsd:documentation>
+Inner bean definition for the event filter.
+								]]></xsd:documentation>
 							</xsd:annotation>
 						</xsd:any>
 					</xsd:sequence>
+					<xsd:attribute name="ref" type="xsd:string" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The name of the event filter bean referred to by this declaration. Used for convenience. If no reference exists,
+use inner bean declarations.
+						]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
 				</xsd:complexType>
 			</xsd:element>
-			<xsd:element name="transport-filter" type="gatewayTransportFilterType"
-						 minOccurs="0" maxOccurs="1" />
+			<xsd:element name="transport-filter" type="gatewayTransportFilterType" minOccurs="0" maxOccurs="1" />
 		</xsd:sequence>
 		<xsd:attributeGroup ref="commonWANQueueAttributes" />
 		<xsd:attribute name="name" type="xsd:string" use="optional">
@@ -2772,8 +2777,7 @@ A transport filter for this gateway component
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:any namespace="##other" processContents="skip"
-					 minOccurs="0" maxOccurs="unbounded">
+			<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Inner bean definition of the transport filter.
@@ -2784,7 +2788,7 @@ Inner bean definition of the transport filter.
 		<xsd:attribute name="ref" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the transport filter bean referred by this declaration. Used as a convenience method. If no reference exists,
+The name of the transport filter bean referred to by this declaration. Used for convenience. If no reference exists,
 use inner bean declarations.
                 ]]></xsd:documentation>
 			</xsd:annotation>
