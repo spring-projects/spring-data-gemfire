@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -50,11 +51,11 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * This test is only valid for GF 7.0 and above
- *
+ * <p/>
  * @author David Turanski
- *
+ * @author John Blum
  */
-
+@SuppressWarnings("unused")
 public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	/* (non-Javadoc)
@@ -107,73 +108,113 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	@Test
 	public void testGatewaySender() throws Exception {
-		GatewaySenderFactoryBean gwsfb = ctx.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
-		Cache cache = TestUtils.readField("cache", gwsfb);
-		assertNotNull(cache);
-		List<GatewayEventFilter> eventFilters = TestUtils.readField("eventFilters", gwsfb);
+		GatewaySenderFactoryBean gatewaySenderFactoryBean = ctx.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
+
+		assertNotNull(gatewaySenderFactoryBean);
+		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
+		assertEquals(2, TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean));
+		assertEquals(10, TestUtils.readField("alertThreshold", gatewaySenderFactoryBean));
+		assertEquals(11, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
+		assertEquals(12, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
+		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
+
+		List<GatewayEventFilter> eventFilters = TestUtils.readField("eventFilters", gatewaySenderFactoryBean);
+
 		assertNotNull(eventFilters);
 		assertEquals(2, eventFilters.size());
 		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
 
-		List<GatewayTransportFilter> transportFilters = TestUtils.readField("transportFilters", gwsfb);
+		List<GatewayTransportFilter> transportFilters = TestUtils.readField("transportFilters", gatewaySenderFactoryBean);
+
 		assertNotNull(transportFilters);
 		assertEquals(2, transportFilters.size());
 		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
-
-		assertEquals(2, TestUtils.readField("remoteDistributedSystemId", gwsfb));
-		assertEquals(10, TestUtils.readField("alertThreshold", gwsfb));
-		assertEquals(11, TestUtils.readField("batchSize", gwsfb));
-		assertEquals(12, TestUtils.readField("dispatcherThreads", gwsfb));
-		assertEquals(true, TestUtils.readField("manualStart", gwsfb));
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void testInnerGatewaySender() throws Exception {
 		Region<?, ?> region = ctx.getBean("region-inner-gateway-sender", Region.class);
-		GatewaySender gws = ctx.getBean("gateway-sender", GatewaySender.class);
+
 		assertNotNull(region.getAttributes().getGatewaySenderIds());
 		assertEquals(2, region.getAttributes().getGatewaySenderIds().size());
 
-		RegionFactoryBean rfb = ctx.getBean("&region-inner-gateway-sender", RegionFactoryBean.class);
-		Object[] gwsenders = TestUtils.readField("gatewaySenders", rfb);
-		gws = (GatewaySender) gwsenders[0];
-		List<GatewayEventFilter> eventFilters = gws.getGatewayEventFilters();
+		RegionFactoryBean regionFactoryBean = ctx.getBean("&region-inner-gateway-sender", RegionFactoryBean.class);
+
+		Object[] gatewaySenders = TestUtils.readField("gatewaySenders", regionFactoryBean);
+
+		assertNotNull(gatewaySenders);
+		assertEquals(2, gatewaySenders.length);
+
+		GatewaySender gatewaySender = (GatewaySender) gatewaySenders[0];
+
+		assertNotNull(gatewaySender);
+		assertEquals(1, gatewaySender.getRemoteDSId());
+		assertEquals(false, gatewaySender.isManualStart());
+		assertEquals(true,gatewaySender.isRunning());
+		assertEquals(10, gatewaySender.getAlertThreshold());
+		assertEquals(11, gatewaySender.getBatchSize());
+		assertEquals(3000, gatewaySender.getBatchTimeInterval());
+		assertEquals(2, gatewaySender.getDispatcherThreads());
+		assertEquals("diskstore", gatewaySender.getDiskStoreName());
+		assertTrue(gatewaySender.isBatchConflationEnabled());
+		assertEquals(50, gatewaySender.getMaximumQueueMemory());
+		assertEquals(OrderPolicy.THREAD, gatewaySender.getOrderPolicy());
+		assertTrue(gatewaySender.isPersistenceEnabled());
+		assertFalse(gatewaySender.isParallel());
+		assertEquals(16536, gatewaySender.getSocketBufferSize());
+		assertEquals(3000, gatewaySender.getSocketReadTimeout());
+
+		List<GatewayEventFilter> eventFilters = gatewaySender.getGatewayEventFilters();
+
 		assertNotNull(eventFilters);
 		assertEquals(1, eventFilters.size());
 		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
 
-		List<GatewayTransportFilter> transportFilters = gws.getGatewayTransportFilters();
+		List<GatewayTransportFilter> transportFilters = gatewaySender.getGatewayTransportFilters();
 
 		assertNotNull(transportFilters);
 		assertEquals(1, transportFilters.size());
 		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
-
-		assertEquals(1, gws.getRemoteDSId());
-		assertEquals(false, gws.isManualStart());
-        assertEquals(true,gws.isRunning());
-		assertEquals(10, gws.getAlertThreshold());
-		assertEquals(11, gws.getBatchSize());
-		assertEquals(3000, gws.getBatchTimeInterval());
-		assertEquals(2, gws.getDispatcherThreads());
-		assertEquals("diskstore", gws.getDiskStoreName());
-		assertTrue(gws.isBatchConflationEnabled());
-		assertEquals(50, gws.getMaximumQueueMemory());
-		assertEquals(OrderPolicy.THREAD, gws.getOrderPolicy());
-		assertTrue(gws.isPersistenceEnabled());
-		assertFalse(gws.isParallel());
-		assertEquals(16536, gws.getSocketBufferSize());
-		assertEquals(3000, gws.getSocketReadTimeout());
 	}
 
 	@Test
-	public void testInnerGatewayReceiver() {
-		GatewayReceiver gwr = ctx.getBean("gateway-receiver", GatewayReceiver.class);
-		assertEquals(12345, gwr.getStartPort());
-		assertEquals(23456, gwr.getEndPort());
-		assertEquals("192.168.0.1", gwr.getBindAddress());
-		assertEquals(3000, gwr.getMaximumTimeBetweenPings());
-		assertEquals(16536, gwr.getSocketBufferSize());
+	public void testGatewaySenderWithEventTransportFilterRefs() throws Exception {
+		GatewaySenderFactoryBean gatewaySenderFactoryBean = ctx.getBean("&gateway-sender-with-event-transport-filter-refs",
+			GatewaySenderFactoryBean.class);
+
+		assertNotNull(gatewaySenderFactoryBean);
+		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
+		assertEquals(3, TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean));
+		assertEquals(50, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
+		assertEquals(10, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
+		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
+
+		List<GatewayEventFilter> eventFilters = TestUtils.readField("eventFilters", gatewaySenderFactoryBean);
+
+		assertNotNull(eventFilters);
+		assertEquals(1, eventFilters.size());
+		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
+		assertSame(ctx.getBean("event-filter"), eventFilters.get(0));
+
+		List<GatewayTransportFilter> transportFilters = TestUtils.readField("transportFilters", gatewaySenderFactoryBean);
+
+		assertNotNull(transportFilters);
+		assertEquals(1, transportFilters.size());
+		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
+		assertSame(ctx.getBean("transport-filter"), transportFilters.get(0));
+	}
+
+	@Test
+	public void testGatewayReceiver() {
+		GatewayReceiver gatewayReceiver = ctx.getBean("gateway-receiver", GatewayReceiver.class);
+
+		assertNotNull(gatewayReceiver);
+		assertEquals("192.168.0.1", gatewayReceiver.getBindAddress());
+		assertEquals(12345, gatewayReceiver.getStartPort());
+		assertEquals(23456, gatewayReceiver.getEndPort());
+		assertEquals(3000, gatewayReceiver.getMaximumTimeBetweenPings());
+		assertEquals(16536, gatewayReceiver.getSocketBufferSize());
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -181,49 +222,38 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 		@Override
 		public void close() {
-			// TODO Auto-generated method stub
 		}
 
 		@Override
 		public void afterAcknowledgement(GatewayQueueEvent arg0) {
-			// TODO Auto-generated method stub
-
 		}
 
 		@Override
 		public boolean beforeEnqueue(GatewayQueueEvent arg0) {
-			// TODO Auto-generated method stub
 			return false;
 		}
 
 		@Override
 		public boolean beforeTransmit(GatewayQueueEvent arg0) {
-			// TODO Auto-generated method stub
 			return false;
 		}
-
 	}
 
 	public static class TestTransportFilter implements GatewayTransportFilter {
 
 		@Override
 		public void close() {
-			// TODO Auto-generated method stub
-
 		}
 
 		@Override
 		public InputStream getInputStream(InputStream arg0) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public OutputStream getOutputStream(OutputStream arg0) {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -231,15 +261,12 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 		@Override
 		public void close() {
-			// TODO Auto-generated method stub
 		}
 
 		@Override
 		public boolean processEvents(List<AsyncEvent> arg0) {
-			// TODO Auto-generated method stub
 			return false;
 		}
-
 	}
 
 }
