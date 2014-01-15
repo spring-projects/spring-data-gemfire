@@ -133,6 +133,9 @@ class Predicates implements Predicate {
 			case IS_NULL:
 			case IS_NOT_NULL:
 				return String.format("%s NULL", getOperator(type));
+            case TRUE:
+            case FALSE:
+                return String.format("%s", getOperator(type));
 			default:
 				return String.format("%s $%s", getOperator(type), value.next());
 			}
@@ -170,6 +173,10 @@ class Predicates implements Predicate {
 			case IS_NULL:
 			case SIMPLE_PROPERTY:
 				return "=";
+             case TRUE:
+                return "= true";
+             case FALSE:
+                return "= false";
 			default:
 				throw new IllegalArgumentException(String.format("Unsupported operator %s!", type));
 			}
