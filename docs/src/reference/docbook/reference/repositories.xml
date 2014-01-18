@@ -187,7 +187,16 @@ public class Person { … }</programlisting>
               <entry><code>x.firstname = $1</code></entry>
             </row>
 
-            <row>
+			<row>
+			  <entry>Like</entry>
+
+			  <entry><methodname>findByFirstnameLike(String
+			  name)</methodname></entry>
+
+			  <entry><code>x.firstname LIKE $1</code></entry>
+			</row>
+
+		    <row>
               <entry><literal>Not</literal></entry>
 
               <entry><methodname>findByFirstnameNot(String

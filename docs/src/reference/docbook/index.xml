@@ -13,17 +13,22 @@
       <author>
         <firstname>Costin</firstname>
         <surname>Leau</surname>
-        <affiliation>SpringSource, a division of VMware</affiliation>
+        <affiliation>SpringSource, a division of Pivotal</affiliation>
       </author>
       <author>
         <firstname>Oliver</firstname>
         <surname>Gierke</surname>
-        <affiliation>SpringSource, a division of VMware</affiliation>
+        <affiliation>SpringSource, a division of Pivotal</affiliation>
+      </author>
+      <author>
+        <firstname>John</firstname>
+        <surname>Blum</surname>
+        <affiliation>SpringSource, a division of Pivotal</affiliation>
       </author>
       <author>
         <firstname>David</firstname>
         <surname>Turanski</surname>
-        <affiliation>SpringSource, a division of VMware</affiliation>
+        <affiliation>SpringSource, a division of Pivotal</affiliation>
       </author>
       <author>
         <firstname>Lyndon</firstname>
