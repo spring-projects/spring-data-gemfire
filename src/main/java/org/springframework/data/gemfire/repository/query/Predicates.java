@@ -121,20 +121,22 @@ class Predicates implements Predicate {
 		 */
 		@Override
 		public String toString(String alias) {
-
 			Type type = part.getType();
-			return String.format("%s.%s %s", alias == null ? QueryBuilder.DEFAULT_ALIAS : alias, part.getProperty()
-					.toDotPath(), toClause(type));
+
+			return String.format("%s.%s %s", alias == null ? QueryBuilder.DEFAULT_ALIAS : alias,
+				part.getProperty().toDotPath(), toClause(type));
 		}
 
 		private String toClause(Type type) {
-
 			switch (type) {
-			case IS_NULL:
-			case IS_NOT_NULL:
-				return String.format("%s NULL", getOperator(type));
-			default:
-				return String.format("%s $%s", getOperator(type), value.next());
+				case FALSE:
+				case TRUE:
+					return String.format("%1$s %2$s", getOperator(type), Type.TRUE.equals(type));
+				case IS_NULL:
+				case IS_NOT_NULL:
+					return String.format("%s NULL", getOperator(type));
+				default:
+					return String.format("%s $%s", getOperator(type), value.next());
 			}
 		}
 
@@ -145,33 +147,39 @@ class Predicates implements Predicate {
 		 * @return
 		 */
 		private String getOperator(Type type) {
-
 			switch (type) {
-			case IN:
-				return "IN SET";
-			case NOT_IN:
-				return "NOT IN SET";
-			case GREATER_THAN:
-				return ">";
-			case GREATER_THAN_EQUAL:
-				return ">=";
-			case LESS_THAN:
-				return "<";
-			case LESS_THAN_EQUAL:
-				return "<=";
-			case IS_NOT_NULL:
-			case NEGATING_SIMPLE_PROPERTY:
-				return "!=";
-			case LIKE:
-			case STARTING_WITH:
-			case ENDING_WITH:
-			case CONTAINING:
-				return "LIKE";
-			case IS_NULL:
-			case SIMPLE_PROPERTY:
-				return "=";
-			default:
-				throw new IllegalArgumentException(String.format("Unsupported operator %s!", type));
+				case IN:
+					return "IN SET";
+				case NOT_IN:
+					return "NOT IN SET";
+				case GREATER_THAN:
+					return ">";
+				case GREATER_THAN_EQUAL:
+					return ">=";
+				case LESS_THAN:
+					return "<";
+				case LESS_THAN_EQUAL:
+					return "<=";
+				case IS_NOT_NULL:
+				case NEGATING_SIMPLE_PROPERTY:
+					return "!=";
+				/*
+				NOTE unfortunately, 'NOT LIKE' operator is not supported by GemFire's Query/OQL syntax
+				case NOT_LIKE:
+					return "NOT LIKE";
+				*/
+				case LIKE:
+				case STARTING_WITH:
+				case ENDING_WITH:
+				case CONTAINING:
+					return "LIKE";
+				case FALSE:
+				case IS_NULL:
+				case SIMPLE_PROPERTY:
+				case TRUE:
+					return "=";
+				default:
+					throw new IllegalArgumentException(String.format("Unsupported operator %s!", type));
 			}
 		}
 	}
