@@ -15,10 +15,12 @@
  */
 package org.springframework.data.gemfire.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.junit.Test;
@@ -29,6 +31,7 @@ import org.springframework.data.repository.query.parser.Part;
  * 
  * @author Oliver Gierke
  */
+@SuppressWarnings("unused")
 public class PredicatesUnitTests {
 
 	@Test
@@ -68,9 +71,24 @@ public class PredicatesUnitTests {
 		assertThat(predicate.toString(null), is("x.firstname = $1 OR x.lastname = $2"));
 	}
 
-	static class Person {
+	@Test
+	public void testBooleanBasedPredicate() {
+		Part part = new Part("activeTrue", User.class);
+		Iterator<Integer> indexes = Collections.<Integer>emptyList().iterator();
+		Predicates predicate = Predicates.create(part, indexes);
 
+		assertNotNull(predicate);
+		assertThat(predicate.toString("user"), is("user.active = true"));
+	}
+
+	static class Person {
 		String firstname;
 		String lastname;
 	}
+
+	static class User {
+		Boolean active;
+		String username;
+	}
+
 }
