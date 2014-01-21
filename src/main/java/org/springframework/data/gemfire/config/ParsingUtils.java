@@ -281,9 +281,9 @@ abstract class ParsingUtils {
 		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", regionAttributesBuilder);
 		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", regionAttributesBuilder);
 		result |= parseExpiration(element, "entry-tti", "entryIdleTimeout", regionAttributesBuilder);
-		result |= parseCustomExpiration(parserContext, element,"custom-entry-ttl","customEntryTimeToLive",
+		result |= parseCustomExpiration(element, parserContext, "custom-entry-ttl","customEntryTimeToLive",
 			regionAttributesBuilder);
-		result |= parseCustomExpiration(parserContext, element,"custom-entry-tti","customEntryIdleTimeout",
+		result |= parseCustomExpiration(element, parserContext, "custom-entry-tti","customEntryIdleTimeout",
 			regionAttributesBuilder);
 
 		if (result) {
@@ -381,60 +381,53 @@ abstract class ParsingUtils {
 	}
 
 	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName,
-			BeanDefinitionBuilder attrBuilder) {
+			BeanDefinitionBuilder regionAttributesBuilder) {
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
-		if (expirationElement == null)
-			return false;
+		if (expirationElement != null) {
+			String timeoutAttribute = expirationElement.getAttribute("timeout");
+			String expirationTimeout = (StringUtils.hasText(timeoutAttribute) ? timeoutAttribute : null);
 
-		String expirationTime = null;
-		ExpirationAction action = ExpirationAction.INVALIDATE;
+			String actionAttribute = StringUtils.trimAllWhitespace(expirationElement.getAttribute("action"));
+			ExpirationAction expirationAction;
 
-		// do manual conversion since the enum is not public
-		String attr = expirationElement.getAttribute("timeout");
-		if (StringUtils.hasText(attr)) {
-			expirationTime = attr;
+			// TODO refactor this using an Enum and ExpirationActionConverter!
+			if ("DESTROY".equalsIgnoreCase(actionAttribute)) {
+				expirationAction = ExpirationAction.DESTROY;
+			}
+			else if ("LOCAL_DESTROY".equalsIgnoreCase(actionAttribute)) {
+				expirationAction = ExpirationAction.LOCAL_DESTROY;
+			}
+			else if ("LOCAL_INVALIDATE".equalsIgnoreCase(actionAttribute)) {
+				expirationAction = ExpirationAction.LOCAL_INVALIDATE;
+			}
+			else {
+				expirationAction = ExpirationAction.INVALIDATE;
+			}
+
+			BeanDefinitionBuilder expirationAttributes = BeanDefinitionBuilder.genericBeanDefinition(
+				ExpirationAttributes.class);
+			expirationAttributes.addConstructorArgValue(expirationTimeout);
+			expirationAttributes.addConstructorArgValue(expirationAction);
+			regionAttributesBuilder.addPropertyValue(propertyName, expirationAttributes.getBeanDefinition());
+
+			return true;
 		}
 
-		attr = expirationElement.getAttribute("action");
-		if (StringUtils.hasText(attr)) {
-			// figure out action based on string length
-			attr = attr.trim();
-
-			if (attr.length() == 10) {
-				action = ExpirationAction.INVALIDATE;
-			}
-			else if (attr.length() == 7) {
-				action = ExpirationAction.DESTROY;
-			}
-			else if (attr.length() == 13) {
-				action = ExpirationAction.LOCAL_DESTROY;
-			}
-			else if (attr.length() == 16) {
-				action = ExpirationAction.LOCAL_INVALIDATE;
-			}
-		}
-		BeanDefinitionBuilder expirationAttributes = BeanDefinitionBuilder
-				.genericBeanDefinition(ExpirationAttributes.class);
-		expirationAttributes.addConstructorArgValue(expirationTime);
-		expirationAttributes.addConstructorArgValue(action);
-		attrBuilder.addPropertyValue(propertyName, expirationAttributes.getBeanDefinition());
-
-		return true;
+		return false;
 	}
 	
-	private static boolean parseCustomExpiration(ParserContext parserContext, Element rootElement, String elementName, String propertyName,
-			BeanDefinitionBuilder attrBuilder) {
+	private static boolean parseCustomExpiration(Element rootElement, ParserContext parserContext, String elementName,
+			String propertyName, BeanDefinitionBuilder regionAttributesBuilder) {
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
-		if (expirationElement == null)
-			return false;
-		
-		Object customExpiry = parseRefOrSingleNestedBeanDeclaration(parserContext, expirationElement, attrBuilder);
+		if (expirationElement != null) {
+			Object customExpiry = parseRefOrSingleNestedBeanDeclaration(parserContext, expirationElement, regionAttributesBuilder);
+			regionAttributesBuilder.addPropertyValue(propertyName, customExpiry);
+			return true;
+		}
 
-		attrBuilder.addPropertyValue(propertyName, customExpiry);
-
-		return true;
+		return false;
 	}
 
 	static String resolveCacheReference(final String cacheRef) {

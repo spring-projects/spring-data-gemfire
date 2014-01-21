@@ -98,18 +98,19 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		Assert.isTrue(gemfireCache instanceof Cache, "Unable to create Regions from " + gemfireCache);
 
 		Cache cache = (Cache) gemfireCache;
+		RegionFactory<K, V> regionFactory;
 
 		if (attributes != null) {
 			AttributesFactory.validateAttributes(attributes);
+			regionFactory = cache.createRegionFactory(attributes);
 		}
-
-		RegionFactory<K, V> regionFactory = (attributes != null ? cache.createRegionFactory(attributes)
-			: cache.<K, V>createRegionFactory());
+		else {
+			regionFactory = cache.createRegionFactory();
+		}
 
 		if (hubId != null) {
 			enableGateway = (enableGateway == null || enableGateway);
 			Assert.isTrue(enableGateway, "hubId requires the enableGateway property to be true");
-
 			regionFactory.setGatewayHubId(hubId);
 		}
 
@@ -161,7 +162,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		if (attributes != null) {
 			Assert.state(!attributes.isLockGrantor() || scope.isGlobal(),
-				"Lock grantor only applies to a global scoped region");
+				"Lock Grantor only applies to a global scoped region.");
 		}
 
 		// get underlying AttributesFactory
