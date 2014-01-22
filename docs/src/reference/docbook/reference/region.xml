@@ -61,20 +61,20 @@
     <title>Using an externally configured Region</title>
 
     <para>For referencing regions already configured through GemFire native
-    configuration, e.g., a <literal>cache.xml</literal> file, use the
+    configuration, e.g. a <literal>cache.xml</literal> file, use the
     <literal>lookup-region</literal> element. Simply declare the target region
-    name with the<literal> name</literal> attribute; for example, to declare a
-    bean definition, named <literal>region-bean</literal> for an existing
-    region named <literal>orders</literal> one can use the following
+    name with the<literal>name</literal> attribute; for example, to declare a
+    bean definition named <literal>region-bean</literal> for an existing
+    region named <literal>Orders</literal> one can use the following bean
     definition:</para>
 
-    <programlisting language="xml">&lt;gfe:lookup-region id="region-bean" name="orders"/&gt;</programlisting>
+    <programlisting language="xml">&lt;gfe:lookup-region id="region-bean" name="Orders"/&gt;</programlisting>
 
     <para>If the <literal>name</literal> is not specified, the bean's
     <literal>id</literal> will be used. The example above becomes:</para>
 
-    <programlisting language="xml">&lt;!-- lookup for a region called 'orders' --&gt;
-&lt;gfe:lookup-region id="orders"/&gt;</programlisting>
+    <programlisting language="xml">&lt;!-- lookup for a region called 'Orders' --&gt;
+&lt;gfe:lookup-region id="Orders"/&gt;</programlisting>
 
     <note>
       <para>If the region does not exist, an initialization exception will be
@@ -82,13 +82,13 @@
       sections below.</para>
     </note>
 
-    <para>Note that in the previous examples, since no cache name was defined,
+    <para>Note, in the previous examples, since no cache name was defined,
     the default naming convention (<literal>gemfireCache</literal>) was used.
     Alternately, one can reference the cache bean through the
     <literal>cache-ref</literal> attribute:</para>
 
     <programlisting language="xml">&lt;gfe:cache id="cache"/&gt;
-&lt;gfe:lookup-region id="region-bean" name="orders" cache-ref="cache"/&gt;</programlisting>
+&lt;gfe:lookup-region id="region-bean" name="Orders" cache-ref="cache"/&gt;</programlisting>
 
     <para>The <literal>lookup-region</literal> provides a simple way of
     retrieving existing, pre-configured regions without exposing the region
@@ -118,7 +118,7 @@
           <para>Client Region <literal>&lt;client-region&gt;</literal></para>
         </listitem>
       </itemizedlist>For a comprehensive description of <ulink
-    url="http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/region_options/region_types.html">region
+    url="http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/region_options/region_types.html">Region
     types</ulink> please consult the GemFire product documentation.</para>
 
     <section id="bootstrap:region:common:attributes">
@@ -465,6 +465,145 @@
       as <classname>GemfireTemplate</classname>. The full path should also be
       used in OQL query strings.</para>
     </section>
+  </section>
+
+  <section id="bootstrap:region:common:regions-subregions-lookups-caution">
+    <title>A Word of Caution on Regions, Subregions and Lookups</title>
+
+	<para>One of the underlying properties of the high-level <literal>replicated-region</literal>,
+	<literal>partitioned-region</literal>, <literal>local-region</literal> and <literal>client-region</literal>
+	elements in Spring Data GemFire's XML namespace, which correspond to GemFire's Region types based on
+	Data Policy, is that these elements perform a lookup first before attempting to create the region.
+	This is done in case the region already exists, which might be the case if the region was defined
+	in GemFire's native configuration, e.g. <literal>cache.xml</literal>, thereby avoiding any errors.
+	This was by design, though subject to change.</para>
+
+	<caution>
+		<para>The Spring team highly recommends that the <literal>replicated-region</literal>,
+		<literal>partitioned-region</literal>, <literal>local-region</literal> and <literal>client-region</literal>
+		elements be strictly used only for defining new regions.  One of the problems with these elements
+		doing a lookup first is, if the developer assumed that defining a bean definition for a REPLICATE
+		region would create a new region, however, consequently a region with the same name already exists
+		having different semantics for eviction, expiration, subscription and/or other attributes, this
+		could adversely affect application logic and/or expectations thereby violating application
+		requirements.</para>
+	</caution>
+
+	<important>
+		<para>Recommended Practice - Only use the <literal>replicated-region</literal>,
+		<literal>partitioned-region</literal>, <literal>local-region</literal> and
+		<literal>client-region</literal> XML namespace elements for defining new regions.</para>
+	</important>
+
+	<para>However, because the high-level region elements perform a lookup first, this can cause problems for
+	dependency injected region resources to application code, like DAOs or Repositories.</para>
+
+	<para>Take for instance the following native GemFire configuration file
+	(e.g. <literal>cachel.xml</literal>)...</para>
+
+	<programlisting language="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+"http://www.gemstone.com/dtd/cache7_0.dtd"&gt;
+&lt;cache&gt;
+    &lt;region name="Customers" refid="REPLICATE"&gt;
+	    &lt;region name="Accounts" refid="REPLICATE"&gt;
+		    &lt;region name="Orders" refid="REPLICATE"&gt;
+			    &lt;region name="Items" refid="REPLICATE"/&gt;
+            &lt;/region&gt;
+        &lt;/region&gt;
+    &lt;/region&gt;
+&lt;/cache&gt;
+	</programlisting>
+
+	<para>Also, consider that you might have defined a DAO as follows...</para>
+
+	<programlisting language="java">
+public class CustomerAccountDao extends GemDaoSupport {
+
+    @Resource(name = "Customers/Accounts")
+    private Region customersAccounts;
+
+    ...
+}
+	</programlisting>
+
+	<para>Here, we are injecting a reference to the <literal>Customers/Accounts</literal> GemFire Region in
+	our DAO. As such, it is not uncommon for a developer to define beans for all or some of these regions in
+	Spring XML configuration meta-data as follows...</para>
+
+	<programlisting language="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:gfe="http://www.springframework.org/schema/gemfire"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+"&gt;
+
+    &lt;gfe:cache cache-xml-location="classpath:cache.xml"/&gt;
+
+    &lt;gfe:lookup-region name="Customers/Accounts"/&gt;
+    &lt;gfe:lookup-region name="Customers/Accounts/Orders"/&gt;
+&lt;/beans&gt;
+	</programlisting>
+
+	<para>Here the <literal>Customers/Accounts</literal> and <literal>Customers/Accounts/Orders</literal>
+	GemFire Regions are referenced as beans in the Spring context as "Customers/Accounts"
+	and "Customers/Accounts/Orders", respectively.  The nice thing about using the
+	<literal>lookup-region</literal> element and the corresponding syntax above is that it allows
+	a developer to reference a subregion directly without unnecessarily defining a bean for the
+	parent region (e.g. <literal>Customers</literal>).</para>
+
+	<para>However, if now the developer changes his/her configuration meta-data syntax to using
+	the nested format, like so...</para>
+
+	<programlisting language="xml">
+&lt;gfe:lookup-region name="Customers"&gt;
+    &lt;gfe:lookup-region name="Accounts"&gt;
+        &lt;gfe:lookup-region name="Orders"/&gt;
+    &lt;/gfe:lookup-region&gt;
+&lt;/gfe:lookup-region&gt;
+	</programlisting>
+
+	<para>Or, perhaps the developer erroneously chooses to use the high-level
+	<literal>replicated-region</literal> element, which will do a lookup first, as in...</para>
+
+	<programlisting language="xml">
+&lt;gfe:replicated-region name="Customers" persistent="true"&gt;
+    &lt;gfe:replicated-region name="Accounts" persistent="true"&gt;
+        &lt;gfe:replicated-region name="Orders" persistent="true"/&gt;
+    &lt;/gfe:replicated-region&gt;
+&lt;/gfe:replicated-region&gt;
+	</programlisting>
+
+	<para>Then the region beans defined in the Spring context will consist of the following:
+	<literal>{ "Customers", "/Customers/Accounts", "/Customers/Accounts/Orders" }.</literal>
+	This means the dependency injected reference (i.e. <literal>@Resource(name = "Customers/Accounts"))
+	</literal> is now broken since no bean with name "Customers/Accounts" is defined.</para>
+
+	<para>GemFire is flexible in referencing both parent regions and subregions.  The parent can be
+	referenced as "/Customers" or "Customers" and the child as "/Customers/Accounts" or just
+	"Customers/Accounts". However, Spring Data GemFire is very specific when it comes to naming beans
+	after regions, typically always using the forward slash (/) to represents subregions
+	(e.g. "/Customers/Accounts").</para>
+
+	<para>Therefore, it is recommended that users use either the nested <literal>lookup-region</literal>
+	syntax as illustrated above, or define direct references with a leading forward slash (/) like so...</para>
+
+	<programlisting language="xml">
+&lt;gfe:lookup-region name="/Customers/Accounts"/&gt;
+&lt;gfe:lookup-region name="/Customers/Accounts/Orders"/&gt;
+	</programlisting>
+
+	<para>The example above where the nested <literal>replicated-region</literal> elements were used to
+	reference the subregions serves to illustrate the problem stated earlier.  Are the Customers, Accounts
+	and Orders Regions/Subregions persistent or not?  Not, since the regions were defined in native GemFire
+	configuration (i.e. <literal>cache.xml</literal>) and will exist by the time the cache is initialized,
+	or once the <literal>&lt;gfe:cache&gt;</literal> bean is created.  Since the high-level region
+	XML namespace abstractions, like <literal>replicated-region</literal>, perform the lookup first, it
+	uses the regions as defined in the <literal>cache.xml</literal> configuration file.</para>
   </section>
 
   <section id="bootstrap:region:persistence">

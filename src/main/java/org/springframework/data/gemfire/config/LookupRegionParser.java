@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.config;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**

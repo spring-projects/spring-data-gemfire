@@ -4,7 +4,7 @@
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-		    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire-1.3.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
 ">
@@ -34,7 +34,7 @@
 	-->
 
 	<!--
-	  <gfe:lookup-region id="/Parent/Child/Grandchild"/>
-	  -->
+	<gfe:lookup-region id="/Parent/Child/Grandchild"/>
+	-->
 
 </beans>
