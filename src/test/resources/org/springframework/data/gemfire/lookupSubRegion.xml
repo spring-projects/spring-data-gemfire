@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire-1.3.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+">
+
+	<util:properties id="peerCacheConfigurationSettings">
+		<prop key="name">springGemFireLookupSubRegionTest</prop>
+		<prop key="locators">localhost[11235]</prop>
+		<prop key="log-level">config</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="start-locator">localhost[11235]</prop>
+	</util:properties>
+
+	<gfe:cache cache-xml-location="/subregion-cache.xml" properties-ref="peerCacheConfigurationSettings"/>
+
+	<gfe:lookup-region id="/Customers/Accounts"/>
+
+	<gfe:lookup-region id="Customers/Accounts/Orders/Items"/>
+
+	<gfe:lookup-region id="Parent">
+		<gfe:lookup-region name="Child">
+			<gfe:lookup-region name="Grandchild"/>
+		</gfe:lookup-region>
+	</gfe:lookup-region>
+
+	<!--
+	<gfe:lookup-region id="/Parent/Child"/>
+	-->
+
+	<!--
+	<gfe:lookup-region id="/Parent/Child/Grandchild"/>
+	-->
+
+</beans>

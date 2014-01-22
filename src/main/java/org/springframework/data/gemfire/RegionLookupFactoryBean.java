@@ -35,12 +35,14 @@ import com.gemstone.gemfire.cache.Region;
  * @author Costin Leau
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>, InitializingBean, BeanNameAware {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
 	private GemFireCache cache;
 
+	private Region<?, ?> parent;
 	private Region<K, V> region;
 
 	private String beanName;
@@ -56,7 +58,13 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 		Assert.hasText(regionName, "The 'regionName', 'name' or 'beanName' property must be set.");
 
 		synchronized (cache) {
-			region = cache.getRegion(regionName);
+			//region = (getParent() != null ? getParent().getSubregion(regionName) : cache.getRegion(regionName));
+			if (getParent() != null) {
+				region = getParent().getSubregion(regionName);
+			}
+			else {
+				region = cache.getRegion(regionName);
+			}
 
 			if (region != null) {
 				log.info(String.format("Retrieved Region [%1$s] from Cache [%2$s].", regionName, cache.getName()));
@@ -124,6 +132,26 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * Sets a reference to the parent Region if this FactoryBean represents a GemFire Cache Sub-Region.
+	 * <p/>
+	 * @param parent a reference to the parent Region if this Region is a Sub-Region.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	public void setParent(Region<?, ?> parent) {
+		this.parent = parent;
+	}
+
+	/**
+	 * Gets a reference to the parent Region if this FactoryBean represents a GemFire Cache Sub-Region.
+	 * <p/>
+	 * @return a reference to the parent Region or null if this Region is not a Sub-Region.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	protected Region<?, ?> getParent() {
+		return parent;
 	}
 
 	/**

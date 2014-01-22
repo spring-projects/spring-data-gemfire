@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.config;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -41,15 +40,13 @@ class LookupRegionParser extends AbstractRegionParser {
 			boolean subRegion) {
 		super.doParse(element, builder);
 
+		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
+
+		builder.addPropertyReference("cache", resolvedCacheRef);
 		ParsingUtils.setPropertyValue(element, builder, "name", "name");
 
 		if (!subRegion) {
-			String cacheRef = element.getAttribute("cache-ref");
-			builder.addPropertyReference("cache", (StringUtils.hasText(cacheRef) ? cacheRef
-				: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
-		}
-		else {
-			builder.addPropertyValue("lookupOnly", true);
+			parseSubRegions(element, parserContext, resolvedCacheRef);
 		}
 	}
 
