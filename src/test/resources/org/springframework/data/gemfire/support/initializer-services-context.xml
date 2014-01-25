@@ -9,6 +9,6 @@
 
 	<context:annotation-config/>
 
-	<bean name="userService" class="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerTest$TestUserService"/>
+	<bean name="userService" class="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$TestUserService"/>
 
 </beans>

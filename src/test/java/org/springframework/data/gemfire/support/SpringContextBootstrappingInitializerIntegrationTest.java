@@ -58,7 +58,7 @@ import com.gemstone.gemfire.cache.Region;
  * @since 7.0.1 (GemFire)
  */
 @SuppressWarnings("unused")
-public class SpringContextBootstrappingInitializerTest {
+public class SpringContextBootstrappingInitializerIntegrationTest {
 
 	protected static final String GEMFIRE_LOCATORS = "localhost[11235]";
 	protected static final String GEMFIRE_LOG_LEVEL = "config";
@@ -69,7 +69,7 @@ public class SpringContextBootstrappingInitializerTest {
 	@Test
 	public void testSpringContextBootstrappingInitialization() {
 		Cache gemfireCache = new CacheFactory()
-			.set("cache-xml-file", "cache-with-initializer.xml")
+			.set("cache-xml-file", "cache-with-spring-context-bootstrap-initializer.xml")
 			.set("locators", GEMFIRE_LOCATORS)
 			.set("log-level", GEMFIRE_LOG_LEVEL)
 			.set("mcast-port", GEMFIRE_MCAST_PORT)
