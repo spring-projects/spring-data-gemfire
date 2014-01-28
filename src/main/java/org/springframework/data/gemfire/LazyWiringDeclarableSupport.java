@@ -40,6 +40,8 @@ import com.gemstone.gemfire.cache.Declarable;
  * @author John Blum
  * @see org.springframework.context.ApplicationListener
  * @see org.springframework.context.event.ContextRefreshedEvent
+ * @see org.springframework.data.gemfire.DeclarableSupport
+ * @see org.springframework.data.gemfire.WiringDeclarableSupport
  * @see com.gemstone.gemfire.cache.Declarable
  * @since 1.3.4
  */
@@ -47,19 +49,19 @@ import com.gemstone.gemfire.cache.Declarable;
 public abstract class LazyWiringDeclarableSupport implements ApplicationListener<ContextRefreshedEvent>, Declarable {
 
 	// The name of the template bean defined in the Spring context for wiring this Declarable instance.
-	private static final String BEAN_NAME_PARAMETER = "bean-name";
+	protected static final String BEAN_NAME_PARAMETER = "bean-name";
 
 	// atomic reference to the parameter passed by GemFire when this Declared was constructed
 	// and the init method was called.
 	private final AtomicReference<Properties> parametersReference = new AtomicReference<Properties>();
 
-	private volatile boolean initialized = false;
+	protected volatile boolean initialized = false;
 
 	/**
-	 * Constructs an instance of the LazyWiringDeclarableSupport class register with the
+	 * Constructs an instance of the LazyWiringDeclarableSupport class registered with the
 	 * SpringContextBootstrappingInitializer to receive notification when the Spring context is created and initialized
-	 * by GemFire to that this Declarable component can be configured and properly initialized with any required Spring
-	 * bean dependencies.
+	 * (refreshed) by GemFire in order for this Declarable component to be configured and properly initialized with any
+	 * required Spring bean dependencies.
 	 * <p/>
 	 * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer
 	 * 	#register(org.springframework.context.ApplicationListener)
@@ -70,12 +72,13 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 
 	/**
 	 * Asserts that this Declarable object has been properly configured and initialized by the Spring container
-	 * after GemFire has constructed this Declarable during startup.  It is recommended that this method be called
-	 * in any GemFire CacheCallback/Declarable object operational method (e.g. CacheLoader.load(..)) before use
-	 * in order to ensure that this Declarable was properly constructed, configured and initialized.
+	 * after GemFire has constructed this Declarable object during startup.  It is recommended that this method
+	 * be called in any GemFire CacheCallback/Declarable object operational method (e.g. CacheLoader.load(..))
+	 * before use in order to ensure that this Declarable was properly constructed, configured and initialized.
 	 * <p/>
-	 * @throws IllegalStateException if the Declarable object has not been properly configured or initialized by the
-	 * Spring container.
+	 * @throws IllegalStateException if the Declarable object has not been properly configured or initialized
+	 * by the Spring container.
+	 * @see #init(java.util.Properties)
 	 * @see #isInitialized()
 	 */
 	protected void assertInitialized() {
@@ -86,19 +89,21 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 
 	/**
 	 * Performs the actual configuration and initialization of this Declarable object before use.  This method
-	 * is triggered by an ApplicationEvent indicating that the Spring context has been created and refreshed.
+	 * is triggered by an ApplicationEvent (specifically, the ContextRefreshedEvent) indicating that the Spring context
+	 * has been created and refreshed.
 	 * <p/>
 	 * @param beanFactory the ConfigurableListableBeanFactory used to configure and initialize this Declarable GemFire
 	 * component.
 	 * @param parameters Properties instance containing the parameters from GemFire's configuration file
-	 * (e.g. cache.xml) to configure this Declarable object.
+	 * (e.g. cache.xml) to configure and initialize this Declarable object.
 	 * @throws IllegalArgumentException if the bean-name parameter was specified in GemFire configuration meta-data
 	 * but no bean with the specified name could be found in the Spring context.
+	 * @see #init(java.util.Properties)
 	 * @see org.springframework.beans.factory.wiring.BeanConfigurerSupport
 	 * @see org.springframework.beans.factory.wiring.BeanWiringInfo
 	 * @see org.springframework.beans.factory.wiring.BeanWiringInfoResolver
 	 */
-	protected void doInit(final ConfigurableListableBeanFactory beanFactory, final Properties parameters) {
+	/* package-private */ void doInit(final ConfigurableListableBeanFactory beanFactory, final Properties parameters) {
 		BeanConfigurerSupport beanConfigurer = new BeanConfigurerSupport();
 
 		beanConfigurer.setBeanFactory(beanFactory);
@@ -124,11 +129,24 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 		beanConfigurer.destroy();
 
 		initialized = true;
+
+		doPostInit(parameters);
+	}
+
+	/**
+	 * Default no operation method performed post initialization of this Declarable GemFire component to be overridden
+	 * by subclasses for application specific extension and behavior.
+	 * <p/>
+	 * @param parameters Properties instance containing the parameters from GemFire's configuration file
+	 * (e.g. cache.xml) to configure and initialize this Declarable object.
+	 * @see #doInit(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.Properties)
+	 */
+	protected void doPostInit(final Properties parameters) {
 	}
 
 	/**
 	 * Initialization method called by GemFire with the configured parameters once this Declarable object has been
-	 * constructed during GemFire startup using an &lt;initalizer&gt;.
+	 * constructed during GemFire startup using an &lt;initalizer&gt; element in GemFire's configuration meta-data.
 	 * <p/>
 	 * @param parameters the configured parameters passed from the GemFire configuration (e.g. cache.xml) to this
 	 * Declarable as a Properties instance.
@@ -148,6 +166,7 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 	 * <p/>
 	 * @return a boolean value indicating whether this Declarable object has been configured and initialized by
 	 * the Spring container.
+	 * @see #assertInitialized()
 	 * @see #doInit(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.Properties)
 	 */
 	protected boolean isInitialized() {
@@ -164,6 +183,9 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 	 * called this Declarable object's init method yet, which is probably a bug and violates the lifecycle contract
 	 * of Declarable GemFire objects).
 	 * @throws IllegalArgumentException if the ApplicationContext is not an instance of ConfigurableApplicationContext.
+	 * @see #doInit(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.Properties)
+	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+	 * @see org.springframework.context.event.ContextRefreshedEvent
 	 */
 	@Override
 	public final void onApplicationEvent(final ContextRefreshedEvent event) {

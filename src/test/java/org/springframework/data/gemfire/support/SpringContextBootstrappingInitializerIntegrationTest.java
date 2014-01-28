@@ -48,8 +48,8 @@ import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * The SpringContextBootstrappingInitializerTest class is a test suite of test cases testing the functionality of the
- * SpringContextBootstrappingInitializer class
+ * The SpringContextBootstrappingInitializerTest class is a test suite of test cases testing the integrated
+ * functionality of the SpringContextBootstrappingInitializer class.
  * <p/>
  * @author John Blum
  * @see org.junit.Test
@@ -137,6 +137,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		private DataSource userDataSource;
 
 		protected DataSource getDataSource() {
+			Assert.state(userDataSource != null, "A reference to the Users DataSource as not properly configured!");
 			return userDataSource;
 		}
 	}
@@ -151,6 +152,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		private UserDao userDao;
 
 		protected UserDao getUserDao() {
+			Assert.state(userDao != null, "A reference to the UserDao was not properly configured!");
 			return userDao;
 		}
 	}
@@ -180,6 +182,10 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 
 		protected static User createUser(final String username, final Boolean active) {
 			return createUser(username, String.format("%1$s@xcompay.com", username), active, Calendar.getInstance());
+		}
+
+		protected static User createUser(final String username, final Boolean active, final Calendar since) {
+			return createUser(username, String.format("%1$s@xcompay.com", username), active, since);
 		}
 
 		protected static User createUser(final String username, final String email, final Boolean active, final Calendar since) {

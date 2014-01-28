@@ -39,6 +39,11 @@ import com.gemstone.gemfire.cache.Declarable;
  * and initializes the Cache for use.
  * <p/>
  * @author John Blum
+ * @see org.springframework.context.ApplicationContext
+ * @see org.springframework.context.ApplicationListener
+ * @see org.springframework.context.event.ApplicationEventMulticaster
+ * @see org.springframework.context.event.ContextRefreshedEvent
+ * @see org.springframework.context.event.SimpleApplicationEventMulticaster
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.support.ClassPathXmlApplicationContext
  * @see com.gemstone.gemfire.cache.Declarable
@@ -50,7 +55,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 
 	public static final String CONTEXT_CONFIG_LOCATIONS_PARAMETER = "contextConfigLocations";
 
-	private static ConfigurableApplicationContext applicationContext;
+	/* package-private */ static ConfigurableApplicationContext applicationContext;
 
 	// TODO consider whether I should register a TaskExecutor to perform the event notifications in a separate Thread???
 	private static ApplicationEventMulticaster eventNotifier = new SimpleApplicationEventMulticaster();
@@ -72,25 +77,51 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * when instantiating and initializing declared Initializers from the GemFire native configuration file
 	 * (e.g. cache.xml).
 	 * <p/>
-	 * @param listener the ApplicationListener to register for ContextStartedEvents by this
+	 * @param <T> the Class type of the Spring ApplicationListener.
+	 * @param listener the ApplicationListener to register for ContextRefreshedEvents by this
 	 * SpringContextBootstrappingInitializer.
+	 * @return the reference to the ApplicationListener for method call chaining purposes.
+	 * @see #unregister(org.springframework.context.ApplicationListener)
 	 * @see org.springframework.context.ApplicationListener
 	 * @see org.springframework.context.event.SimpleApplicationEventMulticaster
 	 * 	#addApplicationListener(org.springframework.context.ApplicationListener)
 	 */
-	public static void register(ApplicationListener listener) {
+	public static <T extends ApplicationListener> T register(final T listener) {
 		eventNotifier.addApplicationListener(listener);
+		return listener;
 	}
 
 	/**
-	 * Gets the the ID of the Spring ApplicationContext in a null-safe manner.
+	 * Unregisters the Spring ApplicationListener from this SpringContextBootstrappingInitializer in order to stop
+	 * receiving ApplicationEvents on Spring context refreshes.
 	 * <p/>
-	 * @param applicationContext the Spring ApplicationContext to retrieve the ID of.
-	 * @return the ID of the given Spring ApplicationContext or null if the ApplicationContext reference is null.
-	 * @see org.springframework.context.ApplicationContext#getId()
+	 * @param <T> the Class type of the Spring ApplicationListener.
+	 * @param listener the ApplicationListener to unregister from receiving ContextRefreshedEvents by this
+	 * SpringContextBootstrappingInitializer.
+	 * @return the reference to the ApplicationListener for method call chaining purposes.
+	 * @see #register(org.springframework.context.ApplicationListener)
+	 * @see org.springframework.context.ApplicationListener
+	 * @see org.springframework.context.event.SimpleApplicationEventMulticaster
+	 * 	#removeApplicationListener(org.springframework.context.ApplicationListener)
 	 */
-	protected static String nullSafeGetApplicationContextId(final ApplicationContext applicationContext) {
-		return (applicationContext != null ? applicationContext.getId() : null);
+	public static <T extends ApplicationListener> T unregister(final T listener) {
+		eventNotifier.removeApplicationListener(listener);
+		return listener;
+	}
+
+	/**
+	 * Creates (constructs and initializes) a ConfigurableApplicationContext instance based on the specified locations
+	 * of the context configuration meta-data files and indicates whether ApplicationContext.refresh should happen
+	 * automatically during creation.  This method allows subclasses to override the type of
+	 * ConfigurableApplicationContext created; by default, a ClassPathXmlApplicationContext is created.
+	 * <p/>
+	 * @param configLocations a String array indicating the locations of the context configuration meta-data files.
+	 * @param refresh a boolean value indicating whether the ApplicationContext is refreshed on creation.
+	 * @return a newly constructed and initialized instance of a ConfigurableApplicationContext.
+	 * @see org.springframework.context.support.ClassPathXmlApplicationContext
+	 */
+	protected ConfigurableApplicationContext createApplicationContext(final String[] configLocations, final boolean refresh) {
+		return new ClassPathXmlApplicationContext(configLocations, refresh);
 	}
 
 	/**
@@ -99,6 +130,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * <p/>
 	 * @param parameters a Properties object containing the configuration parameters and settings defined in the
 	 * GemFire cache.xml &gt;initializer/&lt; element.
+	 * @see #createApplicationContext(String[], boolean)
 	 * @see java.util.Properties
 	 */
 	@Override
@@ -116,15 +148,26 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 				"A Spring application context with ID (%1$s) has already been created.",
 					nullSafeGetApplicationContextId(applicationContext)));
 
-			applicationContext = new ClassPathXmlApplicationContext(configLocations, false);
+			applicationContext = createApplicationContext(configLocations, false);
 			applicationContext.addApplicationListener(this);
 			applicationContext.registerShutdownHook();
 			applicationContext.refresh();
 
 			Assert.state(applicationContext.isActive(), String.format(
-				"The Spring application context has failed to be properly initialized with the following config files (%1$s)!",
-					Arrays.toString(configLocations)));
+				"The Spring application context (%1$s) has failed to be properly initialized with the following config files (%2$s)!",
+					nullSafeGetApplicationContextId(applicationContext), Arrays.toString(configLocations)));
 		}
+	}
+
+	/**
+	 * Gets the the ID of the Spring ApplicationContext in a null-safe manner.
+	 * <p/>
+	 * @param applicationContext the Spring ApplicationContext to retrieve the ID for.
+	 * @return the ID of the given Spring ApplicationContext or null if the ApplicationContext reference is null.
+	 * @see org.springframework.context.ApplicationContext#getId()
+	 */
+	protected String nullSafeGetApplicationContextId(final ApplicationContext applicationContext) {
+		return (applicationContext != null ? applicationContext.getId() : null);
 	}
 
 	/**

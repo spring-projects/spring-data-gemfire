@@ -4,6 +4,8 @@
 <cache>
 	<region name="Users" refid="REPLICATE">
 		<region-attributes initial-capacity="101" load-factor="0.85">
+			<key-constraint>java.lang.String</key-constraint>
+			<value-constraint>org.springframework.data.gemfire.repository.sample.User</value-constraint>
 			<cache-loader>
 				<class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$UserDataStoreCacheLoader</class-name>
 			</cache-loader>
