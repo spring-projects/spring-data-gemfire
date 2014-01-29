@@ -15,6 +15,8 @@ pom.xml
 .settings/
 .idea/
 _site/
+.bak/
+*.dat
 
 /samples/hello-world/vf.gf.dmn-events.cfg
 /samples/hello-world/vf.gf.dmn-license.cfg
