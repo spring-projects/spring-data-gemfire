@@ -1557,16 +1557,14 @@ The maximum size (in megabytes) of data stored in each directory. Default value 
 				</xsd:complexType>
 			</xsd:element>
 		</xsd:sequence>
-		<xsd:attribute name="auto-compact" type="xsd:string"
-			default="true">
+		<xsd:attribute name="auto-compact" type="xsd:string" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether or not the operation logs are automatically compacted or not. Default is true.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="max-oplog-size" type="xsd:string"
-			default="1024">
+		<xsd:attribute name="max-oplog-size" type="xsd:string" default="1024">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this
@@ -1574,8 +1572,7 @@ amount of file space will be immediately reserved.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="time-interval" type="xsd:string"
-			default="1000">
+		<xsd:attribute name="time-interval" type="xsd:string" default="1000">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the number of milliseconds that can elapse before unwritten data is written to disk.
@@ -1583,8 +1580,7 @@ It is considered only for asynchronous writing.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="queue-size" type="xsd:string"
-			default="0">
+		<xsd:attribute name="queue-size" type="xsd:string" default="0">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been
@@ -1593,32 +1589,24 @@ Considered only for asynchronous writing.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="compaction-threshold" default="50">
+		<xsd:attribute name="compaction-threshold" type="xsd:string" default="50">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the threshold at which an oplog will become compactable. Until it reaches this threshold the oplog will not be compacted.
 The threshold is a percentage in the range 0..100. When the amount of garbage in an oplog exceeds this percentage then when a
-compaction is done this garbage will be cleaned up freeing up disk space. Garbage is created by entry destroys,
+compaction is done and this garbage will be cleaned up freeing up disk space. Garbage is created by entry destroys,
 entry updates, and region destroys.
 ]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:short">
-					<xsd:minInclusive value="0" />
-					<xsd:maxInclusive value="100" />
-				</xsd:restriction>
-			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="allow-force-compaction" type="xsd:string"
-			default="false">
+		<xsd:attribute name="allow-force-compaction" type="xsd:string" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether forced compaction is allowed for regions using this disk store
 				 ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="write-buffer-size" type="xsd:string"
-			default="32768">
+		<xsd:attribute name="write-buffer-size" type="xsd:string" default="32768">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates the write buffer size in bytes
@@ -1636,8 +1624,7 @@ Indicates the write buffer size in bytes
 The name of the disk store bean definition. This is also used as the disk store name]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="cache-ref" type="xsd:string" use="optional"
-					default="gemfireCache">
+				<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The name of the bean defining the GemFire cache (by default 'gemfireCache').
