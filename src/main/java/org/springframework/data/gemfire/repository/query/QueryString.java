@@ -34,7 +34,8 @@ import com.gemstone.gemfire.cache.Region;
  */
 class QueryString {
 
-	private static final String REGION_PATTERN = "(?<=\\/)\\w+";
+	//private static final String REGION_PATTERN = "(?<=\\/)\\w+";
+	private static final String REGION_PATTERN = "\\/\\w+";
 	private static final String IN_PARAMETER_PATTERN = "(?<=IN (SET|LIST) \\$)\\d";
 	private static final String IN_PATTERN = "(?<=IN (SET|LIST) )\\$\\d";
 
@@ -79,7 +80,7 @@ class QueryString {
 	 * @return
 	 */
 	public QueryString forRegion(Class<?> domainClass, Region<?, ?> region) {
-		return new QueryString(query.replaceAll(REGION_PATTERN, region.getName()));
+		return new QueryString(query.replaceAll(REGION_PATTERN, region.getFullPath()));
 	}
 
 	/**

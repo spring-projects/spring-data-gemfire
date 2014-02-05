@@ -21,26 +21,19 @@ import java.util.List;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 
 /**
- * The UserRepository class is a DAO for accessing and persisting Users.
+ * The ProgrammerRepository class is a Data Access Object (DAO) for Programmer domain objects supporting basic CRUD
+ * and Query operations.
  * <p/>
  * @author John Blum
  * @see org.springframework.data.gemfire.repository.GemfireRepository
- * @see org.springframework.data.gemfire.repository.Query
- * @see org.springframework.data.gemfire.repository.sample.User
+ * @see org.springframework.data.gemfire.repository.sample.Programmer
  * @since 1.3.4
  */
 @SuppressWarnings("unused")
-public interface UserRepository extends GemfireRepository<User, String> {
+public interface ProgrammerRepository extends GemfireRepository<Programmer, String> {
 
-	//@Query("SELECT DISTINCT * FROM /Users u WHERE u.active = true")
-	public List<User> findDistinctByActiveTrue();
+	public List<Programmer> findDistinctByProgrammingLanguageOrderByUsernameAsc(String programmingLanguage);
 
-	//@Query("SELECT DISTINCT * FROM /Users u WHERE u.active = false")
-	public List<User> findDistinctByActiveFalse();
-
-	public List<User> findDistinctByUsernameLike(String username);
-
-	// NOTE unfortunately, the 'NOT LIKE' operator is unsupported in GemFire's Query/OQL syntax
-	//public List<User> findDistinctByUsernameNotLike(String username);
+	public List<Programmer> findDistinctByProgrammingLanguageLikeOrderByUsernameAsc(String programmingLanguage);
 
 }

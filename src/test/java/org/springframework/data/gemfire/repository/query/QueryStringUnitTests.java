@@ -43,21 +43,25 @@ public class QueryStringUnitTests {
 
 	@Test
 	public void replacesDomainObjectWithRegionNameCorrectly() {
-
 		QueryString query = new QueryString("SELECT * FROM /Person p WHERE p.firstname = $1");
 
-		when(region.getName()).thenReturn("foo");
+		when(region.getFullPath()).thenReturn("/foo");
+
 		assertThat(query.forRegion(Person.class, region).toString(), is("SELECT * FROM /foo p WHERE p.firstname = $1"));
+
+		verify(region, never()).getName();
 	}
 	
 	//SGF-156
 	@Test
 	public void replacesDomainObjectWithPluralRegionNameCorrectly() {
-
 		QueryString query = new QueryString("SELECT * FROM /Persons p WHERE p.firstname = $1");
 
-		when(region.getName()).thenReturn("Persons");
+		when(region.getFullPath()).thenReturn("/Persons");
+
 		assertThat(query.forRegion(Person.class, region).toString(), is("SELECT * FROM /Persons p WHERE p.firstname = $1"));
+
+		verify(region, never()).getName();
 	}
 
 	@Test
