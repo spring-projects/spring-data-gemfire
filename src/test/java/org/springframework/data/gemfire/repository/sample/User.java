@@ -27,12 +27,14 @@ import org.springframework.util.ObjectUtils;
  * The User class represents an authorized user of a service or computer system, etc.
  * <p/>
  * @author John Blum
- * @since 1.3.3 (Spring Data GemFire)
- * @since 7.0.1 (GemFire)
+ * @see java.lang.Comparable
+ * @see org.springframework.data.annotation.Id
+ * @see org.springframework.data.gemfire.mapping.Region
+ * @since 1.3.4
  */
-@SuppressWarnings("unused")
 @Region("Users")
-public class User {
+@SuppressWarnings("unused")
+public class User implements Comparable<User> {
 
 	private Boolean active = true;
 
@@ -80,8 +82,9 @@ public class User {
 		return username;
 	}
 
-	private static boolean equalsIgnoreNull(final Object obj1, final Object obj2) {
-		return (obj1 == null ? obj2 == null : obj1.equals(obj2));
+	@Override
+	public int compareTo(final User user) {
+		return getUsername().compareTo(user.getUsername());
 	}
 
 	@Override
