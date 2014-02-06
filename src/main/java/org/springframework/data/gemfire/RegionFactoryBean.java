@@ -101,6 +101,10 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		RegionFactory<K, V> regionFactory;
 
 		if (attributes != null) {
+			// TODO refactor... AttributesFactory extended by the SDG RegionAttributesFactoryBean and used by all
+			// RegionFactoryBeans subclasses calls AttributesFactory.validateAttributes(..) before the RegionAttributes
+			// are created in the AttributesFactory.create() method, which is called by
+			// RegionAttributesFactoryBean.afterPropertiesSet() method.
 			AttributesFactory.validateAttributes(attributes);
 			regionFactory = cache.createRegionFactory(attributes);
 		}
