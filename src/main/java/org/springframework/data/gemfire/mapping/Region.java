@@ -34,9 +34,11 @@ import java.lang.annotation.Target;
 public @interface Region {
 
 	/**
-	 * The name of the {@link com.gemstone.gemfire.cache.Region} the entity shall be stored in.
-	 * 
-	 * @return the name of the region the entity shall be persisted in.
+	 * The name, or fully-qualified bean name of the {@link com.gemstone.gemfire.cache.Region} the entity
+	 * shall be stored in (e.g. "Users", or "/Local/Admin/Users").
+	 * <p/>
+	 * @return the name or qualified path of the Region the entity shall be persisted in.
 	 */
 	String value() default "";
+
 }

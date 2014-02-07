@@ -25,6 +25,15 @@
 		<gfe:replicated-region name="Programmers" persistent="false"/>
 	</gfe:replicated-region>
 
+	<gfe:replicated-region id="Local" persistent="false">
+		<gfe:replicated-region name="Admin" persistent="false">
+			<gfe:replicated-region name="Users" persistent="false"/>
+		</gfe:replicated-region>
+		<gfe:replicated-region name="Guest" persistent="false">
+			<gfe:replicated-region name="Users" persistent="false"/>
+		</gfe:replicated-region>
+	</gfe:replicated-region>
+
 	<gfe-data:repositories base-package="org.springframework.data.gemfire.repository.sample"/>
 
 </beans>
