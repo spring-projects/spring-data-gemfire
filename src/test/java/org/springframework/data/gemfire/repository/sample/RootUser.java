@@ -17,39 +17,26 @@
 package org.springframework.data.gemfire.repository.sample;
 
 import org.springframework.data.gemfire.mapping.Region;
-import org.springframework.util.StringUtils;
 
 /**
- * The Programmer class is a User representing/modeling a software engineer/developer.
+ * The RootUser class represents an authorized administrative user of a service or computer system, etc.
  * <p/>
- * @author John J. Blum
+ * @author John Blum
  * @see org.springframework.data.gemfire.mapping.Region
  * @see org.springframework.data.gemfire.repository.sample.User
  * @since 1.3.4
  */
-@Region("Programmers")
+@Region("/Local/Admin/Users")
 @SuppressWarnings("unused")
-public class Programmer extends User {
+public class RootUser extends User {
 
-	protected static final String DEFAULT_PROGRAMMING_LANGUAGE = "?";
-
-	private String programmingLanguage;
-
-	public Programmer(final String username) {
+	public RootUser(final String username) {
 		super(username);
-	}
-
-	public String getProgrammingLanguage() {
-		return (StringUtils.hasText(programmingLanguage) ? programmingLanguage : DEFAULT_PROGRAMMING_LANGUAGE);
-	}
-
-	public void setProgrammingLanguage(final String programmingLanguage) {
-		this.programmingLanguage = programmingLanguage;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%1$s programs in '%2$s.", getUsername(), getProgrammingLanguage());
+		return String.format("Root User '%1$s'", getUsername());
 	}
 
 }

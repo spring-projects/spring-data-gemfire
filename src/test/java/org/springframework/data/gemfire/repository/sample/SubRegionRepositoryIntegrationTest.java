@@ -51,6 +51,8 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @see com.gemstone.gemfire.cache.Region
+ * @link https://jira.springsource.org/browse/SGF-251
+ * @link https://jira.springsource.org/browse/SGF-252
  * @since 1.0.0
  */
 @ContextConfiguration("subregionRepository.xml")
@@ -58,9 +60,18 @@ import com.gemstone.gemfire.cache.Region;
 @SuppressWarnings("unused")
 public class SubRegionRepositoryIntegrationTest {
 
-	private static final Map<String, Programmer> PROGRAMMER_DATA = new HashMap<String, Programmer>(23, 0.90f);
+	private static final Map<String, RootUser> ADMIN_USER_DATA = new HashMap<String, RootUser>(5, 0.90f);
+
+	private static final Map<String, GuestUser> GUEST_USER_DATA = new HashMap<String, GuestUser>(3, 0.90f);
+
+	private static final Map<String, Programmer> PROGRAMMER_USER_DATA = new HashMap<String, Programmer>(23, 0.90f);
 
 	static {
+		createAdminUser("supertool");
+		createAdminUser("thor");
+		createAdminUser("zeus");
+		createGuestUser("bubba");
+		createGuestUser("joeblow");
 		createProgrammer("AdaLovelace", "Ada");
 		createProgrammer("AlanKay", "Smalltalk");
 		createProgrammer("BjarneStroustrup", "C++");
@@ -87,10 +98,68 @@ public class SubRegionRepositoryIntegrationTest {
 	@Resource(name = "/Users/Programmers")
 	private Region<String, Programmer> programmers;
 
+	@Resource(name = "/Local/Admin/Users")
+	private Region<String, RootUser> adminUsers;
+
+	@Resource(name = "/Local/Guest/Users")
+	private Region<String, GuestUser> guestUsers;
+
+	@Autowired
+	private GuestUserRepository guestUserRepo;
+
+	@Autowired
+	private RootUserRepository adminUserRepo;
+
+	protected static RootUser createAdminUser(final String username) {
+		RootUser user = new RootUser(username);
+		ADMIN_USER_DATA.put(username, user);
+		return user;
+	}
+
+	protected static GuestUser createGuestUser(final String username) {
+		GuestUser user = new GuestUser(username);
+		GUEST_USER_DATA.put(username, user);
+		return user;
+	}
+
+	protected static RootUser getAdminUser(final String username) {
+		List<RootUser> users = getAdminUsers(username);
+		return (users.isEmpty() ? null : users.get(0));
+	}
+
+	protected static List<RootUser> getAdminUsers(final String... usernames) {
+		return getUsers(ADMIN_USER_DATA, usernames);
+	}
+
+	protected static GuestUser getGuestUser(final String username) {
+		List<GuestUser> users = getGuestUsers(username);
+		return (users.isEmpty() ? null : users.get(0));
+	}
+
+	protected static List<GuestUser> getGuestUsers(final String... usernames) {
+		return getUsers(GUEST_USER_DATA, usernames);
+	}
+
+	protected static <T extends User> List<T> getUsers(final Map<String, T> userData, final String... usernames) {
+		List<T> users = new ArrayList<T>(usernames.length);
+
+		for (String username : usernames) {
+			T user = userData.get(username);
+
+			if (user != null) {
+				users.add(user);
+			}
+		}
+
+		Collections.sort(users);
+
+		return users;
+	}
+
 	protected static Programmer createProgrammer(final String username, final String programmingLanguage) {
 		Programmer programmer = new Programmer(username);
 		programmer.setProgrammingLanguage(programmingLanguage);
-		PROGRAMMER_DATA.put(username, programmer);
+		PROGRAMMER_USER_DATA.put(username, programmer);
 		return programmer;
 	}
 
@@ -98,10 +167,10 @@ public class SubRegionRepositoryIntegrationTest {
 		List<Programmer> programmers = new ArrayList<Programmer>(usernames.length);
 
 		for (String username : usernames) {
-			Programmer programmer = PROGRAMMER_DATA.get(username);
+			Programmer programmer = PROGRAMMER_USER_DATA.get(username);
 
 			if (programmer != null) {
-				programmers.add(PROGRAMMER_DATA.get(username));
+				programmers.add(PROGRAMMER_USER_DATA.get(username));
 			}
 		}
 
@@ -115,15 +184,29 @@ public class SubRegionRepositoryIntegrationTest {
 		assertNotNull("The /Users/Programmers Subregion was null!", programmers);
 
 		if (programmers.isEmpty()) {
-			programmers.putAll(PROGRAMMER_DATA);
+			programmers.putAll(PROGRAMMER_USER_DATA);
 		}
 
-		assertEquals(PROGRAMMER_DATA.size(), programmers.size());
+		assertEquals(PROGRAMMER_USER_DATA.size(), programmers.size());
+		assertNotNull("The /Local/Admins/Users Subregion was null!", adminUsers);
+
+		if (adminUsers.isEmpty()) {
+			adminUsers.putAll(ADMIN_USER_DATA);
+		}
+
+		assertEquals(ADMIN_USER_DATA.size(), adminUsers.size());
+		assertNotNull("The /Local/Guest/Users Subregion was null!", guestUsers);
+
+		if (guestUsers.isEmpty()) {
+			guestUsers.putAll(GUEST_USER_DATA);
+		}
+
+		assertEquals(GUEST_USER_DATA.size(), guestUsers.size());
 	}
 
 	@Test
 	public void testSubregionRepositoryInteractions() {
-		assertEquals(PROGRAMMER_DATA.get("JamesGosling"), programmersRepo.findOne("JamesGosling"));
+		assertEquals(PROGRAMMER_USER_DATA.get("JamesGosling"), programmersRepo.findOne("JamesGosling"));
 
 		List<Programmer> javaProgrammers = programmersRepo.findDistinctByProgrammingLanguageOrderByUsernameAsc("Java");
 
@@ -168,6 +251,27 @@ public class SubRegionRepositoryIntegrationTest {
 
 		assertNotNull(pseudoCodeProgrammers);
 		assertTrue(pseudoCodeProgrammers.isEmpty());
+	}
+
+	@Test
+	public void testIdenticallyNamedSubregionDataAccess() {
+		assertEquals(getAdminUser("supertool"), adminUserRepo.findOne("supertool"));
+		assertEquals(getGuestUser("joeblow"), guestUserRepo.findOne("joeblow"));
+
+		List<RootUser> rootUsers = adminUserRepo.findDistinctByUsername("zeus");
+
+		assertNotNull(rootUsers);
+		assertFalse(rootUsers.isEmpty());
+		assertEquals(1, rootUsers.size());
+
+		assertEquals(getAdminUser("zeus"), rootUsers.get(0));
+
+		List<GuestUser> guestUsers = guestUserRepo.findDistinctByUsername("bubba");
+
+		assertNotNull(guestUsers);
+		assertFalse(guestUsers.isEmpty());
+		assertEquals(1, guestUsers.size());
+		assertEquals(getGuestUser("bubba"), guestUsers.get(0));
 	}
 
 }

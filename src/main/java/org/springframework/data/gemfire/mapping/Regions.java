@@ -27,8 +27,9 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * Simple value object to abstract access to regions by name and mapped type.
- * 
+ * <p/>
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class Regions implements Iterable<Region<?, ?>> {
 
@@ -52,6 +53,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 
 		for (Region<?, ?> region : regions) {
 			regionMap.put(region.getName(), region);
+			regionMap.put(region.getFullPath(), region);
 		}
 
 		this.regions = Collections.unmodifiableMap(regionMap);
@@ -68,25 +70,23 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Region<?, T> getRegion(Class<T> type) {
-
 		Assert.notNull(type);
 
 		GemfirePersistentEntity<?> entity = context.getPersistentEntity(type);
+
 		return (Region<?, T>) (entity == null ? regions.get(type.getSimpleName()) : regions.get(entity.getRegionName()));
 	}
 
 	/**
-	 * Returns the {@link Region} with the given name.
-	 * 
-	 * @param name must not be {@literal null}.
-	 * @return the {@link Region} with the given name.
+	 * Returns the {@link Region} with the given name or path.
+	 * <p/>
+	 * @param namePath must not be {@literal null}, and either identifies the Region by name or the fully-qualified path.
+	 * @return the {@link Region} with the given name or path.
 	 */
 	@SuppressWarnings("unchecked")
-	public <S, T> Region<S, T> getRegion(String name) {
-
-		Assert.notNull(name);
-
-		return (Region<S, T>) regions.get(name);
+	public <S, T> Region<S, T> getRegion(String namePath) {
+		Assert.notNull(namePath);
+		return (Region<S, T>) regions.get(namePath);
 	}
 
 	/*
@@ -98,4 +98,5 @@ public class Regions implements Iterable<Region<?, ?>> {
 	public Iterator<Region<?, ?>> iterator() {
 		return regions.values().iterator();
 	}
+
 }

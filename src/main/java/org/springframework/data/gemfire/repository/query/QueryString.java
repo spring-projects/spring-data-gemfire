@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.Region;
 class QueryString {
 
 	//private static final String REGION_PATTERN = "(?<=\\/)\\w+";
-	private static final String REGION_PATTERN = "\\/\\w+";
+	private static final String REGION_PATTERN = "\\/(\\/?\\w)+";
 	private static final String IN_PARAMETER_PATTERN = "(?<=IN (SET|LIST) \\$)\\d";
 	private static final String IN_PATTERN = "(?<=IN (SET|LIST) )\\$\\d";
 
