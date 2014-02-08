@@ -65,13 +65,38 @@ public class SpringContextBootstrappingInitializerTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
+	public void testCreateApplicationContextWhenBasePackagesAndConfigLocationsAreBothUnspecified() {
+		try {
+			new SpringContextBootstrappingInitializer().createApplicationContext(null, null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("Either 'basePackages' or 'configLocations' must be specified to construct an instance of the ConfigurableApplicationContext.",
+				expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreateClassPathXmlApplicationContextWhenConfigLocationsAreUnspecified() {
+		try {
+			new SpringContextBootstrappingInitializer().createApplicationContext(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("The configLocations must be specified to construct an instance of the ClassPathXmlApplicationContext.",
+				expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
 	public void testInitWithUnspecifiedContextConfigLocationsParameter() {
 		try {
 			new SpringContextBootstrappingInitializer().init(createParameters(
 				SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER, ""));
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("The contextConfigLocations parameter is required.", expected.getMessage());
+			assertEquals("Either 'basePackages' or the 'contextConfigLocations' parameter must be specified.",
+				expected.getMessage());
 			throw expected;
 		}
 	}
@@ -98,11 +123,11 @@ public class SpringContextBootstrappingInitializerTest {
 	}
 
 	@Test(expected = IllegalStateException.class)
-	public void testInitWithNonActiveApplicationConstruct() {
+	public void testInitWithNonActiveApplicationContext() {
 		final ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
 			"testInitWithNonActiveApplicationConstruct");
 
-		when(mockApplicationContext.getId()).thenReturn("testInitWithNonActiveApplicationConstruct");
+		when(mockApplicationContext.getId()).thenReturn("testInitWithNonActiveApplicationContext");
 		when(mockApplicationContext.isActive()).thenReturn(false);
 
 		SpringContextBootstrappingInitializer initializer = null;
@@ -110,7 +135,8 @@ public class SpringContextBootstrappingInitializerTest {
 		try {
 			initializer = new SpringContextBootstrappingInitializer() {
 				@Override
-				protected ConfigurableApplicationContext createApplicationContext(final String[] configLocations, final boolean refresh) {
+				protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
+						final String[] configLocations) {
 					return mockApplicationContext;
 				}
 			};
@@ -119,7 +145,7 @@ public class SpringContextBootstrappingInitializerTest {
 				"/path/to/spring/context/configuration/file.xml"));
 		}
 		catch (IllegalStateException expected) {
-			assertEquals("The Spring application context (testInitWithNonActiveApplicationConstruct) has failed to be properly initialized with the following config files ([/path/to/spring/context/configuration/file.xml])!",
+			assertEquals("The Spring application context (testInitWithNonActiveApplicationContext) has failed to be properly initialized with the following config files ([/path/to/spring/context/configuration/file.xml])!",
 				expected.getMessage());
 			throw expected;
 		}
@@ -140,7 +166,8 @@ public class SpringContextBootstrappingInitializerTest {
 
 		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
 				@Override
-				protected ConfigurableApplicationContext createApplicationContext(final String[] configLocations, final boolean refresh) {
+				protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
+						final String[] configLocations) {
 					return mockApplicationContext;
 				}
 			};

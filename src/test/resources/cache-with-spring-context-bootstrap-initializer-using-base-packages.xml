@@ -13,11 +13,9 @@
 	</region>
 	<initializer>
 		<class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer</class-name>
-		<parameter name="contextConfigLocations">
+		<parameter name="basePackages">
 			<string>
-				classpath:org/springframework/data/gemfire/support/sample/initializer-gemfire-context.xml,
-				classpath:org/springframework/data/gemfire/support/sample/initializer-dao-context.xml,
-				classpath:org/springframework/data/gemfire/support/sample/initializer-services-context.xml
+				org.springframework.data.gemfire.support.sample
 			</string>
 		</parameter>
 	</initializer>

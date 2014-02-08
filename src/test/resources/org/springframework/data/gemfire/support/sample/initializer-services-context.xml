@@ -9,7 +9,6 @@
 
 	<context:annotation-config/>
 
-	<bean id="userDataSource" class="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$TestDataSource"/>
-	<bean id="userDao" class="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$TestUserDao"/>
+	<bean name="userService" class="org.springframework.data.gemfire.support.sample.TestUserService"/>
 
 </beans>

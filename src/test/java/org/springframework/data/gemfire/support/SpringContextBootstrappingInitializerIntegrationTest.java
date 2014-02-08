@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -29,18 +30,21 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.sql.DataSource;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.gemfire.LazyWiringDeclarableSupport;
 import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.repository.sample.User;
+import org.springframework.data.gemfire.support.sample.TestUserDao;
+import org.springframework.data.gemfire.support.sample.TestUserService;
 import org.springframework.data.gemfire.test.support.DataSourceAdapter;
-import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheLoaderException;
@@ -53,12 +57,22 @@ import com.gemstone.gemfire.cache.Region;
  * <p/>
  * @author John Blum
  * @see org.junit.Test
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.data.gemfire.LazyWiringDeclarableSupport
  * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.CacheFactory
+ * @see com.gemstone.gemfire.cache.CacheLoader
+ * @see com.gemstone.gemfire.cache.Region
  * @since 1.3.4 (Spring Data GemFire)
  * @since 7.0.1 (GemFire)
  */
 @SuppressWarnings("unused")
 public class SpringContextBootstrappingInitializerIntegrationTest {
+
+	private static final long CACHE_CLOSE_TIMEOUT = 15000l; // 15 seconds
+
+	private static final Object MUTEX_LOCK = new Object();
 
 	protected static final String GEMFIRE_LOCATORS = "localhost[11235]";
 	protected static final String GEMFIRE_LOG_LEVEL = "config";
@@ -66,15 +80,78 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 	protected static final String GEMFIRE_NAME = "SpringContextBootstrappingInitializationTest";
 	protected static final String GEMFIRE_START_LOCATORS = "localhost[11235]";
 
-	@Test
-	public void testSpringContextBootstrappingInitialization() {
+	@Before
+	public void setup() {
+		setupBeforeCacheCreate();
+	}
+
+	private void setupBeforeCacheCreate() {
+		try {
+			long timeout = (System.currentTimeMillis() + CACHE_CLOSE_TIMEOUT);
+
+			while (CacheFactory.getAnyInstance() != null && System.currentTimeMillis() < timeout) {
+				synchronized (MUTEX_LOCK) {
+					try {
+						System.out.printf("Waiting in setup...%n");
+						MUTEX_LOCK.wait(500l);
+					}
+					catch (InterruptedException ignore) {
+					}
+				}
+			}
+
+			fail(String.format("The Cache instance was not properly closed and shutdown by the timeout of %1$d seconds!%n",
+				(CACHE_CLOSE_TIMEOUT / 1000)));
+		}
+		catch (CacheClosedException ignore) {
+		}
+	}
+
+	@After
+	public void tearDown() {
+		SpringContextBootstrappingInitializer.applicationContext = null;
+		UserDataStoreCacheLoader.INSTANCE.set(null);
+		tearDownCache();
+	}
+
+	private void tearDownCache() {
+		try {
+			Cache cache = CacheFactory.getAnyInstance();
+
+			if (cache != null) {
+				System.out.printf("Closing Cache...%n");
+				cache.close();
+
+				// Now, wait for the GemFire Hog to shutdown, OIY!
+				synchronized (MUTEX_LOCK) {
+					while (!cache.isClosed()) {
+						try {
+							System.out.printf("Waiting in tearDown...");
+							MUTEX_LOCK.wait(500l);
+						}
+						catch (InterruptedException ignore) {
+						}
+					}
+
+					MUTEX_LOCK.notifyAll();
+				}
+			}
+		}
+		catch (CacheClosedException ignore) {
+			// CacheClosedExceptions happen when the Cache reference returned by GemFireCacheImpl.getInstance()
+			// inside the CacheFactory.getAnyInstance() is null, or the Cache is already closed with calling
+			// Cache.close();
+		}
+	}
+
+	protected void doSpringContextBootstrappingInitializationTest(final String cacheXmlFile) {
 		Cache gemfireCache = new CacheFactory()
-			.set("cache-xml-file", "cache-with-spring-context-bootstrap-initializer.xml")
-			.set("locators", GEMFIRE_LOCATORS)
+			.set("cache-xml-file", cacheXmlFile)
+			//.set("locators", GEMFIRE_LOCATORS)
 			.set("log-level", GEMFIRE_LOG_LEVEL)
 			.set("mcast-port", GEMFIRE_MCAST_PORT)
 			.set("name", GEMFIRE_NAME)
-			.set("start-locator", GEMFIRE_LOCATORS)
+			//.set("start-locator", GEMFIRE_LOCATORS)
 			.create();
 
 		assertNotNull("The GemFire Cache was not properly created or initialized!", gemfireCache);
@@ -124,37 +201,18 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		assertEquals(3, users.size());
 	}
 
+	@Test
+	public void testSpringContextBootstrappingInitialization() {
+		doSpringContextBootstrappingInitializationTest("cache-with-spring-context-bootstrap-initializer.xml");
+	}
+
+	@Test
+	public void testSpringContextBootstrappingInitializationUsingBasePackages() {
+		doSpringContextBootstrappingInitializationTest(
+			"cache-with-spring-context-bootstrap-initializer-using-base-packages.xml");
+	}
+
 	public static final class TestDataSource extends DataSourceAdapter {
-	}
-
-	@Repository
-	public static interface UserDao {
-	}
-
-	public static final class TestUserDao implements UserDao {
-
-		@Autowired
-		private DataSource userDataSource;
-
-		protected DataSource getDataSource() {
-			Assert.state(userDataSource != null, "A reference to the Users DataSource as not properly configured!");
-			return userDataSource;
-		}
-	}
-
-	@Service
-	public static interface UserService {
-	}
-
-	public static final class TestUserService implements UserService {
-
-		@Autowired
-		private UserDao userDao;
-
-		protected UserDao getUserDao() {
-			Assert.state(userDao != null, "A reference to the UserDao was not properly configured!");
-			return userDao;
-		}
 	}
 
 	public static final class UserDataStoreCacheLoader extends LazyWiringDeclarableSupport implements CacheLoader<String, User> {
@@ -207,7 +265,6 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 
 		@Override
 		public void close() {
-			USER_DATA.clear();
 			userDataSource = null;
 		}
 

@@ -22,11 +22,13 @@ import java.util.Properties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Declarable;
@@ -41,21 +43,27 @@ import com.gemstone.gemfire.cache.Declarable;
  * @author John Blum
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ApplicationListener
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @see org.springframework.context.event.ApplicationEventMulticaster
  * @see org.springframework.context.event.ContextRefreshedEvent
  * @see org.springframework.context.event.SimpleApplicationEventMulticaster
- * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.support.ClassPathXmlApplicationContext
  * @see com.gemstone.gemfire.cache.Declarable
  * @since 1.3.4
  * @link http://pubs.vmware.com/vfabric53/topic/com.vmware.vfabric.gemfire.7.0/basic_config/the_cache/setting_cache_initializer.html
+ * @link https://jira.springsource.org/browse/SGF-248
  */
 @SuppressWarnings("unused")
 public class SpringContextBootstrappingInitializer implements Declarable, ApplicationListener<ContextRefreshedEvent> {
 
+	public static final String BASE_PACKAGES_PARAMETER = "basePackages";
 	public static final String CONTEXT_CONFIG_LOCATIONS_PARAMETER = "contextConfigLocations";
 
-	/* package-private */ static ConfigurableApplicationContext applicationContext;
+	protected static final String CHARS_TO_DELETE = " \n\t";
+	protected static final String COMMA_DELIMITER = ",";
+
+	/* package-private */ static volatile ConfigurableApplicationContext applicationContext;
 
 	// TODO consider whether I should register a TaskExecutor to perform the event notifications in a separate Thread???
 	private static ApplicationEventMulticaster eventNotifier = new SimpleApplicationEventMulticaster();
@@ -110,18 +118,61 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	}
 
 	/**
-	 * Creates (constructs and initializes) a ConfigurableApplicationContext instance based on the specified locations
-	 * of the context configuration meta-data files and indicates whether ApplicationContext.refresh should happen
-	 * automatically during creation.  This method allows subclasses to override the type of
-	 * ConfigurableApplicationContext created; by default, a ClassPathXmlApplicationContext is created.
+	 * Creates (constructs and configures) a ConfigurableApplicationContext instance based on the specified locations
+	 * of the context configuration meta-data files.  The created ConfigurableApplicationContext is not automatically
+	 * "refreshed" and therefore must be "refreshed" by the caller manually.
 	 * <p/>
-	 * @param configLocations a String array indicating the locations of the context configuration meta-data files.
-	 * @param refresh a boolean value indicating whether the ApplicationContext is refreshed on creation.
-	 * @return a newly constructed and initialized instance of a ConfigurableApplicationContext.
+	 * @param configLocations a String array indicating the locations of the context configuration meta-data files
+	 * used to configure the ConfigurableApplicationContext instance.
+	 * @return a newly constructed and configured instance of the ConfigurableApplicationContext class.  Note, the
+	 * "refresh" method must be called manually before using the context.
+	 * @throws IllegalArgumentException if the configLocations parameter argument is null or empty.
+	 * @see #createApplicationContext(String[], String[])
 	 * @see org.springframework.context.support.ClassPathXmlApplicationContext
 	 */
-	protected ConfigurableApplicationContext createApplicationContext(final String[] configLocations, final boolean refresh) {
-		return new ClassPathXmlApplicationContext(configLocations, refresh);
+	protected ConfigurableApplicationContext createApplicationContext(final String[] configLocations) {
+		Assert.notEmpty(configLocations, "The configLocations must be specified to construct an instance"
+			+ " of the ClassPathXmlApplicationContext.");
+		return createApplicationContext(null, configLocations);
+	}
+
+	/**
+	 * Creates (constructs and configures) an instance of the ConfigurableApplicationContext based on either the
+	 * specified base packages containing @Configuration, @Component or JSR 330 annotated classes to scan, or the
+	 * specified locations of context configuration meta-data files used to configure the context.  The created
+	 * ConfigurableApplicationContext is not automatically "refreshed" and therefore must be "refreshed"
+	 * by the caller manually.
+	 * <p/>
+	 * When basePackages are specified, an instance of AnnotationConfigApplicationContext is returned; otherwise
+	 * an instance of the ClassPathXmlApplicationContext is initialized with the configLocations and returned.
+	 * This method prefers the ClassPathXmlApplicationContext to the AnnotationConfigApplicationContext when both
+	 * basePackages and configLocations are specified.
+	 * <p/>
+	 * @param basePackages the base application packages to scan for application @Components and @Configuration classes.	 *
+	 * @param configLocations a String array indicating the locations of the context configuration meta-data files
+	 * used to configure the ConfigurableApplicationContext instance.
+	 * @return an instance of ConfigurableApplicationContext configured and initialized with either configLocations
+	 * or the basePackages when configLocations is unspecified.  Note, the "refresh" method must be called manually
+	 * before using the context.
+	 * @throws IllegalArgumentException if both the basePackages and configLocation parameter arguments
+	 * are null or empty.
+	 * @see #createApplicationContext(String[])
+	 * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
+	 * @see org.springframework.context.annotation.AnnotationConfigApplicationContext#scan(String...)
+	 * @see org.springframework.context.support.ClassPathXmlApplicationContext
+	 */
+	protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
+			final String[] configLocations) {
+		if (!ObjectUtils.isEmpty(configLocations)) {
+			return new ClassPathXmlApplicationContext(configLocations, false);
+		}
+		else {
+			Assert.notEmpty(basePackages, "Either 'basePackages' or 'configLocations' must be specified"
+				+ " to construct an instance of the ConfigurableApplicationContext.");
+			AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+			applicationContext.scan(basePackages);
+			return applicationContext;
+		}
 	}
 
 	/**
@@ -130,25 +181,29 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * <p/>
 	 * @param parameters a Properties object containing the configuration parameters and settings defined in the
 	 * GemFire cache.xml &gt;initializer/&lt; element.
-	 * @see #createApplicationContext(String[], boolean)
+	 * @see #createApplicationContext
 	 * @see java.util.Properties
 	 */
 	@Override
 	public void init(final Properties parameters) {
+		String basePackages = parameters.getProperty(BASE_PACKAGES_PARAMETER);
 		String contextConfigLocations = parameters.getProperty(CONTEXT_CONFIG_LOCATIONS_PARAMETER);
 
-		Assert.hasText(contextConfigLocations, "The contextConfigLocations parameter is required.");
+		Assert.isTrue(StringUtils.hasText(basePackages) || StringUtils.hasText(contextConfigLocations),
+			"Either 'basePackages' or the 'contextConfigLocations' parameter must be specified.");
 
-		String[] configLocations = contextConfigLocations.split(",");
+		String[] basePackagesArray = StringUtils.delimitedListToStringArray(basePackages,
+			COMMA_DELIMITER, CHARS_TO_DELETE);
 
-		StringUtils.trimArrayElements(configLocations);
+		String[] configLocations = StringUtils.delimitedListToStringArray(contextConfigLocations,
+			COMMA_DELIMITER, CHARS_TO_DELETE);
 
 		synchronized (SpringContextBootstrappingInitializer.class) {
 			Assert.state(applicationContext == null, String.format(
 				"A Spring application context with ID (%1$s) has already been created.",
 					nullSafeGetApplicationContextId(applicationContext)));
 
-			applicationContext = createApplicationContext(configLocations, false);
+			applicationContext = createApplicationContext(basePackagesArray, configLocations);
 			applicationContext.addApplicationListener(this);
 			applicationContext.registerShutdownHook();
 			applicationContext.refresh();

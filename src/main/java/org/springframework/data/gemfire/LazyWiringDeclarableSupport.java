@@ -19,6 +19,7 @@ package org.springframework.data.gemfire;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.wiring.BeanConfigurerSupport;
 import org.springframework.beans.factory.wiring.BeanWiringInfo;
@@ -38,6 +39,7 @@ import com.gemstone.gemfire.cache.Declarable;
  * for wiring GemFire components with Spring bean dependencies defined in the Spring context.
  * <p/>
  * @author John Blum
+ * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.context.ApplicationListener
  * @see org.springframework.context.event.ContextRefreshedEvent
  * @see org.springframework.data.gemfire.DeclarableSupport
@@ -46,7 +48,8 @@ import com.gemstone.gemfire.cache.Declarable;
  * @since 1.3.4
  */
 @SuppressWarnings("unused")
-public abstract class LazyWiringDeclarableSupport implements ApplicationListener<ContextRefreshedEvent>, Declarable {
+public abstract class LazyWiringDeclarableSupport implements ApplicationListener<ContextRefreshedEvent>,
+		Declarable, DisposableBean {
 
 	// The name of the template bean defined in the Spring context for wiring this Declarable instance.
 	protected static final String BEAN_NAME_PARAMETER = "bean-name";
@@ -199,6 +202,19 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 				ObjectUtils.nullSafeClassName(event.getApplicationContext())));
 
 		doInit(((ConfigurableApplicationContext) event.getApplicationContext()).getBeanFactory(), parameters);
+	}
+
+	/**
+	 * When this bean gets destroyed by the Spring container, make sure this component gets unregistered from the
+	 * SpringContextBootstrappingInitializer.
+	 * <p/>
+	 * @throws Exception if bean destruction is unsuccessful.
+	 * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer#unregister(
+	 *   org.springframework.context.ApplicationListener)
+	 */
+	@Override
+	public void destroy() throws Exception {
+		SpringContextBootstrappingInitializer.unregister(this);
 	}
 
 }
