@@ -66,7 +66,9 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	/* package-private */ static volatile ConfigurableApplicationContext applicationContext;
 
 	// TODO consider whether I should register a TaskExecutor to perform the event notifications in a separate Thread???
-	private static ApplicationEventMulticaster eventNotifier = new SimpleApplicationEventMulticaster();
+	private static final ApplicationEventMulticaster eventNotifier = new SimpleApplicationEventMulticaster();
+
+	private static ContextRefreshedEvent contextRefreshedEvent;
 
 	/**
 	 * Gets a reference to the Spring ApplicationContext constructed, configured and initialized inside the GemFire
@@ -91,12 +93,39 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @return the reference to the ApplicationListener for method call chaining purposes.
 	 * @see #unregister(org.springframework.context.ApplicationListener)
 	 * @see org.springframework.context.ApplicationListener
+	 * @see org.springframework.context.event.ContextRefreshedEvent
 	 * @see org.springframework.context.event.SimpleApplicationEventMulticaster
 	 * 	#addApplicationListener(org.springframework.context.ApplicationListener)
 	 */
-	public static <T extends ApplicationListener> T register(final T listener) {
-		eventNotifier.addApplicationListener(listener);
+	public static <T extends ApplicationListener<ContextRefreshedEvent>> T register(final T listener) {
+		synchronized (eventNotifier) {
+			eventNotifier.addApplicationListener(listener);
+			notifyListenerOfExistingContextRefreshedEvent(listener);
+		}
+
 		return listener;
+	}
+
+	/**
+	 * Notifies any Spring ApplicationListeners of a current and existing ContextRefreshedEvent if the
+	 * ApplicationContext was previously created, initialized and refreshed before any ApplicationListeners interested
+	 * in ContextRefreshedEvents get registered so that application components (such as LazyWiringDeclarableSupport
+	 * objects) arriving late to the game that also require configuration (auto-wiring) get wired accordingly too.
+	 * <p/>
+	 * @param listener a Spring ApplicationListener requiring notification of any ContextRefreshedEvents after the
+	 * ApplicationContext has already been created, initialized and/or refreshed.
+	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+	 * @see org.springframework.context.event.ContextRefreshedEvent
+	 */
+	protected static void notifyListenerOfExistingContextRefreshedEvent(
+			final ApplicationListener<ContextRefreshedEvent> listener) {
+		synchronized (eventNotifier) {
+			// NOTE the null check on the ApplicationContext is not absolutely necessary, but is an extra safety
+			// precaution none-the-less.
+			if (applicationContext != null && contextRefreshedEvent != null) {
+				listener.onApplicationEvent(contextRefreshedEvent);
+			}
+		}
 	}
 
 	/**
@@ -109,11 +138,15 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @return the reference to the ApplicationListener for method call chaining purposes.
 	 * @see #register(org.springframework.context.ApplicationListener)
 	 * @see org.springframework.context.ApplicationListener
+	 * @see org.springframework.context.event.ContextRefreshedEvent
 	 * @see org.springframework.context.event.SimpleApplicationEventMulticaster
 	 * 	#removeApplicationListener(org.springframework.context.ApplicationListener)
 	 */
-	public static <T extends ApplicationListener> T unregister(final T listener) {
-		eventNotifier.removeApplicationListener(listener);
+	public static <T extends ApplicationListener<ContextRefreshedEvent>> T unregister(final T listener) {
+		synchronized (eventNotifier) {
+			eventNotifier.removeApplicationListener(listener);
+		}
+
 		return listener;
 	}
 
@@ -131,7 +164,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see org.springframework.context.support.ClassPathXmlApplicationContext
 	 */
 	protected ConfigurableApplicationContext createApplicationContext(final String[] configLocations) {
-		Assert.notEmpty(configLocations, "The configLocations must be specified to construct an instance"
+		Assert.notEmpty(configLocations, "'configLocations' must be specified to construct an instance"
 			+ " of the ClassPathXmlApplicationContext.");
 		return createApplicationContext(null, configLocations);
 	}
@@ -185,6 +218,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see java.util.Properties
 	 */
 	@Override
+	@SuppressWarnings("null")
 	public void init(final Properties parameters) {
 		String basePackages = parameters.getProperty(BASE_PACKAGES_PARAMETER);
 		String contextConfigLocations = parameters.getProperty(CONTEXT_CONFIG_LOCATIONS_PARAMETER);
@@ -204,13 +238,15 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 					nullSafeGetApplicationContextId(applicationContext)));
 
 			applicationContext = createApplicationContext(basePackagesArray, configLocations);
+			Assert.notNull(applicationContext, "The 'created' ConfigurableApplicationContext cannot be null!");
 			applicationContext.addApplicationListener(this);
 			applicationContext.registerShutdownHook();
 			applicationContext.refresh();
 
 			Assert.state(applicationContext.isActive(), String.format(
-				"The Spring application context (%1$s) has failed to be properly initialized with the following config files (%2$s)!",
-					nullSafeGetApplicationContextId(applicationContext), Arrays.toString(configLocations)));
+				"The Spring application context (%1$s) has failed to be properly initialized with the following config files (%2$s) or base packages (%3$s)!",
+					nullSafeGetApplicationContextId(applicationContext), Arrays.toString(configLocations),
+						Arrays.toString(basePackagesArray)));
 		}
 	}
 
@@ -238,7 +274,10 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 */
 	@Override
 	public void onApplicationEvent(final ContextRefreshedEvent event) {
-		eventNotifier.multicastEvent(event);
+		synchronized (eventNotifier) {
+			contextRefreshedEvent = event;
+			eventNotifier.multicastEvent(event);
+		}
 	}
 
 }
