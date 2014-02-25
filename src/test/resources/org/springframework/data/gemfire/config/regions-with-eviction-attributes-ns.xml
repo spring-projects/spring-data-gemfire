@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<gfe:cache/>
+
+	<gfe:replicated-region id="One">
+		<gfe:eviction threshold="4096" type="ENTRY_COUNT"/>
+	</gfe:replicated-region>
+
+	<gfe:partitioned-region id="Two">
+		<gfe:eviction type="ENTRY_COUNT"/>
+	</gfe:partitioned-region>
+
+	<gfe:replicated-region id="Three">
+		<gfe:eviction type="HEAP_PERCENTAGE" action="OVERFLOW_TO_DISK"/>
+	</gfe:replicated-region>
+
+	<gfe:partitioned-region id="Four">
+		<gfe:eviction type="HEAP_PERCENTAGE" action="OVERFLOW_TO_DISK"/>
+	</gfe:partitioned-region>
+
+	<gfe:replicated-region id="Five">
+		<gfe:eviction threshold="85" type="MEMORY_SIZE" action="OVERFLOW_TO_DISK"/>
+	</gfe:replicated-region>
+
+	<gfe:partitioned-region id="Six">
+		<gfe:eviction type="MEMORY_SIZE"/>
+	</gfe:partitioned-region>
+
+</beans>
