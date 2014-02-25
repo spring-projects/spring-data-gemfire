@@ -1455,7 +1455,7 @@ Considers the amount of heap used (through the GemFire resource manager) before 
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="threshold" type="xsd:string" use="required">
+		<xsd:attribute name="threshold" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The threshold (or limit) against which the eviction algorithm runs. Once the threashold is reached, eviction is
