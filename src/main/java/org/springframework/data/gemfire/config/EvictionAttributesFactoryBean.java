@@ -25,85 +25,64 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 /**
  * Simple utility class used for defining nested factory-method like definitions w/o polluting the container with useless beans.
- * 
+ * <p/>
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see com.gemstone.gemfire.cache.EvictionAttributes
+ * @see com.gemstone.gemfire.cache.util.ObjectSizer
  */
+@SuppressWarnings("unused")
 class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, InitializingBean {
 
-	private EvictionAttributes evictionAttr;
-
-	private Integer threshold = null;
-	private ObjectSizer objectSizer = null;
 	private EvictionAction action = null;
+
+	private EvictionAttributes evictionAttributes;
+
 	private EvictionType type = EvictionType.ENTRY_COUNT;
 
-	public void afterPropertiesSet() {
-		if (action == null) {
-			action = EvictionAction.DEFAULT_EVICTION_ACTION;
-		}
+	private Integer threshold = null;
 
-		evictionAttr = createAttributes();
+	private ObjectSizer objectSizer = null;
+
+	public void afterPropertiesSet() {
+		this.action = (this.action != null ? action : EvictionAction.DEFAULT_EVICTION_ACTION);
+		evictionAttributes = createAttributes();
 	}
 
-	private EvictionAttributes createAttributes() {
+	EvictionAttributes createAttributes() {
 		switch (type) {
-		case HEAP_PERCENTAGE:
-			return EvictionAttributes.createLRUHeapAttributes(objectSizer, action);
-
-		case MEMORY_SIZE:
-			if (threshold != null) {
-				return EvictionAttributes.createLRUMemoryAttributes(threshold, objectSizer, action);
-			}
-			return EvictionAttributes.createLRUMemoryAttributes(objectSizer, action);
-
-		// consider entry count as default
-		case ENTRY_COUNT:
-		default:
-			if (threshold != null) {
-				return EvictionAttributes.createLRUEntryAttributes(threshold, action);
-			}
-			return EvictionAttributes.createLRUEntryAttributes();
+			case HEAP_PERCENTAGE:
+				if (threshold != null) {
+					throw new IllegalArgumentException(
+						"The HEAP_PERCENTAGE (LRU_HEAP algorithm) does not support threshold (a.k.a. maximum)!");
+				}
+				return EvictionAttributes.createLRUHeapAttributes(objectSizer, action);
+			case MEMORY_SIZE:
+				if (threshold != null) {
+					return EvictionAttributes.createLRUMemoryAttributes(threshold, objectSizer, action);
+				}
+				return EvictionAttributes.createLRUMemoryAttributes(objectSizer, action);
+			case ENTRY_COUNT:
+			default:
+				if (threshold != null) {
+					return EvictionAttributes.createLRUEntryAttributes(threshold, action);
+				}
+				return EvictionAttributes.createLRUEntryAttributes();
 		}
 	}
 
 	public EvictionAttributes getObject() {
-		return evictionAttr;
+		return evictionAttributes;
 	}
 
 	public Class<?> getObjectType() {
-		return (evictionAttr != null ? evictionAttr.getClass() : EvictionAttributes.class);
+		return (evictionAttributes != null ? evictionAttributes.getClass() : EvictionAttributes.class);
 	}
 
 	public boolean isSingleton() {
 		return true;
-	}
-
-	/**
-	 * @return the threshold
-	 */
-	public Integer getThreshold() {
-		return threshold;
-	}
-
-	/**
-	 * @param threshold the threshold to set
-	 */
-	public void setThreshold(Integer threshold) {
-		this.threshold = threshold;
-	}
-
-	/**
-	 * @return the objectSizer
-	 */
-	public ObjectSizer getObjectSizer() {
-		return objectSizer;
-	}
-
-	/**
-	 * @param objectSizer the objectSizer to set
-	 */
-	public void setObjectSizer(ObjectSizer objectSizer) {
-		this.objectSizer = objectSizer;
 	}
 
 	/**
@@ -121,6 +100,34 @@ class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, 
 	}
 
 	/**
+	 * @return the objectSizer
+	 */
+	public ObjectSizer getObjectSizer() {
+		return objectSizer;
+	}
+
+	/**
+	 * @param objectSizer the objectSizer to set
+	 */
+	public void setObjectSizer(ObjectSizer objectSizer) {
+		this.objectSizer = objectSizer;
+	}
+
+	/**
+	 * @return the threshold
+	 */
+	public Integer getThreshold() {
+		return threshold;
+	}
+
+	/**
+	 * @param threshold the threshold to set
+	 */
+	public void setThreshold(Integer threshold) {
+		this.threshold = threshold;
+	}
+
+	/**
 	 * @return the type
 	 */
 	public EvictionType getType() {
@@ -133,4 +140,5 @@ class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, 
 	public void setType(EvictionType type) {
 		this.type = type;
 	}
+
 }
