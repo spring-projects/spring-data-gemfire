@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.config;
 
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -45,6 +46,10 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 			asyncEventListenerElement, builder);
 
 		builder.addPropertyValue("asyncEventListener", asyncEventListener);
+
+		if (asyncEventListener instanceof RuntimeBeanReference) {
+			builder.addDependsOn(((RuntimeBeanReference) asyncEventListener).getBeanName());
+		}
 
 		String cacheRefAttribute = element.getAttribute("cache-ref");
 
@@ -79,6 +84,7 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 
 				int i = 0;
 				String name = regionName + ".asyncEventQueue#" + i;
+
 				while (parserContext.getRegistry().isBeanNameInUse(name)) {
 					i++;
 					name = regionName + ".asyncEventQueue#" + i;
