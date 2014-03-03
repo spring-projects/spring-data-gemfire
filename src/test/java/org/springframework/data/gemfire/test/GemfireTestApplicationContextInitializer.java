@@ -22,7 +22,9 @@ import org.springframework.util.StringUtils;
  *
  */
 public class GemfireTestApplicationContextInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
 	private static Log logger = LogFactory.getLog(GemfireTestApplicationContextInitializer.class);
+
 	public static final String GEMFIRE_TEST_RUNNER_DISABLED = "org.springframework.data.gemfire.test.GemfireTestRunner.nomock";
 
 	/* (non-Javadoc)
@@ -32,11 +34,14 @@ public class GemfireTestApplicationContextInitializer implements ApplicationCont
 	public void initialize(ConfigurableApplicationContext applicationContext) {
 		if (StringUtils.hasText(System.getProperty(GEMFIRE_TEST_RUNNER_DISABLED))) {
 			String value = System.getProperty(GEMFIRE_TEST_RUNNER_DISABLED);
-			if (!(value.equalsIgnoreCase("NO") || value.equalsIgnoreCase("FALSE"))) {
-				logger.warn("Mocks disabled. Using real GemFire components:" +  GEMFIRE_TEST_RUNNER_DISABLED + " = " + value);
+
+			if (!("NO".equalsIgnoreCase(value) || "FALSE".equalsIgnoreCase(value))) {
+				logger.warn(String.format("Mocks disabled. Using real GemFire components: %1$s = %2$s",
+					GEMFIRE_TEST_RUNNER_DISABLED, value));
 				return;
 			}
 		}
+
 		applicationContext.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
 	}
 

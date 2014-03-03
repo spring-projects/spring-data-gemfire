@@ -25,12 +25,12 @@
 		<gfe:eviction type="HEAP_PERCENTAGE" action="OVERFLOW_TO_DISK"/>
 	</gfe:partitioned-region>
 
-	<gfe:replicated-region id="Five">
-		<gfe:eviction threshold="85" type="MEMORY_SIZE" action="OVERFLOW_TO_DISK"/>
-	</gfe:replicated-region>
-
-	<gfe:partitioned-region id="Six">
-		<gfe:eviction type="MEMORY_SIZE"/>
+	<gfe:partitioned-region id="Five">
+		<gfe:eviction threshold="85" type="MEMORY_SIZE" action="LOCAL_DESTROY"/>
 	</gfe:partitioned-region>
+
+	<gfe:replicated-region id="Six">
+		<gfe:eviction type="MEMORY_SIZE"/>
+	</gfe:replicated-region>
 
 </beans>

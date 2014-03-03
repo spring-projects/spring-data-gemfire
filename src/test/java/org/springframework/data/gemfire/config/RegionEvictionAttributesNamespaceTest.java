@@ -117,17 +117,17 @@ public class RegionEvictionAttributesNamespaceTest {
 	public void testMemorySizeRegionEvictionAttributes() {
 		assertNotNull(five);
 		assertNotNull(five.getAttributes());
-		assertEquals(DataPolicy.REPLICATE, five.getAttributes().getDataPolicy());
+		assertEquals(DataPolicy.PARTITION, five.getAttributes().getDataPolicy());
 		assertNotNull(five.getAttributes().getEvictionAttributes());
-		assertEquals(EvictionAction.OVERFLOW_TO_DISK, five.getAttributes().getEvictionAttributes().getAction());
+		assertEquals(EvictionAction.LOCAL_DESTROY, five.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, five.getAttributes().getEvictionAttributes().getAlgorithm());
 		assertEquals(85, five.getAttributes().getEvictionAttributes().getMaximum());
 
 		assertNotNull(six);
 		assertNotNull(six.getAttributes());
-		assertEquals(DataPolicy.PARTITION, six.getAttributes().getDataPolicy());
+		assertEquals(DataPolicy.REPLICATE, six.getAttributes().getDataPolicy());
 		assertNotNull(six.getAttributes().getEvictionAttributes());
-		assertEquals(EvictionAction.LOCAL_DESTROY, six.getAttributes().getEvictionAttributes().getAction());
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, six.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, six.getAttributes().getEvictionAttributes().getAlgorithm());
 
 		if (six.getAttributes().getEvictionAttributes() instanceof EvictionAttributesImpl) {

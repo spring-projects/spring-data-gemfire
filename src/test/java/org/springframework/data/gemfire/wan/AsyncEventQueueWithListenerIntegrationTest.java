@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
@@ -49,7 +50,8 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
  * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
  * @since 1.0.0
  */
-@ContextConfiguration("asyncEventQueueWithListener.xml")
+@ContextConfiguration(value = "asyncEventQueueWithListener.xml",
+	initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class AsyncEventQueueWithListenerIntegrationTest {

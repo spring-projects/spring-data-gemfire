@@ -19,6 +19,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * @author David Turanski
@@ -43,7 +44,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 
 	private boolean batchConflationEnabled;
 
-	private int dispatcherThreads;
+	private int dispatcherThreads = GatewaySender.DEFAULT_DISPATCHER_THREADS;
 
 	private OrderPolicy orderPolicy;
 
@@ -66,6 +67,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		when(asyncEventQueue.getBatchTimeInterval()).thenReturn(this.batchTimeInterval);
 		when(asyncEventQueue.getOrderPolicy()).thenReturn(this.orderPolicy);
 		when(asyncEventQueue.getDispatcherThreads()).thenReturn(this.dispatcherThreads);
+
 		return this.asyncEventQueue;
 	}
 
