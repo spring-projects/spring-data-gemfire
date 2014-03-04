@@ -31,9 +31,7 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.lru.LRUCapacityController;
-import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
 
 /**
  * The RegionEvictionAttributesNamespaceTest class is a test suite of test cases testing the use of Eviction settings
@@ -82,10 +80,8 @@ public class RegionEvictionAttributesNamespaceTest {
 		assertEquals(EvictionAction.LOCAL_DESTROY, two.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_ENTRY, two.getAttributes().getEvictionAttributes().getAlgorithm());
 
-		if (two.getAttributes().getEvictionAttributes() instanceof EvictionAttributesImpl) {
-			assertEquals(LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES, 
-				two.getAttributes().getEvictionAttributes().getMaximum());
-		}
+		assertEquals(LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES,
+			two.getAttributes().getEvictionAttributes().getMaximum());
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -117,23 +113,19 @@ public class RegionEvictionAttributesNamespaceTest {
 	public void testMemorySizeRegionEvictionAttributes() {
 		assertNotNull(five);
 		assertNotNull(five.getAttributes());
-		assertEquals(DataPolicy.PARTITION, five.getAttributes().getDataPolicy());
+		assertEquals(DataPolicy.REPLICATE, five.getAttributes().getDataPolicy());
 		assertNotNull(five.getAttributes().getEvictionAttributes());
-		assertEquals(EvictionAction.LOCAL_DESTROY, five.getAttributes().getEvictionAttributes().getAction());
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, five.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, five.getAttributes().getEvictionAttributes().getAlgorithm());
-		assertEquals(85, five.getAttributes().getEvictionAttributes().getMaximum());
+		assertEquals(128, five.getAttributes().getEvictionAttributes().getMaximum());
 
 		assertNotNull(six);
 		assertNotNull(six.getAttributes());
-		assertEquals(DataPolicy.REPLICATE, six.getAttributes().getDataPolicy());
+		assertEquals(DataPolicy.PARTITION, six.getAttributes().getDataPolicy());
 		assertNotNull(six.getAttributes().getEvictionAttributes());
 		assertEquals(EvictionAction.OVERFLOW_TO_DISK, six.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, six.getAttributes().getEvictionAttributes().getAlgorithm());
-
-		if (six.getAttributes().getEvictionAttributes() instanceof EvictionAttributesImpl) {
-			assertEquals(MemLRUCapacityController.DEFAULT_MAXIMUM_MEGABYTES,
-				six.getAttributes().getEvictionAttributes().getMaximum());
-		}
+		assertEquals(256, six.getAttributes().getEvictionAttributes().getMaximum());
 	}
 
 }
