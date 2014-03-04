@@ -33,6 +33,7 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
  * @see com.gemstone.gemfire.cache.EvictionAttributes
  * @see com.gemstone.gemfire.cache.util.ObjectSizer
  */
+@SuppressWarnings("unused")
 class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, InitializingBean {
 
 	private EvictionAction action = null;

@@ -32,6 +32,7 @@ import org.springframework.data.repository.query.parser.Part;
  * @author Oliver Gierke
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class PredicatesUnitTests {
 
 	@Test

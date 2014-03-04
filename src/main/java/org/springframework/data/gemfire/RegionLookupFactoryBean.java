@@ -35,6 +35,7 @@ import com.gemstone.gemfire.cache.Region;
  * @author Costin Leau
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>, InitializingBean, BeanNameAware {
 
 	protected final Log log = LogFactory.getLog(getClass());

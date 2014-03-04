@@ -44,6 +44,7 @@ import com.gemstone.gemfire.cache.Region;
  */
 @ContextConfiguration("lookupSubRegion.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unused")
 public class LookupSubRegionTest {
 
 	@Autowired

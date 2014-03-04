@@ -50,6 +50,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * @author David Turanski
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements BeanFactoryAware,
 		DisposableBean {
 

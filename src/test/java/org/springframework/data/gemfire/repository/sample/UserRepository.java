@@ -29,6 +29,7 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
  * @see org.springframework.data.gemfire.repository.sample.User
  * @since 1.3.4
  */
+@SuppressWarnings("unused")
 public interface UserRepository extends GemfireRepository<User, String> {
 
 	//@Query("SELECT DISTINCT * FROM /Users u WHERE u.active = true")

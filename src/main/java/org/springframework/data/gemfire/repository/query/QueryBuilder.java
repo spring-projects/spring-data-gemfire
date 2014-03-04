@@ -16,6 +16,7 @@
 package org.springframework.data.gemfire.repository.query;
 
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
+import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
 
 /**

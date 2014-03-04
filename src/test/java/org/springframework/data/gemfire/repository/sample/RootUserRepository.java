@@ -28,6 +28,7 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
  * @see org.springframework.data.gemfire.repository.sample.RootUser
  * @since 1.3.4
  */
+@SuppressWarnings("unused")
 public interface RootUserRepository extends GemfireRepository<RootUser, String> {
 
 	public List<RootUser> findDistinctByUsername(String username);

@@ -49,6 +49,7 @@ import com.gemstone.gemfire.cache.DiskStore;
 @ContextConfiguration(locations = "diskstore-using-propertyplaceholders-config.xml",
 	initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unused")
 public class DiskStoreBeanUsingPropertyPlaceholdersIntegrationTest {
 
 	@Autowired
@@ -57,6 +58,7 @@ public class DiskStoreBeanUsingPropertyPlaceholdersIntegrationTest {
 	@Resource(name="diskStoreConfiguration")
 	private Map<String, Object> diskStoreConfiguration;
 
+	@SuppressWarnings("unchecked")
 	protected Object getExpectedValue(final String propertyPlaceholderName) {
 		return diskStoreConfiguration.get(propertyPlaceholderName);
 	}

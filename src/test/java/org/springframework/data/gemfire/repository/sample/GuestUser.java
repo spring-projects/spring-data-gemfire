@@ -27,6 +27,7 @@ import org.springframework.data.gemfire.mapping.Region;
  * @since 1.3.4
  */
 @Region("/Local/Guest/Users")
+@SuppressWarnings("unused")
 public class GuestUser extends User {
 
 	public GuestUser(final String username) {

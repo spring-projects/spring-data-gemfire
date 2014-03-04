@@ -28,6 +28,7 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
  * @see org.springframework.data.gemfire.repository.sample.GuestUser
  * @since 1.3.4
  */
+@SuppressWarnings("unused")
 public interface GuestUserRepository extends GemfireRepository<GuestUser, String> {
 
 	public List<GuestUser> findDistinctByUsername(String username);

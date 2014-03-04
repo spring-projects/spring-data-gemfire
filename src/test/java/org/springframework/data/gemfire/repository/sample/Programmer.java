@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
  * @since 1.3.4
  */
 @Region("Programmers")
+@SuppressWarnings("unused")
 public class Programmer extends User {
 
 	protected static final String DEFAULT_PROGRAMMING_LANGUAGE = "?";

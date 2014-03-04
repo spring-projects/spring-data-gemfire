@@ -50,6 +50,7 @@ import com.gemstone.gemfire.cache.Region;
  */
 @ContextConfiguration("userRepositoryQueriesIntegrationTest.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unused")
 public class UserRepositoryQueriesIntegrationTest {
 
 	@Resource(name = "Users")
