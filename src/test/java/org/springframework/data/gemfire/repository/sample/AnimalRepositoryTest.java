@@ -47,7 +47,7 @@ public class AnimalRepositoryTest {
 		assertEquals(1L, dogRepo.count());
 
 		Animal foundFelix = catRepo.findOne(1L);
-		assertEquals(leo, foundFelix);
+		assertEquals(felix, foundFelix);
 
 		Animal findOther = catRepo.findByName("Leo");
 		assertEquals(leo, findOther);
