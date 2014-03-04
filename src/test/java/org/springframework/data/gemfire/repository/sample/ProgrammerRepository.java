@@ -29,7 +29,6 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
  * @see org.springframework.data.gemfire.repository.sample.Programmer
  * @since 1.3.4
  */
-@SuppressWarnings("unused")
 public interface ProgrammerRepository extends GemfireRepository<Programmer, String> {
 
 	public List<Programmer> findDistinctByProgrammingLanguageOrderByUsernameAsc(String programmingLanguage);

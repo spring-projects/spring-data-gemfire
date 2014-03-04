@@ -24,7 +24,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.QueryService;

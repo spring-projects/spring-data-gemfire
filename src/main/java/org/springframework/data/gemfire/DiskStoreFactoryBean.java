@@ -39,7 +39,6 @@ import com.gemstone.gemfire.cache.GemFireCache;
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
  */
-@SuppressWarnings("unused")
 public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, InitializingBean, BeanNameAware {
 
 	private DiskStoreFactory diskStoreFactory;

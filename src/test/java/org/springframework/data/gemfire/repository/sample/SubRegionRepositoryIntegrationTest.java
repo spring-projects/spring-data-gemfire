@@ -57,7 +57,6 @@ import com.gemstone.gemfire.cache.Region;
  */
 @ContextConfiguration("subregionRepository.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-@SuppressWarnings("unused")
 public class SubRegionRepositoryIntegrationTest {
 
 	private static final Map<String, RootUser> ADMIN_USER_DATA = new HashMap<String, RootUser>(5, 0.90f);

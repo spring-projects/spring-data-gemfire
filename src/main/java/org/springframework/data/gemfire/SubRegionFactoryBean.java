@@ -40,7 +40,6 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * (e.g. ReplicatedRegionFactoryBean) instead.
  */
 @Deprecated
-@SuppressWarnings("deprecation")
 public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implements FactoryBean<Region<K, V>>,
 		InitializingBean {
 

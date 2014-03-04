@@ -35,7 +35,6 @@ import com.gemstone.gemfire.cache.PartitionResolver;
  * @see org.springframework.data.gemfire.PartitionAttributesFactoryBean
  * @since 1.3.3
  */
-@SuppressWarnings("unused")
 public class PartitionAttributesFactoryBeanTest {
 
 	protected PartitionResolver createMockPartitionResolver(final String name) {

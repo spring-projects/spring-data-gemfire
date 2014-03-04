@@ -24,8 +24,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.listener.ContinuousQueryDefinition;
-import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 
 import com.gemstone.gemfire.cache.Cache;

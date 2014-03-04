@@ -227,7 +227,6 @@ abstract class ParsingUtils {
 	 * @param regionAttributesBuilder the Region Attributes builder.
 	 * @return true if parsing actually occurred, false otherwise.
 	 */
-	@SuppressWarnings("unused")
 	static boolean parseSubscription(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder regionAttributesBuilder) {
 
@@ -293,7 +292,6 @@ abstract class ParsingUtils {
 		return result;
 	}
 
-	@SuppressWarnings("unused")
 	static void parseOptionalRegionAttributes(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder regionAttributesBuilder) {
 
@@ -332,7 +330,6 @@ abstract class ParsingUtils {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	static void parseMembershipAttributes(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder regionAttributesBuilder) {
 

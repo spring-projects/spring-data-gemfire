@@ -33,7 +33,6 @@ import org.springframework.util.ObjectUtils;
  * @since 1.3.4
  */
 @Region("Users")
-@SuppressWarnings("unused")
 public class User implements Comparable<User> {
 
 	private Boolean active = true;
