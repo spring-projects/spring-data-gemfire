@@ -102,10 +102,18 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 	private GemfireTemplate getTemplate(RepositoryMetadata metadata) {
 
+		Class<?> repositoryClass = metadata.getRepositoryInterface();
 		Class<?> domainClass = metadata.getDomainType();
-		GemfirePersistentEntity<?> entity = context.getPersistentEntity(domainClass);
+		
+		GemfirePersistentEntity<?> entity;
+		if (repositoryClass.isAnnotationPresent(org.springframework.data.gemfire.mapping.Region.class)) {
+			entity = context.getPersistentEntity(repositoryClass);
+		}
+		else {
+			entity = context.getPersistentEntity(domainClass);
+		}
 
-		Region<?, ?> region = regions.getRegion(domainClass);
+		Region<?, ?> region = regions.getRegion(entity.getRegionName());
 
 		if (region == null) {
 			throw new IllegalStateException(String.format(
