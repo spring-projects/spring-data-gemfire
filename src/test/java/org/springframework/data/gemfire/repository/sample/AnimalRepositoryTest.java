@@ -9,51 +9,66 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+/**
+ * @author Stuart Williams
+ * @author John Blum
+ */
 @ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unused")
 public class AnimalRepositoryTest {
 
 	@Autowired
-	CatRepository catRepo;
+	private CatRepository catRepo;
 
 	@Autowired
-	DogRepository dogRepo;
+	private DogRepository dogRepo;
+
+	protected static Animal createAnimal(final long id, final String name) {
+		Animal animal = new Animal();
+		animal.setId(id);
+		animal.setName(name);
+		return animal;
+	}
 
 	@Test
-	public void foo() {
+	public void testAnimals() {
+		Animal felix = createAnimal(1, "Felix");
+		Animal leo = createAnimal(2, "Leo");
+		Animal credo = createAnimal(3, "Credo");
+		Animal fido = createAnimal(1, "Fido");
 
-		Animal felix = new Animal();
-		felix.setId(1);
-		felix.setName("Felix");
-
-		Animal leo = new Animal();
-		leo.setId(2);
-		leo.setName("Leo");
-
-		Animal fido = new Animal();
-		fido.setId(1);
-		fido.setName("Fido");
-
-		Animal leo_ = catRepo.save(leo);
-		assertNotNull(leo_);
-
-		Animal felix_ = catRepo.save(felix);
-		assertNotNull(felix_);
-
-		Animal fido_ = dogRepo.save(fido);
-		assertNotNull(fido_);
-
-		assertEquals(2L, catRepo.count());
-		assertEquals(1L, dogRepo.count());
+		assertNotNull(catRepo.save(felix));
+		assertNotNull(catRepo.save(leo));
+		assertNotNull(catRepo.save(credo));
+		assertNotNull(dogRepo.save(fido));
+		assertNotNull(dogRepo.save(credo));
+		assertEquals(3L, catRepo.count());
+		assertEquals(2L, dogRepo.count());
 
 		Animal foundFelix = catRepo.findOne(1L);
+
 		assertEquals(felix, foundFelix);
 
-		Animal findOther = catRepo.findByName("Leo");
-		assertEquals(leo, findOther);
+		Animal foundLeo = catRepo.findBy("Leo");
+
+		assertEquals(leo, foundLeo);
+
+		Animal foundCredoTheCat = catRepo.findByName("Credo");
+
+		assertEquals(credo, foundCredoTheCat);
+		assertEquals(foundCredoTheCat, catRepo.findBy("Credo"));
+		assertEquals(foundCredoTheCat, catRepo.findOne(3L));
 
 		Animal foundFido = dogRepo.findBy("Fido");
+
 		assertEquals(fido, foundFido);
+
+		Animal foundCredoTheDog = dogRepo.findByName("Credo");
+
+		assertEquals(credo, foundCredoTheDog);
+		assertEquals(foundCredoTheDog, dogRepo.findBy("Credo"));
+		assertEquals(foundCredoTheDog, dogRepo.findOne(3L));
 	}
 
 }
