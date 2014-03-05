@@ -29,7 +29,7 @@
 		<gfe:eviction threshold="128" type="MEMORY_SIZE"/>
 	</gfe:replicated-region>
 
-	<gfe:partitioned-region id="Six">
+	<gfe:partitioned-region id="Six" local-max-memory="512">
 		<gfe:eviction threshold="256" type="MEMORY_SIZE" action="OVERFLOW_TO_DISK"/>
 	</gfe:partitioned-region>
 

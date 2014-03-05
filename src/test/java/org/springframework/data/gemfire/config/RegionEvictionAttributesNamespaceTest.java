@@ -125,7 +125,11 @@ public class RegionEvictionAttributesNamespaceTest {
 		assertNotNull(six.getAttributes().getEvictionAttributes());
 		assertEquals(EvictionAction.OVERFLOW_TO_DISK, six.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, six.getAttributes().getEvictionAttributes().getAlgorithm());
-		assertEquals(256, six.getAttributes().getEvictionAttributes().getMaximum());
+
+		int expectedMaximum = (Boolean.getBoolean("org.springframework.data.gemfire.test.GemfireTestRunner.nomock")
+			? 512 : 256);
+
+		assertEquals(expectedMaximum, six.getAttributes().getEvictionAttributes().getMaximum());
 	}
 
 }
