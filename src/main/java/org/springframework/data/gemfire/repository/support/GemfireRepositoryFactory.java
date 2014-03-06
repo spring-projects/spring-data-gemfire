@@ -36,6 +36,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Region;
 
@@ -58,11 +59,9 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 * @param regions must not be {@literal null}.
 	 * @param context
 	 */
-	public GemfireRepositoryFactory(Iterable<Region<?, ?>> regions,
-			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
-
+	public GemfireRepositoryFactory(Iterable<Region<?, ?>> regions, MappingContext<? extends GemfirePersistentEntity<?>,
+			GemfirePersistentProperty> context) {
 		Assert.notNull(regions);
-
 		this.context = context == null ? new GemfireMappingContext() : context;
 		this.regions = new Regions(regions, this.context);
 	}
@@ -70,14 +69,12 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.springframework.data.repository.core.support.RepositoryFactorySupport
-	 * #getEntityInformation(java.lang.Class)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
+	 * 	#getEntityInformation(java.lang.Class)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID extends Serializable> GemfireEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-
 		GemfirePersistentEntity<T> entity = (GemfirePersistentEntity<T>) context.getPersistentEntity(domainClass);
 		return new DefaultGemfireEntityInformation<T, ID>(entity);
 	}
@@ -85,64 +82,54 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.springframework.data.repository.core.support.RepositoryFactorySupport
-	 * #getTargetRepository(org.springframework.data.repository.core.
-	 * RepositoryMetadata)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
+	 * 	#getTargetRepository(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Object getTargetRepository(RepositoryMetadata metadata) {
-
 		GemfireEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
 		GemfireTemplate gemfireTemplate = getTemplate(metadata);
-
 		return new SimpleGemfireRepository(gemfireTemplate, entityInformation);
 	}
 
 	private GemfireTemplate getTemplate(RepositoryMetadata metadata) {
+		GemfirePersistentEntity<?> entity = context.getPersistentEntity(metadata.getDomainType());
 
-		Class<?> repositoryClass = metadata.getRepositoryInterface();
-		Class<?> domainClass = metadata.getDomainType();
-		
-		GemfirePersistentEntity<?> entity;
-		if (repositoryClass.isAnnotationPresent(org.springframework.data.gemfire.mapping.Region.class)) {
-			entity = context.getPersistentEntity(repositoryClass);
-		}
-		else {
-			entity = context.getPersistentEntity(domainClass);
-		}
+		String entityRegionName = entity.getRegionName();
+		String repositoryRegionName = getRepositoryRegionName(metadata.getRepositoryInterface());
+		String regionName = (StringUtils.hasText(repositoryRegionName) ? repositoryRegionName : entityRegionName);
 
-		Region<?, ?> region = regions.getRegion(entity.getRegionName());
+		Region<?, ?> region = regions.getRegion(regionName);
 
 		if (region == null) {
-			throw new IllegalStateException(String.format(
-					"No region '%s' found for domain class %s! Make sure you have "
-							+ "configured a Gemfire region of that name in your application context!",
-					entity.getRegionName(), domainClass));
+			throw new IllegalStateException(String.format("No region '%s' found for domain class %s!"
+				+ " Make sure you have configured a Gemfire region of that name in your application context!",
+					regionName, metadata.getDomainType()));
 		}
 
 		Class<?> regionKeyType = region.getAttributes().getKeyConstraint();
 		Class<?> entityIdType = metadata.getIdType();
 
 		if (regionKeyType != null && entity.getIdProperty() != null) {
-			Assert.isTrue(
-					regionKeyType.isAssignableFrom(entityIdType),
-					String.format(
-							"The region referenced only supports keys of type %s but the entity to be stored has an id of type %s!",
-							regionKeyType, entityIdType));
+			Assert.isTrue(regionKeyType.isAssignableFrom(entityIdType), String.format(
+				"The region referenced only supports keys of type %s but the entity to be stored has an id of type %s!",
+					regionKeyType, entityIdType));
 		}
 
 		return new GemfireTemplate(region);
 	}
 
+	private String getRepositoryRegionName(final Class<?> repositoryClass) {
+		return (repositoryClass.isAnnotationPresent(org.springframework.data.gemfire.mapping.Region.class) ?
+			repositoryClass.getAnnotation(org.springframework.data.gemfire.mapping.Region.class).value() : null);
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.springframework.data.repository.core.support.RepositoryFactorySupport
-	 * #getRepositoryBaseClass(org.springframework.data.repository.core.
-	 * RepositoryMetadata)
+	 *
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
+	 * 	#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
@@ -152,10 +139,8 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.springframework.data.repository.core.support.RepositoryFactorySupport
-	 * #getQueryLookupStrategy(org.springframework.data.repository.query.
-	 * QueryLookupStrategy.Key)
+	 * @see springframework.data.repository.core.support.RepositoryFactorySupport
+	 * 	#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key)
 	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
@@ -180,4 +165,5 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 			}
 		};
 	}
+
 }

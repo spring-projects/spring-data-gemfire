@@ -79,7 +79,7 @@ public class Plant {
 
 	@Override
 	public String toString() {
-		return String.format("{ type = %1$s, id = %2$s, name = %3$s }", getClass().getSimpleName(), getId(), getName());
+		return String.format("{ @type = %1$s, id = %2$s, name = %3$s }", getClass().getSimpleName(), getId(), getName());
 	}
 
 }

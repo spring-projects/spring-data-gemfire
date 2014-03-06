@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.repository.sample;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 
@@ -27,8 +28,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * The PlantRepositoryTest class is a test suite of test cases testing the functionality behind PR #55 involving
- * persisting application domain object/entities to multiple Regions in GemFire's Cache.
+ * The IncompatibleRegionKeyEntityIdAnimalRepositoryTest class is a test suite of test cases testing the functionality
+ * behind PR #55 involving persisting application domain object/entities to multiple Regions in GemFire's Cache.
  * <p/>
  * @author John Blum
  * @see org.junit.Test
@@ -36,26 +37,33 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @since 1.4.0
  * @link https://github.com/spring-projects/spring-data-gemfire/pull/55
  */
-public class PlantRepositoryTest {
+public class IncompatibleRegionKeyEntityIdAnimalRepositoryTest {
 
 	protected static final String APPLICATION_CONTEXT_CONFIG_LOCATION = String.format("%1$s%2$s%1$s%3$s",
-		File.separator, PlantRepositoryTest.class.getPackage().getName().replace('.', File.separatorChar),
-			"PlantRepositoryTest-context.xml");
+		File.separator, AnimalRepositoryTest.class.getPackage().getName().replace('.', File.separatorChar),
+			"IncompatibleRegionKeyEntityIdAnimalRepositoryTest-context.xml");
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testStorePlantHavingStringIdInPlantsRegionWithLongKey() {
+	public void testStoreAnimalHavingLongIdInRabbitsRegionWithStringKey() {
 		try {
-			ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(
+			ConfigurableApplicationContext applicationContext = new ClassPathXmlApplicationContext(
 				APPLICATION_CONTEXT_CONFIG_LOCATION);
-			context.getBean(PlantRepository.class);
+			applicationContext.getBean(RabbitRepository.class);
 		}
-		// NOTE technically, the IllegalArgumentException for incompatible Region 'Key' and Entity ID is thrown
-		// when the Spring container starts up and the Repository beans are created.
+		// NOTE the ClassCastException thrown from GemFire is unexpected; this is not correct and the identifying type
+		// mismatch should be caught and handled by GemfireRepositoryFactory.getTemplate(..) method on line 129
+		// (appropriately throwing an IllegalArgumentException) after satisfying the condition on line 128,
+		// which always occurs with the @Region annotation set on the domain class/entity!
+		catch (ClassCastException unexpected) {
+			//unexpected.printStackTrace(System.err);
+			//assertTrue(unexpected.getMessage().contains("key ( java.lang.Long ) does not satisfy keyConstraint ( java.lang.String )"));
+			fail(unexpected.getMessage());
+		}
 		catch (BeanCreationException expected) {
 			//expected.printStackTrace(System.err);
 			assertTrue(expected.getCause() instanceof IllegalArgumentException);
 			assertEquals(String.format("The region referenced only supports keys of type %1$s but the entity to be stored has an id of type %2$s!",
-				Long.class, String.class), expected.getCause().getMessage());
+				String.class, Long.class), expected.getCause().getMessage());
 			throw (IllegalArgumentException) expected.getCause();
 		}
 	}
