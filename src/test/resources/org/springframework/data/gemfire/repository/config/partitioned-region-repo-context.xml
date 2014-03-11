@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:p="http://www.springframework.org/schema/p"
     xmlns:gfe="http://www.springframework.org/schema/gemfire"
     xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
-    xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	xmlns:repo="http://www.springframework.org/schema/data/repository"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire-1.2.xsd">
+    	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
+		http://www.springframework.org/schema/data/repository http://www.springframework.org/schema/data/repository/spring-repository.xsd
+">
 
-	<gfe-data:repositories base-package="org.springframework.data.gemfire.repository.sample" />
-	
-	<gfe:cache use-bean-factory-locator="false" />	
-	<gfe:partitioned-region id="simple" />	
+	<gfe:cache use-bean-factory-locator="false"/>
+
+	<gfe:partitioned-region id="simple"/>
+
+	<gfe-data:repositories base-package="org.springframework.data.gemfire.repository.sample">
+		<repo:include-filter type="assignable" expression="org.springframework.data.gemfire.repository.sample.PersonRepository"/>
+	</gfe-data:repositories>
+
 </beans>

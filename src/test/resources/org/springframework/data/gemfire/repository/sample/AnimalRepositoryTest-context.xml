@@ -2,12 +2,14 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
+	xmlns:repo="http://www.springframework.org/schema/data/repository"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
         http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
+		http://www.springframework.org/schema/data/repository http://www.springframework.org/schema/data/repository/spring-repository.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
@@ -31,6 +33,9 @@
 		key-constraint="java.lang.Long"
 		value-constraint="org.springframework.data.gemfire.repository.sample.Animal"/>
 
-	<gfe-data:repositories base-package="org.springframework.data.gemfire.repository.sample"/>
+	<gfe-data:repositories base-package="org.springframework.data.gemfire.repository.sample">
+		<repo:include-filter type="assignable" expression="org.springframework.data.gemfire.repository.sample.CatRepository"/>
+		<repo:include-filter type="assignable" expression="org.springframework.data.gemfire.repository.sample.DogRepository"/>
+	</gfe-data:repositories>
 
 </beans>
