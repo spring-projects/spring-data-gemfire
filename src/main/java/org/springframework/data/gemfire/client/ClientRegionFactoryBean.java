@@ -75,8 +75,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	private Interest<K>[] interests;
 
-	private Region<?, ?> parent;
-
 	private RegionAttributes<K, V> attributes;
 
 	private Resource snapshot;
@@ -91,6 +89,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		Assert.isTrue(cache instanceof ClientCache, String.format("Unable to create regions from %1$s", cache));
 
@@ -145,13 +144,13 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			factory.setDiskStoreName(diskStoreName);
 		}
 
-		Region<K, V> clientRegion = (this.parent != null ? factory.createSubregion(parent, regionName)
+		Region<K, V> clientRegion = (getParent() != null ? factory.createSubregion(getParent(), regionName)
 			: factory.create(regionName));
 
 		if (log.isInfoEnabled()) {
-			if (parent != null) {
+			if (getParent() != null) {
 				log.info(String.format("Created new Client Cache sub-Region [%1$s] under parent Region [%2$s].",
-					regionName, parent.getName()));
+					regionName, getParent().getName()));
 			}
 			else {
 				log.info(String.format("Created new Client Cache Region [%1$s].", regionName));
@@ -237,15 +236,13 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * @see com.gemstone.gemfire.cache.DataPolicy
 	 */
 	protected void assertDataPolicyAndPersistentAttributeAreCompatible(final DataPolicy resolvedDataPolicy) {
-		final boolean persistentNotSpecified = (this.persistent == null);
-
 		if (resolvedDataPolicy.withPersistence()) {
-			Assert.isTrue(persistentNotSpecified || isPersistent(), String.format(
+			Assert.isTrue(isPersistentUnspecified() || isPersistent(), String.format(
 				"Data Policy '%1$s' is invalid when persistent is false.", resolvedDataPolicy));
 		}
 		else {
 			// NOTE otherwise, the Data Policy is without persistence, so...
-			Assert.isTrue(persistentNotSpecified || isNotPersistent(), String.format(
+			Assert.isTrue(isPersistentUnspecified() || isNotPersistent(), String.format(
 				"Data Policy '%1$s' is invalid when persistent is true.", resolvedDataPolicy));
 		}
 	}
@@ -380,7 +377,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	/**
 	 * Sets the pool used by this client.
 	 *
-	 * @param pool
+	 * @param pool the GemFire client pool.
 	 */
 	public void setPool(Pool pool) {
 		Assert.notNull(pool, "pool cannot be null");
@@ -390,7 +387,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	/**
 	 * Sets the pool name used by this client.
 	 *
-	 * @param poolName
+	 * @param poolName a String specify the name of the GemFire client pool.
 	 */
 	public void setPoolName(String poolName) {
 		Assert.hasText(poolName, "pool name is required");
@@ -474,7 +471,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	/**
 	 * Sets the name of disk store to use for overflow and persistence
-	 * @param diskStoreName
+	 * <p/>
+	 * @param diskStoreName a String specifying the 'name' of the client Region Disk Store.
 	 */
 	public void setDiskStoreName(String diskStoreName) {
 		this.diskStoreName = diskStoreName;
@@ -494,8 +492,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		setDataPolicy(resolvedDataPolicy);
 	}
 
-	public void setParent(Region<?, ?> parent) {
-		this.parent = parent;
+	protected boolean isPersistentUnspecified() {
+		return (persistent == null);
 	}
 
 	protected boolean isPersistent() {

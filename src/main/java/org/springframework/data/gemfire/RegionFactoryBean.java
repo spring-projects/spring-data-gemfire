@@ -56,6 +56,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * @author David Turanski
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean, SmartLifecycle {
 
 	protected final Log log = LogFactory.getLog(getClass());
