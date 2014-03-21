@@ -49,7 +49,7 @@ class ClientRegionParser extends AbstractRegionParser {
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 
-		validateDataPolicyShortcutMutualExclusion(element, parserContext);
+		validateDataPolicyShortcutAttributesMutualExclusion(element, parserContext);
 
 		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
@@ -111,14 +111,6 @@ class ClientRegionParser extends AbstractRegionParser {
 
 		if (!subRegion) {
 			parseSubRegions(element, parserContext, resolvedCacheRef);
-		}
-	}
-
-	private void validateDataPolicyShortcutMutualExclusion(final Element element, final ParserContext parserContext) {
-		if (element.hasAttribute("data-policy") && element.hasAttribute("shortcut")) {
-			parserContext.getReaderContext().error(String.format(
-				"Only one of [data-policy, shortcut] may be specified with element '%1$s'.", element.getTagName()),
-				element);
 		}
 	}
 

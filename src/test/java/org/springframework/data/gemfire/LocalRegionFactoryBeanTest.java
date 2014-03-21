@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
@@ -28,11 +29,13 @@ import org.springframework.data.gemfire.support.AbstractRegionFactoryBeanTest;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 
 /**
  * The PartitionedRegionFactoryBeanTest class is a test suite of test cases testing the component functionality
  * and correct behavior of the PartitionedRegionFactoryBean class.
  * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  * @see org.mockito.Mockito
@@ -50,30 +53,30 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		return new RegionFactoryBeanConfig(new LocalRegionFactoryBean(), "default") {
 
 			@Override
+			public void configureRegionFactoryBean() {
+			}
+
+			@Override
 			public void verify() {
 				Region region = regionFactoryBean.getRegion();
 				assertNotNull(region);
 				assertEquals(DataPolicy.DEFAULT, region.getAttributes().getDataPolicy());
 			}
-
-			@Override
-			public void configureRegionFactoryBean() {
-			}
 		};
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "deprecation", "rawtypes" })
 	private RegionFactoryBeanConfig invalidConfig() {
 		return new RegionFactoryBeanConfig(new LocalRegionFactoryBean(), "local-replicate") {
 
 			@Override
-			public void verify() {
-				assertNotNull(this.exception);
+			public void configureRegionFactoryBean() {
+				regionFactoryBean.setDataPolicy("replicate");
 			}
 
 			@Override
-			public void configureRegionFactoryBean() {
-				regionFactoryBean.setDataPolicy("replicate");
+			public void verify() {
+				assertNotNull(this.exception);
 			}
 		};
 	}
@@ -86,6 +89,67 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	protected RegionFactory<?, ?> createMockRegionFactory() {
 		return mock(RegionFactory.class);
+	}
+
+	@Test
+	public void testResolveDataPolicyWhenPersistentUnspecifiedAndDataPolicyUnspecified() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.resolveDataPolicy(mockRegionFactory, null, (String) null);
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.NORMAL));
+	}
+
+	@Test
+	public void testResolveDataPolicyWhenNotPersistentAndDataPolicyUnspecified() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.setPersistent(false);
+		factoryBean.resolveDataPolicy(mockRegionFactory, false, (String) null);
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.NORMAL));
+	}
+
+	@Test
+	public void testResolveDataPolicyWhenPersistentAndDataPolicyUnspecified() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.setPersistent(true);
+		factoryBean.resolveDataPolicy(mockRegionFactory, true, (String) null);
+		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveDataPolicyWithBlankDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+
+		try {
+			factoryBean.resolveDataPolicy(mockRegionFactory, null, "  ");
+		}
+		catch (IllegalArgumentException e) {
+			assertEquals("Data Policy '  ' is invalid.", e.getMessage());
+			throw e;
+		}
+		finally {
+			verify(mockRegionFactory, never()).setDataPolicy(null);
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.NORMAL));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.PRELOADED));
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveDataPolicyWithEmptyDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+
+		try {
+			factoryBean.resolveDataPolicy(mockRegionFactory, null, "");
+		}
+		catch (IllegalArgumentException e) {
+			assertEquals("Data Policy '' is invalid.", e.getMessage());
+			throw e;
+		}
+		finally {
+			verify(mockRegionFactory, never()).setDataPolicy(null);
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.NORMAL));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
+			verify(mockRegionFactory, never()).setDataPolicy(eq(DataPolicy.PRELOADED));
+		}
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -108,14 +172,14 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testResolveDataPolicyWithInvalidDataPolicyRegionType() {
+	public void testResolveDataPolicyWithInvalidDataPolicyType() {
 		RegionFactory mockRegionFactory = createMockRegionFactory();
 
 		try {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "PARTITION");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'PARTITION' is not supported in Local Regions.", e.getMessage());
+			assertEquals("Data Policy 'PARTITION' is not supported for Local Regions.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -127,14 +191,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	}
 
 	@Test
-	public void testResolveDataPolicyWithPersistentUnspecifiedAndDataPolicyUnspecified() {
-		RegionFactory mockRegionFactory = createMockRegionFactory();
-		factoryBean.resolveDataPolicy(mockRegionFactory, null, null);
-		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.NORMAL));
-	}
-
-	@Test
-	public void testResolveDataPolicyWithPersistentUnspecifiedAndNormalDataPolicy() {
+	public void testResolveDataPolicyWhenPersistentUnspecifiedAndNormalDataPolicy() {
 		RegionFactory mockRegionFactory = createMockRegionFactory();
 		factoryBean.resolveDataPolicy(mockRegionFactory, null, "Normal");
 		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.NORMAL));
@@ -157,7 +214,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	}
 
 	@Test
-	public void testResolveDataPolicyWithPersistentUnspecifiedAndPreloadedDataPolicy() {
+	public void testResolveDataPolicyWhenPersistentUnspecifiedAndPreloadedDataPolicy() {
 		RegionFactory mockRegionFactory = createMockRegionFactory();
 		factoryBean.resolveDataPolicy(mockRegionFactory, null, "preloaded");
 		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PRELOADED));
@@ -177,6 +234,56 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		factoryBean.setPersistent(true);
 		factoryBean.resolveDataPolicy(mockRegionFactory, true, "PRELOADED");
 		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveDataPolicyWhenShortcutIsNullAndPersistentReplicateDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+
+		try {
+			factoryBean.setShortcut(null);
+			factoryBean.resolveDataPolicy(mockRegionFactory, null, DataPolicy.PERSISTENT_REPLICATE);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is not supported for Local Regions.",
+				expected.getMessage());
+			throw expected;
+		}
+		finally {
+			verify(mockRegionFactory, never()).setDataPolicy(null);
+			verify(mockRegionFactory, never()).setDataPolicy(DataPolicy.NORMAL);
+			verify(mockRegionFactory, never()).setDataPolicy(DataPolicy.PRELOADED);
+			verify(mockRegionFactory, never()).setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveDataPolicyWhenShortcutNotPersistentAndPersistentReplicateDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+
+		try {
+			factoryBean.setShortcut(RegionShortcut.LOCAL_OVERFLOW);
+			factoryBean.resolveDataPolicy(mockRegionFactory, true, DataPolicy.PERSISTENT_REPLICATE);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is not supported for Local Regions.",
+				expected.getMessage());
+			throw expected;
+		}
+		finally {
+			verify(mockRegionFactory, never()).setDataPolicy(null);
+			verify(mockRegionFactory, never()).setDataPolicy(DataPolicy.NORMAL);
+			verify(mockRegionFactory, never()).setDataPolicy(DataPolicy.PRELOADED);
+			verify(mockRegionFactory, never()).setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+		}
+	}
+
+	@Test
+	public void testResolveDataPolicyWhenPersistentPersistentReplicateDataPolicy() {
+		RegionFactory mockRegionFactory = createMockRegionFactory();
+		factoryBean.setShortcut(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
+		factoryBean.resolveDataPolicy(mockRegionFactory, false, DataPolicy.PERSISTENT_REPLICATE);
+		verify(mockRegionFactory).setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
 	}
 
 }

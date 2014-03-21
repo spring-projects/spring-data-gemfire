@@ -21,7 +21,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionStoreException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.xml.sax.SAXParseException;
 
 /**
  * The SubRegionWithInvalidDataPolicyTest class is a test suite of test cases testing the data-policy and persistent
@@ -35,17 +37,15 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class SubRegionWithInvalidDataPolicyTest {
 
-	@Test(expected = BeanCreationException.class)
+	@Test(expected = XmlBeanDefinitionStoreException.class)
 	public void testSubRegionBeanDefinitionWithInconsistentDataPolicy() {
 		try {
 			new ClassPathXmlApplicationContext("/org/springframework/data/gemfire/config/subregion-with-invalid-datapolicy.xml");
 		}
-		catch (BeanCreationException expected) {
+		catch (XmlBeanDefinitionStoreException expected) {
 			//expected.printStackTrace(System.err);
-			assertTrue(expected.getMessage().contains("Error creating bean with name '/Parent/Child'"));
-			assertTrue(expected.getCause() instanceof IllegalArgumentException);
-			assertEquals("Data Policy 'PERSISTENT_PARTITION' is not supported in Replicated Regions.",
-				expected.getCause().getMessage());
+			assertTrue(expected.getCause() instanceof SAXParseException);
+			assertTrue(expected.getCause().getMessage().contains("PERSISTENT_PARTITION"));
 			throw expected;
 		}
 	}

@@ -39,6 +39,8 @@ class LocalRegionParser extends AbstractRegionParser {
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 
+		validateDataPolicyShortcutAttributesMutualExclusion(element, parserContext);
+
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			RegionAttributesFactoryBean.class);
 

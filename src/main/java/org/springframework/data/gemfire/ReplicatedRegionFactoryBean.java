@@ -27,30 +27,36 @@ import com.gemstone.gemfire.cache.RegionFactory;
 public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	@Override
-	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
-		if (dataPolicy != null) {
-			DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
-
-			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
-
-			if (DataPolicy.EMPTY.equals(resolvedDataPolicy)) {
-				resolvedDataPolicy = DataPolicy.EMPTY;
-			}
-			else {
-				// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
-				// configuration meta-data element for Region (i.e. <gfe:replicated-region .../>)!
-				Assert.isTrue(resolvedDataPolicy.withReplication(), String.format(
-					"Data Policy '%1$s' is not supported in Replicated Regions.", resolvedDataPolicy));
-			}
-
-			// Validate that the data-policy and persistent attributes are compatible when specified!
-			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
-
-			regionFactory.setDataPolicy(resolvedDataPolicy);
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
+		if (dataPolicy == null) {
+			dataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE);
+		}
+		else if (DataPolicy.EMPTY.equals(dataPolicy)) {
+			dataPolicy = DataPolicy.EMPTY;
 		}
 		else {
-			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE);
+			// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
+			// configuration meta-data element for the Region (i.e. <gfe:replicated-region .../>)!
+			Assert.isTrue(dataPolicy.withReplication(), String.format(
+				"Data Policy '%1$s' is not supported in Replicated Regions.", dataPolicy));
 		}
+
+		// Validate that the data-policy and persistent attributes are compatible when both are specified!
+		assertDataPolicyAndPersistentAttributesAreCompatible(dataPolicy);
+
+		regionFactory.setDataPolicy(dataPolicy);
+	}
+
+	@Override
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+		DataPolicy resolvedDataPolicy = null;
+
+		if (dataPolicy != null) {
+			resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+		}
+
+		resolveDataPolicy(regionFactory, persistent, resolvedDataPolicy);
 	}
 
 }

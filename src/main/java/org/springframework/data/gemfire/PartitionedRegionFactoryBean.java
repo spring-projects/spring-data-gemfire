@@ -28,32 +28,38 @@ import com.gemstone.gemfire.cache.RegionFactory;
 public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	@Override
-	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
-		if (dataPolicy != null) {
-			DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
+		// First, verify the GemFire version is 6.5 or Higher when Persistence is specified...
+		Assert.isTrue(!DataPolicy.PERSISTENT_PARTITION.equals(dataPolicy) || GemfireUtils.isGemfireVersion65OrAbove(),
+			String.format("Persistent PARTITION Regions can only be used from GemFire 6.5 onwards; current version is [%1$s].",
+				CacheFactory.getVersion()));
 
-			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
-
-			// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
-			// configuration meta-data element for Region (i.e. <gfe:partitioned-region .../>)!
-			Assert.isTrue(resolvedDataPolicy.withPartitioning(), String.format(
-				"Data Policy '%1$s' is not supported in Partitioned Regions.", resolvedDataPolicy));
-
-			// Validate that the data-policy and persistent attributes are compatible when specified!
-			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
-
-			regionFactory.setDataPolicy(resolvedDataPolicy);
-		}
-		else if (isPersistent()) {
-			// first, check the presence of GemFire 6.5 or Higher
-			Assert.isTrue(GemfireUtils.isGemfireVersion65OrAbove(), String.format(
-				"Can define Persistent Partitioned Regions only from GemFire 6.5 onwards; current version is [%1$s]",
-					CacheFactory.getVersion()));
-			regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+		if (dataPolicy == null) {
+			dataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_PARTITION : DataPolicy.PARTITION);
 		}
 		else {
-			regionFactory.setDataPolicy(DataPolicy.PARTITION);
+			// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
+			// configuration meta-data element for Region (i.e. <gfe:partitioned-region .../>)!
+			Assert.isTrue(dataPolicy.withPartitioning(), String.format(
+				"Data Policy '%1$s' is not supported in Partitioned Regions.", dataPolicy));
 		}
+
+		// Validate the data-policy and persistent attributes are compatible when specified!
+		assertDataPolicyAndPersistentAttributesAreCompatible(dataPolicy);
+
+		regionFactory.setDataPolicy(dataPolicy);
+	}
+
+	@Override
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+		DataPolicy resolvedDataPolicy = null;
+
+		if (dataPolicy != null) {
+			resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+		}
+
+		resolveDataPolicy(regionFactory, persistent, resolvedDataPolicy);
 	}
 
 }

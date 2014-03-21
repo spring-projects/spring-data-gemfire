@@ -18,12 +18,17 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -72,6 +77,63 @@ public class AbstractRegionParserTest {
 		when(mockNode.getLocalName()).thenReturn("disk-store");
 
 		assertFalse(regionParser.isSubRegion(mockElement));
+	}
+
+	@Test
+	public void testValidateDataPolicyShortcutAttributesMutualExclusion() {
+		Element mockElement = mock(Element.class);
+
+		when(mockElement.hasAttribute(matches("data-policy"))).thenReturn(false);
+		when(mockElement.hasAttribute(matches("shortcut"))).thenReturn(false);
+
+		new TestRegionParser().validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
+
+		verify(mockElement).hasAttribute(eq("data-policy"));
+		verify(mockElement, never()).hasAttribute(eq("shortcut"));
+	}
+
+	@Test
+	public void testValidateDataPolicyShortcutAttributesMutualExclusionWithDataPolicy() {
+		Element mockElement = mock(Element.class);
+
+		when(mockElement.hasAttribute(matches("data-policy"))).thenReturn(true);
+		when(mockElement.hasAttribute(matches("shortcut"))).thenReturn(false);
+
+		new TestRegionParser().validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
+
+		verify(mockElement).hasAttribute(eq("data-policy"));
+		verify(mockElement).hasAttribute(eq("shortcut"));
+	}
+
+	@Test
+	public void testValidateDataPolicyShortcutAttributesMutualExclusionWithShortcut() {
+		Element mockElement = mock(Element.class);
+
+		when(mockElement.hasAttribute(matches("data-policy"))).thenReturn(false);
+		when(mockElement.hasAttribute(matches("shortcut"))).thenReturn(true);
+
+		new TestRegionParser().validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
+
+		verify(mockElement).hasAttribute(eq("data-policy"));
+		verify(mockElement, never()).hasAttribute(eq("shortcut"));
+	}
+
+	@Test
+	public void testValidateDataPolicyShortcutAttributesMutualExclusionWithDataPolicyAndShortcut() {
+		Element mockElement = mock(Element.class);
+		XmlReaderContext mockReaderContext = mock(XmlReaderContext.class);
+
+		ParserContext mockParserContext = new ParserContext(mockReaderContext, null);
+
+		when(mockElement.hasAttribute(matches("data-policy"))).thenReturn(true);
+		when(mockElement.hasAttribute(matches("shortcut"))).thenReturn(true);
+		when(mockElement.getTagName()).thenReturn("local-region");
+
+		new TestRegionParser().validateDataPolicyShortcutAttributesMutualExclusion(mockElement, mockParserContext);
+
+		verify(mockReaderContext).error(
+			eq("Only one of [data-policy, shortcut] may be specified with element 'local-region'."),
+				eq(mockElement));
 	}
 
 	protected static class TestRegionParser extends AbstractRegionParser {

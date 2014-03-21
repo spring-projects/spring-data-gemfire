@@ -80,7 +80,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "name");
 		ParsingUtils.setPropertyValue(element, builder, "data-policy");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
-		ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "publisher");
+		ParsingUtils.setPropertyValue(element, builder, "shortcut");
 
 		if (StringUtils.hasText(element.getAttribute("disk-store-ref"))) {
 			ParsingUtils.setPropertyValue(element, builder, "disk-store-ref", "diskStoreName");
@@ -147,8 +147,8 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 	private void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder, String className, String subElementName, String propertyName) {
-		List<Element> subElements = DomUtils.getChildElementsByTagName(element,
-			new String[] { subElementName, subElementName + "-ref" });
+		List<Element> subElements = DomUtils.getChildElementsByTagName(element, subElementName,
+			subElementName + "-ref");
 
 		if (!CollectionUtils.isEmpty(subElements)) {
 			ManagedArray array = new ManagedArray(className, subElements.size());
@@ -222,6 +222,15 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			parentPath = parentPath.substring(1);
 		}
 		return parentPath;
+	}
+
+	protected void validateDataPolicyShortcutAttributesMutualExclusion(final Element element,
+			final ParserContext parserContext) {
+		if (element.hasAttribute("data-policy") && element.hasAttribute("shortcut")) {
+			parserContext.getReaderContext().error(String.format(
+				"Only one of [data-policy, shortcut] may be specified with element '%1$s'.", element.getTagName()),
+					element);
+		}
 	}
 
 }
