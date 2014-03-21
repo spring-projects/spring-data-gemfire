@@ -129,8 +129,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
  
 		Object instance = instantiator.createInstance(entity, provider);
 
-		final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper
-				.create(instance, conversionService);
+		final BeanWrapper<Object> wrapper = BeanWrapper.create(instance, conversionService);
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
 			@Override
@@ -168,7 +167,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	@Override
 	public boolean toData(Object value, final PdxWriter writer) {
 		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(value.getClass());
-		final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(value, conversionService);
+		final BeanWrapper<Object> wrapper = BeanWrapper.create(value, conversionService);
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })

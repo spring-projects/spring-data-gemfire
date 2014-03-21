@@ -15,8 +15,8 @@
  */
 package org.springframework.data.gemfire;
 
+import org.springframework.data.gemfire.support.RegionShortcutWrapper;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -39,6 +39,28 @@ public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 		super.afterPropertiesSet();
 	}
 
+	@Override
+	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
+		if (dataPolicy == null || DataPolicy.NORMAL.equals(dataPolicy)) {
+			// NOTE this is safe since a LOCAL Scoped NORMAL Region requiring persistence can be satisfied with
+			// PERSISTENT_REPLICATE, per the RegionShortcut.LOCAL_PERSISTENT
+			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.NORMAL);
+		}
+		else if (DataPolicy.PRELOADED.equals(dataPolicy)) {
+			// NOTE this is safe since a LOCAL Scoped PRELOADED Region requiring persistence can be satisfied with
+			// PERSISTENT_REPLICATE, per the RegionShortcut.LOCAL_PERSISTENT
+			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.PRELOADED);
+		}
+		else if (DataPolicy.PERSISTENT_REPLICATE.equals(dataPolicy)
+				&& RegionShortcutWrapper.valueOf(getShortcut()).isPersistent()) {
+			regionFactory.setDataPolicy(dataPolicy);
+		}
+		else {
+			throw new IllegalArgumentException(String.format("Data Policy '%1$s' is not supported for Local Regions.",
+				dataPolicy));
+		}
+	}
+
 	/**
 	 * Resolves the Data Policy used by this "local" GemFire Region (i.e. locally Scoped; Scope.LOCAL) based on the
 	 * enumerated value from com.gemstone.gemfire.cache.RegionShortcuts (LOCAL, LOCAL_PERSISTENT, LOCAL_HEAP_LRU,
@@ -53,25 +75,14 @@ public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	 */
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
-		DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
+		DataPolicy resolvedDataPolicy = null;
 
-		Assert.isTrue(resolvedDataPolicy != null || !StringUtils.hasText(dataPolicy),
-			String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+		if (dataPolicy != null) {
+			resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+		}
 
-		if (resolvedDataPolicy == null || DataPolicy.NORMAL.equals(resolvedDataPolicy)) {
-			// NOTE this is safe since a LOCAL Scoped NORMAL Region requiring persistence can be satisfied with
-			// PERSISTENT_REPLICATE, per the RegionShortcut.LOCAL_PERSISTENT
-			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.NORMAL);
-		}
-		else if (DataPolicy.PRELOADED.equals(resolvedDataPolicy)) {
-			// NOTE this is safe since a LOCAL Scoped PRELOADED Region requiring persistence can be satisfied with
-			// PERSISTENT_REPLICATE, per the RegionShortcut.LOCAL_PERSISTENT
-			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.PRELOADED);
-		}
-		else {
-			throw new IllegalArgumentException(String.format("Data Policy '%1$s' is not supported in Local Regions.",
-				dataPolicy));
-		}
+		resolveDataPolicy(regionFactory, persistent, resolvedDataPolicy);
 	}
 
 }

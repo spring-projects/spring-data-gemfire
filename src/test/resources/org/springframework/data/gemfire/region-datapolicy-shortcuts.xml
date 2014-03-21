@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+  ">
+
+	<util:properties id="peerCacheConfigurationSettings">
+		<prop key="name">springGemFireRegionDataPolicyShortcutsIntegrationTest</prop>
+		<prop key="log-level">config</prop>
+		<prop key="mcast-port">0</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="peerCacheConfigurationSettings"/>
+
+	<gfe:local-region id="LocalWithDataPolicy" data-policy="NORMAL"/>
+	<gfe:local-region id="LocalWithShortcut" shortcut="LOCAL_PERSISTENT"/>
+
+	<gfe:partitioned-region id="PartitionWithDataPolicy" data-policy="PARTITION"/>
+	<gfe:partitioned-region id="PartitionWithShortcut" shortcut="PARTITION_PERSISTENT"/>
+
+	<gfe:replicated-region id="ReplicateWithDataPolicy" data-policy="REPLICATE"/>
+	<gfe:replicated-region id="ReplicateWithShortcut" shortcut="REPLICATE_PERSISTENT"/>
+
+	<gfe:partitioned-region id="ShortcutDefaults" shortcut="PARTITION_REDUNDANT_PERSISTENT_OVERFLOW"
+						  cloning-enabled="false" concurrency-checks-enabled="true" disk-synchronous="false"
+						  ignore-jta="true" initial-capacity="101" load-factor="0.85f" key-constraint="java.lang.Long"
+						  multicast-enabled="false" total-buckets="177" value-constraint="java.lang.String"/>
+
+	<gfe:partitioned-region id="ShortcutOverrides" shortcut="PARTITION_REDUNDANT_OVERFLOW"
+						  cloning-enabled="true" concurrency-checks-enabled="false" copies="3" disk-synchronous="true"
+						  ignore-jta="false" initial-capacity="51" load-factor="0.72f" key-constraint="java.lang.String"
+						  multicast-enabled="false" total-buckets="111" value-constraint="java.lang.Object">
+		<gfe:eviction threshold="8192" type="ENTRY_COUNT" action="LOCAL_DESTROY"/>
+	</gfe:partitioned-region>
+
+</beans>

@@ -13,7 +13,7 @@
 
 	<gfe:client-region id="simple" name="SimpleRegion"/>
 
-	<gfe:client-region id="empty" pool-name="gemfire-pool" name="publisher" data-policy="empty" close="true" destroy="false"/>
+	<gfe:client-region id="empty" pool-name="gemfire-pool" name="publisher" data-policy="EMPTY" close="true" destroy="false"/>
 
 	<gfe:client-region id="complex" name="ComplexRegion" pool-name="gemfire-pool" close="true" destroy="false" load-factor="0.5" statistics="true">
 		<gfe:cache-listener>

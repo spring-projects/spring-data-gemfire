@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <xsd:schema xmlns="http://www.springframework.org/schema/gemfire"
-			xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
-			xmlns:tool="http://www.springframework.org/schema/tool" xmlns:context="http://www.springframework.org/schema/context"
+			xmlns:beans="http://www.springframework.org/schema/beans"
+			xmlns:context="http://www.springframework.org/schema/context"
+			xmlns:tool="http://www.springframework.org/schema/tool"
 			xmlns:repository="http://www.springframework.org/schema/data/repository"
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 			targetNamespace="http://www.springframework.org/schema/gemfire"
 			elementFormDefault="qualified" attributeFormDefault="unqualified"
 			version="1.4">
 	<xsd:import namespace="http://www.springframework.org/schema/beans" />
-	<xsd:import namespace="http://www.springframework.org/schema/tool" />
 	<xsd:import namespace="http://www.springframework.org/schema/context" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
 	<!-- -->
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -998,6 +1000,28 @@ reduce thread contention. This sets an initial parameter on the underlying java.
                         ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<xsd:attribute name="data-policy" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies the data policy for this region (EMPTY, REPLICATE, PERSISTENT_REPLICATE).  Setting 'data-policy' is not
+stictly necessary, but if set, then the value must agree with the 'persistent' attribute if also specified.
+                        ]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="EMPTY"/>
+							<xsd:enumeration value="REPLICATE"/>
+							<xsd:enumeration value="PERSISTENT_REPLICATE"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="is-lock-grantor" type="xsd:string" use="optional" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the region is a lock grantor.This attribute is only relevant for regions with global scope, as only they allow locking.
+                                ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="scope" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
@@ -1005,20 +1029,22 @@ Specifies the scope for this region: distributed-ack,distributed-no-ack, global
                         ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="data-policy" type="xsd:string">
+				<xsd:attribute name="shortcut" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-Specifies the data policy for this region
-                        ]]></xsd:documentation>
+The RegionShortcut for this region. Allows easy initialization of the region based on pre-defined defaults.
+						]]></xsd:documentation>
 					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="is-lock-grantor" type="xsd:string"
-							   use="optional" default="false">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates whether the region is a lock grantor.This attribute is only relevant for regions with global scope, as only they allow locking.
-                                ]]></xsd:documentation>
-					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="REPLICATE"/>
+							<xsd:enumeration value="REPLICATE_PERSISTENT"/>
+							<xsd:enumeration value="REPLICATE_OVERFLOW"/>
+							<xsd:enumeration value="REPLICATE_PERSISTENT_OVERFLOW"/>
+							<xsd:enumeration value="REPLICATE_HEAP_LRU"/>
+							<xsd:enumeration value="REPLICATE_PROXY"/>
+						</xsd:restriction>
+					</xsd:simpleType>
 				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
@@ -1086,13 +1112,6 @@ The action to take when performing eviction.
 					</xsd:element>
 					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:sequence>
-				<xsd:attribute name="data-policy" type="xsd:string">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates the DataPolicy to use for this region (NORMAL or PRELOADED)
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
 				<xsd:attribute name="concurrency-level">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
@@ -1101,6 +1120,36 @@ This attribute does not apply to partitioned regions. This attribute helps GemFi
 reduce thread contention. This sets an initial parameter on the underlying java.util.ConcurrentHashMap used for storing region entries.
                         ]]></xsd:documentation>
 					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="data-policy" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies the data policy for this region (NORMAL or PRELOADED).  Setting 'data-policy' is not stictly necessary,
+but if set, then the value must agree with the 'persistent' attribute if also specified.
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="NORMAL"/>
+							<xsd:enumeration value="PRELOADED"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="shortcut" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The RegionShortcut for this region. Allows easy initialization of the region based on pre-defined defaults.
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="LOCAL"/>
+							<xsd:enumeration value="LOCAL_PERSISTENT"/>
+							<xsd:enumeration value="LOCAL_HEAP_LRU"/>
+							<xsd:enumeration value="LOCAL_OVERFLOW"/>
+							<xsd:enumeration value="LOCAL_PERSISTENT_OVERFLOW"/>
+						</xsd:restriction>
+					</xsd:simpleType>
 				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
@@ -1257,16 +1306,28 @@ redundancy. Each copy provides extra backup at the expense of extra storages.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="colocated-with" type="xsd:string"
-							   use="optional">
+				<xsd:attribute name="colocated-with" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The name of the partitioned region with which this newly created partitioned region is colocated.
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="local-max-memory" type="xsd:string"
-							   use="optional">
+				<xsd:attribute name="data-policy" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies the data policy for this region (PARTITION, PERSISTENT_PARTITION).  Setting 'data-policy' is not
+stictly necessary, but if set, then the value must agree with the 'persistent' attribute if also specified.
+                        ]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="PARTITION"/>
+							<xsd:enumeration value="PERSISTENT_PARTITION"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="local-max-memory" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The maximum amount of memory, in megabytes, to be used by the region in this process. If not set, a default of 90%
@@ -1274,18 +1335,16 @@ of available heap is used.
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="total-max-memory" type="xsd:string"
-							   use="optional">
+				<xsd:attribute name="total-max-memory" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The maximum amount of memory, in megabytes, to be used by the region in all process.
 
 Note: This setting must be the same in all processes using the region.
-							]]></xsd:documentation>
+						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="total-buckets" type="xsd:string"
-							   use="optional">
+				<xsd:attribute name="total-buckets" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The total number of hash buckets to be used by the region in all processes.
@@ -1300,8 +1359,7 @@ Note: This setting must be the same in all processes using the region.
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="recovery-delay" type="xsd:string"
-							   use="optional" default="-1">
+				<xsd:attribute name="recovery-delay" type="xsd:string" use="optional" default="-1">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes.
@@ -1309,8 +1367,30 @@ The delay in milliseconds that existing members will wait before satisfying redu
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="startup-recovery-delay" type="xsd:string"
-							   use="optional" default="-1">
+				<xsd:attribute name="shortcut" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The RegionShortcut for this region. Allows easy initialization of the region based on pre-defined defaults.
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="PARTITION"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT"/>
+							<xsd:enumeration value="PARTITION_PERSISTENT"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT_PERSISTENT"/>
+							<xsd:enumeration value="PARTITION_OVERFLOW"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT_OVERFLOW"/>
+							<xsd:enumeration value="PARTITION_PERSISTENT_OVERFLOW"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT_PERSISTENT_OVERFLOW"/>
+							<xsd:enumeration value="PARTITION_HEAP_LRU"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT_HEAP_LRU"/>
+							<xsd:enumeration value="PARTITION_PROXY"/>
+							<xsd:enumeration value="PARTITION_PROXY_REDUNDANT"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="startup-recovery-delay" type="xsd:string" use="optional" default="-1">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members
@@ -1745,21 +1825,27 @@ The action to take when performing eviction.
 						</xsd:element>
 					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded"/>
 				</xsd:sequence>
-				<xsd:attribute name="data-policy" type="xsd:string"
-								   use="optional">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-The data policy for this client. Can be either 'EMPTY' or 'NORMAL' (the default). In case persistence or overflow are
-configured for this region, this parameter will be ignored.
+				<xsd:attribute name="data-policy" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The data policy for this client region. Can be either 'EMPTY' or 'NORMAL' (the default). In case persistence or overflow
+are configured for this region, this parameter will be ignored.
 
-EMPTY - causes data to never be stored in local memory. The region will always appear empty. It can be used to for zero
- footprint producers that only want to distribute their data to others and for zero footprint consumers that only want
- to see events.
+EMPTY - causes data to never be stored in local memory. The region will always appear empty. It can be used for zero
+footprint producers that only want to distribute their data to others and for zero footprint consumers that only want
+to see events.
+
 NORMAL - causes data that this region is interested in to be stored in local memory. It allows the contents in this
 cache to differ from other caches.
- 							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
+ 						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="EMPTY"/>
+							<xsd:enumeration value="NORMAL"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
 				<xsd:attribute name="pool-name" type="xsd:string"
 								   use="optional">
 						<xsd:annotation>
@@ -1771,20 +1857,20 @@ The name of the pool used by this client. If not set, a default pool (initialize
 				<xsd:attribute name="shortcut" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The ClientRegionShortcut for this region. Allows easy initialization of the region based on defaults.
+The ClientRegionShortcut for this region. Allows easy initialization of the region based on pre-defined defaults.
  							]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:simpleType>
 							<xsd:restriction base="xsd:string">
-								<xsd:enumeration value="PROXY" />
-								<xsd:enumeration value="CACHING_PROXY" />
-								<xsd:enumeration value="CACHING_PROXY_HEAP_LRU" />
-								<xsd:enumeration value="CACHING_PROXY_OVERFLOW" />
-								<xsd:enumeration value="LOCAL" />
-								<xsd:enumeration value="LOCAL_PERSISTENT" />
-								<xsd:enumeration value="LOCAL_HEAP_LRU" />
-								<xsd:enumeration value="LOCAL_OVERFLOW" />
-								<xsd:enumeration value="LOCAL_PERSISTENT_OVERFLOW" />
+								<xsd:enumeration value="PROXY"/>
+								<xsd:enumeration value="CACHING_PROXY"/>
+								<xsd:enumeration value="CACHING_PROXY_HEAP_LRU"/>
+								<xsd:enumeration value="CACHING_PROXY_OVERFLOW"/>
+								<xsd:enumeration value="LOCAL"/>
+								<xsd:enumeration value="LOCAL_PERSISTENT"/>
+								<xsd:enumeration value="LOCAL_HEAP_LRU"/>
+								<xsd:enumeration value="LOCAL_OVERFLOW"/>
+								<xsd:enumeration value="LOCAL_PERSISTENT_OVERFLOW"/>
 							</xsd:restriction>
 						</xsd:simpleType>
 					</xsd:attribute>

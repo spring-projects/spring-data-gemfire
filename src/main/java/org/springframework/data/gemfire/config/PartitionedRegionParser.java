@@ -46,10 +46,13 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		return PartitionedRegionFactoryBean.class;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
+
+		validateDataPolicyShortcutAttributesMutualExclusion(element, parserContext);
+
 		super.doParse(element, builder);
 
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
@@ -63,11 +66,11 @@ class PartitionedRegionParser extends AbstractRegionParser {
 			PartitionAttributesFactoryBean.class);
 
 		parseColocatedWith(element, builder, partitionAttributesBuilder, "colocated-with");
-		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "copies","redundantCopies");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "copies", "redundantCopies");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "local-max-memory");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "recovery-delay");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "startup-recovery-delay");
-		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-buckets","totalNumBuckets");
+		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-buckets", "totalNumBuckets");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-max-memory");
 
 		Element partitionResolverSubElement = DomUtils.getChildElementByTagName(element, "partition-resolver");

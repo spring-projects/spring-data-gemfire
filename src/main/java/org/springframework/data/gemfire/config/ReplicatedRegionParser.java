@@ -40,13 +40,14 @@ class ReplicatedRegionParser extends AbstractRegionParser {
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
 
+		validateDataPolicyShortcutAttributesMutualExclusion(element, parserContext);
+
 		ParsingUtils.parseScope(element, builder);
 
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			RegionAttributesFactoryBean.class);
 
-		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder,
-			subRegion);
+		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder, subRegion);
 
 		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 	}

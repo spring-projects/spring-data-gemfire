@@ -303,6 +303,7 @@ abstract class ParsingUtils {
 
 		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
 		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
+		setPropertyValue(element, regionAttributesBuilder, "disk-synchronous");
 		setPropertyValue(element, regionAttributesBuilder, "enable-async-conflation");
 		setPropertyValue(element, regionAttributesBuilder, "enable-subscription-conflation");
 		setPropertyValue(element, regionAttributesBuilder, "ignore-jta", "ignoreJTA");
@@ -311,6 +312,7 @@ abstract class ParsingUtils {
 		setPropertyValue(element, regionAttributesBuilder, "key-constraint");
 		setPropertyValue(element, regionAttributesBuilder, "load-factor");
 		setPropertyValue(element, regionAttributesBuilder, "multicast-enabled");
+		setPropertyValue(element, regionAttributesBuilder, "publisher");
 		setPropertyValue(element, regionAttributesBuilder, "value-constraint");
 
 		String indexUpdateType = element.getAttribute("index-update-type");
