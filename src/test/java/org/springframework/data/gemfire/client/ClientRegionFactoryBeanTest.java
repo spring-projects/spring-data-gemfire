@@ -81,12 +81,14 @@ public class ClientRegionFactoryBeanTest {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void testSetDataPolicyName() throws Exception {
 		factoryBean.setDataPolicyName("NORMAL");
 		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", factoryBean));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
+	@SuppressWarnings("deprecation")
 	public void testSetDataPolicyNameWithInvalidName() throws Exception {
 		try {
 			factoryBean.setDataPolicyName("INVALID");
@@ -98,6 +100,17 @@ public class ClientRegionFactoryBeanTest {
 		finally {
 			assertNull(TestUtils.readField("dataPolicy", factoryBean));
 		}
+	}
+
+	@Test
+	public void testIsPersistentUnspecified() {
+		assertTrue(factoryBean.isPersistentUnspecified());
+		factoryBean.setPersistent(true);
+		assertTrue(factoryBean.isPersistent());
+		assertFalse(factoryBean.isPersistentUnspecified());
+		factoryBean.setPersistent(false);
+		assertTrue(factoryBean.isNotPersistent());
+		assertFalse(factoryBean.isPersistentUnspecified());
 	}
 
 	@Test

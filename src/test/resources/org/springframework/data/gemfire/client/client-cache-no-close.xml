@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
 	
-	 <gfe:client-cache close="false" use-bean-factory-locator="false"/>
 	 <gfe:pool keep-alive="true">
 	 	<gfe:server host="localhost" port="40404"/>
 	 </gfe:pool>
-	 <gfe:client-region id="r1" data-policy="EMPTY"/>
+
+	 <gfe:client-cache close="false" use-bean-factory-locator="false"/>
+
+	 <gfe:client-region id="r1" data-policy="EMPTY" ignore-if-exists="true"/>
+
 </beans>

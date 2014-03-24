@@ -21,13 +21,13 @@ import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 
-import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 
 /**
  * 
  * @author David Turanski
- * 
+ * @author John Blum
  */
 public class SubRegionTest extends RecreatingContextTest {
 	@Override
@@ -44,25 +44,41 @@ public class SubRegionTest extends RecreatingContextTest {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void testBasic() throws Exception {
-		CacheFactoryBean cfb = new CacheFactoryBean();
-		cfb.setBeanName("gemfireCache");
-		cfb.setUseBeanFactoryLocator(false);
-		GemFireCache cache = cfb.getObject();
-		RegionFactoryBean rfb = new ReplicatedRegionFactoryBean();
-		rfb.setCache(cache);
-		rfb.setName("parent");
-		rfb.afterPropertiesSet();
-		Region parent = rfb.getObject();
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
-		SubRegionFactoryBean srfb = new SubRegionFactoryBean();
-		srfb.setParent(parent);
-		srfb.setName("/parent/child");
-		srfb.setRegionName("child");
-		srfb.afterPropertiesSet();
-		Region child = srfb.getObject();
+		cacheFactoryBean.setBeanName("gemfireCache");
+		cacheFactoryBean.setUseBeanFactoryLocator(false);
 
-		assertNotNull(parent.getSubregion("child"));
-		assertSame(child, parent.getSubregion("child"));
+		Cache cache = cacheFactoryBean.getObject();
+
+		assertNotNull(cache);
+
+		RegionFactoryBean regionFactory = new ReplicatedRegionFactoryBean();
+
+		regionFactory.setCache(cache);
+		regionFactory.setName("Outer");
+		regionFactory.afterPropertiesSet();
+
+		Region outer = regionFactory.getObject();
+
+		assertNotNull(outer);
+		assertEquals("Outer", outer.getName());
+		assertEquals("/Outer", outer.getFullPath());
+		assertSame(outer, cache.getRegion("/Outer"));
+
+		RegionFactoryBean subRegionFactory = new RegionFactoryBean();
+
+		subRegionFactory.setCache(cache);
+		subRegionFactory.setParent(outer);
+		subRegionFactory.setName("/Outer/Inner");
+		subRegionFactory.setRegionName("Inner");
+		subRegionFactory.afterPropertiesSet();
+
+		Region inner = subRegionFactory.getObject();
+
+		assertNotNull(inner);
+		assertSame(inner, outer.getSubregion("Inner"));
+		assertSame(inner, cache.getRegion("/Outer/Inner"));
 	}
 
 	@SuppressWarnings("rawtypes")

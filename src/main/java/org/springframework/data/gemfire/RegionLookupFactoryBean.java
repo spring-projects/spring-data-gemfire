@@ -40,6 +40,8 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 
 	protected final Log log = LogFactory.getLog(getClass());
 
+	private Boolean lookupEnabled = Boolean.TRUE;
+
 	private GemFireCache cache;
 
 	private Region<?, ?> parent;
@@ -59,11 +61,13 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 
 		synchronized (cache) {
 			//region = (getParent() != null ? getParent().getSubregion(regionName) : cache.getRegion(regionName));
-			if (getParent() != null) {
-				region = getParent().getSubregion(regionName);
-			}
-			else {
-				region = cache.getRegion(regionName);
+			if (isLookupEnabled()) {
+				if (getParent() != null) {
+					region = getParent().getSubregion(regionName);
+				}
+				else {
+					region = cache.getRegion(regionName);
+				}
 			}
 
 			if (region != null) {
@@ -164,6 +168,18 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	 */
 	public void setRegionName(String regionName) {
 		this.regionName = regionName;
+	}
+
+	private boolean isLookupEnabled() {
+		return Boolean.TRUE.equals(getLookupEnabled());
+	}
+
+	public Boolean getLookupEnabled() {
+		return lookupEnabled;
+	}
+
+	public void setLookupEnabled(Boolean lookupEnabled) {
+		this.lookupEnabled = lookupEnabled;
 	}
 
 	protected Region<K, V> getRegion() {

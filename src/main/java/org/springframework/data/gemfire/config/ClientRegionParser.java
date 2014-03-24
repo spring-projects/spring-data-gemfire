@@ -59,8 +59,9 @@ class ClientRegionParser extends AbstractRegionParser {
 			ParsingUtils.setPropertyValue(element, builder, "destroy");
 		}
 
-		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicyName");
 		ParsingUtils.setPropertyValue(element, builder, "name");
+		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicyName");
+		ParsingUtils.setPropertyValue(element, builder, "ignore-if-exists", "lookupEnabled");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name");
 		ParsingUtils.setPropertyValue(element, builder, "shortcut");

@@ -12,8 +12,8 @@
  */
 package org.springframework.data.gemfire.config;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
@@ -25,24 +25,35 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
-
 public class MultipleCacheTest {
+
 	@Test
 	public void testMultipleCaches() {
-		String resourcePath = "/org/springframework/data/gemfire/config/MultipleCacheTest-context.xml";
-		
-		ConfigurableApplicationContext ctx1 = new ClassPathXmlApplicationContext(resourcePath);
-		ConfigurableApplicationContext ctx2 = new ClassPathXmlApplicationContext(resourcePath);
-		Region region1 = ctx1.getBean(Region.class);
-		Cache cache1 = ctx1.getBean(Cache.class);
-		Region region2 = ctx2.getBean(Region.class);
-		Cache cache2 = ctx2.getBean(Cache.class);
-		assertSame(region1,region2);
-		assertSame(cache1,cache2);
-		ctx1.close();
+		String configLocation = "/org/springframework/data/gemfire/config/MultipleCacheTest-context.xml";
+
+		ConfigurableApplicationContext context1 = new ClassPathXmlApplicationContext(configLocation);
+		ConfigurableApplicationContext context2 = new ClassPathXmlApplicationContext(configLocation);
+
+		Cache cache1 = context1.getBean(Cache.class);
+		Cache cache2 = context2.getBean(Cache.class);
+
+		assertNotNull(cache1);
+		assertSame(cache1, cache2);
+
+		Region region1 = context1.getBean(Region.class);
+		Region region2 = context2.getBean(Region.class);
+
+		assertNotNull(region1);
+		assertSame(region1, region2);
 		assertFalse(cache1.isClosed());
-		assertFalse("region was destroyed" ,region1.isDestroyed());
+		assertFalse(region1.isDestroyed());
+
+		context1.close();
+
+		assertFalse(cache1.isClosed());
+		assertFalse("region was destroyed", region1.isDestroyed());
 	}
+
 }

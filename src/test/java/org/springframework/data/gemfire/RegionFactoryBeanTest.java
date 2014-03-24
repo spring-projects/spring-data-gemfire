@@ -81,7 +81,6 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	@SuppressWarnings("rawtypes")
 	private RegionFactoryBeanConfig defaultConfig() {
 		return new RegionFactoryBeanConfig(new RegionFactoryBean(), "default") {
-
 			@Override
 			public void verify() {
 				Region region = regionFactoryBean.getRegion();
@@ -92,13 +91,11 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 			public void configureRegionFactoryBean() {
 			}
 		};
-
 	}
 
 	@SuppressWarnings("rawtypes")
 	private RegionFactoryBeanConfig persistentConfig() {
 		return new RegionFactoryBeanConfig(new RegionFactoryBean(), "persistent") {
-
 			@Override
 			public void verify() {
 				Region region = regionFactoryBean.getRegion();
@@ -115,7 +112,6 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	@SuppressWarnings({ "deprecation", "rawtypes" })
 	private RegionFactoryBeanConfig invalidPersistentConfig() {
 		return new RegionFactoryBeanConfig(new RegionFactoryBean(), "invalid-persistence") {
-
 			@Override
 			public void configureRegionFactoryBean() {
 				regionFactoryBean.setDataPolicy("persistent_replicate");

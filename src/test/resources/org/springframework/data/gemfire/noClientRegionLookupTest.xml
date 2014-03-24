@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="clientCacheConfigurationSettings">
+		<prop key="name">springGemFireNoClientRegionLookupTest</prop>
+		<prop key="log-level">config</prop>
+		<prop key="mcast-port">0</prop>
+	</util:properties>
+
+	<gfe:pool min-connections="1" max-connections="1">
+		<gfe:server host="localhost" port="54321"/>
+	</gfe:pool>
+
+	<gfe:client-cache cache-xml-location="/clientcache-with-regions.xml" properties-ref="clientCacheConfigurationSettings"/>
+
+	<gfe:client-region id="NativeClientRegion" persistent="false" shortcut="PROXY"/>
+
+</beans>

@@ -78,6 +78,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 
 		ParsingUtils.setPropertyValue(element, builder, "name");
+		ParsingUtils.setPropertyValue(element, builder, "ignore-if-exists", "lookupEnabled");
 		ParsingUtils.setPropertyValue(element, builder, "data-policy");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "shortcut");
