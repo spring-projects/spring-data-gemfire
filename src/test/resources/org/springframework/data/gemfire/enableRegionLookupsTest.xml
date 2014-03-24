@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="peerCacheConfigurationSettings">
+		<prop key="name">springGemFireEnableRegionLookupsTest</prop>
+		<prop key="log-level">config</prop>
+		<prop key="mcast-port">0</prop>
+	</util:properties>
+
+	<gfe:cache cache-xml-location="/cache-with-regions.xml" properties-ref="peerCacheConfigurationSettings"/>
+
+	<gfe:local-region id="NativeLocalRegion" ignore-if-exists="true"
+		cloning-enabled="true"
+		concurrency-checks-enabled="true"
+		concurrency-level="5"
+		initial-capacity="7"
+		key-constraint="java.lang.String"
+		load-factor="0.50"
+		persistent="true"
+		value-constraint="java.util.Date"/>
+
+	<gfe:partitioned-region id="NativePartitionRegion" ignore-if-exists="true"
+		cloning-enabled="false"
+		concurrency-checks-enabled="false"
+		initial-capacity="11"
+		key-constraint="java.lang.String"
+		load-factor="0.50"
+		multicast-enabled="true"
+		persistent="false"
+		value-constraint="java.util.Date"/>
+
+	<gfe:replicated-region id="NativeReplicateRegion" ignore-if-exists="true"
+		cloning-enabled="true"
+		concurrency-checks-enabled="false"
+		concurrency-level="15"
+		initial-capacity="21"
+		key-constraint="java.lang.String"
+		load-factor="0.25"
+		multicast-enabled="true"
+		persistent="false"
+		scope="distributed-ack"
+		value-constraint="java.util.Date"/>
+
+	<gfe:replicated-region id="NativeParentRegion" ignore-if-exists="true">
+		<gfe:replicated-region name="NativeChildRegion" ignore-if-exists="true" persistent="true"/>
+	</gfe:replicated-region>
+
+	<gfe:replicated-region id="regionOne" name="SpringReplicateRegion" persistent="false"/>
+
+	<gfe:replicated-region id="regionTwo" name="SpringReplicateRegion" ignore-if-exists="true" persistent="true"/>
+
+</beans>

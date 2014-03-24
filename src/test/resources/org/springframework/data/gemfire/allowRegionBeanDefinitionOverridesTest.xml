@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire-1.3.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+">
+
+	<util:properties id="peerCacheConfigurationSettings">
+		<prop key="name">springGemFireRegionBeanDefinitionOverridesAllowedTest</prop>
+		<prop key="log-level">config</prop>
+		<prop key="mcast-port">0</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="peerCacheConfigurationSettings" use-bean-factory-locator="false"/>
+
+	<gfe:replicated-region id="regionOne" name="AppDataRegion" persistent="false"
+						   multicast-enabled="true" scope="distributed-no-ack"
+						   initial-capacity="51" load-factor="0.90"
+						   cloning-enabled="false" concurrency-checks-enabled="false"
+						   key-constraint="java.lang.String" value-constraint="java.lang.Integer"/>
+
+	<gfe:replicated-region id="regionOne" name="AppDataRegion" persistent="true"
+						   multicast-enabled="false" scope="distributed-ack"
+						   initial-capacity="101" load-factor="0.85"
+						   cloning-enabled="true" concurrency-checks-enabled="true"
+						   key-constraint="java.lang.Integer" value-constraint="java.lang.String"/>
+
+</beans>

@@ -548,6 +548,29 @@ CustomExpiry Time to idle (or idle timeout) configuration for the region entries
 						</xsd:element>
 					</xsd:choice>
 				</xsd:sequence>
+				<xsd:attribute name="ignore-if-exists" type="xsd:string" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the Region bean definition should perform a "lookup" first, using any existing Region already defined
+with the same name in the Cache (thus, reverting to pre-1.4.0 behavior, e.g. 1.3.x), before attempting to create
+the Region
+
+The default is false, meaning the default behavior is always attempt to "create" the Region first.
+
+Prior to 1.4.0, the default behavior was to perform a "lookup" first and then try to "create" the Region.
+This functionality is useful in situations where multiple Spring context configuration files exists and 1 or more
+define the same Region with the same semantics, such that the application dynamically loads configuration files,
+or creates new Spring contexts as needed and application components (e.g. application DAOs) have runtime dependencies
+on those Regions.
+
+WARNING...
+
+It is recommended that this feature be used carefully as the first bean definition to create the Region wins.
+So if there are multiple, conflicting bean definitions (with difference semantics for evictions/expiration, etc)
+for the "same" Region (by name), then this can cause confusion or have unexpected consequences for the application.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="persistent" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[

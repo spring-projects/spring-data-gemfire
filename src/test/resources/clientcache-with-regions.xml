@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE client-cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+	"http://www.gemstone.com/dtd/cache7_0.dtd">
+<client-cache>
+	<pool name="DEFAULT" min-connections="0">
+		<server host="localhost" port="54321"/>
+	</pool>
+	<region name="NativeClientRegion" refid="PROXY">
+		<region-attributes cloning-enabled="false"/>
+	</region>
+	<region name="NativeClientParentRegion" refid="PROXY">
+		<region name="NativeClientChildRegion" refid="PROXY"/>
+	</region>
+</client-cache>
