@@ -87,6 +87,10 @@ public class User implements Comparable<User> {
 		return getUsername().compareTo(user.getUsername());
 	}
 
+	protected static boolean equalsIgnoreNull(final Object obj1, final Object obj2) {
+		return (obj1 == null ? obj2 == null : obj1.equals(obj2));
+	}
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj == this) {
@@ -101,6 +105,10 @@ public class User implements Comparable<User> {
 
 		return this.getUsername().equals(that.getUsername())
 			&& ObjectUtils.nullSafeEquals(this.getEmail(), that.getEmail());
+	}
+
+	protected static int hashCodeIgnoreNull(final Object obj) {
+		return (obj != null ? obj.hashCode() : 0);
 	}
 
 	@Override

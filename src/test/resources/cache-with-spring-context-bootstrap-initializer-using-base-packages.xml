@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+	"http://www.gemstone.com/dtd/cache7_0.dtd">
+<cache>
+	<region name="Users" refid="REPLICATE">
+		<region-attributes initial-capacity="101" load-factor="0.85">
+			<key-constraint>java.lang.String</key-constraint>
+			<value-constraint>org.springframework.data.gemfire.repository.sample.User</value-constraint>
+			<cache-loader>
+				<class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$UserDataStoreCacheLoader</class-name>
+			</cache-loader>
+		</region-attributes>
+	</region>
+	<initializer>
+		<class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer</class-name>
+		<parameter name="basePackages">
+			<string>
+				org.springframework.data.gemfire.support.sample
+			</string>
+		</parameter>
+	</initializer>
+</cache>
