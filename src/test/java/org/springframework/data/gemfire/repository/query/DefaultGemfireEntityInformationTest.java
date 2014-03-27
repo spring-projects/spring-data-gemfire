@@ -112,7 +112,6 @@ public class DefaultGemfireEntityInformationTest {
 	}
 
 	@Test
-	// Uh, WOW!
 	public void testConfusedDomainEntityHavingStringId() {
 		GemfireEntityInformation<MyConfusedDomainEntity, String> entityInfo = createEntityInformation(
 			createPersistentEntity(MyConfusedDomainEntity.class));
@@ -122,8 +121,8 @@ public class DefaultGemfireEntityInformationTest {
 		assertEquals(MyConfusedDomainEntity.class, entityInfo.getJavaType());
 		//assertEquals(String.class, entityInfo.getIdType());
 		assertTrue(Long.class.equals(entityInfo.getIdType()));
-		//assertEquals("123", entityInfo.getId(new MyConfusedDomainEntity(123l)));
-		assertEquals(123l, entityInfo.getId(new MyConfusedDomainEntity("123")));
+		assertEquals(123l, entityInfo.getId(new MyConfusedDomainEntity(123l)));
+		assertEquals(248l, entityInfo.getId(new MyConfusedDomainEntity("248")));
 	}
 
 	@SuppressWarnings("unused")
