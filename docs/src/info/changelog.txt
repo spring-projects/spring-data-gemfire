@@ -2,6 +2,55 @@ SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
 
+
+Changes in version 1.4 M1 (2014-03-31)
+--------------------------------------
+** Bug
+    * [SGF-225] - Inconsistent data policy defaults for subregions that are replicated regions
+    * [SGF-230] - Cannot specify a Disk Store to be used for overflow on a Gateway Sender without enabling persistence.
+    * [SGF-231] - Unable to specify Ordering Policy for Serial GW Sender
+    * [SGF-232] - Unable to specify Order Policy for Serial Async Event Queue
+    * [SGF-233] - Cannot specify a Disk Store to be used for overflow on an Async Event Queue without enabling persistence.
+    * [SGF-234] - The docs indicate that the PDX attribute pdx-persistent defaults to true, however this does not seem to be the case.
+    * [SGF-235] - NPE in DefaultFunctionArgumentResolver.resolveFunctionArguments(30) when a Function has no arguments and none are provided.
+    * [SGF-238] - "jndi-prop" is not parced correctly
+    * [SGF-239] - The value "XaPooledDataSource" of jndi-binding "type" attribute should be changed to "XAPooledDataSource"
+    * [SGF-240] - XML schema type restrictions should be avoided in order to support placeholders (al types should be xs:string)
+    * [SGF-242] - When defining "membership-attributes" for a Region, the bean definition "required-roles" attribute is required and, when specified, causes a BeanCreationException in the Spring container during initialization.
+    * [SGF-244] - The nested <gfe:gateway-sender/>, <gfe:event-filter/> element is missing the ref attribute in the XSD.
+    * [SGF-245] - <gfe:cache> always creates cache with default values ignoring all the specified attributes
+    * [SGF-246] - execute function always assumes arguments are passed
+    * [SGF-247] - boolean based repository queries generate UnsupportedOperationException in non PDX serialized entities
+    * [SGF-249] - The SDG XSD is restricting the use of property placeholder values on <gfe:disk-store/>, compaction-threshold attributes given the attribute type is a short and not string.
+    * [SGF-251] - Creating and using GemFire Repositories based on the Spring Data Commons Repository abstraction does not work properly for domain objects stored in Subregions. 
+    * [SGF-252] - Spring GemFire's Repository extension does not properly handle multiple, identically named Subregions for persisting corresponding application domain objects associated by way of the @Region annotation.
+    * [SGF-255] - The <gfe:eviction> element's 'threshold' attribute is required even when the Eviction type is 'HEAP_PERCENTAGE'.
+    * [SGF-258] - The SDG XML namespace <partitioned-region> element is missing the 'data-policy' attribute.
+    * [SGF-263] - The 'disk-synchronous' Region attribute does not get successfully applied when explicitly set to false.
+
+** Improvement
+    * [SGF-88] - Create Regions in Spring Context with Region Shortcuts
+    * [SGF-187] - Consider appending to the list of listener a new listener defined by another peer member
+    * [SGF-201] - Create a Spring Boot Starter POM for Spring Data GemFire
+    * [SGF-204] - The existing RegionFactoryBean does a lookup of a Region before trying to create one. 
+    * [SGF-209] - GemfireTemplate creates a temporary object for every operation.
+    * [SGF-210] - GemfireRepository requires that there be an attribute in the entity class for the key.
+    * [SGF-236] - Sub-Region Bean names require prepended "/" (vs. previous use of gfe:lookup-region for sub-regions)
+    * [SGF-241] - Add support for defining client sub-Regions using nested <gfe:client-region/> SDG XML namespace elements.
+    * [SGF-256] - Upgrade to the latest version of the Spring Framework (3.2.8) and Spring Data Commons (1.8.0)
+    * [SGF-257] - Specify strict type rules in the Spring Data GemFire XSD for peer Region 'data-policy' and 'shortcut' attributes as currently enforced by the <gfe:client-region> element's 'shortcut' attribute.
+    * [SGF-259] - Handle cyclic bean dependencies in SDG XML config between Async Event Queues and Async Event Listeners.
+    * [SGF-260] - Add the ability to set @Id to a method name.
+    * [SGF-261] - Add ability to persist application domain objects (entities) to multiple Regions in a GemFire Cache.
+    * [SGF-265] - Upgrade to the latest version GemFire (7.0.2)
+
+** New Feature
+    * [SGF-132] - Being able to get cacheservers overall status on the client
+    * [SGF-248] - Ability to bootstrap a Spring context inside a GemFire Server JVM process by starting the GemFire Server with Gfsh.
+
+** Task
+    * [SGF-266] - Release 1.4 M1
+
 Changes in Version 1.3.3 (2013-11-13)
 -------------------------------------
 General
