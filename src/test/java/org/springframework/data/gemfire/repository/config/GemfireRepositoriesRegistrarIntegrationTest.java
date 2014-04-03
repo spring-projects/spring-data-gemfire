@@ -20,7 +20,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.repository.sample.Person;
@@ -44,7 +46,9 @@ import com.gemstone.gemfire.cache.Region;
 public class GemfireRepositoriesRegistrarIntegrationTest {
 
 	@Configuration
-	@EnableGemfireRepositories("org.springframework.data.gemfire.repository.sample")
+	@EnableGemfireRepositories(value = "org.springframework.data.gemfire.repository.sample",
+		includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+			value = org.springframework.data.gemfire.repository.sample.PersonRepository.class))
 	static class Config {
 
 		@Bean
