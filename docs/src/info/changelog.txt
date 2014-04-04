@@ -2,6 +2,21 @@ SPRING DATA GEMFIRE CHANGELOG
 =============================
 http://www.springsource.org/spring-gemfire
 
+Changes in Version 1.3.4 (2014-04-04)
+-------------------------------------
+General
+	* This is a maintenance/patch release to address bugs and other minor improvements.
+Bugs
+	* [SGF-235] - NPE in DefaultFunctionArgumentResolver.resolveFunctionArguments(30) when a Function has no arguments and none are provided.
+	* [SGF-238] - "jndi-prop" is not parced correctly.
+	* [SGF-239] - The value "XaPooledDataSource" of jndi-binding "type" attribute should be changed to "XAPooledDataSource".
+	* [SGF-240] - XML schema type restrictions should be avoided in order to support placeholders (al types should be xs:string).
+	* [SGF-246] - execute function always assumes arguments are passed.
+	* [SGF-249] - The SDG XSD is restricting the use of property placeholder values on <gfe:disk-store/>, compaction-threshold attributes given the attribute type is a short and not string.
+	* [SGF-255] - The <gfe:eviction> element's 'threshold' attribute is required even when the Eviction type is 'HEAP_PERCENTAGE'.
+Improvements
+	* Upgrades SDG to Spring Framework 3.2.8 and Spring Data Commons 1.7.1.
+
 Changes in Version 1.3.3 (2013-11-13)
 -------------------------------------
 General
