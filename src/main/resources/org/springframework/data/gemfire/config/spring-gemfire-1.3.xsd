@@ -2237,17 +2237,9 @@ The JNDI name for this datasource. Will be prefixed with "java:/"
 		<xsd:attribute name="type" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies the datasource implementation: ManagedDataSource,SimpleDataSource,PooledDataSource,XaPooledDataSource
+Specifies the DataSource implementation: SimpleDataSource, ManagedDataSource, PooledDataSource, XAPooledDataSource
             ]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="ManagedDataSource" />
-					<xsd:enumeration value="SimpleDataSource" />
-					<xsd:enumeration value="PooledDataSource" />
-					<xsd:enumeration value="XaPooledDataSource" />
-				</xsd:restriction>
-			</xsd:simpleType>
 		</xsd:attribute>
 		<xsd:attribute name="blocking-timeout-seconds" type="xsd:string"
 			use="optional" />
