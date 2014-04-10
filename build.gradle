@@ -62,8 +62,6 @@ dependencies {
     compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion"
     compile "org.slf4j:slf4j-api:$slf4jVersion"
     compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
-    testRuntime "log4j:log4j:$log4jVersion"
-    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
 
     // Testing
     testCompile("org.springframework:spring-test:$springVersion") {
@@ -75,7 +73,9 @@ dependencies {
     testCompile "org.mockito:mockito-core:$mockitoVersion"
 
     testCompile "javax.annotation:jsr250-api:1.0", optional
+	testRuntime "log4j:log4j:$log4jVersion"
 	testCompile "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
+	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
 }
 
 sourceCompatibility = 1.6
