@@ -35,8 +35,7 @@ test {
 // Common dependencies
 dependencies {
     // Logging
-    compile 'org.aspectj:aspectjrt:1.7.2'
-    compile 'org.aspectj:aspectjweaver:1.7.2'
+    compile 'org.aspectj:aspectjweaver:1.7.4'
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.12'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.12'
     compile "org.slf4j:slf4j-api:$slf4jVersion"
@@ -71,24 +70,23 @@ dependencies {
     testCompile("org.springframework:spring-test:$springVersion") {
       exclude group: "commons-logging", module: "commons-logging"
     }
-    testCompile "junit:junit-dep:$junitVersion"
+    testCompile "junit:junit:$junitVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
-    testCompile "cglib:cglib:${cglibVersion}"
 
     testCompile "javax.annotation:jsr250-api:1.0", optional
 	  testCompile "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
 }
 
 sourceCompatibility = 1.6
-targetCompatibility = 1.6 
+targetCompatibility = 1.6
 
 javadoc {
   ext.srcDir = file("${projectDir}/docs/src/api")
   destinationDir = file("${buildDir}/api")
   ext.tmpDir = file("${buildDir}/api-work")
-  
+
   configure(options) {
       stylesheetFile = file("${srcDir}/spring-javadoc.css")
       overview = "${srcDir}/overview.html"
