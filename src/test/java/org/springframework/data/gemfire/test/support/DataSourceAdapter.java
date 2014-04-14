@@ -19,12 +19,15 @@ package org.springframework.data.gemfire.test.support;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 /**
  * The DataSourceAdapter class is an implementation of the DataSource interface with unsupported operations by default.
  * <p/>
  * @author John Blum
+ * @see java.sql.Connection
  * @see javax.sql.DataSource
  * @since 1.3.4
  */
@@ -60,6 +63,11 @@ public abstract class DataSourceAdapter implements DataSource {
 
 	@Override
 	public void setLoginTimeout(final int seconds) throws SQLException {
+		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
+	}
+
+	//@Override
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
 		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
 	}
 
