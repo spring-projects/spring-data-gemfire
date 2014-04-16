@@ -15,9 +15,9 @@
  */
 package org.springframework.data.gemfire.repository.query;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.gemfire.GemfireTemplate;
@@ -28,13 +28,13 @@ import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
-import com.gemstone.gemfire.cache.query.internal.ResultsCollectionPdxDeserializerWrapper;
 
 /**
  * {@link GemfireRepositoryQuery} using plain {@link String} based OQL queries.
- * 
+ * <p/>
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
  */
 public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
@@ -43,6 +43,16 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	private final QueryString query;
 	private final GemfireQueryMethod method;
 	private final GemfireTemplate template;
+
+	/*
+	 * (non-Javadoc)
+	 * Constructor used for testing purposes only!
+	 */
+	StringBasedGemfireRepositoryQuery() {
+		query = null;
+		method = null;
+		template = null;
+	}
 
 	/**
 	 * Creates a new {@link StringBasedGemfireRepositoryQuery} using the given {@link GemfireQueryMethod} and
@@ -85,13 +95,11 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 */
 	@Override
 	public Object execute(Object[] parameters) {
-
 		ParametersParameterAccessor accessor = new ParametersParameterAccessor(method.getParameters(), parameters);
 		QueryString query = this.query.forRegion(method.getEntityInformation().getJavaType(), template.getRegion());
 
-		Iterator<Integer> indexes = query.getInParameterIndexes().iterator();
-		while (indexes.hasNext()) {
-			query = query.bindIn(toCollection(accessor.getBindableValue(indexes.next() - 1)));
+		for (Integer index : query.getInParameterIndexes()) {
+			query = query.bindIn(toCollection(accessor.getBindableValue(index - 1)));
 		}
 
 		Collection<?> result = toCollection(template.find(query.toString(), parameters));
@@ -112,27 +120,33 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	}
 
 	/**
-	 * Returns the given object as collection. Collections will be returned as is, Arrays will be converted into a
-	 * collection and all other objects will be wrapped into a single-element collection.
-	 * 
-	 * @param source
-	 * @return
+	 * Returns the given object as a Collection. Collections will be returned as is, Arrays will be converted into a
+	 * Collection and all other objects will be wrapped into a single-element Collection.
+	 * <p/>
+	 * @param source the resulting object from the GemFire Query.
+	 * @return the querying resulting object as a Collection.
+	 * @see java.util.Arrays#asList(Object[])
+	 * @see java.util.Collection
+	 * @see org.springframework.util.CollectionUtils#arrayToList(Object)
 	 */
-	private Collection<?> toCollection(Object source) {
-
+	Collection<?> toCollection(Object source) {
 		if (source instanceof SelectResults) {
 			return ((SelectResults) source).asList();
 		}
 
 		if (source instanceof ResultsBag) {
-			ResultsBag bag = (ResultsBag) source;
-			return bag.asList();
+			return ((ResultsBag) source).asList();
 		}
 
 		if (source instanceof Collection) {
 			return (Collection<?>) source;
 		}
 
-		return source.getClass().isArray() ? CollectionUtils.arrayToList(source) : Collections.singleton(source);
+		if (source == null) {
+			return Collections.emptyList();
+		}
+
+		return (source.getClass().isArray() ? CollectionUtils.arrayToList(source) : Arrays.asList(source));
 	}
+
 }
