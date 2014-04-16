@@ -19,7 +19,6 @@ package org.springframework.data.gemfire;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
@@ -27,9 +26,15 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * a XML 'factory-method' tag.
  * <p/>
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see com.gemstone.gemfire.cache.AttributesFactory
+ * @see com.gemstone.gemfire.cache.RegionAttributes
  */
-public class RegionAttributesFactoryBean extends AttributesFactory implements FactoryBean<RegionAttributes>,
-		InitializingBean {
+@SuppressWarnings("deprecation")
+public class RegionAttributesFactoryBean extends com.gemstone.gemfire.cache.AttributesFactory
+		implements FactoryBean<RegionAttributes>, InitializingBean {
 
 	private RegionAttributes attributes;
 

@@ -39,8 +39,9 @@ import com.gemstone.gemfire.cache.server.ServerLoadProbe;
  * @author Costin Leau
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class CacheServerFactoryBean implements FactoryBean<CacheServer>, InitializingBean, DisposableBean,
-	SmartLifecycle {
+		SmartLifecycle {
 
 	private boolean autoStartup = true;
 	private boolean notifyBySubscription = CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION;
@@ -68,7 +69,7 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 	private String hostNameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
 	private String subscriptionDiskStore;
 
-	private String[] serverGroups = CacheServer.DEFAULT_GROUPS;
+	private String[] serverGroups = {};
 
 	private SubscriptionEvictionPolicy subscriptionEvictionPolicy = SubscriptionEvictionPolicy.valueOf(
 		ClientSubscriptionConfig.DEFAULT_EVICTION_POLICY.toUpperCase());
@@ -85,6 +86,7 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void afterPropertiesSet() throws IOException {
 		Assert.notNull(cache, "A GemFire Cache is required.");
 

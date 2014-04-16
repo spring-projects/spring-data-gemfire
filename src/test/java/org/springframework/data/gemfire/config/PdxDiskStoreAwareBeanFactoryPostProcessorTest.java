@@ -69,7 +69,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorTest {
 		return (array == null || array.length == 0);
 	}
 
-	protected static boolean isBeanType(final BeanDefinition beanDefinition, final Class beanType) {
+	protected static boolean isBeanType(final BeanDefinition beanDefinition, final Class<?> beanType) {
 		return (beanDefinition instanceof AbstractBeanDefinition
 			&& ((AbstractBeanDefinition) beanDefinition).hasBeanClass()
 				&& beanType.isAssignableFrom(((AbstractBeanDefinition) beanDefinition).getBeanClass()));

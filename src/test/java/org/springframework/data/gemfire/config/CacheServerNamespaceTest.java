@@ -55,6 +55,7 @@ public class CacheServerNamespaceTest {
 	private ApplicationContext context;
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void testBasicCacheServer() throws Exception {
 		CacheServer cacheServer = context.getBean("advanced-config", CacheServer.class);
 

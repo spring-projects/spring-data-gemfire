@@ -12,7 +12,6 @@
  */
 package org.springframework.data.gemfire.test;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -20,19 +19,20 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Region;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
+ * The StubGatewaySenderFactory class for testing purposes.
+ * <p/>
  * @author David Turanski
- *
+ * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
  */
 public class StubGatewaySenderFactory implements GatewaySenderFactory {
 
@@ -210,4 +210,5 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

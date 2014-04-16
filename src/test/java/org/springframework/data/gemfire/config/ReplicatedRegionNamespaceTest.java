@@ -56,13 +56,13 @@ public class ReplicatedRegionNamespaceTest {
 	public void testBasicReplica() throws Exception {
 		assertTrue(context.containsBean("simple"));
 		RegionFactoryBean fb = context.getBean("&simple", RegionFactoryBean.class);
-		assertEquals(false ,(Boolean)TestUtils.readField("close", fb));
+		assertEquals(false, TestUtils.readField("close", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		assertFalse(attrs.getConcurrencyChecksEnabled());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings({ "deprecation", "rawtypes" })
 	public void testPublishingReplica() throws Exception {
 		assertTrue(context.containsBean("pub"));
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);

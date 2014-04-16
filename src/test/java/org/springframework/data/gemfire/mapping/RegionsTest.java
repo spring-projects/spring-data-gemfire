@@ -48,6 +48,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.data.gemfire.mapping.Regions
  * @since 1.3.4
  */
+@SuppressWarnings("unchecked")
 public class RegionsTest {
 
 	private MappingContext mockMappingContext;
@@ -74,7 +75,6 @@ public class RegionsTest {
 	}
 
 	@Before
-	@SuppressWarnings("unchecked")
 	public void setup() {
 		mockMappingContext = mock(GemfireMappingContext.class, "GemfireMappingContext");
 

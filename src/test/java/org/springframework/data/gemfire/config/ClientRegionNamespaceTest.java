@@ -114,8 +114,8 @@ public class ClientRegionNamespaceTest {
 		assertEquals(5, attrs.getEvictionAttributes().getMaximum());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings({ "deprecation", "rawtypes" })
 	public void testPersistent() throws Exception {
 		assertTrue(context.containsBean("persistent"));
 		Region region = context.getBean("persistent", Region.class);

@@ -29,7 +29,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -66,7 +65,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	private boolean autoStartup = true;
 	private boolean close = true;
 	private boolean destroy = false;
 	private boolean running;
@@ -288,13 +286,13 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * @see com.gemstone.gemfire.cache.RegionAttributes#getDataPolicy
 	 * @see com.gemstone.gemfire.cache.DataPolicy
 	 */
-	@SuppressWarnings({ "deprecation", "unchecked"})
+	@SuppressWarnings({ "deprecation", "unchecked" })
 	DataPolicy getDataPolicy(final RegionFactory regionFactory) {
 		// NOTE cannot pass RegionAttributes.class as the "targetType" on the second invocation of getFieldValue(..)
 		// since the "regionAttributes" field is naively of the implementation class type rather than the interface
 		// type... so much for programming to interfaces.
-		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory", AttributesFactory.class),
-			"regionAttributes", null)).getDataPolicy();
+		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory",
+			com.gemstone.gemfire.cache.AttributesFactory.class), "regionAttributes", null)).getDataPolicy();
 	}
 
 	/*
@@ -415,7 +413,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	@SuppressWarnings("deprecation")
 	void validateRegionAttributes(final RegionAttributes regionAttributes) {
-		AttributesFactory.validateAttributes(regionAttributes);
+		com.gemstone.gemfire.cache.AttributesFactory.validateAttributes(regionAttributes);
 	}
 
 	/**
@@ -725,7 +723,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	@Override
 	public boolean isAutoStartup() {
-		return this.autoStartup;
+		return true;
 	}
 
 	/*

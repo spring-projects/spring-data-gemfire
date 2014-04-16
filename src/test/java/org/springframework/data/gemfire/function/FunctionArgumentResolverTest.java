@@ -262,6 +262,7 @@ public class FunctionArgumentResolverTest {
     }
 
     @Test
+	@SuppressWarnings("unchecked")
     public void testMethodWithFunctionContextAndResultSender() throws NoSuchMethodException {
         FunctionContext functionContext = mock(FunctionContext.class);
         ResultSender resultSender = mock(ResultSender.class);

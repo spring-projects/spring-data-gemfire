@@ -79,6 +79,7 @@ public class CacheServerIntegrationTest {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void testCacheServerRunningWithSubscription() {
 		assertNotNull(cacheServer);
 		assertTrue(cacheServer.isRunning());

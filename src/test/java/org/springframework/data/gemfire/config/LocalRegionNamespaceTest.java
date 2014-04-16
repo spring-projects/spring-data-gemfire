@@ -58,8 +58,8 @@ public class LocalRegionNamespaceTest {
 		assertTrue(context.containsBean("simple"));
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings({ "deprecation", "rawtypes" })
 	public void testPublishingLocal() throws Exception {
 		assertTrue(context.containsBean("pub"));
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);

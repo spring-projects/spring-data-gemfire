@@ -26,6 +26,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * @author David Turanski
  * @author John Blum
  */
+@SuppressWarnings("deprecation")
 public class StubCacheServer implements CacheServer {
 
 	private boolean isRunning;
