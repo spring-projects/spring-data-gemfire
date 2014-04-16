@@ -21,13 +21,24 @@ import org.springframework.util.Assert;
 
 /**
  * Base class for GemFire specific {@link RepositoryQuery} implementations.
- * 
+ * <p/>
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.data.gemfire.repository.query.GemfireQueryMethod
+ * @see org.springframework.data.repository.query.RepositoryQuery
  */
 abstract class GemfireRepositoryQuery implements RepositoryQuery {
 
 	private final GemfireQueryMethod queryMethod;
+
+	/*
+	 * (non-Javadoc)
+	 * Constructor used for testing purposes only!
+	 */
+	GemfireRepositoryQuery() {
+		queryMethod = null;
+	}
 
 	/**
 	 * Creates a new {@link GemfireRepositoryQuery} using the given {@link GemfireQueryMethod}.
@@ -35,7 +46,6 @@ abstract class GemfireRepositoryQuery implements RepositoryQuery {
 	 * @param queryMethod must not be {@literal null}.
 	 */
 	public GemfireRepositoryQuery(GemfireQueryMethod queryMethod) {
-
 		Assert.notNull(queryMethod);
 		this.queryMethod = queryMethod;
 	}
@@ -48,4 +58,5 @@ abstract class GemfireRepositoryQuery implements RepositoryQuery {
 	public QueryMethod getQueryMethod() {
 		return this.queryMethod;
 	}
+
 }
