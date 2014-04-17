@@ -15,8 +15,8 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,32 +26,39 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.Repository;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * Unit tests for {@link GemfireRepositoryFactory}.
- * 
+ * <p/>
  * @author Oliver Gierke
+ * @author John Blum
+ * @see org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("unused")
 public class GemfireRepositoryFactoryUnitTests {
 
 	@Mock
-	Region<?, ?> region;
+	private Region<?, ?> region;
 
 	@Mock
 	@SuppressWarnings("rawtypes")
-	RegionAttributes attributes;
+	private RegionAttributes attributes;
 
 	/**
-	 * @see SGF-112
+	 * @link https://jira.spring.io/browse/SGF-112
 	 */
-	@Test
+	@Test(expected = IllegalStateException.class)
 	@SuppressWarnings("unchecked")
 	public void rejectsInterfacesExtendingPagingAndSortingRepository() {
 
@@ -67,12 +74,23 @@ public class GemfireRepositoryFactoryUnitTests {
 
 		try {
 			factory.getRepository(SampleInterface.class);
-		} catch (IllegalStateException e) {
-			assertThat(e.getMessage(), Matchers.startsWith("Pagination is not supported by Gemfire repositories!"));
+			//factory.getRepository(SamplePagingInterface.class);
+			//factory.getRepository(SampleSortingInterface.class);
+		} catch (IllegalStateException expected) {
+			assertThat(expected.getMessage(), Matchers.startsWith("Pagination is not supported by Gemfire repositories!"));
+			throw expected;
 		}
 	}
 
 	interface SampleInterface extends PagingAndSortingRepository<Person, Long> {
-
 	}
+
+	interface SamplePagingInterface extends Repository<Person, Long> {
+		Page<Person> findAll(Pageable pageable);
+	}
+
+	interface SampleSortingInterface extends Repository<Person, Long> {
+		Iterable<Person> findAll(Sort sort);
+	}
+
 }
