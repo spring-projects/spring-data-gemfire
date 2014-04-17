@@ -23,7 +23,7 @@ import org.springframework.data.gemfire.repository.Query;
 /**
  * The RabbitRepository class is a Spring Data GemFire Repository extension for accessing and persistent Rabbits
  * from/to an underlying data store (GemFire).
- * <p/>
+ *
  * @author John Blum
  * @see org.springframework.data.gemfire.mapping.Region
  * @see org.springframework.data.gemfire.repository.GemfireRepository

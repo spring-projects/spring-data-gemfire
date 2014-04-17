@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
  * FactoryBean for easy creation and configuration of GemFire {@link CacheServer} instances.
- * <p/>
+ *
  * @author Costin Leau
  * @author John Blum
  */

@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 /**
  * The ClientRegionShortcutWrapper enum is a Java enumerated type that wraps GemFire's ClientRegionShortcuts
  * with Spring Data GemFire ClientRegionShortcutWrapper enumerated values.
- * <p/>
+ *
  * @author John Blum
  * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
  * @since 1.4.0

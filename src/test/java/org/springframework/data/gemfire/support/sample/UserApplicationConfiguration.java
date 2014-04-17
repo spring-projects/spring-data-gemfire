@@ -24,13 +24,13 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest;
 
 /**
- * The UserApplicationConfiguration class is a configuration component for confguring the user's application.
- * <p/>
+ * The UserApplicationConfiguration class is a configuration component for configuring the user's application.
+ *
  * @author John Blum
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.ImportResource
- * @since 1.3.4
+ * @since 1.4.0
  */
 @Configuration
 @ImportResource({ "classpath:org/springframework/data/gemfire/support/sample/initializer-gemfire-context.xml" })

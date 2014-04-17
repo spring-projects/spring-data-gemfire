@@ -41,7 +41,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The SubRegionRepositoryTest class is a test suite of test cases testing the use of GemFire Repositories on GemFire
  * Cache Subregions.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
@@ -53,7 +53,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see com.gemstone.gemfire.cache.Region
  * @link https://jira.springsource.org/browse/SGF-251
  * @link https://jira.springsource.org/browse/SGF-252
- * @since 1.0.0
+ * @since 1.4.0
  */
 @ContextConfiguration("subregionRepository.xml")
 @RunWith(SpringJUnit4ClassRunner.class)

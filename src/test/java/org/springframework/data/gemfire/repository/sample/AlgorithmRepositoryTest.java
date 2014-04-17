@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.Region;
  * The AlgorithmRepositoryTest class is a test suite of test cases testing the contract and functionality of GemFire's
  * Repository extension when using a plain old Java interface for defining the application domain object/entity type,
  * rather than a Java class, that is the subject of the persistence operations.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith

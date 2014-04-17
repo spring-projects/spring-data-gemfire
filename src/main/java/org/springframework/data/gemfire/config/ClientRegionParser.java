@@ -31,9 +31,9 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;client-region;gt; bean definitions.
- * <p/>
+ *
  * To avoid eager evaluations, the region interests are declared as nested definition.
- * <p/>
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum

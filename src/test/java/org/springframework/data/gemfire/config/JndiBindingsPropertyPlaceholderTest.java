@@ -38,7 +38,7 @@ import com.gemstone.gemfire.internal.datasource.ConfigProperty;
 /**
  * The JndiBindingsPropertyPlaceholderTest class is a test suite of test cases testing the configuration of a GemFire
  * Cache JNDI DataSource using property placeholders.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ApplicationContext

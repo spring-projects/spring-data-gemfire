@@ -193,9 +193,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Validates that the settings for Data Policy and the 'persistent' attribute in <gfe:*-region/> elements
+	 * Validates that the settings for Data Policy and the 'persistent' attribute in &lt;gfe:*-region&gt; elements
 	 * are compatible.
-	 * <p/>
+	 *
 	 * @param resolvedDataPolicy the GemFire Data Policy resolved form the Spring GemFire XML namespace configuration
 	 * meta-data.
 	 * @see #isPersistent()
@@ -216,7 +216,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	/**
 	 * Determines whether the user explicitly set the 'persistent' attribute or not.
-	 * <p/>
+	 *
 	 * @return a boolean value indicating whether the user explicitly set the 'persistent' attribute to true or false.
 	 * @see #isPersistent()
 	 * @see #isNotPersistent()
@@ -229,7 +229,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Returns true when the user explicitly specified a value for the persistent attribute and it is true.  If the
 	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
 	 * and will be determined by the Data Policy.
-	 * <p/>
+	 *
 	 * @return true when the user specified an explicit value for the persistent attribute and it is true;
 	 * false otherwise.
 	 * @see #isNotPersistent()
@@ -243,7 +243,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Returns true when the user explicitly specified a value for the persistent attribute and it is false.  If the
 	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
 	 * and will be determined by the Data Policy.
-	 * <p/>
+	 *
 	 * @return true when the user specified an explicit value for the persistent attribute and it is false;
 	 * false otherwise.
 	 * @see #isPersistent()
@@ -256,7 +256,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	/**
 	 * Creates an instance of RegionFactory using the given Cache instance used to configure and construct the Region
 	 * created by this FactoryBean.
-	 * <p/>
+	 *
 	 * @param cache the GemFire Cache instance.
 	 * @return a RegionFactory used to configure and construct the Region created by this FactoryBean.
 	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory()
@@ -311,7 +311,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * user specified a RegionShortcut.  This method gets called by the createRegionFactory method depending upon
 	 * the value passed to the Cache.createRegionFactory() method (i.e. whether there was a RegionShortcut specified
 	 * or not).
-	 * <p/>
+	 *
 	 * @param <K> the Class type fo the Region key.
 	 * @param <V> the Class type of the Region value.
 	 * @param regionFactory the GemFire RegionFactory used to configure and create the Region that is the product
@@ -420,7 +420,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * Post-process the RegionFactory used to create the GemFire Region for this factory bean during the initialization
 	 * process.  The RegionFactory is already configured and initialized by the factory bean before this method
 	 * is invoked.
-	 * <p/>
+	 *
 	 * @param regionFactory the GemFire RegionFactory used to create the Region for post-processing.
 	 * @see com.gemstone.gemfire.cache.RegionFactory
 	 */
@@ -430,7 +430,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	/**
 	 * Post-process the Region for this factory bean during the initialization process. The Region is
 	 * already configured and initialized by the factory bean before this method is invoked.
-	 * <p/>
+	 *
 	 * @param region the GemFire Region to post-process.
 	 * @see com.gemstone.gemfire.cache.Region
 	 */
@@ -440,7 +440,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	/**
 	 * Validates and sets the Data Policy on the RegionFactory used to create and configure the Region from this
 	 * FactoryBean.
-	 * <p/>
+	 *
 	 * @param regionFactory the RegionFactory used by this FactoryBean to create and configure the Region.
 	 * @param persistent a boolean value indicating whether the Region should be persistent and persist it's
 	 * data to disk.
@@ -462,7 +462,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	/**
 	 * Validates the configured Data Policy and may override it, taking into account the 'persistent' attribute
 	 * and constraints for the Region type.
-	 * <p/>
+	 *
 	 * @param regionFactory the GemFire RegionFactory used to create the desired Region.
 	 * @param persistent a boolean value indicating whether the Region should persist it's data to disk.
 	 * @param dataPolicy requested Data Policy as set by the user in the Spring GemFire configuration meta-data.
@@ -504,7 +504,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	/**
 	 * The list of AsyncEventQueues to use with this Region.
-	 * <p/>
+	 *
 	 * @param asyncEventQueues defined as Object for backwards compatibility with Gemfire 6.
 	 */
 	public void setAsyncEventQueues(Object[] asyncEventQueues) {
@@ -573,7 +573,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	/**
 	 * Sets the DataPolicy of the Region.
-	 * <p/>
+	 *
 	 * @param dataPolicy the GemFire DataPolicy to use when configuring the Region.
 	 * @since 1.4.0
 	 */
@@ -583,7 +583,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	/**
 	 * Sets the DataPolicy of the Region as a String.
-	 * <p/>
+	 *
 	 * @param dataPolicyName the name of the DataPolicy (e.g. REPLICATE, PARTITION)
 	 * @see #setDataPolicy(com.gemstone.gemfire.cache.DataPolicy)
 	 * @deprecated as of 1.4.0, use setDataPolicy(:DataPolicy) instead.
@@ -594,7 +594,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	/**
 	 * Sets the name of Disk Store used for either overflow or persistence, or both.
-	 * <p/>
+	 *
 	 * @param diskStoreName the name of the Disk Store bean in context used for overflow/persistence.
 	 */
 	public void setDiskStoreName(String diskStoreName) {
@@ -642,7 +642,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 	/**
 	 * Configures the Region with a RegionShortcut.
-	 * <p/>
+	 *
 	 * @param shortcut the RegionShortcut used to configure pre-defined default for the Region created
 	 * by this FactoryBean.
 	 * @see com.gemstone.gemfire.cache.RegionShortcut

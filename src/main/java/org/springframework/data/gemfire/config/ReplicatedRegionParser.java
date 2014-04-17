@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;replicated-region;gt; definitions.
- * <p/>
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum

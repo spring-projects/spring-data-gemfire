@@ -43,14 +43,14 @@ import org.springframework.util.ObjectUtils;
  * and functionality of the SpringContextBootstrappingInitializer class.  This test class focuses on testing isolated
  * units of functionality in the Initializer class directly, mocking any dependencies as appropriate, in order for the
  * class to uphold it's contract.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer
  * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest
- * @since 1.3.4
+ * @since 1.4.0
  */
 @SuppressWarnings("unused")
 public class SpringContextBootstrappingInitializerTest {

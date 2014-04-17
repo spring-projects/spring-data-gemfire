@@ -37,7 +37,6 @@ import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
 import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
@@ -51,14 +50,15 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * This test is only valid for GF 7.0 and above
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  */
 @SuppressWarnings("unused")
 public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.RecreatingContextTest#location()
 	 */
 	@Override

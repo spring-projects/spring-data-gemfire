@@ -37,7 +37,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The SubRegionNamespaceTest class is a test suite of test cases testing the contract and functionality of
  * Region/SubRegion creation in a GemFire Cache.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  * @see org.junit.Test

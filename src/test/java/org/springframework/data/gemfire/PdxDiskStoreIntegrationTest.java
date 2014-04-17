@@ -38,7 +38,7 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * The PdxDiskStoreTest class is a test suite containing tests to reproduce the issue in JIRA SGF-197.
- * <p/>
+ *
  * @author John Blum
  * @link https://jira.springsource.org/browse/SGF-197
  * @see org.junit.Test
@@ -130,6 +130,7 @@ public class PdxDiskStoreIntegrationTest {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public static class KeyHolder<T extends Serializable> extends AbstractHolderSupport {
 
 		private T key;
@@ -178,6 +179,7 @@ public class PdxDiskStoreIntegrationTest {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public static class ValueHolder<T extends Serializable> extends AbstractHolderSupport {
 
 		private T value;

@@ -23,12 +23,12 @@ import org.springframework.util.Assert;
 /**
  * The TestUserService class is an implementation of the UserService service interface for performing service operations
  * on Users.
- * <p/>
+ *
  * @author John Blum
  * @see org.springframework.data.gemfire.repository.sample.User
  * @see org.springframework.data.gemfire.support.sample.UserService
  * @see org.springframework.stereotype.Service
- * @since 1.3.4
+ * @since 1.4.0
  */
 @Service("userService")
 @SuppressWarnings("unused")

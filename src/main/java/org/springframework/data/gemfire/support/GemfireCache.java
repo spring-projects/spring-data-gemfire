@@ -24,9 +24,9 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * Spring Framework {@link Cache} implementation backed by a GemFire {@link Region}.
- * <p/>
+ *
  * Supports GemFire 6.5 or higher.
- * <p/>
+ *
  * @author Costin Leau
  * @author John Blum
  *

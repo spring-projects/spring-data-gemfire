@@ -20,8 +20,6 @@ import com.gemstone.gemfire.cache.execute.Function;
  * An interface for invoking Gemfire functions
  * 
  * @author David Turanski
- *
- * @param <T> the preferred return type
  */
 public interface GemfireFunctionOperations {
 
@@ -66,7 +64,7 @@ public interface GemfireFunctionOperations {
 	
 	
     /**
-     * Execute a function using a native GemFire {@link Execution} instance
+     * Execute a function using a native GemFire {@link com.gemstone.gemfire.cache.execute.Execution} instance
      * @param callback a callback providing the execution instance
      * @return the execution result
      */

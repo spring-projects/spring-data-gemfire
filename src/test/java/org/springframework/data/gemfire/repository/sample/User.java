@@ -25,12 +25,12 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * The User class represents an authorized user of a service or computer system, etc.
- * <p/>
+ *
  * @author John Blum
  * @see java.lang.Comparable
  * @see org.springframework.data.annotation.Id
  * @see org.springframework.data.gemfire.mapping.Region
- * @since 1.3.4
+ * @since 1.4.0
  */
 @Region("Users")
 @SuppressWarnings("unused")

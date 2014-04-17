@@ -22,7 +22,7 @@ import org.springframework.data.repository.CrudRepository;
 
 /**
  * Gemfire-specific extension of the {@link CrudRepository} interface.
- * <p/>
+ *
  * @author Oliver Gierke
  * @author John Blum
  * @see java.io.Serializable
@@ -33,7 +33,7 @@ public interface GemfireRepository<T, ID extends Serializable> extends CrudRepos
 
 	/**
 	 * Returns all entities sorted by the given options.
-	 * <p/>
+	 *
 	 * @param sort the Spring Data Commons Sort type defining the ordering criteria.
 	 * @return all entities sorted by the given options.
 	 * @see org.springframework.data.repository.PagingAndSortingRepository#findAll(org.springframework.data.domain.Sort)

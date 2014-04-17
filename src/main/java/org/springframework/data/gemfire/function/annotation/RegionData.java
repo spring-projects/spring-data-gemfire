@@ -20,12 +20,11 @@ import java.lang.annotation.Target;
 /**
  * 
  * Used to inject Region data into a function execution. The annotated parameter must be of type
- * {@link Map}. The contents depends on the region configuration (for a partitioned region, this will
+ * {@link java.util.Map}. The contents depends on the region configuration (for a partitioned region, this will
  * contain only entries for the local partition)
  * and any filters configured for the function context.  
  * 
  * @author David Turanski
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER})

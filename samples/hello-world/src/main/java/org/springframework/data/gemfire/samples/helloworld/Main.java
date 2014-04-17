@@ -20,9 +20,8 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * Hello World startup class.
- * Bootstraps the Spring container which in turns starts GemFire and the actual application.
- * <p/>
+ * Hello World startup class. Bootstraps the Spring container which in turns starts GemFire and the actual application.
+ *
  * Accepts as optional parameters location of one (or multiple) application contexts that will
  * be used for configuring the Spring container. See the reference documentation for more
  * {@link http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/resources.html information}.

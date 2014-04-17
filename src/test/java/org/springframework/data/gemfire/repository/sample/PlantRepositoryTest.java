@@ -29,7 +29,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * The PlantRepositoryTest class is a test suite of test cases testing the functionality behind PR #55 involving
  * persisting application domain object/entities to multiple Regions in GemFire's Cache.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext

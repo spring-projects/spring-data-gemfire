@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 /**
  * The RegionShortcutWrapperTest class is a test suite of test cases testing the contract and functionality of the
  * RegionShortcutWrapper enum class type.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.support.RegionShortcutWrapper

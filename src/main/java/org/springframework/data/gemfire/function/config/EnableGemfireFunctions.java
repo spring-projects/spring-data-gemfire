@@ -23,12 +23,11 @@ import org.springframework.context.annotation.Import;
 
 /**
  * 
- * Enables Gemfire annotated function implementations. Causes the container to 
- * discover any beans that are annotated with {code} @GemfireFunction {code}, wrap them in 
- * a {@link PojoFunctionWrapper}, and register them with the cache.
+ * Enables Gemfire annotated function implementations. Causes the container to discover any beans that are annotated
+ * with {code} @GemfireFunction {code}, wrap them in a
+ * {@link org.springframework.data.gemfire.function.PojoFunctionWrapper}, and register them with the cache.
  * 
  * @author David Turanski
- *
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

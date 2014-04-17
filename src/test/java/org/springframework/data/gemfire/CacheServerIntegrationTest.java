@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 /**
  * The CacheServerIntegrationTest class is a test suite of test cases testing the functionality of GemFire Cache Servers
  * configured using the Spring Data GemFire XML namespace.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.server.CacheServerFactoryBean

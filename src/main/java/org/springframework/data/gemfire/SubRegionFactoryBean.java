@@ -30,7 +30,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * FactoryBean for creating a Gemfire sub-Regions.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  * @param <K> Region Key Type
@@ -124,7 +124,7 @@ public class SubRegionFactoryBean<K, V> extends com.gemstone.gemfire.cache.Attri
 	/**
 	 * Sets the cache listeners used for the region used by this factory. Used
 	 * only when a new region is created. Overrides the settings specified
-	 * through {@link setAttributes(com.gemstone.gemfire.cache.RegionAttributes)}.
+	 * through setAttributes(com.gemstone.gemfire.cache.RegionAttributes).
 	 *
 	 * @param cacheListeners the cacheListeners to set on a newly created region
 	 */

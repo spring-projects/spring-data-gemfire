@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.DiskStore;
  * The DiskStoreBeanUsingPropertyPlaceholdersIntegrationTest class is a test suite of integration tests testing the use
  * of Spring PropertyPlaceholders to configure and initialize a Disk Store bean's properties using property placeholders
  * in the SDG XML namespace &lt;disk-store&gt; bean definition attributes.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith

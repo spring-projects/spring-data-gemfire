@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 /**
  * The RegionShortcutConverterTest class is a test suite of test cases testing the contract and functionality of the
  * RegionShortcutConverter class
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.RegionShortcutConverter

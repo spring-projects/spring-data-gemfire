@@ -41,7 +41,7 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * The RegionsTest class is a test suite of test cases testing the contract and functionality of the Regions class.
- * <p/>
+ *
  * @author John J. Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito

@@ -226,7 +226,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 * objects (default) it manages. While copies imply additional work for
 	 * every fetch operation, direct references can cause dirty reads across
 	 * concurrent threads in the same VM, whether or not transactions are used.
-	 * <p/>
+	 *
 	 * One could explicitly deep copy objects before making changes (for example
 	 * by using {@link com.gemstone.gemfire.CopyHelper#copy(Object)} in which
 	 * case this setting can be set to <code>false</code>. However, unless there

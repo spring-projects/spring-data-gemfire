@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.GemFireVersion;
 /**
  * The GemfireUtilsTest class is a test suite of test cases testing the contract and functionality of the GemfireUtils
  * abstract utility class.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.GemfireUtils

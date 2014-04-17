@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 /**
  * 
  * Used to inject a set of cache keys into a function execution,  The annotated parameter must be of type
- * {@link Set}. This is used by the function invocation to specify a set of keys of interest and also to define 
+ * {@link java.util.Set}. This is used by the function invocation to specify a set of keys of interest and also to define
  * an additional parameter on the function implementation method containing the filter.   
  * @author David Turanski
  *

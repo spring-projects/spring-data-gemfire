@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 
 /**
  * The DataSourceAdapter class is an implementation of the DataSource interface with unsupported operations by default.
- * <p/>
+ *
  * @author John Blum
  * @see java.sql.Connection
  * @see javax.sql.DataSource

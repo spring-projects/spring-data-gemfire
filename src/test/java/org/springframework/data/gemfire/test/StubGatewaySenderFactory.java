@@ -30,7 +30,7 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * The StubGatewaySenderFactory class for testing purposes.
- * <p/>
+ *
  * @author David Turanski
  * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
  */

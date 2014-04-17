@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
  * and aliases of the bean (so the same "registry" can be used for storing multiple BeanFactories). 
  * If there is only one BeanFactory registered then a null value can be used with {@link #setBeanName(String)}.
  * 
- * <p/> In most cases, one does not need to use this class directly as it is used internally 
+ * In most cases, one does not need to use this class directly as it is used internally
  * by {@link com.gemstone.gemfire.cache.CacheFactory}.
  * 
  * @author Costin Leau

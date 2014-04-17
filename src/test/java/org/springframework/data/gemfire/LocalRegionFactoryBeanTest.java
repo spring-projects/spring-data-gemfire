@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 /**
  * The PartitionedRegionFactoryBeanTest class is a test suite of test cases testing the component functionality
  * and correct behavior of the PartitionedRegionFactoryBean class.
- * <p/>
+ *
  *
  * @author David Turanski
  * @author John Blum

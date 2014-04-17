@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 /**
  * The RegionShortcutWrapper enum is a Java enumerated type that wraps GemFire's RegionShortcuts
  * with Spring Data GemFire RegionShortcutWrapper enumerated values.
- * <p/>
  *
  * @author John Blum
  * @see com.gemstone.gemfire.cache.RegionShortcut

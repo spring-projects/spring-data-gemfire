@@ -39,7 +39,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * Unit tests for {@link GemfireRepositoryFactory}.
- * <p/>
+ *
  * @author Oliver Gierke
  * @author John Blum
  * @see org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory

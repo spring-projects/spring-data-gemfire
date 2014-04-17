@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 /**
  * Simple utility class used for defining nested factory-method like definitions w/o polluting the container with useless beans.
- * <p/>
+ *
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.FactoryBean
