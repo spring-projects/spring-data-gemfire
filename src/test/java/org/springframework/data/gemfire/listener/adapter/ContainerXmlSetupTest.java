@@ -17,6 +17,8 @@
 package org.springframework.data.gemfire.listener.adapter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.AfterClass;
@@ -24,8 +26,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.listener.ContinuousQueryDefinition;
-import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.query.CqQuery;
 
 /**
  * @author Costin Leau
+ * @author John Blum
  */
 public class ContainerXmlSetupTest {
 
@@ -47,28 +48,38 @@ public class ContainerXmlSetupTest {
 		ForkUtil.sendSignal();
 	}
 
-
 	@Test
 	public void testContainerSetup() throws Exception {
-		GenericXmlApplicationContext ctx = new GenericXmlApplicationContext(
-				"/org/springframework/data/gemfire/listener/container.xml");
+		GenericXmlApplicationContext applicationContext = new GenericXmlApplicationContext(
+			"/org/springframework/data/gemfire/listener/container.xml");
 
-		ContinuousQueryListenerContainer container = ctx.getBean(ContinuousQueryListenerContainer.class);
-		assertTrue(container.isRunning());
+		try {
+			ContinuousQueryListenerContainer container = applicationContext.getBean(
+				ContinuousQueryListenerContainer.class);
 
-		Cache cache = ctx.getBean("gemfireCache", Cache.class);
-		Pool pool = ctx.getBean("client", Pool.class);
-		
-		// Test getting container listener bean by ID
-		ctx.getBean("testContainerId");
+			assertNotNull(container);
+			assertTrue(container.isRunning());
 
-		CqQuery[] cqs = cache.getQueryService().getCqs();
-		CqQuery[] pcqs = pool.getQueryService().getCqs();
-		assertTrue(pool.getQueryService().getCq("test-bean-1") != null);
-		assertEquals(3, cqs.length);
-		assertEquals(3, pcqs.length);
-		ForkUtil.sendSignal();
-		ctx.close();
-		
+			// test getting container listener by bean ID
+			ContinuousQueryListenerContainer container2 = applicationContext.getBean("testContainerId",
+				ContinuousQueryListenerContainer.class);
+
+			assertSame(container, container2);
+
+			Cache cache = applicationContext.getBean("gemfireCache", Cache.class);
+			Pool pool = applicationContext.getBean("client", Pool.class);
+
+			CqQuery[] cqs = cache.getQueryService().getCqs();
+			CqQuery[] poolCqs = pool.getQueryService().getCqs();
+
+			assertTrue(pool.getQueryService().getCq("test-bean-1") != null);
+			assertEquals(3, cqs.length);
+			assertEquals(3, poolCqs.length);
+		}
+		finally {
+			ForkUtil.sendSignal();
+			applicationContext.close();
+		}
 	}
+
 }

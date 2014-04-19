@@ -2097,57 +2097,42 @@ The name of the cache server definition (by default "gemfireServer").
 				]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="auto-startup" type="xsd:string"
-						   use="optional" default="true" />
-			<xsd:attribute name="bind-address" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="port" type="xsd:string" use="optional"
-						   default="40404">
+			<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the bean defining the GemFire cache (by default 'gemfireCache').
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="auto-startup" type="xsd:string" use="optional" default="true"/>
+			<xsd:attribute name="bind-address" type="xsd:string" use="optional" />
+			<xsd:attribute name="port" type="xsd:string" use="optional" default="40404">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The port number of the server.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="host-name-for-clients" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="load-poll-interval" type="xsd:string"
-						   use="optional" default="5000" />
-			<xsd:attribute name="max-connections" type="xsd:string"
-						   use="optional" default="800" />
-			<xsd:attribute name="max-threads" type="xsd:string"
-						   use="optional" default="0" />
-			<xsd:attribute name="max-message-count" type="xsd:string"
-						   use="optional" default="230000" />
-			<xsd:attribute name="max-time-between-pings" type="xsd:string"
-						   use="optional" default="60000" />
-			<xsd:attribute name="message-time-to-live" type="xsd:string"
-						   use="optional" default="180" />
-			<xsd:attribute name="socket-buffer-size" type="xsd:string"
-						   use="optional" default="32768" />
-			<xsd:attribute name="notify-by-subscription" type="xsd:string"
-						   use="optional" default="true" />
-			<xsd:attribute name="groups" type="xsd:string" use="optional"
-						   default="">
+			<xsd:attribute name="host-name-for-clients" type="xsd:string" use="optional" />
+			<xsd:attribute name="load-poll-interval" type="xsd:string" use="optional" default="5000"/>
+			<xsd:attribute name="max-connections" type="xsd:string" use="optional" default="800"/>
+			<xsd:attribute name="max-threads" type="xsd:string" use="optional" default="0" />
+			<xsd:attribute name="max-message-count" type="xsd:string" use="optional" default="230000"/>
+			<xsd:attribute name="max-time-between-pings" type="xsd:string" use="optional" default="60000"/>
+			<xsd:attribute name="message-time-to-live" type="xsd:string" use="optional" default="180"/>
+			<xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" default="32768"/>
+			<xsd:attribute name="notify-by-subscription" type="xsd:string" use="optional" default="true"/>
+			<xsd:attribute name="groups" type="xsd:string" use="optional" default="">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The server groups that this server will be a member of given as a comma separated values list.
 				]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="load-probe-ref" type="xsd:string"
-						   use="optional">
+			<xsd:attribute name="load-probe-ref" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The name of the bean defining the CacheServer Load Probe.
-					]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="cache-ref" type="xsd:string" use="optional"
-						   default="gemfireCache">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-The name of the bean defining the GemFire cache (by default 'gemfireCache').
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -2168,20 +2153,19 @@ Container for continuous query listeners. All listeners will be hosted by the sa
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="listener" type="listenerType"
-							 minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="listener" type="listenerType" minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 			<xsd:attribute name="id" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The id of the listener (optional)
-                                    ]]></xsd:documentation>
+					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="cache" type="xsd:string" default="gemfireCache">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-A reference (by name) to the GemFire cache bean. Default is "gemfireCache".
+A reference (by name) to the GemFire Cache bean. Default is "gemfireCache".
 	          ]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
@@ -2190,19 +2174,14 @@ A reference (by name) to the GemFire cache bean. Default is "gemfireCache".
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="task-executor" type="xsd:string">
+			<xsd:attribute name="pool-name" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-A reference to a Spring TaskExecutor (or standard JDK 1.5 Executor) for executing
-GemFire listener invokers. Default is a SimpleAsyncTaskExecutor.
-	          ]]></xsd:documentation>
-					<xsd:appinfo>
-						<tool:annotation kind="ref">
-							<tool:expected-type type="java.util.concurrent.Executor" />
-						</tool:annotation>
-					</xsd:appinfo>
+The name of the GemFire Pool used by the container.
+ 						]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attribute name="auto-startup" type="xsd:string" use="optional" default="true"/>
 			<xsd:attribute name="phase" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
@@ -2213,11 +2192,29 @@ and stop as soon as possible.
 	          ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="pool-name" type="xsd:string" use="optional">
+			<xsd:attribute name="error-handler" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The name of the pool used by the container.
- 						]]></xsd:documentation>
+A reference to a Spring ErrorHandler strategy handling any errors that may occur when the container executes the CQs.
+	          		]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="java.util.concurrent.Executor"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="task-executor" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+A reference to a Spring TaskExecutor (or standard JDK 1.5 Executor) for executing GemFire CQ listener invokers.
+The default is a SimpleAsyncTaskExecutor.
+	          		]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="java.util.concurrent.Executor"/>
+						</tool:annotation>
+					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
 		</xsd:complexType>
@@ -2242,18 +2239,18 @@ The query for the GemFire continuous query.
 	        ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the resulting GemFire ContinuousQuery (CQ). Useful for monitoring and statistics-based querying.
+	        ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="method" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The name of the listener method to invoke. If not specified, the target bean is supposed to implement the ContinuousQueryListener
 interface or provide a method named 'handleEvent'.
-	        ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="name" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The name of the resulting GemFire continuous query. Useful for monitoring and statistics querying.
 	        ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
