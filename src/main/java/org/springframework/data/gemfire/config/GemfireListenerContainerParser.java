@@ -34,8 +34,10 @@ import org.w3c.dom.Element;
  * Parser for SGF <code>&lt;cq-listener-container&gt;</code> element.
  * 
  * @author Costin Leau
+ * @author John Blum
  */
 class GemfireListenerContainerParser extends AbstractSingleBeanDefinitionParser {
+
 	@Override
 	protected Class<ContinuousQueryListenerContainer> getBeanClass(Element element) {
 		return ContinuousQueryListenerContainer.class;
@@ -43,19 +45,21 @@ class GemfireListenerContainerParser extends AbstractSingleBeanDefinitionParser 
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
+		ParsingUtils.setPropertyReference(element, builder, "cache", "cache");
+		ParsingUtils.setPropertyValue(element, builder, "auto-startup");
 		ParsingUtils.setPropertyValue(element, builder, "phase");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name");
-		ParsingUtils.setPropertyReference(element, builder, "cache","cache");
-		ParsingUtils.setPropertyReference(element, builder, "task-executor","task-executor");
+		ParsingUtils.setPropertyReference(element, builder, "error-handler", "errorHandler");
+		ParsingUtils.setPropertyReference(element, builder, "task-executor", "taskExecutor");
 
-		// parse nested listeners
-		List<Element> listDefs = DomUtils.getChildElementsByTagName(element, "listener");
+		// parse nested Continuous Query Listeners
+		List<Element> listenerElements = DomUtils.getChildElementsByTagName(element, "listener");
 
-		if (!listDefs.isEmpty()) {
-			ManagedSet<BeanDefinition> listeners = new ManagedSet<BeanDefinition>(listDefs.size());
-			for (Element listElement : listDefs) {
-				listeners.add(parseListener(listElement));
+		if (!listenerElements.isEmpty()) {
+			ManagedSet<BeanDefinition> listeners = new ManagedSet<BeanDefinition>(listenerElements.size());
+
+			for (Element listenerElement : listenerElements) {
+				listeners.add(parseListener(listenerElement));
 			}
 
 			builder.addPropertyValue("queryListeners", listeners);
@@ -69,30 +73,36 @@ class GemfireListenerContainerParser extends AbstractSingleBeanDefinitionParser 
 	 * @return
 	 */
 	private BeanDefinition parseListener(Element element) {
+		BeanDefinitionBuilder continuousQueryListenerBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			ContinuousQueryListenerAdapter.class);
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ContinuousQueryListenerAdapter.class);
-		builder.addConstructorArgReference(element.getAttribute("ref"));
+		continuousQueryListenerBuilder.addConstructorArgReference(element.getAttribute("ref"));
 
-		String attr = element.getAttribute("method");
-		if (StringUtils.hasText(attr)) {
-			builder.addPropertyValue("defaultListenerMethod", attr);
+		String attribute = element.getAttribute("method");
+
+		if (StringUtils.hasText(attribute)) {
+			continuousQueryListenerBuilder.addPropertyValue("defaultListenerMethod", attribute);
 		}
 
-		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(ContinuousQueryDefinition.class);
+		BeanDefinitionBuilder continuousQueryBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			ContinuousQueryDefinition.class);
 
-		attr = element.getAttribute("name");
-		if (StringUtils.hasText(attr)) {
-			defBuilder.addConstructorArgValue(attr);
+		attribute = element.getAttribute("name");
+
+		if (StringUtils.hasText(attribute)) {
+			continuousQueryBuilder.addConstructorArgValue(attribute);
 		}
 
-		defBuilder.addConstructorArgValue(element.getAttribute("query"));
-		defBuilder.addConstructorArgValue(builder.getBeanDefinition());
+		continuousQueryBuilder.addConstructorArgValue(element.getAttribute("query"));
+		continuousQueryBuilder.addConstructorArgValue(continuousQueryListenerBuilder.getBeanDefinition());
 
-		attr = element.getAttribute("durable");
-		if (StringUtils.hasText(attr)) {
-			defBuilder.addConstructorArgValue(attr);
+		attribute = element.getAttribute("durable");
+
+		if (StringUtils.hasText(attribute)) {
+			continuousQueryBuilder.addConstructorArgValue(attribute);
 		}
 
-		return defBuilder.getBeanDefinition();
+		return continuousQueryBuilder.getBeanDefinition();
 	}
+
 }

@@ -22,16 +22,22 @@ import org.springframework.util.Assert;
 import com.gemstone.gemfire.cache.query.CqQuery;
 
 /**
- * Basic holder class for defining an {@link CqQuery}. Useful for configuring GemFire {@link CqQuery}s through XML
- * and or JavaBeans means.
+ * Basic holder class for defining an {@link CqQuery}. Useful for configuring GemFire {@link CqQuery}s by mean of
+ * XML or using JavaBeans.
  * 
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.beans.factory.InitializingBean
  */
+@SuppressWarnings("unused")
 public class ContinuousQueryDefinition implements InitializingBean {
 
-	private String name = null, query = null;
-	private ContinuousQueryListener listener = null;
 	private boolean durable = false;
+
+	private ContinuousQueryListener listener;
+
+	private String name;
+	private String query;
 
 	public ContinuousQueryDefinition() {
 	}
@@ -60,35 +66,44 @@ public class ContinuousQueryDefinition implements InitializingBean {
 	}
 
 	public void afterPropertiesSet() {
-		Assert.hasText(query, "a non-empty query is required");
-		Assert.notNull(listener, "a non- null listener is required");
+		Assert.hasText(query, "A non-empty query is required.");
+		Assert.notNull(listener, "A non-null listener is required.");
 	}
 
 	/**
-	 * @return the name
+	 * Determines whether the CQ is durable.
+	 *
+	 * @return a boolean indicating if the CQ is durable.
+	 */
+	public boolean isDurable() {
+		return durable;
+	}
+
+	/**
+	 * Gets the name for the CQ.
+	 *
+	 * @return a String name for the CQ.
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * @return the query
+	 * Gets the query string that will be executed for the CQ.
+	 *
+	 * @return a String value with the query to be executed for the CQ.
 	 */
 	public String getQuery() {
 		return query;
 	}
 
 	/**
-	 * @return the listener
+	 * The CQ Listener receiving events and notifications with changes from the CQ.
+	 *
+	 * @return the listener to be registered for the CQ.
 	 */
 	public ContinuousQueryListener getListener() {
 		return listener;
 	}
 
-	/**
-	 * @return the durable
-	 */
-	public boolean isDurable() {
-		return durable;
-	}
 }

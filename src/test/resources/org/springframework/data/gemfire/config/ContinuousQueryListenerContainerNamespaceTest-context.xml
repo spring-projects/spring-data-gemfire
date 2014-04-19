@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:task="http://www.springframework.org/schema/task"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="clientCacheConfigurationSettings">
+		<prop key="name">cq-client</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:pool id="clientPool" subscription-enabled="true">
+		<gfe:server host="localhost" port="40404"/>
+	</gfe:pool>
+
+	<gfe:client-cache use-bean-factory-locator="false" properties-ref="clientCacheConfigurationSettings" pool-name="clientPool"/>
+
+	<bean id="testErrorHandler" class="org.springframework.data.gemfire.listener.StubErrorHandler"/>
+	<bean id="testQueryListener" class="org.springframework.data.gemfire.listener.GemfireMDP"/>
+
+	<task:executor id="testTaskExecutor"/>
+
+	<gfe:cq-listener-container id="testContainerId" cache="gemfireCache" pool-name="clientPool"
+							   auto-startup="false" phase="4"
+							   error-handler="testErrorHandler" task-executor="testTaskExecutor">
+		<gfe:listener ref="testQueryListener" query="SELECT * FROM /test-cq" name="Q1"/>
+		<gfe:listener ref="testQueryListener" query="SELECT * FROM /test-cq" name="Q2" method="handleQuery"/>
+		<gfe:listener ref="testQueryListener" query="SELECT * FROM /test-cq" name="Q3" durable="true"/>
+	</gfe:cq-listener-container>
+
+</beans>
