@@ -45,7 +45,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 /**
  * Client extension for GemFire Regions.
- * <p/>
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
@@ -202,9 +202,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Validates that the settings for ClientRegionShortcut and the 'persistent' attribute in <gfe:*-region/> elements
+	 * Validates that the settings for ClientRegionShortcut and the 'persistent' attribute in &lt;gfe:*-region&gt; elements
 	 * are compatible.
-	 * <p/>
+	 *
 	 * @param resolvedShortcut the GemFire ClientRegionShortcut resolved form the Spring GemFire XML namespace
 	 * configuration meta-data.
 	 * @see #isPersistent()
@@ -226,9 +226,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Validates that the settings for Data Policy and the 'persistent' attribute in <gfe:*-region/> elements
+	 * Validates that the settings for Data Policy and the 'persistent' attribute in &lt;gfe:*-region&gt; elements
 	 * are compatible.
-	 * <p/>
+	 *
 	 * @param resolvedDataPolicy the GemFire Data Policy resolved form the Spring GemFire XML namespace configuration
 	 * meta-data.
 	 * @see #isPersistent()
@@ -402,7 +402,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * Indicates whether the region referred by this factory bean, will be
 	 * closed on shutdown (default true). Note: destroy and close are mutually
 	 * exclusive. Enabling one will automatically disable the other.
-	 * <p/>
+	 *
 	 * @param close whether to close or not the region
 	 * @see #setDestroy(boolean)
 	 */
@@ -419,7 +419,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * Indicates whether the region referred by this factory bean will be
 	 * destroyed on shutdown (default false). Note: destroy and close are
 	 * mutually exclusive. Enabling one will automatically disable the other.
-	 * <p/>
+	 *
 	 * @param destroy whether or not to destroy the region
 	 * @see #setClose(boolean)
 	 */
@@ -441,7 +441,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	/**
 	 * Sets the CacheLoader used to load data local to the client's Region on cache misses.
-	 * <p/>
+	 *
 	 * @param cacheLoader a GemFire CacheLoader used to load data into the client Region.
 	 * @see com.gemstone.gemfire.cache.CacheLoader
 	 */
@@ -451,7 +451,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	/**
 	 * Sets the CacheWriter used to perform a synchronous write-behind when data is put into the client's Region.
-	 * <p/>
+	 *
 	 * @param cacheWriter the GemFire CacheWriter used to perform synchronous write-behinds on put ops.
 	 * @see com.gemstone.gemfire.cache.CacheWriter
 	 */
@@ -461,7 +461,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	/**
 	 * Sets the Data Policy. Used only when a new Region is created.
-	 * <p/>
+	 *
 	 * @param dataPolicy the client Region's Data Policy.
 	 * @see com.gemstone.gemfire.cache.DataPolicy
 	 */
@@ -471,7 +471,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	/**
 	 * Sets the name of disk store to use for overflow and persistence
-	 * <p/>
+	 *
 	 * @param diskStoreName a String specifying the 'name' of the client Region Disk Store.
 	 */
 	public void setDiskStoreName(String diskStoreName) {
@@ -480,7 +480,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	/**
 	 * An alternate way to set the Data Policy, using the String name of the enumerated value.
-	 * <p/>
+	 *
 	 * @param dataPolicyName the enumerated value String name of the Data Policy.
 	 * @see com.gemstone.gemfire.cache.DataPolicy
 	 * @see #setDataPolicy(com.gemstone.gemfire.cache.DataPolicy)
@@ -523,7 +523,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * Sets the snapshots used for loading a newly <i>created</i> region. That
 	 * is, the snapshot will be used <i>only</i> when a new region is created -
 	 * if the region already exists, no loading will be performed.
-	 * <p/>
+	 *
 	 * @param snapshot the snapshot to set
 	 * @see #setName(String)
 	 */

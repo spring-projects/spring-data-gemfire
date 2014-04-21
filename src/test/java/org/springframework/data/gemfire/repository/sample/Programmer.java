@@ -21,11 +21,11 @@ import org.springframework.util.StringUtils;
 
 /**
  * The Programmer class is a User representing/modeling a software engineer/developer.
- * <p/>
+ *
  * @author John J. Blum
  * @see org.springframework.data.gemfire.mapping.Region
  * @see org.springframework.data.gemfire.repository.sample.User
- * @since 1.3.4
+ * @since 1.4.0
  */
 @Region("Programmers")
 @SuppressWarnings("unused")

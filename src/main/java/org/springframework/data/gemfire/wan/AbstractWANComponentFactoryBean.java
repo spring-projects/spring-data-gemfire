@@ -30,7 +30,7 @@ import com.gemstone.gemfire.cache.Cache;
 
 /**
  * Base class for GemFire WAN Gateway component factory beans.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  */

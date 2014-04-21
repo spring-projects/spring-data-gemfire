@@ -17,14 +17,31 @@ package org.springframework.data.gemfire.repository;
 
 import java.io.Serializable;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 
 /**
  * Gemfire-specific extension of the {@link CrudRepository} interface.
- * 
+ *
  * @author Oliver Gierke
+ * @author John Blum
+ * @see java.io.Serializable
+ * @see org.springframework.data.repository.CrudRepository
  */
+@SuppressWarnings("unused")
 public interface GemfireRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
 
+	/**
+	 * Returns all entities sorted by the given options.
+	 *
+	 * @param sort the Spring Data Commons Sort type defining the ordering criteria.
+	 * @return all entities sorted by the given options.
+	 * @see org.springframework.data.repository.PagingAndSortingRepository#findAll(org.springframework.data.domain.Sort)
+	 * @see org.springframework.data.domain.Sort
+	 * @see java.lang.Iterable
+	 */
+	Iterable<T> findAll(Sort sort);
+
 	T save(Wrapper<T, ID> wrapper);
+
 }

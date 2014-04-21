@@ -30,10 +30,11 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * FactoryBean for creating a parallel or serial GemFire {@link GatewaySender}.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>
 		implements SmartLifecycle {
 
@@ -65,7 +66,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	/**
 	 * Constructs an instance of the GatewaySenderFactoryBean class initialized with a reference to the GemFire cache.
-	 * <p/>
+	 *
 	 * @param cache the Gemfire cache reference.
 	 * @see com.gemstone.gemfire.cache.Cache
 	 */

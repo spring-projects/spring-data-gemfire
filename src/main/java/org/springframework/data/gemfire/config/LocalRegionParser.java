@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;local-region;gt; bean definitions.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  */

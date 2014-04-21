@@ -32,7 +32,7 @@ import com.gemstone.gemfire.cache.GemFireCache;
 
 /**
  * FactoryBean for creating a GemFire DiskStore.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.beans.factory.BeanNameAware
@@ -41,8 +41,6 @@ import com.gemstone.gemfire.cache.GemFireCache;
  */
 @SuppressWarnings("unused")
 public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, InitializingBean, BeanNameAware {
-
-	private DiskStoreFactory diskStoreFactory;
 
 	private Boolean allowForceCompaction;
 	private Boolean autoCompact;
@@ -81,7 +79,7 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 		Assert.state(cache != null, String.format("A reference to the GemFire Cache must be set for Disk Store '%1$s'.",
 			getName()));
 
-		diskStoreFactory = cache.createDiskStoreFactory();
+		DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
 
 		if (allowForceCompaction != null) {
 			diskStoreFactory.setAllowForceCompaction(allowForceCompaction);

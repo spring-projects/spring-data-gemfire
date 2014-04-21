@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.util.Gateway;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
- * <p/>
+ * 
  * @author David Turanski
  * @author John Blum
  */
@@ -51,7 +51,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
-	 * <p/>
+	 * 
 	 * @param cache the GemFire Cache reference.
 	 * @see #AsyncEventQueueFactoryBean(com.gemstone.gemfire.cache.Cache, com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener)
 	 */
@@ -61,7 +61,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
-	 * <p/>
+	 * 
 	 * @param cache the GemFire Cache reference.
 	 * @param asyncEventListener required {@link AsyncEventListener}
 	 */

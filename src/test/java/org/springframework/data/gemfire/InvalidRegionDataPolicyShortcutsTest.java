@@ -26,7 +26,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * The InvalidRegionDataPolicyShortcutsIntegrationTest class is a test suite of test cases testing and setting up
  * some invalid, or illegal uses of the Region data-policy and/or shortcut XML namespace attributes.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @since 1.4.0

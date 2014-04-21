@@ -55,7 +55,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 /**
  * The RegionFactoryBeanTest class is a test suite of test cases testing the contract and functionality of the
  * RegionFactoryBean class.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.data.gemfire.RegionFactoryBean

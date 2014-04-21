@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
 
 /**
  * Abstract base class encapsulating functionality common to all Region Parsers.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  */

@@ -23,10 +23,13 @@ import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * Spring Framework {@link Cache} implementation using a GemFire {@link Region} underneath.
- * Supports Gemfire 6.5 or higher.
- * 
+ * Spring Framework {@link Cache} implementation backed by a GemFire {@link Region}.
+ *
+ * Supports GemFire 6.5 or higher.
+ *
  * @author Costin Leau
+ * @author John Blum
+ *
  */
 public class GemfireCache implements Cache {
 
@@ -64,7 +67,9 @@ public class GemfireCache implements Cache {
 		return (value == null ? null : new SimpleValueWrapper(value));
 	}
 
+	@SuppressWarnings("unchecked")
 	public void put(Object key, Object value) {
 		region.put(key, value);
 	}
+
 }

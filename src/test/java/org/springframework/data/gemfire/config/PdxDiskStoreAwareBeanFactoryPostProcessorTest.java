@@ -49,7 +49,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 /**
  * The PdxDiskStoreAwareBeanFactoryPostProcessorTest class is a test suite of test cases testing the functionality
  * of the PdxDiskStoreAwareBeanFactoryPostProcessor class.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
@@ -69,7 +69,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorTest {
 		return (array == null || array.length == 0);
 	}
 
-	protected static boolean isBeanType(final BeanDefinition beanDefinition, final Class beanType) {
+	protected static boolean isBeanType(final BeanDefinition beanDefinition, final Class<?> beanType) {
 		return (beanDefinition instanceof AbstractBeanDefinition
 			&& ((AbstractBeanDefinition) beanDefinition).hasBeanClass()
 				&& beanType.isAssignableFrom(((AbstractBeanDefinition) beanDefinition).getBeanClass()));

@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.cache.lru.LRUCapacityController;
 /**
  * The RegionEvictionAttributesNamespaceTest class is a test suite of test cases testing the use of Eviction settings
  * (EvictionAttributes) in the SDG XML namespace.
- * <p/>
+ *
  * @author John Blum
  * @since 1.3.4
  */

@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
  * The LazyWiringDeclarableSupportIntegrationTest class is a test suite of integration test cases testing
  * a LazyWiringDeclarableSupport object/component's wiring configuration and initialization in
  * a Spring container context.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith

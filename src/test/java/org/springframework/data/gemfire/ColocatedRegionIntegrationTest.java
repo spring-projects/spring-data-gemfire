@@ -30,7 +30,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The ColocatedRegionIntegrationTest class is a test suite class containing test cases for JIRA issue SGF-195,
  * concerning colocated Regions in GemFire.
- * <p/>
+ *
  * @author John Blum
  * @link https://jira.springsource.org/browse/SGF-195
  * @see org.junit.Test

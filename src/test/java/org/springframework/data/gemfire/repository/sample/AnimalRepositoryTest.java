@@ -28,13 +28,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**
  * The AnimalRepositoryTest class is a test suite of test cases testing the functionality behind PR #55 involving
  * persisting application domain object/entities to multiple Regions in GemFire's Cache.
- * <p/>
+ *
  * @author Stuart Williams
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @since 1.4.0
  * @link https://github.com/spring-projects/spring-data-gemfire/pull/55
  */
 @ContextConfiguration("AnimalRepositoryTest-context.xml")

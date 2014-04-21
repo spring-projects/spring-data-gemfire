@@ -65,7 +65,7 @@ public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	 * Resolves the Data Policy used by this "local" GemFire Region (i.e. locally Scoped; Scope.LOCAL) based on the
 	 * enumerated value from com.gemstone.gemfire.cache.RegionShortcuts (LOCAL, LOCAL_PERSISTENT, LOCAL_HEAP_LRU,
 	 * LOCAL_OVERFLOW, and LOCAL_PERSISTENT_OVERFLOW), but without consideration of the Eviction settings.
-	 * <p/>
+	 *
 	 * @param regionFactory the GemFire RegionFactory used to created the Local Region.
 	 * @param persistent a boolean value indicating whether the Local Region should persist it's data.
 	 * @param dataPolicy requested Data Policy as set by the user in the Spring GemFire configuration meta-data.

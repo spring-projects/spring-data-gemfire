@@ -71,10 +71,10 @@ public interface GemfireOperations {
 	/**
 	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return multiple results; for queries that return only one
 	 * element use {@link #findUnique(String, Object...)}.
-	 * <p/>
+	 *
 	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
 	 * 
-	 * <p/>Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
+	 * Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
 	 * is being used.
 	 * 
 	 * @see QueryService#newQuery(String)
@@ -90,10 +90,10 @@ public interface GemfireOperations {
 	/**
 	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return a single result; for queries that return multiple
 	 * elements use {@link #find(String, Object...)}.
-	 * <p/>
+	 *
 	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
 	 * 
-	 * <p/>Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
+	 * Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
 	 * is being used.
 	 * 
 	 * @see QueryService#newQuery(String)

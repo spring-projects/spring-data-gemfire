@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * Base class for GemfireTemplate and GemfireInterceptor, defining common properties such as {@link Region}. 
- * <p/>
+ *
  * Not intended to be used directly.
  * 
  * @author Costin Leau
@@ -73,7 +73,6 @@ public class GemfireAccessor implements InitializingBean {
 	 * is called only for GemFire querying exception that do <b>NOT</b> extend from GemFire exception.
 	 * May be overridden in subclasses.
 	 * 
-	 * @see com.gemstone.gemfire.cache.query.CqInvalidException
 	 * @param ex GemFireException that occurred
 	 * @return the corresponding DataAccessException instance
 	 */

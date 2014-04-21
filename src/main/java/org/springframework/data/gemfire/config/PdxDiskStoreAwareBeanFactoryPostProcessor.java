@@ -33,7 +33,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
  * Region and Disk Store beans in the Spring container to form a dependency on the Cache's PDX Disk Store bean.
  * A persistent Region may contain PDX typed data, in which case, the PDX type meta-data stored to disk needs to be
  * loaded before the Region having PDX data is loaded from disk.
- * <p/>
+ *
  * @author John Blum
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
  * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
@@ -67,7 +67,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	 * or requirement on the PDX-based Disk Store being present before the bean itself can be processed and created.
 	 * For instance, Regions that might contained PDX-based Key types require the PDX type meta-data to be loaded
 	 * before the Region's data (Keys) are accessed.
-	 * <p/>
+	 *
 	 * @param beanFactory the BeanFactory used to evaluate beans in context for PDX Disk Store dependencies.
 	 * @param beanTypes an array of Class types indicating the type of beans to evaluate.
 	 * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory#getBeanNamesForType(Class)
@@ -94,7 +94,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	/**
 	 * Adds the PDX Disk Store bean name as a dependency at the beginning of the list of dependencies declared
 	 * by the Bean.
-	 * <p/>
+	 *
 	 * @param beanDefinition the BeanDefinition to add the PDX Disk Store dependency to.
 	 * @see #getDependsOn(org.springframework.beans.factory.config.BeanDefinition)
 	 * @see org.springframework.beans.factory.config.BeanDefinition#setDependsOn(String[])
@@ -107,7 +107,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	/**
 	 * Gets the current list of dependencies declared in the BeanDefinition for the Bean, returning an
 	 * empty String array if the dependsOn property is null.
-	 * <p/>
+	 *
 	 * @param beanDefinition the BeanDefinition of the Bean containing the dependencies.
 	 * @return an array of Bean names that this Bean depends on, or an empty String array if the dependencies
 	 * are undefined.

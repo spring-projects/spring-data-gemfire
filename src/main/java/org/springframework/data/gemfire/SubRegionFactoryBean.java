@@ -23,7 +23,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
@@ -31,7 +30,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * FactoryBean for creating a Gemfire sub-Regions.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  * @param <K> Region Key Type
@@ -40,9 +39,9 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * (e.g. ReplicatedRegionFactoryBean) instead.
  */
 @Deprecated
-@SuppressWarnings("deprecation")
-public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implements FactoryBean<Region<K, V>>,
-		InitializingBean {
+@SuppressWarnings({"deprecation", "unused"})
+public class SubRegionFactoryBean<K, V> extends com.gemstone.gemfire.cache.AttributesFactory<K, V>
+		implements FactoryBean<Region<K, V>>, InitializingBean {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -56,7 +55,6 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 	private Region<?, ?> parentRegion;
 	private Region<K, V> subRegion;
 
-	@SuppressWarnings("unused")
 	private String name;
 	private String regionName;
 
@@ -125,8 +123,8 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 
 	/**
 	 * Sets the cache listeners used for the region used by this factory. Used
-	 * only when a new region is created.Overrides the settings specified
-	 * through {@link #setAttributes(com.gemstone.gemfire.cache.RegionAttributes)}.
+	 * only when a new region is created. Overrides the settings specified
+	 * through setAttributes(com.gemstone.gemfire.cache.RegionAttributes).
 	 *
 	 * @param cacheListeners the cacheListeners to set on a newly created region
 	 */
@@ -134,10 +132,6 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 		this.cacheListeners = cacheListeners;
 	}
 
-	/**
-	 *
-	 * @param gatewaySenders
-	 */
 	public void setGatewaySenders(Object[] gatewaySenders) {
 		this.gatewaySenders = gatewaySenders;
 	}
@@ -145,7 +139,6 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 	/**
 	 * Set to true if the subregion should already exist, e.g., specified by
 	 * &lt;lookup-region&gt;
-	 * @param lookupOnly
 	 */
 	public void setLookupOnly(boolean lookupOnly) {
 		this.lookupOnly = lookupOnly;
@@ -153,7 +146,6 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 
 	/**
 	 * Set the bean name - the same as the subregion full path
-	 * @param name
 	 */
 	public void setName(String name) {
         this.name = name;
@@ -161,7 +153,6 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 
 	/**
 	 * Set the simple name of the region
-	 * @param regionName
 	 */
 	public void setRegionName(String regionName) {
 		this.regionName = regionName;
@@ -169,7 +160,6 @@ public class SubRegionFactoryBean<K, V> extends AttributesFactory<K, V> implemen
 
 	/**
 	 * Set the parent Region
-	 * @param parent
 	 */
 	public void setParent(Region<?, ?> parent) {
 		this.parentRegion = parent;

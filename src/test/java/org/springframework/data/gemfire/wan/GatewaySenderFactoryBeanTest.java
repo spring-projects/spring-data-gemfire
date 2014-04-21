@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 /**
  * The GatewaySenderFactoryBeanTest class is a test suite of test cases testing the contract and functionality of the
  * GatewaySenderFactoryBean class.
- * <p/>
+ *
  * @author John Blum
  * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.wan.GatewaySender

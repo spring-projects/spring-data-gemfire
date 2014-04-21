@@ -36,7 +36,7 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 
 /**
  * The SubRegionSubElementNamespaceTest class...
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.test.context.ContextConfiguration

@@ -32,7 +32,7 @@ public interface GemfireCallback<T> {
 	/**
 	 * Gets called by {@link GemfireTemplate#execute(GemfireCallback)}. Does not need to care about handling transactions
 	 * or exceptions.
-	 * <p/>
+	 *
 	 * Allows for returning a result object created within the callback, i.e. a domain object or a collection of domain
 	 * objects. A thrown custom RuntimeException is treated as an application exception: It gets propagated to the caller
 	 * of the template.

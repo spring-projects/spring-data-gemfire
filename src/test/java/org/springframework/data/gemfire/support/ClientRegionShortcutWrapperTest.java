@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 /**
  * The ClientRegionShortcutWrapperTest class is a test suite of test cases testing the contract and functionality of the
  * ClientRegionShortcutWrapper enum class type.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.support.ClientRegionShortcutWrapper

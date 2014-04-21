@@ -22,7 +22,7 @@ import org.springframework.data.gemfire.repository.Query;
 /**
  * The PlantRepository class is a Repository extension for accessing and storing Plants.
  * Note, this Spring GemFire Repository extension incorrectly maps Plants to the Plants Region on purpose
- * <p/>
+ *
  * @author John Blum
  * @see org.springframework.data.gemfire.repository.GemfireRepository
  * @see org.springframework.data.gemfire.repository.Query

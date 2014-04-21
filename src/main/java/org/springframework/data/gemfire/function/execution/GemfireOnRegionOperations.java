@@ -18,8 +18,6 @@ import com.gemstone.gemfire.cache.execute.Function;
 
 /**
  * @author David Turanski
- *
- * @param <T>
  */
 public interface GemfireOnRegionOperations extends GemfireFunctionOperations {
 

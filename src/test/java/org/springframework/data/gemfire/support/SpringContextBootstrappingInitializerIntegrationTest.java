@@ -54,7 +54,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The SpringContextBootstrappingInitializerTest class is a test suite of test cases testing the integrated
  * functionality of the SpringContextBootstrappingInitializer class.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext
@@ -64,8 +64,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see com.gemstone.gemfire.cache.CacheFactory
  * @see com.gemstone.gemfire.cache.CacheLoader
  * @see com.gemstone.gemfire.cache.Region
- * @since 1.3.4 (Spring Data GemFire)
- * @since 7.0.1 (GemFire)
+ * @since 1.4.0
  */
 @SuppressWarnings("unused")
 public class SpringContextBootstrappingInitializerIntegrationTest {

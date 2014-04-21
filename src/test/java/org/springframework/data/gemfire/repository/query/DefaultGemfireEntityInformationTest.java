@@ -35,7 +35,7 @@ import org.springframework.data.mapping.context.MappingContext;
  * The DefaultGemfireEntityInformationTest class is a test suite of test cases testing the contract and functionality
  * of the DefaultGemfireEntityInformation class used to extract entity information during persistence/mapping operations
  * during data access to the underlying data store (GemFire).
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.repository.query.DefaultGemfireEntityInformation

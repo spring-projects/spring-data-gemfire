@@ -1,6 +1,10 @@
 package org.springframework.data.gemfire.test;
-import static org.mockito.Mockito.*;
- 
+
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.naming.Context;
 
 import org.mockito.invocation.InvocationOnMock;
@@ -38,12 +41,10 @@ import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.BridgeServer;
 import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.util.GatewayHub;
@@ -58,6 +59,8 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.PdxSerializer;
+
+@SuppressWarnings("deprecation")
 public class StubCache implements Cache {
 
 	private Properties properties;
@@ -390,7 +393,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	@Deprecated
-	public BridgeServer addBridgeServer() {
+	public com.gemstone.gemfire.cache.util.BridgeServer addBridgeServer() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -462,8 +465,7 @@ public class StubCache implements Cache {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> RegionFactory<K, V> createRegionFactory() {
-		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createRegionFactory();
-		return regionFactory;
+		return new MockRegionFactory<K,V>(this).createRegionFactory();
 	}
 
 	/* (non-Javadoc)
@@ -472,8 +474,7 @@ public class StubCache implements Cache {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortCut) {
-		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createRegionFactory();
-		return regionFactory;
+		return new MockRegionFactory<K,V>(this).createRegionFactory();
 	}
 
 	/* (non-Javadoc)
@@ -482,8 +483,7 @@ public class StubCache implements Cache {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> RegionFactory<K, V> createRegionFactory(String arg0) {
-		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createRegionFactory();
-		return regionFactory;
+		return new MockRegionFactory<K,V>(this).createRegionFactory();
 	}
 
 	/* (non-Javadoc)
@@ -491,8 +491,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
-		RegionFactory<K, V> regionFactory = new MockRegionFactory<K,V>(this).createMockRegionFactory(regionAttributes);
-		return regionFactory;
+		return new MockRegionFactory<K,V>(this).createMockRegionFactory(regionAttributes);
 	}
 
 	/* (non-Javadoc)
@@ -754,9 +753,6 @@ public class StubCache implements Cache {
 		this.searchTimeout = arg0;
 	}
 	
-	/**
-	 * @return
-	 */
 	DistributedSystem mockDistributedSystem() {
 		DistributedSystem ds = mock(DistributedSystem.class);
 		DistributedMember dm = mockDistributedMember();
@@ -777,10 +773,7 @@ public class StubCache implements Cache {
 		return dm;
 	}
 	
-	/**
-	 * @return
-	 */
-	CacheServer mockCacheServer() {		
+	CacheServer mockCacheServer() {
 		return new StubCacheServer();
 	}
 	
@@ -814,7 +807,7 @@ public class StubCache implements Cache {
 				String indexName = (String)invocation.getArguments()[0];
 				String indexedExpression = (String)invocation.getArguments()[1];
 				String fromClause = (String)invocation.getArguments()[2];
-				return mockIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause, null);
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, indexedExpression, fromClause, null);
 			}
 		});
 		when(qs.createIndex(anyString(), anyString(),anyString(),anyString())).thenAnswer(new Answer<Index>(){
@@ -824,7 +817,7 @@ public class StubCache implements Cache {
 				String indexedExpression = (String)invocation.getArguments()[1];
 				String fromClause = (String)invocation.getArguments()[2];
 				String imports = (String)invocation.getArguments()[3];
-				return mockIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause, imports);
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, indexedExpression, fromClause, imports);
 			}
 		});
 		
@@ -835,7 +828,7 @@ public class StubCache implements Cache {
 				String indexedExpression = (String)invocation.getArguments()[1];
 				String fromClause = (String)invocation.getArguments()[2];
 				 
-				return mockIndex(indexName, IndexType.PRIMARY_KEY, indexedExpression, fromClause, null);
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY, indexedExpression, fromClause, null);
 			}
 		});
 		
@@ -846,7 +839,7 @@ public class StubCache implements Cache {
 				String indexedExpression = (String)invocation.getArguments()[1];
 				String fromClause = (String)invocation.getArguments()[2];
 				 
-				return mockIndex(indexName, IndexType.HASH, indexedExpression, fromClause, null);
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.HASH, indexedExpression, fromClause, null);
 			}
 		});
 		
@@ -858,15 +851,16 @@ public class StubCache implements Cache {
 				String fromClause = (String)invocation.getArguments()[2];
 				String imports = (String)invocation.getArguments()[3];
 				 
-				return mockIndex(indexName, IndexType.HASH, indexedExpression, fromClause,  imports);
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.HASH, indexedExpression, fromClause,  imports);
 			}
 		});
 		 
 		return qs;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	Index mockIndex(String indexName, IndexType indexType,String indexedExpression, String fromClause, String imports){
+	@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
+	Index mockIndex(String indexName, com.gemstone.gemfire.cache.query.IndexType indexType, String indexedExpression,
+			String fromClause, String imports){
 		Index idx = mock(Index.class);
 		when(idx.getFromClause()).thenReturn(fromClause);
 		when(idx.getIndexedExpression()).thenReturn(indexedExpression);
@@ -888,16 +882,6 @@ public class StubCache implements Cache {
 		return this.allRegions;
 	}
 	
-	GatewaySender mockGatewaySender(String id, int remoteId) {
-		GatewaySender gwSender = mock(GatewaySender.class);
-		when(gwSender.getId()).thenReturn(id);
-		when(gwSender.getRemoteDSId()).thenReturn(remoteId);
-		return gwSender;
-	}
-
-	/**
-	 * @param props
-	 */
 	public void setProperties(Properties props) {
 		this.properties = props;
 	}

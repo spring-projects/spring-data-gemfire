@@ -38,14 +38,13 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 /**
  * The ClientSubRegionTest class is a test suite of test cases testing SubRegion functionality from a client
  * GemFire Cache.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.4.0
- * @since 7.0.1 (GemFire)
  */
 @ContextConfiguration("clientcache-with-subregion-config.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
