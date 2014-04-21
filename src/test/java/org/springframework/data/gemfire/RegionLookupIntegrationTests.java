@@ -37,7 +37,7 @@ import com.gemstone.gemfire.cache.Scope;
 /**
  * The RegionLookupIntegrationTests class is a test suite of test cases testing the lookup functionality for various
  * peer Region types.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext

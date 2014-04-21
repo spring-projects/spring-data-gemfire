@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import org.springframework.cache.Cache;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -36,6 +35,7 @@ public class GemfireCacheTest extends AbstractNativeCacheTest<Region<Object, Obj
 	}
 
 	@Override
+	@SuppressWarnings({"deprecation", "unchecked" })
 	protected Region<Object, Object> createNativeCache() throws Exception {
 		com.gemstone.gemfire.cache.Cache instance = null;
 		try {
@@ -49,9 +49,10 @@ public class GemfireCacheTest extends AbstractNativeCacheTest<Region<Object, Obj
 		}
 		Region reg = instance.getRegion(CACHE_NAME);
 		if (reg == null) {
-			reg = instance.createRegion(CACHE_NAME, new AttributesFactory().create());
+			reg = instance.createRegion(CACHE_NAME, new com.gemstone.gemfire.cache.AttributesFactory().create());
 		}
 
 		return reg;
 	}
+
 }

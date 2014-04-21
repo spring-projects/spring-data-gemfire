@@ -19,11 +19,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Resource;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,11 +35,12 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * @author David Turanski
- *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
+@RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unchecked")
 public class JSONRegionAdviceTest {
+
 	@SuppressWarnings("rawtypes")
 	@Resource(name="someRegion")
 	private Region region;
@@ -75,14 +73,14 @@ public class JSONRegionAdviceTest {
 		map.put("key1", "{\"hello1\":\"world1\"}");
 		map.put("key2", "{\"hello2\":\"world2\"}");
 		region.putAll(map);
-		List<String> keys = Arrays.asList(new String[]{"key1","key2"});
+		List<String> keys = Arrays.asList("key1", "key2");
 		Map<String,String> results = region.getAll(keys);
 		assertEquals("{\"hello1\":\"world1\"}",results.get("key1"));
 		assertEquals("{\"hello2\":\"world2\"}",results.get("key2"));
 	}
 	
 	@Test
-	public void testObjectToJSon() throws JsonGenerationException, JsonMappingException, IOException {
+	public void testObjectToJSon() throws IOException {
 		Person dave = new Person(1L,"Dave","Turanski");
 		region.put("dave",dave);
 		String json = (String)region.get("dave");

@@ -35,7 +35,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 /**
  * The CacheUsingPdxNamespaceTest class is a test suite of test case testing the Spring Data GemFire XML namespace
  * when PDX is configured in GemFire.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith

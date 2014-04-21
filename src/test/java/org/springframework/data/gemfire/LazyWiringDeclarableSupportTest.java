@@ -38,7 +38,7 @@ import org.springframework.data.gemfire.support.SpringContextBootstrappingInitia
  * of the LazyWiringDeclarableSupport class.  This test class focuses on testing isolated units of functionality
  * in the Declarable class directly, mocking any dependencies as appropriate, in order for the class to uphold
  * it's contract.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito

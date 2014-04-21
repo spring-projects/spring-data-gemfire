@@ -17,14 +17,13 @@
 package org.springframework.data.gemfire;
 
 import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.cache.util.ObjectSizerImpl;
 
 /**
  * @author Costin Leau
  */
 public class SimpleObjectSizer implements ObjectSizer {
 
-	private static final ObjectSizer sizer = new ObjectSizerImpl();
+	private static final ObjectSizer sizer = ObjectSizer.DEFAULT;
 
 	@Override
 	public int sizeof(Object o) {

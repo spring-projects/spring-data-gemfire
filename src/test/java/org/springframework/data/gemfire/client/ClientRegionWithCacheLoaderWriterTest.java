@@ -46,7 +46,7 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 /**
  * The ClientRegionWithCacheLoaderWriterTest class is a test suite of test cases testing the addition of CacheLoaders
  * and CacheWriters to a client, local Region inside a GemFire Cache.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith

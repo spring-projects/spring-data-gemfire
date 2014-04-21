@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.mapping;
 
 import java.util.Collections;
@@ -27,7 +28,7 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * Simple value object to abstract access to regions by name and mapped type.
- * <p/>
+ *
  * @author Oliver Gierke
  * @author John Blum
  */
@@ -79,7 +80,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 
 	/**
 	 * Returns the {@link Region} with the given name or path.
-	 * <p/>
+	 *
 	 * @param namePath must not be {@literal null}, and either identifies the Region by name or the fully-qualified path.
 	 * @return the {@link Region} with the given name or path.
 	 */

@@ -41,13 +41,14 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * The RegionsTest class is a test suite of test cases testing the contract and functionality of the Regions class.
- * <p/>
+ *
  * @author John J. Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.mapping.Regions
  * @since 1.3.4
  */
+@SuppressWarnings("unchecked")
 public class RegionsTest {
 
 	private MappingContext mockMappingContext;
@@ -74,7 +75,6 @@ public class RegionsTest {
 	}
 
 	@Before
-	@SuppressWarnings("unchecked")
 	public void setup() {
 		mockMappingContext = mock(GemfireMappingContext.class, "GemfireMappingContext");
 

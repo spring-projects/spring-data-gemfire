@@ -41,7 +41,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
  * The AsyncEvenntQueueWithListenerTest class is a test suite of test cases testing the circular references between
  * an Async Event Queue and a registered AsyncEventListener that refers back to the Async Event Queue on which the
  * listener registered.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
@@ -103,7 +103,7 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 	/**
 	 * The QueueAsyncEventListener class is an implementation of the AsyncEventListener interface that contains
 	 * a reference to the AsyncEventQueue upon which it is registered.
-	 * <p/>
+	 *
 	 * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEvent
 	 * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener
 	 * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue

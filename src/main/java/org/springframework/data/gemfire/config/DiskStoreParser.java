@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;disk-store&gt; bean definitions.
- * <p/>
+ *
  * @author David Turanski
  * @author John Blum
  */

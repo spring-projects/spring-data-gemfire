@@ -52,6 +52,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
  * 
  * @author Costin Leau
  */
+@SuppressWarnings("unused")
 public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 		DisposableBean, BeanNameAware, BeanFactoryAware {
 
@@ -115,9 +116,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 			try {
 				ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
 				properties = clientCacheFactoryBean.getProperties();
-			} catch (Exception e) {
-				
 			}
+			catch (Exception ignore) {
+			}
+
 			connectToTemporaryDs(properties);
 			
 		}
@@ -393,10 +395,12 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 	 *  initialize a client-like Distributed System before initializing
 	 *  the pool
 	 */
+	@SuppressWarnings("deprecation")
 	static void connectToTemporaryDs(Properties properties) {
 		Properties props = properties != null? (Properties) properties.clone() : new Properties();
 		props.setProperty("mcast-port", "0");
 		props.setProperty("locators", "");
 		DistributedSystem.connect(props);
 	}
+
 }

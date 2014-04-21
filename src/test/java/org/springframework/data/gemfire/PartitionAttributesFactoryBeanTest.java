@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.PartitionResolver;
 /**
  * The PartitionAttributesFactoryBeanTest class is test suite of test cases testing the contract and functionality of
  * the PartitionAttributesFactoryBean class.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.PartitionAttributesFactoryBean

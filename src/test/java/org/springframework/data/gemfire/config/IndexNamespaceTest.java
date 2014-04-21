@@ -29,16 +29,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
 
 /**
- * 
  * @author Costin Leau
  * @author David Turanski
  */
+@ContextConfiguration(locations="index-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="index-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("deprecation")
 public class IndexNamespaceTest {
 
 	private final String name = "test-index";
@@ -49,6 +47,7 @@ public class IndexNamespaceTest {
 	@Before
 	public void setUp() throws Exception {
 		Cache cache = (Cache) context.getBean("gemfireCache");
+
 		if (cache.getRegion(name) == null) {
 			cache.createRegionFactory().create("test-index");
 		}
@@ -62,7 +61,7 @@ public class IndexNamespaceTest {
 		assertEquals("status", idx.getIndexedExpression());
 		assertEquals("simple", idx.getName());
 		assertEquals(name, idx.getRegion().getName());
-		assertEquals(IndexType.FUNCTIONAL, idx.getType());
+		assertEquals(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, idx.getType());
 	}
 
 	@Test
@@ -73,6 +72,7 @@ public class IndexNamespaceTest {
 		assertEquals("tsi.name", idx.getIndexedExpression());
 		assertEquals("complex-index", idx.getName());
 		assertEquals(name, idx.getRegion().getName());
-		assertEquals(IndexType.HASH, idx.getType());
+		assertEquals(com.gemstone.gemfire.cache.query.IndexType.HASH, idx.getType());
 	}
+
 }

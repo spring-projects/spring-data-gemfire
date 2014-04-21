@@ -33,14 +33,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Spring container BeanDefinition representing a GemFire Region having SubRegions.  This test suite is meant to
  * ensure the correct behavior of and provide regression coverage for, JIRA issue SGF-178, "parent attribute causes
  * endless loop in hashCode".
- * <p/>
+ *
  * The 'parent' attribute was added to the parent Region's BeanDefinition, referring to the parent Region's
  * BeanDefinition itself, before it recurses to parse the SubRegion elements, which is then used by the
  * AbstractRegionParser.doParseInternal method to set the parent property of the SubRegion's BeanDefinition.
- * <p/>
+ *
  * Calling hashCode on a parent Region's BeanDefinition that has a parent 'attribute' referring to the parent Region's
  * BeanDefinition itself, causes infinite recursion and an eventual StackOverflowError.
- * <p/>
+ *
  * <code>
  * java.lang.StackOverflowError
  *   at java.util.LinkedHashMap$LinkedHashIterator.<init>(LinkedHashMap.java:345)
@@ -68,10 +68,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *   at org.springframework.core.AttributeAccessorSupport.hashCode(AttributeAccessorSupport.java:99)
  *   at org.springframework.beans.factory.support.AbstractBeanDefinition.hashCode(AbstractBeanDefinition.java:1052)
  * </code>
- * <p/>
+ *
  * This also causes problems for tools like Spring Tool Suite, which use the BeanDefinitions from the Spring container
  * context as meta-data in the IDE.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith

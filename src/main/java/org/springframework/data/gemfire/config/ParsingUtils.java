@@ -39,7 +39,7 @@ import com.gemstone.gemfire.cache.Scope;
 
 /**
  * Utilities used by the Spring Data GemFire XML Namespace parsers.
- * <p/>
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author Lyndon Adams
@@ -179,7 +179,7 @@ abstract class ParsingUtils {
 
 	/**
 	 * Parses the eviction sub-element. Populates the given attribute factory with the proper attributes.
-	 * <p/>
+	 *
 	 * @param parserContext the context used for parsing the XML document.
 	 * @param element the XML elements being parsed.
 	 * @param regionAttributesBuilder the Region Attributes builder.
@@ -221,7 +221,7 @@ abstract class ParsingUtils {
 	
 	/**
 	 * Parses the subscription sub-element. Populates the given attribute factory with the proper attributes.
-	 * <p/>
+	 *
 	 * @param parserContext the context used while parsing the XML document.
 	 * @param element the XML element being parsed.
 	 * @param regionAttributesBuilder the Region Attributes builder.
@@ -267,7 +267,7 @@ abstract class ParsingUtils {
 
 	/**
 	 * Parses the expiration sub-elements. Populates the given attribute factory with proper attributes.
-	 * <p/>
+	 *
 	 * @param parserContext the context used while parsing the XML document.
 	 * @param element the XML element being parsed.
 	 * @param regionAttributesBuilder the Region Attributes builder.

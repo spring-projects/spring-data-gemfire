@@ -33,12 +33,10 @@ import com.gemstone.gemfire.Instantiator;
  * either by relying on an existing bean definition (which acts as a template) or by providing an embedded
  * configuration through annotations.
  * 
- * <p/>
  * Can reuse existing instantiators to optimize instance creation. If one is not provided, it will fallback
  * to reflection invocation.
  * 
- * <p/>
- * By default, on initialization, the class will register itself as an {@link Instantiator} through 
+ * By default, on initialization, the class will register itself as an {@link Instantiator} through
  * {@link #register(Instantiator)}. This behaviour can be disabled through {@link #setAutoRegister(boolean)}. 
  * Additionally, the instantiator registration is not distributed by default, to allow the application context
  * to be reused. This can be changed through {@link #setDistribute(boolean)}.
@@ -47,8 +45,7 @@ import com.gemstone.gemfire.Instantiator;
  * @see org.springframework.beans.factory.wiring.BeanWiringInfoResolver
  * @see org.springframework.beans.factory.annotation.Autowired
  * @see javax.annotation.Resource
- * @see javax.inject.Inject
- * 
+ *
  * @author Costin Leau
  */
 public class WiringInstantiator extends Instantiator implements BeanFactoryAware, InitializingBean, DisposableBean {

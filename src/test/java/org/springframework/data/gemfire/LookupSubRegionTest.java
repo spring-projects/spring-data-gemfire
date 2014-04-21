@@ -32,7 +32,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The LookupSubRegionTest class is a test suite of test cases testing the contract and functionality of Region lookups
  * using Spring Data GemFire configuration and GemFire native cache.xml.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ApplicationContext

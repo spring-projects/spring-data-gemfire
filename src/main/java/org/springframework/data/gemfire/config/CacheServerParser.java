@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
 
 /**
  * Namespace parser for "cache-server" element.
- * <p/>
+ *
  * @author Costin Leau
  * @author John Blum
  */

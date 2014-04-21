@@ -47,7 +47,7 @@ import com.gemstone.gemfire.cache.SubscriptionAttributes;
  * The SubRegionIntegrationTest class is a test suite of test cases testing the functionality of SubRegions in GemFire
  * configured with Spring Data GemFire's XML namespace configuration meta-data.  This test class tests a complex
  * SubRegion configuration in order to ensure functional completeness.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
@@ -58,6 +58,7 @@ import com.gemstone.gemfire.cache.SubscriptionAttributes;
  */
 @ContextConfiguration("complex-subregion.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unused")
 public class SubRegionIntegrationTest {
 
 	@Autowired

@@ -36,7 +36,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The RegionShortcutsIntegrationTest class is a test suite of test cases testing the use of RegionShortcuts in the
  * Spring Data GemFire XML Namespace!
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith

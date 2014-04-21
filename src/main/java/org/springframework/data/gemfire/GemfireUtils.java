@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The GemfireUtils class is a utility class encapsulating common functionality to access features and capabilities
  * of GemFire based on version and other configuration meta-data.
- * <p/>
+ *
  * @author John Blum
  * @since 1.3.3
  */

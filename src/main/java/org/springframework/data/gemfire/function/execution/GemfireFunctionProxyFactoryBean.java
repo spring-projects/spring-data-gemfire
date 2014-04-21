@@ -31,7 +31,6 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * A proxy Factory Bean for all non-region function execution interfaces
  *  
  * @author David Turanski
- *
  */
 public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, MethodInterceptor, BeanClassLoaderAware {
 
@@ -53,11 +52,9 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 
 	/**
 	 * @param serviceInterface the proxied interface
-	 * @param functionId the associated function id (must be a function registered by this id with the GemFire {@link FunctionService}
 	 * @param gemfireFunctionOperations an interface used to delegate the function invocation (typically a GemFire function template)
 	 */
-	public GemfireFunctionProxyFactoryBean(Class<?> serviceInterface,
-			GemfireFunctionOperations gemfireFunctionOperations) {
+	public GemfireFunctionProxyFactoryBean(Class<?> serviceInterface, GemfireFunctionOperations gemfireFunctionOperations) {
 		Assert.notNull(serviceInterface, "'serviceInterface' must not be null");
 		Assert.isTrue(serviceInterface.isInterface(), "'serviceInterface' must be an interface");
 		this.serviceInterface = serviceInterface;

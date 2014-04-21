@@ -24,13 +24,11 @@ import java.io.File;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskWriteAttributes;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.MembershipAttributes;
@@ -53,7 +51,7 @@ public class MockRegionFactory<K,V>   {
 	private static QueryService queryService =  mock(QueryService.class);
 	private static RegionService regionService = mock(RegionService.class);
 
-	private AttributesFactory<K,V> attributesFactory;
+	private com.gemstone.gemfire.cache.AttributesFactory<K,V> attributesFactory;
 
 	private final StubCache cache;
 
@@ -65,10 +63,10 @@ public class MockRegionFactory<K,V>   {
 		return createMockRegionFactory(null);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "deprecation", "rawtypes", "unchecked" })
 	public RegionFactory<K, V> createMockRegionFactory(RegionAttributes<K,V> attributes) {
-		attributesFactory = (attributes != null ? new AttributesFactory<K,V>(attributes)
-			: new AttributesFactory<K,V>());
+		attributesFactory = (attributes != null ? new com.gemstone.gemfire.cache.AttributesFactory<K,V>(attributes)
+			: new com.gemstone.gemfire.cache.AttributesFactory<K,V>());
 
 		//Workaround for GemFire bug
 		if (attributes !=null) {
@@ -340,10 +338,12 @@ public class MockRegionFactory<K,V>   {
 			}
 		});
 
-		when(regionFactory.setDiskWriteAttributes(any(DiskWriteAttributes.class))).thenAnswer(new Answer<RegionFactory>(){
+		when(regionFactory.setDiskWriteAttributes(any(com.gemstone.gemfire.cache.DiskWriteAttributes.class)))
+				.thenAnswer(new Answer<RegionFactory>(){
 			@Override
 			public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-				DiskWriteAttributes val =  (DiskWriteAttributes)invocation.getArguments()[0];
+				com.gemstone.gemfire.cache.DiskWriteAttributes val =
+					(com.gemstone.gemfire.cache.DiskWriteAttributes) invocation.getArguments()[0];
 				attributesFactory.setDiskWriteAttributes(val);
 				return regionFactory;
 			}
@@ -505,8 +505,7 @@ public class MockRegionFactory<K,V>   {
 		when(region.getAttributes()).thenAnswer(new Answer<RegionAttributes>() {
 			@Override
 			public RegionAttributes answer(InvocationOnMock invocation) throws Throwable {
-				RegionAttributes attributes = attributesFactory.create();
-				return attributes;
+				return attributesFactory.create();
 			}
 		});
 
@@ -523,9 +522,7 @@ public class MockRegionFactory<K,V>   {
 				String subRegionPath = (parentRegionName.startsWith("/") ? parentRegionName+"/"+subRegionName
 					: "/"+parentRegionName+"/"+subRegionName);
 
-				Region region = cache.getRegion(subRegionPath);
-
-				return region;
+				return cache.getRegion(subRegionPath);
 			}
 		});
 

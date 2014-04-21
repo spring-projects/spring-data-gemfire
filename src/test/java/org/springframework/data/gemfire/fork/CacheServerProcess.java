@@ -20,10 +20,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
- 
 import org.springframework.data.gemfire.ForkUtil;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -31,11 +29,11 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
  * @author Costin Leau
  */
+@SuppressWarnings("unchecked")
 public class CacheServerProcess {
 
 	public static void main(String[] args) throws Exception {
@@ -75,4 +73,5 @@ public class CacheServerProcess {
 		System.out.println("Waiting for shutdown");
 		bufferedReader.readLine();
 	}
+
 }

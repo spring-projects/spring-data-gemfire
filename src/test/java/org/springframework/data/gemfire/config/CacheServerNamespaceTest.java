@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 /**
  * The CacheServerNamespaceTest class is a test suite of test cases testing the functionality of the SDG XML namespace
  * when configuring a GemFire Cache Servers and Client Subscription.
- * <p/>
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
@@ -49,12 +49,14 @@ import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
  */
 @ContextConfiguration(locations="server-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unused")
 public class CacheServerNamespaceTest {
 
 	@Autowired
 	private ApplicationContext context;
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void testBasicCacheServer() throws Exception {
 		CacheServer cacheServer = context.getBean("advanced-config", CacheServer.class);
 

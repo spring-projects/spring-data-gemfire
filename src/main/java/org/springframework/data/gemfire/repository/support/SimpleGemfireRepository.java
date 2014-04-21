@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.GemfireCallback;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.repository.GemfireRepository;
@@ -101,12 +102,44 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	@Override
 	public Collection<T> findAll() {
 		SelectResults<T> results = template.find("select * from " + template.getRegion().getFullPath());
-		return (Collection<T>)results.asList();
+		return results.asList();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 * @see org.springframework.data.gemfire.repository.GemfireRepository.sor(:org.springframework.data.domain.Sort)
+	 */
+	@Override
+	public Iterable<T> findAll(final Sort sort) {
+		SelectResults<T> selectResults = template.find(String.format("SELECT * FROM %1$s%2$s",
+			template.getRegion().getFullPath(), toString(sort)));
+		return selectResults.asList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see org.springframework.data.domain.Sort
+	 */
+	private String toString(final Sort sort) {
+		if (sort != null) {
+			StringBuilder orderClause = new StringBuilder(" ORDER BY ");
+			int count = 0;
+
+			for (Sort.Order order : sort) {
+				orderClause.append(count++ > 0 ? ", " : "");
+				orderClause.append(String.format("%1$s %2$s", order.getProperty(), order.getDirection()));
+			}
+
+			return orderClause.toString();
+		}
+
+		return "";
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see
 	 * org.springframework.data.repository.CrudRepository#findAll(java.lang.
 	 * Iterable)

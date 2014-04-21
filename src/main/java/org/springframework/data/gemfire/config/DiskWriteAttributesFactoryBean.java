@@ -19,9 +19,6 @@ package org.springframework.data.gemfire.config;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import com.gemstone.gemfire.cache.DiskWriteAttributes;
-import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
-
 /**
  * Simple utility class used for defining nested factory-method like definitions
  * w/o polluting the container with useless beans.
@@ -30,11 +27,12 @@ import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
  * @deprecated
  */
 @Deprecated
-class DiskWriteAttributesFactoryBean implements FactoryBean<DiskWriteAttributes>, InitializingBean {
+@SuppressWarnings({ "deprecation", "unused" })
+class DiskWriteAttributesFactoryBean implements FactoryBean<com.gemstone.gemfire.cache.DiskWriteAttributes>, InitializingBean {
 
-	private DiskWriteAttributes attributes;
+	private com.gemstone.gemfire.cache.DiskWriteAttributes attributes;
 
-	private DiskWriteAttributesFactory attrFactory;
+	private com.gemstone.gemfire.cache.DiskWriteAttributesFactory attrFactory;
 
 	@Override
 	public void afterPropertiesSet() {
@@ -42,13 +40,13 @@ class DiskWriteAttributesFactoryBean implements FactoryBean<DiskWriteAttributes>
 	}
 
 	@Override
-	public DiskWriteAttributes getObject() throws Exception {
+	public com.gemstone.gemfire.cache.DiskWriteAttributes getObject() throws Exception {
 		return attributes;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return (attributes != null ? attributes.getClass() : DiskWriteAttributes.class);
+		return (attributes != null ? attributes.getClass() : com.gemstone.gemfire.cache.DiskWriteAttributes.class);
 	}
 
 	@Override
@@ -56,7 +54,8 @@ class DiskWriteAttributesFactoryBean implements FactoryBean<DiskWriteAttributes>
 		return true;
 	}
 
-	public void setDiskAttributesFactory(DiskWriteAttributesFactory dwaf) {
+	public void setDiskAttributesFactory(com.gemstone.gemfire.cache.DiskWriteAttributesFactory dwaf) {
 		this.attrFactory = dwaf;
 	}
+
 }

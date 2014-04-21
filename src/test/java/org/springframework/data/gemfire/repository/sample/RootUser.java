@@ -20,11 +20,11 @@ import org.springframework.data.gemfire.mapping.Region;
 
 /**
  * The RootUser class represents an authorized administrative user of a service or computer system, etc.
- * <p/>
+ *
  * @author John Blum
  * @see org.springframework.data.gemfire.mapping.Region
  * @see org.springframework.data.gemfire.repository.sample.User
- * @since 1.3.4
+ * @since 1.4.0
  */
 @Region("/Local/Admin/Users")
 @SuppressWarnings("unused")

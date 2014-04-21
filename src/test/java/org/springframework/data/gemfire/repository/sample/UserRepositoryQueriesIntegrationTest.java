@@ -39,14 +39,13 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The RepositoryQueriesTest class is a test suite of test cases testing the GemFire Query capability of Spring Data
  * GemFire Repositories.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @since 1.3.3 (Spring Data GemFire)
- * @since 7.0.1 (GemFire)
+ * @since 1.3.3
  */
 @ContextConfiguration("userRepositoryQueriesIntegrationTest.xml")
 @RunWith(SpringJUnit4ClassRunner.class)

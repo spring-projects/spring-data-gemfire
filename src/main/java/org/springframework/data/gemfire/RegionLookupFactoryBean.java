@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * Simple FactoryBean for retrieving generic GemFire {@link Region}s. If the Region does not exist,
  * an exception is thrown.  For declaring and configuring new regions, see {@link RegionFactoryBean}.
- * <p/>
+ *
  * @author Costin Leau
  * @author John Blum
  */
@@ -107,7 +107,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	/**
 	 * Sets the name of the Cache Region based on the bean 'id' attribute.  If no Region is found for the given name,
 	 * a new one will be created.
-	 * <p/>
+	 *
 	 * @param name the name of this bean (Region) in the application context (bean factory).
 	 * @see org.springframework.beans.factory.BeanNameAware#setBeanName(String)
 	 */
@@ -117,7 +117,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 
 	/**
 	 * Sets a reference to the Cache used to create the Region.
-	 * <p/>
+	 *
 	 * @param cache a reference to the Cache.
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
 	 * @see com.gemstone.gemfire.cache.GemFireCache
@@ -129,7 +129,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	/**
 	 * Sets the name of the Cache Region based on the bean 'name' attribute.  If no Region is found with the given name,
 	 * a new one will be created.  If no name is given, the value of the 'beanName' property will be used.
-	 * <p/>
+	 *
 	 * @param name the region name
 	 * @see #setBeanName(String)
 	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
@@ -140,7 +140,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 
 	/**
 	 * Sets a reference to the parent Region if this FactoryBean represents a GemFire Cache Sub-Region.
-	 * <p/>
+	 *
 	 * @param parent a reference to the parent Region if this Region is a Sub-Region.
 	 * @see com.gemstone.gemfire.cache.Region
 	 */
@@ -150,7 +150,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 
 	/**
 	 * Gets a reference to the parent Region if this FactoryBean represents a GemFire Cache Sub-Region.
-	 * <p/>
+	 *
 	 * @return a reference to the parent Region or null if this Region is not a Sub-Region.
 	 * @see com.gemstone.gemfire.cache.Region
 	 */
@@ -161,7 +161,7 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	/**
 	 * Sets the name of the Cache Region as expected by GemFire.  If no Region is found with the given name, a new one
 	 * will be created.  If no name is given, the value of the 'name' property will be used.
-	 * <p/>
+	 *
 	 * @param regionName a String indicating the name of the Region in GemFire.
 	 * @see #setName(String)
 	 * @see com.gemstone.gemfire.cache.Region#getName()

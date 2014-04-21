@@ -43,18 +43,18 @@ import com.gemstone.gemfire.cache.query.CqQuery;
  * Allows listener methods to operate on event content types, completely
  * independent from the GemFire API.
  * 
- * <p/>Modeled as much as possible after the JMS MessageListenerAdapter in
+ * Modeled as much as possible after the JMS MessageListenerAdapter in
  * Spring Framework.
  *
  * <p>By default, the content of incoming GemFire events gets extracted before
  * being passed into the target listener method, to let the target method
  * operate on event content types such as Object or Operation instead of
- * the raw {@link CqEvent}.
+ * the raw {@link CqEvent}.</p>
  *
  * <p>Find below some examples of method signatures compliant with this
  * adapter class. This first example handles all <code>CqEvent</code> types
  * and gets passed the contents of each <code>event</code> type as an
- * argument.
+ * argument.</p>
  *
  * <pre class="code">public interface PojoListener {
  *    void handleEvent(CqEvent event);
@@ -69,7 +69,6 @@ import com.gemstone.gemfire.cache.query.CqQuery;
  * @author Juergen Hoeller
  * @author Costin Leau
  * @author Oliver Gierke
- * @see org.springframework.jms.listener.adapter.MessageListenerAdapter
  */
 public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 

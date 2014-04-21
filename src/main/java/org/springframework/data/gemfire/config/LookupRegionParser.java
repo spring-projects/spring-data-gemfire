@@ -23,7 +23,7 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;lookup-region;gt; definitions.
- * <p/>
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum

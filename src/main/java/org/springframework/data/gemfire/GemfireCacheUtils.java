@@ -43,9 +43,6 @@ import com.gemstone.gemfire.NoSystemException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.SystemIsRunningException;
 import com.gemstone.gemfire.UnmodifiableException;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.RegionNotFoundException;
-import com.gemstone.gemfire.admin.RuntimeAdminException;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheExistsException;
 import com.gemstone.gemfire.cache.CacheLoaderException;
@@ -58,7 +55,6 @@ import com.gemstone.gemfire.cache.DiskAccessException;
 import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.EntryExistsException;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.EntryNotFoundInRegion;
 import com.gemstone.gemfire.cache.FailedSynchronizationException;
 import com.gemstone.gemfire.cache.OperationAbortedException;
 import com.gemstone.gemfire.cache.PartitionedRegionDistributionException;
@@ -90,18 +86,18 @@ public abstract class GemfireCacheUtils {
 
 	private static Class<?> CQ_EXCEPTION_CLASS;
 
-	{
-		Class<?> clz = null;
+	static {
+		Class<?> type = null;
 
 		try {
+			type = ClassUtils.resolveClassName("com.gemstone.gemfire.cache.query.CqInvalidException",
+				GemfireCacheUtils.class.getClassLoader());
 
-			clz = ClassUtils.resolveClassName("com.gemstone.gemfire.cache.query.CqInvalidException",
-					GemfireCacheUtils.class.getClassLoader());
-
-		} catch (IllegalArgumentException iae) {
+		}
+		catch (IllegalArgumentException ignore) {
 		}
 
-		CQ_EXCEPTION_CLASS = clz;
+		CQ_EXCEPTION_CLASS = type;
 	}
 
 
@@ -112,6 +108,7 @@ public abstract class GemfireCacheUtils {
 	 * @param ex Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
 	 */
+	@SuppressWarnings("deprecation")
 	public static DataAccessException convertGemfireAccessException(GemFireException ex) {
 		if (ex instanceof CacheException) {
 			if (ex instanceof CacheExistsException) {
@@ -179,7 +176,7 @@ public abstract class GemfireCacheUtils {
 			if (ex instanceof RegionDestroyedException) {
 				return new InvalidDataAccessResourceUsageException(ex.getMessage(), ex);
 			}
-			if (ex instanceof RegionNotFoundException) {
+			if (ex instanceof com.gemstone.gemfire.admin.RegionNotFoundException) {
 				return new InvalidDataAccessResourceUsageException(ex.getMessage(), ex);
 			}
 			if (ex instanceof ResourceException) {
@@ -198,7 +195,7 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof CopyException) {
 			return new GemfireSystemException(ex);
 		}
-		if (ex instanceof EntryNotFoundInRegion) {
+		if (ex instanceof com.gemstone.gemfire.cache.EntryNotFoundInRegion) {
 			return new DataRetrievalFailureException(ex.getMessage(), ex);
 		}
 		if (ex instanceof FunctionException) {
@@ -234,7 +231,7 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof NoSystemException) {
 			return new GemfireSystemException(ex);
 		}
-		if (ex instanceof RuntimeAdminException) {
+		if (ex instanceof com.gemstone.gemfire.admin.RuntimeAdminException) {
 			return new GemfireSystemException(ex);
 		}
 		if (ex instanceof ServerConnectivityException) {
@@ -263,9 +260,6 @@ public abstract class GemfireCacheUtils {
 	 * Dedicated method for converting exceptions changed in 6.5 that had their
 	 * parent changed. This method exists to 'fool' the compiler type checks
 	 * by loosening the type so the code compiles on both 6.5 (pre and current) branches.
-	 * 
-	 * @param ex
-	 * @return
 	 */
 	static DataAccessException convertQueryExceptions(RuntimeException ex) {
 		if (ex instanceof IndexInvalidException) {
@@ -290,6 +284,7 @@ public abstract class GemfireCacheUtils {
 	 * @param ex Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
 	 */
+	@SuppressWarnings("deprecation")
 	public static DataAccessException convertGemfireAccessException(GemFireCheckedException ex) {
 		// query exceptions
 		if (ex instanceof QueryException) {
@@ -304,7 +299,7 @@ public abstract class GemfireCacheUtils {
 			return new DataAccessResourceFailureException(ex.getMessage(), ex);
 		}
 		// admin exception
-		if (ex instanceof AdminException) {
+		if (ex instanceof com.gemstone.gemfire.admin.AdminException) {
 			return new GemfireSystemException(ex);
 		}
 		// fall back
@@ -337,9 +332,6 @@ public abstract class GemfireCacheUtils {
 
 	/**
 	 * Package protected method for detecting CqInvalidException which has been removed in GemFire 6.5 GA.
-	 * 
-	 * @param ex
-	 * @return
 	 */
 	static boolean isCqInvalidException(RuntimeException ex) {
 		return (CQ_EXCEPTION_CLASS != null && CQ_EXCEPTION_CLASS.isAssignableFrom(ex.getClass()));
@@ -356,4 +348,5 @@ public abstract class GemfireCacheUtils {
 	static DataAccessException convertCqInvalidException(RuntimeException ex) {
 		return new GemfireQueryException(ex);
 	}
+
 }

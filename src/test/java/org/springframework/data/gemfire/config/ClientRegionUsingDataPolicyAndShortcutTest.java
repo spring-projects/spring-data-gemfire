@@ -25,7 +25,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * The ClientRegionUsingDataPolicyAndShortcutTest class is a test suite of test case testing a client Region
  * bean definition with both data-policy and shortcut specified.
- * <p/>
+ *
  * @author John Blum
  * @see org.junit.Test
  * @since 1.3.3

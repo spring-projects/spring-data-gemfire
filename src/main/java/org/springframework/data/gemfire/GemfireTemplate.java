@@ -45,7 +45,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * {@link GemFireException} into Spring {@link DataAccessException}, following the <tt>org.springframework.dao</tt>
  * exception hierarchy.
  * 
- * <p/>
+ *
  * The central method is <tt>execute</tt>, supporting GemFire access code implementing the GemfireCallback interface.
  * It provides dedicated handling such that neither the GemfireCallback implementation nor the calling code needs to
  * explicitly care about handling {@link Region} life-cycle exceptions.

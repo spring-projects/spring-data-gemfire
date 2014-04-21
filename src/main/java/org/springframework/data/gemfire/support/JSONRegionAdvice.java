@@ -48,7 +48,7 @@ public class JSONRegionAdvice {
 
 	/**
 	 * Sets names of regions to be included for JSON conversion. By default, all regions will be included
-	 * @param regions a List of region names to include
+	 * @param regionNames a List of region names to include
 	 */
 	public void setIncludedRegionNames(List<String> regionNames) {
 		this.includedRegions = regionNames;

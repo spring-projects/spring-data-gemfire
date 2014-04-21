@@ -31,10 +31,10 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;partitioned-region;gt; bean definitions.
- * <p/>
+ * Parser for &lt;partitioned-region&gt; bean definitions.
+ *
  * To avoid eager evaluations, the region attributes are declared as a nested definition.
- * <p/>
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum

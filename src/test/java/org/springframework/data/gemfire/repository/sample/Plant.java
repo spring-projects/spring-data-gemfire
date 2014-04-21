@@ -22,7 +22,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * The Plant class is a very simple ADT modeling a plant for SDG Repository testing purposes.
- * <p/>
+ *
  * @author John Blum
  * @see org.springframework.data.annotation.Id
  * @see org.springframework.data.gemfire.mapping.Region
