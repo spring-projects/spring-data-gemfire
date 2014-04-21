@@ -16,20 +16,24 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import org.springframework.data.gemfire.mapping.Region;
+import java.util.List;
+
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Query;
 
 /**
- * @author Stuart Williams
+ * The CustomerRepository class is a Data Access Object (DAO) for accessing and performing persistent operations on
+ * Customer objects.
+ *
  * @author John Blum
+ * @see org.springframework.data.gemfire.repository.sample.Customer
+ * @see org.springframework.data.gemfire.repository.GemfireRepository
+ * @since 1.0.0
  */
-@Region("Cats")
-public interface CatRepository extends GemfireRepository<Animal, Long> {
+@SuppressWarnings("unused")
+public interface CustomerRepository extends GemfireRepository<Customer, Long> {
 
-	Animal findByName(String name);
-
-	@Query("SELECT * FROM /Cats x WHERE x.name = $1")
-	Animal findBy(String name);
+	@Query("SELECT DISTINCT c FROM /Customers c, /Accounts a WHERE c.id = a.customerId")
+	List<Customer> findCustomersWithAccounts();
 
 }

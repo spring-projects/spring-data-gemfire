@@ -21,23 +21,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.gemstone.gemfire.cache.Region;
+
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * Value object to work with OQL query strings.
  * 
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
  */
 class QueryString {
 
-	//private static final String REGION_PATTERN = "(?<=\\/)\\w+";
-	private static final String REGION_PATTERN = "\\/(\\/?\\w)+";
-	private static final String IN_PARAMETER_PATTERN = "(?<=IN (SET|LIST) \\$)\\d";
 	private static final String IN_PATTERN = "(?<=IN (SET|LIST) )\\$\\d";
+	private static final String IN_PARAMETER_PATTERN = "(?<=IN (SET|LIST) \\$)\\d";
+	private static final String REGION_PATTERN = "\\/(\\/?\\w)+";
 
 	private final String query;
 
@@ -47,8 +47,7 @@ class QueryString {
 	 * @param source
 	 */
 	public QueryString(String source) {
-
-		Assert.hasText(source);
+		Assert.hasText(source, "The OQL statement (Query) to execute must be specified!");
 		this.query = source;
 	}
 
@@ -57,7 +56,8 @@ class QueryString {
 	 * 
 	 * @param domainClass must not be {@literal null}.
 	 */
-	public QueryString(Class<?> domainClass) {
+  @SuppressWarnings("unused")
+  public QueryString(Class<?> domainClass) {
 		this(domainClass, false);
 	}
 
@@ -68,8 +68,7 @@ class QueryString {
 	 * @param isCountQuery indicates if this is a count query
 	 */
 	public QueryString(Class<?> domainClass, boolean isCountQuery) {
-		this(String
-				.format(isCountQuery ? "SELECT count(*) FROM /%s" : "SELECT * FROM /%s", domainClass.getSimpleName()));
+		this(String.format(isCountQuery ? "SELECT count(*) FROM /%s" : "SELECT * FROM /%s", domainClass.getSimpleName()));
 	}
 
 	/**
@@ -79,6 +78,7 @@ class QueryString {
 	 * @param region must not be {@literal null}.
 	 * @return
 	 */
+  @SuppressWarnings("unused")
 	public QueryString forRegion(Class<?> domainClass, Region<?, ?> region) {
 		return new QueryString(query.replaceAll(REGION_PATTERN, region.getFullPath()));
 	}
@@ -90,23 +90,21 @@ class QueryString {
 	 * @param values the values to bind, returns the {@link QueryString} as is if {@literal null} is given.
 	 * @return
 	 */
-	public QueryString bindIn(Collection<?> values) {
+  public QueryString bindIn(Collection<?> values) {
+    if (values != null) {
+      String valueString = StringUtils.collectionToDelimitedString(values, ", ", "'", "'");
+      return new QueryString(query.replaceFirst(IN_PATTERN, String.format("(%s)", valueString)));
+    }
 
-		if (values == null) {
-			return this;
-		}
+    return this;
+  }
 
-		String valueString = StringUtils.collectionToDelimitedString(values, ", ", "'", "'");
-		return new QueryString(query.replaceFirst(IN_PATTERN, String.format("(%s)", valueString)));
-	}
-
-	/**
+  /**
 	 * Returns the parameter indexes used in this query.
 	 * 
 	 * @return the parameter indexes used in this query or an empty {@link Iterable} if none are used.
 	 */
 	public Iterable<Integer> getInParameterIndexes() {
-
 		Pattern pattern = Pattern.compile(IN_PARAMETER_PATTERN);
 		Matcher matcher = pattern.matcher(query);
 		List<Integer> result = new ArrayList<Integer>();
@@ -126,4 +124,5 @@ class QueryString {
 	public String toString() {
 		return query;
 	}
+
 }
