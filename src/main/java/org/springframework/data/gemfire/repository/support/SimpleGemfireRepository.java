@@ -10,6 +10,7 @@ import org.springframework.data.gemfire.GemfireCallback;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Wrapper;
+import org.springframework.data.gemfire.repository.query.QueryString;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 
@@ -111,30 +112,13 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public Iterable<T> findAll(final Sort sort) {
-		SelectResults<T> selectResults = template.find(String.format("SELECT * FROM %1$s%2$s",
-			template.getRegion().getFullPath(), toString(sort)));
+		QueryString query = new QueryString("SELECT * FROM /RegionPlaceholder")
+			.forRegion(entityInformation.getJavaType(), template.getRegion())
+			.orderBy(sort);
+
+		SelectResults<T> selectResults = template.find(query.toString());
+
 		return selectResults.asList();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.springframework.data.domain.Sort
-	 */
-	private String toString(final Sort sort) {
-		if (sort != null) {
-			StringBuilder orderClause = new StringBuilder(" ORDER BY ");
-			int count = 0;
-
-			for (Sort.Order order : sort) {
-				orderClause.append(count++ > 0 ? ", " : "");
-				orderClause.append(String.format("%1$s %2$s", order.getProperty(), order.getDirection()));
-			}
-
-			return orderClause.toString();
-		}
-
-		return "";
 	}
 
 	/*

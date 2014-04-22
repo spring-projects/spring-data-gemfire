@@ -16,7 +16,9 @@
 package org.springframework.data.gemfire.repository.sample;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Query;
 
@@ -53,4 +55,9 @@ public interface PersonRepository extends GemfireRepository<Person, Long> {
 	Collection<Person> findByLastnameEndingWith(String lastname);
 
 	Collection<Person> findByFirstnameContaining(String firstname);
+
+	List<Person> findDistinctByLastname(String lastName, Sort order);
+
+	List<Person> findDistinctPeopleByOrderByLastnameDesc(Sort order);
+
 }
