@@ -20,9 +20,12 @@ import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
 
 /**
- * 
+ * The QueryBuilder class is used to build a QueryString.
+ *
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.data.gemfire.repository.query.QueryString
  */
 class QueryBuilder {
 
@@ -31,17 +34,18 @@ class QueryBuilder {
 	private final String query;
 
 	public QueryBuilder(String source) {
-		Assert.hasText(source);
+		Assert.hasText(source, "The OQL Query string must be specified.");
 		this.query = source;
 	}
 
-	public QueryBuilder(GemfirePersistentEntity<?> entity) {
-		this(String.format("SELECT * FROM /%s %s", entity.getRegionName(), DEFAULT_ALIAS));
+	public QueryBuilder(GemfirePersistentEntity<?> entity, PartTree tree) {
+		this(String.format(tree.isDistinct() ?  "SELECT DISTINCT * FROM /%1$s %2$s" : "SELECT * FROM /%1$s %2$s",
+			entity.getRegionName(), DEFAULT_ALIAS));
 	}
 
 	public QueryString create(Predicate predicate) {
-
-		return new QueryString(query + " WHERE " + predicate.toString(DEFAULT_ALIAS));
+		return new QueryString(predicate != null ? String.format("%1$s WHERE %2$s", query,
+			predicate.toString(DEFAULT_ALIAS)) : query);
 	}
 
 	/*
@@ -52,4 +56,5 @@ class QueryBuilder {
 	public String toString() {
 		return query;
 	}
+
 }
