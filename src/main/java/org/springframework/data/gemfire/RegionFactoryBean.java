@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
@@ -153,7 +154,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		resolveDataPolicy(regionFactory, persistent, dataPolicy);
 
-		if (diskStoreName != null) {
+		if (isDiskStoreConfigurationAllowed()) {
 			regionFactory.setDiskStoreName(diskStoreName);
 		}
 
@@ -190,6 +191,16 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		}
 
 		return region;
+	}
+
+	private boolean isDiskStoreConfigurationAllowed() {
+		boolean allow = (diskStoreName != null);
+
+		allow &= (getDataPolicy().withPersistence() || (getAttributes() != null
+			&& getAttributes().getEvictionAttributes() != null
+			&& EvictionAction.OVERFLOW_TO_DISK.equals(attributes.getEvictionAttributes().getAction())));
+
+		return allow;
 	}
 
 	/**
@@ -453,6 +464,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		if (dataPolicy != null) {
 			assertDataPolicyAndPersistentAttributesAreCompatible(dataPolicy);
 			regionFactory.setDataPolicy(dataPolicy);
+			setDataPolicy(dataPolicy);
 		}
 		else {
 			resolveDataPolicy(regionFactory, persistent, (String) null);
@@ -477,9 +489,13 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
 
 			regionFactory.setDataPolicy(resolvedDataPolicy);
+			setDataPolicy(resolvedDataPolicy);
 		}
 		else {
-			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.DEFAULT);
+			DataPolicy resolvedDataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.DEFAULT);
+
+			regionFactory.setDataPolicy(resolvedDataPolicy);
+			setDataPolicy(resolvedDataPolicy);
 		}
 	}
 
@@ -520,6 +536,17 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	public void setAttributes(RegionAttributes<K, V> attributes) {
 		this.attributes = attributes;
+	}
+
+	/**
+	 * Returns the attributes used to configure the Region created by this factory as set in the SDG XML namespace
+	 * configuration meta-data, or as set with the setAttributes(:Attributes) method.
+	 *
+	 * @return the RegionAttributes used to configure the Region created by this factory.
+	 * @see com.gemstone.gemfire.cache.RegionAttributes
+	 */
+	public RegionAttributes getAttributes() {
+		return (getRegion() != null ? getRegion().getAttributes() : attributes);
 	}
 
 	/**
@@ -590,6 +617,18 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	public void setDataPolicy(String dataPolicyName) {
 		this.dataPolicy = new DataPolicyConverter().convert(dataPolicyName);
+	}
+
+	/**
+	 * Gets the "resolved" Data Policy as determined by this RegionFactory when configuring the attributes
+	 * of the Region to be created.
+	 *
+	 * @return the "resolved" Data Policy to be used to create the Region.
+	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 */
+	public DataPolicy getDataPolicy() {
+		Assert.state(dataPolicy != null, "The Data Policy has not been properly resolved yet!");
+		return dataPolicy;
 	}
 
 	/**

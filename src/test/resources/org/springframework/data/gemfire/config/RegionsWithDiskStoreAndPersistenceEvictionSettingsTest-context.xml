@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<gfe:cache/>
+
+	<gfe:disk-store id="DiskStoreOne" auto-compact="true" compaction-threshold="75">
+		<gfe:disk-dir location="." max-size="1024"/>
+	</gfe:disk-store>
+
+	<gfe:partitioned-region id="NotPersistentNoOverflowRegion" persistent="false" disk-store-ref="DiskStoreOne">
+	</gfe:partitioned-region>
+
+	<gfe:partitioned-region id="NotPersistentOverflowRegion" persistent="false" disk-store-ref="DiskStoreOne">
+		<gfe:eviction action="OVERFLOW_TO_DISK"/>
+	</gfe:partitioned-region>
+
+	<gfe:partitioned-region id="PersistentNoOverflowRegion" persistent="true" disk-store-ref="DiskStoreOne">
+		<gfe:eviction action="LOCAL_DESTROY"/>
+	</gfe:partitioned-region>
+
+	<gfe:partitioned-region id="PersistentOverflowRegion" persistent="true" disk-store-ref="DiskStoreOne">
+		<gfe:eviction action="OVERFLOW_TO_DISK"/>
+	</gfe:partitioned-region>
+
+</beans>

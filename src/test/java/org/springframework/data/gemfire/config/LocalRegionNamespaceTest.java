@@ -36,6 +36,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
@@ -63,7 +64,7 @@ public class LocalRegionNamespaceTest {
 	public void testPublishingLocal() throws Exception {
 		assertTrue(context.containsBean("pub"));
 		RegionFactoryBean fb = context.getBean("&pub", RegionFactoryBean.class);
-		assertNull(TestUtils.readField("dataPolicy", fb));
+		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", fb));
 		assertEquals(Scope.LOCAL, TestUtils.readField("scope", fb));
 		assertEquals("publisher", TestUtils.readField("name", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);

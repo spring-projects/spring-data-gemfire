@@ -45,6 +45,7 @@ public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 		assertDataPolicyAndPersistentAttributesAreCompatible(dataPolicy);
 
 		regionFactory.setDataPolicy(dataPolicy);
+		setDataPolicy(dataPolicy);
 	}
 
 	@Override
