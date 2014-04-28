@@ -44,10 +44,9 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 	 * @param entity must not be {@literal null}.
 	 */
 	public GemfireQueryCreator(PartTree tree, GemfirePersistentEntity<?> entity) {
-
 		super(tree);
 
-		this.query = new QueryBuilder(entity);
+		this.query = new QueryBuilder(entity, tree);
 		this.indexes = new IndexProvider();
 	}
 
@@ -57,7 +56,6 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 	 */
 	@Override
 	public QueryString createQuery(Sort dynamicSort) {
-
 		this.indexes = new IndexProvider();
 		return super.createQuery(dynamicSort);
 	}
@@ -95,11 +93,10 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 	 */
 	@Override
 	protected QueryString complete(Predicates criteria, Sort sort) {
-
-		QueryString result = query.create(criteria);
+		QueryString result = query.create(criteria).orderBy(sort);
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Created query: " + result.toString());
+			LOG.debug(String.format("Created Query '%1$s'", result.toString()));
 		}
 
 		return result;
@@ -119,6 +116,7 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 		 */
 		@Override
 		public boolean hasNext() {
+			// TODO really?
 			return index <= Integer.MAX_VALUE;
 		}
 
@@ -140,4 +138,5 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 			throw new UnsupportedOperationException();
 		}
 	}
+
 }

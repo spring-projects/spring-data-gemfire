@@ -213,14 +213,14 @@ public class SubRegionRepositoryIntegrationTest {
 		assertNotNull(javaProgrammers);
 		assertFalse(javaProgrammers.isEmpty());
 		assertEquals(2, javaProgrammers.size());
-		assertTrue(javaProgrammers.containsAll(getProgrammers("JamesGosling", "JoshuaBloch")));
+		assertEquals(javaProgrammers, getProgrammers("JamesGosling", "JoshuaBloch"));
 
 		List<Programmer> groovyProgrammers = programmersRepo.findDistinctByProgrammingLanguageLikeOrderByUsernameAsc("Groovy");
 
 		assertNotNull(groovyProgrammers);
 		assertFalse(groovyProgrammers.isEmpty());
 		assertEquals(1, groovyProgrammers.size());
-		assertTrue(groovyProgrammers.containsAll(getProgrammers("JamesStrachan")));
+		assertEquals(groovyProgrammers, getProgrammers("JamesStrachan"));
 
 		programmersRepo.save(new Wrapper<Programmer, String>(createProgrammer("RodJohnson", "Java"), "RodJohnson"));
 		programmersRepo.save(new Wrapper<Programmer, String>(createProgrammer("GuillaumeLaforge", "Groovy"), "GuillaumeLaforge"));
@@ -231,21 +231,21 @@ public class SubRegionRepositoryIntegrationTest {
 		assertNotNull(javaProgrammers);
 		assertFalse(javaProgrammers.isEmpty());
 		assertEquals(3, javaProgrammers.size());
-		assertTrue(javaProgrammers.containsAll(getProgrammers("JamesGosling", "JoshuaBloch", "RodJohnson")));
+		assertEquals(javaProgrammers, getProgrammers("JamesGosling", "JoshuaBloch", "RodJohnson"));
 
 		groovyProgrammers = programmersRepo.findDistinctByProgrammingLanguageLikeOrderByUsernameAsc("Groovy");
 
 		assertNotNull(groovyProgrammers);
 		assertFalse(groovyProgrammers.isEmpty());
 		assertEquals(3, groovyProgrammers.size());
-		assertTrue(groovyProgrammers.containsAll(getProgrammers("GraemeRocher", "GuillaumeLaforge", "JamesStrachan")));
+		assertEquals(groovyProgrammers, getProgrammers("GraemeRocher", "GuillaumeLaforge", "JamesStrachan"));
 
 		List<Programmer> javaLikeProgrammers = programmersRepo.findDistinctByProgrammingLanguageLikeOrderByUsernameAsc("Java%");
 
 		assertNotNull(javaLikeProgrammers);
 		assertFalse(javaLikeProgrammers.isEmpty());
 		assertEquals(4, javaLikeProgrammers.size());
-		assertTrue(javaLikeProgrammers.containsAll(getProgrammers("BrendanEich", "JamesGosling", "JoshuaBloch", "RodJohnson")));
+		assertEquals(javaLikeProgrammers, getProgrammers("BrendanEich", "JamesGosling", "JoshuaBloch", "RodJohnson"));
 
 		List<Programmer> pseudoCodeProgrammers = programmersRepo.findDistinctByProgrammingLanguageLikeOrderByUsernameAsc("PseudoCode");
 

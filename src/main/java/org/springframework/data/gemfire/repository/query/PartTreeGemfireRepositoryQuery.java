@@ -15,13 +15,15 @@
  */
 package org.springframework.data.gemfire.repository.query;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.Part;
-import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
@@ -71,35 +73,31 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	}
 
 	private Object[] prepareStringParameters(Object[] parameters) {
+		Iterator<Part> partsIterator = tree.getParts().iterator();
+		List<Object> stringParameters = new ArrayList<Object>(parameters.length);
 
-		Iterator<Part> iterator = tree.getParts().iterator();
-		Object[] result = new Object[parameters.length];
-
-		for (int i = 0; i < parameters.length; i++) {
-			Object parameter = parameters[i];
-
-			if (parameter == null) {
-				result[i] = parameter;
-				continue;
+		for (Object parameter : parameters) {
+			if (parameter == null || parameter instanceof Sort) {
+				stringParameters.add(parameter);
 			}
-
-			Type type = iterator.next().getType();
-
-			switch (type) {
-			case CONTAINING:
-				result[i] = String.format("%%%s%%", parameter.toString());
-				break;
-			case STARTING_WITH:
-				result[i] = String.format("%s%%", parameter.toString());
-				break;
-			case ENDING_WITH:
-				result[i] = String.format("%%%s", parameter.toString());
-				break;
-			default:
-				result[i] = parameter;
+			else {
+				switch (partsIterator.next().getType()) {
+					case CONTAINING:
+						stringParameters.add(String.format("%%%s%%", parameter.toString()));
+						break;
+					case STARTING_WITH:
+						stringParameters.add(String.format("%s%%", parameter.toString()));
+						break;
+					case ENDING_WITH:
+						stringParameters.add(String.format("%%%s", parameter.toString()));
+						break;
+					default:
+						stringParameters.add(parameter);
+				}
 			}
 		}
 
-		return result;
+		return stringParameters.toArray();
 	}
+
 }
