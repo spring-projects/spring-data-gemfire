@@ -22,14 +22,14 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.cache.lru.LRUCapacityController;
-import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
 
 /**
  * The EvictionAttributesFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -43,13 +43,44 @@ import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
  */
 public class EvictionAttributesFactoryBeanTest {
 
-	@Test
-	public void testCreateEntryCountHeapAttributes() {
-		EvictionAttributesFactoryBean factoryBean = new EvictionAttributesFactoryBean();
+	private EvictionAttributesFactoryBean factoryBean;
 
+	private ObjectSizer mockObjectSizer;
+
+	@Before
+	public void setup() {
+		factoryBean = new EvictionAttributesFactoryBean();
+		mockObjectSizer = mock(ObjectSizer.class, "MockObjectSizer");
+	}
+
+	@After
+	public void tearDown() {
+		factoryBean = null;
+		mockObjectSizer = null;
+	}
+
+	@Test
+	public void testCreateEntryCountEvictionAttributesWithNullAction() {
+		factoryBean.setAction(null);
+		factoryBean.setObjectSizer(mockObjectSizer);
+		factoryBean.setThreshold(1024);
+		factoryBean.setType(EvictionType.ENTRY_COUNT);
+		factoryBean.afterPropertiesSet();
+
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
+
+		assertNotNull(evictionAttributes);
+		assertEquals(EvictionAction.DEFAULT_EVICTION_ACTION, evictionAttributes.getAction());
+		assertNull(evictionAttributes.getObjectSizer());
+		assertEquals(1024, evictionAttributes.getMaximum());
+		assertEquals(EvictionAlgorithm.LRU_ENTRY, evictionAttributes.getAlgorithm());
+	}
+
+	@Test
+	public void testCreateEntryCountEvictionAttributesWithNone() {
 		factoryBean.setAction(EvictionAction.NONE);
-		factoryBean.setObjectSizer(null);
-		factoryBean.setThreshold(8192);
+		factoryBean.setObjectSizer(mockObjectSizer);
+		factoryBean.setThreshold(null);
 		factoryBean.setType(EvictionType.ENTRY_COUNT);
 		factoryBean.afterPropertiesSet();
 
@@ -58,32 +89,80 @@ public class EvictionAttributesFactoryBeanTest {
 		assertNotNull(evictionAttributes);
 		assertEquals(EvictionAction.NONE, evictionAttributes.getAction());
 		assertNull(evictionAttributes.getObjectSizer());
-		assertEquals(8192, evictionAttributes.getMaximum());
-		assertEquals(EvictionAlgorithm.LRU_ENTRY, evictionAttributes.getAlgorithm());
-
-		ObjectSizer mockObjectSizer = mock(ObjectSizer.class, "testCreateEntryCountHeapAttributes");
-
-		factoryBean.setAction(null);
-		factoryBean.setObjectSizer(mockObjectSizer); // ObjectSize is not used for ENTRY LRU!
-		factoryBean.setThreshold(null);
-		factoryBean.afterPropertiesSet();
-
-		evictionAttributes = factoryBean.getObject();
-
-		assertNotNull(evictionAttributes);
-		assertEquals(EvictionAction.DEFAULT_EVICTION_ACTION, evictionAttributes.getAction());
-		assertNull(evictionAttributes.getObjectSizer());
-		assertEquals(LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES, evictionAttributes.getMaximum());
+		assertEquals(EvictionAttributesFactoryBean.DEFAULT_LRU_MAXIMUM_ENTRIES, evictionAttributes.getMaximum());
 		assertEquals(EvictionAlgorithm.LRU_ENTRY, evictionAttributes.getAlgorithm());
 	}
 
 	@Test
-	public void testCreateHeapPercentageEvictionAttributes() {
-		EvictionAttributesFactoryBean factoryBean = new EvictionAttributesFactoryBean();
+	public void testCreateEntryCountEvictionAttributesWithLocalDestroy() {
+		factoryBean.setAction(EvictionAction.LOCAL_DESTROY);
+		factoryBean.setObjectSizer(mockObjectSizer);
+		factoryBean.setThreshold(128);
+		factoryBean.setType(EvictionType.ENTRY_COUNT);
+		factoryBean.afterPropertiesSet();
 
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
+
+		assertNotNull(evictionAttributes);
+		assertEquals(EvictionAction.LOCAL_DESTROY, evictionAttributes.getAction());
+		assertNull(evictionAttributes.getObjectSizer());
+		assertEquals(128, evictionAttributes.getMaximum());
+		assertEquals(EvictionAlgorithm.LRU_ENTRY, evictionAttributes.getAlgorithm());
+	}
+
+	@Test
+	public void testCreateEntryCountEvictionAttributesWithOverflowToDisk() {
+		factoryBean.setAction(EvictionAction.OVERFLOW_TO_DISK);
+		factoryBean.setObjectSizer(mockObjectSizer);
+		factoryBean.setThreshold(null);
+		factoryBean.setType(EvictionType.ENTRY_COUNT);
+		factoryBean.afterPropertiesSet();
+
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
+
+		assertNotNull(evictionAttributes);
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evictionAttributes.getAction());
+		assertNull(evictionAttributes.getObjectSizer());
+		assertEquals(EvictionAttributesFactoryBean.DEFAULT_LRU_MAXIMUM_ENTRIES, evictionAttributes.getMaximum());
+		assertEquals(EvictionAlgorithm.LRU_ENTRY, evictionAttributes.getAlgorithm());
+	}
+
+	@Test
+	public void testCreateHeapPercentageEvictionAttributesWithNullAction() {
+		factoryBean.setAction(null);
+		factoryBean.setObjectSizer(mockObjectSizer);
+		factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
+		factoryBean.afterPropertiesSet();
+
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
+
+		assertNotNull(evictionAttributes);
+		assertEquals(EvictionAction.DEFAULT_EVICTION_ACTION, evictionAttributes.getAction());
+		assertSame(mockObjectSizer, evictionAttributes.getObjectSizer());
+		assertEquals(EvictionAlgorithm.LRU_HEAP, evictionAttributes.getAlgorithm());
+	}
+
+	@Test
+	public void testCreateHeapPercentageEvictionAttributesWithNone() {
+		factoryBean.setAction(EvictionAction.NONE);
+		factoryBean.setObjectSizer(mockObjectSizer);
+		factoryBean.setThreshold(null);
+		factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
+		factoryBean.afterPropertiesSet();
+
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
+
+		assertNotNull(evictionAttributes);
+		assertEquals(EvictionAction.NONE, evictionAttributes.getAction());
+		assertSame(mockObjectSizer, evictionAttributes.getObjectSizer());
+		assertEquals(EvictionAlgorithm.LRU_HEAP, evictionAttributes.getAlgorithm());
+	}
+
+	@Test
+	public void testCreateHeapPercentageEvictionAttributesWithLocalDestroy() {
 		factoryBean.setAction(EvictionAction.LOCAL_DESTROY);
 		factoryBean.setObjectSizer(null);
-		//factoryBean.setThreshold(50); // Threshold is not used in HEAP LRU
+		factoryBean.setThreshold(null);
 		factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
 		factoryBean.afterPropertiesSet();
 
@@ -93,18 +172,20 @@ public class EvictionAttributesFactoryBeanTest {
 		assertEquals(EvictionAction.LOCAL_DESTROY, evictionAttributes.getAction());
 		assertNull(evictionAttributes.getObjectSizer());
 		assertEquals(EvictionAlgorithm.LRU_HEAP, evictionAttributes.getAlgorithm());
+	}
 
-		ObjectSizer mockObjectSizer = mock(ObjectSizer.class, "testCreateHeapPercentageEvictionAttributes");
-
-		factoryBean.setAction(null);
+	@Test
+	public void testCreateHeapPercentageEvictionAttributesWithOverflowToDisk() {
+		factoryBean.setAction(EvictionAction.OVERFLOW_TO_DISK);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(null);
+		factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
 		factoryBean.afterPropertiesSet();
 
-		evictionAttributes = factoryBean.getObject();
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
 
 		assertNotNull(evictionAttributes);
-		assertEquals(EvictionAction.DEFAULT_EVICTION_ACTION, evictionAttributes.getAction());
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evictionAttributes.getAction());
 		assertSame(mockObjectSizer, evictionAttributes.getObjectSizer());
 		assertEquals(EvictionAlgorithm.LRU_HEAP, evictionAttributes.getAlgorithm());
 	}
@@ -128,12 +209,61 @@ public class EvictionAttributesFactoryBeanTest {
 	}
 
 	@Test
-	public void testCreateMemorySizeEvictionAttributes() {
-		EvictionAttributesFactoryBean factoryBean = new EvictionAttributesFactoryBean();
+	public void testCreateMemorySizeEvictionAttributesWithNullAction() {
+		factoryBean.setAction(null);
+		factoryBean.setObjectSizer(mockObjectSizer);
+		factoryBean.setThreshold(null);
+		factoryBean.setType(EvictionType.MEMORY_SIZE);
+		factoryBean.afterPropertiesSet();
 
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
+
+		assertNotNull(evictionAttributes);
+		assertEquals(EvictionAction.DEFAULT_EVICTION_ACTION, evictionAttributes.getAction());
+		assertSame(mockObjectSizer, evictionAttributes.getObjectSizer());
+		assertEquals(EvictionAttributesFactoryBean.DEFAULT_MEMORY_MAXIMUM_SIZE, evictionAttributes.getMaximum());
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, evictionAttributes.getAlgorithm());
+	}
+
+	@Test
+	public void testCreateMemorySizeEvictionAttributesWithNone() {
+		factoryBean.setAction(EvictionAction.NONE);
+		factoryBean.setObjectSizer(null);
+		factoryBean.setThreshold(256);
+		factoryBean.setType(EvictionType.MEMORY_SIZE);
+		factoryBean.afterPropertiesSet();
+
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
+
+		assertNotNull(evictionAttributes);
+		assertEquals(EvictionAction.NONE, evictionAttributes.getAction());
+		assertNull(evictionAttributes.getObjectSizer());
+		assertEquals(256, evictionAttributes.getMaximum());
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, evictionAttributes.getAlgorithm());
+	}
+
+	@Test
+	public void testCreateMemorySizeEvictionAttributesWithLocalDestroy() {
+		factoryBean.setAction(EvictionAction.LOCAL_DESTROY);
+		factoryBean.setObjectSizer(mockObjectSizer);
+		factoryBean.setThreshold(1024);
+		factoryBean.setType(EvictionType.MEMORY_SIZE);
+		factoryBean.afterPropertiesSet();
+
+		EvictionAttributes evictionAttributes = factoryBean.getObject();
+
+		assertNotNull(evictionAttributes);
+		assertEquals(EvictionAction.LOCAL_DESTROY, evictionAttributes.getAction());
+		assertSame(mockObjectSizer, evictionAttributes.getObjectSizer());
+		assertEquals(1024, evictionAttributes.getMaximum());
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, evictionAttributes.getAlgorithm());
+	}
+
+	@Test
+	public void testCreateMemorySizeEvictionAttributesWithOverflowToDisk() {
 		factoryBean.setAction(EvictionAction.OVERFLOW_TO_DISK);
 		factoryBean.setObjectSizer(null);
-		factoryBean.setThreshold(512);
+		factoryBean.setThreshold(null);
 		factoryBean.setType(EvictionType.MEMORY_SIZE);
 		factoryBean.afterPropertiesSet();
 
@@ -142,22 +272,7 @@ public class EvictionAttributesFactoryBeanTest {
 		assertNotNull(evictionAttributes);
 		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evictionAttributes.getAction());
 		assertNull(evictionAttributes.getObjectSizer());
-		assertEquals(512, evictionAttributes.getMaximum());
-		assertEquals(EvictionAlgorithm.LRU_MEMORY, evictionAttributes.getAlgorithm());
-
-		ObjectSizer mockObjectSizer = mock(ObjectSizer.class, "testCreateMemorySizeEvictionAttributes");
-
-		factoryBean.setAction(null);
-		factoryBean.setObjectSizer(mockObjectSizer);
-		factoryBean.setThreshold(null);
-		factoryBean.afterPropertiesSet();
-
-		evictionAttributes = factoryBean.getObject();
-
-		assertNotNull(evictionAttributes);
-		assertEquals(EvictionAction.DEFAULT_EVICTION_ACTION, evictionAttributes.getAction());
-		assertSame(mockObjectSizer, evictionAttributes.getObjectSizer());
-		assertEquals(MemLRUCapacityController.DEFAULT_MAXIMUM_MEGABYTES, evictionAttributes.getMaximum());
+		assertEquals(EvictionAttributesFactoryBean.DEFAULT_MEMORY_MAXIMUM_SIZE, evictionAttributes.getMaximum());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, evictionAttributes.getAlgorithm());
 	}
 

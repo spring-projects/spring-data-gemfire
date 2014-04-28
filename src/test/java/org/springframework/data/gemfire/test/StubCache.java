@@ -63,6 +63,8 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 @SuppressWarnings("deprecation")
 public class StubCache implements Cache {
 
+	protected static final String NOT_IMPLEMENTED = "Not Implemented!";
+
 	private Properties properties;
 	
 	private DistributedSystem distributedSystem;
@@ -289,8 +291,7 @@ public class StubCache implements Cache {
 	 * @see com.gemstone.gemfire.cache.GemFireCache#loadCacheXml(java.io.InputStream)
 	 */
 	@Override
-	public void loadCacheXml(InputStream is) throws TimeoutException, CacheWriterException, GatewayException,
-			RegionExistsException {
+	public void loadCacheXml(InputStream is) throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
 	}
 
 	/* (non-Javadoc)
@@ -323,7 +324,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public PdxInstance createPdxEnum(String arg0, String arg1, int arg2) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -331,7 +332,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public PdxInstanceFactory createPdxInstanceFactory(String arg0) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -339,7 +340,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public CancelCriterion getCancelCriterion() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -394,7 +395,7 @@ public class StubCache implements Cache {
 	@Override
 	@Deprecated
 	public com.gemstone.gemfire.cache.util.BridgeServer addBridgeServer() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -453,36 +454,16 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	@Deprecated
-	public <K, V> Region<K, V> createRegion(String arg0, RegionAttributes<K, V> arg1) throws RegionExistsException,
-			TimeoutException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public <K, V> Region<K, V> createRegion(String arg0, RegionAttributes<K, V> arg1) throws RegionExistsException, TimeoutException {
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
+	@SuppressWarnings("unchecked")
 	public <K, V> RegionFactory<K, V> createRegionFactory() {
-		return new MockRegionFactory<K,V>(this).createRegionFactory();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionShortcut)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortCut) {
-		return new MockRegionFactory<K,V>(this).createRegionFactory();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(java.lang.String)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <K, V> RegionFactory<K, V> createRegionFactory(String arg0) {
 		return new MockRegionFactory<K,V>(this).createRegionFactory();
 	}
 
@@ -495,14 +476,30 @@ public class StubCache implements Cache {
 	}
 
 	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionShortcut)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut) {
+		return new MockRegionFactory<K,V>(this).createRegionFactory();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(java.lang.String)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public <K, V> RegionFactory<K, V> createRegionFactory(String regionAttributesId) {
+		return new MockRegionFactory<K,V>(this).createRegionFactory();
+	}
+
+	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#createVMRegion(java.lang.String, com.gemstone.gemfire.cache.RegionAttributes)
 	 */
 	@Override
 	@Deprecated
-	public <K, V> Region<K, V> createVMRegion(String arg0, RegionAttributes<K, V> arg1) throws RegionExistsException,
-			TimeoutException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public <K, V> Region<K, V> createVMRegion(String arg0, RegionAttributes<K, V> arg1) throws RegionExistsException, TimeoutException {
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -510,7 +507,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public Set<DistributedMember> getAdminMembers() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -518,7 +515,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public AsyncEventQueue getAsyncEventQueue(String name) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -526,7 +523,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public Set<AsyncEventQueue> getAsyncEventQueues() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -535,7 +532,7 @@ public class StubCache implements Cache {
 	@Override
 	@Deprecated
 	public List<CacheServer> getBridgeServers() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -543,7 +540,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public List<CacheServer> getCacheServers() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -592,7 +589,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public GatewaySender getGatewaySender(String name) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -625,7 +622,7 @@ public class StubCache implements Cache {
 	@Override
 	@Deprecated
 	public LogWriterI18n getLoggerI18n() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -633,7 +630,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public Set<DistributedMember> getMembers() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -642,7 +639,7 @@ public class StubCache implements Cache {
 	@SuppressWarnings({"rawtypes"})
 	@Override
 	public Set<DistributedMember> getMembers(Region arg0) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -667,7 +664,7 @@ public class StubCache implements Cache {
 	@Override
 	@Deprecated
 	public LogWriterI18n getSecurityLoggerI18n() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -675,7 +672,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public CacheSnapshotService getSnapshotService() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -692,7 +689,6 @@ public class StubCache implements Cache {
 	@Override
 	@Deprecated
 	public void readyForEvents() {
-		// TODO Auto-generated method stub	
 	}
 
 	/* (non-Javadoc)
@@ -709,7 +705,7 @@ public class StubCache implements Cache {
 	@Override
 	@Deprecated
 	public GatewayHub setGatewayHub(String arg0, int arg1) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -752,7 +748,7 @@ public class StubCache implements Cache {
 	public void setSearchTimeout(int arg0) {
 		this.searchTimeout = arg0;
 	}
-	
+
 	DistributedSystem mockDistributedSystem() {
 		DistributedSystem ds = mock(DistributedSystem.class);
 		DistributedMember dm = mockDistributedMember();
@@ -765,18 +761,18 @@ public class StubCache implements Cache {
 		when(ds.getDistributedMember()).thenReturn(dm);
 		return ds;
 	}
-	
+
 	DistributedMember mockDistributedMember() {
 		DistributedMember dm = mock(DistributedMember.class);
 		when(dm.getHost()).thenReturn("mockDistributedMember.host");
 		when(dm.getName()).thenReturn("mockDistributedMember");
 		return dm;
 	}
-	
+
 	CacheServer mockCacheServer() {
 		return new StubCacheServer();
 	}
-	
+
 	GatewayHub mockGatewayHub() {
 		final Gateway gw = mock(Gateway.class);
 		final GatewayQueueAttributes queueAttributes= mock(GatewayQueueAttributes.class);
@@ -793,7 +789,7 @@ public class StubCache implements Cache {
 		});
 		return gwh;
 	}
-	
+
 	QueryService mockQueryService() throws RegionNotFoundException, IndexInvalidException, IndexNameConflictException, IndexExistsException, UnsupportedOperationException {
 		 
 		QueryService qs = mock(QueryService.class);
@@ -857,7 +853,7 @@ public class StubCache implements Cache {
 		 
 		return qs;
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
 	Index mockIndex(String indexName, com.gemstone.gemfire.cache.query.IndexType indexType, String indexedExpression,
 			String fromClause, String imports){
@@ -876,14 +872,14 @@ public class StubCache implements Cache {
 		}
 		return idx;
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public Map<String,Region> allRegions() {
 		return this.allRegions;
 	}
-	
+
 	public void setProperties(Properties props) {
 		this.properties = props;
 	}
-	
+
 }

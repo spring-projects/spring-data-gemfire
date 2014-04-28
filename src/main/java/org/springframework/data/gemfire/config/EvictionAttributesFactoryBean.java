@@ -22,6 +22,8 @@ import org.springframework.beans.factory.InitializingBean;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
+import com.gemstone.gemfire.internal.cache.lru.LRUCapacityController;
+import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
 
 /**
  * Simple utility class used for defining nested factory-method like definitions w/o polluting the container with useless beans.
@@ -35,6 +37,11 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
  */
 @SuppressWarnings("unused")
 class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, InitializingBean {
+
+	// TODO remove this reference to the GemFire internal class when the Gem team fixes the EvictionAttributes bug!!!
+	protected static final int DEFAULT_LRU_MAXIMUM_ENTRIES = LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES;
+
+	protected static final int DEFAULT_MEMORY_MAXIMUM_SIZE = MemLRUCapacityController.DEFAULT_MAXIMUM_MEGABYTES;
 
 	private EvictionAction action = null;
 
@@ -60,16 +67,12 @@ class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, 
 				}
 				return EvictionAttributes.createLRUHeapAttributes(objectSizer, action);
 			case MEMORY_SIZE:
-				if (threshold != null) {
-					return EvictionAttributes.createLRUMemoryAttributes(threshold, objectSizer, action);
-				}
-				return EvictionAttributes.createLRUMemoryAttributes(objectSizer, action);
+				return (threshold != null ? EvictionAttributes.createLRUMemoryAttributes(threshold, objectSizer, action)
+					:  EvictionAttributes.createLRUMemoryAttributes(objectSizer, action));
 			case ENTRY_COUNT:
 			default:
-				if (threshold != null) {
-					return EvictionAttributes.createLRUEntryAttributes(threshold, action);
-				}
-				return EvictionAttributes.createLRUEntryAttributes();
+				return (threshold != null ? EvictionAttributes.createLRUEntryAttributes(threshold, action)
+					: EvictionAttributes.createLRUEntryAttributes(DEFAULT_LRU_MAXIMUM_ENTRIES, action));
 		}
 	}
 

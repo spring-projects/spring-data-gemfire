@@ -44,16 +44,23 @@ public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 		if (dataPolicy == null || DataPolicy.NORMAL.equals(dataPolicy)) {
 			// NOTE this is safe since a LOCAL Scoped NORMAL Region requiring persistence can be satisfied with
 			// PERSISTENT_REPLICATE, per the RegionShortcut.LOCAL_PERSISTENT
-			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.NORMAL);
+			DataPolicy resolvedDataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.NORMAL);
+
+			regionFactory.setDataPolicy(resolvedDataPolicy);
+			setDataPolicy(resolvedDataPolicy);
 		}
 		else if (DataPolicy.PRELOADED.equals(dataPolicy)) {
 			// NOTE this is safe since a LOCAL Scoped PRELOADED Region requiring persistence can be satisfied with
 			// PERSISTENT_REPLICATE, per the RegionShortcut.LOCAL_PERSISTENT
-			regionFactory.setDataPolicy(isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.PRELOADED);
+			DataPolicy resolvedDataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.PRELOADED);
+
+			regionFactory.setDataPolicy(resolvedDataPolicy);
+			setDataPolicy(resolvedDataPolicy);
 		}
 		else if (DataPolicy.PERSISTENT_REPLICATE.equals(dataPolicy)
 				&& RegionShortcutWrapper.valueOf(getShortcut()).isPersistent()) {
 			regionFactory.setDataPolicy(dataPolicy);
+			setDataPolicy(dataPolicy);
 		}
 		else {
 			throw new IllegalArgumentException(String.format("Data Policy '%1$s' is not supported for Local Regions.",

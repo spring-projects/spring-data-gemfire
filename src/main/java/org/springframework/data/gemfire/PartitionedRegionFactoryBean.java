@@ -48,6 +48,7 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 		assertDataPolicyAndPersistentAttributesAreCompatible(dataPolicy);
 
 		regionFactory.setDataPolicy(dataPolicy);
+		setDataPolicy(dataPolicy);
 	}
 
 	@Override
