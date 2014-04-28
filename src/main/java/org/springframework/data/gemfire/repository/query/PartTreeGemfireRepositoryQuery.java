@@ -60,10 +60,10 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 */
 	@Override
 	public Object execute(Object[] parameters) {
-
 		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(method.getParameters(), parameters);
-		QueryString query = new GemfireQueryCreator(tree, method.getPersistentEntity()).createQuery(parameterAccessor
-				.getSort());
+
+		QueryString query = new GemfireQueryCreator(tree, method.getPersistentEntity())
+			.createQuery(parameterAccessor.getSort());
 
 		RepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery(query.toString(), method, template);
 

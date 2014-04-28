@@ -16,20 +16,18 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import org.springframework.data.gemfire.mapping.Region;
 import org.springframework.data.gemfire.repository.GemfireRepository;
-import org.springframework.data.gemfire.repository.Query;
 
 /**
- * @author Stuart Williams
+ * The AccountsRepository class is a Data Access Object (DAO) for accessing and performing persistent operations on
+ * Account objects.
+ *
  * @author John Blum
+ * @see org.springframework.data.gemfire.repository.sample.Account
+ * @see org.springframework.data.gemfire.repository.GemfireRepository
+ * @since 1.0.0
  */
-@Region("Cats")
-public interface CatRepository extends GemfireRepository<Animal, Long> {
-
-	Animal findByName(String name);
-
-	@Query("SELECT * FROM /Cats x WHERE x.name = $1")
-	Animal findBy(String name);
+@SuppressWarnings("unused")
+public interface AccountRepository extends GemfireRepository<Account, Long> {
 
 }

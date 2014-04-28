@@ -29,7 +29,7 @@ public interface DogRepository extends GemfireRepository<Animal, Long> {
 
 	Animal findByName(String name);
 
-	@Query("SELECT * FROM /Animals x WHERE x.name = $1")
+	@Query("SELECT * FROM /Dogs x WHERE x.name = $1")
 	Animal findBy(String name);
 
 }

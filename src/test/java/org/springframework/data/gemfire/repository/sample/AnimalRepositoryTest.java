@@ -38,7 +38,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @since 1.4.0
  * @link https://github.com/spring-projects/spring-data-gemfire/pull/55
  */
-@ContextConfiguration("AnimalRepositoryTest-context.xml")
+@ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class AnimalRepositoryTest {

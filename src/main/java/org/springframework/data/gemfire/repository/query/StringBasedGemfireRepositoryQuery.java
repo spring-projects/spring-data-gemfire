@@ -38,11 +38,13 @@ import com.gemstone.gemfire.cache.query.internal.ResultsBag;
  */
 public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
-	private static final String INVALID_EXECUTION = "Paging and modifying queries are not supported!";
+	private static final String INVALID_QUERY = "Paging and modifying queries are not supported!";
 
-	private final QueryString query;
+	private boolean userDefinedQuery = false;
+
 	private final GemfireQueryMethod method;
 	private final GemfireTemplate template;
+	private final QueryString query;
 
 	/*
 	 * (non-Javadoc)
@@ -69,34 +71,50 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * Creates a new {@link StringBasedGemfireRepositoryQuery} using the given query {@link String},
 	 * {@link GemfireQueryMethod} and {@link GemfireTemplate}.
 	 * 
-	 * @param query will fall back to the query annotated to the given {@link GemfireQueryMethod} if {@literal null} is
-	 *          given.
+	 * @param query will fall back to the query annotated to the given {@link GemfireQueryMethod} if {@literal null}.
 	 * @param method must not be {@literal null}.
 	 * @param template must not be {@literal null}.
 	 */
 	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod method, GemfireTemplate template) {
-
 		super(method);
 
 		Assert.notNull(template);
 
+		this.userDefinedQuery |= !StringUtils.hasText(query);
 		this.query = new QueryString(StringUtils.hasText(query) ? query : method.getAnnotatedQuery());
 		this.method = method;
 		this.template = template;
 
 		if (method.isPageQuery() || method.isModifyingQuery()) {
-			throw new IllegalStateException(INVALID_EXECUTION);
+			throw new IllegalStateException(INVALID_QUERY);
 		}
 	}
 
-	/* 
+	/*
+	 * (non-Javadoc)
+	 */
+	public StringBasedGemfireRepositoryQuery asUserDefinedQuery() {
+		this.userDefinedQuery = true;
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 */
+	public boolean isUserDefinedQuery() {
+		return userDefinedQuery;
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
 	 */
 	@Override
 	public Object execute(Object[] parameters) {
 		ParametersParameterAccessor accessor = new ParametersParameterAccessor(method.getParameters(), parameters);
-		QueryString query = this.query.forRegion(method.getEntityInformation().getJavaType(), template.getRegion());
+
+		QueryString query = (isUserDefinedQuery() ? this.query :
+			this.query.forRegion(method.getEntityInformation().getJavaType(), template.getRegion()));
 
 		for (Integer index : query.getInParameterIndexes()) {
 			query = query.bindIn(toCollection(accessor.getBindableValue(index - 1)));

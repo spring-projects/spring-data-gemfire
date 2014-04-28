@@ -28,10 +28,10 @@ import org.springframework.data.gemfire.repository.Query;
  */
 public interface PersonRepository extends GemfireRepository<Person, Long> {
 
-	@Query("SELECT * FROM /Person p WHERE p.firstname = $1")
+	@Query("SELECT * FROM /simple p WHERE p.firstname = $1")
 	Collection<Person> findByFirstnameAnnotated(String firstname);
 
-	@Query("SELECT * FROM /Person p WHERE p.firstname IN SET $1")
+	@Query("SELECT * FROM /simple p WHERE p.firstname IN SET $1")
 	Collection<Person> findByFirstnamesAnnotated(Collection<String> firstnames);
 
 	Collection<Person> findByFirstname(String firstname);

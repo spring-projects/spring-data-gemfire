@@ -147,18 +147,18 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		return new QueryLookupStrategy() {
 			@Override
 			public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, NamedQueries namedQueries) {
-
 				GemfireQueryMethod queryMethod = new GemfireQueryMethod(method, metadata, context);
 				GemfireTemplate template = getTemplate(metadata);
 
 				if (queryMethod.hasAnnotatedQuery()) {
-					return new StringBasedGemfireRepositoryQuery(queryMethod, template);
+					return new StringBasedGemfireRepositoryQuery(queryMethod, template).asUserDefinedQuery();
 				}
 
 				String namedQueryName = queryMethod.getNamedQueryName();
+
 				if (namedQueries.hasQuery(namedQueryName)) {
 					return new StringBasedGemfireRepositoryQuery(namedQueries.getQuery(namedQueryName), queryMethod,
-							template);
+						template).asUserDefinedQuery();
 				}
 
 				return new PartTreeGemfireRepositoryQuery(queryMethod, template);
