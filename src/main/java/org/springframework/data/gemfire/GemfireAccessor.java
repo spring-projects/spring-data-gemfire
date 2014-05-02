@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
+import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
@@ -31,18 +32,39 @@ import com.gemstone.gemfire.cache.Region;
  * Not intended to be used directly.
  * 
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see com.gemstone.gemfire.cache.Region
  */
 public class GemfireAccessor implements InitializingBean {
 
-	/** Logger available to subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
 
-	private Region<?, ?> region;
+	private Region region;
+
+	/**
+	 * Returns the template GemFire Cache Region.
+	 *
+	 * @return the GemFire Cache Region.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	@SuppressWarnings("unchecked")
+	public <K, V> Region<K, V> getRegion() {
+		return region;
+	}
+
+	/**
+	 * Sets the template GemFire Cache Region.
+	 *
+	 * @param region the GemFire Cache Region used by this template.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	public void setRegion(Region<?, ?> region) {
+		this.region = region;
+	}
 
 	public void afterPropertiesSet() {
-		if (getRegion() == null) {
-			throw new IllegalArgumentException("Property 'region' is required");
-		}
+		Assert.notNull(getRegion(), "The GemFire Cache Region is required.");
 	}
 
 	/**
@@ -80,21 +102,4 @@ public class GemfireAccessor implements InitializingBean {
 		return GemfireCacheUtils.convertQueryExceptions(ex);
 	}
 
-	/**
-	 * Returns the template region.
-	 * 
-	 * @return the region
-	 */
-	public Region<?, ?> getRegion() {
-		return region;
-	}
-
-	/**
-	 * Sets the template region.
-	 * 
-	 * @param region the region to set
-	 */
-	public void setRegion(Region<?, ?> region) {
-		this.region = region;
-	}
 }

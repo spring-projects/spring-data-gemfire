@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
-		default-lazy-init="true">
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+">
 
-	<gfe:cache />
-	
-	<gfe:replicated-region id="simple" />
-	
-	<bean id="template" class="org.springframework.data.gemfire.GemfireTemplate">
-		<property name="region" ref="simple"/>
-	</bean>
-		
+	<gfe:cache/>
+
+	<gfe:replicated-region id="simple"/>
+
+	<bean id="template" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="simple"/>
+
 </beans>

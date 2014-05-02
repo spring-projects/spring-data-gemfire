@@ -17,11 +17,21 @@
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Resource;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +42,12 @@ import org.springframework.data.gemfire.test.MockRegionFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.gemstone.gemfire.GemFireCheckedException;
+import com.gemstone.gemfire.GemFireException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.NameResolutionException;
 import com.gemstone.gemfire.cache.query.Query;
@@ -41,33 +57,109 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 
 /**
+ * The GemfireTemplateTest class is a test suite of test case testing the contract and functionality of the
+ * GemfirTemplate class.
+ *
  * @author Costin Leau
+ * @author John Blum
+ * @see org.junit.Test
+ * @see org.junit.runner.RunWith
+ * @see org.springframework.data.gemfire.GemfireTemplate
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
+ * @see org.springframework.test.context.ContextConfiguration
  */
+@ContextConfiguration(locations="basic-template.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/org/springframework/data/gemfire/basic-template.xml",
-initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class GemfireTemplateTest  {
 
-	private static final String MULTI_QUERY = "select * from /simple";
+	private static final String MULTI_QUERY = "SELECT * FROM /simple";
+	private static final String SINGLE_QUERY = "(SELECT * FROM /simple).size";
 
-	private static final String SINGLE_QUERY = "(select * from /simple).size";
-	
-	@Autowired GemfireOperations template;
-	
+	@Autowired
+	private GemfireTemplate template;
+
+	@Resource(name = "simple")
+	private Region<?, ?> simple;
+
+	@Before
 	@SuppressWarnings("rawtypes")
-	@Before 
 	public void setUp() throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-		//Only applies if Mocks are enabled
-		QueryService querySevice = MockRegionFactory.mockQueryService();
+		QueryService queryService = MockRegionFactory.mockQueryService();
 		Query singleQuery = mock(Query.class);
+
 		when(singleQuery.execute(any(Object[].class))).thenReturn(0);
+		when(queryService.newQuery(SINGLE_QUERY)).thenReturn(singleQuery);
+
 		Query multipleQuery = mock(Query.class);
-	 	
 		SelectResults selectResults = mock(SelectResults.class);
+
 		when(multipleQuery.execute(any(Object[].class))).thenReturn(selectResults);
-		
-		when(querySevice.newQuery(SINGLE_QUERY)).thenReturn(singleQuery);
-		when(querySevice.newQuery(MULTI_QUERY)).thenReturn(multipleQuery);
+		when(queryService.newQuery(MULTI_QUERY)).thenReturn(multipleQuery);
+	}
+
+	@After
+	public void tearDown() {
+		template.setExposeNativeRegion(false);
+	}
+
+	@Test
+	public void testConstructWithNonNullRegion() {
+		GemfireTemplate localTemplate = new GemfireTemplate(simple);
+
+		assertNotNull(localTemplate);
+		assertSame(simple, localTemplate.getRegion());
+		assertFalse(localTemplate.isExposeNativeRegion());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testConstructWithNullRegion() {
+		try {
+			new GemfireTemplate(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("The GemFire Cache Region is required.", expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test
+	public void testExecuteUsingNativeRegion() {
+		template.setExposeNativeRegion(true);
+
+		assertTrue(template.isExposeNativeRegion());
+		assertSame(simple, template.getRegion());
+
+		final AtomicBoolean callbackInvoked = new AtomicBoolean(false);
+
+		template.execute(new GemfireCallback<Object>() {
+			@Override
+			public Object doInGemfire(final Region<?, ?> region) throws GemFireCheckedException, GemFireException {
+				callbackInvoked.set(true);
+				assertSame(simple, region);
+				return null;
+			}
+		});
+
+		assertTrue(callbackInvoked.get());
+	}
+
+	@Test
+	public void testExecuteUsingProxyRegion() {
+		assertFalse(template.isExposeNativeRegion());
+
+		final AtomicBoolean callbackInvoked = new AtomicBoolean(false);
+
+		template.execute(new GemfireCallback<Object>() {
+			@Override
+			public Object doInGemfire(final Region<?, ?> region) throws GemFireCheckedException, GemFireException {
+				callbackInvoked.set(true);
+				assertNotSame(simple, region);
+				return null;
+			}
+		});
+
+		assertTrue(callbackInvoked.get());
 	}
 
 	@Test(expected = InvalidDataAccessApiUsageException.class)
@@ -82,14 +174,43 @@ public class GemfireTemplateTest  {
 	
 	@Test
 	public void testFind() throws Exception {
- 		SelectResults<Object> find = template.find(MULTI_QUERY);
-		assertNotNull(find);
+		assertNotNull(template.find(MULTI_QUERY));
 	}
-	
+
 	@Test
 	public void testFindUnique() throws Exception {
- 		Integer find = template.findUnique(SINGLE_QUERY);
-		assertEquals(find, Integer.valueOf(0));
+		assertEquals(0, template.findUnique(SINGLE_QUERY));
+	}
+
+	@Test
+	public void testLookupQueryService() {
+		assertSame(simple.getRegionService().getQueryService(), template.lookupQueryService(simple));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testLookupLocalQueryService() {
+		ClientCache mockClientCache = mock(ClientCache.class, "testLookupLocalQueryService.ClientCache");
+		Region<Object, Object> mockRegion = mock(Region.class, "testLookupLocalQueryService.Region");
+		QueryService mockQueryService = mock(QueryService.class, "testLookupLocalQueryService.QueryService");
+		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class, "testLookupLocalQueryService.RegionAttributes");
+
+		when(mockClientCache.getLocalQueryService()).thenReturn(mockQueryService);
+		when(mockRegion.getRegionService()).thenReturn(mockClientCache);
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegionAttributes.getScope()).thenReturn(Scope.LOCAL);
+
+		GemfireTemplate localTemplate = new GemfireTemplate(mockRegion) {
+			@Override boolean isLocalWithNoServerProxy(final Region<?, ?> region) {
+				return true;
+			}
+		};
+
+		assertSame(mockQueryService, localTemplate.lookupQueryService(mockRegion));
+
+		verify(mockClientCache, times(1)).getLocalQueryService();
+		verify(mockRegion, times(2)).getRegionService();
+		verify(mockRegionAttributes, times(1)).getScope();
 	}
 
 }
