@@ -3,6 +3,24 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.4.0.RC1 (2014-05-02)
+-----------------------------------------
+* SGF-283 - Release 1.4 RC1.
+* SGF-282 - The Eviction 'action', other than the default, for a PARTITION Region is not properly passed to the GemFire EvictionAttributes.createLRUEntryAttributes(..) factory method when the 'threshold' is not set.
+* SGF-281 - Avoid setting the RegionAttributes Disk Store "Name" when the Region is neither "persistent" nor has an Eviction policy set to "OVERFLOW_TO_DISK".
+* SGF-280 - The ContinuousQueryListenerContainer class is not Thread-safe!.
+* SGF-279 - The <cq-listener-container> element is missing the 'error-handler' attribute.
+* SGF-278 - The ContinuousQueryListenerContainer class's 'taskExecutor' property is not set properly by the GemfireListenerContainerParser.
+* SGF-277 - OQL Join in Repository interface.
+* SGF-276 - LIKE operator does not work.
+* SGF-275 - The <cq-listener-container> element's 'phase' attribute is ignored.
+* SGF-274 - Avoid the creation of temporary objects in the GemfireTemplate when used with Spring Data GemFire's Repository abstraction and extension.
+* SGF-273 - OrderBy (static) and Sort parameter (dynamic) Repository Queries do not work!.
+* SGF-271 - The <cq-listener-container> element is missing the 'auto-startup' attribute.
+* SGF-268 - Make it possible to run the build on Java 7 and/or Java 8.
+* SGF-265 - Upgrade to the latest version GemFire (7.0.2).
+
+
 Changes in version 1.4 M1 (2014-03-31)
 --------------------------------------
 ** Bug
