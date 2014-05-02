@@ -12,7 +12,7 @@ group = 'org.springframework.data'
 
 repositories {
   maven { url "http://dist.gemstone.com.s3.amazonaws.com/maven/release"}
-  maven { url "http://repo.spring.io/libs-milestone" }
+  maven { url "http://repo.spring.io/libs-snapshot" }
   maven { url "http://repo.spring.io/plugins-release"}
 }
 
