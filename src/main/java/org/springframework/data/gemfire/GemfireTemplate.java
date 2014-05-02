@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * Helper class that simplifies GemFire data access code and converts {@link GemFireCheckedException} and
  * {@link GemFireException} into Spring {@link DataAccessException}, following the <tt>org.springframework.dao</tt>
  * exception hierarchy.
- * 
  *
  * The central method is <tt>execute</tt>, supporting GemFire access code implementing the GemfireCallback interface.
  * It provides dedicated handling such that neither the GemfireCallback implementation nor the calling code needs to
@@ -52,9 +51,18 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * Typically used to implement data access or business logic services that use GemFire within their implementation but
  * are GemFire-agnostic in their interface. The latter or code calling the latter only have to deal with business
  * objects, query objects, and <tt>org.springframework.dao</tt> exceptions. 
- * 
+ *
  * @author Costin Leau
+ * @author John Blum
+ * @see java.util.Map
+ * @see org.springframework.data.gemfire.GemfireAccessor
+ * @see org.springframework.data.gemfire.GemfireOperations
+ * @see com.gemstone.gemfire.cache.Region
+ * @see com.gemstone.gemfire.cache.query.Query
+ * @see com.gemstone.gemfire.cache.query.QueryService
+ * @see com.gemstone.gemfire.cache.query.SelectResults
  */
+@SuppressWarnings("unused")
 public class GemfireTemplate extends GemfireAccessor implements GemfireOperations {
 
 	private boolean exposeNativeRegion = false;
@@ -101,11 +109,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public boolean containsKey(final Object key) {
-		return execute(new GemfireCallback<Boolean>() {
- 			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
-				return region.containsKey(key);
-			}
-		});
+		return getRegion().containsKey(key);
 	}
 
 	/* (non-Javadoc)
@@ -113,11 +117,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public boolean containsKeyOnServer(final Object key) {
-		return execute(new GemfireCallback<Boolean>() {
-			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
-				return region.containsKeyOnServer(key);
-			}
-		});
+		return getRegion().containsKeyOnServer(key);
 	}
 
 	/* (non-Javadoc)
@@ -125,11 +125,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public boolean containsValue(final Object value) {
-		return execute(new GemfireCallback<Boolean>() {
-			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
-				return region.containsValue(value);
-			}
-		});
+		return getRegion().containsValue(value);
 	}
 
 	/* (non-Javadoc)
@@ -137,11 +133,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public boolean containsValueForKey(final Object key) {
-		return execute(new GemfireCallback<Boolean>() {
-			public Boolean doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException {
-				return region.containsValueForKey(key);
-			}
-		});
+		return getRegion().containsValueForKey(key);
 	}
 
 	/* (non-Javadoc)
@@ -149,13 +141,12 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public <K, V> void create(final K key, final V value) {
-		execute(new GemfireCallback<Object>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public Object doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				region.create(key, value);
-				return null;
-			}
-		});
+		try {
+			getRegion().create(key, value);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -163,77 +154,12 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public <K, V> V get(final K key) {
-		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return (V) region.get(key);
-			}
-		});
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.GemfireOperations#put(K, V)
-	 */
-	@Override
-	public <K, V> V put(final K key, final V value) {
-		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return (V) region.put(key, value);
-			}
-		});
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.GemfireOperations#putIfAbsent(K, V)
-	 */
-	@Override
-	public <K, V> V putIfAbsent(final K key, final V value) {
-		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return (V) region.putIfAbsent(key, value);
-			}
-		});
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.GemfireOperations#remove(K)
-	 */
-	@Override
-	public <K, V> V remove(final K key) {
-		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return (V) region.remove(key);
-			}
-		});
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.GemfireOperations#replace(K, V)
-	 */
-	@Override
-	public <K, V> V replace(final K key, final V value) {
-		return execute(new GemfireCallback<V>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public V doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return (V) region.replace(key, value);
-			}
-		});
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.GemfireOperations#replace(K, V, V)
-	 */
-	@Override
-	public <K, V> boolean replace(final K key, final V oldValue, final V newValue) {
-		return execute(new GemfireCallback<Boolean>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public Boolean doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return region.replace(key, oldValue, newValue);
-			}
-		});
+		try {
+			return this.<K, V>getRegion().get(key);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -241,12 +167,25 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public <K, V> Map<K, V> getAll(final Collection<?> keys) {
-		return execute(new GemfireCallback<Map<K, V>>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public Map<K, V> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return (Map<K, V>) region.getAll(keys);
-			}
-		});
+		try {
+			return this.<K, V>getRegion().getAll(keys);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#put(K, V)
+	 */
+	@Override
+	public <K, V> V put(final K key, final V value) {
+		try {
+			return this.<K, V>getRegion().put(key, value);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -254,13 +193,64 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public <K, V> void putAll(final Map<? extends K, ? extends V> map) {
-		execute(new GemfireCallback<Object>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public Object doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				region.putAll(map);
-				return null;
-			}
-		});
+		try {
+			this.<K, V>getRegion().putAll(map);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#putIfAbsent(K, V)
+	 */
+	@Override
+	public <K, V> V putIfAbsent(final K key, final V value) {
+		try {
+			return this.<K, V>getRegion().putIfAbsent(key, value);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#remove(K)
+	 */
+	@Override
+	public <K, V> V remove(final K key) {
+		try {
+			return this.<K, V>getRegion().remove(key);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#replace(K, V)
+	 */
+	@Override
+	public <K, V> V replace(final K key, final V value) {
+		try {
+			return this.<K, V>getRegion().replace(key, value);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.gemfire.GemfireOperations#replace(K, V, V)
+	 */
+	@Override
+	public <K, V> boolean replace(final K key, final V oldValue, final V newValue) {
+		try {
+			return this.<K, V>getRegion().replace(key, oldValue, newValue);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -268,78 +258,164 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 */
 	@Override
 	public <E> SelectResults<E> query(final String query) {
-		return execute(new GemfireCallback<SelectResults<E>>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				return region.query(query);
+		try {
+			return this.getRegion().query(query);
+		}
+		catch (IndexInvalidException ex) {
+			throw convertGemFireQueryException(ex);
+		}
+		catch (QueryInvalidException ex) {
+			throw convertGemFireQueryException(ex);
+		}
+		catch (GemFireCheckedException e) {
+			throw convertGemFireAccessException(e);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
+		catch (RuntimeException ex) {
+			// test for CqInvalidException (removed in 6.5)
+			if (GemfireCacheUtils.isCqInvalidException(ex)) {
+				throw GemfireCacheUtils.convertCqInvalidException(ex);
 			}
-		});
+
+			// callback code threw application exception
+			throw ex;
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.gemfire.GemfireOperations#find(java.lang.String, java.lang.Object)
 	 */
 	@Override
-	public <E> SelectResults<E> find(final String query, final Object... params)
-			throws InvalidDataAccessApiUsageException {
-		return execute(new GemfireCallback<SelectResults<E>>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public SelectResults<E> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				QueryService queryService = lookupQueryService(region);
-				Query q = queryService.newQuery(query);
- 				Object result = q.execute(params);
- 				if (result instanceof SelectResults) {
-					return (SelectResults<E>) result;
-				}
-				throw new InvalidDataAccessApiUsageException(
-						"Result object returned from GemfireCallback isn't a SelectResult: [" + result + "]");
+	@SuppressWarnings("unchecked")
+	public <E> SelectResults<E> find(final String queryString, final Object... params) throws InvalidDataAccessApiUsageException {
+		try {
+			QueryService queryService = lookupQueryService(getRegion());
+			Query query = queryService.newQuery(queryString);
+			Object result = query.execute(params);
+
+			if (result instanceof SelectResults) {
+				return (SelectResults<E>) result;
 			}
-		});
+			else {
+				throw new InvalidDataAccessApiUsageException(
+					"Result object returned from GemfireCallback isn't a SelectResult: [" + result + "]");
+			}
+		}
+		catch (IndexInvalidException ex) {
+			throw convertGemFireQueryException(ex);
+		}
+		catch (QueryInvalidException ex) {
+			throw convertGemFireQueryException(ex);
+		}
+		catch (GemFireCheckedException e) {
+			throw convertGemFireAccessException(e);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
+		catch (RuntimeException ex) {
+			// test for CqInvalidException (removed in 6.5)
+			if (GemfireCacheUtils.isCqInvalidException(ex)) {
+				throw GemfireCacheUtils.convertCqInvalidException(ex);
+			}
+
+			// callback code threw application exception
+			throw ex;
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.gemfire.GemfireOperations#findUnique(java.lang.String, java.lang.Object)
 	 */
 	@Override
-	public <T> T findUnique(final String query, final Object... params) throws InvalidDataAccessApiUsageException {
-		return execute(new GemfireCallback<T>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public T doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
-				QueryService queryService = lookupQueryService(region);
-				Query q = queryService.newQuery(query);
-				Object result = q.execute(params);
-				if (result instanceof SelectResults) {
-					SelectResults<T> selectResults = (SelectResults<T>)result;
-					if (selectResults.asList().size() == 1) {
-						result = selectResults.iterator().next();
-					} else {
-						throw new InvalidDataAccessApiUsageException(
-							"Result object returned from GemfireCallback isn't unique: [" + result + "]");
-					}
-				}
-				return (T) result;
-			}
-		});
-	}
+	@SuppressWarnings("unchecked")
+	public <T> T findUnique(final String queryString, final Object... params) throws InvalidDataAccessApiUsageException {
+		try {
+			QueryService queryService = lookupQueryService(getRegion());
+			Query query = queryService.newQuery(queryString);
+			Object result = query.execute(params);
 
+			if (result instanceof SelectResults) {
+				SelectResults<T> selectResults = (SelectResults<T>) result;
+
+				if (selectResults.asList().size() == 1) {
+					result = selectResults.iterator().next();
+				}
+				else {
+					throw new InvalidDataAccessApiUsageException(String.format(
+						"The result returned from query (%1$s) is not unique: (%2$s).", queryString, result));
+				}
+			}
+
+			return (T) result;
+		}
+		catch (IndexInvalidException ex) {
+			throw convertGemFireQueryException(ex);
+		}
+		catch (QueryInvalidException ex) {
+			throw convertGemFireQueryException(ex);
+		}
+		catch (GemFireCheckedException e) {
+			throw convertGemFireAccessException(e);
+		}
+		catch (GemFireException e) {
+			throw convertGemFireAccessException(e);
+		}
+		catch (RuntimeException ex) {
+			// test for CqInvalidException (removed in 6.5)
+			if (GemfireCacheUtils.isCqInvalidException(ex)) {
+				throw GemfireCacheUtils.convertCqInvalidException(ex);
+			}
+
+			// callback code threw application exception
+			throw ex;
+		}
+	}
 
 	/**
 	 * Returns the query service used by the template in its find methods.
 	 * 
 	 * @param region region to find the local query service from
 	 * @return query service to use, local or generic
+	 * @see com.gemstone.gemfire.cache.Region
+	 * @see com.gemstone.gemfire.cache.Region#getRegionService()
+	 * @see com.gemstone.gemfire.cache.RegionService#getQueryService()
+	 * @see com.gemstone.gemfire.cache.client.ClientCache#getLocalQueryService()
 	 */
-	protected QueryService lookupQueryService(Region<?, ?> region) {
-		if (region.getRegionService() instanceof ClientCache
-				&& (region instanceof LocalRegion && !((LocalRegion) region).hasServerProxy())
-				&& Scope.LOCAL.equals(region.getAttributes().getScope())) {
-			return ((ClientCache) region.getRegionService()).getLocalQueryService();
-		}
-		return region.getRegionService().getQueryService();
+	protected QueryService lookupQueryService(final Region<?, ?> region) {
+		return (requiresLocalQueryService(region) ? ((ClientCache) region.getRegionService()).getLocalQueryService()
+			: region.getRegionService().getQueryService());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Region
+	 * @see com.gemstone.gemfire.internal.cache.LocalRegion
+	 */
+	/* package-private */ boolean isLocalWithNoServerProxy(final Region<?, ?> region) {
+		return (region instanceof LocalRegion && !((LocalRegion) region).hasServerProxy());
+	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * @see #isLocalWithNoServerProxy(:Region)
+	 * @see com.gemstone.gemfire.cache.Region
+	 * @see com.gemstone.gemfire.cache.RegionAttributes
+	 * @see com.gemstone.gemfire.cache.RegionAttributes#getScope()
+	 * @see com.gemstone.gemfire.cache.Scope
+	 * @see com.gemstone.gemfire.cache.client.ClientCache
+	 * @see com.gemstone.gemfire.internal.cache.LocalRegion
+	 * @see com.gemstone.gemfire.internal.cache.LocalRegion#hasServerProxy()
+	 */
+	private boolean requiresLocalQueryService(final Region<?, ?> region) {
+		return (region.getRegionService() instanceof ClientCache && isLocalWithNoServerProxy(region)
+			&& Scope.LOCAL.equals(region.getAttributes().getScope()));
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.GemfireOperations#execute(org.springframework.data.gemfire.GemfireCallback)
 	 */
 	@Override
@@ -347,7 +423,8 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 		return execute(action, isExposeNativeRegion());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.GemfireOperations#execute(org.springframework.data.gemfire.GemfireCallback, boolean)
 	 */
 	@Override
@@ -355,21 +432,26 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 		Assert.notNull(action, "Callback object must not be null");
 		try {
 			Region<?, ?> regionToExpose = (exposeNativeRegion ? getRegion() : regionProxy);
-			T result = action.doInGemfire(regionToExpose);
-			return result;
-		} catch (IndexInvalidException ex) {
+			return action.doInGemfire(regionToExpose);
+		}
+		catch (IndexInvalidException ex) {
 			throw convertGemFireQueryException(ex);
-		} catch (QueryInvalidException ex) {
+		}
+		catch (QueryInvalidException ex) {
 			throw convertGemFireQueryException(ex);
-		} catch (GemFireCheckedException ex) {
+		}
+		catch (GemFireCheckedException ex) {
 			throw convertGemFireAccessException(ex);
-		} catch (GemFireException ex) {
+		}
+		catch (GemFireException ex) {
 			throw convertGemFireAccessException(ex);
-		} catch (RuntimeException ex) {
-			// try first the CqInvalidException (removed in 6.5)
+		}
+		catch (RuntimeException ex) {
+			// test for CqInvalidException (removed in 6.5)
 			if (GemfireCacheUtils.isCqInvalidException(ex)) {
 				throw GemfireCacheUtils.convertCqInvalidException(ex);
 			}
+
 			// callback code threw application exception
 			throw ex;
 		}
@@ -386,51 +468,49 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 * @see #execute(GemfireCallback, boolean)
 	 */
 	@SuppressWarnings("unchecked")
-	protected <K, V> Region<K, V> createRegionProxy(Region<K, V> region) {
-		Class<?>[] ifcs = ClassUtils.getAllInterfacesForClass(region.getClass(), getClass().getClassLoader());
-		return (Region<K, V>) Proxy.newProxyInstance(region.getClass().getClassLoader(), ifcs,
-				new CloseSuppressingInvocationHandler(region));
+	protected <K, V> Region<K, V> createRegionProxy(final Region<K, V> region) {
+		return (Region<K, V>) Proxy.newProxyInstance(region.getClass().getClassLoader(),
+			ClassUtils.getAllInterfacesForClass(region.getClass(), getClass().getClassLoader()),
+				new RegionCloseSuppressingInvocationHandler(region));
 	}
 
-	//-------------------------------------------------------------------------
-	// Convenience methods for load, save, delete
-	//-------------------------------------------------------------------------
-
 	/**
-	 * Invocation handler that suppresses close calls on GemFire Regions.
-	 * @see Region#close()
+	 * InvocationHandler that suppresses close calls on GemFire Cache Regions.
+	 *
+	 * @see com.gemstone.gemfire.cache.Region#close()
+	 * @see java.lang.reflect.InvocationHandler
 	 */
-	private static class CloseSuppressingInvocationHandler implements InvocationHandler {
+	private static class RegionCloseSuppressingInvocationHandler implements InvocationHandler {
 
 		private final Region<?, ?> target;
 
-		public CloseSuppressingInvocationHandler(Region<?, ?> target) {
+		public RegionCloseSuppressingInvocationHandler(final Region<?, ?> target) {
+			Assert.notNull(target, "The Region to target must not be null.");
 			this.target = target;
 		}
 
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-			// Invocation on Region interface coming in...
-
 			if (method.getName().equals("equals")) {
-				// Only consider equal when proxies are identical.
+				// only consider equal when proxies are identical
 				return (proxy == args[0]);
 			}
 			else if (method.getName().equals("hashCode")) {
-				// Use hashCode of region proxy.
+				// use hashCode of Region proxy
 				return System.identityHashCode(proxy);
 			}
 			else if (method.getName().equals("close")) {
-				// Handle close method: suppress, not valid.
+				// suppress Region.close() method call
 				return null;
 			}
-
-			// Invoke method on target Region
-			try {
-				Object retVal = method.invoke(this.target, args);
-				return retVal;
-			} catch (InvocationTargetException ex) {
-				throw ex.getTargetException();
+			else {
+				try {
+					return method.invoke(this.target, args);
+				}
+				catch (InvocationTargetException ex) {
+					throw ex.getTargetException();
+				}
 			}
 		}
 	}
+
 }

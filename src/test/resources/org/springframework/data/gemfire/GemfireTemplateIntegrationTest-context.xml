@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<util:properties id="gemfireCacheConfigurationSettings">
+		<prop key="name">GemfireTemplateIntegrationTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">config</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireCacheConfigurationSettings"/>
+
+	<gfe:replicated-region id="Users" persistent="false"/>
+
+	<bean id="template" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="Users"/>
+
+</beans>
