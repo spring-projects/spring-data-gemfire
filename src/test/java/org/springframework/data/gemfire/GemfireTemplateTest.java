@@ -24,6 +24,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -183,17 +184,34 @@ public class GemfireTemplateTest  {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testLookupQueryService() {
-		assertSame(simple.getRegionService().getQueryService().getClass(),
-			template.lookupQueryService(simple).getClass());
+		ClientCache mockClientCache = mock(ClientCache.class, "testLookupQueryService.ClientCache");
+		QueryService mockQueryService = mock(QueryService.class, "testLookupQueryService.QueryService");
+		Region<Object, Object> mockRegion = mock(Region.class, "testLookupQueryService.Region");
+
+		when(mockRegion.getRegionService()).thenReturn(mockClientCache);
+		when(mockClientCache.getQueryService()).thenReturn(mockQueryService);
+
+		GemfireTemplate localTemplate = new GemfireTemplate(mockRegion) {
+			@Override boolean isLocalWithNoServerProxy(final Region<?, ?> region) {
+				return false;
+			}
+		};
+
+		assertSame(mockQueryService, localTemplate.lookupQueryService(mockRegion));
+
+		verify(mockRegion, times(2)).getRegionService();
+		verify(mockClientCache, times(1)).getQueryService();
+		verify(mockClientCache, never()).getLocalQueryService();
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testLookupLocalQueryService() {
 		ClientCache mockClientCache = mock(ClientCache.class, "testLookupLocalQueryService.ClientCache");
-		Region<Object, Object> mockRegion = mock(Region.class, "testLookupLocalQueryService.Region");
 		QueryService mockQueryService = mock(QueryService.class, "testLookupLocalQueryService.QueryService");
+		Region<Object, Object> mockRegion = mock(Region.class, "testLookupLocalQueryService.Region");
 		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class, "testLookupLocalQueryService.RegionAttributes");
 
 		when(mockClientCache.getLocalQueryService()).thenReturn(mockQueryService);
@@ -209,6 +227,7 @@ public class GemfireTemplateTest  {
 
 		assertSame(mockQueryService, localTemplate.lookupQueryService(mockRegion));
 
+		verify(mockClientCache, never()).getQueryService();
 		verify(mockClientCache, times(1)).getLocalQueryService();
 		verify(mockRegion, times(2)).getRegionService();
 		verify(mockRegionAttributes, times(1)).getScope();
