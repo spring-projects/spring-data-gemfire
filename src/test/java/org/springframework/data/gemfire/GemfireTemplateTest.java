@@ -184,7 +184,8 @@ public class GemfireTemplateTest  {
 
 	@Test
 	public void testLookupQueryService() {
-		assertSame(simple.getRegionService().getQueryService(), template.lookupQueryService(simple));
+		assertSame(simple.getRegionService().getQueryService().getClass(),
+			template.lookupQueryService(simple).getClass());
 	}
 
 	@Test
