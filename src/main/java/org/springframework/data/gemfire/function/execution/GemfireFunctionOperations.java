@@ -24,49 +24,61 @@ import com.gemstone.gemfire.cache.execute.Function;
 public interface GemfireFunctionOperations {
 
 	/**
-	 * Execute an unregistered function
-	 * @param function the function
-	 * @param args calling arguments
-	 * @return the contents of the results collector
+	 * Execute an unregistered GemFire Function with the given arguments.
+	 *
+	 * @param <T> type parameter specifying the result type of the Function execution.
+	 * @param function the GemFire Function object to execute.
+	 * @param args an array of Object arguments to the Function call.
+	 * @return the contents of the ResultsCollector.
 	 */
 	public abstract <T> Iterable<T> execute(Function function, Object... args);
-	
+
+	/**
+	 * Execute a GemFire Function registered with the given ID.
+	 *
+	 * @param <T> type parameter specifying the result type of the Function execution.
+	 * @param functionId the ID under which the GemFire function is registered.
+	 * @param args an array of Object arguments to the Function call.
+	 * @return the results
+	 */
+	public abstract <T> Iterable<T> execute(String functionId, Object... args);
+
     /**
-     * Execute an unregistered function with an expected singleton result
-     * @param function the function
-     * @param args calling arguments
-     * @return the first item in the results collector 
+     * Execute an unregistered GemFire Function with the expected singleton result.
+
+	 * @param <T> type parameter specifying the result type of the Function execution.
+	 * @param function the GemFire Function object.
+	 * @param args an array of Object arguments to the Function call.
+	 * @return the first item in the ResultsCollector.
+	 * @see com.gemstone.gemfire.cache.execute.Function
      */
 	public abstract <T> T executeAndExtract(Function function, Object... args);
 
 	/**
-	 * Execute a function registered with an ID
-	 * @param functionId the function ID
-	 * @param args the calling arguments
-	 * @return the results
-	 */
-	public abstract <T> Iterable<T> execute(String functionId, Object... args);
-	
-	/**
-	 * Execute a function registered with an ID with no return value
-	 * @param functionId the function ID
-	 * @param args the calling arguments
-	 */
-	public void executeWithNoResult(String functionId, Object... args);
-	
-	/**
-	 * Execute a function registered with an ID and with an expected singleton result
-	 * @param functionId the function ID
-	 * @param args the calling arguments
+	 * Execute a GemFire Function registered with an ID and with an expected singleton result
+
+	 * @param <T> type parameter specifying the result type of the Function execution.
+	 * @param functionId the ID under which the GemFire function is registered.
+	 * @param args an array of Object arguments to the Function call.
 	 * @return the first item in the results collector
 	 */
-	public abstract <T> T executeAndExtract(String functionId, Object... args);	
-	
-	
+	public abstract <T> T executeAndExtract(String functionId, Object... args);
+
+	/**
+	 * Execute a GemFire Function registered with the given ID having no return value.
+
+	 * @param functionId the ID under which the GemFire function is registered.
+	 * @param args an array of Object arguments to the Function call.
+	 */
+	public void executeWithNoResult(String functionId, Object... args);
+
     /**
-     * Execute a function using a native GemFire {@link com.gemstone.gemfire.cache.execute.Execution} instance
-     * @param callback a callback providing the execution instance
-     * @return the execution result
+     * Execute a GemFire Function using a native GemFire {@link com.gemstone.gemfire.cache.execute.Execution} instance.
+	 *
+	 * @param <T> type parameter specifying the result type of the Function execution.
+     * @param callback a callback providing the execution instance.
+     * @return the Function execution result.
+	 * @see org.springframework.data.gemfire.function.execution.GemfireFunctionCallback
      */
 	public abstract <T> T execute(GemfireFunctionCallback<T> callback);
 

@@ -30,8 +30,11 @@ public class FixedPartitionAttributesFactoryBean implements FactoryBean<FixedPar
 	private String partitionName;
 	private Integer numBuckets;
 	private FixedPartitionAttributes fixedPartitionAttributes;
+
 	/**
-	 * @param primary
+	 * Sets whether this particular PARTITION Region is the primary (i.e. not secondary).
+	 *
+	 * @param primary a boolean value to indicate whether this PARTITION Region is the primary.
 	 */
 	public void setPrimary(boolean primary) {
 		this.primary = primary;

@@ -31,19 +31,20 @@ public class GemfireListenerExecutionFailedException extends InvalidDataAccessAp
 	/**
 	 * Constructs a new <code>GemfireListenerExecutionFailedException</code> instance.
 	 *
-	 * @param msg
-	 * @param cause
+	 * @param message a String describing the cause of the exception.
 	 */
-	public GemfireListenerExecutionFailedException(String msg, Throwable cause) {
-		super(msg, cause);
+	public GemfireListenerExecutionFailedException(String message) {
+		super(message);
 	}
 
 	/**
 	 * Constructs a new <code>GemfireListenerExecutionFailedException</code> instance.
 	 *
-	 * @param msg
+	 * @param message a String describing the cause of the exception.
+	 * @param cause a Throwable that was underlying cause of this exception.
 	 */
-	public GemfireListenerExecutionFailedException(String msg) {
-		super(msg);
+	public GemfireListenerExecutionFailedException(String message, Throwable cause) {
+		super(message, cause);
 	}
+
 }

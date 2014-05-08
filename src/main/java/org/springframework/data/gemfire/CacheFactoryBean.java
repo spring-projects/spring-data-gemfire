@@ -329,7 +329,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * Sets the PDX properties for the given object. Note this is implementation
 	 * specific as it depends on the type of the factory passed in.
 	 *
-	 * @param factory
+	 * @param factory the GemFire CacheFactory used to apply the PDX configuration settings.
 	 */
 	protected void applyPdxOptions(Object factory) {
 		if (factory instanceof CacheFactory) {
@@ -571,63 +571,74 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * 
-	 * @param copyOnRead
+	 * Set the copyOnRead attribute of the Cache.
+	 *
+	 * @param copyOnRead a boolean value indicating whether the object stored in the Cache is copied on gets.
 	 */
 	public void setCopyOnRead(Boolean copyOnRead) {
 		this.copyOnRead = copyOnRead;
 	}
 
 	/**
-	 * 
-	 * @param lockTimeout
+	 * Sets the number of seconds in which the implicit object lock request will timeout.
+	 *
+	 * @param lockTimeout an integer value specifying the object lock request timeout.
 	 */
 	public void setLockTimeout(Integer lockTimeout) {
 		this.lockTimeout = lockTimeout;
 	}
 
 	/**
-	 * 
-	 * @param lockLease
+	 * Sets the number of seconds for implicit and explicit object lock leases to timeout.
+	 *
+	 * @param lockLease an integer value indicating the object lock lease timeout.
 	 */
 	public void setLockLease(Integer lockLease) {
 		this.lockLease = lockLease;
 	}
 
 	/**
-	 * 
-	 * @param messageSyncInterval
+	 * Set for client subscription queue synchronization when this member acts as a server to clients
+	 * and server redundancy is used. Sets the frequency (in seconds) at which the primary server sends messages
+	 * to its secondary servers to remove queued events that have already been processed by the clients.
+	 *
+	 * @param messageSyncInterval an integer value specifying the number of seconds in which the primary server
+	 * sends messages to secondary servers.
 	 */
 	public void setMessageSyncInterval(Integer messageSyncInterval) {
 		this.messageSyncInterval = messageSyncInterval;
 	}
 
 	/**
-	 * 
-	 * @param searchTimeout
+	 * Set the number of seconds a netSearch operation can wait for data before timing out.
+	 *
+	 * @param searchTimeout an integer value indicating the netSearch timeout value.
 	 */
 	public void setSearchTimeout(Integer searchTimeout) {
 		this.searchTimeout = searchTimeout;
 	}
 
 	/**
-	 * 
-	 * @param evictionHeapPercentage
+	 * Set the Cache's eviction heap percentage attribute.
+	 *
+	 * @param evictionHeapPercentage float-point value indicating the Cache's heap use percentage to trigger eviction.
 	 */
 	public void setEvictionHeapPercentage(Float evictionHeapPercentage) {
 		this.evictionHeapPercentage = evictionHeapPercentage;
 	}
 
 	/**
-	 * 
-	 * @param criticalHeapPercentage
+	 * Set the Cache's critical heap percentage attribute.
+	 *
+	 * @param criticalHeapPercentage floating point value indicating the critical heap percentage.
 	 */
 	public void setCriticalHeapPercentage(Float criticalHeapPercentage) {
 		this.criticalHeapPercentage = criticalHeapPercentage;
 	}
 
 	/**
-	 * 
+	 * Set whether the Cache should be closed.
+	 *
 	 * @param close set to false if destroy() should not close the cache
 	 */
 	public void setClose(boolean close) {
@@ -635,16 +646,22 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * 
-	 * @param transactionListeners
+	 * Sets the list of TransactionListeners used to configure the Cache to receive transaction events after
+	 * the transaction is processed (committed, rolled back).
+	 *
+	 * @param transactionListeners the list of GemFire TransactionListeners listening for transaction events.
+	 * @see com.gemstone.gemfire.cache.TransactionListener
 	 */
 	public void setTransactionListeners(List<TransactionListener> transactionListeners) {
 		this.transactionListeners = transactionListeners;
 	}
 
 	/**
-	 * 
-	 * @param transactionWriter
+	 * Sets the TransactionWriter used to configure the Cache for handling transaction events, such as to veto
+	 * the transaction or update an external DB before the commit.
+	 *
+	 * @param transactionWriter the GemFire TransactionWriter callback receiving transaction events.
+	 * @see com.gemstone.gemfire.cache.TransactionWriter
 	 */
 	public void setTransactionWriter(TransactionWriter transactionWriter) {
 		this.transactionWriter = transactionWriter;
@@ -661,8 +678,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * 
-	 * @param dynamicRegionSupport
+	 * Sets an instance of the DynamicRegionSupport to support Dynamic Regions in this GemFire Cache.
+	 *
+	 * @param dynamicRegionSupport the DynamicRegionSupport class to setup Dynamic Regions in this Cache.
 	 */
 	public void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
 		this.dynamicRegionSupport = dynamicRegionSupport;
@@ -838,7 +856,9 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * return lazyInitialize
+	 * Determines whether this Cache instance will be lazily initialized.
+	 *
+	 * @return a boolean value indicating whether this Cache instance will be lazily initialized.
 	 */
 	public boolean isLazyInitialize() {
 		return lazyInitialize;

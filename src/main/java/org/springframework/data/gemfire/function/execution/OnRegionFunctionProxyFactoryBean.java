@@ -22,18 +22,19 @@ import org.springframework.data.gemfire.util.ArrayUtils;
  * @author David Turanski
  *
  */
-public class OnRegionFunctionProxyFactoryBean extends GemfireFunctionProxyFactoryBean { 
+public class OnRegionFunctionProxyFactoryBean extends GemfireFunctionProxyFactoryBean {
+
 	private OnRegionExecutionMethodMetadata methodMetadata;
+
 	/**
-	 * @param serviceInterface
+	 * @param serviceInterface the Service class interface specifying the operations to proxy.
 	 * @param gemfireOnRegionOperations an {@link GemfireOnRegionOperations} instance
 	 */
-	public OnRegionFunctionProxyFactoryBean(Class<?> serviceInterface,
-			GemfireOnRegionOperations gemfireOnRegionOperations) {
-		super(serviceInterface, (GemfireFunctionOperations) gemfireOnRegionOperations);
+	public OnRegionFunctionProxyFactoryBean(Class<?> serviceInterface, GemfireOnRegionOperations gemfireOnRegionOperations) {
+		super(serviceInterface, gemfireOnRegionOperations);
 		methodMetadata = new OnRegionExecutionMethodMetadata(serviceInterface);
 	}
-	
+
 	@Override
 	protected Iterable<?> invokeFunction(Method method, Object[] args) {
 		

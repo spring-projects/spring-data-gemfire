@@ -25,26 +25,33 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface OnServer {
-	
-	/**
-	 * The bean name
-     */
-	String id() default "";
-	
-	/**
-	 * Optional ResultCollector bean reference
-	 */
-	String resultCollector() default "";
-	
-	/**
-	 * The pool bean id (optional)
-	 * @return
-	 */
 
-	String pool() default "";
 	/**
-	 *  A reference to the cache
+	 * The bean name of the POJO interface defining the GemFire Function executions.
+	 * 
+	 * @return the bean name (id) of the POJO interface defining the GemFire Function executions.
+	 */
+	String id() default "";
+
+	/**
+	 *  A reference to the cache.
+	 *  
+	 *  @return a bean name reference to the GemFire Cache.
 	 */
 	String cache() default "";
+
+	/**
+	 * The pool bean name (optional).
+	 * 
+	 * @return an optional bean name of the GemFire Pool.
+	 */
+	String pool() default "";
+
+	/**
+	 * Optional ResultCollector bean reference.
+	 * 
+	 * @return an optional bean name of the ResultCollector to process the Function results.
+	 */
+	String resultCollector() default "";
 	
 }

@@ -62,7 +62,9 @@ public abstract class DeclarableSupport implements CacheCallback, Declarable {
 	/**
 	 * Initialize the current instance based on the given properties.
 	 * 
-	 * @param props
+	 * @param props the Properties used to initialize this Declarable.
+	 * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
+	 * @see java.util.Properties
 	 */
 	protected void initInstance(Properties props) {
 	}
@@ -78,12 +80,12 @@ public abstract class DeclarableSupport implements CacheCallback, Declarable {
 	}
 
 	/**
-	 * Sets the key under which the enclosing beanFactory can be found. Needed
-	 * only if multiple beanFactories are used with GemFire inside the same
-	 * class loader / class space.
+	 * Sets the key under which the enclosing BeanFactory can be found. Needed only if multiple BeanFactories
+	 * are used with GemFire inside the same class loader / class space.
 	 * 
 	 * @see GemfireBeanFactoryLocator
-	 * @param key
+	 * @param key a String specifying the key used to lookup the "enclosing" BeanFactory in the presenence of
+	 * multiple BeanFactories.
 	 */
 	public void setFactoryKey(String key) {
 		this.factoryKey = key;

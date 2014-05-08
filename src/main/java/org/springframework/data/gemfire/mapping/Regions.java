@@ -65,7 +65,8 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 * Returns the {@link Region} the given type is mapped to. Will try to find
 	 * a {@link Region} with the simple class name in case no mapping
 	 * information is found.
-	 * 
+	 *
+	 * @param <T> the Region value class type.
 	 * @param type must not be {@literal null}.
 	 * @return the {@link Region} the given type is mapped to.
 	 */
@@ -81,6 +82,8 @@ public class Regions implements Iterable<Region<?, ?>> {
 	/**
 	 * Returns the {@link Region} with the given name or path.
 	 *
+	 * @param <S> the Region key class type.
+	 * @param <T> the Region value class type.
 	 * @param namePath must not be {@literal null}, and either identifies the Region by name or the fully-qualified path.
 	 * @return the {@link Region} with the given name or path.
 	 */

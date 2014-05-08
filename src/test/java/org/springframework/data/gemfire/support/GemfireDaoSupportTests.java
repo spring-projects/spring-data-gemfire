@@ -15,45 +15,46 @@
  */
 package org.springframework.data.gemfire.support;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import junit.framework.TestCase;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Test;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 
 /**
  * @author Costin Leau
- * 
+ * @author John Blum
  */
-public class GemfireDaoSupportTests extends TestCase {
+public class GemfireDaoSupportTests {
 
+	@Test
 	@SuppressWarnings("rawtypes")
 	public void testGemfireDaoSupportWithTemplate() throws Exception {
-		GemfireOperations template = new GemfireTemplate();
-		final List test = new ArrayList();
+		final AtomicBoolean flag = new AtomicBoolean(false);
+
 		GemfireDaoSupport dao = new GemfireDaoSupport() {
-			@SuppressWarnings("unchecked")
 			protected void initDao() {
-				test.add("test");
+				flag.set(true);
 			}
 		};
-		dao.setGemfireTemplate(template);
+
+		GemfireOperations expectedTemplate = new GemfireTemplate();
+
+		dao.setGemfireTemplate(expectedTemplate);
 		dao.afterPropertiesSet();
+
 		assertNotNull("template not created", dao.getGemfireTemplate());
-		assertEquals("incorrect template", template, dao.getGemfireTemplate());
-		assertEquals("initDao not called", test.size(), 1);
+		assertEquals("incorrect template", expectedTemplate, dao.getGemfireTemplate());
+		assertTrue("initDao not called", flag.get());
 	}
 
+	@Test(expected = IllegalStateException.class)
 	public void testInvalidDaoTemplate() throws Exception {
-		GemfireDaoSupport dao = new GemfireDaoSupport() {
-		};
-		try {
-			dao.afterPropertiesSet();
-			fail("expected exception");
-		} catch (IllegalArgumentException iae) {
-			// okay
-		}
+		new GemfireDaoSupport().afterPropertiesSet();
 	}
+
 }

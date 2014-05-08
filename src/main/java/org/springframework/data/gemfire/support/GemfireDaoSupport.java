@@ -35,36 +35,31 @@ import com.gemstone.gemfire.cache.Region;
  * A custom GemfireTemplate instance can be used through overriding <code>createGemfireTemplate</code>.
  * 
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.dao.support.DaoSupport
  */
 public class GemfireDaoSupport extends DaoSupport {
 
 	private GemfireOperations gemfireTemplate;
 
 	/**
-	 * Sets the GemFire Region to be used by this DAO.
-	 * Will automatically create a GemfireTemplate for the given Region.
+	 * Sets the GemFire Cache Region to be used by this DAO. Will automatically create
+	 * an instance of the GemfireTemplate for the given Region.
 	 *
-	 * @param region
+	 * @param region the GemFire Cache Region upon which this DAO operates.
+	 * @see com.gemstone.gemfire.cache.Region
+	 * @see #createGemfireTemplate(com.gemstone.gemfire.cache.Region)
 	 */
 	public void setRegion(Region<?, ?> region) {
 		this.gemfireTemplate = createGemfireTemplate(region);
 	}
 
 	/**
-	 * Creates a GemfireTemplate for the given Region.
-	 * <p>Can be overridden in subclasses to provide a GemfireTemplate instance
-	 * with different configuration, or a custom GemfireTemplate subclass.
-	 * @param region the GemFire Region to create a GemfireTemplate for
-	 * @return the new GemfireTemplate instance
-	 * @see #setRegion
-	 */
-	protected GemfireOperations createGemfireTemplate(Region<?, ?> region) {
-		return new GemfireTemplate(region);
-	}
-
-	/**
-	 * Set the GemfireTemplate for this DAO explicitly,
-	 * as an alternative to specifying a GemFire {@link Region}.
+	 * Set the GemfireTemplate for this DAO explicitly as an alternative to specifying a GemFire Cache {@link Region}.
+	 *
+	 * @param gemfireTemplate the GemfireTemplate to be use by this DAO.
+	 * @see org.springframework.data.gemfire.GemfireOperations
+	 * @see org.springframework.data.gemfire.GemfireTemplate
 	 * @see #setRegion
 	 */
 	public final void setGemfireTemplate(GemfireOperations gemfireTemplate) {
@@ -72,15 +67,36 @@ public class GemfireDaoSupport extends DaoSupport {
 	}
 
 	/**
-	 * Return the GemfireTemplate for this DAO, pre-initialized
-	 * with the Region or set explicitly.
+	 * Returns the GemfireTemplate for this DAO, pre-initialized with the Region or set explicitly.
+	 *
+	 * @return an instance of the GemfireTemplate to perform data access operations on the GemFire Cache Region.
+	 * @see org.springframework.data.gemfire.GemfireOperations
+	 * @see org.springframework.data.gemfire.GemfireTemplate
 	 */
 	public final GemfireOperations getGemfireTemplate() {
 		return gemfireTemplate;
 	}
 
+	/**
+	 * Creates an instance of the GemfireTemplate for the given GemFire Cache Region.
+	 * <p>Can be overridden in subclasses to provide a GemfireTemplate instance with different configuration,
+	 * or even a custom GemfireTemplate subclass.
+	 *
+	 * @param region the GemFire Cache Region for which the GemfireTemplate is created.
+	 * @return a new GemfireTemplate instance configured with the given GemFire Cache Region.
+	 * @see com.gemstone.gemfire.cache.Region
+	 * @see #setRegion
+	 */
+	protected GemfireOperations createGemfireTemplate(Region<?, ?> region) {
+		return new GemfireTemplate(region);
+	}
+
+	/**
+	 * Verifies that this DAO has been configured properly.
+	 */
 	@Override
 	protected final void checkDaoConfig() {
-		Assert.notNull(gemfireTemplate, "region or gemfireTemplate is required");
+		Assert.state(gemfireTemplate != null, "A GemFire Cache Region or an instance of the GemfireTemplate is required.");
 	}
+
 }

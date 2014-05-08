@@ -27,18 +27,24 @@ import java.lang.annotation.Target;
 public @interface OnRegion {
 
 	/**
-	 * The bean name
-     */
+	 * The bean name of the POJO interface defining the GemFire Function executions.
+	 * 
+	 * @return the bean name (id) of the POJO interface defining the GemFire Function executions.
+	 */
 	String id() default "";
-	
+
 	/**
-	 * Optional ResultCollector bean reference
+	 * A reference to the bean id of the GemFire Region.
+	 * 
+	 * @return the bean name (id) of the GemFire Region.
+	 */
+	String region();
+
+	/**
+	 * Optional ResultCollector bean reference.
+	 * 
+	 * @return an optional bean name of the ResultCollector to process the Function results.
 	 */
 	String resultCollector() default "";
-	
-	/**
-	 * The reference to the bean id of the region
-	 * @return the region id
-	 */
-	String region(); 
+
 }

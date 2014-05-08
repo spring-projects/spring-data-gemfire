@@ -28,8 +28,10 @@ public class GemfireOnRegionFunctionTemplate extends AbstractFunctionTemplate im
 	private Region<?, ?> region;
 
 	/**
-	 *  
-	 * @param region
+	 * Constructs an instance of the GemFireOnRegionFunctionTemplate with the given GemFire Cache Region.
+	 *
+	 * @param region the GemFire Cache Region upon which the Function will be executed.
+	 * @see com.gemstone.gemfire.cache.Region
 	 */
 	public GemfireOnRegionFunctionTemplate(Region<?, ?> region) {
 		Assert.notNull(region, "Region cannot be null");

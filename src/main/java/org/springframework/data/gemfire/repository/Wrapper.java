@@ -33,11 +33,10 @@ public final class Wrapper<T, KEY extends Serializable> {
 	/**
 	 * The entity to handle as well as the key.
 	 * 
-	 * @param entity
+	 * @param entity the application domain object/entity to wrap.
 	 * @param key must not be {@literal null}.
 	 */
 	public Wrapper(T entity, KEY key) {
-
 		Assert.notNull(key);
 
 		this.entity = entity;
@@ -64,8 +63,7 @@ public final class Wrapper<T, KEY extends Serializable> {
 	 */
 	@Override
 	public boolean equals(Object value) {
-
-		if (this == value) {
+		if (value == this) {
 			return true;
 		}
 
@@ -75,7 +73,7 @@ public final class Wrapper<T, KEY extends Serializable> {
 
 		Wrapper<?, ?> that = (Wrapper<?, ?>) value;
 
-		return this.key.equals(that.key) && ObjectUtils.nullSafeEquals(this.entity, that.entity);
+		return (this.key.equals(that.key) && ObjectUtils.nullSafeEquals(this.entity, that.entity));
 	}
 
 	/* 
@@ -84,7 +82,6 @@ public final class Wrapper<T, KEY extends Serializable> {
 	 */
 	@Override
 	public int hashCode() {
-
 		int result = 17;
 
 		result += 31 * key.hashCode();
@@ -92,4 +89,14 @@ public final class Wrapper<T, KEY extends Serializable> {
 
 		return result;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return ObjectUtils.nullSafeToString(getEntity());
+	}
+
 }

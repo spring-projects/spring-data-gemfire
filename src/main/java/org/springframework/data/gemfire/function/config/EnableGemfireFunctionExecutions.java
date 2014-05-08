@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Import;
  * These include interfaces annotated with one of {code} @OnRegion, @OnServer, @OnServers, @OnMember, @OnMembers{code} 
  * 
  * @author David Turanski
- *
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -40,29 +39,46 @@ public @interface EnableGemfireFunctionExecutions {
 	 * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation declarations e.g.:
 	 * {@code @EnableGemfireRepositories("org.my.pkg")} instead of
 	 * {@code @EnableGemfireRepositories(basePackages="org.my.pkg")}.
+	 *
+	 * @return an array of Strings indicating the names of packages to scan during component scanning.
+	 * @see #basePackages()
 	 */
 	String[] value() default {};
+
 	/**
 	 * Base packages to scan for annotated components. {@link #value()} is an alias for (and mutually exclusive with) this
 	 * attribute. Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
+	 *
+	 * @return an array of Strings indicating the names of packages to scan during component scanning.
+	 * @see #basePackageClasses()
 	 */
 	String[] basePackages() default {};
 
 	/**
-	 * Type-safe alternative to {@link #basePackages()} for specifying the packages to scan for annotated components. The
-	 * package of each class specified will be scanned. Consider creating a special no-op marker class or interface in
-	 * each package that serves no purpose other than being referenced by this attribute.
+	 * Type-safe alternative to {@link #basePackages()} for specifying the packages to scan for annotated components.
+	 * The package of each class specified will be scanned. Consider creating a special no-op marker class or interface
+	 * in each package that serves no purpose other than being referenced by this attribute.
+	 *
+	 * @return an array of Class types used to get the packages to scan during component scanning.
+	 * @see #basePackages()
 	 */
 	Class<?>[] basePackageClasses() default {};
 
 	/**
 	 * Specifies which types are eligible for component scanning. Further narrows the set of candidate components from
 	 * everything in {@link #basePackages()} to everything in the base packages that matches the given filter or filters.
+	 *
+	 * @return an array of Filters indicating which types are eligible for component scanning.
+	 * @see org.springframework.context.annotation.ComponentScan.Filter
 	 */
 	Filter[] includeFilters() default {};
 
 	/**
 	 * Specifies which types are not eligible for component scanning.
+	 *
+	 * @return an array of Filters indicating which types are not eligible for component scanning.
+	 * @see org.springframework.context.annotation.ComponentScan.Filter
 	 */
 	Filter[] excludeFilters() default {};
+
 }

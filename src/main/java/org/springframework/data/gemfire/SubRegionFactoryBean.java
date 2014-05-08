@@ -139,27 +139,35 @@ public class SubRegionFactoryBean<K, V> extends com.gemstone.gemfire.cache.Attri
 	/**
 	 * Set to true if the subregion should already exist, e.g., specified by
 	 * &lt;lookup-region&gt;
+	 *
+	 * @param lookupOnly a boolean value indicating whether this Subregion should be looked up instead of created.
 	 */
 	public void setLookupOnly(boolean lookupOnly) {
 		this.lookupOnly = lookupOnly;
 	}
 
 	/**
-	 * Set the bean name - the same as the subregion full path
+	 * Set the bean name - the same as the Subregion full path.
+	 *
+	 * @param name the name of this Subregion bean in the Spring context.
 	 */
 	public void setName(String name) {
         this.name = name;
 	}
 
 	/**
-	 * Set the simple name of the region
+	 * Set the simple name of this Subregion.
+	 *
+	 * @param regionName the simple name of this Subregion.
 	 */
 	public void setRegionName(String regionName) {
 		this.regionName = regionName;
 	}
 
 	/**
-	 * Set the parent Region
+	 * Set the parent Region.
+	 *
+	 * @param parent a reference to the parent Region.
 	 */
 	public void setParent(Region<?, ?> parent) {
 		this.parentRegion = parent;

@@ -180,43 +180,56 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	/**
-	 * @param asyncEventQueue the asyncEventQueue to set
+	 * @param asyncEventQueue overrides Async Event Queue returned by this FactoryBean.
 	 */
 	public void setAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
 		this.asyncEventQueue = asyncEventQueue;
 	}
 
 	/**
-	 * @param dispatcherThreads the dispatcherThreads to set
+	 * Set the number of dispatcher threads used to process Region events from the associated Aysnc Event Queue (AEQ).
+	 *
+	 * @param dispatcherThreads an integer indicating the number of dispatcher threads used to process Region events
+	 * from the associated queue.
 	 */
 	public void setDispatcherThreads(Integer dispatcherThreads) {
 		this.dispatcherThreads = dispatcherThreads;
 	}
 
 	/**
-	 * @param batchTimeInterval
+	 * Set the Aysync Event Queue's (AEQ) interval between sending batches.
+	 *
+	 * @param batchTimeInterval an integer value indicating the maximum number of milliseconds that can elapse
+	 * between sending batches.
 	 */
 	public void setBatchTimeInterval(Integer batchTimeInterval) {
 		this.batchTimeInterval = batchTimeInterval;
 	}
 
 	/**
-	 * 
-	 * @param batchConflationEnabled
+	 * Enable or disable the Async Event Queue's (AEQ) should conflate messages.
+	 *
+	 * @param batchConflationEnabled a boolean value indicating whether to conflate queued events.
 	 */
 	public void setBatchConflationEnabled(Boolean batchConflationEnabled) {
 		this.batchConflationEnabled = batchConflationEnabled;
 	}
 
 	/**
-	 * @param diskSynchronous
+	 * Set the Async Event Queue (AEQ) disk write synchronization policy.
+	 *
+	 * @param diskSynchronous a boolean value indicating whether disk writes are synchronous.
 	 */
 	public void setDiskSynchronous(Boolean diskSynchronous) {
 		this.diskSynchronous = diskSynchronous;
 	}
 
 	/**
-	 * @param orderPolicy
+	 * Set the Async Event Queue (AEQ) ordering policy (e.g. KEY, PARTITION, THREAD). When dispatcher threads
+	 * are greater than 1, the ordering policy configures the way in which multiple dispatcher threads
+	 * process Region events from the queue.
+	 *
+	 * @param orderPolicy a String to indicate the AEQ order policy.
 	 */
 	public void setOrderPolicy(String orderPolicy) {
 		this.orderPolicy = orderPolicy;
