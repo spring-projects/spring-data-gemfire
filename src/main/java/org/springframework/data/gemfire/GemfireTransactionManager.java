@@ -81,7 +81,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	/**
 	 * Creates a new GemfireTransactionManager instance.
 	 * 
-	 * @param cache
+	 * @param cache a reference to the GemFire Cache associated with Cache transactions.
 	 */
 	public GemfireTransactionManager(Cache cache) {
 		this.cache = cache;
@@ -211,10 +211,11 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * Sets the Gemfire {@link Region} (as an alternative in setting in the
-	 * cache directly).
-	 * 
-	 * @param region Gemfire region
+	 * Sets the GemFire Cache {@link Region} (as an alternative in setting in the Cache directly).
+	 *
+	 * @param <K> the Region key class type.
+	 * @param <V> the Region value class type.
+	 * @param region the Gemfire Cache Region directly involved in the Cache transaction.
 	 */
 	public <K, V> void setRegion(Region<K, V> region) {
 		Assert.notNull(region, "non-null arguments are required");

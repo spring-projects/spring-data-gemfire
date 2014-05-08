@@ -57,7 +57,8 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 * Creates a new {@link GemfireRepositoryFactory}.
 	 * 
 	 * @param regions must not be {@literal null}.
-	 * @param context
+	 * @param context the {@link MappingContext} used by the constructed Repository for mapping entities
+	 * to the underlying data store.
 	 */
 	public GemfireRepositoryFactory(Iterable<Region<?, ?>> regions, MappingContext<? extends GemfirePersistentEntity<?>,
 			GemfirePersistentProperty> context) {

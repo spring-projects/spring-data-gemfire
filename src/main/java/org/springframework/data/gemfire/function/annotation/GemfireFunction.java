@@ -27,26 +27,40 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface GemfireFunction {
+
 	/**
 	 * The name of the registered function. If not provided the simple method name will be used
 	 * @return the function id
      */
 	String id() default "";
+
 	/**
-	 * is the function HA - highly available
+	 * Attribute to determine whether the GemFire Function is HA (Highly Available).
+	 *
+	 * @return a boolean value indicating whether the defined GemFire Function is HA.
 	 */
 	boolean HA() default false;
+
 	/**
-	 * is the function optimized for write operations
+	 * Attribute to determine whether the GemFire Function is optimized for write operations.
+	 *
+	 * @return a boolean value indicating if the GemFire Function is configured for optimized write operations.
 	 */
 	boolean optimizeForWrite() default false;
+
 	/**
-	 * controls the maximum number of results sent at one time
+	 * Controls the maximum number of results sent at one time.
+	 *
+	 * @return an integer value indicating the batch size, or the number of results sent at one time.
 	 */
 	int batchSize() default 0;
+
 	/**
-	 * normally follows the method return type, i.e., false if void, true otherwise. This allows overriding 
+	 * Normally follows the method return type, i.e., false if void, true otherwise. This allows overriding
 	 * a void method which uses the resultSender directly.
+	 *
+	 * @return a boolean value indicating if the GemFire Function is expected to return a result.
 	 */
 	boolean hasResult() default false;
+
 }

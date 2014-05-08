@@ -41,8 +41,11 @@ public interface GemfireCallback<T> {
 	 * A thrown custom RuntimeException is treated as an application exception: it gets propagated to
 	 * the caller of the template.
 	 *  
-	 * @param region a GemFire Cache Region.
+	 * @param region the GemFire Cache Region upon which the operation of this callback will be performed.
 	 * @return a result object, or <tt>null</tt> if no result.
+	 * @throws GemFireCheckedException for checked Exceptions occurring in GemFire.
+	 * @throws GemFireException for runtime Exceptions occurring in GemFire.
+	 * @see org.springframework.data.gemfire.GemfireTemplate
 	 * @see com.gemstone.gemfire.cache.Region
 	 */
 	T doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException;

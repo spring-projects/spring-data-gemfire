@@ -84,21 +84,24 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	}
 
 	/**
-	 * Sets whether to expose the native Gemfire Region to GemfireCallback
-	 * code. Default is "false": a Region proxy will be returned,
-	 * suppressing <code>close</code> calls.
-	 * <p>As there is often a need to cast to a interface, the exposed proxy
-	 * implements all interfaces implemented by the original {@link Region}.
-	 * If this is not sufficient, turn this flag to "true".
-	 * @see GemfireCallback
+	 * Sets whether to expose the native Gemfire Region to GemfireCallback code. Default is "false": a Region proxy
+	 * will be returned, suppressing <code>close</code> calls.
+	 * <p>As there is often a need to cast to a interface, the exposed proxy implements all interfaces
+	 * implemented by the original {@link Region}. If this is not sufficient, turn this flag to "true".
+	 *
+	 * @param exposeNativeRegion a boolean value to indicate whether the native GemFire Cache Region should be exposed
+	 * to the GemfireCallback.
+	 * @see org.springframework.data.gemfire.GemfireCallback
 	 */
 	public void setExposeNativeRegion(boolean exposeNativeRegion) {
 		this.exposeNativeRegion = exposeNativeRegion;
 	}
 
 	/**
-	 * Returns whether to expose the native GemFire Region to GemfireCallback
-	 * code, or rather a Region proxy.
+	 * Returns whether to expose the native GemFire Cache Region or a Region proxy to the GemfireCallback code.
+	 *
+	 * @return a boolean value indicating whether the native GemFire Cache Region or Region proxy is exposed
+	 * to the GemfireCallback code.
 	 */
 	public boolean isExposeNativeRegion() {
 		return this.exposeNativeRegion;
@@ -458,13 +461,14 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	}
 
 	/**
-	 * Create a close-suppressing proxy for the given GemFire {@link Region}.
+	 * Create a close-suppressing proxy for the given GemFire Cache {@link Region}.
 	 * Called by the <code>execute</code> method.
-	 * 
-	 * @param region the GemFire Region to create a proxy for
-	 * @return the Region proxy, implementing all interfaces
-	 * implemented by the passed-in Region object 
-	 * @see Region#close()
+	 *
+	 * @param <K> the Region key class type.
+	 * @param <V> the Region value class type.
+	 * @param region the GemFire Cache Region to create a proxy for.
+	 * @return the Region proxy implementing all interfaces implemented by the passed-in Region object.
+	 * @see com.gemstone.gemfire.cache.Region#close()
 	 * @see #execute(GemfireCallback, boolean)
 	 */
 	@SuppressWarnings("unchecked")

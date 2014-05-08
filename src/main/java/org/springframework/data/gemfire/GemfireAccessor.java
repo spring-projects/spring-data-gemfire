@@ -45,6 +45,8 @@ public class GemfireAccessor implements InitializingBean {
 	/**
 	 * Returns the template GemFire Cache Region.
 	 *
+	 * @param <K> the Region key class type.
+	 * @param <V> the Region value class type.
 	 * @return the GemFire Cache Region.
 	 * @see com.gemstone.gemfire.cache.Region
 	 */

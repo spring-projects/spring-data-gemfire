@@ -80,12 +80,12 @@ public class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>,
 	}
 
 	/**
-	 * Fall back method in case the named region does not exist.
-	 * By default, this implementation throws an exception.
+	 * Fallback method in case the named Region does not exist.  By default, this implementation throws an exception.
 	 * 
-	 * @param cache GemFire cache
-	 * @param regionName region name
-	 * @throws Exception
+	 * @param cache a reference to the GemFire Cache.
+	 * @param regionName the name of the GemFire Cache Region.
+	 * @return the Region in the GemFire Cache with the given name.
+	 * @throws Exception if the lookup operation fails.
 	 */
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		throw new BeanInitializationException(String.format("Cannot find Region [%1$s] in Cache [%2$s].",

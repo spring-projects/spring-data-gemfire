@@ -93,8 +93,9 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	/**
-	 * Configures custom pdx serializers to use for specific types 
-	 * @param customSerializers
+	 * Configures custom PDX serializers to use for specific class types.
+	 *
+	 * @param customSerializers a mapping of domain object class types and their corresponding PDX serializer.
 	 */
 	public void setCustomSerializers(Map<Class<?>, PdxSerializer> customSerializers) {
 		this.customSerializers = customSerializers;

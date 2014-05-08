@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.query.internal.ResultsBag;
 
 /**
  * {@link GemfireRepositoryQuery} using plain {@link String} based OQL queries.
- * <p/>
+ * <p>
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum

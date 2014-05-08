@@ -125,9 +125,10 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	}
 
 	/**
-	 * Specify the name of the default listener method to delegate to,
-	 * for the case where no specific listener method has been determined.
-	 * Out-of-the-box value is {@link #ORIGINAL_DEFAULT_LISTENER_METHOD "handleEvent}.
+	 * Specify the name of the default listener method to delegate to in the case where no specific listener method
+	 * has been determined.  Out-of-the-box value is {@link #ORIGINAL_DEFAULT_LISTENER_METHOD "handleEvent}.
+	 *
+	 * @param defaultListenerMethod the name of the default listener method to invoke.
 	 * @see #getListenerMethodName
 	 */
 	public void setDefaultListenerMethod(String defaultListenerMethod) {
@@ -137,6 +138,8 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
 	/**
 	 * Return the name of the default listener method to delegate to.
+	 *
+	 * @return the name of the default listener method to invoke on CQ events.
 	 */
 	protected String getDefaultListenerMethod() {
 		return this.defaultListenerMethod;

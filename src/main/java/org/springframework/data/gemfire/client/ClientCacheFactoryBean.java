@@ -40,6 +40,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * 
  * @author Costin Leau
  * @author Lyndon Adams
+ * @author John Blum
  */
 public class ClientCacheFactoryBean extends CacheFactoryBean {
 
@@ -189,23 +190,35 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	/**
-	 * Inform cluster client cache is ready to receive events.
+	 * Inform the GemFire cluster that this client cache is ready to receive events.
 	 */
 	private void readyForEvents(){
 		ClientCache clientCache = ClientCacheFactory.getAnyInstance();
-		if( readyForEvents != null && readyForEvents.booleanValue() && !clientCache.isClosed()){
+
+		if (Boolean.TRUE.equals(readyForEvents) && !clientCache.isClosed()) {
 			try {
 				clientCache.readyForEvents();
-			}catch(IllegalStateException ex){
-				// Cannot be called for a non-durable client so exception is throw
+			}
+			catch (IllegalStateException ignore) {
+				// Cannot be called for a non-durable client so exception is thrown.
 			}
 		}
 	}
-	
+
+	/**
+	 * Sets the pool used by this client.
+	 *
+	 * @param pool the GemFire pool used by the Client Cache to obtain connections to the GemFire cluster.
+	 */
+	public void setPool(Pool pool) {
+		Assert.notNull(pool, "pool cannot be null");
+		this.pool = pool;
+	}
+
 	/**
 	 * Sets the pool name used by this client.
-	 * 
-	 * @param poolName
+	 *
+	 * @param poolName set the name of the GemFire Pool used by the GemFire Client Cache.
 	 */
 	public void setPoolName(String poolName) {
 		Assert.hasText(poolName, "pool name is required");
@@ -213,9 +226,11 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	/**
-	 * Set the readyForEvents event flag.
-	 * 
-	 * @param readyForEvents
+	 * Set the readyForEvents flag.
+	 *
+	 * @param readyForEvents sets a boolean flag to notify the server that this durable client is ready
+	 * to receive updates.
+	 * @see #getReadyForEvents()
 	 */
 	public void setReadyForEvents(Boolean readyForEvents){
 		this.readyForEvents = readyForEvents;
@@ -225,16 +240,6 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		return this.readyForEvents;
 	}
 	
-	/**
-	 * Sets the pool used by this client.
-	 * 
-	 * @param pool
-	 */
-	public void setPool(Pool pool) {
-		Assert.notNull(pool, "pool cannot be null");
-		this.pool = pool;
-	}
-
 	@Override
 	protected void applyPdxOptions(Object factory) {
 		if (factory instanceof ClientCacheFactory) {

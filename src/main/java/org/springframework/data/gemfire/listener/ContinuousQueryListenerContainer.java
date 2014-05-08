@@ -127,6 +127,7 @@ public class ContinuousQueryListenerContainer implements BeanNameAware, Initiali
 	 * <p>The default implementation builds a {@link org.springframework.core.task.SimpleAsyncTaskExecutor}
 	 * with the specified bean name (or the class name, if no bean name is specified) as thread name prefix.</p>
 	 *
+	 * @return an instance of the TaskExecutor used to process CQ events asynchronously.
 	 * @see org.springframework.core.task.SimpleAsyncTaskExecutor#SimpleAsyncTaskExecutor(String)
 	 */
 	protected TaskExecutor createDefaultTaskExecutor() {
@@ -303,9 +304,11 @@ public class ContinuousQueryListenerContainer implements BeanNameAware, Initiali
 	}
 
 	/**
-	 * Set an ErrorHandler to be invoked in case of any uncaught exceptions thrown
-	 * while processing a event. By default there will be <b>no</b> ErrorHandler
-	 * so that error-level logging is the only result.
+	 * Set an ErrorHandler to be invoked in case of any uncaught exceptions thrown while processing a CQ event.
+	 * By default there will be <b>no</b> ErrorHandler so that error-level logging is the only result.
+	 *
+	 * @param errorHandler the ErrorHandler invoked when uncaught exceptions are thrown while processing the CQ event.
+	 * @see org.springframework.util.ErrorHandler
 	 */
 	public void setErrorHandler(ErrorHandler errorHandler) {
 		this.errorHandler = errorHandler;
@@ -427,7 +430,9 @@ public class ContinuousQueryListenerContainer implements BeanNameAware, Initiali
 	/**
 	 * Execute the specified listener.
 	 *
-	 * @see #handleListenerException
+	 * @param listener the ContinuousQueryListener to notify of the CQ event.
+	 * @param event the CQ event.
+	 * @see #handleListenerException(Throwable)
 	 */
 	protected void executeListener(ContinuousQueryListener listener, CqEvent event) {
 		try {

@@ -47,8 +47,10 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	private String bindAddress;
 
 	/**
-	 * 
-	 * @param cache
+	 * Constructs an instance of the GatewayReceiverFactoryBean class for configuring an initializing
+	 * a GemFire Gateway Receiver.
+	 *
+	 * @param cache a reference to the GemFire Cache used to setup the Gateway Receiver.
 	 */
 	public GatewayReceiverFactoryBean(Cache cache) {
 		super(cache);

@@ -43,15 +43,21 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 public @interface EnableGemfireRepositories {
 
 	/**
-	 * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation declarations e.g.:
+	 * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation declarations, e.g.
 	 * {@code @EnableGemfireRepositories("org.my.pkg")} instead of
 	 * {@code @EnableGemfireRepositories(basePackages="org.my.pkg")}.
+	 *
+	 * @return a String array specifying the packages to search for GemFire Repositories.
+	 * @see #basePackages()
 	 */
 	String[] value() default {};
 
 	/**
 	 * Base packages to scan for annotated components. {@link #value()} is an alias for (and mutually exclusive with) this
 	 * attribute. Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
+	 *
+	 * @return a String array specifying the packages to search for GemFire Repositories.
+	 * @see #value()
 	 */
 	String[] basePackages() default {};
 
@@ -59,17 +65,23 @@ public @interface EnableGemfireRepositories {
 	 * Type-safe alternative to {@link #basePackages()} for specifying the packages to scan for annotated components. The
 	 * package of each class specified will be scanned. Consider creating a special no-op marker class or interface in
 	 * each package that serves no purpose other than being referenced by this attribute.
+	 *
+	 * @return an array of classes used to determine the packages to scan for GemFire Repositories.
 	 */
 	Class<?>[] basePackageClasses() default {};
 
 	/**
 	 * Specifies which types are eligible for component scanning. Further narrows the set of candidate components from
 	 * everything in {@link #basePackages()} to everything in the base packages that matches the given filter or filters.
+	 *
+	 * @return an array of Filters used to specify Repositories to be included during the component scan.
 	 */
 	Filter[] includeFilters() default {};
 
 	/**
 	 * Specifies which types are not eligible for component scanning.
+	 *
+	 * @return an array of Filters used to specify Repositories to be excluded during the component scan.
 	 */
 	Filter[] excludeFilters() default {};
 
@@ -78,7 +90,8 @@ public @interface EnableGemfireRepositories {
 	 * for a repository named {@code PersonRepository} the corresponding implementation class will be looked up scanning
 	 * for {@code PersonRepositoryImpl}.
 	 * 
-	 * @return
+	 * @return a String indicating the postfix to append to the Repository interface name when looking up the custom
+	 * Repository implementing class.
 	 */
 	String repositoryImplementationPostfix() default "Impl";
 
@@ -86,7 +99,7 @@ public @interface EnableGemfireRepositories {
 	 * Configures the location of where to find the Spring Data named queries properties file. Will default to
 	 * {@code META-INFO/jpa-named-queries.properties}.
 	 * 
-	 * @return
+	 * @return a String indicating the location of the name queries properties file.
 	 */
 	String namedQueriesLocation() default "";
 
@@ -94,7 +107,7 @@ public @interface EnableGemfireRepositories {
 	 * Returns the key of the {@link QueryLookupStrategy} to be used for lookup queries for query methods. Defaults to
 	 * {@link Key#CREATE_IF_NOT_FOUND}.
 	 * 
-	 * @return
+	 * @return the Key used to determine the Query lookup and creation strategy.
 	 */
 	Key queryLookupStrategy() default Key.CREATE_IF_NOT_FOUND;
 
@@ -102,16 +115,17 @@ public @interface EnableGemfireRepositories {
 	 * Returns the {@link FactoryBean} class to be used for each repository instance. Defaults to
 	 * {@link GemfireRepositoryFactoryBean}.
 	 * 
-	 * @return
+	 * @return the {@link FactoryBean} class type used for each Repository interface.
 	 */
 	Class<?> repositoryFactoryBeanClass() default GemfireRepositoryFactoryBean.class;
 
-	// Gemfire specific configuration
 	/**
 	 * Configures the name of the {@link GemfireMappingContext} bean definition to be used to create repositories
 	 * discovered through this annotation. If not configured a default one will be created.
 	 * 
-	 * @return
+	 * @return the bean name of the {@link org.springframework.data.mapping.context.MappingContext} used by the
+	 * Repository to map entities to the underlying data store.
 	 */
 	String mappingContextRef() default "";
+
 }

@@ -64,13 +64,14 @@ public interface GemfireOperations {
 	 * Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
 	 * is being used.
 	 *
+	 * @param <E> type parameter specifying the type of the select results.
+	 * @param query the OQL query statement to execute.
+	 * @param params an array of Object values used as arguments to bind to the OQL query parameters (such as $1).
+	 * @return A {@link SelectResults} instance holding the objects matching the query
+	 * @throws InvalidDataAccessApiUsageException in case the query returns a single result (not a {@link SelectResults}).
 	 * @see QueryService#newQuery(String)
 	 * @see Query#execute(Object[])
 	 * @see SelectResults
-	 * @param query GemFire query
-	 * @param params Values that are bound to parameters (such as $1) in this query.
-	 * @return A {@link SelectResults} instance holding the objects matching the query
-	 * @throws InvalidDataAccessApiUsageException in case the query returns a single result (not a {@link SelectResults}).
 	 */
 	<E> SelectResults<E> find(String query, Object... params) throws InvalidDataAccessApiUsageException;
 
@@ -83,12 +84,13 @@ public interface GemfireOperations {
 	 * Note that the local query service is used if the region is configured as a client without any pool configuration or server connectivity - otherwise the query service on the default pool
 	 * is being used.
 	 *
-	 * @see QueryService#newQuery(String)
-	 * @see Query#execute(Object[])
-	 * @param query GemFire query
-	 * @param params Values that are bound to parameters (such as $1) in this query.
+	 * @param <T> type parameter specifying the returned result type.
+	 * @param query the OQL query statement to execute.
+	 * @param params an array of Object values used as arguments to bind to the OQL query parameters (such as $1).
 	 * @return The (single) object that represents the result of the query.
 	 * @throws InvalidDataAccessApiUsageException in case the query returns multiple objects (through {@link SelectResults}).
+	 * @see QueryService#newQuery(String)
+	 * @see Query#execute(Object[])
 	 */
 	<T> T findUnique(String query, Object... params) throws InvalidDataAccessApiUsageException;
 
@@ -98,16 +100,18 @@ public interface GemfireOperations {
 	 * This method evaluates the passed in where clause and returns results. It is supported on servers as well as clients.
 	 * When executed on a client, this method always runs on the server and returns results.
 	 * When invoking this method from the client, applications can pass in a where clause or a complete query.
-
-	 * @see Region#query(String)
-	 * @param query A query language boolean query predicate.
+	 *
+	 * @param <E> type parameter specifying the type of the select results.
+	 * @param query an OQL Query language boolean query predicate.
 	 * @return A SelectResults containing the values of this Region that match the predicate.
+	 * @see Region#query(String)
 	 */
 	<E> SelectResults<E> query(String query);
 
 	/**
 	 * Execute the action specified by the given action object within a Region.
 	 *
+	 * @param <T> type parameter specifying the returned result type.
 	 * @param action callback object that specifies the Gemfire action to execute.
 	 * @return a result object returned by the action, or <code>null</code>.
 	 * @throws org.springframework.dao.DataAccessException in case of GemFire errors.
@@ -117,6 +121,7 @@ public interface GemfireOperations {
 	/**
 	 * Execute the action specified by the given action object within a Region.
 	 *
+	 * @param <T> type parameter specifying the returned result type.
 	 * @param action callback object that specifies the Gemfire action to execute.
 	 * @param exposeNativeRegion whether to expose the native GemFire region to callback code.
 	 * @return a result object returned by the action, or <code>null</code>.

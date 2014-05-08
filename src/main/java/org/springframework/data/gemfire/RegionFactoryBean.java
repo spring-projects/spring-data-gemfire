@@ -583,16 +583,20 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/**
-	 * Indicates whether the region referred by this factory bean, will be
-	 * closed on shutdown (default true).
+	 * Indicates whether the Region referred to by this factory bean will be closed on shutdown (default true).
+	 *
+	 * @param close a boolean value indicating whether this Region should be closed on member shutdown.
+	 * @see #setDestroy(boolean)
 	 */
 	public void setClose(boolean close) {
 		this.close = close;
 	}
 
 	/**
-	 * Indicates whether the region referred by this factory bean, will be
-	 * destroyed on shutdown (default false).
+	 * Indicates whether the Region referred to by this factory bean will be destroyed on shutdown (default false).
+	 *
+	 * @param destroy a boolean value indicating whether the Region is to be destroy on member shutdown.
+	 * @see #setDestroy(boolean)
 	 */
 	public void setDestroy(boolean destroy) {
 		this.destroy = destroy;

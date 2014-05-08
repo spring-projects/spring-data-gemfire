@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 
 /**
  * Base class for GemFire specific {@link RepositoryQuery} implementations.
- * <p/>
+ * <p>
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum

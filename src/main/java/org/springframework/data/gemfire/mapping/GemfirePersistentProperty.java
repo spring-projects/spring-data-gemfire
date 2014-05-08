@@ -32,10 +32,12 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty<GemfirePersistentProperty> {
 
 	/**
-	 * @param field
-	 * @param propertyDescriptor
-	 * @param owner
-	 * @param simpleTypeHolder
+	 * Constructs an instance of the GemfirePersistentProperty with entity information.
+	 *
+	 * @param field the entity field corresponding to the persistent property.
+	 * @param propertyDescriptor PropertyDescriptor for the entity's persistent property.
+	 * @param owner the entity owning the persistent property.
+	 * @param simpleTypeHolder type holder for primitive types.
 	 */
 	public GemfirePersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			PersistentEntity<?, GemfirePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {

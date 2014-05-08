@@ -26,21 +26,26 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface OnMember {
-	
+
 	/**
-	 * The bean name 
-     */
-	String id() default "";
-	
-	/**
-	 * Optional ResultCollector bean reference
+	 * The bean name of the POJO interface defining the GemFire Function executions.
+	 * 
+	 * @return the bean name (id) of the POJO interface defining the GemFire Function executions.
 	 */
-	String resultCollector() default "";
-	
-	//TODO SpEL expression for DistributedMember?
-	
+	String id() default "";
+
 	/**
-	 *  groups
+	 * The GemFire Group to which the members must belong to target the Function execution.
+	 * 
+	 * @return the name of the GemFire Group to which the members must belong for the targeted the Function execution.
 	 */
 	String groups() default "";
+
+	/**
+	 * Optional ResultCollector bean reference.
+	 * 
+	 * @return an optional bean name of the ResultCollector to process the Function results.
+	 */
+	String resultCollector() default "";
+
 }
