@@ -4,6 +4,7 @@ buildscript {
     }
     dependencies {
         classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.2.4'
+        classpath 'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
     }
 }
 
@@ -24,9 +25,21 @@ apply from: "$rootDir/maven.gradle"
 apply plugin: 'docbook-reference'
 //apply plugin: 'bundlor'
 
+if (project.hasProperty('platformVersion')) {
+   apply plugin: 'spring-io'
+
+    repositories {
+        maven { url "https://repo.spring.io/libs-snapshot" }
+    }
+
+    dependencies {
+      springIoVersions "io.spring.platform:platform-versions:${platformVersion}@properties"
+    }
+}
+
 [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
-test {
+tasks.withType(Test).all {
     forkEvery = 1
     systemProperties['gemfire.disableShutdownHook'] = 'true'
     systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
