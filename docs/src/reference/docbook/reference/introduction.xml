@@ -1,39 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter version="5.0" xml:id="ref-introduction"
-         xmlns="http://docbook.org/ns/docbook"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
-         xmlns:xi="http://www.w3.org/2001/XInclude"
-         xmlns:ns5="http://www.w3.org/2000/svg"
-         xmlns:ns4="http://www.w3.org/1998/Math/MathML"
-         xmlns:ns3="http://www.w3.org/1999/xhtml"
-         xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Document structure</title>
+		 xmlns="http://docbook.org/ns/docbook">
+	<title>Document Structure</title>
 
-  <para>The following chapters explain the core functionality offered by
-  Spring Data GemFire.</para>
+	<para>
+		The following chapters explain the core functionality offered by Spring Data GemFire.
+	</para>
 
-  <para><xref linkend="bootstrap"/> describes the configuration support
-  provided for bootstrapping, initializing, configuring, and accessing GemFire
-  caches, cache servers, regions, and related distributed system
-  components</para>
+	<para>
+		<xref linkend="bootstrap"/> describes the configuration support provided for bootstrapping, configuring,
+		initializing and accessing GemFire Caches, Cache Servers, Regions, and related Distributed System components.
+	</para>
 
-  <para><xref linkend="apis"/> explains the integration between the GemFire
-  APIs and the various data access features available in Spring, such as
-  transaction management and exception translation.</para>
+	<para>
+		<xref linkend="apis"/> explains the integration between the GemFire APIs and the various data access features
+		available in Spring, such as transaction management and exception translation.
+	</para>
 
-  <para><xref linkend="serialization"/> describes the enhancements for GemFire
-  (de)serialization and management of associated objects.</para>
+	<para>
+		<xref linkend="serialization"/> describes the enhancements for GemFire (de)serialization and management
+		of associated objects.
+	</para>
 
-  <para><xref linkend="mapping"/> describes persistence mapping for POJOs
-  stored in GemFire using Spring Data</para>
+	<para>
+		<xref linkend="mapping"/> describes persistence mapping for POJOs stored in GemFire using Spring Data.
+	</para>
 
-  <para><xref linkend="gemfire-repositories"/> describes how to create and use
-  GemFire Repositories using Spring Data</para>
+	<para>
+		<xref linkend="gemfire-repositories"/> describes how to create and use GemFire Repositories using Spring Data.
+	</para>
 
-  <para><xref linkend="function-annotations"/> describes how to create and use
-  GemFire Functions using Spring Data</para>
+	<para>
+		<xref linkend="function-annotations"/> describes how to create and use GemFire Functions using annotations.
+	</para>
 
-  <para><xref linkend="samples"/> describes the samples provided with the
-  distribution to illustrate the various features available in Spring Data
-  GemFire.</para>
+	<para>
+		<xref linkend="samples"/> describes the samples provided with the distribution to illustrate
+		the various features available in Spring Data GemFire.
+	</para>
+
 </chapter>

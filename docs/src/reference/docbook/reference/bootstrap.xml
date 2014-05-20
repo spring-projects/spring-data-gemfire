@@ -2,25 +2,22 @@
 <chapter version="5.0" xml:id="bootstrap"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
-         xmlns:xi="http://www.w3.org/2001/XInclude"
-         xmlns:ns5="http://www.w3.org/2000/svg"
-         xmlns:ns4="http://www.w3.org/1998/Math/MathML"
-         xmlns:ns3="http://www.w3.org/1999/xhtml"
-         xmlns:ns="http://docbook.org/ns/docbook">
+         xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>Bootstrapping GemFire through the Spring Container</title>
 
-  <para>Spring Data GemFire provides full configuration and initialization of
-  the GemFire data grid through Spring's IoC container and provides several
-  classes that simplify the configuration of GemFire components including
-  caches, regions, WAN gateways, persistence backup, and other distributed
-  system components to support a variety of scenarios with minimal
-  effort.</para>
+  <para>
+	  Spring Data GemFire provides full configuration and initialization of the GemFire data grid through
+	  Spring's IoC container and provides several classes that simplify the configuration of GemFire components
+	  including Caches, Regions, WAN Gateways, Persistence Backup, and other Distributed System components
+	  to support a variety of scenarios with minimal effort.
+  </para>
 
   <note>
-    <para>This section assumes basic familiarity with GemFire. For more
-    information see the <link
-    xlink:href="http://www.vmware.com/products/application-platform/vfabric-gemfire">product</link>
-    documentation.</para>
+	  <para>
+		  This section assumes basic familiarity with GemFire. For more information see the
+		  <link xlink:href="http://www.vmware.com/products/application-platform/vfabric-gemfire">product</link>
+		  documentation.
+	  </para>
   </note>
 
   <section id="bootstrap:region:spring:config">

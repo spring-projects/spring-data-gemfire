@@ -95,259 +95,226 @@
     semantics or setup infrastructure.</para>
   </section>
 
-  <section id="bootstrap:region:overview">
-    <title>Configuring Regions</title>
-
-    <para>Spring Data GemFire provides comprehensive support for configuring
-    any type of GemFire Region via the following elements: <itemizedlist>
-        <listitem>
-          <para>Local Region <literal>&lt;local-region&gt;</literal></para>
-        </listitem>
-
-        <listitem>
-          <para>Replicated Region
-          <literal>&lt;replicated-region&gt;</literal></para>
-        </listitem>
-
-        <listitem>
-          <para>Partitioned Region
-          <literal>&lt;partitioned-region&gt;</literal></para>
-        </listitem>
-
-        <listitem>
-          <para>Client Region <literal>&lt;client-region&gt;</literal></para>
-        </listitem>
-      </itemizedlist>For a comprehensive description of <ulink
-    url="http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/region_options/region_types.html">Region
-    types</ulink> please consult the GemFire product documentation.</para>
-
-    <section id="bootstrap:region:common:attributes">
-      <title>Common Region Attributes</title>
-
-      <para>The following table(s) list attributes available for various
-      region types: <table id="bootstrap:region:common:attributes:table">
-          <title>Common Region Attributes</title>
-
-          <tgroup cols="3">
-            <colspec colwidth="1*"/>
-
-            <colspec colwidth="2*"/>
-
-            <colspec colwidth="2*"/>
-
-            <thead>
-              <row>
-                <entry>Name</entry>
-
-                <entry spanname="values">Values</entry>
-
-                <entry spanname="description">Description</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>cache-ref</entry>
-
-                <entry spanname="values">
-                  <emphasis>GemFire cache bean name</emphasis>
-                </entry>
-
-                <entry spanname="description">The name of the bean defining
-                the GemFire cache (by default 'gemfireCache').</entry>
-              </row>
-
-              <row>
-                <entry>close</entry>
-
-                <entry spanname="values">
-                  <emphasis>boolean, default:false (Note: The default was true
-                  prior to 1.3.0)</emphasis>
-                </entry>
-
-                <entry spanname="description">Indicates whether the region
-                should be closed at shutdown</entry>
-              </row>
-
-              <row>
-                <entry>data-policy</entry>
-
-                <entry spanname="values">
-                  <emphasis>See GemFire's <ulink
-                  url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DataPolicy.html">Data
-                  Policy</ulink></emphasis>
-                </entry>
-
-                <entry spanname="description">The region's data policy. Note
-                not all data policies are supported for every region
-                type</entry>
-              </row>
-
-              <row>
-                <entry>destroy</entry>
-
-                <entry spanname="values">
-                  <emphasis>boolean, default:false</emphasis>
-                </entry>
-
-                <entry spanname="description">Indicates whether the region
-                should be destroyed at shutdown</entry>
-              </row>
-
-              <row>
-                <entry>disk-store-ref</entry>
-
-                <entry spanname="values">
-                  <emphasis>The name of a configured disk store</emphasis>
-                </entry>
-
-                <entry spanname="description">A reference to a bean created
-                via the <literal>disk-store</literal> element. Note: This will
-                automatically enable persistence. If persistent is explicitly
-                set to false, an exception will be thrown.</entry>
-              </row>
-
-              <row>
-                <entry>disk-synchronous</entry>
-
-                <entry spanname="values">
-                  <emphasis>boolean, default:false</emphasis>
-                </entry>
-
-                <entry spanname="description">Indicates whether disk store
-                writes are synchronous. Note: This will automatically enable
-                persistence. If persistent is explicitly set to false, an
-                exception will be thrown.</entry>
-              </row>
-
-              <row>
-                <entry>enable-gateway</entry>
-
-                <entry spanname="values">
-                  <emphasis>boolean, default:false</emphasis>
-                </entry>
-
-                <entry spanname="description">Indicates whether the region
-                will synchronize entries over a WAN gateway.</entry>
-              </row>
-
-              <row>
-                <entry>hub-id</entry>
-
-                <entry spanname="values">
-                  <emphasis>The name of the Gateway Hub</emphasis>
-                </entry>
-
-                <entry spanname="description">This will automatically set
-                enable-gateway to true. If enable-gateway is explicitly set to
-                false, an exception will be thrown.</entry>
-              </row>
-
-              <row>
-                <entry>id</entry>
-
-                <entry spanname="values">
-                  <emphasis>any valid bean name</emphasis>
-                </entry>
-
-                <entry spanname="description">Will also be the region name by
-                default</entry>
-              </row>
-
-              <row>
-                <entry>ignore-jta</entry>
-
-                <entry spanname="values">
-                  <emphasis>boolean, default:false</emphasis>
-                </entry>
-
-                <entry spanname="description">Indicates whether the region
-                participates in JTA transactions</entry>
-              </row>
-
-              <row>
-                <entry>index-update-type</entry>
-
-                <entry spanname="values">
-                  <emphasis>synchronous or asynchronous,
-                  default:asynchronous</emphasis>
-                </entry>
-
-                <entry spanname="description">Indicates whether indices will
-                be updated synchronously or asynchronously on entry
-                creation</entry>
-              </row>
-
-              <row>
-                <entry>initial-capacity</entry>
-
-                <entry spanname="values">
-                  <emphasis>integer, default:16</emphasis>
-                </entry>
-
-                <entry spanname="description">The initial memory allocation
-                for number of entries</entry>
-              </row>
-
-              <row>
-                <entry>key-constraint</entry>
-
-                <entry spanname="values">
-                  <emphasis>any valid java class name</emphasis>
-                </entry>
-
-                <entry spanname="description">The expected key type</entry>
-              </row>
-
-              <row>
-                <entry>name</entry>
-
-                <entry spanname="values">
-                  <emphasis>any valid region name</emphasis>
-                </entry>
-
-                <entry spanname="description">The name of the region
-                definition. If no specified, it will assume the value of the
-                id attribute (the bean name).</entry>
-              </row>
-
-              <row>
-                <entry>persistent</entry>
-
-                <entry spanname="values">
-                  <emphasis>boolean, default:false</emphasis>
-                </entry>
-
-                <entry spanname="description">Indicates whether the region
-                persists entries to a disk store</entry>
-              </row>
-
-              <row>
-                <entry>statistics</entry>
-
-                <entry spanname="values">
-                  <emphasis>boolean, default:false</emphasis>
-                </entry>
-
-                <entry spanname="description">Indicates whether the region
-                reports statistics</entry>
-              </row>
-
-              <row>
-                <entry>value-constraint</entry>
-
-                <entry spanname="values">
-                  <emphasis>any valid java class name</emphasis>
-                </entry>
-
-                <entry spanname="description">The expected value type</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table></para>
-    </section>
-
-    <section id="bootstrap:region:common:cache-listener">
+	<section id="bootstrap:region:overview">
+		<title>Configuring Regions</title>
+
+		<para>
+			Spring Data GemFire provides comprehensive support for configuring any type of GemFire Region
+			via the following elements:
+
+			<itemizedlist>
+				<listitem>
+					<para>Local Region <literal>&lt;local-region&gt;</literal></para>
+				</listitem>
+				<listitem>
+					<para>Replicated Region <literal>&lt;replicated-region&gt;</literal></para>
+				</listitem>
+				<listitem>
+					<para>Partitioned Region <literal>&lt;partitioned-region&gt;</literal></para>
+				</listitem>
+				<listitem>
+					<para>Client Region <literal>&lt;client-region&gt;</literal></para>
+				</listitem>
+			</itemizedlist>
+
+			For a comprehensive description of
+			<ulink url="http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/region_options/region_types.html">
+				Region types
+			</ulink>
+			please consult the GemFire product documentation.
+		</para>
+
+		<section id="bootstrap:region:common:attributes">
+		  <title>Common Region Attributes</title>
+
+		  <para>
+			  The following table(s) list attributes available for various region types:
+
+			  <table id="bootstrap:region:common:attributes:table">
+				  <title>Common Region Attributes</title>
+				  <tgroup cols="3">
+					  <colspec colwidth="1*"/>
+					  <colspec colwidth="2*"/>
+					  <colspec colwidth="2*"/>
+					  <thead>
+						  <row>
+							  <entry>Name</entry>
+							  <entry spanname="values">Values</entry>
+							  <entry spanname="description">Description</entry>
+						  </row>
+					  </thead>
+					  <tbody>
+						  <row>
+							  <entry>cache-ref</entry>
+							  <entry spanname="values">
+								  <emphasis>GemFire Cache bean name</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  The name of the bean defining the GemFire Cache (by default 'gemfireCache').
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>close</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:false (Note: The default was true prior to 1.3.0)</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Indicates whether the Region should be closed at shutdown.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>concurrency-checks-enables</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:true</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Determines whether members perform checks to provide consistent handling
+								  for concurrent or out-of-order updates to distributed Regions.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>data-policy</entry>
+							  <entry spanname="values">
+								  <emphasis>See GemFire's
+									  <ulink url="http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DataPolicy.html">Data Policy</ulink>
+								  </emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  The Region's Data Policy. Note, not all Data Policies are supported for every Region type.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>destroy</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:false</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Indicates whether the Region should be destroyed at shutdown.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>disk-store-ref</entry>
+							  <entry spanname="values">
+								  <emphasis>The name of a configured Disk Store.</emphasis>
+							  </entry>
+							  <entry spanname="description">A reference to a bean created via the
+								  <literal>disk-store</literal> element.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>disk-synchronous</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:false</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Indicates whether Disk Store writes are synchronous.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>enable-gateway</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:false</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Indicates whether the Region will synchronize entries over a WAN Gateway.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>hub-id</entry>
+							  <entry spanname="values">
+								  <emphasis>The name of the Gateway Hub.</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  This will automatically set enable-gateway to true. If enable-gateway is explicitly
+								  set to false, an exception will be thrown.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>id</entry>
+							  <entry spanname="values">
+								  <emphasis>Any valid bean name.</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Will also be the Region name by default.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>ignore-jta</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:false</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Indicates whether the Region participates in JTA transactions.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>index-update-type</entry>
+							  <entry spanname="values">
+								  <emphasis>synchronous or asynchronous, default:asynchronous</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Indicates whether indices will be updated synchronously or asynchronously
+								  on entry creation.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>initial-capacity</entry>
+							  <entry spanname="values">
+								  <emphasis>integer, default:16</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  The initial memory allocation for number of Region entries.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>key-constraint</entry>
+							  <entry spanname="values">
+								  <emphasis>Any valid, fully-qualified Java class name.</emphasis>
+							  </entry>
+							  <entry spanname="description">The expected key type.</entry>
+						  </row>
+						  <row>
+							  <entry>name</entry>
+							  <entry spanname="values">
+								  <emphasis>Any valid Region name.</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  The name of the Region definition. If not specified, it will assume the value of the
+								  id attribute (the bean name).
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>persistent</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:false</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Indicates whether the Region persists entries to a Disk Store (disk).
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>statistics</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:false</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Indicates whether the Region reports statistics.
+							  </entry>
+						  </row>
+						  <row>
+							  <entry>value-constraint</entry>
+							  <entry spanname="values">
+								  <emphasis>Any valid, fully-qualified Java class name.</emphasis>
+							  </entry>
+							  <entry spanname="description">The expected value type.</entry>
+						  </row>
+					  </tbody>
+				  </tgroup>
+			  </table>
+		  </para>
+	  </section>
+
+	  <section id="bootstrap:region:common:cache-listener">
       <title>Cache Listeners</title>
 
       <para>Cache Listeners are registered with a region to handle region

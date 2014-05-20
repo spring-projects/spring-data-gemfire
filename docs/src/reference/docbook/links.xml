@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xml:id="sgf-links" xmlns="http://docbook.org/ns/docbook"
-         xmlns:ns52="http://www.w3.org/1999/xhtml"
-         xmlns:ns5="http://www.w3.org/1999/xlink"
-         xmlns:ns4="http://www.w3.org/2000/svg"
-         xmlns:ns3="http://www.w3.org/1998/Math/MathML"
-         xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Useful Links</title>
+<chapter xml:id="sgf-links" xmlns="http://docbook.org/ns/docbook">
+	<title>Useful Links</title>
 
-  <itemizedlist>
-    <listitem>
-      <ulink url="http://www.springsource.org/spring-gemfire">Spring Data GemFire Home Page</ulink>
-    </listitem>
-     <listitem>
-      <ulink url="http://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html">vFabric GemFire Home Page</ulink>
-    </listitem>
-     <listitem>
-      <ulink url="https://www.vmware.com/support/pubs/vfabric-gemfire.html">vFabric GemFire Documentation</ulink>
-    </listitem>
-    <listitem>
-      <ulink url="http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire">GemFire Community Home Page</ulink>
-    </listitem>
-    <listitem>
-      <ulink url="http://forum.springsource.org/forumdisplay.php?77-GemFire">Spring Data GemFire Forum</ulink>
-    </listitem>
-  </itemizedlist>
+	<itemizedlist>
+		<listitem>
+			<ulink url="http://projects.spring.io/spring-data-gemfire/">Spring Data GemFire Home Page</ulink>
+		</listitem>
+		<listitem>
+			<ulink url="http://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html">Pivotal GemFire Home Page</ulink>
+		</listitem>
+		<listitem>
+			<ulink url="https://www.vmware.com/support/pubs/vfabric-gemfire.html">Pivotal GemFire Documentation</ulink>
+		</listitem>
+		<listitem>
+			<ulink url="http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire">Pivotal GemFire Community Home Page</ulink>
+		</listitem>
+		<listitem>
+			<ulink url="http://forum.spring.io/forum/spring-projects/data/gemfire">Spring Data GemFire Forum</ulink>
+		</listitem>
+	</itemizedlist>
+
 </chapter>

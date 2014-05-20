@@ -1,130 +1,151 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="apis">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
+		 xmlns:xi="http://www.w3.org/2001/XInclude"
+		 xml:id="apis">
   <title>Working with the GemFire APIs</title>
 
-  <para>Once the GemFire cache and regions have been configured they can
-  injected and used inside application objects. This chapter describes the
-  integration with Spring's transaction management functionality and
-  <classname>DaoException</classname> hierarchy. It also covers support for
-  dependency injection of GemFire managed objects.</para>
+  <para>
+	  Once the GemFire Cache and Regions have been configured they can be injected and used inside application objects.
+	  This chapter describes the integration with Spring's Transaction Management functionality
+	  and <classname>DaoException</classname> hierarchy. It also covers support for dependency injection
+	  of GemFire managed objects.
+  </para>
 
   <section id="apis:exception-translation">
-    <title>Exception translation</title>
+	  <title>Exception Translation</title>
 
-    <para>Using a new data access technology requires not just accommodating
-    to a new API but also handling exceptions specific to that technology. To
-    accommodate this case, Spring Framework provides a technology agnostic,
-    consistent exception <ulink
-    url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/dao.html#dao-exceptions">hierarchy</ulink>
-    that abstracts one from proprietary (and usually checked) exceptions to a
-    set of focused runtime exceptions. As mentioned in the Spring Framework
-    documentation, <ulink
-    url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/orm.html#orm-exception-translation">exception
-    translation</ulink> can be applied transparently to your data access
-    objects through the use of the <literal>@Repository</literal> annotation
-    and AOP by defining a <classname>PersistenceExceptionTranslationPostProcessor</classname> bean.
-    The same exception translation functionality is enabled when using GemFire
-    as long as at least a <classname>CacheFactoryBean</classname> is declared, e.g., using a <literal>&lt;gfe:cache/&gt;</literal> declaration)
-    as it acts as an exception translator which is automatically detected by the Spring infrastructure
-    and used accordingly.</para>
+	  <para>
+		  Using a new data access technology requires not only accommodating a new API but also handling exceptions
+		  specific to that technology. To accommodate this case, Spring Framework provides a technology agnostic,
+		  consistent <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/dao.html#dao-exceptions">exception hierarchy</ulink>
+		  that abstracts the application from proprietary (and usually checked) exceptions to a set of focused
+		  runtime exceptions. As mentioned in the Spring Framework documentation,
+		  <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/orm.html#orm-exception-translation">exception translation</ulink>
+		  can be applied transparently to your data access objects through the use of the <literal>@Repository</literal>
+		  annotation and AOP by defining a <classname>PersistenceExceptionTranslationPostProcessor</classname> bean.
+		  The same exception translation functionality is enabled when using GemFire as long as at least a
+		  <classname>CacheFactoryBean</classname> is declared, e.g. using a <literal>&lt;gfe:cache/&gt;</literal>
+		  declaration, as it acts as an exception translator which is automatically detected by the
+		  Spring infrastructure and used accordingly.
+	  </para>
   </section>
  
   <section id="apis:template">
     <title>GemfireTemplate</title>
 
-    <para>As with many other high-level abstractions provided by the Spring projects, Spring Data GemFire provides a
-    <emphasis>template</emphasis> that simplifies GemFire data access. The class provides several <emphasis>one-line</emphasis>
-    methods, for common region operations but also the ability to
-    <emphasis>execute</emphasis> code against the native GemFire API without
-    having to deal with GemFire checked exceptions for example through the <interfacename>GemfireCallback</interfacename>.</para>
+	  <para>
+		  As with many other high-level abstractions provided by the Spring projects, Spring Data GemFire provides a
+		  <emphasis>template</emphasis> that simplifies GemFire data access. The class provides several
+		  <emphasis>one-line</emphasis> methods, for common region operations but also the ability to
+		  <emphasis>execute</emphasis> code against the native GemFire API without having to deal with GemFire
+		  checked exceptions for example through the <interfacename>GemfireCallback</interfacename>.
+	  </para>
 
-    <para>The template class requires a GemFire
-    <interfacename>Region</interfacename> instance and once configured is
-    thread-safe and should be reused across multiple classes:</para>
+	  <para>
+		  The template class requires a GemFire <interfacename>Region</interfacename> instance and once configured is
+		  thread-safe and should be reused across multiple classes:
+	  </para>
 
-    <programlisting language="xml">&lt;bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/&gt;</programlisting>
+	  <programlisting language="xml">&lt;bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/&gt;</programlisting>
 
-    <para>Once the template is configured, one can use it alongside
-    <interfacename>GemfireCallback</interfacename> to work directly with the
-    GemFire <interfacename>Region</interfacename>, without having to deal with
-    checked exceptions, threading or resource management concerns:</para>
+	  <para>
+		  Once the template is configured, one can use it alongside <interfacename>GemfireCallback</interfacename>
+		  to work directly with the GemFire <interfacename>Region</interfacename>, without having to deal with
+		  checked exceptions, threading or resource management concerns:
+	  </para>
 
-    <programlisting language="java">template.execute(new GemfireCallback&lt;Iterable&lt;String&gt;&gt;() {
-  public Iterable&lt;String&gt; doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
-    // working against a Region of String
-    Region&lt;String, String&gt; region = reg;
+	  <programlisting language="java">template.execute(new GemfireCallback&lt;Iterable&lt;String&gt;&gt;() {
+	public Iterable&lt;String&gt; doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
+	  	// working against a Region of String
+		Region&lt;String, String&gt; region = reg;
 
-    region.put("1", "one");
-    region.put("3", "three");
+		region.put("1", "one");
+		region.put("3", "three");
 
-    return region.query("length &lt; 5");
-  }
+		return region.query("length &lt; 5");
+	}
 });</programlisting>
 
-   <para>For accessing the full power of the GemFire query language, one can use the <methodname>find</methodname> and <methodname>findUnique</methodname> which, as opposed to the 
-   <methodname>query</methodname> method, can execute queries across multiple regions, execute projections, and the like. The <methodname>find</methodname> method should be
-   used when the query selects multiple items (through <literal>SelectResults</literal>) and the latter, <methodname>findUnique</methodname>, as the name suggests, when only one object is returned.
-   </para>
+	  <para>
+		  For accessing the full power of the GemFire query language, one can use the <methodname>find</methodname>
+		  and <methodname>findUnique</methodname> which, as opposed to the <methodname>query</methodname> method,
+		  can execute queries across multiple regions, execute projections, and the like. The <methodname>find</methodname>
+		  method should be used when the query selects multiple items (through<literal>SelectResults</literal>)
+		  and the latter, <methodname>findUnique</methodname>, as the name suggests, when only one object is returned.
+	  </para>
   </section>
 
   <section id="apis:spring-cache-abstraction">
-  	<title>Support for Spring Cache Abstraction</title>
-  	
-  	<para>Since 1.1, Spring GemFire provides an implementation for Spring 3.1 
-  	<ulink url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#cache">cache abstraction</ulink>.
-  	To use GemFire as a backing implementation, simply add <classname>GemfireCacheManager</classname> to your configuration:</para>
-  	
-  	<programlisting language="xml"><![CDATA[<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  <title>Support for Spring Cache Abstraction</title>
+
+	  <para>
+		  Since 1.1, Spring Data GemFire provides an implementation of the Spring 3.1
+		  <ulink url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#cache">cache abstraction</ulink>.
+		  To use GemFire as a backing implementation, simply add <classname>GemfireCacheManager</classname> to your
+		  configuration:
+	  </para>
+
+	  <programlisting language="xml"><![CDATA[<beans xmlns="http://www.springframework.org/schema/beans"
   xmlns:cache="http://www.springframework.org/schema/cache"
   xmlns:gfe="http://www.springframework.org/schema/gemfire"
   xmlns:p="http://www.springframework.org/schema/p"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  	  http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-      http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+  	                  http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+                      http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
   <!-- turn on declarative caching -->
-  <cache:annotation-driven />
-  
-  <gfe:cache id="gemfire-cache" />
+  <cache:annotation-driven/>
+
+  <gfe:cache id="gemfire-cache"/>
+
   <!-- declare GemFire Cache Manager -->
   <bean id="cacheManager" class="org.springframework.data.gemfire.support.GemfireCacheManager" p:cache-ref="gemfire-cache">
-</beans>]]>
-  	
-  	</programlisting>
+</beans>]]></programlisting>
   </section>
   
 
   <section id="apis:tx-mgmt">
-    <title>Transaction Management</title>
+	  <title>Transaction Management</title>
 
-    <para>One of the most popular features of Spring Framework is <ulink
-    url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#transaction">transaction</ulink>
-    management. If you are not familiar with it, we strongly recommend <ulink
-    url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#transaction-motivation">looking</ulink>
-    into it as it offers a consistent programming model that works transparently across multiple APIs that can be configured either programmatically or declaratively (the most popular choice).</para>
+	  <para>
+		  One of the most popular features of Spring Framework is
+		  <ulink url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#transaction">transaction management</ulink>.
+		  If you are not familiar with it, we strongly recommend
+		  <ulink url="http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#transaction-motivation">reading</ulink>
+		  about it as it offers a consistent programming model that works transparently across multiple APIs and can be
+		  configured either programmatically or declaratively (the most popular choice).
+	  </para>
 
-    <para>For GemFire, Spring Data GemFire provides a dedicated, per-cache, transaction manager that once declared, allows region operations to be executed atomically through Spring:</para>
+	  <para>
+		  For GemFire, Spring Data GemFire provides a dedicated, per-cache, transaction manager that, once declared,
+		  allows Region operations to be executed atomically through Spring:
+	  </para>
 
-	<programlisting language="xml">&lt;gfe:transaction-manager id="tx-manager" cache-ref="cache"/&gt;</programlisting>
-	<note>The example above can be simplified even more by eliminating the <literal>cache-ref</literal> attribute if the GemFire cache is defined under the default 
-	name <literal>gemfireCache</literal>. As with the other Spring Data GemFire namespace elements, if the cache name is not configured, the aforementioned naming convention will used.
-	Additionally, the transaction manager name, if not specified is <literal>gemfireTransactionManager</literal>.</note>
+	  <programlisting language="xml">&lt;gfe:transaction-manager id="tx-manager" cache-ref="cache"/&gt;</programlisting>
 
-    <para>Note that currently GemFire supports optimistic transactions with
-    <emphasis>read committed</emphasis> isolation. Furthermore, to guarantee
-    this isolation, developers should avoid making
-    <emphasis>in-place</emphasis> changes, that is manually modifying the
-    values present in the cache. To prevent this from happening, the
-    transaction manager configured the cache to use <emphasis>copy on
-    read</emphasis> semantics, meaning a clone of the actual value is created,
-    each time a read is performed. This behavior can be disabled if needed
-    through the <literal>copyOnRead</literal> property. For more information
-    on the semantics of the underlying GemFire transaction manager, see the
-    GemFire <ulink
-    url="https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.</para>
+	  <note>
+		  The example above can be simplified even more by eliminating the <literal>cache-ref</literal> attribute
+		  if the GemFire Cache is defined under the default name<literal>gemfireCache</literal>. As with the other
+		  Spring Data GemFire namespace elements, if the Cache bean name is not configured, the aforementioned naming
+		  convention will used. Additionally, the transaction manager name is<literal>gemfireTransactionManager</literal>
+		  if not explicitly specified.
+	  </note>
+
+	  <para>
+		  Currently, GemFire supports optimistic transactions with <emphasis>read committed</emphasis> isolation.
+		  Furthermore, to guarantee this isolation, developers should avoid making <emphasis>in-place</emphasis> changes
+		  that manually modify values present in the Cache. To prevent this from happening, the transaction manager
+		  configures the Cache to use <emphasis>copy on read</emphasis> semantics, meaning a clone of the actual value
+		  is created, each time a read is performed. This behavior can be disabled if needed through the
+		  <literal>copyOnRead</literal> property. For more information on the semantics of the underlying GemFire
+		  transaction manager, see the GemFire
+		  <ulink url="https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheTransactionManager.html">documentation</ulink>.
+	  </para>
   </section>
 
   <xi:include href="cq-container.xml"/>
-  
+
   <section id="apis:declarable">
     <title>Wiring <interfacename>Declarable</interfacename> components</title>
 
@@ -330,4 +351,5 @@
       <classname>DBLoader</classname> code.</para>
     </section>
   </section>
+
 </chapter>

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <book xmlns="http://docbook.org/ns/docbook" version="5.0"
     xml:id="spring-gemfire-reference"
-    xmlns:xi="http://www.w3.org/2001/XInclude"
-    xmlns:xlink="http://www.w3.org/1999/xlink">
+    xmlns:xi="http://www.w3.org/2001/XInclude">
   <bookinfo>
     <title>Spring Data GemFire Reference Guide</title>
     <releaseinfo>${version}</releaseinfo>
@@ -29,11 +28,6 @@
         <firstname>Oliver</firstname>
         <surname>Gierke</surname>
         <affiliation>SpringSource, a division of Pivotal</affiliation>
-      </author>
-      <author>
-        <firstname>Lyndon</firstname>
-        <surname>Adams</surname>
-        <affiliation>Pivotal</affiliation>
       </author>
     </authorgroup>
 
@@ -74,6 +68,7 @@
       <xi:include href="reference/mapping.xml"/>
       <xi:include href="reference/repositories.xml"/>
       <xi:include href="reference/function-annotations.xml"/>
+      <xi:include href="reference/gemfire-bootstrap.xml"/>
       <xi:include href="reference/samples.xml"/>
   </part>
 
