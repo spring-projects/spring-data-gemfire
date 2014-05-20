@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="ref-introduction"
-		 xmlns="http://docbook.org/ns/docbook">
+<chapter id="ref-introduction" version="5.0" xmlns="http://docbook.org/ns/docbook">
 	<title>Document Structure</title>
 
 	<para>
@@ -32,6 +31,11 @@
 
 	<para>
 		<xref linkend="function-annotations"/> describes how to create and use GemFire Functions using annotations.
+	</para>
+
+	<para>
+		<xref linkend="gemfire-bootstrap"/> describes how to bootstrap a Spring ApplicationContext running
+		in a GemFire Server using Gfsh.
 	</para>
 
 	<para>

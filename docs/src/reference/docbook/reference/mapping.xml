@@ -1,24 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="mapping" xmlns="http://docbook.org/ns/docbook"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
-         xmlns:xi="http://www.w3.org/2001/XInclude"
-         xmlns:ns5="http://www.w3.org/1999/xhtml"
-         xmlns:ns4="http://www.w3.org/2000/svg"
-         xmlns:ns3="http://www.w3.org/1998/Math/MathML"
-         xmlns:ns="http://docbook.org/ns/docbook">
+<chapter id="mapping" version="5.0" xmlns="http://docbook.org/ns/docbook">
   <title>POJO mapping</title>
 
-  <section xml:id="mapping.entities">
-    <title>Entity mapping</title>
+	<section xml:id="mapping.entities">
+		<title>Entity Mapping</title>
 
-    <para>Spring Data GemFire provides support to map entities to be stored in
-    a GemFire grid. The mapping metadata is define by using annotations at the
-    domain classes just like this: </para>
+		<para>
+			Spring Data GemFire provides support to map entities that will be stored in a GemFire data grid.
+			The mapping metadata is defined using annotations at the domain classes just like this:
+		</para>
 
-    <example>
-      <title>Mapping a domain class to GemFire</title>
+		<example>
+			<title>Mapping a domain class to a GemFire Region</title>
 
-      <programlisting language="java">@Region("myRegion")
+			<programlisting language="java">@Region("People")
 public class Person {
 
   @Id Long id;
@@ -31,24 +26,69 @@ public class Person {
   }
 
   …
-}  </programlisting>
+}
+			</programlisting>
 
-    </example>
+		</example>
 
-    <para>The first thing you see here is the
-    <interfacename>@Region</interfacename> annotation that can be used to
-    customize the region instances of the <classname>Person</classname> class
-    are stored in. The <interfacename>@Id</interfacename> annotation can be
-    used to annotate the property that shall be used as cache key. The
-    <interfacename>@PersistenceConstructor</interfacename> annotation actually
-    helps disambiguating multiple potentially available constructors taking
-    parameters and explicitly marking the one annotated as the one to be used
-    to create entities. With none or only a single constructor you can omit
-    the annotation.</para>
-  </section>
+		<para>
+			The first thing you see here is the <interfacename>@Region</interfacename> annotation that can be used to
+			customize the Region in which the <classname>Person</classname> class is stored in. The
+			<interfacename>@Id</interfacename> annotation can be used to annotate the property that shall be used as
+			the Cache key. The <interfacename>@PersistenceConstructor</interfacename> annotation actually helps
+			disambiguating multiple potentially available constructors taking parameters and explicitly marking the one
+			annotated as the one to be used to create entities. With none or only a single constructor you can omit the
+			annotation.
+		</para>
 
-  <section xml:id="mapping.pdx-serializer">
-    <title>Mapping PDX serializer</title>
+		<para>
+			In addition to storing entities in top-level Regions, entities can be stored in GemFire Sub-Regions, as so:
+		</para>
+
+		<programlisting language="java">@Region("/Users/Admin")
+public class Admin extends User {
+  …
+}
+
+@Region("/Users/Guest")
+public class Guest extends User {
+  ...
+}
+		</programlisting>
+
+		<para>
+			Be sure to use the full-path of the GemFire Region, as defined in Spring Data GemFire XML namespace
+			configuration meta-data, as specified in the <literal>id</literal> or <literal>name</literal> attributes
+			of the <literal>&lt;*-region&gt;</literal> bean definition.
+		</para>
+
+		<para>
+			As alternative to specifying the Region in which the entity will be stored using the
+			<interfacename>@Region</interfacename> annotation on the entity class, you can also specify the
+			<interfacename>@Region</interfacename> annotation on the entity's <interfacename>Repository</interfacename>
+			abstraction. See <xref linkend="gemfire-repositories"/> for more details.
+		</para>
+
+		<para>
+			However, let's say you want to store a Person in multiple GemFire Regions (e.g. <literal>People</literal>
+			and <literal>Customers</literal>), then you can define your corresponding <interfacename>Repository</interfacename>
+			interface abstractions like so:
+		</para>
+
+		<programlisting language="java"><![CDATA[@Region("People")
+public interface PersonRepository extends GemfireRepository<Person, String> {
+…
+}
+
+@Region("Customers")
+public interface CustomerRepository extends GemfireRepository<Person, String> {
+...
+}
+		]]></programlisting>
+	</section>
+
+	<section xml:id="mapping.pdx-serializer">
+    <title>Mapping PDX Serializer</title>
 
     <para>Spring Data GemFire provides a custom
     <interfacename>PDXSerializer</interfacename> implementation that uses the
@@ -82,4 +122,5 @@ public class Person {
     <code>lastname</code> will be the Spring bean with name
     <code>bean</code>.</para>
   </section>
+
 </chapter>

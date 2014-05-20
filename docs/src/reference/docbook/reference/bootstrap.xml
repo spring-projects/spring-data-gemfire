@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="bootstrap"
+<chapter id="bootstrap" version="5.0"
          xmlns="http://docbook.org/ns/docbook"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
-         xmlns:xi="http://www.w3.org/2001/XInclude">
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Bootstrapping GemFire through the Spring Container</title>
 
   <para>
@@ -21,8 +21,7 @@
   </note>
 
   <section id="bootstrap:region:spring:config">
-    <title>Advantages of using Spring over GemFire
-    <literal>cache.xml</literal></title>
+    <title>Advantages of using Spring over GemFire <literal>cache.xml</literal></title>
 
     <para xmlns="">As of release 1.2.0, Spring Data GemFire's XML namespace
     supports full configuration of the data grid. In fact, the Spring Data

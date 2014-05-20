@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<section id="bootstrap:region" version="5.0"
-         xmlns="http://docbook.org/ns/docbook"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
-         xmlns:xi="http://www.w3.org/2001/XInclude"
-         xmlns:ns5="http://www.w3.org/1998/Math/MathML"
-         xmlns:ns4="http://www.w3.org/2000/svg"
-         xmlns:ns3="http://www.w3.org/1999/xhtml"
-         xmlns:ns="http://docbook.org/ns/docbook">
+<section id="bootstrap:region" version="5.0" xmlns="http://docbook.org/ns/docbook">
   <title>Configuring a GemFire Region</title>
 
   <para xmlns="">A region is required to store and retrieve data from the
@@ -239,6 +232,16 @@
 							  </entry>
 						  </row>
 						  <row>
+							  <entry>ignore-if-exists</entry>
+							  <entry spanname="values">
+								  <emphasis>boolean, default:false</emphasis>
+							  </entry>
+							  <entry spanname="description">
+								  Ignores this bean definition configuration if the Region already exists
+								  in the GemFire Cache, resulting in a lookup instead.
+							  </entry>
+						  </row>
+						  <row>
 							  <entry>ignore-jta</entry>
 							  <entry spanname="values">
 								  <emphasis>boolean, default:false</emphasis>
@@ -437,12 +440,12 @@
   <section id="bootstrap:region:common:regions-subregions-lookups-caution">
     <title>A Word of Caution on Regions, Subregions and Lookups</title>
 
-	<para>One of the underlying properties of the high-level <literal>replicated-region</literal>,
-	<literal>partitioned-region</literal>, <literal>local-region</literal> and <literal>client-region</literal>
-	elements in Spring Data GemFire's XML namespace, which correspond to GemFire's Region types based on
-	Data Policy, is that these elements perform a lookup first before attempting to create the region.
-	This is done in case the region already exists, which might be the case if the region was defined
-	in GemFire's native configuration, e.g. <literal>cache.xml</literal>, thereby avoiding any errors.
+	<para>Prior to Spring Data GemFire 1.4, one of the underlying properties of the high-level
+    <literal>replicated-region</literal>, <literal>partitioned-region</literal>, <literal>local-region</literal>
+    and <literal>client-region</literal> elements in Spring Data GemFire's XML namespace, which correspond to
+    GemFire's Region types based on Data Policy, is that these elements perform a lookup first before attempting
+    to create the region. This is done in case the region already exists, which might be the case if the region
+    was defined in GemFire's native configuration, e.g. <literal>cache.xml</literal>, thereby avoiding any errors.
 	This was by design, though subject to change.</para>
 
 	<caution>

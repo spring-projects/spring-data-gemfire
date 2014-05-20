@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xml:id="new-features" xmlns="http://docbook.org/ns/docbook" version="5.0">
+<chapter id="new-features" version="5.0" xmlns="http://docbook.org/ns/docbook">
 	<title>New Features</title>
 
 	<note>
@@ -210,15 +210,22 @@
 				</para>
 			</listitem>
 			<listitem>
-				<para>Support for bootstrapping a Spring Context in a GemFire Server when started from Gfsh.</para>
+				<para>
+					Support for bootstrapping a Spring Context in a GemFire Server when started from Gfsh.
+					See <xref linkend="gemfire-bootstrap"/>.
+				</para>
 			</listitem>
 			<listitem>
-				<para>Support for persisting application domain object/entities to multiple GemFire Cache Regions.</para>
+				<para>
+					Support for persisting application domain object/entities to multiple GemFire Cache Regions.
+					See <xref linkend="mapping.entities"/> for more details.
+				</para>
 			</listitem>
 			<listitem>
 				<para>
 					Support for persisting application domain object/entities to GemFire Cache Sub-Regions, avoiding
 					collisions when Sub-Regions are uniquely identifiable, but identically named.
+					See <xref linkend="mapping.entities"/> for more details.
 				</para>
 			</listitem>
 			<listitem>
@@ -232,6 +239,9 @@
 					Changed the default behavior of SDG <literal>&lt;*-region&gt;</literal> elements from lookup
 					to always create a new Region along with an option to restore old behavior using the
 					<emphasis>ignore-if-exists</emphasis> attribute.
+					See <link linkend="bootstrap:region:common:attributes">Common Region Attributes</link>
+					and <xref linkend="bootstrap:region:common:regions-subregions-lookups-caution"/>
+					for more details.
 				</para>
 			</listitem>
 			<listitem>
