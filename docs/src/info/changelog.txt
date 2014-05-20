@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.4.0.RELEASE (2014-05-20)
+---------------------------------------------
+* SGF-287 - Upgrade to Spring 3.2.9.
+* SGF-286 - Release 1.4 GA.
+* SGF-274 - Avoid the creation of temporary objects in the GemfireTemplate when used with Spring Data GemFire's Repository abstraction and extension.
+* SGF-272 - Cleanup all Javadoc warnings.
+
+
 Changes in version 1.4.0.RC1 (2014-05-02)
 -----------------------------------------
 * SGF-283 - Release 1.4 RC1.
