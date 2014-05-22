@@ -12,6 +12,8 @@ pom.xml
 .classpath
 .project
 .settings/
+.bak/
+.idea/
 
 /samples/hello-world/vf.gf.dmn-events.cfg
 /samples/hello-world/vf.gf.dmn-license.cfg
