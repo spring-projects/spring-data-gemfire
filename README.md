@@ -2,7 +2,7 @@ Spring Data GemFire
 ===================
 
 The primary goal of the [Spring Data GemFire](http://www.springsource.org/spring-gemfire) project is to make it easier to build highly scalable Spring-powered applications using 
-[vFabric GemFire](http://www.vmware.com/products/application-platform/vfabric-gemfire) as a distributed [data management](http://www.springsource.com/products/data-management) platform.
+[Pivotal GemFire](http://www.gopivotal.com/big-data/pivotal-gemfire#details) as a distributed [data management](http://www.springsource.com/products/data-management) platform.
 
 # Examples
 
