@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.repository.sample;
 import java.util.List;
 
 import org.springframework.data.gemfire.repository.GemfireRepository;
+import org.springframework.data.gemfire.repository.Query;
 
 /**
  * The UserRepository class is a DAO for accessing and persisting Users.
@@ -33,14 +34,17 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
 public interface UserRepository extends GemfireRepository<User, String> {
 
 	//@Query("SELECT DISTINCT * FROM /Users u WHERE u.active = true")
-	public List<User> findDistinctByActiveTrue();
+	List<User> findDistinctByActiveTrue();
 
 	//@Query("SELECT DISTINCT * FROM /Users u WHERE u.active = false")
-	public List<User> findDistinctByActiveFalse();
+	List<User> findDistinctByActiveFalse();
 
-	public List<User> findDistinctByUsernameLike(String username);
+	List<User> findDistinctByUsernameLike(String username);
 
 	// NOTE unfortunately, the 'NOT LIKE' operator is unsupported in GemFire's Query/OQL syntax
-	//public List<User> findDistinctByUsernameNotLike(String username);
+	//List<User> findDistinctByUsernameNotLike(String username);
+
+  @Query("SELECT count(*) FROM /Users u WHERE u.username LIKE $1")
+  Integer countUsersByUsernameLike(String username);
 
 }
