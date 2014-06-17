@@ -16,10 +16,7 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,14 +24,14 @@ import java.util.Calendar;
 import java.util.List;
 import javax.annotation.Resource;
 
+import com.gemstone.gemfire.cache.Region;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The RepositoryQueriesTest class is a test suite of test cases testing the GemFire Query capability of Spring Data
@@ -47,8 +44,8 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.3.3
  */
-@ContextConfiguration("userRepositoryQueriesIntegrationTest.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("userRepositoryQueriesIntegrationTest.xml")
 @SuppressWarnings("unused")
 public class UserRepositoryQueriesIntegrationTest {
 
@@ -81,17 +78,19 @@ public class UserRepositoryQueriesIntegrationTest {
 
 	protected static User createUser(final String username, final Boolean active, final Calendar since, final String email) {
 		User user = new User(username);
-
 		user.setActive(active);
 		user.setEmail(email);
 		user.setSince(since);
-
 		return user;
 	}
 
+  protected static int toIntValue(final Integer value) {
+    return (value == null ? 0 : value.intValue());
+  }
+
 	@Before
 	public void setup() {
-		assertNotNull("The Users Region cannot be null!", users);
+		assertNotNull("The 'Users' GemFire Cache Region cannot be null!", users);
 
 		if (users.isEmpty()) {
 			userRepository.save(createUser("blumj", true));
@@ -110,7 +109,7 @@ public class UserRepositoryQueriesIntegrationTest {
 	}
 
 	@Test
-	public void testQueries() {
+	public void testMultiResultQueries() {
 		List<User> activeUsers = userRepository.findDistinctByActiveTrue();
 
 		assertQueryResults(activeUsers, "blumj", "blums", "handyj", "doej");
@@ -129,5 +128,21 @@ public class UserRepositoryQueriesIntegrationTest {
 		assertQueryResults(nonHandyUsers, "blumj", "blums", "blume", "bloomr", "doej", "doep", "doec");
 		*/
 	}
+
+  @Test
+  public void testNonCollectionNonEntityResultQueries() {
+    Integer count = userRepository.countUsersByUsernameLike("doe%");
+
+    assertEquals(3, toIntValue(count));
+
+    count = userRepository.countUsersByUsernameLike("handy%");
+
+    assertEquals(2, toIntValue(count));
+
+    count = userRepository.countUsersByUsernameLike("smith%");
+
+    assertNotNull(count);
+    assertEquals(0, toIntValue(count));
+  }
 
 }

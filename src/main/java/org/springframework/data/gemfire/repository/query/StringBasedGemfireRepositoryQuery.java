@@ -19,15 +19,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.gemstone.gemfire.cache.query.SelectResults;
+
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.ResultsBag;
 
 /**
  * {@link GemfireRepositoryQuery} using plain {@link String} based OQL queries.
@@ -111,49 +110,59 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 */
 	@Override
 	public Object execute(Object[] parameters) {
-		ParametersParameterAccessor accessor = new ParametersParameterAccessor(method.getParameters(), parameters);
+		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(method.getParameters(), parameters);
 
-		QueryString query = (isUserDefinedQuery() ? this.query :
-			this.query.forRegion(method.getEntityInformation().getJavaType(), template.getRegion()));
+		QueryString query = (isUserDefinedQuery() ? this.query : this.query.forRegion(
+      method.getEntityInformation().getJavaType(), template.getRegion()));
 
 		for (Integer index : query.getInParameterIndexes()) {
-			query = query.bindIn(toCollection(accessor.getBindableValue(index - 1)));
+			query = query.bindIn(toCollection(parameterAccessor.getBindableValue(index - 1)));
 		}
 
 		Collection<?> result = toCollection(template.find(query.toString(), parameters));
 
-		if (method.isCollectionQuery()) {
-			return result;
-		} else if (method.isQueryForEntity()) {
-			if (result.isEmpty()) {
-				return null;
-			} else if (result.size() == 1) {
-				return result.iterator().next();
-			} else {
-				throw new IncorrectResultSizeDataAccessException(1, result.size());
-			}
-		} else {
-			throw new IllegalStateException("Unsupported query: " + query.toString());
-		}
-	}
+    if (method.isCollectionQuery()) {
+      return result;
+    }
+    else if (method.isQueryForEntity()) {
+      if (result.isEmpty()) {
+        return null;
+      }
+      else if (result.size() == 1) {
+        return result.iterator().next();
+      }
+      else {
+        throw new IncorrectResultSizeDataAccessException(1, result.size());
+      }
+    }
+    else if (isSingleResultNonEntityQuery(method, result)) {
+      return result.iterator().next();
+    }
+    else {
+      throw new IllegalStateException("Unsupported query: " + query.toString());
+    }
+  }
 
-	/**
+
+  boolean isSingleResultNonEntityQuery(final GemfireQueryMethod method, final Collection<?> result) {
+    return (!method.isCollectionQuery() && method.getReturnedObjectType() != null
+      && !Void.TYPE.equals(method.getReturnedObjectType()) && result != null && result.size() == 1);
+  }
+
+  /**
 	 * Returns the given object as a Collection. Collections will be returned as is, Arrays will be converted into a
 	 * Collection and all other objects will be wrapped into a single-element Collection.
-	 * <p/>
+	 *
 	 * @param source the resulting object from the GemFire Query.
 	 * @return the querying resulting object as a Collection.
 	 * @see java.util.Arrays#asList(Object[])
 	 * @see java.util.Collection
 	 * @see org.springframework.util.CollectionUtils#arrayToList(Object)
+   * @see com.gemstone.gemfire.cache.query.SelectResults
 	 */
-	Collection<?> toCollection(Object source) {
+	Collection<?> toCollection(final Object source) {
 		if (source instanceof SelectResults) {
 			return ((SelectResults) source).asList();
-		}
-
-		if (source instanceof ResultsBag) {
-			return ((ResultsBag) source).asList();
 		}
 
 		if (source instanceof Collection) {
