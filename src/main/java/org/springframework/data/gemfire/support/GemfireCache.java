@@ -67,7 +67,11 @@ public class GemfireCache implements Cache {
 		return (value == null ? null : new SimpleValueWrapper(value));
 	}
 
-	@SuppressWarnings("unchecked")
+  public <T> T get(final Object key, final Class<T> type) {
+    return type.cast(region.get(key));
+  }
+
+  @SuppressWarnings("unchecked")
 	public void put(Object key, Object value) {
 		region.put(key, value);
 	}
