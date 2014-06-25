@@ -154,7 +154,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 			.create();
 
 		assertNotNull("The GemFire Cache was not properly created or initialized!", gemfireCache);
-		assertFalse("The GemFire Cache is close!", gemfireCache.isClosed());
+		assertFalse("The GemFire Cache is closed!", gemfireCache.isClosed());
 
 		Set<Region<?, ?>> rootRegions = gemfireCache.rootRegions();
 
@@ -256,6 +256,14 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		public UserDataStoreCacheLoader() {
 			Assert.state(INSTANCE.compareAndSet(null, this), String.format("An instance of %1$s was already created!",
 				getClass().getName()));
+		}
+
+		@Override
+		protected void assertInitialized() {
+			super.assertInitialized();
+			Assert.state(userDataSource != null, String.format(
+				"The 'User' Data Source was not properly configured and initialized for use in (%1$s!)",
+					getClass().getName()));
 		}
 
 		protected DataSource getDataSource() {
