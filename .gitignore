@@ -2,7 +2,12 @@
 .#*
 *~
 _site
-.idea
+*.iml
+*.log
 *.sw[op]
+.idea
 .project
 sample-pages
+.bak
+.gradle
+build
