@@ -3,6 +3,13 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.4.1.RELEASE (2014-06-30)
+---------------------------------------------
+* SGF-293 - Release 1.4.1.
+* SGF-290 - SDG's Repository extension does not properly handle custom @Query annotated Repository methods returning non-Collection, non-Entity-based return values.
+* SGF-288 - CacheServer's "maximum-time-between-pings" is set to ZERO.
+
+
 Changes in version 1.4.0.RELEASE (2014-05-20)
 ---------------------------------------------
 * SGF-287 - Upgrade to Spring 3.2.9.
