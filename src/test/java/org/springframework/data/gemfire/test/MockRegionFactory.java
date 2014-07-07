@@ -459,7 +459,7 @@ public class MockRegionFactory<K,V>   {
 			}
 		});
 
-		when(region.getFullPath()).thenReturn(name);
+		when(region.getFullPath()).thenReturn(Region.SEPARATOR + name);
 		when(region.getName()).thenReturn(name);
     	when(region.getRegionService()).thenReturn(mockRegionService);
 

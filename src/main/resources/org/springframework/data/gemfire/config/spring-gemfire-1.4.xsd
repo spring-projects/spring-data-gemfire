@@ -1121,8 +1121,7 @@ Eviction policy for the replicated region.
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType"
-												   fixed="OVERFLOW_TO_DISK">
+									<xsd:attribute name="action" type="evictionActionType">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[
 The action to take when performing eviction.
