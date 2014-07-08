@@ -12,13 +12,12 @@ description = 'Spring Data GemFire'
 group = 'org.springframework.data'
 
 repositories {
-  //mavenLocal();
   //maven { url "http://nexus.gemstone.com:8081/nexus/content/repositories/snapshots" }
   maven { url "http://dist.gemstone.com.s3.amazonaws.com/maven/release"}
+  maven { url "http://repo.spring.io/gemstone-snapshot-cache" }
   maven { url "http://repo.spring.io/libs-snapshot" }
   maven { url "http://repo.spring.io/plugins-release"}
 }
-
 
 apply plugin: "java"
 apply plugin: 'eclipse'
@@ -28,7 +27,7 @@ apply plugin: 'docbook-reference'
 //apply plugin: 'bundlor'
 
 if (project.hasProperty('platformVersion')) {
-   apply plugin: 'spring-io'
+    apply plugin: 'spring-io'
 
     repositories {
         maven { url "https://repo.spring.io/libs-snapshot" }
