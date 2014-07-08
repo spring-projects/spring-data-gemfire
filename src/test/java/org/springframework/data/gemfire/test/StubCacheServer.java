@@ -31,6 +31,7 @@ public class StubCacheServer implements CacheServer {
 
 	private boolean isRunning;
 	private boolean notifyBySubscription;
+	private boolean tcpNoDelay;
 
 	private int maxConnections;
 	private int maximumMessageCount;
@@ -349,7 +350,23 @@ public class StubCacheServer implements CacheServer {
 		return null;
 	}
 
-	 ClientSubscriptionConfig mockClientSubscriptionConfig() {
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.server.CacheServer#getTcpNoDelay()
+	 */
+	@Override
+	public boolean getTcpNoDelay() {
+		return tcpNoDelay;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.server.CacheServer#setTcpNoDelay(boolean)
+	 */
+	@Override
+	public void setTcpNoDelay(final boolean tcpNoDelay) {
+		this.tcpNoDelay = tcpNoDelay;
+	}
+
+	ClientSubscriptionConfig mockClientSubscriptionConfig() {
 		return new MockClientSubscriptionConfig();
 	}
 

@@ -36,11 +36,12 @@ import org.springframework.util.StringUtils;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
- * The AsyncEvenntQueueWithListenerTest class is a test suite of test cases testing the circular references between
- * an Async Event Queue and a registered AsyncEventListener that refers back to the Async Event Queue on which the
- * listener registered.
+ * The AsyncEventQueueWithListenerIntegrationTest class is a test suite of test cases testing the circular references
+ * between an Async Event Queue and a registered AsyncEventListener that refers back to the Async Event Queue
+ * on which the listener is registered.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -50,9 +51,8 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
  * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
  * @since 1.0.0
  */
-@ContextConfiguration(value = "asyncEventQueueWithListener.xml",
-	initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(value = "asyncEventQueueWithListener.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class AsyncEventQueueWithListenerIntegrationTest {
 
@@ -83,7 +83,7 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 		assertFalse(queueTwo.isPersistent());
 		assertTrue(queueTwo.isParallel());
 		assertEquals(150, queueTwo.getMaximumQueueMemory());
-		assertEquals(1, queueTwo.getDispatcherThreads());
+		assertEquals(GatewaySender.DEFAULT_DISPATCHER_THREADS, queueTwo.getDispatcherThreads());
 		assertTrue(queueTwo.getAsyncEventListener() instanceof TestAsyncEventListener);
 		assertEquals("ListenerTwo", ((TestAsyncEventListener) queueTwo.getAsyncEventListener()).getName());
 	}

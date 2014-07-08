@@ -10,6 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.support;
 
 import java.util.ArrayList;
@@ -25,10 +26,10 @@ import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
@@ -37,37 +38,23 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 
 /**
  * @author David Turanski
- *
  */
 @Aspect
+@SuppressWarnings("unused")
 public class JSONRegionAdvice {
-	private static Log log = LogFactory.getLog(JSONRegionAdvice.class);
-	private List<String> includedRegions;
+
 	private boolean convertReturnedCollections = true;
 	private boolean prettyPrint = false;
 
-	/**
-	 * Sets names of regions to be included for JSON conversion. By default, all regions will be included
-	 * @param regionNames a List of region names to include
-	 */
-	public void setIncludedRegionNames(List<String> regionNames) {
-		this.includedRegions = regionNames;
-	}
+	private List<String> includedRegions;
+
+	protected final Log log = LogFactory.getLog(JSONRegionAdvice.class);
 
 	/**
-	 * Sets regions to be included for JSON conversion. By default, all regions will be included
-	 * @param regions a List of region names to include
-	 */
-	public void setIncludedRegions(List<Region<?,?>> regions) {
-	this.includedRegions = new ArrayList<String>();
-	for (Region<?,?> region: regions) {
-		includedRegions.add(region.getName());
-	}
-	}
-	/**
-	 * Flag to convert collections returned from cache from @{link PdxInstance} to JSON String. If the returned 
-	 * collections are very large, overhead will be incurred to covert all the values from from 
-	 * Region.getAll() and Region.values() 
+	 * Flag to convert collections returned from cache from @{link PdxInstance} to JSON String. If the returned
+	 * collections are very large, overhead will be incurred to covert all the values from from
+	 * Region.getAll() and Region.values()
+	 *
 	 * @param convertReturnedCollections true by default
 	 */
 	public void setConvertReturnedCollections(boolean convertReturnedCollections) {
@@ -75,7 +62,29 @@ public class JSONRegionAdvice {
 	}
 
 	/**
+	 * Sets regions to be included for JSON conversion. By default, all regions will be included
+	 *
+	 * @param regions a List of region names to include
+	 */
+	public void setIncludedRegions(List<Region<?, ?>> regions) {
+		this.includedRegions = new ArrayList<String>();
+		for (Region<?, ?> region : regions) {
+			includedRegions.add(region.getName());
+		}
+	}
+
+	/**
+	 * Sets names of regions to be included for JSON conversion. By default, all regions will be included
+	 *
+	 * @param regionNames a List of region names to include
+	 */
+	public void setIncludedRegionNames(List<String> regionNames) {
+		this.includedRegions = regionNames;
+	}
+
+	/**
 	 * Flag to print JSON Strings with proper indentation, etc.
+	 *
 	 * @param prettyPrint false be default
 	 */
 	public void setPrettyPrint(boolean prettyPrint) {
@@ -83,35 +92,38 @@ public class JSONRegionAdvice {
 	}
 
 	@Around("execution(* com.gemstone.gemfire.cache.Region.put(..)) || "
-			+ "execution(* com.gemstone.gemfire.cache.Region.create(..)) ||"
-			+ "execution(* com.gemstone.gemfire.cache.Region.putIfAbsent(..)) ||"
-			+ "execution(* com.gemstone.gemfire.cache.Region.replace(..))")
+		+ "execution(* com.gemstone.gemfire.cache.Region.create(..)) ||"
+		+ "execution(* com.gemstone.gemfire.cache.Region.putIfAbsent(..)) ||"
+		+ "execution(* com.gemstone.gemfire.cache.Region.replace(..))")
 	public Object put(ProceedingJoinPoint pjp) {
-
 		boolean JSONRegion = isIncludedSONRegion(pjp.getTarget());
-		Object retVal = null;
+		Object returnValue = null;
+
 		try {
 			if (JSONRegion) {
 				Object[] newArgs = Arrays.copyOf(pjp.getArgs(), pjp.getArgs().length);
 				Object val = newArgs[1];
 				newArgs[1] = convertArgumentToPdxInstance(val);
-				retVal = pjp.proceed(newArgs);
-				log.debug("converting " + retVal + " to JSON string");
-				retVal = convertPdxInstanceToJSONString(retVal);
-			} else {
-				retVal = pjp.proceed();
+				returnValue = pjp.proceed(newArgs);
+				log.debug("converting " + returnValue + " to JSON string");
+				returnValue = convertPdxInstanceToJSONString(returnValue);
 			}
-		} catch (Throwable t) {
+			else {
+				returnValue = pjp.proceed();
+			}
+		}
+		catch (Throwable t) {
 			handleThrowable(t);
 		}
-		return retVal;
+
+		return returnValue;
 	}
 
 	@Around("execution(* com.gemstone.gemfire.cache.Region.putAll(..))")
 	public Object putAll(ProceedingJoinPoint pjp) {
 		boolean JSONRegion = isIncludedSONRegion(pjp.getTarget());
+		Object returnValue = null;
 
-		Object retVal = null;
 		try {
 			if (JSONRegion) {
 				Object[] newArgs = Arrays.copyOf(pjp.getArgs(), pjp.getArgs().length);
@@ -121,52 +133,64 @@ public class JSONRegionAdvice {
 					newArg.put(entry.getKey(), convertArgumentToPdxInstance(entry.getValue()));
 				}
 				newArgs[0] = newArg;
-				retVal = pjp.proceed(newArgs);
-			} else {
-				retVal = pjp.proceed();
+				returnValue = pjp.proceed(newArgs);
 			}
-		} catch (Throwable t) {
+			else {
+				returnValue = pjp.proceed();
+			}
+		}
+		catch (Throwable t) {
 			handleThrowable(t);
 		}
-		return retVal;
+
+		return returnValue;
 	}
 
 	@Around("execution(* com.gemstone.gemfire.cache.Region.get(..)) "
-			+ "|| execution(* com.gemstone.gemfire.cache.Region.selectValue(..))"
-			+ "|| execution(* com.gemstone.gemfire.cache.Region.remove(..))")
+		+ "|| execution(* com.gemstone.gemfire.cache.Region.selectValue(..))"
+		+ "|| execution(* com.gemstone.gemfire.cache.Region.remove(..))")
 	public Object get(ProceedingJoinPoint pjp) {
-		Object retVal = null;
+		Object returnValue = null;
+
 		try {
 			if (isIncludedSONRegion(pjp.getTarget())) {
-				retVal = pjp.proceed();
-				log.debug("converting " + retVal + " to JSON string");
-				retVal =  convertPdxInstanceToJSONString(retVal);
-			} else {
-				retVal =  pjp.proceed();
+				returnValue = pjp.proceed();
+				log.debug("converting " + returnValue + " to JSON string");
+				returnValue = convertPdxInstanceToJSONString(returnValue);
 			}
-		} catch (Throwable t) {
+			else {
+				returnValue = pjp.proceed();
+			}
+		}
+		catch (Throwable t) {
 			handleThrowable(t);
 		}
-		return retVal;
+
+		return returnValue;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Around("execution(* com.gemstone.gemfire.cache.Region.getAll(..))")
 	public Map<Object, Object> getAll(ProceedingJoinPoint pjp) {
 		Map<Object, Object> result = null;
+
 		try {
 			Map<Object, Object> retVal = (Map<Object, Object>) pjp.proceed();
-			if (!convertReturnedCollections || CollectionUtils.isEmpty(retVal) || !isIncludedSONRegion(pjp.getTarget())) {
+			if (!convertReturnedCollections || CollectionUtils.isEmpty(retVal) || !isIncludedSONRegion(
+				pjp.getTarget())) {
 				result = retVal;
-			} else {
+			}
+			else {
 				result = new HashMap<Object, Object>();
 				for (Entry<Object, Object> entry : retVal.entrySet()) {
 					result.put(entry.getKey(), convertPdxInstanceToJSONString(entry.getValue()));
 				}
 			}
-		} catch (Throwable t) {
+		}
+		catch (Throwable t) {
 			handleThrowable(t);
 		}
+
 		return result;
 	}
 
@@ -174,89 +198,107 @@ public class JSONRegionAdvice {
 	@Around("execution(* com.gemstone.gemfire.cache.Region.values(..))")
 	public Collection<Object> values(ProceedingJoinPoint pjp) {
 		Collection<Object> result = null;
+
 		try {
 			Collection<Object> retVal = (Collection<Object>) pjp.proceed();
-			if (!convertReturnedCollections || CollectionUtils.isEmpty(retVal) || !isIncludedSONRegion(pjp.getTarget())) {
+			if (!convertReturnedCollections || CollectionUtils.isEmpty(retVal) || !isIncludedSONRegion(
+				pjp.getTarget())) {
 				result = retVal;
-			} else {
+			}
+			else {
 				result = new ArrayList<Object>();
 				for (Object obj : retVal) {
 					result.add(convertArgumentToPdxInstance(obj));
 				}
 			}
-		} catch (Throwable t) {
+		}
+		catch (Throwable t) {
 			handleThrowable(t);
 		}
+
 		return result;
 	}
-	
-	@Around("execution(* org.springframework.data.gemfire.GemfireOperations.find(..)) " + 
-			"|| execution(* org.springframework.data.gemfire.GemfireOperations.findUnique(..)) " + 
-			"|| execution(* org.springframework.data.gemfire.GemfireOperations.query(..))")
+
+	@Around("execution(* org.springframework.data.gemfire.GemfireOperations.find(..)) " +
+		"|| execution(* org.springframework.data.gemfire.GemfireOperations.findUnique(..)) " +
+		"|| execution(* org.springframework.data.gemfire.GemfireOperations.query(..))")
 	public Object templateQuery(ProceedingJoinPoint pjp) {
 		GemfireTemplate template = (GemfireTemplate) pjp.getTarget();
 		boolean jsonRegion = isIncludedSONRegion(template.getRegion());
-		Object retVal = null;
+		Object returnValue = null;
+
 		try {
 			if (jsonRegion) {
-				retVal = pjp.proceed();
-				if (retVal instanceof SelectResults && convertReturnedCollections ) {
+				returnValue = pjp.proceed();
+				if (returnValue instanceof SelectResults && convertReturnedCollections) {
 					ResultsBag resultsBag = new ResultsBag();
-					for (Object obj: (SelectResults<?>)retVal) {
+					for (Object obj : (SelectResults<?>) returnValue) {
 						resultsBag.add(convertPdxInstanceToJSONString(obj));
 					}
-					retVal = resultsBag;
-				} else {
-					retVal = convertPdxInstanceToJSONString(retVal);
+					returnValue = resultsBag;
 				}
-			} else {
-				retVal = pjp.proceed();
+				else {
+					returnValue = convertPdxInstanceToJSONString(returnValue);
+				}
 			}
-		} catch (Throwable t) {
+			else {
+				returnValue = pjp.proceed();
+			}
+		}
+		catch (Throwable t) {
 			handleThrowable(t);
 		}
-		return retVal;
+		return returnValue;
 	}
 
 
 	private PdxInstance convertArgumentToPdxInstance(Object value) {
-		PdxInstance val = null;
+		PdxInstance pdx = null;
+
 		if (value instanceof PdxInstance) {
-			val = (PdxInstance) value;
-		} else if (value instanceof String) {
-			val = JSONFormatter.fromJSON((String) value);
-		} else {
+			pdx = (PdxInstance) value;
+		}
+		else if (value instanceof String) {
+			pdx = JSONFormatter.fromJSON((String) value);
+		}
+		else {
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				String json = mapper.writeValueAsString(value);
-				val = JSONFormatter.fromJSON(json);
-			} catch (Throwable t) {
+				pdx = JSONFormatter.fromJSON(json);
+			}
+			catch (Throwable t) {
 				handleThrowable(t);
 			}
 		}
-		return val;
+
+		return pdx;
 	}
 
 	private boolean isIncludedSONRegion(Object target) {
 		Region<?, ?> region = (Region<?, ?>) target;
 		boolean result = false;
+
 		if (includedRegions == null || includedRegions.contains(region.getName())) {
 			if (log.isDebugEnabled()) {
 				log.debug(region.getName() + " is included for JSON conversion");
 			}
 			result = true;
 		}
+
 		return result;
 	}
 
-	private Object convertPdxInstanceToJSONString(Object retVal) {
-		Object result = retVal;
-		if (retVal != null && retVal instanceof PdxInstance) {
-			result = JSONFormatter.toJSON((PdxInstance) retVal);
+	private Object convertPdxInstanceToJSONString(Object returnValue) {
+		Object result = returnValue;
+
+		if (returnValue != null && returnValue instanceof PdxInstance) {
+			result = JSONFormatter.toJSON((PdxInstance) returnValue);
 			if (!prettyPrint) {
 				result = flattenString(result);
 			}
 		}
+
 		return result;
 	}
 
@@ -265,15 +307,18 @@ public class JSONRegionAdvice {
 			String json = (String) result;
 			return json.replaceAll("\\s*", "");
 		}
+
 		return result;
 	}
 
 	private void handleThrowable(Throwable t) {
 		if (t instanceof RuntimeException) {
 			throw (RuntimeException) t;
-		} else {
+		}
+		else {
 			throw new RuntimeException(t);
 		}
 
 	}
+
 }

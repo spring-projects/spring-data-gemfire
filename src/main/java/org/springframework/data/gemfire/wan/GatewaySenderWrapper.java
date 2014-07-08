@@ -6,6 +6,7 @@ import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
@@ -23,8 +24,8 @@ public class GatewaySenderWrapper implements GatewaySender {
 
 	public GatewaySenderWrapper(final GatewaySender gatewaySender) {
 		Assert.notNull(gatewaySender, "The target Gateway Sender must not be null.");
-        this.delegate = gatewaySender;
-    }
+		this.delegate = gatewaySender;
+	}
 
     @Override
     public void start() {
@@ -126,7 +127,11 @@ public class GatewaySenderWrapper implements GatewaySender {
         return delegate.getGatewayEventFilters();
     }
 
-    @Override
+	public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
+		return delegate.getGatewayEventSubstitutionFilter();
+	}
+
+	@Override
     public List<GatewayTransportFilter> getGatewayTransportFilters() {
         return delegate.getGatewayTransportFilters();
     }
@@ -159,6 +164,11 @@ public class GatewaySenderWrapper implements GatewaySender {
     public void setManualStart(boolean manualStart) {
         this.manualStart = manualStart;
     }
+
+	@Override
+	public int getMaxParallelismForReplicatedRegion() {
+		return delegate.getMaxParallelismForReplicatedRegion();
+	}
 
 	@Override
 	public String toString() {

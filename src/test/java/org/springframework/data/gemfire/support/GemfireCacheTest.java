@@ -26,7 +26,10 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
  * @author Costin Leau
+ * @author John Blum
  */
+// TODO avoid using actual GemFire Cache and Region instances, thereby creating a distributed system, for this test!
+// TODO Use Mocks!
 public class GemfireCacheTest extends AbstractNativeCacheTest<Region<Object, Object>> {
 
 	@Override
@@ -38,21 +41,25 @@ public class GemfireCacheTest extends AbstractNativeCacheTest<Region<Object, Obj
 	@SuppressWarnings({"deprecation", "unchecked" })
 	protected Region<Object, Object> createNativeCache() throws Exception {
 		com.gemstone.gemfire.cache.Cache instance = null;
+
 		try {
 			instance = CacheFactory.getAnyInstance();
-		} catch (Exception ex) {
+		}
+		catch (Exception ignore) {
 		}
 
 		if (instance == null) {
 			DistributedSystem ds = DistributedSystem.connect(new Properties());
 			instance = CacheFactory.create(ds);
 		}
-		Region reg = instance.getRegion(CACHE_NAME);
-		if (reg == null) {
-			reg = instance.createRegion(CACHE_NAME, new com.gemstone.gemfire.cache.AttributesFactory().create());
+
+		Region region = instance.getRegion(CACHE_NAME);
+
+		if (region == null) {
+			region = instance.createRegion(CACHE_NAME, new com.gemstone.gemfire.cache.AttributesFactory().create());
 		}
 
-		return reg;
+		return region;
 	}
 
 }

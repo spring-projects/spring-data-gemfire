@@ -12,6 +12,8 @@ description = 'Spring Data GemFire'
 group = 'org.springframework.data'
 
 repositories {
+  //mavenLocal();
+  //maven { url "http://nexus.gemstone.com:8081/nexus/content/repositories/snapshots" }
   maven { url "http://dist.gemstone.com.s3.amazonaws.com/maven/release"}
   maven { url "http://repo.spring.io/libs-snapshot" }
   maven { url "http://repo.spring.io/plugins-release"}
@@ -71,8 +73,9 @@ dependencies {
 	runtime("antlr:antlr:$antlrVersion")
 
 	compile "org.aspectj:aspectjweaver:$aspectjVersion"
-    compile "org.codehaus.jackson:jackson-core-asl:$jacksonVersion"
-    compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion"
+    compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+    compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
+    compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "org.slf4j:slf4j-api:$slf4jVersion"
     compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
@@ -250,7 +253,7 @@ task wrapper(type: Wrapper) {
 
   doLast() {
     def gradleOpts = "-XX:MaxPermSize=1024m -Xms256m -Xmx1024m"
-    def gradleBatOpts = "$gradleOpts -XX:MaxHeapSize=256m"
+    def gradleBatOpts = "$gradleOpts -XX:MaxHeapSize=1024m"
     File wrapperFile = file("gradlew")
     wrapperFile.text = wrapperFile.text.replace("DEFAULT_JVM_OPTS=",
                                                 "GRADLE_OPTS=\"$gradleOpts \$GRADLE_OPTS\"\nDEFAULT_JVM_OPTS=")

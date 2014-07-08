@@ -24,6 +24,7 @@ import org.mockito.stubbing.Answer;
 
 import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
@@ -32,37 +33,40 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * The StubGatewaySenderFactory class for testing purposes.
  *
  * @author David Turanski
+ * @author John Blum
  * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
  */
+@SuppressWarnings({ "deprecation", "unused" })
 public class StubGatewaySenderFactory implements GatewaySenderFactory {
 
-	private int alertThreshold;
 	private boolean batchConflationEnabled;
-	private int batchSize;
-	private int batchTimeInterval;
-	private String diskStoreName;
 	private boolean diskSynchronous;
-	private int dispatcherThreads;
 	private boolean manualStart;
-	private int maxQueueMemory;
-	private OrderPolicy orderPolicy;
 	private boolean parallel;
 	private boolean persistenceEnabled;
+	private boolean running = true;
+
+	private int alertThreshold;
+	private int batchSize;
+	private int batchTimeInterval;
+	private int dispatcherThreads;
+	private int maxQueueMemory;
+	private int parallelFactorForReplicatedRegion;
 	private int socketBufferSize;
 	private int socketReadTimeout;
+
+	private GatewayEventSubstitutionFilter<?, ?> gatewayEventSubstitutionFilter;
+
 	private List<GatewayEventFilter> eventFilters;
 	private List<GatewayTransportFilter> transportFilters;
 
-	private String name;
+	private OrderPolicy orderPolicy;
 
-    private boolean running = true;
-
-	private int remoteSystemId;
+	private String diskStoreName;
 
 	public StubGatewaySenderFactory() {
 		this.eventFilters = new ArrayList<GatewayEventFilter>();
 		this.transportFilters = new ArrayList<GatewayTransportFilter>();
-
 	}
 
 	@Override
@@ -78,18 +82,18 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 	}
 
 	@Override
-	public GatewaySender create(String name, int remoteSystemId) {
+	public GatewaySender create(final String name, final int remoteSystemId) {
 		GatewaySender gatewaySender = mock(GatewaySender.class);
-		this.name = name;
-		this.remoteSystemId = remoteSystemId;
-		when(gatewaySender.getId()).thenReturn(this.name);
-		when(gatewaySender.getRemoteDSId()).thenReturn(this.remoteSystemId);
+
+		when(gatewaySender.getId()).thenReturn(name);
+		when(gatewaySender.getRemoteDSId()).thenReturn(remoteSystemId);
 		when(gatewaySender.getAlertThreshold()).thenReturn(this.alertThreshold);
 		when(gatewaySender.getBatchSize()).thenReturn(this.batchSize);
 		when(gatewaySender.getBatchTimeInterval()).thenReturn(this.batchTimeInterval);
 		when(gatewaySender.getDiskStoreName()).thenReturn(this.diskStoreName);
 		when(gatewaySender.getDispatcherThreads()).thenReturn(this.dispatcherThreads);
 		when(gatewaySender.getGatewayEventFilters()).thenReturn(this.eventFilters);
+		when(gatewaySender.getGatewayEventSubstitutionFilter()).thenReturn(gatewayEventSubstitutionFilter);
 		when(gatewaySender.getGatewayTransportFilters()).thenReturn(this.transportFilters);
 		when(gatewaySender.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
 		when(gatewaySender.getOrderPolicy()).thenReturn(this.orderPolicy);
@@ -100,18 +104,19 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 		when(gatewaySender.isDiskSynchronous()).thenReturn(this.diskSynchronous);
 		when(gatewaySender.isParallel()).thenReturn(this.parallel);
 		when(gatewaySender.isPersistenceEnabled()).thenReturn(this.persistenceEnabled);
-        doAnswer(new Answer<Void>() {
+		when(gatewaySender.isRunning()).thenAnswer(new Answer<Boolean>() {
+			@Override
+			public Boolean answer(InvocationOnMock invocation) throws Throwable {
+				return running;
+			}
+		});
+		doAnswer(new Answer<Void>() {
             public Void answer(InvocationOnMock invocation) {
-                running = true;
-               return null;
+				running = true;
+				return null;
             }
         }).when(gatewaySender).start();
-        when(gatewaySender.isRunning()).thenAnswer(new Answer<Boolean>(){
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                return running;
-            }
-        });
+
 		return gatewaySender;
 	}
 
@@ -206,9 +211,20 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 	}
 
 	@Override
-	public GatewaySenderFactory removeGatewayTransportFilter(GatewayTransportFilter arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public GatewaySenderFactory removeGatewayTransportFilter(GatewayTransportFilter gatewayTransportFilter) {
+		return this;
+	}
+
+	@Override
+	public GatewaySenderFactory setParallelFactorForReplicatedRegion(final int parallelFactorForReplicatedRegion) {
+		this.parallelFactorForReplicatedRegion = parallelFactorForReplicatedRegion;
+		return this;
+	}
+
+	@Override
+	public GatewaySenderFactory setGatewayEventSubstitutionFilter(final GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
+		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
+		return this;
 	}
 
 }

@@ -31,9 +31,10 @@ import org.springframework.cache.Cache;
  */
 public abstract class AbstractNativeCacheTest<T> {
 
+	protected static final String CACHE_NAME = "testCache";
+
 	private T nativeCache;
 	private Cache cache;
-	protected final static String CACHE_NAME = "testCache";
 
 	@Before
 	public void setUp() throws Exception {
@@ -42,11 +43,9 @@ public abstract class AbstractNativeCacheTest<T> {
 		cache.clear();
 	}
 
-
 	protected abstract T createNativeCache() throws Exception;
 
 	protected abstract Cache createCache(T nativeCache);
-
 
 	@Test
 	public void testCacheName() throws Exception {
@@ -60,7 +59,6 @@ public abstract class AbstractNativeCacheTest<T> {
 
 	@Test
 	public void testCachePut() throws Exception {
-
 		Object key = "enescu";
 		Object value = "george";
 
@@ -78,6 +76,21 @@ public abstract class AbstractNativeCacheTest<T> {
 		cache.clear();
 		assertNull(cache.get("vlaicu"));
 		assertNull(cache.get("enescu"));
+	}
+
+	@Test
+	public void testCacheGetForClassType() {
+		cache.put("one", Boolean.TRUE);
+		cache.put("two", 'X');
+		cache.put("three", 101);
+		cache.put("four", Math.PI);
+		cache.put("five", "TEST");
+
+		assertEquals(Boolean.TRUE, cache.get("one", Boolean.class));
+		assertEquals(new Character('X'), cache.get("two", Character.class));
+		assertEquals(new Integer(101), cache.get("three", Integer.class));
+		assertEquals(new Double(Math.PI), cache.get("four", Double.class));
+		assertEquals("TEST", cache.get("five", String.class));
 	}
 
 }

@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
-		http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd">
+">
 
-	<util:properties id="props">
-		<prop key="bind-address">127.0.0.1</prop>
+	<util:properties id="gemfireProperties">
+		<prop key="name">JSONRegionAdviceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">config</prop>
 	</util:properties>
 
-	<gfe-data:json-region-autoproxy 
-	pretty-print="false" 
-	convert-returned-collections="true" 
-	region-refs="someRegion"/>
-	<!-- Above replaces -->
-	<!-- 	<aop:aspectj-autoproxy /> -->
-	<!-- 	<bean class="org.springframework.data.gemfire.support.JSONRegionAdvice" /> -->
+	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:cache properties-ref="props"/>
-	<gfe:replicated-region id="someRegion"/>
-	
-	<bean id="template" class="org.springframework.data.gemfire.GemfireTemplate">
-		<constructor-arg ref="someRegion"/>
-	</bean>
+	<gfe:replicated-region id="jsonRegion"/>
+
+	<gfe-data:json-region-autoproxy pretty-print="false" convert-returned-collections="true" region-refs="jsonRegion"/>
+	<!-- gfe-data:json-region-autoproxy replaces... -->
+	<!--
+	<aop:aspectj-autoproxy/>
+	<bean class="org.springframework.data.gemfire.support.JSONRegionAdvice"/>
+	-->
+
+	<bean class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="jsonRegion"/>
+
 </beans>

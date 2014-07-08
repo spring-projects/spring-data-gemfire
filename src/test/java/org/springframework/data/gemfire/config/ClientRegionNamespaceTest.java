@@ -121,7 +121,7 @@ public class ClientRegionNamespaceTest {
 		Region region = context.getBean("persistent", Region.class);
 		RegionAttributes attrs = region.getAttributes();
 		assertEquals("diskStore", attrs.getDiskStoreName());
-		assertEquals(1, attrs.getDiskDirSizes()[0]);
+		assertEquals(10, attrs.getDiskDirSizes()[0]);
 	}
 
 	@SuppressWarnings("rawtypes")

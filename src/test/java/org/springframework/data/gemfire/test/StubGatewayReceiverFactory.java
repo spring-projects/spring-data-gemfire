@@ -24,8 +24,10 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * @author David Turanski
+ * @author John Blum
  *
  */
+@SuppressWarnings("unused")
 public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 
 	private int endPort;
@@ -37,6 +39,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 
 	private String bindAddress;
 	private String hostnameForClients;
+	private String hostnameForSenders;
 
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setStartPort(int)
@@ -112,8 +115,17 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#create()
+	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setHostnameForSenders(String)
 	 */
+	@Override
+	public GatewayReceiverFactory setHostnameForSenders(final String hostnameForSenders) {
+		this.hostnameForSenders = hostnameForSenders;
+		return this;
+	}
+
+	/* (non-Javadoc)
+		 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#create()
+		 */
 	@Override
 	public GatewayReceiver create() {
 		GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);

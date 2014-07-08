@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
 
 import org.mockito.invocation.InvocationOnMock;
@@ -60,62 +61,51 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "deprecation", "unused" })
 public class StubCache implements Cache {
 
 	protected static final String NOT_IMPLEMENTED = "Not Implemented!";
 
-	private Properties properties;
-	
-	private DistributedSystem distributedSystem;
-
 	private CacheTransactionManager cacheTransactionManager;
 
+	private boolean closed;
 	private boolean copyOnRead;
+	private boolean pdxIgnoreUnreadFields;
+	private boolean pdxPersistent;
+	private boolean pdxReadSerialized;
+	private boolean server;
 
-	private Declarable initializer;
+	private int lockLease;
+	private int lockTimeout;
+	private int messageSyncInterval;
+	private int searchTimeout;
 
 	private Context jndiContext;
 
-	private LogWriter logWriter;
+	private Declarable initializer;
 
-	private String name;
-
-	private String pdxDiskStore;
-
-	private boolean pdxIgnoreUnreadFields;
-
-	private boolean pdxPersistent;
-
-	private boolean pdxReadSerialized;
-
-	private PdxSerializer pdxSerializer;
-
-	private ResourceManager resourceManager;
-
-	private LogWriter securityLogger;
-
-	private boolean closed;
+	private DistributedSystem distributedSystem;
 
 	private GatewayConflictResolver gatewayConflictResolver;
 
+	private HashMap<String, Region> allRegions;
+
 	private List<GatewayHub> gatewayHubs;
 
-	private Set<GatewayReceiver> gatewayReceivers;
+	private LogWriter logWriter;
+	private LogWriter securityLogWriter;
 
+	private PdxSerializer pdxSerializer;
+
+	private Properties properties;
+
+	private ResourceManager resourceManager;
+
+	private Set<GatewayReceiver> gatewayReceivers;
 	private Set<GatewaySender> gatewaySenders;
 
-	private int lockLease;
-
-	private int lockTimeout;
-
-	private int messageSyncInterval;
-
-	private int searchTimeout;
-
-	private boolean server;
-
-	private HashMap<String, Region> allRegions;
+	private String pdxDiskStore;
+	private String name;
 
 	public StubCache(){
 		this.allRegions = new HashMap<String,Region>();
@@ -134,7 +124,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public DiskStore findDiskStore(String name) {
-		return StubDiskStore.diskStores.get(name);
+		return StubDiskStore.getDiskStore(name);
 	}
 
 	/* (non-Javadoc)
@@ -271,7 +261,7 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public LogWriter getSecurityLogger() {
-		return this.securityLogger;
+		return this.securityLogWriter;
 	}
 
 	/* (non-Javadoc)
@@ -880,6 +870,25 @@ public class StubCache implements Cache {
 
 	public void setProperties(Properties props) {
 		this.properties = props;
+	}
+
+	@Override
+	public boolean isReconnecting() {
+		return false;
+	}
+
+	@Override
+	public Cache getReconnectedCache() {
+		return this;
+	}
+
+	@Override
+	public boolean waitUntilReconnected(final long l, final TimeUnit timeUnit) throws InterruptedException {
+		return false;
+	}
+
+	@Override
+	public void stopReconnecting() {
 	}
 
 }

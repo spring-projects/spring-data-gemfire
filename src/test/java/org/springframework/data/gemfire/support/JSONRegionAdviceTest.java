@@ -10,6 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.support;
 
 import static org.junit.Assert.assertEquals;
@@ -35,82 +36,90 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * @author David Turanski
+ * @author John Blum
  */
-@ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
 @SuppressWarnings("unchecked")
 public class JSONRegionAdviceTest {
 
-	@SuppressWarnings("rawtypes")
-	@Resource(name="someRegion")
-	private Region region;
-	
+	// TODO figure out why auto-proxying the Region for JSON support prevents the GemfireTemplate from being "auto-wired",
+	// as a GemfireTemplate rather than GemfireOperations, resulting in a NoSuchBeanDefinitionException thrown by the
+	// Spring container!?!?!?!?
 	@Autowired
-	GemfireOperations template;
-	
+	private GemfireOperations template;
+
+	@SuppressWarnings("rawtypes")
+	@Resource(name = "jsonRegion")
+	private Region jsonRegion;
+
 	@Before
-	public void setUp() {
-		region.clear();
+	public void setup() {
+		jsonRegion.clear();
 	}
+
 	@Test
 	public void testPutString() {
 		String json = "{\"hello\":\"world\"}";
-		
-		region.put("key",json);
-		Object result = region.put("key",json);
-		assertEquals(json,result);
-		
-		region.create("key2",json);
-		
-		System.out.println(region.get("key"));
-		assertEquals(json,region.get("key"));
+
+		jsonRegion.put("key", json);
+
+		assertEquals(json, jsonRegion.put("key", json));
+
+		jsonRegion.create("key2", json);
+
+		System.out.println(jsonRegion.get("key"));
+
+		assertEquals(json, jsonRegion.get("key"));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testPutAll() {
-	Map<String,String> map = new HashMap<String,String>();
+		Map<String, String> map = new HashMap<String, String>();
 		map.put("key1", "{\"hello1\":\"world1\"}");
 		map.put("key2", "{\"hello2\":\"world2\"}");
-		region.putAll(map);
+		jsonRegion.putAll(map);
 		List<String> keys = Arrays.asList("key1", "key2");
-		Map<String,String> results = region.getAll(keys);
-		assertEquals("{\"hello1\":\"world1\"}",results.get("key1"));
-		assertEquals("{\"hello2\":\"world2\"}",results.get("key2"));
+		Map<String, String> results = jsonRegion.getAll(keys);
+		assertEquals("{\"hello1\":\"world1\"}", results.get("key1"));
+		assertEquals("{\"hello2\":\"world2\"}", results.get("key2"));
 	}
-	
+
 	@Test
 	public void testObjectToJSon() throws IOException {
-		Person dave = new Person(1L,"Dave","Turanski");
-		region.put("dave",dave);
-		String json = (String)region.get("dave");
-		assertEquals(json,"{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",json);
-		Object result = region.put("dave",dave);
-		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",result);
+		Person dave = new Person(1L, "Dave", "Turanski");
+		jsonRegion.put("dave", dave);
+		String json = (String) jsonRegion.get("dave");
+		assertEquals(json, "{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}", json);
+		Object result = jsonRegion.put("dave", dave);
+		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}", result);
 	}
-	
+
 	@Test
 	public void testTemplateFindUnique() {
-		Person dave = new Person(1L,"Dave","Turanski");
-		region.put("dave",dave);
-		String json = (String) template.findUnique("Select * from /someRegion where firstname=$1","Dave");
-		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",json);
+		Person dave = new Person(1L, "Dave", "Turanski");
+		jsonRegion.put("dave", dave);
+		String json = (String) template.findUnique("SELECT * FROM /jsonRegion WHERE firstname=$1", "Dave");
+		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}", json);
 	}
-	
+
 	@Test
 	public void testTemplateFind() {
-		Person dave = new Person(1L,"Dave","Turanski");
-		region.put("dave",dave);
-		SelectResults<String> results =  template.find("Select * from /someRegion where firstname=$1","Dave");
-		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",results.iterator().next());
+		Person dave = new Person(1L, "Dave", "Turanski");
+		jsonRegion.put("dave", dave);
+		SelectResults<String> results = template.find("SELECT * FROM /jsonRegion WHERE firstname=$1", "Dave");
+		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",
+			results.iterator().next());
 	}
-	
+
 	@Test
 	public void testTemplateQuery() {
-		Person dave = new Person(1L,"Dave","Turanski");
-		region.put("dave",dave);
-		SelectResults<String> results =  template.query("firstname='Dave'");
-		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",results.iterator().next());
+		Person dave = new Person(1L, "Dave", "Turanski");
+		jsonRegion.put("dave", dave);
+		SelectResults<String> results = template.query("firstname='Dave'");
+		assertEquals("{\"id\":1,\"firstname\":\"Dave\",\"lastname\":\"Turanski\",\"address\":null}",
+			results.iterator().next());
 	}
 
 }

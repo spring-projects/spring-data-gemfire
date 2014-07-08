@@ -16,6 +16,7 @@
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
@@ -33,9 +34,12 @@ public class DataPolicyConverterTest {
 	protected int getDataPolicyEnumerationSize() {
 		for (byte ordinal = 0; ordinal < Byte.MAX_VALUE; ordinal++) {
 			try {
-				DataPolicy.fromOrdinal(ordinal);
+				assertNotNull(DataPolicy.fromOrdinal(ordinal));
 			}
-			catch (Exception e) {
+			catch (Exception ignore) {
+				return ordinal;
+			}
+			catch (Error ignore) {
 				return ordinal;
 			}
 		}

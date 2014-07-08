@@ -32,8 +32,8 @@
 
 	<gfe:client-region id="persistent" name="PersistentRegion" pool-name="gemfire-pool" persistent="true" disk-store-ref="diskStore" disk-synchronous="true"/>
 
-	<gfe:disk-store id="diskStore" queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
-		<gfe:disk-dir location="./" max-size="1"/>
+	<gfe:disk-store id="diskStore" queue-size="50" auto-compact="true" max-oplog-size="5" time-interval="9999">
+		<gfe:disk-dir location="./" max-size="10"/>
 	</gfe:disk-store>
 
 	<gfe:client-region id="overflow" name="OverflowRegion" pool-name="gemfire-pool" disk-store-ref="diskStore">

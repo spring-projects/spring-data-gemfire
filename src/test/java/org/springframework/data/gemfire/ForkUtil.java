@@ -19,111 +19,106 @@ package org.springframework.data.gemfire;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.util.StringUtils;
-
 
 /**
  * Utility for forking Java processes.
  * 
  * @author Costin Leau
+ * @author John Blum
  */
 public class ForkUtil {
-	private static OutputStream os;
-	private static String TEMP_DIR = System.getProperty("java.io.tmpdir");
-	
-	
 
-	private static OutputStream cloneJVM(String arguments) {
-		String cp = System.getProperty("java.class.path");
-		String home = System.getProperty("java.home");
+	private static OutputStream processStandardInStream;
 
-		Process proc = null;
-		String sp = System.getProperty("file.separator");
-		String java = home + sp + "bin" + sp + "java";
-		
+	private static String JAVA_CLASSPATH = System.getProperty("java.class.path");
+	private static String JAVA_HOME = System.getProperty("java.home");
+	private static String JAVA_EXE = JAVA_HOME.concat(File.separator).concat("bin").concat(File.separator).concat("java");
+	private static String TEMP_DIRECTORY = System.getProperty("java.io.tmpdir");
+
+	private static OutputStream cloneJVM(final String arguments) {
 		String[] args = arguments.split("\\s+");
-		String[] cmd = new String[args.length + 3];
-		cmd[0]=java;
-		cmd[1]="-cp";
-		cmd[2]=cp;
-		for (int i=3; i< cmd.length; i++) {
-			cmd[i] = args[i-3];
-		}
-		
+
+		List<String> command = new ArrayList<String>(args.length + 5);
+
+		command.add(JAVA_EXE);
+		command.add("-classpath");
+		command.add(JAVA_CLASSPATH);
+		//command.add("-Xms256m");
+		//command.add("-Xmx512m");
+		command.addAll(Arrays.asList(args));
+
+		Process javaProcess;
+
 		try {
- 			proc = Runtime.getRuntime().exec(cmd);
-		} catch (IOException ioe) {
-			System.out.println("[FORK-ERROR] " + ioe.getMessage());
-			throw new IllegalStateException("Cannot start command " + StringUtils.arrayToDelimitedString(cmd," "), ioe);
+			javaProcess = Runtime.getRuntime().exec(command.toArray(new String[command.size()]));
+		}
+		catch (IOException e) {
+			System.out.println("[FORK-ERROR] " + e.getMessage());
+			throw new IllegalStateException(String.format("Cannot start command %1$s",
+				StringUtils.arrayToDelimitedString(command.toArray(), " ")), e);
 		}
 
-		System.out.println("Started fork from command\n" + StringUtils.arrayToDelimitedString(cmd," "));
-		final Process p = proc;
+		System.out.println("Started fork from command: \n" + StringUtils.arrayToDelimitedString(command.toArray()," "));
 
-		final BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		final BufferedReader er = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-		final AtomicBoolean run = new AtomicBoolean(true);
+		final AtomicBoolean runCondition = new AtomicBoolean(true);
+		final Process p = javaProcess;
 
-	new Thread(new Runnable() {
-			public void run() {
-				try {
-					String line = null;
-					do {
-						while ((line = er.readLine()) != null) {
-							System.out.println("[FORK-ERROR] " + line);
-						}
-						Thread.sleep(200);
-					} while (run.get());
-				} catch (Exception ex) {
-					// ignore and exit
-				}
-			}
-		}).start();
-		 
-		
-		 new Thread(new Runnable() {
-
-			public void run() {
-				try {
-					String line = null;
-					do {
-						while ((line = br.readLine()) != null) {
-							System.out.println("[FORK] " + line);
-						}
-						Thread.sleep(200);
-					} while (run.get());
-				} catch (Exception ex) {
-					// ignore and exit
-				}
-			}
-		}).start();
+		new Thread(newProcessStreamReaderRunnable(runCondition, p.getErrorStream(), "[FORK-ERROR]")).start();
+		new Thread(newProcessStreamReaderRunnable(runCondition, p.getInputStream(), "[FORK]")).start();
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
 				System.out.println("Stopping fork...");
-				run.set(false);
-				os = null;
-				if (p != null)
-					p.destroy();
+				runCondition.set(false);
+				processStandardInStream = null;
 
 				try {
+					p.destroy();
 					p.waitFor();
-				} catch (InterruptedException e) {
-					// ignore
 				}
+				catch (InterruptedException ignore) {
+				}
+
 				System.out.println("Fork stopped");
 			}
 		});
 
-		os = proc.getOutputStream();
-		return os;
+		processStandardInStream = javaProcess.getOutputStream();
+
+		return processStandardInStream;
 	}
-	
+
+	protected static Runnable newProcessStreamReaderRunnable(final AtomicBoolean runCondition, final InputStream processStream, final String label) {
+		final BufferedReader processStreamReader = new BufferedReader(new InputStreamReader(processStream));
+
+		return new Runnable() {
+			public void run() {
+				try {
+					do {
+						for (String line = "Reading..."; line != null; line = processStreamReader.readLine()) {
+							System.out.printf("%1$s %2$s%n ", label, line);
+						}
+
+						Thread.sleep(200);
+					}
+					while (runCondition.get());
+				}
+				catch (Exception ignore) {
+				}
+			}
+		};
+	}
+
 	public static OutputStream cacheServer(Class<?> clazz) {
 		return startCacheServer(clazz.getName());
 	}
@@ -162,25 +157,27 @@ public class ForkUtil {
 
 	public static void sendSignal() {
 		try {
-			os.write("\n".getBytes());
-			os.flush();
-		} catch (IOException ex) {
+			processStandardInStream.write("\n".getBytes());
+			processStandardInStream.flush();
+		}
+		catch (IOException ex) {
 			throw new IllegalStateException("Cannot communicate with forked VM", ex);
 		}
 	}
 
 	public static boolean deleteControlFile(String name) {
-		String path = TEMP_DIR + File.separator + name;
+		String path = TEMP_DIRECTORY + File.separator + name;
 		return new File(path).delete();
 	}
 
 	public static boolean createControlFile(String name) throws IOException {
-		String path = TEMP_DIR + File.separator + name;
+		String path = TEMP_DIRECTORY + File.separator + name;
 		return new File(path).createNewFile();
 	}
 
 	public static boolean controlFileExists(String name) {
-		String path = TEMP_DIR + File.separator + name;
+		String path = TEMP_DIRECTORY + File.separator + name;
 		return new File(path).exists();
 	}
+
 }

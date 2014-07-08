@@ -12,147 +12,52 @@
  */
 package org.springframework.data.gemfire.test;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
-public class StubDiskStore implements DiskStore, DiskStoreFactory {
-   static Map<String,DiskStore> diskStores = new HashMap<String,DiskStore>();
-	
+public class StubDiskStore implements DiskStoreFactory {
 
-	private String name;
-	private boolean autoCompact;
-	private int compactionThreshold;
+	private static Map<String, DiskStore> diskStores = new HashMap<String, DiskStore>();
+
 	private boolean allowForceCompaction;
+	private boolean autoCompact;
+
+	private float diskUsageCriticalPercentage;
+	private float diskUsageWarningPercentage;
+
+	private int compactionThreshold;
+	private int queueSize;
+	private int writeBufferSize;
+
+	private int[] diskDirSizes;
+
 	private long maxOpLogSize;
 	private long timeInterval;
-	private int writeBufferSize;
+
 	private File[] diskDirs;
-	private int[] diskDirSizes;
-	private UUID diskStoreUUID;
-	private int queueSize;
 
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getName()
-	 */
-	@Override
-	public String getName() { 
-		return this.name;
+	public static DiskStore getDiskStore(final String name) {
+		return diskStores.get(name);
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getAutoCompact()
+	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setAllowForceCompaction(boolean)
 	 */
 	@Override
-	public boolean getAutoCompact() {
-		return this.autoCompact;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getCompactionThreshold()
-	 */
-	@Override
-	public int getCompactionThreshold() {
-		return this.compactionThreshold;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getAllowForceCompaction()
-	 */
-	@Override
-	public boolean getAllowForceCompaction() {
-		return this.allowForceCompaction;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getMaxOplogSize()
-	 */
-	@Override
-	public long getMaxOplogSize() {
-		return this.maxOpLogSize;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getTimeInterval()
-	 */
-	@Override
-	public long getTimeInterval() {
-		return this.timeInterval;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getWriteBufferSize()
-	 */
-	@Override
-	public int getWriteBufferSize() {
-		return this.writeBufferSize;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getDiskDirs()
-	 */
-	@Override
-	public File[] getDiskDirs() {
-		return this.diskDirs;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getDiskDirSizes()
-	 */
-	@Override
-	public int[] getDiskDirSizes() {
-		return this.diskDirSizes;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getDiskStoreUUID()
-	 */
-	@Override
-	public UUID getDiskStoreUUID() {
-		return this.diskStoreUUID;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#getQueueSize()
-	 */
-	@Override
-	public int getQueueSize() {
-		return this.queueSize;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#flush()
-	 */
-	@Override
-	public void flush() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#forceRoll()
-	 */
-	@Override
-	public void forceRoll() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStore#forceCompaction()
-	 */
-	@Override
-	public boolean forceCompaction() {
-		// TODO Auto-generated method stub
-		return false;
+	public DiskStoreFactory setAllowForceCompaction(boolean allowForceCompaction) {
+		this.allowForceCompaction = allowForceCompaction;
+		return this;
 	}
 
 	/* (non-Javadoc)
@@ -170,15 +75,6 @@ public class StubDiskStore implements DiskStore, DiskStoreFactory {
 	@Override
 	public DiskStoreFactory setCompactionThreshold(int compactionThreshold) {
 		this.compactionThreshold = compactionThreshold;
-		return this;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setAllowForceCompaction(boolean)
-	 */
-	@Override
-	public DiskStoreFactory setAllowForceCompaction(boolean allowForceCompaction) {
-		this.allowForceCompaction = allowForceCompaction;
 		return this;
 	}
 
@@ -238,12 +134,46 @@ public class StubDiskStore implements DiskStore, DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#create(java.lang.String)
+	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setDiskUsageCriticalPercentage(float)
 	 */
 	@Override
-	public DiskStore create(String name) {
-		this.name = name;
-		diskStores.put(name,this);
+	public DiskStoreFactory setDiskUsageCriticalPercentage(final float diskUsageCriticalPercentage) {
+		this.diskUsageCriticalPercentage = diskUsageCriticalPercentage;
 		return this;
 	}
+
+	/* (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setDiskUsageWarningPercentage(float)
+	 */
+	@Override
+	public DiskStoreFactory setDiskUsageWarningPercentage(final float diskUsageWarningPercentage) {
+		this.diskUsageWarningPercentage = diskUsageWarningPercentage;
+		return this;
+	}
+
+	/* (non-Javadoc)
+		 * @see com.gemstone.gemfire.cache.DiskStoreFactory#create(java.lang.String)
+		 */
+	@Override
+	public DiskStore create(final String name) {
+		DiskStore mockDiskStore = mock(DiskStore.class, name);
+
+		when(mockDiskStore.getName()).thenReturn(name);
+		when(mockDiskStore.getAllowForceCompaction()).thenReturn(allowForceCompaction);
+		when(mockDiskStore.getAutoCompact()).thenReturn(autoCompact);
+		when(mockDiskStore.getCompactionThreshold()).thenReturn(compactionThreshold);
+		when(mockDiskStore.getDiskUsageCriticalPercentage()).thenReturn(diskUsageCriticalPercentage);
+		when(mockDiskStore.getDiskUsageWarningPercentage()).thenReturn(diskUsageWarningPercentage);
+		when(mockDiskStore.getDiskDirs()).thenReturn(diskDirs);
+		when(mockDiskStore.getDiskDirSizes()).thenReturn(diskDirSizes);
+		when(mockDiskStore.getMaxOplogSize()).thenReturn(maxOpLogSize);
+		when(mockDiskStore.getQueueSize()).thenReturn(queueSize);
+		when(mockDiskStore.getTimeInterval()).thenReturn(timeInterval);
+		when(mockDiskStore.getWriteBufferSize()).thenReturn(writeBufferSize);
+
+		diskStores.put(name, mockDiskStore);
+
+		return mockDiskStore;
+	}
+
 }

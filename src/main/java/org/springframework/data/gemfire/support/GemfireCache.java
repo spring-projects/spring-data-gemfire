@@ -29,7 +29,8 @@ import com.gemstone.gemfire.cache.Region;
  *
  * @author Costin Leau
  * @author John Blum
- *
+ * @see org.springframework.cache.Cache
+ * @see com.gemstone.gemfire.cache.Region
  */
 public class GemfireCache implements Cache {
 
@@ -41,7 +42,7 @@ public class GemfireCache implements Cache {
 	 * 
 	 * @param region backing GemFire region
 	 */
-	public GemfireCache(Region<?, ?> region) {
+	public GemfireCache(final Region<?, ?> region) {
 		this.region = region;
 	}
 
@@ -57,22 +58,22 @@ public class GemfireCache implements Cache {
 		region.clear();
 	}
 
-	public void evict(Object key) {
+	public void evict(final Object key) {
 		region.destroy(key);
 	}
 
-	public ValueWrapper get(Object key) {
+	public ValueWrapper get(final Object key) {
 		Object value = region.get(key);
 
 		return (value == null ? null : new SimpleValueWrapper(value));
 	}
 
-  public <T> T get(final Object key, final Class<T> type) {
-    return type.cast(region.get(key));
-  }
+	public <T> T get(final Object key, final Class<T> type) {
+		return type.cast(region.get(key));
+	}
 
-  @SuppressWarnings("unchecked")
-	public void put(Object key, Object value) {
+	@SuppressWarnings("unchecked")
+	public void put(final Object key, final Object value) {
 		region.put(key, value);
 	}
 
