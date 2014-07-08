@@ -27,6 +27,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * Base class for GemFire WAN Gateway component factory beans.
@@ -34,7 +35,7 @@ import com.gemstone.gemfire.cache.Cache;
  * @author David Turanski
  * @author John Blum
  */
-public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<T>, InitializingBean, BeanNameAware,
+public abstract class AbstractWANComponentFactoryBean<T> implements BeanNameAware, FactoryBean<T>, InitializingBean,
 		DisposableBean {
 
 	protected static final List<String> VALID_ORDER_POLICIES = Arrays.asList("KEY", "PARTITION", "THREAD");
@@ -51,33 +52,23 @@ public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<
 	protected AbstractWANComponentFactoryBean(final Cache cache) {
 		this.cache = cache;
 	}
-	
-	public void setName(String name) {
+
+	@Override
+	public final void setBeanName(final String beanName) {
+		this.beanName = beanName;
+	}
+
+	public void setFactory(Object factory) {
+		this.factory = factory;
+	}
+
+	public void setName(final String name) {
 		this.name = name;
 	}
 
 	public String getName() {
-		return (name != null ? name: beanName);
+		return (StringUtils.hasText(name) ? name: beanName);
 	}
-
-	@Override
-	public void destroy() throws Exception {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public final void setBeanName(String beanName) {
-		this.beanName = beanName;
-	}
-
-	@Override
-	public final void afterPropertiesSet() throws Exception {
-		Assert.notNull(getName(), "Name cannot be null");
-		Assert.notNull(cache, "Cache cannot be null");
-		doInit();
-	}
-
-	protected abstract void doInit() throws Exception;
 
 	@Override
 	public abstract T getObject() throws Exception;
@@ -89,9 +80,18 @@ public abstract class AbstractWANComponentFactoryBean<T> implements FactoryBean<
 	public final boolean isSingleton() {
 		return true;
 	}
-	
-	public void setFactory(Object factory) {
-		this.factory = factory;
+
+	@Override
+	public final void afterPropertiesSet() throws Exception {
+		Assert.notNull(getName(), "Name must not be null.");
+		Assert.notNull(cache, "Cache must not be null.");
+		doInit();
 	}
-	
+
+	protected abstract void doInit() throws Exception;
+
+	@Override
+	public void destroy() throws Exception {
+	}
+
 }

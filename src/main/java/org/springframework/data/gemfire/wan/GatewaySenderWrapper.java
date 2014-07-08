@@ -1,21 +1,29 @@
 package org.springframework.data.gemfire.wan;
 
+import java.util.List;
+
+import org.springframework.util.Assert;
+
 import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
-import java.util.List;
-
 /**
- * Created by dturanski on 9/16/13.
+ * @author David Turanski
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.util.Gateway
+ * @see com.gemstone.gemfire.cache.wan.GatewaySender
  */
 public class GatewaySenderWrapper implements GatewaySender {
-    private final GatewaySender delegate;
+
     private boolean manualStart;
 
-    public GatewaySenderWrapper(GatewaySender delegate) {
-        this.delegate = delegate;
+    private final GatewaySender delegate;
+
+	public GatewaySenderWrapper(final GatewaySender gatewaySender) {
+		Assert.notNull(gatewaySender, "The target Gateway Sender must not be null.");
+        this.delegate = gatewaySender;
     }
 
     @Override
@@ -151,4 +159,10 @@ public class GatewaySenderWrapper implements GatewaySender {
     public void setManualStart(boolean manualStart) {
         this.manualStart = manualStart;
     }
+
+	@Override
+	public String toString() {
+		return this.delegate.toString();
+	}
+
 }

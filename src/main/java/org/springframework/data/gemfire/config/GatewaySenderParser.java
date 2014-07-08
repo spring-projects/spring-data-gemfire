@@ -25,7 +25,8 @@ import org.w3c.dom.Element;
 
 /**
  * @author David Turanski
- * 
+ * @author John Blum
+ * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
  */
 class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -36,12 +37,12 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
 		String cacheRef = element.getAttribute("cache-ref");
 
-		// add cache reference (fallback to default if nothing is specified)
 		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef
-				: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+
+		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
 		ParsingUtils.setPropertyValue(element, builder, "alert-threshold");
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
 		ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
@@ -52,39 +53,40 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "manual-start");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
 		ParsingUtils.setPropertyValue(element, builder, "order-policy");
+		ParsingUtils.setPropertyValue(element, builder, "parallel");
+		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "remote-distributed-system-id");
 		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
 		ParsingUtils.setPropertyValue(element, builder, "socket-read-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "persistent");
-		ParsingUtils.setPropertyValue(element, builder, "parallel");
-		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
 
 		Element eventFilterElement = DomUtils.getChildElementByTagName(element, "event-filter");
+
 		if (eventFilterElement != null) {
-			builder.addPropertyValue("eventFilters",
-					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, eventFilterElement, builder));
+			builder.addPropertyValue("eventFilters", ParsingUtils.parseRefOrNestedBeanDeclaration(
+				parserContext, eventFilterElement, builder));
 		}
 
 		ParsingUtils.parseTransportFilters(element, parserContext, builder);
 
-		/**
-		 * set the name for an inner bean
-		 */
+		 // set the name for the GatewaySender as an inner bean
 		if (!StringUtils.hasText(element.getAttribute(NAME_ATTRIBUTE))) {
 			if (element.getParentNode().getNodeName().endsWith("region")) {
 				Element region = (Element) element.getParentNode();
-				String regionName = StringUtils.hasText(region.getAttribute("name")) ? region.getAttribute("name")
-						: region.getAttribute("id");
 
-				int i = 0;
-				String name = regionName + ".gatewaySender#" + i;
-				while (parserContext.getRegistry().isBeanNameInUse(name)) {
-					i++;
-					name = regionName + ".gatewaySender#" + i;
+				String regionName = (StringUtils.hasText(region.getAttribute(NAME_ATTRIBUTE))
+					? region.getAttribute(NAME_ATTRIBUTE) : region.getAttribute(ID_ATTRIBUTE));
+
+				int number = 0;
+
+				String gatewaySenderName = (regionName + ".gatewaySender#" + number);
+
+				while (parserContext.getRegistry().isBeanNameInUse(gatewaySenderName)) {
+					gatewaySenderName = (regionName + ".gatewaySender#" + (++number));
 				}
 
-				builder.addPropertyValue("name", name);
+				builder.addPropertyValue("name", gatewaySenderName);
 			}
 		}
 	}
+
 }

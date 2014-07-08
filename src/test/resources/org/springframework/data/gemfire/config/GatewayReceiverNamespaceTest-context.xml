@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<gfe:cache/>
+
+	<gfe:gateway-receiver id="Default" bind-address="192.168.0.1" start-port="12345" end-port="54321"
+						  maximum-time-between-pings="5000" socket-buffer-size="32768"/>
+
+	<gfe:gateway-receiver id="Auto" manual-start="false"/>
+
+	<gfe:gateway-receiver id="Manual" manual-start="true"/>
+
+</beans>
