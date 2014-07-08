@@ -13,6 +13,7 @@
 package org.springframework.data.gemfire.function;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
@@ -39,7 +40,7 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
 public class FunctionArgumentResolverTest {
 
 	@Test
-	public void testDefaultFunctionArgumentResolverNoArguments() {
+	public void testDefaultFunctionArgumentResolverWithNoArguments() {
 		FunctionArgumentResolver functionArgumentResolver = new DefaultFunctionArgumentResolver();
 		FunctionContext mockFunctionContext = mock(FunctionContext.class);
 
@@ -51,32 +52,35 @@ public class FunctionArgumentResolverTest {
 		assertEquals(0, args.length);
 	}
 
-    @Test
-    public void testDefaultFunctionArgumentResolverSingleArg() {
-        FunctionArgumentResolver far = new DefaultFunctionArgumentResolver();
+	@Test
+	public void testDefaultFunctionArgumentResolverWithArgumentArray() {
+		FunctionArgumentResolver functionArgumentResolver = new DefaultFunctionArgumentResolver();
+		FunctionContext functionContext = mock(FunctionContext.class);
 
+		when(functionContext.getArguments()).thenReturn(new String[] { "one", "two", "three" });
+
+		Object[] args = functionArgumentResolver.resolveFunctionArguments(functionContext);
+
+		assertNotNull(args);
+		assertFalse(args instanceof String[]);
+		assertEquals(3, args.length);
+		assertEquals("one", args[0]);
+		assertEquals("two", args[1]);
+		assertEquals("three", args[2]);
+	}
+
+	@Test
+    public void testDefaultFunctionArgumentResolverWithSingleArgument() {
+        FunctionArgumentResolver functionArgumentResolver = new DefaultFunctionArgumentResolver();
         FunctionContext functionContext = mock(FunctionContext.class);
 
-        when(functionContext.getArguments()).thenReturn("hello");
+        when(functionContext.getArguments()).thenReturn("test");
 
-        Object[] args = far.resolveFunctionArguments(functionContext);
+        Object[] args = functionArgumentResolver.resolveFunctionArguments(functionContext);
 
+		assertNotNull(args);
         assertEquals(1, args.length);
-        assertEquals("hello", args[0]);
-    }
-
-    @Test
-    public void testDefaultFunctionArgumentResolverSingleArgAsArray() {
-        FunctionArgumentResolver far = new DefaultFunctionArgumentResolver();
-
-        FunctionContext functionContext = mock(FunctionContext.class);
-
-        when(functionContext.getArguments()).thenReturn(new String[]{"hello"});
-
-        Object[] args = far.resolveFunctionArguments(functionContext);
-
-        assertEquals(1, args.length);
-        assertEquals("hello", args[0]);
+        assertEquals("test", args[0]);
     }
 
     @Test
