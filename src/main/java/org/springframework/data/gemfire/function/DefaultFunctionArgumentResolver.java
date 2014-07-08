@@ -28,7 +28,7 @@ class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
 	 */
 	@Override
 	public Object[] resolveFunctionArguments(final FunctionContext functionContext) {
-		return (isArray(functionContext.getArguments())) ? (Object[]) functionContext.getArguments()
+		return (isArray(functionContext.getArguments())) ? toObjectArray((Object[]) functionContext.getArguments())
 			: getArguments(functionContext);
 	}
 
@@ -36,8 +36,20 @@ class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
 		return (value != null && value.getClass().isArray());
 	}
 
+	private Object[] toObjectArray(final Object[] arguments) {
+		Object[] result = new Object[arguments.length];
+
+		int index = 0;
+
+		for (Object arg : arguments) {
+			result[index++] = arg;
+		}
+
+		return result;
+	}
+
 	private Object[] getArguments(final FunctionContext context) {
-		final Object arguments = context.getArguments();
+		Object arguments = context.getArguments();
 		return (arguments != null ? new Object[] { arguments } : EMPTY_ARRAY);
 	}
 
