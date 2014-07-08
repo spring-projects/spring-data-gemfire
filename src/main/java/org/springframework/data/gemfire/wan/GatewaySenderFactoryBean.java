@@ -33,6 +33,13 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.context.SmartLifecycle
+ * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.util.Gateway
+ * @see com.gemstone.gemfire.cache.wan.GatewaySender
+ * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
+ * @since 1.2.2
  */
 @SuppressWarnings("unused")
 public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>
@@ -81,7 +88,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	@Override
 	public Class<?> getObjectType() {
-		return GatewaySender.class;
+		return (gatewaySender != null ? gatewaySender.getClass() : GatewaySender.class);
 	}
 
 	@Override
@@ -159,6 +166,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 		GatewaySenderWrapper wrapper = new GatewaySenderWrapper(gatewaySenderFactory.create(getName(),
 			remoteDistributedSystemId));
+
         wrapper.setManualStart(manualStart);
         gatewaySender = wrapper;
 	}
@@ -204,7 +212,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	}
 
 	public void setManualStart(Boolean manualStart) {
-		this.manualStart = manualStart;
+		this.manualStart = Boolean.TRUE.equals(manualStart);
 	}
 
 	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
@@ -248,29 +256,11 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#start()
+	 * @see org.springframework.context.SmartLifecycle#isAutoStartup()
 	 */
 	@Override
-	public synchronized void start() {
-		if (!gatewaySender.isRunning()){
-			gatewaySender.start();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#stop()
-	 */
-	@Override
-	public void stop() {
-		gatewaySender.stop();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#isRunning()
-	 */
-	@Override
-	public boolean isRunning() {
-		return gatewaySender.isRunning();
+	public boolean isAutoStartup() {
+		return !manualStart;
 	}
 
 	/* (non-Javadoc)
@@ -282,11 +272,31 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.context.SmartLifecycle#isAutoStartup()
+	 * @see org.springframework.context.Lifecycle#isRunning()
 	 */
 	@Override
-	public boolean isAutoStartup() {
-		return !manualStart;
+	public boolean isRunning() {
+		return gatewaySender.isRunning();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Lifecycle#start()
+	 */
+	@Override
+	public synchronized void start() {
+		Assert.notNull(gatewaySender, "The GatewaySender was not properly configured and initialized!");
+
+		if (!isRunning()){
+			gatewaySender.start();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.Lifecycle#stop()
+	 */
+	@Override
+	public void stop() {
+		gatewaySender.stop();
 	}
 
 	/* (non-Javadoc)

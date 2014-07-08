@@ -27,13 +27,15 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  *
  */
 public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
-	
-	private int startPort;
+
 	private int endPort;
-	private String bindAddress;
-	private List<GatewayTransportFilter> gatewayTransportFilters = new ArrayList<GatewayTransportFilter>();
 	private int maximumTimeBetweenPings;
 	private int socketBufferSize;
+	private int startPort;
+
+	private List<GatewayTransportFilter> gatewayTransportFilters = new ArrayList<GatewayTransportFilter>();
+
+	private String bindAddress;
 	private String hostnameForClients;
 
 	/* (non-Javadoc)
@@ -115,14 +117,15 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	@Override
 	public GatewayReceiver create() {
 		GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
+
 		when(gatewayReceiver.getBindAddress()).thenReturn(this.bindAddress);
 		when(gatewayReceiver.getEndPort()).thenReturn(this.endPort);
 		when(gatewayReceiver.getGatewayTransportFilters()).thenReturn(this.gatewayTransportFilters);
+		when(gatewayReceiver.getHost()).thenReturn(this.hostnameForClients);
 		when(gatewayReceiver.getMaximumTimeBetweenPings()).thenReturn(this.maximumTimeBetweenPings);
 		when(gatewayReceiver.getSocketBufferSize()).thenReturn(this.socketBufferSize);
 		when(gatewayReceiver.getStartPort()).thenReturn(this.startPort);
-		when(gatewayReceiver.getHost()).thenReturn(this.hostnameForClients);
-		 
+
 		return gatewayReceiver;
 	}
 

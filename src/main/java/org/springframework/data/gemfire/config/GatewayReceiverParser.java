@@ -24,9 +24,11 @@ import org.w3c.dom.Element;
 
 /**
  * @author David Turanski
- * 
+ * @author John Blum
+ * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
  */
 class GatewayReceiverParser extends AbstractSimpleBeanDefinitionParser {
+
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return GatewayReceiverFactoryBean.class;
@@ -34,15 +36,19 @@ class GatewayReceiverParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		builder.setLazyInit(false);
 		String cacheRef = element.getAttribute("cache-ref");
-		// add cache reference (fallback to default if nothing is specified)
-		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef : "gemfireCache"));
+
+		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef
+			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+		builder.setLazyInit(false);
+
+		ParsingUtils.setPropertyValue(element, builder, "bind-address");
 		ParsingUtils.setPropertyValue(element, builder, "start-port");
 		ParsingUtils.setPropertyValue(element, builder, "end-port");
-		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
+		ParsingUtils.setPropertyValue(element, builder, "manual-start");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-time-between-pings");
-		ParsingUtils.setPropertyValue(element, builder, "bind-address");
+		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
 		ParsingUtils.parseTransportFilters(element, parserContext, builder);
 	}
+
 }
