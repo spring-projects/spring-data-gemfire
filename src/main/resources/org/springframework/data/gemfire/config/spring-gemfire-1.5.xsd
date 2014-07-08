@@ -2455,43 +2455,18 @@ Optionally specifies the GemFire gateway sender id. By default this value is the
                   ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="remote-distributed-system-id" type="xsd:string"
-					   use="required">
+		<xsd:attribute name="remote-distributed-system-id" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Specifies the remote distributed system id, an integer value representing the remote distributed system
                   ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="manual-start" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="alert-threshold" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies if the gateway sender is manually (true) or automatically(false) started
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="socket-buffer-size" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the socket buffer size in bytes
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="socket-read-timeout" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the socket read timeout in milliseconds
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="enable-batch-conflation" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies whether batch conflation is enabled (true or false)
+Specifies the alert threshold in miliseconds, indicating the maximum time elapsed from when the gateway sent the message
+to when the acknowldgement was received from the gateway receiver.
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2503,20 +2478,24 @@ The maximum time interval that can elapse before a partial batch is sent from a 
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="alert-threshold" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the alert threshold in miliseconds, indicating the maximum time elapsed from when the gateway sent the message
-to when the acknowldgement was received from the gateway receiver.
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="dispatcher-threads" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Specifies the number of dispatcher threads to allocate to the gateway sender
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="enable-batch-conflation" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Specifies whether batch conflation is enabled (true or false)
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="manual-start" type="xsd:string" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Specifies if the gateway sender is manually (true) or automatically (false) started.  Default is an automatic start (false).
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2531,6 +2510,20 @@ THREAD: Indicates that events will be concurrently processed based on the event'
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Specifies the socket buffer size in bytes
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="socket-read-timeout" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Specifies the socket read timeout in milliseconds
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:complexType>
 	<!-- -->
 	<xsd:attributeGroup name="commonWANQueueAttributes">
@@ -2541,23 +2534,14 @@ Specifies the batch size
             	]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="persistent" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies whether persistence is enabled: true or false(default)
-            	]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="disk-store-ref" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="disk-store-ref" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates the id of disk store to use for persistence
             	]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="maximum-queue-memory" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="maximum-queue-memory" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Specifies the maximum memory in MB to allocate for the queue
@@ -2569,6 +2553,13 @@ Specifies the maximum memory in MB to allocate for the queue
 				<xsd:documentation><![CDATA[
                 A value of "false" or "true" that specifies the type of queue GemFire creates, serial or parallel.
             ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="persistent" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Specifies whether persistence is enabled: true or false(default)
+            	]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:attributeGroup>
@@ -2588,6 +2579,27 @@ A gateway receiver definition (requires Gemfire 7.0 or later)
 			<xsd:element name="transport-filter" type="gatewayTransportFilterType"
 						 minOccurs="0" maxOccurs="1" />
 		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The id of this bean definition
+                    ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cache-ref" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The id of the cache - default is gemfireCache
+                  ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="bind-address" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Specifies the bind address (IP address or host name) for the gateway receiver
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="start-port" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -2602,42 +2614,25 @@ Specifies the upper end of a port range to use for the gateway receiver
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="bind-address" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="manual-start" type="xsd:string" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies the bind address (IP address or host name) for the gateway receiver
+Specifies if the gateway receiver is manually (true) or automatically (false) started.  Default is an automatic start (false).
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="maximum-time-between-pings" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="maximum-time-between-pings" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Specifies the maximum time between pings in milliseconds
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="socket-buffer-size" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Specifies the socket buffer size in bytes
             ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="id" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The id of this bean definition
-                    ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="cache-ref" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The id of the cache - default is gemfireCache
-                  ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
