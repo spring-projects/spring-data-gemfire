@@ -38,13 +38,7 @@ class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
 
 	private Object[] toObjectArray(final Object[] arguments) {
 		Object[] result = new Object[arguments.length];
-
-		int index = 0;
-
-		for (Object arg : arguments) {
-			result[index++] = arg;
-		}
-
+		System.arraycopy(arguments, 0, result, 0, arguments.length);
 		return result;
 	}
 
