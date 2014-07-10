@@ -3,6 +3,19 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.5.0.M1 (2014-07-10)
+----------------------------------------
+* SGF-299 - Upgrade Spring Data GemFire 1.5 to Spring Framework 4.0.6.
+* SGF-298 - Release 1.5 M1.
+* SGF-297 - Executing SDG Functions annotated POJO methods from Gfsh does not work when "injecting" arguments during Function argument resolution.
+* SGF-296 - Create spring-gemfire-1.5.xsd and spring-data-gemfire-1.5.xsd for SDG 1.5.
+* SGF-295 - Enable Local Region Eviction action to be set to 'LOCAL_DESTROY', which is allowed in GemFire using the public API or in cache.xml.
+* SGF-294 - Enable GemFire GatewayReceivers to be started manually, the same as for GatewaySenders using SDG.
+* SGF-292 - Upgrade Spring Data GemFire 1.5 to Spring Framework 4.0.5.RELEASE.
+* SGF-290 - SDG's Repository extension does not properly handle custom @Query annotated Repository methods returning non-Collection, non-Entity-based return values.
+* SGF-215 - Ensure compatibility with Spring Framework 4.0.0.X.
+
+
 Changes in version 1.4.1.RELEASE (2014-06-30)
 ---------------------------------------------
 * SGF-293 - Release 1.4.1.
