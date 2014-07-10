@@ -117,15 +117,6 @@ Configures a data source to be bound to a JNDI context for use with Gemfire tran
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
-		<xsd:attribute name="copy-on-read" type="xsd:string"
-					   use="optional" default="false">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Controls whether entry value retrieval methods return direct references to the entry value objects in the cache (false)
-or copies of the objects (true).
-                ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
 		<xsd:attribute name="id" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -150,6 +141,14 @@ consider using a dedicated utility such as the <util:*/> namespace and its 'prop
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="lazy-init" default="true">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Determines if the cache should be initialized automatically. Normally the cache will be lazily initialized, i.e., during creation of another bean references it.
+For cases in which there are no declared dependencies on the cache, set this attribute to false.
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="use-bean-factory-locator" type="xsd:string"
 					   use="optional" default="true">
 			<xsd:annotation>
@@ -158,6 +157,45 @@ Indicates whether a bean factory locator is enabled (default) for this cache def
 the enclosing bean factory reference to allow auto-wiring of Spring beans into GemFire managed classes. Usually disabled
 when the same cache is used in multiple application context/bean factories inside the same VM.
 				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="close" default="true">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Determines if the cache should be closed when the application context is closed. This value is
+true by default but should be set to false if deploying multiple applications in a jvm that share the
+same cache instance.
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="copy-on-read" type="xsd:string"
+					   use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Controls whether entry value retrieval methods return direct references to the entry value objects in the cache (false)
+or copies of the objects (true).
+                ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="critical-heap-percentage">
+			<xsd:annotation>
+				<xsd:documentation
+					source="com.gemstone.gemfire.cache.control.ResourceManager"><![CDATA[
+Set the percentage of heap at or above which the cache is considered in danger of becoming inoperable
+due to garbage collection pauses or out of memory exceptions. Changing this value can cause a LowMemoryException to
+be thrown during certain cache operation.  This feature requires additional VM flags to perform properly (see the
+JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more information).
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="eviction-heap-percentage">
+			<xsd:annotation>
+				<xsd:documentation
+					source="com.gemstone.gemfire.cache.control.ResourceManager"><![CDATA[
+Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction.
+This feature requires additional VM flags to perform properly (see the
+JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more information).
+            ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="pdx-serializer-ref" type="xsd:string"
@@ -169,6 +207,15 @@ domain classes which are added to the cache in portable data exchange (PDX) form
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="pdx-persistent" type="xsd:string"
+					   use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Control whether the type metadata for PDX objects is persisted to disk.
+Set to true if you are using persistent regions, WAN gateways or GemFire's JSON support.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="pdx-disk-store" type="xsd:string"
 					   use="optional">
 			<xsd:annotation>
@@ -176,15 +223,6 @@ domain classes which are added to the cache in portable data exchange (PDX) form
 Sets the name of the disk store to use for PDX meta data. When serializing objects in the PDX format,
 the type definitions are persisted to disk. This setting controls which disk store is used for that persistence.
 If not set, the metadata will go in the default disk store.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="pdx-persistent" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Control whether the type metadata for PDX objects is persisted to disk.
-Set to true if you are using persistent regions, WAN gateways or GemFire's JSON support.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -216,44 +254,6 @@ do not need to pay the cost of preserving the unread fields since you will never
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="critical-heap-percentage">
-			<xsd:annotation>
-				<xsd:documentation
-					source="com.gemstone.gemfire.cache.control.ResourceManager"><![CDATA[
-Set the percentage of heap at or above which the cache is considered in danger of becoming inoperable
-due to garbage collection pauses or out of memory exceptions. Changing this value can cause a LowMemoryException to
-be thrown during certain cache operation.  This feature requires additional VM flags to perform properly (see the
-JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more information).
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="eviction-heap-percentage">
-			<xsd:annotation>
-				<xsd:documentation
-					source="com.gemstone.gemfire.cache.control.ResourceManager"><![CDATA[
-Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction.
-This feature requires additional VM flags to perform properly (see the
-JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more information).
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="close" default="true">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Determines if the cache should be closed when the application context is closed. This value is
-true by default but should be set to false if deploying multiple applications in a jvm that share the
-same cache instance.
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="lazy-init" default="true">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Determines if the cache should be initialized automatically. Normally the cache will be lazily initialized, i.e., during creation of another bean references it.
-For cases in which there are no declared dependencies on the cache, set this attribute to false.
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
 	</xsd:complexType>
 	<!-- -->
 	<xsd:element name="cache">
@@ -271,14 +271,24 @@ Defines a GemFire Cache instance used for creating or retrieving 'regions'.
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="cacheBaseType">
-					<xsd:attribute name="lock-timeout" type="xsd:string"
-								   use="optional" default="60">
+					<xsd:attribute name="enable-auto-reconnect" type="xsd:string" use="optional" default="false">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The timeout, in seconds, for implicit object lock requests. This setting affects automatic locking only,
- and does not apply to manual locking. If a lock request does not return before the specified timeout period,
-  it is cancelled and returns with a failure.
-                  ]]></xsd:documentation>
+By default, GemFire 7.5 and later will attempt to reconnect and reinitialize the cache when it has been forced out
+of the distributed system by a network-partition event, or has otherwise been shunned by other members.
+
+An auto-reconnect causes all the GemFire component references (e.g. Cache, Regions, Gateways, etc) that may have
+been injected into and SDG-based application to become stale.  Even when using GemFire's public Java API directly,
+GemFire makes no guarantees to automatically refresh any returned references to application objects that now are
+stale.
+
+Therefore, in Spring Data GemFire, the default behavior will continue to be not to 'auto-reconnect'.  This behavior
+is not recommended for applications that are 'peer' Caches injecting GemFire components, like the Cache, or Regions
+into appliaction components (e.g. @Repository POJOs).
+
+Enabling 'auto-reconnect' is only recommended for Spring bootstrapped GemFire Server's that use the Spring Data GemFire
+XML namespace to configure GemFire instead of GemFire's cache.xml.
+							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="lock-lease" type="xsd:string"
@@ -288,6 +298,16 @@ The timeout, in seconds, for implicit object lock requests. This setting affects
 The timeout, in seconds, for implicit and explicit object lock leases. This affects both automatic locking and manual locking.
 Once a lock is obtained, it can remain in force for the lock lease time period before being automatically cleared by the system
                 ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="lock-timeout" type="xsd:string"
+								   use="optional" default="60">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The timeout, in seconds, for implicit object lock requests. This setting affects automatic locking only,
+ and does not apply to manual locking. If a lock request does not return before the specified timeout period,
+  it is cancelled and returns with a failure.
+                  ]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="message-sync-interval" type="xsd:string"

@@ -37,14 +37,17 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 		this();
 		if (cacheFactoryBean != null) {
 			this.factoryLocator = cacheFactoryBean.getBeanFactoryLocator();
+			this.lazyInitialize = cacheFactoryBean.isLazyInitialize();
+			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();
 			this.beanFactory = cacheFactoryBean.getBeanFactory();
 			this.beanName = cacheFactoryBean.getBeanName();
-			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();
 			this.cacheXml = cacheFactoryBean.getCacheXml();
+			this.properties = cacheFactoryBean.getProperties();
 			this.copyOnRead = cacheFactoryBean.getCopyOnRead();
 			this.criticalHeapPercentage = cacheFactoryBean.getCriticalHeapPercentage();
-			this.dynamicRegionSupport = cacheFactoryBean.getDynamicRegionSupport();
 			this.evictionHeapPercentage = cacheFactoryBean.getEvictionHeapPercentage();
+			this.dynamicRegionSupport = cacheFactoryBean.getDynamicRegionSupport();
+			this.enableAutoReconnect = cacheFactoryBean.getEnableAutoReconnect();
 			this.gatewayConflictResolver = cacheFactoryBean.getGatewayConflictResolver();
 			this.jndiDataSources = cacheFactoryBean.getJndiDataSources();
 			this.lockLease = cacheFactoryBean.getLockLease();
@@ -55,23 +58,20 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 			this.pdxPersistent = cacheFactoryBean.getPdxPersistent();
 			this.pdxReadSerialized = cacheFactoryBean.getPdxReadSerialized();
 			this.pdxSerializer = cacheFactoryBean.getPdxSerializer();
-			this.properties = cacheFactoryBean.getProperties();
 			this.searchTimeout = cacheFactoryBean.getSearchTimeout();
 			this.transactionListeners = cacheFactoryBean.getTransactionListeners();
 			this.transactionWriter = cacheFactoryBean.getTransactionWriter();
-			this.properties = cacheFactoryBean.getProperties();
-			this.lazyInitialize = cacheFactoryBean.isLazyInitialize();
 		}
 	}
-	
+
 	@Override
-	protected Object createFactory(Properties props) {
-		setProperties(props);
-		return new CacheFactory(props);
+	protected Object createFactory(Properties gemfireProperties) {
+		setProperties(gemfireProperties);
+		return new CacheFactory(gemfireProperties);
 	}
-	
+
 	protected GemFireCache fetchCache() {
-		((StubCache)cache).setProperties(this.properties);
+		((StubCache) cache).setProperties(this.properties);
 		return cache;
 	}
  

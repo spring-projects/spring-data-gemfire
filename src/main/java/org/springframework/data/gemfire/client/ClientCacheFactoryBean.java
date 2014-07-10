@@ -86,11 +86,12 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 
 	@Override
 	protected GemFireCache createCache(Object factory) {
-		ClientCacheFactory ccf = (ClientCacheFactory) factory;
-		initializePool(ccf);
+		ClientCacheFactory clientCacheFactory = (ClientCacheFactory) factory;
+
+		initializePool(clientCacheFactory);
 		
 		// Now create the cache
-		GemFireCache cache = ccf.create();
+		GemFireCache cache = clientCacheFactory.create();
 		
 		// Register for events after pool/regions been created and iff non-durable client
 		readyForEvents();
@@ -100,8 +101,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	@Override
-	protected Object createFactory(Properties props) {
-		return new ClientCacheFactory(props);
+	protected Object createFactory(Properties gemfireProperties) {
+		return new ClientCacheFactory(gemfireProperties);
 	}
 
 	@Override
@@ -109,10 +110,6 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		return ClientCacheFactory.getAnyInstance();
 	}
 	
-	public Properties getProperties() {
-		return this.properties;
-	}
-
 	private void initializePool(ClientCacheFactory ccf) {
 		Pool p = pool;
 
@@ -189,20 +186,18 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		}
 	}
 
-	/**
-	 * Inform the GemFire cluster that this client cache is ready to receive events.
-	 */
-	private void readyForEvents(){
-		ClientCache clientCache = ClientCacheFactory.getAnyInstance();
+	@Override
+	protected void postProcessPropertiesBeforeInitialization(final Properties gemfireProperties) {
+	}
 
-		if (Boolean.TRUE.equals(readyForEvents) && !clientCache.isClosed()) {
-			try {
-				clientCache.readyForEvents();
-			}
-			catch (IllegalStateException ignore) {
-				// Cannot be called for a non-durable client so exception is thrown.
-			}
-		}
+	@Override
+	public final Boolean getEnableAutoReconnect() {
+		return Boolean.FALSE;
+	}
+
+	@Override
+	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
+		throw new UnsupportedOperationException("Auto-reconnect is not supported on ClientCache.");
 	}
 
 	/**
@@ -235,15 +230,31 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	public void setReadyForEvents(Boolean readyForEvents){
 		this.readyForEvents = readyForEvents;
 	}
-	
+
 	public Boolean getReadyForEvents(){
 		return this.readyForEvents;
 	}
-	
+
 	@Override
 	protected void applyPdxOptions(Object factory) {
 		if (factory instanceof ClientCacheFactory) {
 			new PdxOptions((ClientCacheFactory) factory).run();
+		}
+	}
+
+	/**
+	 * Inform the GemFire cluster that this client cache is ready to receive events.
+	 */
+	private void readyForEvents(){
+		ClientCache clientCache = ClientCacheFactory.getAnyInstance();
+
+		if (Boolean.TRUE.equals(readyForEvents) && !clientCache.isClosed()) {
+			try {
+				clientCache.readyForEvents();
+			}
+			catch (IllegalStateException ignore) {
+				// cannot be called for a non-durable client so exception is thrown
+			}
 		}
 	}
 

@@ -740,23 +740,29 @@ public class StubCache implements Cache {
 	}
 
 	DistributedSystem mockDistributedSystem() {
-		DistributedSystem ds = mock(DistributedSystem.class);
-		DistributedMember dm = mockDistributedMember();
-		when(ds.getName()).thenAnswer(new Answer<String>() {
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+
+		when(mockDistributedSystem.getName()).thenAnswer(new Answer<String>() {
 			@Override
 			public String answer(InvocationOnMock invocation) throws Throwable {
 				return getName();
-			}		
+			}
 		});
-		when(ds.getDistributedMember()).thenReturn(dm);
-		return ds;
+
+		when(mockDistributedSystem.getProperties()).thenReturn(this.properties);
+
+		DistributedMember mockDistributedMember = mockDistributedMember();
+
+		when(mockDistributedSystem.getDistributedMember()).thenReturn(mockDistributedMember);
+
+		return mockDistributedSystem;
 	}
 
 	DistributedMember mockDistributedMember() {
-		DistributedMember dm = mock(DistributedMember.class);
-		when(dm.getHost()).thenReturn("mockDistributedMember.host");
-		when(dm.getName()).thenReturn("mockDistributedMember");
-		return dm;
+		DistributedMember mockDistributedMember = mock(DistributedMember.class);
+		when(mockDistributedMember.getHost()).thenReturn("mockDistributedMember.host");
+		when(mockDistributedMember.getName()).thenReturn("mockDistributedMember");
+		return mockDistributedMember;
 	}
 
 	CacheServer mockCacheServer() {
@@ -764,84 +770,89 @@ public class StubCache implements Cache {
 	}
 
 	GatewayHub mockGatewayHub() {
-		final Gateway gw = mock(Gateway.class);
-		final GatewayQueueAttributes queueAttributes= mock(GatewayQueueAttributes.class);
-	    when(gw.getQueueAttributes()).thenReturn(queueAttributes);
-		GatewayHub gwh = mock(GatewayHub.class);
-		when(gwh.addGateway(anyString(),anyInt())).thenAnswer(new Answer<Gateway>() {
+		final Gateway gateway = mock(Gateway.class);
 
+	    when(gateway.getQueueAttributes()).thenReturn(mock(GatewayQueueAttributes.class));
+
+		GatewayHub gatewayHub = mock(GatewayHub.class);
+
+		when(gatewayHub.addGateway(anyString(),anyInt())).thenAnswer(new Answer<Gateway>() {
 			@Override
 			public Gateway answer(InvocationOnMock invocation) throws Throwable {
-				// TODO Auto-generated method stub
-				return gw;
+				return gateway;
 			}
-			
+
 		});
-		return gwh;
+
+		return gatewayHub;
 	}
 
 	QueryService mockQueryService() throws RegionNotFoundException, IndexInvalidException, IndexNameConflictException, IndexExistsException, UnsupportedOperationException {
-		 
-		QueryService qs = mock(QueryService.class);
-		
-		when(qs.getIndexes()).thenReturn(new ArrayList<Index>());
-		 
-		
-		when(qs.createIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>(){
+		QueryService queryService = mock(QueryService.class);
+
+		when(queryService.getIndexes()).thenReturn(new ArrayList<Index>());
+
+		when(queryService.createIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>() {
 			@Override
 			public Index answer(InvocationOnMock invocation) throws Throwable {
-				String indexName = (String)invocation.getArguments()[0];
-				String indexedExpression = (String)invocation.getArguments()[1];
-				String fromClause = (String)invocation.getArguments()[2];
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, indexedExpression, fromClause, null);
+				String indexName = (String) invocation.getArguments()[0];
+				String indexedExpression = (String) invocation.getArguments()[1];
+				String fromClause = (String) invocation.getArguments()[2];
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, indexedExpression,
+					fromClause, null);
 			}
 		});
-		when(qs.createIndex(anyString(), anyString(),anyString(),anyString())).thenAnswer(new Answer<Index>(){
+
+		when(queryService.createIndex(anyString(), anyString(),anyString(),anyString())).thenAnswer(new Answer<Index>() {
 			@Override
 			public Index answer(InvocationOnMock invocation) throws Throwable {
-				String indexName = (String)invocation.getArguments()[0];
-				String indexedExpression = (String)invocation.getArguments()[1];
-				String fromClause = (String)invocation.getArguments()[2];
-				String imports = (String)invocation.getArguments()[3];
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, indexedExpression, fromClause, imports);
+				String indexName = (String) invocation.getArguments()[0];
+				String indexedExpression = (String) invocation.getArguments()[1];
+				String fromClause = (String) invocation.getArguments()[2];
+				String imports = (String) invocation.getArguments()[3];
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, indexedExpression,
+					fromClause, imports);
 			}
 		});
-		
-		when(qs.createKeyIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>(){
+
+		when(queryService.createKeyIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>() {
 			@Override
 			public Index answer(InvocationOnMock invocation) throws Throwable {
-				String indexName = (String)invocation.getArguments()[0];
-				String indexedExpression = (String)invocation.getArguments()[1];
-				String fromClause = (String)invocation.getArguments()[2];
-				 
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY, indexedExpression, fromClause, null);
+				String indexName = (String) invocation.getArguments()[0];
+				String indexedExpression = (String) invocation.getArguments()[1];
+				String fromClause = (String) invocation.getArguments()[2];
+
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY, indexedExpression,
+					fromClause, null);
 			}
 		});
-		
-		when(qs.createHashIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>(){
+
+		when(queryService.createHashIndex(anyString(), anyString(),anyString())).thenAnswer(new Answer<Index>() {
 			@Override
 			public Index answer(InvocationOnMock invocation) throws Throwable {
-				String indexName = (String)invocation.getArguments()[0];
-				String indexedExpression = (String)invocation.getArguments()[1];
-				String fromClause = (String)invocation.getArguments()[2];
-				 
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.HASH, indexedExpression, fromClause, null);
+				String indexName = (String) invocation.getArguments()[0];
+				String indexedExpression = (String) invocation.getArguments()[1];
+				String fromClause = (String) invocation.getArguments()[2];
+
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.HASH, indexedExpression,
+					fromClause, null);
 			}
 		});
-		
-		when(qs.createHashIndex(anyString(), anyString(),anyString(),anyString())).thenAnswer(new Answer<Index>(){
+
+		when(queryService.createHashIndex(anyString(), anyString(),anyString(),anyString())).thenAnswer(new Answer<Index>() {
 			@Override
 			public Index answer(InvocationOnMock invocation) throws Throwable {
-				String indexName = (String)invocation.getArguments()[0];
-				String indexedExpression = (String)invocation.getArguments()[1];
-				String fromClause = (String)invocation.getArguments()[2];
-				String imports = (String)invocation.getArguments()[3];
-				 
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.HASH, indexedExpression, fromClause,  imports);
+				String indexName = (String) invocation.getArguments()[0];
+				String indexedExpression = (String) invocation.getArguments()[1];
+				String fromClause = (String) invocation.getArguments()[2];
+				String imports = (String) invocation.getArguments()[3];
+
+				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.HASH, indexedExpression,
+					fromClause, imports);
 			}
 		});
-		 
-		return qs;
+
+		return queryService;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
@@ -868,8 +879,8 @@ public class StubCache implements Cache {
 		return this.allRegions;
 	}
 
-	public void setProperties(Properties props) {
-		this.properties = props;
+	public void setProperties(Properties gemfireProperties) {
+		this.properties = gemfireProperties;
 	}
 
 	@Override
@@ -883,12 +894,12 @@ public class StubCache implements Cache {
 	}
 
 	@Override
-	public boolean waitUntilReconnected(final long l, final TimeUnit timeUnit) throws InterruptedException {
-		return false;
+	public void stopReconnecting() {
 	}
 
 	@Override
-	public void stopReconnecting() {
+	public boolean waitUntilReconnected(final long l, final TimeUnit timeUnit) throws InterruptedException {
+		return false;
 	}
 
 }

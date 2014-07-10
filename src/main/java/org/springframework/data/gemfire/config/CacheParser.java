@@ -56,49 +56,54 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
 		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
-		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer-ref", "pdxSerializer");
-		parsePdxDiskStore(element, parserContext, builder);
-		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
-		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized");
-		ParsingUtils.setPropertyValue(element, builder, "pdx-ignore-unread-fields");
-		ParsingUtils.setPropertyValue(element, builder, "use-bean-factory-locator");
+		ParsingUtils.setPropertyValue(element, builder, "close");
 		ParsingUtils.setPropertyValue(element, builder, "copy-on-read");
-		ParsingUtils.setPropertyValue(element, builder, "lock-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "lock-lease");
-		ParsingUtils.setPropertyValue(element, builder, "message-sync-interval");
-		ParsingUtils.setPropertyValue(element, builder, "search-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "critical-heap-percentage");
 		ParsingUtils.setPropertyValue(element, builder, "eviction-heap-percentage");
-		ParsingUtils.setPropertyValue(element, builder, "close");
+		ParsingUtils.setPropertyValue(element, builder, "enable-auto-reconnect");
+		ParsingUtils.setPropertyValue(element, builder, "lock-lease");
+		ParsingUtils.setPropertyValue(element, builder, "lock-timeout");
+		ParsingUtils.setPropertyValue(element, builder, "message-sync-interval");
+		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer-ref", "pdxSerializer");
+		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized");
+		ParsingUtils.setPropertyValue(element, builder, "pdx-ignore-unread-fields");
+		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
+		parsePdxDiskStore(element, parserContext, builder);
+		ParsingUtils.setPropertyValue(element, builder, "search-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "lazy-init","lazyInitialize");
+		ParsingUtils.setPropertyValue(element, builder, "use-bean-factory-locator");
 
 		List<Element> txListeners = DomUtils.getChildElementsByTagName(element, "transaction-listener");
+
 		if (!CollectionUtils.isEmpty(txListeners)) {
 			ManagedList<Object> transactionListeners = new ManagedList<Object>();
 			for (Element txListener : txListeners) {
-				transactionListeners.add(ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, txListener,
-						builder));
+				transactionListeners.add(ParsingUtils.parseRefOrNestedBeanDeclaration(
+					parserContext, txListener, builder));
 			}
 			builder.addPropertyValue("transactionListeners", transactionListeners);
 		}
+
 		Element txWriter = DomUtils.getChildElementByTagName(element, "transaction-writer");
+
 		if (txWriter != null) {
-			builder.addPropertyValue("transactionWriter",
-					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, txWriter, builder));
+			builder.addPropertyValue("transactionWriter", ParsingUtils.parseRefOrNestedBeanDeclaration(
+				parserContext, txWriter, builder));
 		}
 
 		Element gatewayConflictResolver = DomUtils.getChildElementByTagName(element, "gateway-conflict-resolver");
+
 		if (gatewayConflictResolver != null) {
-			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), "gateway-conflict-resolver",
-					parserContext);
-			builder.addPropertyValue("gatewayConflictResolver",
-					ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, gatewayConflictResolver, builder));
+			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), "gateway-conflict-resolver", parserContext);
+			builder.addPropertyValue("gatewayConflictResolver", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
+				parserContext, gatewayConflictResolver, builder));
 		}
 
 		Element function = DomUtils.getChildElementByTagName(element, "function");
+
 		if (function != null) {
-			builder.addPropertyValue("functions",
-					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, function, builder));
+			builder.addPropertyValue("functions", ParsingUtils.parseRefOrNestedBeanDeclaration(
+				parserContext, function, builder));
 		}
 
 		parseDynamicRegionFactory(element, builder);
@@ -130,6 +135,7 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 	private void parseDynamicRegionFactory(Element element, BeanDefinitionBuilder builder) {
 		Element dynamicRegionFactory = DomUtils.getChildElementByTagName(element, "dynamic-region-factory");
+
 		if (dynamicRegionFactory != null) {
 			BeanDefinitionBuilder dynamicRegionSupport = buildDynamicRegionSupport(dynamicRegionFactory);
 			postProcessDynamicRegionSupport(element, dynamicRegionSupport);
@@ -137,35 +143,40 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 		}
 	}
 
-	/**
-	 * @param dynamicRegionSupport BDB for &lt;dynamic-region-factory&gt;
-	 * element
-	 */
-	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
-
-	}
-
 	private BeanDefinitionBuilder buildDynamicRegionSupport(Element dynamicRegionFactory) {
-		BeanDefinitionBuilder result = null;
 		if (dynamicRegionFactory != null) {
-			BeanDefinitionBuilder dynamicRegionSupport = BeanDefinitionBuilder
-					.genericBeanDefinition(CacheFactoryBean.DynamicRegionSupport.class);
-			String diskDir = dynamicRegionFactory.getAttribute("disk-dir");
-			if (StringUtils.hasText(diskDir)) {
-				dynamicRegionSupport.addPropertyValue("diskDir", diskDir);
+			BeanDefinitionBuilder dynamicRegionSupport = BeanDefinitionBuilder.genericBeanDefinition(
+				CacheFactoryBean.DynamicRegionSupport.class);
+
+			String diskDirectory = dynamicRegionFactory.getAttribute("disk-dir");
+
+			if (StringUtils.hasText(diskDirectory)) {
+				dynamicRegionSupport.addPropertyValue("diskDir", diskDirectory);
 			}
+
 			String persistent = dynamicRegionFactory.getAttribute("persistent");
+
 			if (StringUtils.hasText(persistent)) {
 				dynamicRegionSupport.addPropertyValue("persistent", persistent);
 			}
 
 			String registerInterest = dynamicRegionFactory.getAttribute("register-interest");
+
 			if (StringUtils.hasText(registerInterest)) {
 				dynamicRegionSupport.addPropertyValue("registerInterest", registerInterest);
 			}
-			result = dynamicRegionSupport;
+
+			return dynamicRegionSupport;
 		}
-		return result;
+
+		return null;
+	}
+
+	/**
+	 * @param dynamicRegionSupport BDB for &lt;dynamic-region-factory&gt;
+	 * element
+	 */
+	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
 	}
 
 	private void parseJndiBindings(Element element, BeanDefinitionBuilder builder) {
@@ -222,11 +233,13 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
+
 		if (!StringUtils.hasText(name)) {
 			name = GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME;
-			//For backward compatibility
-			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME, "gemfire-cache");
+			// Set Cache bean alias for backwards compatibility...
+			parserContext.getRegistry().registerAlias(name, "gemfire-cache");
 		}
+
 		return name;
 	}
 

@@ -89,6 +89,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected BeanFactory beanFactory;
 
 	protected Boolean copyOnRead;
+	protected Boolean enableAutoReconnect;
 	protected Boolean pdxIgnoreUnreadFields;
 	protected Boolean pdxPersistent;
 	protected Boolean pdxReadSerialized;
@@ -258,16 +259,14 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			catch (CacheClosedException ex) {
 				initializeDynamicRegionFactory();
 
-				Object factory = createFactory(this.properties);
+				Object factory = createFactory(getProperties());
 
-				// GemFire 6.6 specific options
 				if (isPdxSettingsSpecified()) {
 					Assert.isTrue(ClassUtils.isPresent("com.gemstone.gemfire.pdx.PdxSerializer", beanClassLoader),
 						"Cannot set PDX options since GemFire 6.6 not detected.");
 					applyPdxOptions(factory);
 				}
 
-				// fall back to cache creation
 				cache = (Cache) createCache(factory);
 				messagePrefix = "Created new";
 			}
@@ -275,20 +274,20 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			if (this.copyOnRead != null) {
 				cache.setCopyOnRead(this.copyOnRead);
 			}
+			if (gatewayConflictResolver != null) {
+				cache.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
+			}
 			if (lockLease != null) {
 				cache.setLockLease(lockLease);
 			}
 			if (lockTimeout != null) {
 				cache.setLockTimeout(lockTimeout);
 			}
-			if (searchTimeout != null) {
-				cache.setSearchTimeout(searchTimeout);
-			}
 			if (messageSyncInterval != null) {
 				cache.setMessageSyncInterval(messageSyncInterval);
 			}
-			if (gatewayConflictResolver != null) {
-				cache.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
+			if (searchTimeout != null) {
+				cache.setSearchTimeout(searchTimeout);
 			}
 
 			DistributedSystem system = cache.getDistributedSystem();
@@ -306,7 +305,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 				cache.loadCacheXml(cacheXml.getInputStream());
 
 				if (log.isDebugEnabled()) {
-					log.debug("Initialized cache from " + cacheXml);
+					log.debug(String.format("Initialized Cache from '%1$s'.", cacheXml));
 				}
 			}
 
@@ -404,12 +403,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return (cache != null ? cache : ((CacheFactory) factory).create());
 	}
 
-	protected GemFireCache fetchCache() {
-		return (cache != null ? cache : CacheFactory.getAnyInstance());
+	protected Object createFactory(Properties gemfireProperties) {
+		return new CacheFactory(gemfireProperties);
 	}
 
-	protected Object createFactory(Properties props) {
-		return new CacheFactory(props);
+	protected GemFireCache fetchCache() {
+		return (cache != null ? cache : CacheFactory.getAnyInstance());
 	}
 
 	@Override
@@ -482,6 +481,15 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
+	 * Sets the cache configuration.
+	 *
+	 * @param cacheXml the cacheXml to set
+	 */
+	public void setCacheXml(Resource cacheXml) {
+		this.cacheXml = cacheXml;
+	}
+
+	/**
 	 * Sets the cache properties.
 	 * 
 	 * @param properties the properties to set
@@ -491,12 +499,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Sets the cache configuration.
-	 * 
-	 * @param cacheXml the cacheXml to set
+	 * @param lazyInitialize set to false to force cache initialization if no other bean references it
 	 */
-	public void setCacheXml(Resource cacheXml) {
-		this.cacheXml = cacheXml;
+	public void setLazyInitialize(boolean lazyInitialize) {
+		this.lazyInitialize = lazyInitialize;
 	}
 
 	/**
@@ -510,6 +516,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setUseBeanFactoryLocator(boolean usage) {
 		this.useBeanFactoryLocator = usage;
+	}
+
+	public void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
+		this.enableAutoReconnect = enableAutoReconnect;
 	}
 
 	/**
@@ -701,10 +711,17 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * @param lazyInitialize set to false to force cache initialization if no other bean references it
+	 * @return the beanClassLoader
 	 */
-	public void setLazyInitialize(boolean lazyInitialize) {
-		this.lazyInitialize = lazyInitialize;
+	public ClassLoader getBeanClassLoader() {
+		return beanClassLoader;
+	}
+
+	/**
+	 * @return the beanName
+	 */
+	public String getBeanName() {
+		return beanName;
 	}
 
 	/**
@@ -718,21 +735,15 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * @return the properties
 	 */
 	public Properties getProperties() {
+		if (properties == null) {
+			properties = new Properties();
+		}
+
 		return properties;
 	}
 
-	/**
-	 * @return the beanClassLoader
-	 */
-	public ClassLoader getBeanClassLoader() {
-		return beanClassLoader;
-	}
-
-	/**
-	 * @return the beanName
-	 */
-	public String getBeanName() {
-		return beanName;
+	public Boolean getEnableAutoReconnect() {
+		return enableAutoReconnect;
 	}
 
 	/**
@@ -864,12 +875,19 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return lazyInitialize;
 	}
 
+	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
+		gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
+			!Boolean.TRUE.equals(getEnableAutoReconnect())));
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if (!lazyInitialize) {
+		postProcessPropertiesBeforeInitialization(getProperties());
+
+		if (!isLazyInitialize()) {
 			init();
 		}
 	}

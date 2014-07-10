@@ -1,43 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:p="http://www.springframework.org/schema/p"
-	default-lazy-init="true"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   default-lazy-init="true"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
-	<!-- as there can be only one cache per VM -->
-	
+	<!-- as there can be only one GemFire cache per VM -->
+
 	<gfe:cache/>
-	
+
 	<gfe:cache id="cache-with-name"/>
-	
-	<gfe:cache id="cache-with-xml" cache-xml-location="classpath:gemfire-cache.xml" properties-ref="props" pdx-ignore-unread-fields="false" pdx-persistent="true"/>
-	
-	<util:properties id="props">
+
+	<util:properties id="gemfireProperties">
 		<prop key="disable-tcp">false</prop>
 	</util:properties>
-	
-	<gfe:cache id="no-bl" use-bean-factory-locator="false" />
-	
-	<gfe:client-cache id="client-cache"/>
-	
+
+	<gfe:cache id="cache-with-xml-and-props" cache-xml-location="classpath:gemfire-cache.xml" properties-ref="gemfireProperties"
+			   pdx-read-serialized="true" pdx-ignore-unread-fields="false" pdx-persistent="true"/>
+
+	<gfe:cache id="cache-with-gateway-conflict-resolver">
+		<gfe:gateway-conflict-resolver>
+			<bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestGatewayConflictResolver"/>
+		</gfe:gateway-conflict-resolver>
+	</gfe:cache>
+
+	<gfe:cache id="cache-with-auto-reconnect-disabled" enable-auto-reconnect="false"/>
+
+	<gfe:cache id="cache-with-auto-reconnect-enabled" enable-auto-reconnect="true"/>
+
+	<gfe:cache id="heap-tuned-cache" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
+
+	<gfe:cache id="no-bean-factory-locator" use-bean-factory-locator="false"/>
+
+	<gfe:client-cache id="client-cache-with-name"/>
+
 	<gfe:client-cache id="client-cache-with-xml" cache-xml-location="classpath:gemfire-client-cache.xml"/>
-	
+
 	<gfe:pool>
 		<gfe:server host="localhost" port="1234"/>
 	</gfe:pool>
-	
-    <gfe:cache id="heap-tuned-cache" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
-    
-    <gfe:cache id="cache-with-conflict-resolver">
-        <gfe:gateway-conflict-resolver>
-            <bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestConflictResolver"/>
-        </gfe:gateway-conflict-resolver>
-    </gfe:cache>
+
 </beans>
-    

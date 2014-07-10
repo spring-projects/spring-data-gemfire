@@ -62,8 +62,8 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 	}
  
 	@Override
-	protected Object createFactory(Properties props) {
-		((StubCache)cache).setProperties(props);
-		return new ClientCacheFactory(props);
+	protected Object createFactory(Properties gemfireProperties) {
+		((StubCache)cache).setProperties(gemfireProperties);
+		return new ClientCacheFactory(gemfireProperties);
 	}
 }
