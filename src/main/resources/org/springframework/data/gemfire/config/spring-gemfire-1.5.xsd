@@ -274,20 +274,19 @@ Defines a GemFire Cache instance used for creating or retrieving 'regions'.
 					<xsd:attribute name="enable-auto-reconnect" type="xsd:string" use="optional" default="false">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-By default, GemFire 7.5 and later will attempt to reconnect and reinitialize the cache when it has been forced out
-of the distributed system by a network-partition event, or has otherwise been shunned by other members.
+By default, GemFire 8.0 and later will attempt to reconnect and reinitialize the cache when the peer member has been
+forced out of the distributed system by a network-partition event, or has otherwise been shunned by other members.
 
-An auto-reconnect causes all the GemFire component references (e.g. Cache, Regions, Gateways, etc) that may have
-been injected into and SDG-based application to become stale.  Even when using GemFire's public Java API directly,
-GemFire makes no guarantees to automatically refresh any returned references to application objects that now are
-stale.
+An auto-reconnect causes all GemFire component references (e.g. Cache, Regions, AEQs, Gateways, etc) that may have been
+injected into SDG application components to become stale.  Even when using GemFire's public Java API directly,
+GemFire makes no guarantees to automatically refresh any stale references used by application objects.
 
-Therefore, in Spring Data GemFire, the default behavior will continue to be not to 'auto-reconnect'.  This behavior
-is not recommended for applications that are 'peer' Caches injecting GemFire components, like the Cache, or Regions
-into appliaction components (e.g. @Repository POJOs).
+Therefore, in Spring Data GemFire, the default behavior will be to not 'auto-reconnect'.  Automatically reconnecting
+is not recommended for applications that are also peer member Caches (i.e. GemFire Servers) that inject
+GemFire components, such as the Cache or Regions, into application objects (e.g. @Repository POJOs).
 
-Enabling 'auto-reconnect' is only recommended for Spring bootstrapped GemFire Server's that use the Spring Data GemFire
-XML namespace to configure GemFire instead of GemFire's cache.xml.
+Enabling 'auto-reconnect' is only recommended when bootstrapping a GemFire Server's within a Spring context using
+Spring Data GemFire XML namespace and configuration meta-data to configure GemFire instead of GemFire's cache.xml.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
@@ -327,6 +326,23 @@ that have already been processed by the clients.
 How many seconds a netSearch operation can wait for data before timing out.
 You may want to change this based on your knowledge of the network load or other factors.
                 ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="use-shared-configuration" type="xsd:string" use="optional" default="false">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Enables this Spring Data GemFire configured peer member Cache node to participate in cluster-wide configuration
+by receiving it's configuration meta-data (in the form of cache.xml) from a Locator, with persistent configuration
+enabled, running in the cluster.
+
+The cluster-wide configuration is a shared, persistent and consistent view of the cluster when the member joins
+the cluster and requests the cluster configuration from the Locator.
+
+Spring Data GemFire disables this GemFire 8 feature by default assuming that the primary configuration for this
+member will be defined in Spring Data GemFire's XML namespace configuration meta-data.  However, this feature is useful
+in a production setting to set the base configuration of the member and augment that cluster-wide configuration
+with Spring configuration meta-data that is specific to the application's needs.
+							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 				</xsd:extension>

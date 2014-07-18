@@ -74,7 +74,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	@Before
 	@Override
 	public void createCtx() {
-		if (GemfireUtils.GEMFIRE_VERSION.startsWith("7")) {
+		if (GemfireUtils.isGemfireVersion7OrAbove()) {
 			super.createCtx();
 		}
 	}

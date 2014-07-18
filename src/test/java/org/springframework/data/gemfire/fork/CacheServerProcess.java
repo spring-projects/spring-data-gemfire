@@ -38,12 +38,12 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 public class CacheServerProcess {
 
 	public static void main(final String[] args) throws Exception {
-		Properties props = new Properties();
-		props.setProperty("name", "CqServer");
-		props.setProperty("mcast-port", "0");
-		props.setProperty("log-level", "warning");
+		Properties gemfireProperties = new Properties();
+		gemfireProperties.setProperty("name", "CqServer");
+		gemfireProperties.setProperty("mcast-port", "0");
+		gemfireProperties.setProperty("log-level", "warning");
 
-		Cache cache = new CacheFactory(props).create();
+		Cache cache = new CacheFactory(gemfireProperties).create();
 
 		RegionFactory<String, Integer> regionFactory = cache.createRegionFactory();
 		regionFactory.setDataPolicy(DataPolicy.REPLICATE);
@@ -73,6 +73,8 @@ public class CacheServerProcess {
 		System.out.println("Waiting for shutdown...");
 
 		bufferedReader.readLine();
+
+		System.out.println("Shutting down!");
 	}
 
 }

@@ -56,6 +56,8 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
 		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
+		ParsingUtils.setPropertyValue(element, builder, "lazy-init","lazyInitialize");
+		ParsingUtils.setPropertyValue(element, builder, "use-bean-factory-locator");
 		ParsingUtils.setPropertyValue(element, builder, "close");
 		ParsingUtils.setPropertyValue(element, builder, "copy-on-read");
 		ParsingUtils.setPropertyValue(element, builder, "critical-heap-percentage");
@@ -70,8 +72,7 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
 		parsePdxDiskStore(element, parserContext, builder);
 		ParsingUtils.setPropertyValue(element, builder, "search-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "lazy-init","lazyInitialize");
-		ParsingUtils.setPropertyValue(element, builder, "use-bean-factory-locator");
+		ParsingUtils.setPropertyValue(element, builder, "use-shared-configuration");
 
 		List<Element> txListeners = DomUtils.getChildElementsByTagName(element, "transaction-listener");
 

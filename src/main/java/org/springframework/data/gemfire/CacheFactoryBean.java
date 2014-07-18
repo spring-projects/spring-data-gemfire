@@ -58,24 +58,28 @@ import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
- * Factory used for configuring a Gemfire Cache manager. Allows either retrieval
- * of an existing, opened cache or the creation of a new one.
- * 
+ * FactoryBean used to configure a GemFire peer Cache node. Allows either retrieval of an existing, opened Cache
+ * or the creation of a new Cache instance.
  * <p>
- * This class implements the
- * {@link org.springframework.dao.support.PersistenceExceptionTranslator}
+ * This class implements the {@link org.springframework.dao.support.PersistenceExceptionTranslator}
  * interface, as auto-detected by Spring's
- * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor}
- * , for AOP-based translation of native exceptions to Spring
- * DataAccessExceptions. Hence, the presence of this class automatically enables
- * a PersistenceExceptionTranslationPostProcessor to translate GemFire
- * exceptions.
+ * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor}, for AOP-based translation
+ * of native Exceptions to Spring DataAccessExceptions. Hence, the presence of this class automatically enables
+ * a PersistenceExceptionTranslationPostProcessor to translate GemFire Exceptions appropriately.
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.BeanNameAware
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.dao.support.PersistenceExceptionTranslator
  */
-public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, InitializingBean,
-		DisposableBean, FactoryBean<Cache>, PersistenceExceptionTranslator {
+public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
+		InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
 	protected static final List<String> VALID_JNDI_DATASOURCE_TYPE_NAMES = Collections.unmodifiableList(
 		Arrays.asList("ManagedDataSource", "PooledDataSource", "SimpleDataSource", "XAPooledDataSource"));
@@ -93,6 +97,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected Boolean pdxIgnoreUnreadFields;
 	protected Boolean pdxPersistent;
 	protected Boolean pdxReadSerialized;
+	protected Boolean useSharedConfiguration;
 
 	protected Cache cache;
 
@@ -114,7 +119,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	protected List<TransactionListener> transactionListeners;
 
-	// Defined this way for backward compatibility
+	// Declared with type 'Object' for backward compatibility
 	protected Object gatewayConflictResolver;
 	protected Object pdxSerializer;
 
@@ -128,20 +133,19 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected TransactionWriter transactionWriter;
 
 	public static class DynamicRegionSupport {
-		private String diskDir;
-
-		private String poolName;
 
 		private Boolean persistent = Boolean.TRUE;
-
 		private Boolean registerInterest = Boolean.TRUE;
 
+		private String diskDirectory;
+		private String poolName;
+
 		public String getDiskDir() {
-			return diskDir;
+			return diskDirectory;
 		}
 
-		public void setDiskDir(String diskDir) {
-			this.diskDir = diskDir;
+		public void setDiskDir(String diskDirectory) {
+			this.diskDirectory = diskDirectory;
 		}
 
 		public Boolean getPersistent() {
@@ -152,14 +156,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			this.persistent = persistent;
 		}
 
-		public Boolean getRegisterInterest() {
-			return registerInterest;
-		}
-
-		public void setRegisterInterest(Boolean registerInterest) {
-			this.registerInterest = registerInterest;
-		}
-
 		public String getPoolName() {
 			return poolName;
 		}
@@ -168,13 +164,20 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			this.poolName = poolName;
 		}
 
+		public Boolean getRegisterInterest() {
+			return registerInterest;
+		}
+
+		public void setRegisterInterest(Boolean registerInterest) {
+			this.registerInterest = registerInterest;
+		}
+
 		public void initializeDynamicRegionFactory() {
-			DynamicRegionFactory.Config config = null;
-			if (diskDir == null) {
-				config = new DynamicRegionFactory.Config(null, poolName, persistent, registerInterest);
-			} else {
-				config = new DynamicRegionFactory.Config(new File(diskDir), poolName, persistent, registerInterest);
-			}
+			File localDiskDirectory = (this.diskDirectory == null ? null : new File(this.diskDirectory));
+
+			DynamicRegionFactory.Config config = new DynamicRegionFactory.Config(localDiskDirectory, poolName,
+				persistent, registerInterest);
+
 			DynamicRegionFactory.get().open(config);
 		}
 	}
@@ -182,7 +185,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	public static class JndiDataSource {
 
 		private List<ConfigProperty> props;
-
 		private Map<String, String> attributes;
 
 		public Map<String, String> getAttributes() {
@@ -294,8 +296,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 			DistributedMember member = system.getDistributedMember();
 
-			log.info(String.format("Connected to Distributed System [%1$s] as Member [%2$s] on Host [%3$s].",
-				system.getName(), member.getId(), member.getHost()));
+			log.info(String.format("Connected to Distributed System [%1$s] as Member [%2$s] in Groups [%3$s] with Roles [%4$s] on Host [%5$s] having PID [%6$d].",
+				system.getName(), member.getId(), member.getGroups(), member.getRoles(), member.getHost(), member.getProcessId()));
 
 			log.info(String.format("%1$s GemFire v.%2$s Cache [%3$s].", messagePrefix, CacheFactory.getVersion(),
 				cache.getName()));
@@ -428,41 +430,28 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	@Override
-	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
-		if (ex instanceof GemFireException) {
-			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) ex);
+	public DataAccessException translateExceptionIfPossible(final RuntimeException e) {
+		if (e instanceof GemFireException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) e);
 		}
-		if (ex instanceof IllegalArgumentException) {
-			DataAccessException wrapped = GemfireCacheUtils.convertQueryExceptions(ex);
+
+		if (e instanceof IllegalArgumentException) {
+			DataAccessException wrapped = GemfireCacheUtils.convertQueryExceptions(e);
 			// ignore conversion if the generic exception is returned
 			if (!(wrapped instanceof GemfireSystemException)) {
 				return wrapped;
 			}
 		}
-		if (ex.getCause() instanceof GemFireException) {
-			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) ex.getCause());
+
+		if (e.getCause() instanceof GemFireException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) e.getCause());
 		}
-		if (ex.getCause() instanceof GemFireCheckedException) {
-			return GemfireCacheUtils.convertGemfireAccessException((GemFireCheckedException) ex.getCause());
+
+		if (e.getCause() instanceof GemFireCheckedException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireCheckedException) e.getCause());
 		}
 
 		return null;
-	}
-
-	@Override
-	public Cache getObject() throws Exception {
-		init();
-		return cache;
-	}
-
-	@Override
-	public Class<? extends Cache> getObjectType() {
-		return (cache != null ? cache.getClass() : Cache.class);
-	}
-
-	@Override
-	public boolean isSingleton() {
-		return true;
 	}
 
 	@Override
@@ -518,7 +507,13 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		this.useBeanFactoryLocator = usage;
 	}
 
-	public void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
+	/**
+	 * Controls whether auto-reconnect functionality introduced in GemFire 8 is enabled or not.
+	 *
+	 * @param enableAutoReconnect a boolean value to enable/disable auto-reconnect functionality.
+	 * @since GemFire 8.0
+	 */
+	public void setEnableAutoReconnect(Boolean enableAutoReconnect) {
 		this.enableAutoReconnect = enableAutoReconnect;
 	}
 
@@ -534,23 +529,22 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Sets the object preference to PdxInstance type. Applicable on GemFire 6.6
-	 * or higher.
-	 * 
-	 * @param pdxPersistent the pdxPersistent to set
-	 */
-	public void setPdxPersistent(Boolean pdxPersistent) {
-		this.pdxPersistent = pdxPersistent;
-	}
-
-	/**
-	 * Controls whether the type metadata for PDX objects is persisted to disk.
-	 * Applicable on GemFire 6.6 or higher.
-	 * 
-	 * @param pdxReadSerialized the pdxReadSerialized to set
+	 * Sets the object preference to PdxInstance. Applicable on GemFire 6.6 or higher.
+	 *
+	 * @param pdxReadSerialized a boolean value indicating the PDX instance should be returned from Region.get(key)
+	 * when available.
 	 */
 	public void setPdxReadSerialized(Boolean pdxReadSerialized) {
 		this.pdxReadSerialized = pdxReadSerialized;
+	}
+
+	/**
+	 * Controls whether type metadata for PDX objects is persisted to disk. Applicable on GemFire 6.6 or higher.
+	 *
+	 * @param pdxPersistent a boolean value indicating that PDX type meta-data should be persisted to disk.
+	 */
+	public void setPdxPersistent(Boolean pdxPersistent) {
+		this.pdxPersistent = pdxPersistent;
 	}
 
 	/**
@@ -574,10 +568,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * @return the beanFactory
+	 * Set whether the Cache should be closed.
+	 *
+	 * @param close set to false if destroy() should not close the cache
 	 */
-	public BeanFactory getBeanFactory() {
-		return beanFactory;
+	public void setClose(boolean close) {
+		this.close = close;
 	}
 
 	/**
@@ -590,12 +586,21 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Sets the number of seconds in which the implicit object lock request will timeout.
+	 * Set the Cache's critical heap percentage attribute.
 	 *
-	 * @param lockTimeout an integer value specifying the object lock request timeout.
+	 * @param criticalHeapPercentage floating point value indicating the critical heap percentage.
 	 */
-	public void setLockTimeout(Integer lockTimeout) {
-		this.lockTimeout = lockTimeout;
+	public void setCriticalHeapPercentage(Float criticalHeapPercentage) {
+		this.criticalHeapPercentage = criticalHeapPercentage;
+	}
+
+	/**
+	 * Set the Cache's eviction heap percentage attribute.
+	 *
+	 * @param evictionHeapPercentage float-point value indicating the Cache's heap use percentage to trigger eviction.
+	 */
+	public void setEvictionHeapPercentage(Float evictionHeapPercentage) {
+		this.evictionHeapPercentage = evictionHeapPercentage;
 	}
 
 	/**
@@ -605,6 +610,15 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setLockLease(Integer lockLease) {
 		this.lockLease = lockLease;
+	}
+
+	/**
+	 * Sets the number of seconds in which the implicit object lock request will timeout.
+	 *
+	 * @param lockTimeout an integer value specifying the object lock request timeout.
+	 */
+	public void setLockTimeout(Integer lockTimeout) {
+		this.lockTimeout = lockTimeout;
 	}
 
 	/**
@@ -626,33 +640,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public void setSearchTimeout(Integer searchTimeout) {
 		this.searchTimeout = searchTimeout;
-	}
-
-	/**
-	 * Set the Cache's eviction heap percentage attribute.
-	 *
-	 * @param evictionHeapPercentage float-point value indicating the Cache's heap use percentage to trigger eviction.
-	 */
-	public void setEvictionHeapPercentage(Float evictionHeapPercentage) {
-		this.evictionHeapPercentage = evictionHeapPercentage;
-	}
-
-	/**
-	 * Set the Cache's critical heap percentage attribute.
-	 *
-	 * @param criticalHeapPercentage floating point value indicating the critical heap percentage.
-	 */
-	public void setCriticalHeapPercentage(Float criticalHeapPercentage) {
-		this.criticalHeapPercentage = criticalHeapPercentage;
-	}
-
-	/**
-	 * Set whether the Cache should be closed.
-	 *
-	 * @param close set to false if destroy() should not close the cache
-	 */
-	public void setClose(boolean close) {
-		this.close = close;
 	}
 
 	/**
@@ -678,22 +665,22 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Requires GemFire 7.0 or higher
-	 * @param gatewayConflictResolver defined as Object in the signature for backward
-	 * compatibility with Gemfire 6 compatibility. This must be an instance of 
-	 * {@link com.gemstone.gemfire.cache.util.GatewayConflictResolver}
-	 */
-	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
-		this.gatewayConflictResolver = gatewayConflictResolver;
-	}
-
-	/**
 	 * Sets an instance of the DynamicRegionSupport to support Dynamic Regions in this GemFire Cache.
 	 *
 	 * @param dynamicRegionSupport the DynamicRegionSupport class to setup Dynamic Regions in this Cache.
 	 */
 	public void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
 		this.dynamicRegionSupport = dynamicRegionSupport;
+	}
+
+	/**
+	 * Requires GemFire 7.0 or higher
+	 * @param gatewayConflictResolver defined as Object in the signature for backward
+	 * compatibility with Gemfire 6 compatibility. This must be an instance of
+	 * {@link com.gemstone.gemfire.cache.util.GatewayConflictResolver}
+	 */
+	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
+		this.gatewayConflictResolver = gatewayConflictResolver;
 	}
 
 	/**
@@ -704,10 +691,12 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * @return the list of configured JndiDataSources.
+	 * Sets the state of the use-shared-configuration GemFire distribution config setting.
+	 *
+	 * @param useSharedConfiguration a boolean value to set the use-shared-configuration GemFire distribution property.
 	 */
-	public List<JndiDataSource> getJndiDataSources() {
-		return jndiDataSources;
+	public void setUseSharedConfiguration(Boolean useSharedConfiguration) {
+		this.useSharedConfiguration = useSharedConfiguration;
 	}
 
 	/**
@@ -715,6 +704,20 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public ClassLoader getBeanClassLoader() {
 		return beanClassLoader;
+	}
+
+	/**
+	 * @return the beanFactory
+	 */
+	public BeanFactory getBeanFactory() {
+		return beanFactory;
+	}
+
+	/**
+	 * @return the beanFactoryLocator
+	 */
+	public GemfireBeanFactoryLocator getBeanFactoryLocator() {
+		return factoryLocator;
 	}
 
 	/**
@@ -742,8 +745,51 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return properties;
 	}
 
+	@Override
+	public Cache getObject() throws Exception {
+		init();
+		return cache;
+	}
+
+	@Override
+	public Class<? extends Cache> getObjectType() {
+		return (cache != null ? cache.getClass() : Cache.class);
+	}
+
+	@Override
+	public boolean isSingleton() {
+		return true;
+	}
+
+	/**
+	 * @return the copyOnRead
+	 */
+	public Boolean getCopyOnRead() {
+		return copyOnRead;
+	}
+
+	/**
+	 * @return the criticalHeapPercentage
+	 */
+	public Float getCriticalHeapPercentage() {
+		return criticalHeapPercentage;
+	}
+
+	/**
+	 * Gets the value for the auto-reconnect setting.
+	 *
+	 * @return a boolean value indicating whether auto-reconnect was specified (non-null) and whether it was enabled
+	 * or not.
+	 */
 	public Boolean getEnableAutoReconnect() {
 		return enableAutoReconnect;
+	}
+
+	/**
+	 * @return the evictionHeapPercentage
+	 */
+	public Float getEvictionHeapPercentage() {
+		return evictionHeapPercentage;
 	}
 
 	/**
@@ -754,17 +800,17 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * @return the pdxPersistent
-	 */
-	public Boolean getPdxPersistent() {
-		return pdxPersistent;
-	}
-
-	/**
 	 * @return the pdxReadSerialized
 	 */
 	public Boolean getPdxReadSerialized() {
 		return pdxReadSerialized;
+	}
+
+	/**
+	 * @return the pdxPersistent
+	 */
+	public Boolean getPdxPersistent() {
+		return pdxPersistent;
 	}
 
 	/**
@@ -782,10 +828,10 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * @return the copyOnRead
+	 * @return the lockLease
 	 */
-	public Boolean getCopyOnRead() {
-		return copyOnRead;
+	public Integer getLockLease() {
+		return lockLease;
 	}
 
 	/**
@@ -793,13 +839,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	public Integer getLockTimeout() {
 		return lockTimeout;
-	}
-
-	/**
-	 * @return the lockLease
-	 */
-	public Integer getLockLease() {
-		return lockLease;
 	}
 
 	/**
@@ -831,21 +870,6 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * @return the evictionHeapPercentage
-	 */
-	public Float getEvictionHeapPercentage() {
-		return evictionHeapPercentage;
-	}
-
-	/**
-	 * @return the criticalHeapPercentage
-	 */
-	public Float getCriticalHeapPercentage() {
-
-		return criticalHeapPercentage;
-	}
-
-	/**
 	 * @return the dynamicRegionSupport
 	 */
 	public DynamicRegionSupport getDynamicRegionSupport() {
@@ -860,10 +884,19 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * @return the beanFactoryLocator
+	 * @return the list of configured JndiDataSources.
 	 */
-	public GemfireBeanFactoryLocator getBeanFactoryLocator() {
-		return factoryLocator;
+	public List<JndiDataSource> getJndiDataSources() {
+		return jndiDataSources;
+	}
+
+	/**
+	 * Gets the value fo the use-shared-configuration GemFire setting.
+	 *
+	 * @return a boolean value indicating whether shared configuration use has been enabled or not.
+	 */
+	public Boolean getUseSharedConfiguration() {
+		return this.useSharedConfiguration;
 	}
 
 	/**
@@ -878,6 +911,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
 		gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
 			!Boolean.TRUE.equals(getEnableAutoReconnect())));
+		gemfireProperties.setProperty("use-shared-configuration", String.valueOf(
+			Boolean.TRUE.equals(getUseSharedConfiguration())));
 	}
 
 	/* (non-Javadoc)
@@ -891,4 +926,5 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			init();
 		}
 	}
+
 }

@@ -27,6 +27,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.springframework.data.gemfire.fork.CacheServerProcess;
+import org.springframework.data.gemfire.test.support.IOUtils;
+import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,7 +37,9 @@ import org.springframework.util.StringUtils;
  * 
  * @author Costin Leau
  * @author John Blum
+ * @deprecated ForkUtils has serious design flaws; please use ProcessExecutor instead
  */
+@Deprecated
 public class ForkUtil {
 
 	private static OutputStream processStandardInStream;
@@ -47,13 +52,11 @@ public class ForkUtil {
 	private static OutputStream cloneJVM(final String arguments) {
 		String[] args = arguments.split("\\s+");
 
-		List<String> command = new ArrayList<String>(args.length + 5);
+		List<String> command = new ArrayList<String>(args.length + 3);
 
 		command.add(JAVA_EXE);
 		command.add("-classpath");
 		command.add(JAVA_CLASSPATH);
-		//command.add("-Xms256m");
-		//command.add("-Xmx512m");
 		command.addAll(Arrays.asList(args));
 
 		Process javaProcess;
@@ -72,8 +75,8 @@ public class ForkUtil {
 		final AtomicBoolean runCondition = new AtomicBoolean(true);
 		final Process p = javaProcess;
 
-		new Thread(newProcessStreamReaderRunnable(runCondition, p.getErrorStream(), "[FORK-ERROR]")).start();
-		new Thread(newProcessStreamReaderRunnable(runCondition, p.getInputStream(), "[FORK]")).start();
+		startNewThread(newProcessStreamReader(runCondition, p.getErrorStream(), "[FORK-ERROR]"));
+		startNewThread(newProcessStreamReader(runCondition, p.getInputStream(), "[FORK]"));
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -98,61 +101,69 @@ public class ForkUtil {
 		return processStandardInStream;
 	}
 
-	protected static Runnable newProcessStreamReaderRunnable(final AtomicBoolean runCondition, final InputStream processStream, final String label) {
-		final BufferedReader processStreamReader = new BufferedReader(new InputStreamReader(processStream));
+	protected static Thread startNewThread(final Runnable runnable) {
+		Thread runnableThread = new Thread(runnable);
+		runnableThread.start();
+		return runnableThread;
+	}
 
+	protected static Runnable newProcessStreamReader(final AtomicBoolean runCondition, final InputStream processStream, final String label) {
 		return new Runnable() {
 			public void run() {
+				BufferedReader processStreamReader = new BufferedReader(new InputStreamReader(processStream));
 				try {
-					do {
+					while (runCondition.get()) {
 						for (String line = "Reading..."; line != null; line = processStreamReader.readLine()) {
 							System.out.printf("%1$s %2$s%n ", label, line);
 						}
-
-						Thread.sleep(200);
 					}
-					while (runCondition.get());
 				}
 				catch (Exception ignore) {
+				}
+				finally {
+					IOUtils.close(processStreamReader);
 				}
 			}
 		};
 	}
 
-	public static OutputStream cacheServer(Class<?> clazz) {
-		return startCacheServer(clazz.getName());
-	}
-	
 	public static OutputStream cacheServer() {
-		return startCacheServer("org.springframework.data.gemfire.fork.CacheServerProcess");
+		return cacheServer(CacheServerProcess.class);
 	}
-	
+
+	public static OutputStream cacheServer(Class<?> type) {
+		return startCacheServer(type.getName());
+	}
+
 	public static OutputStream startCacheServer(String args) {
+		return startGemFireProcess(args, "cache server");
+	}
+
+	protected static OutputStream startGemFireProcess(final String args, final String processName) {
 		String className = args.split(" ")[0];
-		
-		System.out.println("main class:" + className);
-		
+
+		System.out.println("main class: " + className);
+
 		if (controlFileExists(className)) {
 			deleteControlFile(className);
 		}
-		OutputStream os = cloneJVM(args);
-		int maxTime = 30000;
-		int time = 0;
-		while (!controlFileExists(className) && time < maxTime) {
-			try {
-				Thread.sleep(500);
-				time += 500;
-			} catch (InterruptedException ex) {
-				// ignore and move on
-			}
+
+		OutputStream outputStream = cloneJVM(args);
+
+		final long timeout = System.currentTimeMillis() + 30000;
+
+		while (!controlFileExists(className) && System.currentTimeMillis() < timeout) {
+			ThreadUtils.sleep(500);
 		}
+
 		if (controlFileExists(className)) {
-			System.out.println("[FORK] Started cache server");
+			System.out.printf("[FORK] Started %1$s%n", processName);
 		}
 		else {
-			throw new RuntimeException("could not fork cache server");
+			throw new RuntimeException(String.format("Failed to fork %1$s", processName));
 		}
-		return os;
+
+		return outputStream;
 	}
 
 	public static void sendSignal() {
@@ -165,19 +176,16 @@ public class ForkUtil {
 		}
 	}
 
-	public static boolean deleteControlFile(String name) {
-		String path = TEMP_DIRECTORY + File.separator + name;
-		return new File(path).delete();
+	public static boolean createControlFile(final String name) throws IOException {
+		return new File(TEMP_DIRECTORY + File.separator + name).createNewFile();
 	}
 
-	public static boolean createControlFile(String name) throws IOException {
-		String path = TEMP_DIRECTORY + File.separator + name;
-		return new File(path).createNewFile();
+	public static boolean controlFileExists(final String name) {
+		return new File(TEMP_DIRECTORY + File.separator + name).isFile();
 	}
 
-	public static boolean controlFileExists(String name) {
-		String path = TEMP_DIRECTORY + File.separator + name;
-		return new File(path).exists();
+	public static boolean deleteControlFile(final String name) {
+		return new File(TEMP_DIRECTORY + File.separator + name).delete();
 	}
 
 }

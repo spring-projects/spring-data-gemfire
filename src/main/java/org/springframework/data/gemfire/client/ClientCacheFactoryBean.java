@@ -89,14 +89,12 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		ClientCacheFactory clientCacheFactory = (ClientCacheFactory) factory;
 
 		initializePool(clientCacheFactory);
-		
-		// Now create the cache
+
 		GemFireCache cache = clientCacheFactory.create();
-		
-		// Register for events after pool/regions been created and iff non-durable client
+
+		// register for events after Pool and Regions been created and iff non-durable client...
 		readyForEvents();
-		
-		// Return the cache
+
 		return cache;
 	}
 
@@ -110,84 +108,108 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		return ClientCacheFactory.getAnyInstance();
 	}
 	
-	private void initializePool(ClientCacheFactory ccf) {
-		Pool p = pool;
+	private void initializePool(ClientCacheFactory clientCacheFactory) {
+		Pool localPool = pool;
 
-		if (p == null) {
+		if (localPool == null) {
 			if (StringUtils.hasText(poolName)) {
-				p = PoolManager.find(poolName);
+				localPool = PoolManager.find(poolName);
 			}
 			
 		   // Bind this client cache to a pool that hasn't been created yet.
-			if (p == null) {
+			if (localPool == null) {
 				PoolFactoryBean.connectToTemporaryDs(this.properties);
 			}
 			
 			if (StringUtils.hasText(poolName)) {
 				try {
-
 					getBeanFactory().isTypeMatch(poolName, Pool.class);
-				} catch (Exception e) {
-					String msg = "No bean found  with name " + poolName
-							+ " of type " + Pool.class.getName();
-					if (poolName
-							.equals(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)) {
-						msg += ". A client cache requires a pool";
-					}
-					throw new BeanInitializationException(msg);
+					localPool = getBeanFactory().getBean(poolName, Pool.class);
 				}
-				p = getBeanFactory().getBean(poolName, Pool.class);
-			} else {
+				catch (Exception e) {
+					String message = String.format("No bean found with name '%1$s' of type '%2$s'.%3$s", poolName,
+						Pool.class.getName(), (GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME.equals(poolName)
+							? " A client cache requires a pool." : ""));
+
+					throw new BeanInitializationException(message);
+				}
+			}
+			else {
 				if (log.isDebugEnabled()) {
-					log.debug("Checking for a unique pool");
+					log.debug("Checking for a unique pool...");
 				}
-				p = getBeanFactory().getBean(Pool.class);
-				this.poolName = p.getName();
+
+				localPool = getBeanFactory().getBean(Pool.class);
+				this.poolName = localPool.getName();
 			}
 		 
 		}
 
-		if (p != null) {
+		if (localPool != null) {
 			// copy the pool settings - this way if the pool is not found, at
 			// least the cache will have a similar config
-			ccf.setPoolFreeConnectionTimeout(p.getFreeConnectionTimeout());
-			ccf.setPoolIdleTimeout(p.getIdleTimeout());
-			ccf.setPoolLoadConditioningInterval(p.getLoadConditioningInterval());
-			ccf.setPoolMaxConnections(p.getMaxConnections());
-			ccf.setPoolMinConnections(p.getMinConnections());
-			ccf.setPoolMultiuserAuthentication(p.getMultiuserAuthentication());
-			ccf.setPoolPingInterval(p.getPingInterval());
-			ccf.setPoolPRSingleHopEnabled(p.getPRSingleHopEnabled());
-			ccf.setPoolReadTimeout(p.getReadTimeout());
-			ccf.setPoolRetryAttempts(p.getRetryAttempts());
-			ccf.setPoolServerGroup(p.getServerGroup());
-			ccf.setPoolSocketBufferSize(p.getSocketBufferSize());
-			ccf.setPoolStatisticInterval(p.getStatisticInterval());
-			ccf.setPoolSubscriptionAckInterval(p.getSubscriptionAckInterval());
-			ccf.setPoolSubscriptionEnabled(p.getSubscriptionEnabled());
-			ccf.setPoolSubscriptionMessageTrackingTimeout(p
-					.getSubscriptionMessageTrackingTimeout());
-			ccf.setPoolSubscriptionRedundancy(p.getSubscriptionRedundancy());
-			ccf.setPoolThreadLocalConnections(p.getThreadLocalConnections());
+			clientCacheFactory.setPoolFreeConnectionTimeout(localPool.getFreeConnectionTimeout());
+			clientCacheFactory.setPoolIdleTimeout(localPool.getIdleTimeout());
+			clientCacheFactory.setPoolLoadConditioningInterval(localPool.getLoadConditioningInterval());
+			clientCacheFactory.setPoolMaxConnections(localPool.getMaxConnections());
+			clientCacheFactory.setPoolMinConnections(localPool.getMinConnections());
+			clientCacheFactory.setPoolMultiuserAuthentication(localPool.getMultiuserAuthentication());
+			clientCacheFactory.setPoolPingInterval(localPool.getPingInterval());
+			clientCacheFactory.setPoolPRSingleHopEnabled(localPool.getPRSingleHopEnabled());
+			clientCacheFactory.setPoolReadTimeout(localPool.getReadTimeout());
+			clientCacheFactory.setPoolRetryAttempts(localPool.getRetryAttempts());
+			clientCacheFactory.setPoolServerGroup(localPool.getServerGroup());
+			clientCacheFactory.setPoolSocketBufferSize(localPool.getSocketBufferSize());
+			clientCacheFactory.setPoolStatisticInterval(localPool.getStatisticInterval());
+			clientCacheFactory.setPoolSubscriptionAckInterval(localPool.getSubscriptionAckInterval());
+			clientCacheFactory.setPoolSubscriptionEnabled(localPool.getSubscriptionEnabled());
+			clientCacheFactory.setPoolSubscriptionMessageTrackingTimeout(localPool.getSubscriptionMessageTrackingTimeout());
+			clientCacheFactory.setPoolSubscriptionRedundancy(localPool.getSubscriptionRedundancy());
+			clientCacheFactory.setPoolThreadLocalConnections(localPool.getThreadLocalConnections());
 
-			List<InetSocketAddress> locators = p.getLocators();
+			List<InetSocketAddress> locators = localPool.getLocators();
+
 			if (locators != null) {
-				for (InetSocketAddress inet : locators) {
-					ccf.addPoolLocator(inet.getHostName(), inet.getPort());
+				for (InetSocketAddress socketAddress : locators) {
+					clientCacheFactory.addPoolLocator(socketAddress.getHostName(), socketAddress.getPort());
 				}
 			}
 
-			List<InetSocketAddress> servers = p.getServers();
+			List<InetSocketAddress> servers = localPool.getServers();
+
 			if (servers != null) {
-				for (InetSocketAddress inet : servers) {
-					ccf.addPoolServer(inet.getHostName(), inet.getPort());
+				for (InetSocketAddress socketAddress : servers) {
+					clientCacheFactory.addPoolServer(socketAddress.getHostName(), socketAddress.getPort());
 				}
 			}
 		}
 	}
 
 	@Override
+	protected void applyPdxOptions(Object factory) {
+		if (factory instanceof ClientCacheFactory) {
+			new PdxOptions((ClientCacheFactory) factory).run();
+		}
+	}
+
+	@Override
 	protected void postProcessPropertiesBeforeInitialization(final Properties gemfireProperties) {
+	}
+
+	/**
+	 * Inform the GemFire cluster that this client cache is ready to receive events.
+	 */
+	private void readyForEvents(){
+		ClientCache clientCache = ClientCacheFactory.getAnyInstance();
+
+		if (Boolean.TRUE.equals(readyForEvents) && !clientCache.isClosed()) {
+			try {
+				clientCache.readyForEvents();
+			}
+			catch (IllegalStateException ignore) {
+				// cannot be called for a non-durable client so exception is thrown
+			}
+		}
 	}
 
 	@Override
@@ -231,31 +253,23 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		this.readyForEvents = readyForEvents;
 	}
 
+	/**
+	 * Gets the value for the readyForEvents property.
+	 *
+	 * @return a boolean value indicating the state of the 'readyForEvents' property.
+	 */
 	public Boolean getReadyForEvents(){
 		return this.readyForEvents;
 	}
 
 	@Override
-	protected void applyPdxOptions(Object factory) {
-		if (factory instanceof ClientCacheFactory) {
-			new PdxOptions((ClientCacheFactory) factory).run();
-		}
+	public final Boolean getUseSharedConfiguration() {
+		return Boolean.FALSE;
 	}
 
-	/**
-	 * Inform the GemFire cluster that this client cache is ready to receive events.
-	 */
-	private void readyForEvents(){
-		ClientCache clientCache = ClientCacheFactory.getAnyInstance();
-
-		if (Boolean.TRUE.equals(readyForEvents) && !clientCache.isClosed()) {
-			try {
-				clientCache.readyForEvents();
-			}
-			catch (IllegalStateException ignore) {
-				// cannot be called for a non-durable client so exception is thrown
-			}
-		}
+	@Override
+	public final void setUseSharedConfiguration(Boolean useSharedConfiguration) {
+		throw new UnsupportedOperationException("Shared, cluster configuration is not applicable to clients.");
 	}
 
 }
