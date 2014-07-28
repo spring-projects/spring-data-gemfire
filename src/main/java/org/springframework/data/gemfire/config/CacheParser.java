@@ -72,7 +72,7 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
 		parsePdxDiskStore(element, parserContext, builder);
 		ParsingUtils.setPropertyValue(element, builder, "search-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "use-shared-configuration");
+		ParsingUtils.setPropertyValue(element, builder, "use-cluster-configuration");
 
 		List<Element> txListeners = DomUtils.getChildElementsByTagName(element, "transaction-listener");
 

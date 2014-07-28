@@ -19,26 +19,27 @@ package org.springframework.data.gemfire;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Resource;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.gemfire.fork.LocatorProcess;
 import org.springframework.data.gemfire.process.ProcessExecutor;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.data.gemfire.test.support.ZipUtils;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.FileSystemUtils;
 
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -46,35 +47,21 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
- * The CacheUsingSharedConfigurationIntegrationTest class is a test suite of test cases testing the integration of
+ * The CacheClusterConfigurationIntegrationTest class is a test suite of test cases testing the integration of
  * Spring Data GemFire with GemFire 8's new shared, persistent, cluster configuration service.
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.junit.runner.RunWith
- * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.support.ClassPathXmlApplicationContext
+ * @see org.springframework.core.io.ClassPathResource
+ * @see org.springframework.data.gemfire.fork.LocatorProcess
+ * @see org.springframework.data.gemfire.process.ProcessExecutor
+ * @see org.springframework.data.gemfire.process.ProcessWrapper
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("cacheUsingSharedConfigurationIntegrationTest.xml")
 @SuppressWarnings("unused")
-public class CacheUsingSharedConfigurationIntegrationTest {
-
-	@Resource(name = "SharedConfigRegion")
-	private Region<Long, String> sharedConfigRegion;
-
-	@Resource(name = "NativeLocalRegion")
-	private Region<Integer, String> nativeLocalRegion;
-
-	@Resource(name = "NativePartitionRegion")
-	private Region<Integer, String> nativePartitionRegion;
-
-	@Resource(name = "NativeReplicateRegion")
-	private Region<Integer, String> nativeReplicateRegion;
-
-	@Resource(name = "LocalRegion")
-	private Region<Integer, String> localRegion;
+public class CacheClusterConfigurationIntegrationTest {
 
 	private static File locatorWorkingDirectory;
 
@@ -82,7 +69,7 @@ public class CacheUsingSharedConfigurationIntegrationTest {
 
 	@BeforeClass
 	public static void testSuiteSetup() throws IOException {
-		String locatorName = "SharedConfigLocator";
+		String locatorName = "ClusterConfigLocator";
 
 		locatorWorkingDirectory = new File(System.getProperty("user.dir"), locatorName.toLowerCase());
 
@@ -93,8 +80,8 @@ public class CacheUsingSharedConfigurationIntegrationTest {
 		List<String> arguments = new ArrayList<String>();
 
 		arguments.add("-Dgemfire.name=" + locatorName);
-		arguments.add("-Dspring.gemfire.enable-shared-configuration=true");
-		arguments.add("-Dspring.gemfire.load-shared-configuration=true");
+		arguments.add("-Dspring.gemfire.enable-cluster-configuration=true");
+		arguments.add("-Dspring.gemfire.load-cluster-configuration=true");
 
 		locatorProcess = ProcessExecutor.launch(locatorWorkingDirectory, LocatorProcess.class,
 			arguments.toArray(new String[arguments.size()]));
@@ -103,7 +90,7 @@ public class CacheUsingSharedConfigurationIntegrationTest {
 
 		waitForLocatorStart(TimeUnit.SECONDS.toMillis(30));
 
-		//System.out.println("Shared Configuration Locator should be running!");
+		//System.out.println("Cluster Configuration Locator should be running!");
 	}
 
 	private static void waitForLocatorStart(final long milliseconds) {
@@ -140,20 +127,54 @@ public class CacheUsingSharedConfigurationIntegrationTest {
 		return actualRegion;
 	}
 
+	protected String getLocation(final String configLocation) {
+		String baseLocation = getClass().getPackage().getName().replace('.', File.separatorChar);
+		return baseLocation.concat(File.separator).concat(configLocation);
+	}
+
+	protected Region getRegion(final ConfigurableApplicationContext applicationContext, final String regionBeanName) {
+		return applicationContext.getBean(regionBeanName, Region.class);
+	}
+
+	protected ConfigurableApplicationContext newApplicationContext(final String... configLocations) {
+		ConfigurableApplicationContext applicationContext = new ClassPathXmlApplicationContext(configLocations);
+		applicationContext.registerShutdownHook();
+		return applicationContext;
+	}
+
 	@Test
-	public void testConfiguration() {
-		assertRegionAttributes(assertRegion(sharedConfigRegion, "SharedConfigRegion"),
+	public void testClusterConfiguration() {
+		ConfigurableApplicationContext applicationContext = newApplicationContext(
+			getLocation("cacheUsingClusterConfigurationIntegrationTest.xml"));
+
+		assertRegionAttributes(assertRegion(getRegion(applicationContext, "ClusterConfigRegion"), "ClusterConfigRegion"),
 			DataPolicy.PARTITION, Scope.DISTRIBUTED_NO_ACK);
 
-		assertRegionAttributes(assertRegion(nativeLocalRegion, "NativeLocalRegion"), DataPolicy.NORMAL, Scope.LOCAL);
+		assertRegionAttributes(assertRegion(getRegion(applicationContext, "NativeLocalRegion"), "NativeLocalRegion"),
+			DataPolicy.NORMAL, Scope.LOCAL);
 
-		assertRegionAttributes(assertRegion(nativePartitionRegion, "NativePartitionRegion"),
+		assertRegionAttributes(assertRegion(getRegion(applicationContext, "NativePartitionRegion"), "NativePartitionRegion"),
 			DataPolicy.PARTITION, Scope.DISTRIBUTED_NO_ACK);
 
-		assertRegionAttributes(assertRegion(nativeReplicateRegion, "NativeReplicateRegion"),
+		assertRegionAttributes(assertRegion(getRegion(applicationContext, "NativeReplicateRegion"), "NativeReplicateRegion"),
 			DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK);
 
-		assertRegionAttributes(assertRegion(localRegion, "LocalRegion"), DataPolicy.NORMAL, Scope.LOCAL);
+		assertRegionAttributes(assertRegion(getRegion(applicationContext, "LocalRegion"), "LocalRegion"),
+			DataPolicy.NORMAL, Scope.LOCAL);
+	}
+
+	@Test
+	public void testLocalOnlyConfiguration() {
+		try {
+			newApplicationContext(getLocation("cacheUsingLocalOnlyConfigurationIntegrationTest.xml"));
+			fail("Loading the 'cacheUsingLocalOnlyConfigurationIntegrationTest.xml' Spring ApplicationContext"
+				+ " configuration file should have resulted in an Exception due to the Region lookup on"
+				+ " 'ClusterConfigRegion' when GemFire Cluster Configuration is disabled!");
+		}
+		catch (BeanCreationException expected) {
+			assertTrue(expected.getCause() instanceof BeanInitializationException);
+			assertTrue(expected.getCause().getMessage().contains("Cannot find Region [ClusterConfigRegion] in Cache"));
+		}
 	}
 
 }

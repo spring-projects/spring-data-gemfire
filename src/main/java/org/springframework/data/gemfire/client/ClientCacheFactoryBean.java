@@ -263,12 +263,12 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	@Override
-	public final Boolean getUseSharedConfiguration() {
+	public final Boolean getUseClusterConfiguration() {
 		return Boolean.FALSE;
 	}
 
 	@Override
-	public final void setUseSharedConfiguration(Boolean useSharedConfiguration) {
+	public final void setUseClusterConfiguration(Boolean useClusterConfiguration) {
 		throw new UnsupportedOperationException("Shared, cluster configuration is not applicable to clients.");
 	}
 

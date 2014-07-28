@@ -97,7 +97,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	protected Boolean pdxIgnoreUnreadFields;
 	protected Boolean pdxPersistent;
 	protected Boolean pdxReadSerialized;
-	protected Boolean useSharedConfiguration;
+	protected Boolean useClusterConfiguration;
 
 	protected Cache cache;
 
@@ -695,8 +695,8 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 *
 	 * @param useSharedConfiguration a boolean value to set the use-shared-configuration GemFire distribution property.
 	 */
-	public void setUseSharedConfiguration(Boolean useSharedConfiguration) {
-		this.useSharedConfiguration = useSharedConfiguration;
+	public void setUseClusterConfiguration(Boolean useSharedConfiguration) {
+		this.useClusterConfiguration = useSharedConfiguration;
 	}
 
 	/**
@@ -895,8 +895,8 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 *
 	 * @return a boolean value indicating whether shared configuration use has been enabled or not.
 	 */
-	public Boolean getUseSharedConfiguration() {
-		return this.useSharedConfiguration;
+	public Boolean getUseClusterConfiguration() {
+		return this.useClusterConfiguration;
 	}
 
 	/**
@@ -911,8 +911,8 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
 		gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
 			!Boolean.TRUE.equals(getEnableAutoReconnect())));
-		gemfireProperties.setProperty("use-shared-configuration", String.valueOf(
-			Boolean.TRUE.equals(getUseSharedConfiguration())));
+		gemfireProperties.setProperty("use-cluster-configuration", String.valueOf(
+			Boolean.TRUE.equals(getUseClusterConfiguration())));
 	}
 
 	/* (non-Javadoc)

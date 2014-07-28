@@ -17,9 +17,9 @@
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfirePeerCacheConfigurationSettings" use-bean-factory-locator="false"
-			   use-shared-configuration="true" cache-xml-location="/sharedconfig-test-cache.xml" lazy-init="false"/>
+			   use-cluster-configuration="true" cache-xml-location="/sharedconfig-test-cache.xml" lazy-init="false"/>
 
-	<gfe:lookup-region id="SharedConfigRegion"/>
+	<gfe:lookup-region id="ClusterConfigRegion"/>
 
 	<gfe:lookup-region id="NativeLocalRegion"/>
 	<gfe:lookup-region id="NativePartitionRegion"/>

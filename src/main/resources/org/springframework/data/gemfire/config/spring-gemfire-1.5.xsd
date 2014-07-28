@@ -328,7 +328,7 @@ You may want to change this based on your knowledge of the network load or other
                 ]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="use-shared-configuration" type="xsd:string" use="optional" default="false">
+					<xsd:attribute name="use-cluster-configuration" type="xsd:string" use="optional" default="false">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Enables this Spring Data GemFire configured peer member Cache node to participate in cluster-wide configuration

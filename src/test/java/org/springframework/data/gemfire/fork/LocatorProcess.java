@@ -73,18 +73,18 @@ public class LocatorProcess {
 			.setPort(Integer.getInteger("spring.gemfire.locator-port", DEFAULT_LOCATOR_PORT))
 			.setRedirectOutput(false)
 			.set(DistributionConfig.ENABLE_SHARED_CONFIGURATION_NAME, String.valueOf(Boolean.getBoolean(
-				"spring.gemfire.enable-shared-configuration")))
+				"spring.gemfire.enable-cluster-configuration")))
 			.set(DistributionConfig.HTTP_SERVICE_PORT_NAME, System.getProperty("spring.gemfire.http-service-port",
 				DEFAULT_HTTP_SERVICE_PORT))
 			.set(DistributionConfig.JMX_MANAGER_NAME, String.valueOf(Boolean.TRUE))
 			.set(DistributionConfig.JMX_MANAGER_START_NAME, String.valueOf(Boolean.FALSE))
 			.set(DistributionConfig.LOAD_SHARED_CONFIG_FROM_DIR_NAME, String.valueOf(Boolean.getBoolean(
-				"spring.gemfire.load-shared-configuration")))
+				"spring.gemfire.load-cluster-configuration")))
 			.set(DistributionConfig.LOG_LEVEL_NAME, System.getProperty("spring.gemfire.log-level", DEFAULT_LOG_LEVEL))
 			.build();
 	}
 
-	private static boolean isSharedConfigurationEnabled(final InternalLocator locator) {
+	private static boolean isClusterConfigurationEnabled(final InternalLocator locator) {
 		return (locator != null && Boolean.valueOf(locator.getDistributedSystem().getProperties().getProperty(
 			DistributionConfig.ENABLE_SHARED_CONFIGURATION_NAME)));
 	}
@@ -99,7 +99,7 @@ public class LocatorProcess {
 			private void stopSharedConfigurationService() {
 				InternalLocator locator = InternalLocator.getLocator();
 
-				if (isSharedConfigurationEnabled(locator)) {
+				if (isClusterConfigurationEnabled(locator)) {
 					SharedConfiguration sharedConfiguration = locator.getSharedConfiguration();
 
 					if (sharedConfiguration != null) {
@@ -113,7 +113,7 @@ public class LocatorProcess {
 	private static void waitForLocatorStart(final long milliseconds) {
 		final InternalLocator locator = InternalLocator.getLocator();
 
-		if (isSharedConfigurationEnabled(locator)) {
+		if (isClusterConfigurationEnabled(locator)) {
 			ThreadUtils.timedWait(milliseconds, 500, new ThreadUtils.WaitCondition() {
 				@Override public boolean waiting() {
 					return !locator.isSharedConfigurationRunning();
