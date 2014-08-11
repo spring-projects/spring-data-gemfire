@@ -16,9 +16,9 @@ package org.springframework.data.gemfire.function.execution;
 import com.gemstone.gemfire.distributed.DistributedMember;
 
 /**
- * 
  * @author David Turanski
- *
+ * @see org.springframework.data.gemfire.function.execution.AbstractFunctionTemplate
+ * @see com.gemstone.gemfire.distributed.DistributedMember
  */
 public class GemfireOnMemberFunctionTemplate  extends AbstractFunctionTemplate {
 	
@@ -46,8 +46,9 @@ public class GemfireOnMemberFunctionTemplate  extends AbstractFunctionTemplate {
 			return new DefaultMemberFunctionExecution();
 		} else if (distributedMember == null) {
 			return new GroupMemberFunctionExecution(this.groups);
-			
-		}  
+		}
+
 		return new DistributedMemberFunctionExecution(this.distributedMember);
 	}
+
 }
