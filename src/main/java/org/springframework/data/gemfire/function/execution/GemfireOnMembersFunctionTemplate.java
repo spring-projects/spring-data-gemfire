@@ -18,36 +18,36 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 
 /**
  * @author David Turanski
- *
+ * @see org.springframework.data.gemfire.function.execution.AbstractFunctionTemplate
+ * @see com.gemstone.gemfire.distributed.DistributedMember
  */
 public class GemfireOnMembersFunctionTemplate  extends AbstractFunctionTemplate {
-	
+
 	private final Set<DistributedMember> distributedMembers;
     private final String[] groups;
-  
+
 	public GemfireOnMembersFunctionTemplate (Set<DistributedMember> distributedMembers) {
 		this.distributedMembers = distributedMembers;
 		this.groups = null;
 	}
-	
+
 	public GemfireOnMembersFunctionTemplate (String[] groups) {
 		this.distributedMembers = null;
 		this.groups = groups;
 	}
-	
+
 	public GemfireOnMembersFunctionTemplate () {
 		this.distributedMembers = null;
 		this.groups = null;
 	}
-	
- 
+
 	protected AbstractFunctionExecution getFunctionExecution() {
 		if (distributedMembers == null && groups == null) {
 			return new AllMembersFunctionExecution();
 		} else if (distributedMembers == null) {
 			return new GroupMembersFunctionExecution(this.groups);
-			
-		}  
+		}
+
 		return new DistributedMembersFunctionExecution(this.distributedMembers);
 	}
 	

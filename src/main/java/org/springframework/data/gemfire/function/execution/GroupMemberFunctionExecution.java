@@ -19,22 +19,33 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
+ * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
+ * @see com.gemstone.gemfire.cache.execute.Execution
+ * @see com.gemstone.gemfire.cache.execute.FunctionService
  */
 class GroupMemberFunctionExecution extends AbstractFunctionExecution {
 	
-	private final String groups[];
+	private final String[] groups;
 
 	/**
-	 * 
-	 * @param groups
+	 * Constructs an instance of the GroupMemberFunctionExecution class to execute a data independent Function
+	 * on a single member from each of the specified groups.
+	 *
+	 * @param groups the list of GemFire Groups from which to pick a member from each group on which to execute
+	 * the data independent Function.
 	 */
-	public GroupMemberFunctionExecution(String... groups) {
-		super();
-		Assert.notEmpty(groups, "groups cannot be null or empty.");
+	public GroupMemberFunctionExecution(final String... groups) {
+		Assert.notEmpty(groups, "'groups' cannot be null or empty.");
 		this.groups = groups; 
 	}
-	
+
+	/**
+	 * Executes the data independent Function on a single member from each of the specified groups.
+	 *
+	 * @return an Execution to execute the Function.
+	 * @see com.gemstone.gemfire.cache.execute.FunctionService#onMember(String...)
+	 */
 	@Override
 	protected Execution getExecution() {
 		return FunctionService.onMember(this.groups);
