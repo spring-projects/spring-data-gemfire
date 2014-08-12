@@ -1,0 +1,5 @@
+[[requirements]]
+= Requirements
+
+Spring Data GemFire requires JDK 6.0 or above, http://www.springsource.org/about[Spring Framework] 3 and http://www.vmware.com/support/pubs/vfabric-gemfire.html[Pivotal GemFire] 6.6 or above (version 7 or above is recommended).
+

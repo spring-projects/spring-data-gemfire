@@ -1,0 +1,83 @@
+[[new-features]]
+= New Features
+
+NOTE: As of the 1.2.0 release, this project, formerly known as Spring GemFire, has been renamed to Spring Data GemFire 
+to reflect that it is now a component of the http://www.springsource.org/spring-data[Spring Data] project.
+
+[[new-in-1-2-0]]
+== New in the 1.2.0 Release
+
+* Full support for GemFire configuration via the SDG *gfe* namespace. Now GemFire components may be configured completely without requiring a native *cache.xml* file.
+* WAN Gateway support for GemFire 6.6.x. See <<bootstrap:gateway>>.
+* Spring Data Repository support using a dedicated SDG namespace, *gfe-data*. See <<gemfire-repositories>>
+* Namespace support for registering GemFire Functions. See <<bootstrap:function>>
+* A top-level `<disk-store>` element has been added to the SDG *gfe* namespace to allow sharing of persist stores among Regions,
+and other components that support persistent backup or overflow. See <<bootstrap-diskstore>>
++
+WARNING: The `<*-region>` elements no longer allow a nested `<disk-store>`
++
+* GemFire Sub-Regions are supported via nested `<*-region>` elements.
+* A `<local-region>` element has been added to configure a Local Region.
+
+[[new-in-1-2-1]]
+== New in the 1.2.1 Release
+
+* Support for the re-designed WAN Gateway in GemFire 7.0.
+
+[[new-in-1-3-0]]
+== New in the 1.3.0 Release
+
+* Annotation support for GemFire Functions. It is now possible to declare and register Functions written as POJOs using annotations. In addition, Function executions are defined as
+annotated interfaces, similar to the way Spring Data Repositories work. See <<function-annotations>>.
+* Added a `<datasource>` element to the SDG *gfe-data* namespace to simplify establishing a basic <<data-access:datasource,client connection>> to a GemFire data grid.
+* Added a `<json-region-autoproxy>` element to the SDG *gfe-data* namespace to <<bootstrap:region:json,support JSON>> features introduced
+in GemFire 7.0, enabling Spring AOP to perform the necessary conversions automatically on Region operations.
+* Upgraded to GemFire 7.0.1 and added namespace support for new AsyncEventQueue attributes.
+* Added support for setting subscription interest policy on Regions.
+
+[[new-in-1-3-1]]
+== New in the 1.3.1 Release
+
+* Support for void returns on Function executions.  See <<function-annotations>> for complete details.
+
+[[new-in-1-3-2]]
+== New in the 1.3.2 Release
+
+* Support for persisting Local Regions. See <<bootstrap:region:local>> and <<bootstrap:region:common:attributes>>.
+* Support for entry time-to-live and entry idle-time on a GemFire Client Cache. See <<bootstrap:cache:client>>.
+* Support for multiple Spring Data GemFire web-based applications using a single GemFire cluster, operating concurrently inside tc Server.
+
+[[new-in-1-3-3]]
+== New in the 1.3.3 Release
+
+* Support for concurrency-checks-enabled on all GemFire Cache Region definitions using the SDG *gfe* namespace. See <<bootstrap:region:common:attributes>>.
+* Support for Cache Loaders and Cache Writers on Client, Local Regions. See <<bootstrap:region:common:loaders-writers>>.
+* Support for registering CacheListeners, AsyncEventQueues and Gateway Senders on GemFire Cache Sub-Regions.
+* Support for PDX persistent keys in GemFire Regions.
+* Support for correct Partition Region bean creation in a Spring context when collocation is specified with the *colocated-with* attribute.
+* Full support for GemFire Cache Sub-Regions using proper, nested `<*-region>` element syntax in the SDG *gfe* namespace.
+
+[[new-in-1-3-4]]
+== New in the 1.3.4 Release
+
+* Upgraded Spring Data GemFire to Spring Framework 3.2.8.
+* Upgraded Spring Data GemFire to Spring Data Commons 1.7.1.
+
+[[new-in-1-4-0]]
+== New in the 1.4.0 Release
+
+* Upgrades Spring Data GemFire to GemFire 7.0.2.
+* Upgrades Spring Data GemFire to Spring Data Commons 1.8.0.
+* Integrates Spring Data GemFire with Spring Boot, which includes both a *spring-boot-starter-data-gemfire* POM along with a Spring Boot Sample
+application demonstrating GemFire Cache Transactions configured with SDG bootstrapped with Spring Boot.
+* Support for bootstrapping a Spring Context in a GemFire Server when started from Gfsh. See <<gemfire-bootstrap>>.
+* Support for persisting application domain object/entities to multiple GemFire Cache Regions. See <<mapping.entities>> for more details.
+* Support for persisting application domain object/entities to GemFire Cache Sub-Regions, avoiding collisions when Sub-Regions are uniquely identifiable, but identically named.
+See <<mapping.entities>> for more details.
+* Adds strict XSD type rules to, and full support for, Data Policies and Region Shortcuts on all GemFire Cache Region types.
+* Changed the default behavior of SDG `<*-region>` elements from lookup to always create a new Region along with an option to restore old behavior using the
+*ignore-if-exists* attribute. See <<bootstrap:region:common:attributes,Common Region Attributes>> and <<bootstrap:region:common:regions-subregions-lookups-caution>>
+for more details.
+* Enables Spring Data GemFire to be fully built and ran on JDK 7 and JDK 8 (Note, however, GemFire has not yet been fully tested and supported on JDK 8;
+See http://pubs.vmware.com/vfabric53/topic/com.vmware.vfabric.gemfire.7.0/getting_started/system_requirements/supported_configurations.html[GemFire User Guide]
+for additional details.

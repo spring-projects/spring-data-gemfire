@@ -1,0 +1,21 @@
+[[ref-introduction]]
+= Document Structure
+
+The following chapters explain the core functionality offered by Spring Data GemFire.
+
+<<bootstrap>> describes the configuration support provided for bootstrapping, configuring, initializing and accessing GemFire Caches, Cache Servers, Regions, and related Distributed System components.
+
+<<apis>> explains the integration between the GemFire APIs and the various data access features available in Spring, such as transaction management and exception translation.
+
+<<serialization>> describes the enhancements for GemFire (de)serialization and management of associated objects.
+
+<<mapping>> describes persistence mapping for POJOs stored in GemFire using Spring Data.
+
+<<gemfire-repositories>> describes how to create and use GemFire Repositories using Spring Data.
+
+<<function-annotations>> describes how to create and use GemFire Functions using annotations.
+
+<<gemfire-bootstrap>> describes how to bootstrap a Spring ApplicationContext running in a GemFire Server using Gfsh.
+
+<<samples>> describes the samples provided with the distribution to illustrate the various features available in Spring Data GemFire.
+

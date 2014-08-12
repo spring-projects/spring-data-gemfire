@@ -1,0 +1,7 @@
+[preface]
+= Preface
+
+Spring Data GemFire focuses on integrating the Spring Framework's powerful, non-invasive programming model and concepts with Pivotal GemFire, simplifying configuration, development and providing high-level abstractions. This document assumes the reader already has a basic familiarity with the Spring Framework and Pivotal GemFire concepts and APIs.
+
+While every effort has been made to ensure this documentation is comprehensive and there are no errors, some topics might require more explanation and some typos might have crept in. If you do spot any mistakes or even more serious errors and you can spare a few cycles, please do bring the errors to the attention of the Spring Data GemFire team by raising an https://jira.spring.io/browse/SGF[issue]. Thank you.
+

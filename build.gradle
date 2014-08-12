@@ -3,7 +3,8 @@ buildscript {
         maven { url 'http://repo.spring.io/plugins-release' }
     }
     dependencies {
-        classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.2.4'
+        classpath('org.asciidoctor:asciidoctor-gradle-plugin:0.7.0')
+        classpath('org.asciidoctor:asciidoctor-java-integration:0.1.4.preview.1')
         classpath 'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
     }
 }
@@ -22,8 +23,8 @@ apply plugin: "java"
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply from: "$rootDir/maven.gradle"
-apply plugin: 'docbook-reference'
 //apply plugin: 'bundlor'
+apply plugin: 'asciidoctor'
 
 if (project.hasProperty('platformVersion')) {
    apply plugin: 'spring-io'
@@ -43,6 +44,31 @@ tasks.withType(Test).all {
     forkEvery = 1
     systemProperties['gemfire.disableShutdownHook'] = 'true'
     systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
+}
+
+asciidoctor {
+    sourceDocumentName = new File("$sourceDir/index.adoc")
+    outputDir = new File("$buildDir/reference/htmlsingle")
+    options = [
+            eruby: 'erubis',
+            attributes: [
+                    linkcss: 'true',
+                    copycss : 'spring.css',
+                    icons : 'font',
+                    'source-highlighter': 'prettify',
+                    sectanchors : '',
+                    toc: '',
+                    toclevels: '4',
+                    idprefix: '',
+                    idseparator: '-',
+                    doctype: 'book',
+                    numbered: '',
+                    version: project.version,
+                    baseDir: "$sourceDir",
+                    stylesheet: "spring.css",
+                    referenceDir: "$sourceDir/reference"
+            ]
+    ]
 }
 
 // Common dependencies
@@ -148,10 +174,6 @@ task javadocJar(type: Jar) {
     from javadoc
 }
 
-reference {
-    sourceDir = file('docs/src/reference/docbook')
-}
-
 task docsZip(type: Zip) {
     group = 'Distribution'
     classifier = 'docs'
@@ -165,9 +187,12 @@ task docsZip(type: Zip) {
         into 'api'
     }
 
-    from (reference) {
-        into 'reference'
+    from (asciidoctor.outputDir) {
+        include "index.html"
+        include "spring.css"
+        into 'reference/htmlsingle'
     }
+
 }
 
 task schemaZip(type: Zip) {

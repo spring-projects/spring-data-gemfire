@@ -1,0 +1,86 @@
+[[mapping]]
+= POJO mapping
+
+[[mapping.entities]]
+== Entity Mapping
+
+Spring Data GemFire provides support to map entities that will be stored in a GemFire data grid. The mapping metadata is defined using annotations at the domain classes just like this:
+
+.Mapping a domain class to a GemFire Region
+====
+[source,java]
+----
+@Region("People")
+public class Person {
+
+  @Id Long id;
+  String firstname;
+  String lastname;
+
+  @PersistenceConstructor
+  public Person(String firstname, String lastname) {
+    // …
+  }
+
+  …
+}
+----
+====
+
+The first thing you see here is the `@Region` annotation that can be used to customize the Region in which the `Person` class is stored in. The `@Id` annotation can be used to annotate the property that shall be used as the Cache key. The `@PersistenceConstructor` annotation actually helps disambiguating multiple potentially available constructors taking parameters and explicitly marking the one annotated as the one to be used to create entities. With none or only a single constructor you can omit the annotation.
+
+In addition to storing entities in top-level Regions, entities can be stored in GemFire Sub-Regions, as so:
+
+[source,java]
+----
+@Region("/Users/Admin")
+public class Admin extends User {
+  …
+}
+
+@Region("/Users/Guest")
+public class Guest extends User {
+  ...
+}		
+----
+
+Be sure to use the full-path of the GemFire Region, as defined in Spring Data GemFire XML namespace configuration meta-data, as specified in the `id` or `name` attributes of the `<*-region>` bean definition.
+
+As alternative to specifying the Region in which the entity will be stored using the `@Region` annotation on the entity class, you can also specify the `@Region` annotation on the entity's `Repository` abstraction. See <<gemfire-repositories>> for more details.
+
+However, let's say you want to store a Person in multiple GemFire Regions (e.g. `People` and `Customers`), then you can define your corresponding `Repository` interface abstractions like so:
+
+[source,java]
+----
+@Region("People")
+public interface PersonRepository extends GemfireRepository<Person, String> {
+…
+}
+
+@Region("Customers")
+public interface CustomerRepository extends GemfireRepository<Person, String> {
+...
+}		
+----
+
+[[mapping.pdx-serializer]]
+== Mapping PDX Serializer
+
+Spring Data GemFire provides a custom `PDXSerializer` implementation that uses the mapping information to customize entity serialization. Beyond that it allows customizing the entity instantiation by using the Spring Data `EntityInstantiator` abstraction. By default the serializer uses a `ReflectionEntityInstantiator` that will use the persistence constructor of the mapped entity (either the single declared one or explicitly annoted with `@PersistenceConstructor`). To provide values for constructor parameters it will read fields with name of the constructor parameters from the `PDXReader` supplied.
+
+.Using @Value on entity constructor parameters
+====
+[source,java]
+----
+public class Person {
+
+  public Person(@Value("#root.foo") String firstname, @Value("bean") String lastname) {
+    // …
+  }
+
+}  
+----
+====
+
+The entity annotated as such will get the field `foo` read from the `PDXReader` and handed as constructor parameter value for `firstname`. The value for `lastname` will be the Spring bean with name `bean`.
+

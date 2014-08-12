@@ -1,0 +1,123 @@
+[[gemfire-repositories]]
+= GemFire Repositories
+
+== Introduction
+
+Spring Data GemFire provides support to use the Spring Data repository abstraction to easily persist entities into GemFire and execute queries. A general introduction into the repository programming model is been provided http://static.springsource.org/spring-data/data-commons/docs/current/reference/html/#repositories[here].
+
+[[gemfire-repositories.spring-configuration]]
+== Spring configuration
+
+To bootstrap Spring Data repositories you use the `<repositories />` element from the GemFire namespace:
+
+.Bootstrap GemFire repositories
+====
+[source,xml]
+----
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/data/gemfire 
+                           http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd>
+
+  <gfe-data:repositories base-package="com.acme.repository" />
+
+</beans>
+----
+====
+
+This configuration snippet will look for interfaces below the configured base package and create repository instances for those interfaces backed by a `SimpleGemFireRepository`. Note that you have to have your domain classes correctly mapped to configured regions as the bottstrap process will fail otherwise.
+
+[[gemfire-repositories.executing-queries]]
+== Executing OQL queries
+
+The GemFire repositories allow the definition of query methods to easily execute OQL queries against the Region the managed entity is mapped to.
+
+.Sample repository
+====
+[source,java]
+----
+@Region("myRegion")
+public class Person { … }
+----
+
+[source,java]
+----
+public interface PersonRepository extends CrudRepository<Person, Long> {
+
+  Person findByEmailAddress(String emailAddress);
+
+  Collection<Person> findByFirstname(String firstname);
+
+  @Query("SELECT * FROM /Person p WHERE p.firstname = $1")
+  Collection<Person> findByFirstnameAnnotated(String firstname);
+
+  @Query("SELECT * FROM /Person p WHERE p.firstname IN SET $1")
+  Collection<Person> findByFirstnamesAnnotated(Collection<String> firstnames);
+}
+----
+====
+
+The first method listed here will cause the following query to be derived: `SELECT x FROM /myRegion x WHERE x.emailAddress = $1`. The second method works the same way except it's returning all entities found whereas the first one expects a single result value. In case the supported keywords are not sufficient to declare your query or the method name gets to verbose you can annotate the query methods with `@Query` as seen for methods 3 and 4.
+
+[cols="1,2,2", options="header"]
+.Supported keywords for query methods
+|===
+| Keyword
+| Sample
+| Logical result
+
+| `GreaterThan`
+| `findByAgeGreaterThan(int age)`
+| `x.age > $1`
+
+| `GreaterThanEqual`
+| `findByAgeGreaterThanEqual(int age)`
+| `x.age >= $1`
+
+| `LessThan`
+| `findByAgeLessThan(int age)`
+| `x.age < $1`
+
+| `LessThanEqual`
+| `findByAgeLessThanEqual(int age)`
+| `x.age <= $1`
+
+| `IsNotNull`, `NotNull`
+| `findByFirstnameNotNull()`
+| `x.firstname =! NULL`
+
+| `IsNull`, `Null`
+| `findByFirstnameNull()`
+| `x.firstname = NULL`
+
+| `In`
+| `findByFirstnameIn(Collection<String> x)`
+| `x.firstname IN SET $1`
+
+| `NotIn`
+| `findByFirstnameNotIn(Collection<String> x)`
+| `x.firstname NOT IN SET $1`
+
+| (No keyword)
+| `findByFirstname(String name)`
+| `x.firstname = $1`
+
+| `Like`
+| `findByFirstnameLike(String name)`
+| `x.firstname LIKE $1`
+
+| `Not`
+| `findByFirstnameNot(String name)`
+| `x.firstname != $1`
+
+| `IsTrue`, `True`
+| `findByActiveIsTrue()`
+| `x.active = true`
+
+| `IsFalse`, `False`
+| `findByActiveIsFalse()`
+| `x.active = false`
+|===
