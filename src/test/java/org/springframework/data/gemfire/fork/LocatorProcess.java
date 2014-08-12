@@ -72,13 +72,13 @@ public class LocatorProcess {
 				DEFAULT_HOSTNAME_FOR_CLIENTS))
 			.setPort(Integer.getInteger("spring.gemfire.locator-port", DEFAULT_LOCATOR_PORT))
 			.setRedirectOutput(false)
-			.set(DistributionConfig.ENABLE_SHARED_CONFIGURATION_NAME, String.valueOf(Boolean.getBoolean(
+			.set(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, String.valueOf(Boolean.getBoolean(
 				"spring.gemfire.enable-cluster-configuration")))
 			.set(DistributionConfig.HTTP_SERVICE_PORT_NAME, System.getProperty("spring.gemfire.http-service-port",
 				DEFAULT_HTTP_SERVICE_PORT))
 			.set(DistributionConfig.JMX_MANAGER_NAME, String.valueOf(Boolean.TRUE))
 			.set(DistributionConfig.JMX_MANAGER_START_NAME, String.valueOf(Boolean.FALSE))
-			.set(DistributionConfig.LOAD_SHARED_CONFIG_FROM_DIR_NAME, String.valueOf(Boolean.getBoolean(
+			.set(DistributionConfig.LOAD_CLUSTER_CONFIG_FROM_DIR_NAME, String.valueOf(Boolean.getBoolean(
 				"spring.gemfire.load-cluster-configuration")))
 			.set(DistributionConfig.LOG_LEVEL_NAME, System.getProperty("spring.gemfire.log-level", DEFAULT_LOG_LEVEL))
 			.build();
@@ -86,7 +86,7 @@ public class LocatorProcess {
 
 	private static boolean isClusterConfigurationEnabled(final InternalLocator locator) {
 		return (locator != null && Boolean.valueOf(locator.getDistributedSystem().getProperties().getProperty(
-			DistributionConfig.ENABLE_SHARED_CONFIGURATION_NAME)));
+			DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME)));
 	}
 
 	private static void registerShutdownHook() {

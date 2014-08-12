@@ -75,7 +75,7 @@ public class CacheClusterConfigurationIntegrationTest {
 
 		assertTrue(locatorWorkingDirectory.isDirectory() || locatorWorkingDirectory.mkdirs());
 
-		ZipUtils.unzip(new ClassPathResource("/shared_config.zip"), locatorWorkingDirectory);
+		ZipUtils.unzip(new ClassPathResource("/cluster_config.zip"), locatorWorkingDirectory);
 
 		List<String> arguments = new ArrayList<String>();
 
