@@ -1,0 +1,100 @@
+[[bootstrap]]
+= Bootstrapping GemFire through the Spring Container
+:referenceDir: .
+
+Spring Data GemFire provides full configuration and initialization of the GemFire data grid through Spring's IoC container and provides several classes that simplify the configuration of GemFire components including Caches, Regions, WAN Gateways, Persistence Backup, and other Distributed System components to support a variety of scenarios with minimal effort.
+
+NOTE: This section assumes basic familiarity with GemFire. For more information see the http://www.vmware.com/products/application-platform/vfabric-gemfire[product] documentation.
+
+[[bootstrap:region:spring:config]]
+== Advantages of using Spring over GemFire `cache.xml`
+
+As of release 1.2.0, Spring Data GemFire's XML namespace supports full configuration of the data grid. In fact, the Spring Data GemFire namespace is considered the preferred way to configure GemFire. GemFire will continue to support native `cache.xml` for legacy reasons, but you can now do everything in Spring XML and take advantage of the many wonderful things Spring has to offer such as modular XML configuration, property placeholders, SpEL, and environment profiles. Behind the namespace, Spring Data GemFire makes extensive use of Spring's `FactoryBean` pattern to simplify the creation and initialization of GemFire components.
+
+For example, GemFire provides several callback interfaces such as `CacheListener`, `CacheWriter`, and `CacheLoader` to allow developers to add custom event handlers. Using the Spring IoC container, these may configured as normal Spring beans and injected into GemFire components. This is a significant improvement over native `cache.xml` which provides relatively limited configuration options and requires callbacks to implement GemFire's `Declarable` interface (see <<apis:declarable>> to see how you can still use `Declarables` within Spring's DI container).
+
+In addition, IDEs such as the Spring Tool Suite (STS) provide excellent support for Spring XML namespaces, such as code completion, pop-up annotations, and real time validation, making them easy to use.
+
+[[bootstrap:namespace]]
+== Using the Core Spring Data GemFire Namespace
+
+To simplify configuration, Spring Data GemFire provides a dedicated XML namespace for configuring core GemFire components. It is also possible to configure the beans directly through Spring's standard <bean> definition. However, as of Spring Data GemFire 1.2.0, all bean properties are exposed via the namespace so there is little benefit to using raw bean definitions. For more information about XML Schema-based configuration in Spring, see http://static.springsource.org/spring/docs/current/spring-framework-reference/html/xsd-config.html[this] appendix in the Spring Framework reference documentation.
+
+NOTE: Spring Data Repository support uses a separate XML namespace. See <<gemfire-repositories>> for more information on how to configure GemFire Repositories.
+
+To use the Spring Data GemFire namespace, simply declare it in your Spring XML configuration meta-data:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlxsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:<!--1-->
+  gfe="http://www.springframework.org/schema/gemfire"<!--2-->
+  xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"> <!--3-->
+
+    <bean id ... >
+
+    <gfe:cache ...> <!--4-->
+
+</beans>
+----
+<1> Spring GemFire namespace prefix. Any name will do but through out the reference documentation, `gfe` will be used.
+<2> The namespace URI.
+<3> The namespace URI location. Note that even though the location points to an external address (which exists and is valid), Spring will resolve the schema locally as it is included in the Spring Data GemFire library.
+<4> Declaration example for the GemFire namespace. Notice the prefix usage.
+
+[NOTE]
+====
+It is possible to change the default namespace, for example from `beans` to `gfe`. This is useful for configuration composed mainly of GemFire components as it avoids declaring the prefix. To achieve this, simply swap the namespace prefix declaration above:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns= <!--1-->
+		"http://www.springframework.org/schema/gemfire"
+    xmlxsi="http://www.w3.org/2001/XMLSchema-instance"
+ <!--2-->
+ xmlns:beans="http://www.springframework.org/schema/beans"
+ xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+
+    <beans:bean id ... > <!--3-->
+
+    <cache ...> <!--4-->
+
+</beans>
+----
+<1> The default namespace declaration for this XML file points to the Spring Data GemFire namespace.
+<2> The `beans` namespace prefix declaration.
+<3> Bean declaration using the `beans` namespace. Notice the prefix.
+<4> Bean declaration using the `gfe` namespace. Notice the lack of prefix (as the default namespace is used).
+====
+
+:leveloffset: 2
+include::{referenceDir}/cache.adoc[]
+include::{referenceDir}/data-access.adoc[]
+include::{referenceDir}/region.adoc[]
+
+:leveloffset: 1
+[[bootstrap:indicies]]
+== Creating an Index
+
+GemFire allows creation on indexes (or indices) to improve the performance of (common) queries. Spring Data GemFire allows indecies to be declared through the `index` element:
+
+[source,xml]
+----
+<gfe:index id="myIndex" expression="someField" from="/someRegion"/>
+----
+
+Before creating an index, Spring Data GemFire will verify whether one with the same name already exists. If it does, it will compare the properties and if they don't match, will remove the old one to create a new one. If the properties match, Spring Data GemFire will simply return the index (in case it does not exist it will simply create one). To prevent the update of the index, even if the properties do not match, set the property `override` to false.
+
+Note that index declaration are not bound to a region but rather are top-level elements (just like `gfe:cache`). This allows one to declare any number of indecies on any region whether they are just created or already exist - an improvement versus the GemFire `cache.xml`. By default the index relies on the default cache declaration but one can customize it accordingly or use a pool (if need be) - see the namespace schema for the full set of options.
+
+:leveloffset: 2
+include::{referenceDir}/diskstore.adoc[]
+include::{referenceDir}/function.adoc[]
+include::{referenceDir}/gateway.adoc[]

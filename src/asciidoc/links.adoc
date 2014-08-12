@@ -1,0 +1,8 @@
+[[sgf-links]]
+= Useful Links
+
+* http://projects.spring.io/spring-data-gemfire[Spring Data GemFire Home Page]
+* http://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html[Pivotal GemFire Home Page]
+* https://www.vmware.com/support/pubs/vfabric-gemfire.html[Pivotal GemFire Documentation]
+* http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire[Pivotal GemFire Community Home Page]
+* http://forum.spring.io/forum/spring-projects/data/gemfire[Spring Data GemFire Forum<]
