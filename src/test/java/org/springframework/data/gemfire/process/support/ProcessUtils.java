@@ -35,17 +35,15 @@ import org.springframework.data.gemfire.test.support.IOUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
-import com.sun.tools.attach.VirtualMachine;
-import com.sun.tools.attach.VirtualMachineDescriptor;
 
 /**
- * The ProcessUtils class is a utilty class for working with process, or specifically instances
+ * The ProcessUtils class is a utility class for working with process, or specifically instances
  * of the Java Process class.
  *
  * @author John Blum
  * @see java.lang.Process
  * @see java.lang.management.RuntimeMXBean
- * @see com.sun.tools.attach.VirtualMachine
+ * see com.sun.tools.attach.VirtualMachine
  * @since 1.5.0
  */
 @SuppressWarnings("unused")
@@ -78,6 +76,7 @@ public abstract class ProcessUtils {
 			runtimeMXBeanName), cause);
 	}
 
+	/*
 	public static boolean isRunning(final int processId) {
 		for (VirtualMachineDescriptor vmDescriptor : VirtualMachine.list()) {
 			if (String.valueOf(processId).equals(vmDescriptor.id())) {
@@ -87,6 +86,7 @@ public abstract class ProcessUtils {
 
 		return false;
 	}
+	*/
 
 	public static boolean isRunning(final Process process) {
 		try {
