@@ -141,7 +141,9 @@ public class LocatorProcess {
 					SharedConfiguration sharedConfiguration = locator.getSharedConfiguration();
 
 					if (sharedConfiguration != null) {
-						sharedConfiguration.destroySharedConfiguration();
+						if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
+							sharedConfiguration.destroySharedConfiguration();
+						}
 					}
 				}
 			}

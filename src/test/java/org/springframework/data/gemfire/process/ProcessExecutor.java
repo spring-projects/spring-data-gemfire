@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.process;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,7 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The ProcessLauncher class is a utility class for launching Java processes.
+ * The ProcessExecutor class is a utility class for launching and running Java processes.
  *
  * @author John Blum
  * @see java.lang.Process
@@ -44,6 +45,8 @@ public abstract class ProcessExecutor {
 
 	protected static final String JAVA_EXE = JAVA_HOME.concat(File.separator).concat("bin")
 		.concat(File.separator).concat("java");
+
+	protected static final String SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX = "spring.gemfire.";
 
 	protected static final String USER_HOME = System.getProperty("user.home");
 
@@ -84,6 +87,7 @@ public abstract class ProcessExecutor {
 		command.add("-server");
 		command.add("-classpath");
 		command.add(JAVA_CLASSPATH);
+		command.addAll(getSpringGemFireSystemProperties());
 
 		if (args != null) {
 			programArgs = new ArrayList<String>(args.length);
@@ -102,6 +106,18 @@ public abstract class ProcessExecutor {
 		command.addAll(programArgs);
 
 		return command.toArray(new String[command.size()]);
+	}
+
+	protected static Collection<? extends String> getSpringGemFireSystemProperties() {
+		List<String> springGemfireSystemProperties = new ArrayList<String>();
+
+		for (String property : System.getProperties().stringPropertyNames()) {
+			if (property.startsWith(SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX)) {
+				springGemfireSystemProperties.add(String.format("-D%1$s=%2$s", property, System.getProperty(property)));
+			}
+		}
+
+		return springGemfireSystemProperties;
 	}
 
 	protected static boolean isJvmOption(final String option) {

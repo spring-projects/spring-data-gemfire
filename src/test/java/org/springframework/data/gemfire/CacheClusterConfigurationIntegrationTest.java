@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -81,19 +80,37 @@ public class CacheClusterConfigurationIntegrationTest {
 
 	@Rule
 	public TestRule watchman = new TestWatcher() {
-		@Override protected void failed(final Throwable t, final Description description) {
-			try {
-				System.out.println(String.format("Test '%1$s' failed...", description.getDisplayName()));
-				System.out.println(ThrowableUtils.toString(t));
-				System.out.println("Locator process log file contents were...");
+		@Override
+		protected void failed(final Throwable t, final Description description) {
+			System.err.println(String.format("Test '%1$s' failed...", description.getDisplayName()));
+			System.err.println(ThrowableUtils.toString(t));
+			System.err.println("Locator process log file contents were...");
+			System.err.println(getLocatorProcessOutput(description));
+		}
 
+		@Override
+		protected void finished(final Description description) {
+			if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
+				try {
+					FileUtils.write(new File(locatorWorkingDirectory.getParent(),
+						String.format("%1$s-clusterconfiglocator.log", description.getMethodName())),
+							getLocatorProcessOutput(description));
+				}
+				catch (IOException e) {
+					throw new RuntimeException("Failed the write the contents of the Locator process log to a file!", e);
+				}
+			}
+		}
+
+		private String getLocatorProcessOutput(final Description description) {
+			try {
 				String locatorProcessOutputString = StringUtils.collectionToDelimitedString(locatorProcessOutput,
 					FileUtils.LINE_SEPARATOR, String.format("[%1$s] - ", description.getMethodName()), "");
 
 				locatorProcessOutputString = (StringUtils.hasText(locatorProcessOutputString) ?
 					locatorProcessOutputString : locatorProcess.readLogFile());
 
-				System.out.println(locatorProcessOutputString);
+				return locatorProcessOutputString;
 			}
 			catch (IOException e) {
 				throw new RuntimeException("Failed to read the contents of the Locator process log file!", e);
@@ -128,9 +145,9 @@ public class CacheClusterConfigurationIntegrationTest {
 			}
 		});
 
-		waitForLocatorStart(TimeUnit.SECONDS.toMillis(60));
+		waitForLocatorStart(TimeUnit.SECONDS.toMillis(30));
 
-		//System.out.println("Cluster Configuration Locator should be running!");
+		System.out.println("Cluster Configuration Locator should be running!");
 	}
 
 	private static void waitForLocatorStart(final long milliseconds) {
@@ -145,7 +162,9 @@ public class CacheClusterConfigurationIntegrationTest {
 	@AfterClass
 	public static void testSuiteTearDown() {
 		locatorProcess.shutdown();
-		FileSystemUtils.deleteRecursively(locatorWorkingDirectory);
+		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
+			FileSystemUtils.deleteRecursively(locatorWorkingDirectory);
+		}
 	}
 
 	protected Region assertRegion(final Region actualRegion, final String expectedRegionName) {
@@ -183,7 +202,6 @@ public class CacheClusterConfigurationIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testClusterConfiguration() {
 		ConfigurableApplicationContext applicationContext = newApplicationContext(
 			getLocation("cacheUsingClusterConfigurationIntegrationTest.xml"));
