@@ -18,6 +18,8 @@ package org.springframework.data.gemfire.process;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,6 +38,8 @@ import java.util.logging.Logger;
 
 import org.springframework.data.gemfire.process.support.PidUnavailableException;
 import org.springframework.data.gemfire.process.support.ProcessUtils;
+import org.springframework.data.gemfire.test.support.FileSystemUtils;
+import org.springframework.data.gemfire.test.support.FileUtils;
 import org.springframework.data.gemfire.test.support.IOUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.data.gemfire.test.support.ThrowableUtils;
@@ -74,10 +78,10 @@ public class ProcessWrapper {
 		this.process = process;
 		this.processConfiguration = processConfiguration;
 
-		postInit();
+		init();
 	}
 
-	private void postInit() {
+	private void init() {
 		newThread("Process OUT Stream Reader", newProcessInputStreamReader(process.getInputStream())).start();
 
 		if (!isRedirectingErrorStream()) {
@@ -167,6 +171,26 @@ public class ProcessWrapper {
 		catch (IllegalThreadStateException ignore) {
 			return -1;
 		}
+	}
+
+	public String readLogFile() throws IOException {
+		File[] logFiles = FileSystemUtils.listFiles(getWorkingDirectory(), new FileFilter() {
+			@Override public boolean accept(final File pathname) {
+				return (pathname != null && (pathname.isDirectory() || pathname.getAbsolutePath().endsWith(".log")));
+			}
+		});
+
+		if (logFiles.length > 0) {
+			return readLogFile(logFiles[0]);
+		}
+		else {
+			throw new FileNotFoundException(String.format(
+				"No log files were found in the process's working directory (%1$s)!", getWorkingDirectory()));
+		}
+	}
+
+	public String readLogFile(final File log) throws IOException {
+		return FileUtils.read(log);
 	}
 
 	public boolean register(final ProcessInputStreamListener listener) {

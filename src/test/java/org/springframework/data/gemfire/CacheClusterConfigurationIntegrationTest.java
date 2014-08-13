@@ -24,12 +24,17 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -37,10 +42,14 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.gemfire.fork.LocatorProcess;
 import org.springframework.data.gemfire.process.ProcessExecutor;
+import org.springframework.data.gemfire.process.ProcessInputStreamListener;
 import org.springframework.data.gemfire.process.ProcessWrapper;
+import org.springframework.data.gemfire.test.support.FileUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
+import org.springframework.data.gemfire.test.support.ThrowableUtils;
 import org.springframework.data.gemfire.test.support.ZipUtils;
 import org.springframework.util.FileSystemUtils;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -67,6 +76,30 @@ public class CacheClusterConfigurationIntegrationTest {
 
 	private static ProcessWrapper locatorProcess;
 
+	private static List<String> locatorProcessOutput = Collections.synchronizedList(new ArrayList<String>());
+
+	@Rule
+	public TestRule watchman = new TestWatcher() {
+		@Override protected void failed(final Throwable t, final Description description) {
+			try {
+				System.err.println(String.format("Test '%1$s' failed...", description.getDisplayName()));
+				System.err.println(ThrowableUtils.toString(t));
+				System.err.println("Locator process log file contents were...");
+
+				String locatorProcessOutputString = StringUtils.collectionToDelimitedString(locatorProcessOutput,
+					FileUtils.LINE_SEPARATOR, String.format("[%1$s] - ", description.getMethodName()), "");
+
+				locatorProcessOutputString = (StringUtils.hasText(locatorProcessOutputString) ?
+					locatorProcessOutputString : locatorProcess.readLogFile());
+
+				System.err.println(locatorProcessOutputString);
+			}
+			catch (IOException e) {
+				throw new RuntimeException("Failed to read the contents of the Locator process log file!", e);
+			}
+		}
+	};
+
 	@BeforeClass
 	public static void testSuiteSetup() throws IOException {
 		String locatorName = "ClusterConfigLocator";
@@ -88,7 +121,13 @@ public class CacheClusterConfigurationIntegrationTest {
 
 		locatorProcess.registerShutdownHook();
 
-		waitForLocatorStart(TimeUnit.SECONDS.toMillis(30));
+		locatorProcess.register(new ProcessInputStreamListener() {
+			@Override public void onInput(final String input) {
+				locatorProcessOutput.add(input);
+			}
+		});
+
+		waitForLocatorStart(TimeUnit.SECONDS.toMillis(60));
 
 		//System.out.println("Cluster Configuration Locator should be running!");
 	}
