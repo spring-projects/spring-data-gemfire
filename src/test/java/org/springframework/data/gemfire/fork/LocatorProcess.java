@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.fork;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.gemfire.process.support.ProcessUtils;
@@ -46,12 +47,9 @@ public class LocatorProcess {
 	public static final String DEFAULT_LOG_LEVEL = "config";
 
 	public static void main(final String... args) throws IOException {
-		LocatorLauncher locatorLauncher = buildLocatorLauncher();
+		runInternalLocator();
 
 		registerShutdownHook();
-
-		// start the GemFire Locator process...
-		locatorLauncher.start();
 
 		waitForLocatorStart(TimeUnit.SECONDS.toMillis(20));
 
@@ -63,6 +61,41 @@ public class LocatorProcess {
 
 	public static String getLocatorProcessControlFilename() {
 		return LocatorProcess.class.getSimpleName().toLowerCase().concat(".pid");
+	}
+
+	@SuppressWarnings("unused")
+	private static LocatorLauncher runLocator() {
+		LocatorLauncher locatorLauncher = buildLocatorLauncher();
+
+		// start the GemFire Locator process...
+		locatorLauncher.start();
+
+		return locatorLauncher;
+	}
+
+	@SuppressWarnings("unused")
+	private static InternalLocator runInternalLocator() throws IOException {
+		String hostnameForClients = System.getProperty("spring.gemfire.hostname-for-clients", DEFAULT_HOSTNAME_FOR_CLIENTS);
+
+		int locatorPort = Integer.getInteger("spring.gemfire.locator-port", DEFAULT_LOCATOR_PORT);
+
+		boolean loadClusterConfigurationFromDirectory = Boolean.getBoolean("spring.gemfire.load-cluster-configuration");
+
+		Properties distributedSystemProperties = new Properties();
+
+		distributedSystemProperties.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME,
+			String.valueOf(Boolean.getBoolean("spring.gemfire.enable-cluster-configuration")));
+		distributedSystemProperties.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME,
+			System.getProperty("spring.gemfire.http-service-port", DEFAULT_HTTP_SERVICE_PORT));
+		distributedSystemProperties.setProperty(DistributionConfig.JMX_MANAGER_NAME, String.valueOf(Boolean.TRUE));
+		distributedSystemProperties.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, String.valueOf(Boolean.FALSE));
+		distributedSystemProperties.setProperty(DistributionConfig.LOAD_CLUSTER_CONFIG_FROM_DIR_NAME,
+			String.valueOf(loadClusterConfigurationFromDirectory));
+		distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME,
+			System.getProperty("spring.gemfire.log-level", DEFAULT_LOG_LEVEL));
+
+		return InternalLocator.startLocator(locatorPort, null, null, null, null, null, distributedSystemProperties, true, true,
+			hostnameForClients, loadClusterConfigurationFromDirectory);
 	}
 
 	private static LocatorLauncher buildLocatorLauncher() {
@@ -93,7 +126,12 @@ public class LocatorProcess {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override public void run() {
 				stopSharedConfigurationService();
-				LocatorLauncher.getInstance().stop();
+
+				LocatorLauncher instance = LocatorLauncher.getInstance();
+
+				if (instance != null) {
+					instance.stop();
+				}
 			}
 
 			private void stopSharedConfigurationService() {
