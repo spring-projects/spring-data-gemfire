@@ -3,6 +3,15 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.5.0.RC1 (2014-08-13)
+-----------------------------------------
+* SGF-306 - Release 1.5 RC1.
+* SGF-304 - OnMembers function execution with Gemfire Group calls onMember (wrong method).
+* SGF-291 - Upgrade Spring Data GemFire 1.5 to GemFire 8.0.
+* SGF-227 - Ability to handle forced disconnects due to node failures with "Reconnect" functionality being added in GemFire.
+* SGF-226 - Ability to request and get the member's configuration from a GemFire Locator/Manager using the cluster-wide configuration in the new Persistent Config feature.
+
+
 Changes in version 1.4.2.RELEASE (2014-07-28)
 ---------------------------------------------
 * SGF-303 - Release 1.4.2.
