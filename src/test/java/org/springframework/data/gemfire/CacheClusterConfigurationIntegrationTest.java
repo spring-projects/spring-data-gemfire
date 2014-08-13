@@ -82,9 +82,9 @@ public class CacheClusterConfigurationIntegrationTest {
 	public TestRule watchman = new TestWatcher() {
 		@Override protected void failed(final Throwable t, final Description description) {
 			try {
-				System.err.println(String.format("Test '%1$s' failed...", description.getDisplayName()));
-				System.err.println(ThrowableUtils.toString(t));
-				System.err.println("Locator process log file contents were...");
+				System.out.println(String.format("Test '%1$s' failed...", description.getDisplayName()));
+				System.out.println(ThrowableUtils.toString(t));
+				System.out.println("Locator process log file contents were...");
 
 				String locatorProcessOutputString = StringUtils.collectionToDelimitedString(locatorProcessOutput,
 					FileUtils.LINE_SEPARATOR, String.format("[%1$s] - ", description.getMethodName()), "");
@@ -92,7 +92,7 @@ public class CacheClusterConfigurationIntegrationTest {
 				locatorProcessOutputString = (StringUtils.hasText(locatorProcessOutputString) ?
 					locatorProcessOutputString : locatorProcess.readLogFile());
 
-				System.err.println(locatorProcessOutputString);
+				System.out.println(locatorProcessOutputString);
 			}
 			catch (IOException e) {
 				throw new RuntimeException("Failed to read the contents of the Locator process log file!", e);
