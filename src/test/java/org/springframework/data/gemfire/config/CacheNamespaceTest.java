@@ -147,8 +147,11 @@ public class CacheNamespaceTest{
 
 		Cache gemfireCache = context.getBean("cache-with-auto-reconnect-enabled", Cache.class);
 
-		assertFalse(Boolean.parseBoolean(gemfireCache.getDistributedSystem().getProperties()
-			.getProperty("disable-auto-reconnect")));
+		boolean expected = Boolean.getBoolean("org.springframework.data.gemfire.test.GemfireTestRunner.nomock");
+		boolean actual = Boolean.parseBoolean(gemfireCache.getDistributedSystem().getProperties()
+			.getProperty("disable-auto-reconnect"));
+
+		assertEquals(String.format("Expected 'disable-auto-reconnect' to be %1$s!", expected), expected, actual);
 
 		CacheFactoryBean cacheFactoryBean = context.getBean("&cache-with-auto-reconnect-enabled", CacheFactoryBean.class);
 
@@ -161,8 +164,8 @@ public class CacheNamespaceTest{
 
 		CacheFactoryBean cacheFactoryBean = context.getBean("&heap-tuned-cache", CacheFactoryBean.class);
 
-		Float criticalHeapPercentage = (Float) TestUtils.readField("criticalHeapPercentage", cacheFactoryBean);
-		Float evictionHeapPercentage = (Float) TestUtils.readField("evictionHeapPercentage", cacheFactoryBean);
+		Float criticalHeapPercentage = TestUtils.readField("criticalHeapPercentage", cacheFactoryBean);
+		Float evictionHeapPercentage = TestUtils.readField("evictionHeapPercentage", cacheFactoryBean);
 
 		assertEquals(70.0f, criticalHeapPercentage, 0.0001);
 		assertEquals(60.0f, evictionHeapPercentage, 0.0001);

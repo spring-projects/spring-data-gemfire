@@ -36,6 +36,12 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
 @SuppressWarnings("unused")
 public abstract class FileSystemUtils extends IOUtils {
 
+	public static final File JAVA_HOME = new File(System.getProperty("java.home"));
+
+	public static final File USER_HOME = new File(System.getProperty("user.home"));
+
+	public static final File WORKING_DIRECTORY = new File(System.getProperty("user.dir"));
+
 	public static File[] listFiles(final File directory, final FileFilter fileFilter) {
 		Assert.isTrue(directory != null && directory.isDirectory(), String.format(
 			"The File (%1$s) does not refer to a valid directory!", directory));

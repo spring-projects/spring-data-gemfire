@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -39,21 +40,14 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public abstract class ProcessExecutor {
 
+	protected static final File JAVA_EXE = new File(new File(FileSystemUtils.JAVA_HOME, "bin"), "java");
+
 	protected static final String JAVA_CLASSPATH = System.getProperty("java.class.path");
-
-	protected static final String JAVA_HOME = System.getProperty("java.home");
-
-	protected static final String JAVA_EXE = JAVA_HOME.concat(File.separator).concat("bin")
-		.concat(File.separator).concat("java");
 
 	protected static final String SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX = "spring.gemfire.";
 
-	protected static final String USER_HOME = System.getProperty("user.home");
-
-	protected static final String USER_WORKING_DIRECTORY = System.getProperty("user.dir");
-
 	public static ProcessWrapper launch(final Class<?> type, final String... args) throws IOException {
-		return launch(new File(USER_WORKING_DIRECTORY), type, args);
+		return launch(FileSystemUtils.WORKING_DIRECTORY, type, args);
 	}
 
 	public static ProcessWrapper launch(final File workingDirectory, final Class<?> type, final String... args)
@@ -83,7 +77,7 @@ public abstract class ProcessExecutor {
 		List<String> command = new ArrayList<String>();
 		List<String> programArgs = Collections.emptyList();
 
-		command.add(JAVA_EXE);
+		command.add(JAVA_EXE.getAbsolutePath());
 		command.add("-server");
 		command.add("-classpath");
 		command.add(JAVA_CLASSPATH);

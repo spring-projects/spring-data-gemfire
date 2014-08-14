@@ -137,13 +137,13 @@ public class CacheClusterConfigurationIntegrationTest {
 		locatorProcess = ProcessExecutor.launch(locatorWorkingDirectory, LocatorProcess.class,
 			arguments.toArray(new String[arguments.size()]));
 
-		locatorProcess.registerShutdownHook();
-
 		locatorProcess.register(new ProcessInputStreamListener() {
 			@Override public void onInput(final String input) {
 				locatorProcessOutput.add(input);
 			}
 		});
+
+		locatorProcess.registerShutdownHook();
 
 		waitForLocatorStart(TimeUnit.SECONDS.toMillis(30));
 

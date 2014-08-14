@@ -17,8 +17,8 @@
 package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -39,6 +39,7 @@ import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.FileSystemUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CustomExpiry;
@@ -58,10 +59,11 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 /**
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="diskstore-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="diskstore-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class DiskStoreAndEvictionRegionParsingTest {
 
 	@Autowired
@@ -70,26 +72,19 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	@Autowired
 	DiskStore diskStore1;
 
-	private static File diskStoreDir;
+	private static File diskStoreDirectory;
 
 	@BeforeClass
 	public static void setUp() {
-		String path = "./build/tmp";
-		diskStoreDir = new File(path);
-		if (!diskStoreDir.exists()) {
-			diskStoreDir.mkdir();
-		}
+		diskStoreDirectory = new File("./build/tmp");
+		assertTrue(diskStoreDirectory.isDirectory() || diskStoreDirectory.mkdir());
 	}
 
 	@AfterClass
 	public static void tearDown() {
-		for (File file : diskStoreDir.listFiles()) {
-			file.delete();
-		}
-		diskStoreDir.delete();
+		FileSystemUtils.deleteRecursively(diskStoreDirectory);
 
 		for (String name : new File(".").list(new FilenameFilter() {
-
 			@Override
 			public boolean accept(File dir, String name) {
 				return name.startsWith("BACKUPds");
@@ -110,14 +105,14 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(true, diskStore1.getAutoCompact());
 		assertEquals(DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD, diskStore1.getCompactionThreshold());
 		assertEquals(9999, diskStore1.getTimeInterval());
-		assertEquals(10, diskStore1.getMaxOplogSize());
-		assertEquals(diskStoreDir, diskStore1.getDiskDirs()[0]);
+		assertEquals(1, diskStore1.getMaxOplogSize());
+		assertEquals(diskStoreDirectory, diskStore1.getDiskDirs()[0]);
 		Cache cache = context.getBean("gemfireCache", Cache.class);
 		assertSame(diskStore1, cache.findDiskStore("diskStore1"));
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testReplicaDataOptions() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
 		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
@@ -134,8 +129,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertNull(evicAttr.getObjectSizer());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testPartitionDataOptions() throws Exception {
 		assertTrue(context.containsBean("partition-data"));
 		RegionFactoryBean fb = context.getBean("&partition-data", RegionFactoryBean.class);
@@ -153,8 +148,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(SimpleObjectSizer.class, sizer.getClass());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testEntryTtl() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
 		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
@@ -178,8 +173,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	}
 	
 
-	@SuppressWarnings("rawtypes") 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testCustomExpiry() throws Exception {
 		assertTrue(context.containsBean("replicated-data-custom-expiry"));
 		RegionFactoryBean fb = context.getBean("&replicated-data-custom-expiry", RegionFactoryBean.class);
@@ -198,8 +193,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		 */
 		@Override
 		public void close() {
-			// TODO Auto-generated method stub
-			
+
 		}
 
 		/* (non-Javadoc)
@@ -209,7 +203,6 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		public ExpirationAttributes getExpiry(Entry<K, V> entry) {
 			return null;
 		}
-		
 	}
-	
+
 }
