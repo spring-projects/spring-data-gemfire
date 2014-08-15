@@ -100,7 +100,6 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		}
 
 		if (dispatcherThreads != null) {
-			Assert.isTrue(isSerialEventQueue(), "The number of Dispatcher Threads cannot be specified with a Parallel Event Queue.");
 			asyncEventQueueFactory.setDispatcherThreads(dispatcherThreads);
 		}
 

@@ -134,7 +134,7 @@ public class AsyncEventQueueFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalStateException.class)
-	public void testSetAsyncEventListenerAfterAyncEventQueueCreation() throws Exception {
+	public void testSetAsyncEventListenerAfterAsyncEventQueueCreation() throws Exception {
 		String asyncEventQueueId = "testEventQueue";
 
 		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
@@ -180,18 +180,39 @@ public class AsyncEventQueueFactoryBeanTest {
 	}
 
 	@Test
-	public void testParallelAsyncEventQueue() throws Exception {
-		AsyncEventQueueFactory mockAsyncEventQueueFatory = createMockAsyncEventQueueFactory("123");
+	public void testConcurrentParallelAsyncEventQueue() throws Exception {
+		AsyncEventQueueFactory mockAsyncEventQueueFactory = createMockAsyncEventQueueFactory("000");
 
 		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
-			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFatory));
+			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
+
+		factoryBean.setName("000");
+		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setDispatcherThreads(8);
+		factoryBean.setParallel(true);
+		factoryBean.doInit();
+
+		verifyExpectations(mockAsyncEventQueueFactory, factoryBean);
+
+		AsyncEventQueue eventQueue = factoryBean.getObject();
+
+		assertNotNull(eventQueue);
+		assertEquals("000", eventQueue.getId());
+	}
+
+	@Test
+	public void testParallelAsyncEventQueue() throws Exception {
+		AsyncEventQueueFactory mockAsyncEventQueueFactory = createMockAsyncEventQueueFactory("123");
+
+		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
+			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
 
 		factoryBean.setName("123");
 		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
 		factoryBean.setParallel(true);
 		factoryBean.doInit();
 
-		verifyExpectations(mockAsyncEventQueueFatory, factoryBean);
+		verifyExpectations(mockAsyncEventQueueFactory, factoryBean);
 
 		AsyncEventQueue eventQueue = factoryBean.getObject();
 
@@ -200,33 +221,11 @@ public class AsyncEventQueueFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testParallelAsyncEventQueueWithDispatcherThreads() {
-		AsyncEventQueueFactory mockAsyncEventQueueFatory = createMockAsyncEventQueueFactory("456");
-
-		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
-			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFatory));
-
-		factoryBean.setName("456");
-		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
-		factoryBean.setDispatcherThreads(1);
-		factoryBean.setParallel(true);
-
-		try {
-			factoryBean.doInit();
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("The number of Dispatcher Threads cannot be specified with a Parallel Event Queue.",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test(expected = IllegalArgumentException.class)
 	public void testParallelAsyncEventQueueWithOrderPolicy() {
-		AsyncEventQueueFactory mockAsyncEventQueueFatory = createMockAsyncEventQueueFactory("456");
+		AsyncEventQueueFactory mockAsyncEventQueueFactory = createMockAsyncEventQueueFactory("456");
 
 		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
-			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFatory));
+			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
 
 		factoryBean.setName("456");
 		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
@@ -266,12 +265,12 @@ public class AsyncEventQueueFactoryBeanTest {
 
 	@Test
 	public void testAsyncEventQueueWithOrderPolicyAndDispatcherThreads() throws Exception {
-		AsyncEventQueueFactory mockAsyncEventQueueFatory = createMockAsyncEventQueueFactory("789");
+		AsyncEventQueueFactory mockAsyncEventQueueFatory = createMockAsyncEventQueueFactory("abc");
 
 		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
 			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFatory));
 
-		factoryBean.setName("789");
+		factoryBean.setName("abc");
 		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
 		factoryBean.setDispatcherThreads(2);
 		factoryBean.setOrderPolicy("THREAD");
@@ -282,7 +281,7 @@ public class AsyncEventQueueFactoryBeanTest {
 		AsyncEventQueue eventQueue = factoryBean.getObject();
 
 		assertNotNull(eventQueue);
-		assertEquals("789", eventQueue.getId());
+		assertEquals("abc", eventQueue.getId());
 	}
 
 	@Test
