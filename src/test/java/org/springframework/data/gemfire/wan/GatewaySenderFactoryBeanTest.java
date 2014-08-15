@@ -108,6 +108,28 @@ public class GatewaySenderFactoryBeanTest {
 	}
 
 	@Test
+	public void testConcurrentParallelGatewaySender() throws Exception {
+		GatewaySenderFactory mockGatewaySenderFactory = createMockGatewaySenderFactory("g0", 69);
+
+		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(
+			createMockCacheWithGatewayInfrastructure(mockGatewaySenderFactory));
+
+		factoryBean.setName("g0");
+		factoryBean.setRemoteDistributedSystemId(69);
+		factoryBean.setParallel(true);
+		factoryBean.setDispatcherThreads(8);
+		factoryBean.doInit();
+
+		verifyExpectations(factoryBean, mockGatewaySenderFactory);
+
+		GatewaySender gatewaySender = factoryBean.getObject();
+
+		assertNotNull(gatewaySender);
+		assertEquals("g0", gatewaySender.getId());
+		assertEquals(69, gatewaySender.getRemoteDSId());
+	}
+
+	@Test
 	public void testParallelGatewaySender() throws Exception {
 		GatewaySenderFactory mockGatewaySenderFactory = createMockGatewaySenderFactory("g1", 69);
 
@@ -149,30 +171,8 @@ public class GatewaySenderFactoryBeanTest {
 		}
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testParallelGatewaySenderWithDispatcherThreads() {
-		GatewaySenderFactory mockGatewaySenderFactory = createMockGatewaySenderFactory("g3", 69);
-
-		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(
-			createMockCacheWithGatewayInfrastructure(mockGatewaySenderFactory));
-
-		factoryBean.setName("g3");
-		factoryBean.setRemoteDistributedSystemId(69);
-		factoryBean.setParallel(true);
-		factoryBean.setDispatcherThreads(1);
-
-		try {
-			factoryBean.doInit();
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("The number of Dispatcher Threads cannot be specified with a Parallel Gateway Sender Queue.",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
 	@Test
-	public void testSerialGatewaySenderWithDispatcherThreads() throws Exception {
+	public void testConcurrentSerialGatewaySender() throws Exception {
 		GatewaySenderFactory mockGatewaySenderFactory = createMockGatewaySenderFactory("g4", 21);
 
 		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(

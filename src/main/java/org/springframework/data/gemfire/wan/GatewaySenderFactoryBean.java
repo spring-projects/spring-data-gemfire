@@ -117,8 +117,6 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		}
 
 		if (dispatcherThreads != null) {
-			Assert.isTrue(isSerialGatewaySender(),
-				"The number of Dispatcher Threads cannot be specified with a Parallel Gateway Sender Queue.");
 			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
 		}
 
