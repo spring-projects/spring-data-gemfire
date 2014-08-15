@@ -16,9 +16,12 @@
 package org.springframework.data.gemfire.config;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -33,8 +36,27 @@ import org.w3c.dom.Element;
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.support.AbstractBeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
+ * @see org.springframework.data.gemfire.DiskStoreFactoryBean
+ * @see org.w3c.dom.Element
  */
 public class DiskStoreParser extends AbstractSingleBeanDefinitionParser {
+
+	private static final AtomicBoolean registered = new AtomicBoolean(false);
+
+	private static void registerDiskStoreBeanPostProcessor(final ParserContext parserContext) {
+		if (registered.compareAndSet(false, true)) {
+			AbstractBeanDefinition diskStoreBeanPostProcessor = BeanDefinitionBuilder
+				.genericBeanDefinition(DiskStoreBeanPostProcessor.class)
+				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
+				.getBeanDefinition();
+
+			BeanDefinitionReaderUtils.registerWithGeneratedName(diskStoreBeanPostProcessor,
+				parserContext.getRegistry());
+		}
+	}
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
@@ -44,6 +66,8 @@ public class DiskStoreParser extends AbstractSingleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, parserContext, builder);
+
+		registerDiskStoreBeanPostProcessor(parserContext);
 
 		builder.setLazyInit(false);
 

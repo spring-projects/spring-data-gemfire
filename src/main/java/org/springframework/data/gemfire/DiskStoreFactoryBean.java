@@ -40,7 +40,7 @@ import com.gemstone.gemfire.cache.GemFireCache;
  * @see org.springframework.beans.factory.InitializingBean
  */
 @SuppressWarnings("unused")
-public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, InitializingBean, BeanNameAware {
+public class DiskStoreFactoryBean implements BeanNameAware , FactoryBean<DiskStore>, InitializingBean {
 
 	private Boolean allowForceCompaction;
 	private Boolean autoCompact;
@@ -66,7 +66,7 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 
 	@Override
 	public Class<?> getObjectType() {
-		return DiskStore.class;
+		return (diskStore != null ? diskStore.getClass() : DiskStore.class);
 	}
 
 	@Override
@@ -84,33 +84,34 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 		if (allowForceCompaction != null) {
 			diskStoreFactory.setAllowForceCompaction(allowForceCompaction);
 		}
+		if (autoCompact != null) {
+			diskStoreFactory.setAutoCompact(autoCompact);
+		}
 		if (compactionThreshold != null) {
 			diskStoreFactory.setCompactionThreshold(compactionThreshold);
 		}
-		if (autoCompact != null) {
-			diskStoreFactory.setAutoCompact(autoCompact);
+		if (maxOplogSize != null) {
+			diskStoreFactory.setMaxOplogSize(maxOplogSize);
 		}
 		if (queueSize != null) {
 			diskStoreFactory.setQueueSize(queueSize);
 		}
-		if (writeBufferSize != null) {
-			diskStoreFactory.setWriteBufferSize(writeBufferSize);
-		}
 		if (timeInterval != null) {
 			diskStoreFactory.setTimeInterval(timeInterval);
 		}
-		if (maxOplogSize != null) {
-			diskStoreFactory.setMaxOplogSize(maxOplogSize);
+		if (writeBufferSize != null) {
+			diskStoreFactory.setWriteBufferSize(writeBufferSize);
 		}
 
 		if (!CollectionUtils.isEmpty(diskDirs)) {
 			File[] diskDirFiles = new File[diskDirs.size()];
 			int[] diskDirSizes = new int[diskDirs.size()];
 
-			for (int i = 0; i < diskDirs.size(); i++) {
-				DiskDir diskDir = diskDirs.get(i);
-				diskDirFiles[i] = new File(diskDir.location);
-				diskDirSizes[i] = diskDir.maxSize == null ? DiskStoreFactory.DEFAULT_DISK_DIR_SIZE : diskDir.maxSize;
+			for (int index = 0; index < diskDirs.size(); index++) {
+				DiskDir diskDir = diskDirs.get(index);
+				diskDirFiles[index] = new File(diskDir.location);
+				diskDirSizes[index] = (diskDir.maxSize != null ? diskDir.maxSize
+					: DiskStoreFactory.DEFAULT_DISK_DIR_SIZE);
 			}
 
 			diskStoreFactory.setDiskDirsAndSizes(diskDirFiles, diskDirSizes);
@@ -118,7 +119,7 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 
 		diskStore = diskStoreFactory.create(getName());
 
-		Assert.notNull(diskStore, String.format("The DiskStore with name '%1$s' failed to be created successfully.",
+		Assert.notNull(diskStore, String.format("DiskStore with name '%1$s' failed to be created successfully.",
 			diskStore.getName()));
 	}
 
@@ -178,14 +179,13 @@ public class DiskStoreFactoryBean implements FactoryBean<DiskStore>, Initializin
 		final Integer maxSize;
 		final String location;
 
-		public DiskDir(String location, int maxSize) {
-			this.location = location;
-			this.maxSize = maxSize;
-		}
-
 		public DiskDir(String location) {
 			this.location = location;
 			this.maxSize = null;
+		}
+		public DiskDir(String location, int maxSize) {
+			this.location = location;
+			this.maxSize = maxSize;
 		}
 	}
 
