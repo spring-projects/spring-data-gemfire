@@ -1687,35 +1687,17 @@ The maximum size (in megabytes) of data stored in each directory. Default value 
 				</xsd:complexType>
 			</xsd:element>
 		</xsd:sequence>
+		<xsd:attribute name="allow-force-compaction" type="xsd:string" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Indicates whether forced compaction is allowed for regions using this disk store
+				 ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="auto-compact" type="xsd:string" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether or not the operation logs are automatically compacted or not. Default is true.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="max-oplog-size" type="xsd:string" default="1024">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this
-amount of file space will be immediately reserved.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="time-interval" type="xsd:string" default="1000">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Sets the number of milliseconds that can elapse before unwritten data is written to disk.
-It is considered only for asynchronous writing.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="queue-size" type="xsd:string" default="0">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been
-queued async ops will begin blocking until some of the queued ops have been flushed to disk.
-Considered only for asynchronous writing.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -1729,11 +1711,29 @@ entry updates, and region destroys.
 ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="allow-force-compaction" type="xsd:string" default="false">
+		<xsd:attribute name="max-oplog-size" type="xsd:string" default="1024">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Indicates whether forced compaction is allowed for regions using this disk store
-				 ]]></xsd:documentation>
+Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this
+amount of file space will be immediately reserved.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="queue-size" type="xsd:string" default="0">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been
+queued async ops will begin blocking until some of the queued ops have been flushed to disk.
+Considered only for asynchronous writing.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="time-interval" type="xsd:string" default="1000">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the number of milliseconds that can elapse before unwritten data is written to disk.
+It is considered only for asynchronous writing.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="write-buffer-size" type="xsd:string" default="32768">
