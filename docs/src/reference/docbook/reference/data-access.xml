@@ -31,6 +31,15 @@
    &lt;locator host="somehost" port="1234"/&gt;
 &lt;/gfe-data:datasource&gt;</programlisting>
 
+    <note><para>The <tag>&lt;datasource&gt;</tag> tag utilizes a remote 
+    function to collect all the region names to automatically create proxy 
+    client regions. For servers bootstraped with gfsh, you will need to ensure 
+    that the Spring Data GemFire jar is on the classpath of all the GemFire 
+    members, or use <emphasis>gfsh deploy</emphasis> to distribute the jar to all members before 
+    using this tag.</para>
+    <programlisting>gfsh>deploy --jar=/path/to/spring-data-gemfire-1.4.0.jar</programlisting>
+    </note>
+
     <para>The datasource tag is synactically similar to <tag>&lt;gfe:pool&gt;</tag>.
     It may be configured with one or more locator or server tags to connect to
     an existing data grid. Additionally, all attributes available to configure
