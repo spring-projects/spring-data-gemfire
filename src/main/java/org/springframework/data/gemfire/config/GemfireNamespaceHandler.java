@@ -25,11 +25,14 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
 /**
- * Namespace handler for GemFire definitions.
+ * Spring NamespaceHandler for GemFire XML namespace (XSD) bean definitions.
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.beans.factory.xml.NamespaceHandlerSupport
  */
+@SuppressWarnings("unused")
 class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 
 	protected static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList("async-event-queue", "gateway-sender",
@@ -48,11 +51,10 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
 	public void init() {
+		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenBeanDefinitionParser());
 		registerBeanDefinitionParser("cache", new CacheParser());
 		registerBeanDefinitionParser("cache-server", new CacheServerParser());
-		registerBeanDefinitionParser("client-cache", new ClientCacheParser());
-		registerBeanDefinitionParser("client-region", new ClientRegionParser());
-		registerBeanDefinitionParser("client-region-template", new ClientRegionParser());
+		registerBeanDefinitionParser("auto-region-lookup", new AutoRegionLookupBeanDefinitionParser());
 		registerBeanDefinitionParser("lookup-region", new LookupRegionParser());
 		registerBeanDefinitionParser("region-template", new TemplateRegionParser());
 		registerBeanDefinitionParser("local-region", new LocalRegionParser());
@@ -63,14 +65,17 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("replicated-region-template", new ReplicatedRegionParser());
 		registerBeanDefinitionParser("async-event-queue", new AsyncEventQueueParser());
 		registerBeanDefinitionParser("disk-store", new DiskStoreParser());
+		registerBeanDefinitionParser("function-service", new FunctionServiceParser());
 		registerBeanDefinitionParser("gateway-hub", new GatewayHubParser());
 		registerBeanDefinitionParser("gateway-receiver", new GatewayReceiverParser());
 		registerBeanDefinitionParser("gateway-sender", new GatewaySenderParser());
 		registerBeanDefinitionParser("index", new IndexParser());
-		registerBeanDefinitionParser("pool", new PoolParser());
-		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenBeanDefinitionParser());
-		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
-		registerBeanDefinitionParser("function-service", new FunctionServiceParser());
 		registerBeanDefinitionParser("transaction-manager", new TransactionManagerParser());
+		registerBeanDefinitionParser("client-cache", new ClientCacheParser());
+		registerBeanDefinitionParser("client-region", new ClientRegionParser());
+		registerBeanDefinitionParser("client-region-template", new ClientRegionParser());
+		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
+		registerBeanDefinitionParser("pool", new PoolParser());
 	}
+
 }

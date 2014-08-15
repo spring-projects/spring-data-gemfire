@@ -431,6 +431,16 @@ The name of the bean referred by this declaration. If no reference exists, use a
 		</xsd:attribute>
 	</xsd:complexType>
 	<!-- -->
+	<xsd:element name="auto-region-lookup">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+GFE namespace element enabling GemFire Cache Regions to be automatically looked up and defined as beans in the Spring
+context when those Regions are defined outside of Spring config, such as in GemFire's native cache.xml or with
+GemFire 8's new cluster-based configuration service.
+			]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
 	<xsd:complexType name="baseLookupRegionType">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
