@@ -300,8 +300,7 @@ that have already been processed by the clients.
                 ]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="search-timeout" type="xsd:string"
-								   use="optional" default="300">
+					<xsd:attribute name="search-timeout" type="xsd:string" use="optional" default="300">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 How many seconds a netSearch operation can wait for data before timing out.
@@ -422,6 +421,41 @@ Defines a lookup Subregion
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
+	<!-- -->
+	<xsd:complexType name="lookupRegionType">
+		<xsd:complexContent>
+			<xsd:extension base="baseLookupRegionType">
+				<xsd:attributeGroup ref="topLevelRegionAttributes" />
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:complexType name="lookupSubRegionType">
+		<xsd:complexContent>
+			<xsd:extension base="baseLookupRegionType">
+				<xsd:attribute name="name" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The name of the region definition.
+                        ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:element name="lookup-region" type="lookupRegionType"/>
+	<!-- -->
+	<xsd:complexType name="basicRegionType">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:complexType>
+	<!-- -->
 	<xsd:complexType name="basicSubRegionType">
 		<xsd:complexContent>
 			<xsd:extension base="baseLookupRegionType">
@@ -433,15 +467,6 @@ The name of the region definition.]]></xsd:documentation>
 				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
-	</xsd:complexType>
-	<xsd:complexType name="basicRegionType">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
 	</xsd:complexType>
 	<!-- -->
 	<xsd:complexType name="baseReadOnlyRegionType" abstract="true">
@@ -549,6 +574,62 @@ CustomExpiry Time to idle (or idle timeout) configuration for the region entries
 						</xsd:element>
 					</xsd:choice>
 				</xsd:sequence>
+				<xsd:attribute name="cloning-enabled" type="xsd:string" default="true">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[[
+Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a
+clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.
+							]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="close" type="xsd:string" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the defined region should be closed or not at shutdown. Close performs a local destroy but leaves behind the region
+disk files. Additionally it notifies the listeners and callbacks.
+
+Default is false
+
+Note: Regions are automatically closed when cache closes.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="concurrency-checks-enabled" type="xsd:string" default="true">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[[
+Indicates whether concurrency checks (versioning) are enabled for the region
+							]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="destroy" type="xsd:string" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the defined region should be destroyed or not at shutdown. Destroy cascades to all entries and subregions.
+After the destroy, this region object can not be used any more and any attempt to use this region object will get
+RegionDestroyedException.
+
+Default is false, meaning that regions are not destroyed.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="disk-store-ref" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates the id of the disk store to use for persistence or overflow.
+
+Note this attribute only applies if a disk store is configured for this region.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="disk-synchronous" type="xsd:string" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether the writing to the disk is synchronous or not. Default is false, meaning asynchronous writing.
+
+Note this attribute only applies if a disk store is configured for this region.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="ignore-if-exists" type="xsd:string" default="false">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
@@ -572,6 +653,37 @@ for the "same" Region (by name), then this can cause confusion or have unexpecte
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<xsd:attribute name="ignore-jta" type="xsd:string" use="optional" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+ Indicates whether operations on this region participates in active JTA transactions or ignores them and operates outside of transactions.
+ This is primarily used in cache loaders, writers, and listeners that need to perform non-transactional operations on a region,
+ such as caching a result set.
+								]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="initial-capacity" type="xsd:string" use="optional" default="16">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+ Sets the initial capacity (number of entries) for the region
+								]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="key-constraint" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The fully qualified class name of the expected key type
+								]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="load-factor" type="xsd:string" default="0.75">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[[
+Together with the initial-capacity region attribute, sets the initial parameters on the underlying java.util.ConcurrentHashMap
+used for storing region entries. This must be a floating point number between 0 and 1, inclusive.
+							]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="persistent" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
@@ -586,77 +698,7 @@ Note: Persistence for partitioned regions is supported only from GemFire 6.5 onw
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="disk-synchronous" type="xsd:string"
-							   default="false">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates whether the writing to the disk is synchronous or not. Default is false, meaning asynchronous writing.
-
-Note this attribute only applies if a disk store is configured for this region.
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="disk-store-ref" type="xsd:string">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates the id of the disk store to use for persistence or overflow.
-
-Note this attribute only applies if a disk store is configured for this region.
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="load-factor" type="xsd:string"
-							   default="0.75">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[[
-Together with the initial-capacity region attribute, sets the initial parameters on the underlying java.util.ConcurrentHashMap
-used for storing region entries. This must be a floating point number between 0 and 1, inclusive.
-							]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="cloning-enabled" type="xsd:string"
-							   default="true">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[[
-Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a
-clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.
-							]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="concurrency-checks-enabled" type="xsd:string"
-							   default="true">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[[
-Indicates whether concurrency checks (versioning) are enabled for the region
-							]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="destroy" type="xsd:string"
-							   default="false">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates whether the defined region should be destroyed or not at shutdown. Destroy cascades to all entries and subregions.
-After the destroy, this region object can not be used any more and any attempt to use this region object will get
-RegionDestroyedException.
-
-Default is false, meaning that regions are not destroyed.
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="close" type="xsd:string" default="false">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates whether the defined region should be closed or not at shutdown. Close performs a local destroy but leaves behind the region
-disk files. Additionally it notifies the listeners and callbacks.
-
-Default is false
-
-Note: Regions are automatically closed when cache closes.
-						]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="statistics" type="xsd:string"
-							   default="false">
+				<xsd:attribute name="statistics" type="xsd:string" default="false">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether statistics are enabled or disabled for this region and its entries.
@@ -664,12 +706,11 @@ Default is false, meaning statistics are disabled.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="key-constraint" type="xsd:string"
-							   use="optional">
+				<xsd:attribute name="template" type="xsd:string" use="optional">
 					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-The fully qualified class name of the expected key type
-								]]></xsd:documentation>
+						<xsd:documentation>
+Specifies the parent, template Region from which to inherit the Region attribute configuration.
+						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="value-constraint" type="xsd:string"
@@ -677,24 +718,6 @@ The fully qualified class name of the expected key type
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The fully qualified class name of the expected value type
-								]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="ignore-jta" type="xsd:string"
-							   use="optional" default="false">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
- Indicates whether operations on this region participates in active JTA transactions or ignores them and operates outside of transactions.
- This is primarily used in cache loaders, writers, and listeners that need to perform non-transactional operations on a region,
- such as caching a result set.
-								]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="initial-capacity" type="xsd:string"
-							   use="optional" default="16">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
- Sets the initial capacity (number of entries) for the region
 								]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -724,7 +747,7 @@ The name of the region definition.]]>
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
-	<xsd:complexType name="baseRegionType">
+	<xsd:complexType name="baseRegionType" abstract="true">
 		<xsd:complexContent>
 			<xsd:extension base="baseReadOnlyRegionType">
 				<xsd:sequence minOccurs="0" maxOccurs="1">
@@ -821,34 +844,32 @@ use inner bean declarations.
 						</xsd:element>
 					</xsd:choice>
 				</xsd:sequence>
-				<xsd:attribute name="index-update-type" use="optional"
-							   default="synchronous">
+				<xsd:attribute name="enable-gateway" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
- Specifies whether region indexes are maintained synchronously with region modifications, or asynchronously in a background thread.
-								]]></xsd:documentation>
-					</xsd:annotation>
-					<xsd:simpleType>
-						<xsd:restriction base="xsd:string">
-							<xsd:enumeration value="asynchronous" />
-							<xsd:enumeration value="synchronous" />
-						</xsd:restriction>
-					</xsd:simpleType>
-				</xsd:attribute>
-				<xsd:attribute name="enable-gateway" type="xsd:string"
-							   use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
- Specifies if WAN gateway communications are enabled for this region (true or false) (Deprecated since Gemfire v 7.0)
+Specifies if WAN Gateway communications are enabled for this Region (true or false) (Deprecated since Gemfire v 7.0)
                                 ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="hub-id" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
- Specifies if WAN gateway hub id if enable-gateway is true. (Deprecated since Gemfire v 7.0)
+Specifies if WAN Gateway hub id if enable-gateway is true. (Deprecated since Gemfire v 7.0)
                                 ]]></xsd:documentation>
 					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="index-update-type" use="optional" default="synchronous">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies whether Region indexes are maintained synchronously with region modifications, or asynchronously in a background thread.
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="asynchronous"/>
+							<xsd:enumeration value="synchronous"/>
+						</xsd:restriction>
+					</xsd:simpleType>
 				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
@@ -861,6 +882,7 @@ use inner bean declarations.
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
+	<!-- -->
 	<xsd:complexType name="subRegionType">
 		<xsd:complexContent>
 			<xsd:extension base="baseRegionType">
@@ -875,27 +897,18 @@ use inner bean declarations.
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
-	<xsd:complexType name="lookupRegionType">
-		<xsd:complexContent>
-			<xsd:extension base="baseLookupRegionType">
-				<xsd:attributeGroup ref="topLevelRegionAttributes" />
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
-	<!-- -->
-	<xsd:complexType name="lookupSubRegionType">
-		<xsd:complexContent>
-			<xsd:extension base="baseLookupRegionType">
-				<xsd:attribute name="name" type="xsd:string" use="required">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-The name of the region definition.
-                        ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
+	<xsd:element name="region-template" type="regionType">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
+Defines a template for creating multiple GemFire Regions that all share a common attribute configuration.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
 	<!-- -->
 	<xsd:group name="subRegionGroup">
 		<xsd:choice>
@@ -915,8 +928,7 @@ The id of the region bean definition.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="cache-ref" type="xsd:string" use="optional"
-					   default="gemfireCache">
+		<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The name of the bean defining the GemFire cache (by default 'gemfireCache').
@@ -934,20 +946,18 @@ Required for subregions.
 	</xsd:attributeGroup>
 	<!-- -->
 	<xsd:attributeGroup name="distributedRegionAttributes">
-		<xsd:attribute name="enable-subscription-conflation"
-					   type="xsd:string" default="false">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Indicates whether the region can conflate its messages to the client.
-                                ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="enable-async-conflation" type="xsd:string"
-					   default="false">
+		<xsd:attribute name="enable-async-conflation" type="xsd:string" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
  For TCP/IP distributions between peers, specifies whether to allow aggregation of asynchronous messages sent by the producer member for the region.
  This is a special-purpose boolean attribute that applies only when asynchronous queues are used for slow consumers
+                                ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="enable-subscription-conflation" type="xsd:string" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Indicates whether the region can conflate its messages to the client.
                                 ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -961,15 +971,12 @@ distributed system with the mcast-port gemfire.properties setting.
 		</xsd:attribute>
 	</xsd:attributeGroup>
 	<!-- -->
-	<xsd:element name="lookup-region" type="lookupRegionType" />
-	<!-- -->
-	<xsd:complexType name="baseReplicatedRegionType">
+	<xsd:complexType name="baseReplicatedRegionType" abstract="true">
 		<xsd:annotation>
-			<xsd:documentation
-				source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
-Defines a GemFire replicated region instance. Each replicated region contains a complete copy of the data.
-As well as high availability, replication provides excellent performance as each region contains a complete,
-up to date copy of the data.
+			<xsd:documentation source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
+Defines a GemFire Replicated Region instance. Each Replicated Region contains a complete copy of the data.
+As well as high availability, replication provides excellent performance as each Region contains a complete,
+up-to-date copy of the data.
             ]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
@@ -1096,119 +1103,28 @@ The name of the region definition.
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
-	<xsd:element name="replicated-region" type="replicatedRegionType"/>
-	<!-- -->
-	<xsd:complexType name="baseLocalRegionType">
+	<xsd:element name="replicated-region-template" type="replicatedRegionType">
 		<xsd:annotation>
-			<xsd:documentation
-				source="org.springframework.data.gemfire.ReplicatedRegionFactoryBean"><![CDATA[
-Defines a GemFire local region instance. Each local region is scoped only to the local JVM.
-            ]]></xsd:documentation>
+			<xsd:documentation source="org.springframework.data.gemfire.ReplicatedRegionFactoryBean"><![CDATA[
+Defines a template for creating multiple GemFire REPLICATE Regions that all share a common attribute configuration.
+			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
-		<xsd:complexContent>
-			<xsd:extension base="baseRegionType">
-				<xsd:sequence minOccurs="1" maxOccurs="1">
-					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Eviction policy for the replicated region.
-                                ]]></xsd:documentation>
-						</xsd:annotation>
-						<xsd:complexType>
-							<xsd:complexContent>
-								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[
-The action to take when performing eviction.
-                                                ]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-								</xsd:extension>
-							</xsd:complexContent>
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded" />
-				</xsd:sequence>
-				<xsd:attribute name="concurrency-level">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Provides an estimate of the maximum number of application threads that will concurrently access a region entry at one time.
-This attribute does not apply to partitioned regions. This attribute helps GemFire optimize the use of system resources and
-reduce thread contention. This sets an initial parameter on the underlying java.util.ConcurrentHashMap used for storing region entries.
-                        ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="data-policy" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Specifies the data policy for this region (NORMAL or PRELOADED).  Setting 'data-policy' is not stictly necessary,
-but if set, then the value must agree with the 'persistent' attribute if also specified.
-						]]></xsd:documentation>
-					</xsd:annotation>
-					<xsd:simpleType>
-						<xsd:restriction base="xsd:string">
-							<xsd:enumeration value="NORMAL"/>
-							<xsd:enumeration value="PRELOADED"/>
-						</xsd:restriction>
-					</xsd:simpleType>
-				</xsd:attribute>
-				<xsd:attribute name="shortcut" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-The RegionShortcut for this region. Allows easy initialization of the region based on pre-defined defaults.
-						]]></xsd:documentation>
-					</xsd:annotation>
-					<xsd:simpleType>
-						<xsd:restriction base="xsd:string">
-							<xsd:enumeration value="LOCAL"/>
-							<xsd:enumeration value="LOCAL_PERSISTENT"/>
-							<xsd:enumeration value="LOCAL_HEAP_LRU"/>
-							<xsd:enumeration value="LOCAL_OVERFLOW"/>
-							<xsd:enumeration value="LOCAL_PERSISTENT_OVERFLOW"/>
-						</xsd:restriction>
-					</xsd:simpleType>
-				</xsd:attribute>
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
+	</xsd:element>
 	<!-- -->
-	<xsd:complexType name="localRegionType">
-		<xsd:complexContent>
-			<xsd:extension base="baseLocalRegionType">
-				<xsd:attributeGroup ref="topLevelRegionAttributes" />
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
+	<xsd:element name="replicated-region" type="replicatedRegionType"/>
 	<!-- -->
-	<xsd:complexType name="localSubRegionType">
-		<xsd:complexContent>
-			<xsd:extension base="baseLocalRegionType">
-				<xsd:attribute name="name" type="xsd:string" use="required">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-The name of the region definition.
-                        ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
-	<!-- -->
-	<xsd:element name="local-region" type="localRegionType"/>
-	<!-- -->
-	<xsd:complexType name="basePartitionedRegionType">
+	<xsd:complexType name="basePartitionedRegionType" abstract="true">
 		<xsd:annotation>
 			<xsd:documentation
 				source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
-Defines a GemFire partitioned region instance. Through partitioning, the data is split across regions.
+Defines a GemFire Partitioned Region instance. Through partitioning, the data is split across Regions.
 Partitioning is useful when the amount of data to store is too large for one member to hold and work
-with as if it were a single entity. One can configure the partitioned region to store redundant copies
+with as if it were a single entity. One can configure the Partitioned Region to store redundant copies
 in different members, for high availability in case of an application failure.
 			]]></xsd:documentation>
 			<xsd:appinfo>
@@ -1466,7 +1382,137 @@ The name of the region definition.
 		</xsd:complexContent>
 	</xsd:complexType>
 	<!-- -->
+	<xsd:element name="partitioned-region-template" type="partitionedRegionType">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.PartitionedRegionFactoryBean"><![CDATA[
+Defines a template for creating multiple GemFire PARTITION Regions that all share a common attribute configuration.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+	<!-- -->
 	<xsd:element name="partitioned-region" type="partitionedRegionType"/>
+	<!-- -->
+	<xsd:complexType name="baseLocalRegionType" abstract="true">
+		<xsd:annotation>
+			<xsd:documentation
+				source="org.springframework.data.gemfire.ReplicatedRegionFactoryBean"><![CDATA[
+Defines a GemFire Local Region instance. Each Local Region is scoped only to the local JVM.
+            ]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="baseRegionType">
+				<xsd:sequence minOccurs="1" maxOccurs="1">
+					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Eviction policy for the replicated region.
+                                ]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:complexType>
+							<xsd:complexContent>
+								<xsd:extension base="evictionType">
+									<xsd:attribute name="action" type="evictionActionType">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[
+The action to take when performing eviction.
+                                                ]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+								</xsd:extension>
+							</xsd:complexContent>
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded" />
+				</xsd:sequence>
+				<xsd:attribute name="concurrency-level">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Provides an estimate of the maximum number of application threads that will concurrently access a region entry at one time.
+This attribute does not apply to partitioned regions. This attribute helps GemFire optimize the use of system resources and
+reduce thread contention. This sets an initial parameter on the underlying java.util.ConcurrentHashMap used for storing region entries.
+                        ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="data-policy" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies the data policy for this region (NORMAL or PRELOADED).  Setting 'data-policy' is not stictly necessary,
+but if set, then the value must agree with the 'persistent' attribute if also specified.
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="NORMAL"/>
+							<xsd:enumeration value="PRELOADED"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="shortcut" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The RegionShortcut for this region. Allows easy initialization of the region based on pre-defined defaults.
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="LOCAL"/>
+							<xsd:enumeration value="LOCAL_PERSISTENT"/>
+							<xsd:enumeration value="LOCAL_HEAP_LRU"/>
+							<xsd:enumeration value="LOCAL_OVERFLOW"/>
+							<xsd:enumeration value="LOCAL_PERSISTENT_OVERFLOW"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:complexType name="localRegionType">
+		<xsd:complexContent>
+			<xsd:extension base="baseLocalRegionType">
+				<xsd:attributeGroup ref="topLevelRegionAttributes" />
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:complexType name="localSubRegionType">
+		<xsd:complexContent>
+			<xsd:extension base="baseLocalRegionType">
+				<xsd:attribute name="name" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+The name of the region definition.
+                        ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:element name="local-region-template" type="localRegionType">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.LocalRegionFactoryBean"><![CDATA[
+Defines a template for creating multiple GemFire Local Regions that all share a common attribute configuration.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+	<!-- -->
+	<xsd:element name="local-region" type="localRegionType"/>
 	<!-- -->
 	<xsd:complexType name="expirationType">
 		<xsd:attribute name="timeout" type="xsd:string" default="0">
@@ -1748,7 +1794,7 @@ The name of the bean defining the GemFire cache (by default 'gemfireCache').
 	<!-- -->
 	<xsd:element name="disk-store" type="diskStoreType" />
 	<!-- -->
-	<xsd:complexType name="baseClientRegionType">
+	<xsd:complexType name="baseClientRegionType" abstract="true">
 		<xsd:annotation>
 			<xsd:documentation
 				source="org.springframework.data.gemfire.client.ClientRegionFactoryBean"><![CDATA[
@@ -1939,6 +1985,19 @@ The name of the region definition.
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
+	<!-- -->
+	<xsd:element name="client-region-template" type="clientRegionType">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.ClientRegionFactoryBean"><![CDATA[
+Defines a template for creating multiple GemFire Client Regions that all share a common attribute configuration.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
 	<!-- -->
 	<xsd:element name="client-region" type="clientRegionType"/>
 	<!-- -->
@@ -3056,10 +3115,8 @@ Deprecated as of Gemfire 7
 		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:choice>
-				<xsd:element name="gateway-endpoint" minOccurs="1"
-							 maxOccurs="unbounded" type="gatewayEndpointType" />
-				<xsd:element name="gateway-listener" minOccurs="1"
-							 maxOccurs="1">
+				<xsd:element name="gateway-endpoint" minOccurs="1" maxOccurs="unbounded" type="gatewayEndpointType"/>
+				<xsd:element name="gateway-listener" minOccurs="1" maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation
 							source="com.gemstone.gemfire.cache.util.GatewayEventListener"><![CDATA[
@@ -3067,8 +3124,7 @@ An gateway event listener definition for the gateway
                             ]]></xsd:documentation>
 						<xsd:appinfo>
 							<tool:annotation>
-								<tool:exports
-									type="com.gemstone.gemfire.cache.util.GatewayEventListener" />
+								<tool:exports type="com.gemstone.gemfire.cache.util.GatewayEventListener"/>
 							</tool:annotation>
 						</xsd:appinfo>
 					</xsd:annotation>

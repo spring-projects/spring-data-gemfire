@@ -52,10 +52,15 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("cache-server", new CacheServerParser());
 		registerBeanDefinitionParser("client-cache", new ClientCacheParser());
 		registerBeanDefinitionParser("client-region", new ClientRegionParser());
+		registerBeanDefinitionParser("client-region-template", new ClientRegionParser());
 		registerBeanDefinitionParser("lookup-region", new LookupRegionParser());
+		registerBeanDefinitionParser("region-template", new TemplateRegionParser());
 		registerBeanDefinitionParser("local-region", new LocalRegionParser());
+		registerBeanDefinitionParser("local-region-template", new LocalRegionParser());
 		registerBeanDefinitionParser("partitioned-region", new PartitionedRegionParser());
+		registerBeanDefinitionParser("partitioned-region-template", new PartitionedRegionParser());
 		registerBeanDefinitionParser("replicated-region", new ReplicatedRegionParser());
+		registerBeanDefinitionParser("replicated-region-template", new ReplicatedRegionParser());
 		registerBeanDefinitionParser("async-event-queue", new AsyncEventQueueParser());
 		registerBeanDefinitionParser("disk-store", new DiskStoreParser());
 		registerBeanDefinitionParser("gateway-hub", new GatewayHubParser());
