@@ -34,6 +34,11 @@ public abstract class GemfireUtils {
 
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
 
+	public static boolean isGemfireVersionGreaterThanEqual(double expectedVersion) {
+		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
+		return actualVersion >= expectedVersion;
+	}
+
 	public static boolean isGemfireVersion65OrAbove() {
 		// expected 'major.minor'
 		try {
@@ -48,15 +53,25 @@ public abstract class GemfireUtils {
 
 	public static boolean isGemfireVersion7OrAbove() {
 		try {
-			int version = Integer.parseInt(GEMFIRE_VERSION.substring(0, 1));
-			return version >= 7;
+			return isGemfireVersionGreaterThanEqual(7.0);
 		}
 		catch (NumberFormatException e) {
 			// NOTE the com.gemstone.gemfire.distributed.ServerLauncher class only exists in GemFire v 7.0.x or above...
 			return ClassUtils.isPresent("com.gemstone.gemfire.distributed.ServerLauncher",
 				Thread.currentThread().getContextClassLoader());
 		}
+	}
 
+	public static boolean isGemfireVersion8OrAbove() {
+		try {
+			return isGemfireVersionGreaterThanEqual(8.0);
+		}
+		catch (NumberFormatException e) {
+			// NOTE the com.gemstone.gemfire.management.internal.web.domain.LinkIndex class only exists
+			// in GemFire v 8.0.0 or above...
+			return ClassUtils.isPresent("com.gemstone.gemfire.management.internal.web.domain.LinkIndex",
+				Thread.currentThread().getContextClassLoader());
+		}
 	}
 
 	public static void main(final String... args) {

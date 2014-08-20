@@ -909,10 +909,12 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
-		gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
-			!Boolean.TRUE.equals(getEnableAutoReconnect())));
-		gemfireProperties.setProperty("use-cluster-configuration", String.valueOf(
-			Boolean.TRUE.equals(getUseClusterConfiguration())));
+		if (GemfireUtils.isGemfireVersion8OrAbove()) {
+			gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
+				!Boolean.TRUE.equals(getEnableAutoReconnect())));
+			gemfireProperties.setProperty("use-cluster-configuration", String.valueOf(
+				Boolean.TRUE.equals(getUseClusterConfiguration())));
+		}
 	}
 
 	/* (non-Javadoc)

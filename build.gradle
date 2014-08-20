@@ -12,8 +12,9 @@ description = 'Spring Data GemFire'
 group = 'org.springframework.data'
 
 repositories {
+  maven { url "http://repo.spring.io/gemstone-release-cache" }
   //maven { url "http://nexus.gemstone.com:8081/nexus/content/repositories/snapshots" }
-  maven { url "http://dist.gemstone.com.s3.amazonaws.com/maven/release"}
+  maven { url "http://dist.gemstone.com/maven/release"}
   maven { url "http://repo.spring.io/gemstone-snapshot-cache" }
   maven { url "http://repo.spring.io/libs-snapshot" }
   maven { url "http://repo.spring.io/plugins-release"}
