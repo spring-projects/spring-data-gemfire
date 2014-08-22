@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -80,6 +82,8 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 	protected void doParseCommonRegionConfiguration(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder, BeanDefinitionBuilder regionAttributesBuilder, boolean subRegion) {
+
+		mergeTemplateRegionAttributes(element, parserContext, builder, regionAttributesBuilder);
 
 		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
@@ -157,6 +161,45 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		if (!subRegion) {
 			parseSubRegions(element, parserContext, resolvedCacheRef);
 		}
+	}
+
+	void mergeTemplateRegionAttributes(Element element, ParserContext parserContext,
+			BeanDefinitionBuilder regionBuilder, BeanDefinitionBuilder regionAttributesBuilder) {
+		String regionTemplate = getParentName(element);
+
+		if (StringUtils.hasText(regionTemplate)) {
+			if (parserContext.getRegistry().containsBeanDefinition(regionTemplate)) {
+				BeanDefinition regionTemplateDefinition = parserContext.getRegistry()
+					.getBeanDefinition(regionTemplate);
+
+				BeanDefinition regionTemplateAttributesDefinition = getRegionAttributesBeanDefinition(
+					regionTemplateDefinition);
+
+				if (regionTemplateAttributesDefinition != null) {
+					// NOTE we only need to merge the parent RegionAttributes with this since the parent will have
+					// already merged it's parent's RegionAttributes and so on...
+					regionAttributesBuilder.getRawBeanDefinition().overrideFrom(regionTemplateAttributesDefinition);
+				}
+			}
+			else {
+				parserContext.getReaderContext().error(String.format(
+					"The Region template [%1$s] must be defined in the Spring context configuration meta-data 'before' the Region [%2$s] using the template!",
+						regionTemplate, resolveId(element, regionBuilder.getRawBeanDefinition(), parserContext)), element);
+			}
+		}
+	}
+
+	BeanDefinition getRegionAttributesBeanDefinition(final BeanDefinition region) {
+		Assert.notNull(region, "The 'Region' BeanDefinition must not be null!");
+
+		Object regionAttributesDefinition = null;
+
+		if (region.getPropertyValues().contains("attributes")) {
+			PropertyValue regionAttributes = region.getPropertyValues().getPropertyValue("attributes");
+			regionAttributesDefinition = regionAttributes.getValue();
+		}
+
+		return (regionAttributesDefinition instanceof BeanDefinition ? (BeanDefinition) regionAttributesDefinition : null);
 	}
 
 	private void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,

@@ -18,6 +18,8 @@ package org.springframework.data.gemfire.config;
 
 import java.util.List;
 
+import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -53,8 +55,6 @@ class PartitionedRegionParser extends AbstractRegionParser {
 
 		validateDataPolicyShortcutAttributesMutualExclusion(element, parserContext);
 
-		super.doParse(element, regionBuilder);
-
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			RegionAttributesFactoryBean.class);
 
@@ -64,6 +64,8 @@ class PartitionedRegionParser extends AbstractRegionParser {
 
 		BeanDefinitionBuilder partitionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			PartitionAttributesFactoryBean.class);
+
+		mergeTemplateRegionPartitionAttributes(element, parserContext, regionBuilder, partitionAttributesBuilder);
 
 		parseColocatedWith(element, regionBuilder, partitionAttributesBuilder, "colocated-with");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "copies", "redundantCopies");
@@ -106,6 +108,40 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		}
 
 		regionAttributesBuilder.addPropertyValue("partitionAttributes", partitionAttributesBuilder.getBeanDefinition());
+	}
+
+	void mergeTemplateRegionPartitionAttributes(Element element, ParserContext parserContext,
+			BeanDefinitionBuilder regionBuilder, BeanDefinitionBuilder partitionAttributesBuilder) {
+		String regionTemplate = getParentName(element);
+
+		if (StringUtils.hasText(regionTemplate)) {
+			if (parserContext.getRegistry().containsBeanDefinition(regionTemplate)) {
+				BeanDefinition regionTemplateDefinition = parserContext.getRegistry()
+					.getBeanDefinition(regionTemplate);
+
+				BeanDefinition regionTemplateAttributesDefinition = getRegionAttributesBeanDefinition(
+					regionTemplateDefinition);
+
+				if (regionTemplateAttributesDefinition != null) {
+					if (regionTemplateAttributesDefinition.getPropertyValues().contains("partitionAttributes")) {
+						PropertyValue partitionAttributes = regionTemplateAttributesDefinition.getPropertyValues()
+							.getPropertyValue("partitionAttributes");
+
+						Object partitionAttributesDefinition = partitionAttributes.getValue();
+
+						if (partitionAttributesDefinition instanceof BeanDefinition) {
+							partitionAttributesBuilder.getRawBeanDefinition().overrideFrom(
+								(BeanDefinition) partitionAttributesDefinition);
+						}
+					}
+				}
+			}
+			else {
+				parserContext.getReaderContext().error(String.format(
+					"The Region template [%1$s] must be defined in the Spring context configuration meta-data 'before' the Region [%2$s] using the template!",
+						regionTemplate, resolveId(element, regionBuilder.getRawBeanDefinition(), parserContext)), element);
+			}
+		}
 	}
 
 	private void parseColocatedWith(Element element, BeanDefinitionBuilder regionBuilder,
