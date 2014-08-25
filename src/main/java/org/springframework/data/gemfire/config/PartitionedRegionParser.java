@@ -112,34 +112,33 @@ class PartitionedRegionParser extends AbstractRegionParser {
 
 	void mergeTemplateRegionPartitionAttributes(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder regionBuilder, BeanDefinitionBuilder partitionAttributesBuilder) {
-		String regionTemplate = getParentName(element);
 
-		if (StringUtils.hasText(regionTemplate)) {
-			if (parserContext.getRegistry().containsBeanDefinition(regionTemplate)) {
-				BeanDefinition regionTemplateDefinition = parserContext.getRegistry()
-					.getBeanDefinition(regionTemplate);
+		String regionTemplateName = getParentName(element);
 
-				BeanDefinition regionTemplateAttributesDefinition = getRegionAttributesBeanDefinition(
-					regionTemplateDefinition);
+		if (StringUtils.hasText(regionTemplateName)) {
+			if (parserContext.getRegistry().containsBeanDefinition(regionTemplateName)) {
+				BeanDefinition templateRegion = parserContext.getRegistry().getBeanDefinition(regionTemplateName);
 
-				if (regionTemplateAttributesDefinition != null) {
-					if (regionTemplateAttributesDefinition.getPropertyValues().contains("partitionAttributes")) {
-						PropertyValue partitionAttributes = regionTemplateAttributesDefinition.getPropertyValues()
+				BeanDefinition templateRegionAttributes = getRegionAttributesBeanDefinition(templateRegion);
+
+				if (templateRegionAttributes != null) {
+					if (templateRegionAttributes.getPropertyValues().contains("partitionAttributes")) {
+						PropertyValue partitionAttributesProperty = templateRegionAttributes.getPropertyValues()
 							.getPropertyValue("partitionAttributes");
 
-						Object partitionAttributesDefinition = partitionAttributes.getValue();
+						Object partitionAttributes = partitionAttributesProperty.getValue();
 
-						if (partitionAttributesDefinition instanceof BeanDefinition) {
+						if (partitionAttributes instanceof BeanDefinition) {
 							partitionAttributesBuilder.getRawBeanDefinition().overrideFrom(
-								(BeanDefinition) partitionAttributesDefinition);
+								(BeanDefinition) partitionAttributes);
 						}
 					}
 				}
 			}
 			else {
 				parserContext.getReaderContext().error(String.format(
-					"The Region template [%1$s] must be defined in the Spring context configuration meta-data 'before' the Region [%2$s] using the template!",
-						regionTemplate, resolveId(element, regionBuilder.getRawBeanDefinition(), parserContext)), element);
+					"The Region template [%1$s] must be 'defined before' the Region [%2$s] referring to the template!",
+						regionTemplateName, resolveId(element, regionBuilder.getRawBeanDefinition(), parserContext)), element);
 			}
 		}
 	}
