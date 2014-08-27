@@ -70,7 +70,8 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.distributed.Role;
 
 /**
- * The TemplateRegionsNamespaceTests class...
+ * The TemplateRegionsNamespaceTests class is a test suite of test cases testing the functionality and support for
+ * Region Templating in Spring Data GemFire.
  *
  * @author John Blum
  * @see org.junit.Test
