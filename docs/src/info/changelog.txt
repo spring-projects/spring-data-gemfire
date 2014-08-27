@@ -3,6 +3,30 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.4.4.RELEASE (2014-08-27)
+---------------------------------------------
+* SGF-308 - Release 1.4.4.
+* SGF-304 - OnMembers function execution with Gemfire Group calls onMember (wrong method).
+
+
+Changes in version 1.5.0.RC1 (2014-08-13)
+-----------------------------------------
+* SGF-306 - Release 1.5 RC1.
+* SGF-304 - OnMembers function execution with Gemfire Group calls onMember (wrong method).
+* SGF-291 - Upgrade Spring Data GemFire 1.5 to GemFire 8.0.
+* SGF-227 - Ability to handle forced disconnects due to node failures with "Reconnect" functionality being added in GemFire.
+* SGF-226 - Ability to request and get the member's configuration from a GemFire Locator/Manager using the cluster-wide configuration in the new Persistent Config feature.
+
+
+Changes in version 1.4.2.RELEASE (2014-07-28)
+---------------------------------------------
+* SGF-303 - Release 1.4.2.
+* SGF-297 - Executing SDG Functions annotated POJO methods from Gfsh does not work when "injecting" arguments during Function argument resolution.
+* SGF-295 - Enable Local Region Eviction action to be set to 'LOCAL_DESTROY', which is allowed in GemFire using the public API or in cache.xml.
+* SGF-294 - Enable GemFire GatewayReceivers to be started manually, the same as for GatewaySenders using SDG.
+* SGF-284 - Modify SDG build (build.gradle script) to include SDG validation and compatibility checks for Spring IO.
+
+
 Changes in version 1.5.0.M1 (2014-07-10)
 ----------------------------------------
 * SGF-299 - Upgrade Spring Data GemFire 1.5 to Spring Framework 4.0.6.
