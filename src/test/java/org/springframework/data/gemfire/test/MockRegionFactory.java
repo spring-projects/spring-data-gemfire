@@ -453,16 +453,14 @@ public class MockRegionFactory<K,V>   {
 		RegionService mockRegionService = mockRegionService();
 		Region region = mock(Region.class);
 
-		when(region.getAttributes()).thenAnswer(new Answer<RegionAttributes>() {
-			@Override public RegionAttributes answer(InvocationOnMock invocation) throws Throwable {
-				return regionAttributes;
-			}
-		});
+		when(region.getAttributes()).thenReturn(regionAttributes);
 
-		String fullPath = (name.startsWith(Region.SEPARATOR) ? name : Region.SEPARATOR + name);
+		String regionFullPath = (name.startsWith(Region.SEPARATOR) ? name : Region.SEPARATOR + name);
+		String regionName = (name.lastIndexOf(Region.SEPARATOR) > 0 ?
+			name.substring(name.lastIndexOf(Region.SEPARATOR) + Region.SEPARATOR.length()) : name);
 
-		when(region.getFullPath()).thenReturn(fullPath);
-		when(region.getName()).thenReturn(name);
+		when(region.getFullPath()).thenReturn(regionFullPath);
+		when(region.getName()).thenReturn(regionName);
     	when(region.getRegionService()).thenReturn(mockRegionService);
 
     	when(region.getSubregion(anyString())).thenAnswer(new Answer<Region>() {
