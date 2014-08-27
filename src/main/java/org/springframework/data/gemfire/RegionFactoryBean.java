@@ -163,8 +163,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		}
 
 		if (attributes != null) {
-			Assert.state(!attributes.isLockGrantor() || scope.isGlobal(),
-				"Lock Grantor only applies to a global scoped region.");
+			Assert.state(!attributes.isLockGrantor() || (scope == null) || scope.isGlobal(),
+				"Lock Grantor only applies to a 'GLOBAL' scoped Region.");
 		}
 
 		postProcess(regionFactory);

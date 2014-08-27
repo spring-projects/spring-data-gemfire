@@ -375,11 +375,9 @@ abstract class ParsingUtils {
 	static void parseScope(Element element, BeanDefinitionBuilder builder) {
 		String scopeAttributeValue = element.getAttribute("scope");
 
-		Scope scope = (StringUtils.hasText(scopeAttributeValue)
-			? Scope.fromString(scopeAttributeValue.toUpperCase().replace("-", "_"))
-			: Scope.DISTRIBUTED_ACK);
-
-		builder.addPropertyValue("scope", scope);
+		if (StringUtils.hasText(scopeAttributeValue)) {
+			builder.addPropertyValue("scope", Scope.fromString(scopeAttributeValue.toUpperCase().replace("-", "_")));
+		}
 	}
 
 	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName,

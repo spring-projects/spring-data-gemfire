@@ -565,31 +565,33 @@ CustomExpiry Time to idle (or idle timeout) configuration for the region entries
 						</xsd:element>
 					</xsd:choice>
 				</xsd:sequence>
-				<xsd:attribute name="cloning-enabled" type="xsd:string" default="true">
+				<xsd:attribute name="cloning-enabled" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[[
-Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a
-clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.
+Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied
+to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place
+in the cache. GemFire default is false.
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="close" type="xsd:string" default="false">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-Indicates whether the defined region should be closed or not at shutdown. Close performs a local destroy but leaves behind the region
-disk files. Additionally it notifies the listeners and callbacks.
+Indicates whether the defined Region should be closed at shutdown. Close performs a local destroy but leaves behind
+the Region disk files. Additionally, close notifies listeners and callbacks.
 
 Default is false
 
-Note: Regions are automatically closed when cache closes.
+Note, Regions are automatically closed when the Cache closes.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="concurrency-checks-enabled" type="xsd:string" default="true">
+				<xsd:attribute name="concurrency-checks-enabled" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[[
-Indicates whether concurrency checks (versioning) are enabled for the region
-							]]></xsd:documentation>
+Determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to
+distributed Regions. GemFire default is true.
+						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="destroy" type="xsd:string" default="false">
@@ -612,12 +614,11 @@ Note this attribute only applies if a disk store is configured for this region.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="disk-synchronous" type="xsd:string" default="false">
+				<xsd:attribute name="disk-synchronous" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-Indicates whether the writing to the disk is synchronous or not. Default is false, meaning asynchronous writing.
-
-Note this attribute only applies if a disk store is configured for this region.
+For Regions that write to disk, boolean that specifies whether disk writes are done synchronously for the region.
+GemFire default is true.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -644,19 +645,19 @@ for the "same" Region (by name), then this can cause confusion or have unexpecte
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="ignore-jta" type="xsd:string" use="optional" default="false">
+				<xsd:attribute name="ignore-jta" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
- Indicates whether operations on this region participates in active JTA transactions or ignores them and operates outside of transactions.
- This is primarily used in cache loaders, writers, and listeners that need to perform non-transactional operations on a region,
- such as caching a result set.
+Indicates whether operations on this Region participates in active JTA transactions or ignores them and operates
+outside of transactions.  This is primarily used in cache loaders, writers, and listeners that need to perform
+non-transactional operations on a Region, such as caching a result set.  GemFire default is false.
 								]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="initial-capacity" type="xsd:string" use="optional" default="16">
+				<xsd:attribute name="initial-capacity" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
- Sets the initial capacity (number of entries) for the region
+Sets the initial capacity (number of entries) for the Region. GemFire default is 16.
 								]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -667,11 +668,12 @@ The fully qualified class name of the expected key type
 								]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="load-factor" type="xsd:string" default="0.75">
+				<xsd:attribute name="load-factor" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[[
-Together with the initial-capacity region attribute, sets the initial parameters on the underlying java.util.ConcurrentHashMap
-used for storing region entries. This must be a floating point number between 0 and 1, inclusive.
+Together with the initial-capacity Region attribute, sets the initial parameters on the underlying
+java.util.ConcurrentHashMap used for storing Region entries. This must be a floating point number
+between 0 and 1, inclusive.  GemFire default value is 0.75.
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -689,11 +691,11 @@ Note: Persistence for partitioned regions is supported only from GemFire 6.5 onw
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="statistics" type="xsd:string" default="false">
+				<xsd:attribute name="statistics" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-Indicates whether statistics are enabled or disabled for this region and its entries.
-Default is false, meaning statistics are disabled.
+Boolean specifying whether to gather statistics on the Region. Statistics must be enabled to use expiration on the
+Region.  GemFire default is false.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -704,8 +706,7 @@ Specifies the parent, template Region from which to inherit the Region attribute
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="value-constraint" type="xsd:string"
-							   use="optional">
+				<xsd:attribute name="value-constraint" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The fully qualified class name of the expected value type
@@ -742,8 +743,7 @@ The name of the region definition.]]>
 		<xsd:complexContent>
 			<xsd:extension base="baseReadOnlyRegionType">
 				<xsd:sequence minOccurs="0" maxOccurs="1">
-					<xsd:element name="cache-loader" type="beanDeclarationType"
-								 minOccurs="0" maxOccurs="1">
+					<xsd:element name="cache-loader" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
 The cache loader definition for this region. A cache loader allows data to be placed into a region.
@@ -755,8 +755,7 @@ The cache loader definition for this region. A cache loader allows data to be pl
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element name="cache-writer" type="beanDeclarationType"
-								 minOccurs="0" maxOccurs="1">
+					<xsd:element name="cache-writer" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation source="com.gemstone.gemfire.cache.CacheWriter"><![CDATA[
 The cache writer definition for this region. A cache writer acts as a dedicated synchronous listener that is notified
@@ -789,23 +788,25 @@ A comma delimited list of required role names
 							<xsd:attribute name="loss-action" type="xsd:string" default="no-access">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-Set one of the following values to specify how access to the region is affected when one or more required roles are lost:
-(full-access, limited-access, no-access, or reconnect).
+Set one of the following values to specify how access to the Region is affected when one or more required roles are lost:
+(full-access, limited-access, no-access, or reconnect).  GemFire default is 'no-access' when required-roles is
+specified, and in SDG, the required-roles attribute is required.
                            ]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:attribute>
 							<xsd:attribute name="resumption-action" type="xsd:string" default="reinitialize">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-Specifies how the region is affected by resumption of reliability when one or more missing required roles return to the distributed membership:
-(none or reinitialize).
+Specifies how the Region is affected by resumption of reliability when one or more missing required roles return
+to the distributed membership: (none or reinitialize).  GemFire default is reinitialize when required-roles is
+specified, and in SDG, the required-roles attribute is required.
                            ]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:attribute>
 						</xsd:complexType>
 					</xsd:element>
 					<xsd:choice minOccurs="0" maxOccurs="unbounded">
-						<xsd:element name="gateway-sender" type="baseGatewaySenderType" />
+						<xsd:element name="gateway-sender" type="baseGatewaySenderType"/>
 						<xsd:element name="gateway-sender-ref">
 							<xsd:complexType>
 								<xsd:attribute name="bean" type="xsd:string" use="optional">
@@ -820,7 +821,7 @@ use inner bean declarations.
 						</xsd:element>
 					</xsd:choice>
 					<xsd:choice minOccurs="0" maxOccurs="unbounded">
-						<xsd:element name="async-event-queue" type="baseAsyncEventQueueType" />
+						<xsd:element name="async-event-queue" type="baseAsyncEventQueueType"/>
 						<xsd:element name="async-event-queue-ref">
 							<xsd:complexType>
 								<xsd:attribute name="bean" type="xsd:string" use="optional">
@@ -849,10 +850,11 @@ Specifies if WAN Gateway hub id if enable-gateway is true. (Deprecated since Gem
                                 ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="index-update-type" use="optional" default="synchronous">
+				<xsd:attribute name="index-update-type" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-Specifies whether Region indexes are maintained synchronously with region modifications, or asynchronously in a background thread.
+Specifies whether Region indexes are maintained synchronously with Region modifications, or asynchronously
+in a background thread.  GemFire default is synchronous.
 						]]></xsd:documentation>
 					</xsd:annotation>
 					<xsd:simpleType>
@@ -937,19 +939,21 @@ Required for subregions.
 	</xsd:attributeGroup>
 	<!-- -->
 	<xsd:attributeGroup name="distributedRegionAttributes">
-		<xsd:attribute name="enable-async-conflation" type="xsd:string" default="false">
+		<xsd:attribute name="enable-async-conflation" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
- For TCP/IP distributions between peers, specifies whether to allow aggregation of asynchronous messages sent by the producer member for the region.
- This is a special-purpose boolean attribute that applies only when asynchronous queues are used for slow consumers
-                                ]]></xsd:documentation>
+For TCP/IP distributions between peers, specifies whether to allow aggregation of asynchronous messages sent
+by the producer member for the Region. This is a special-purpose boolean attribute that applies only when
+asynchronous queues are used for slow consumers. A false value disables conflation so that all asynchronous messages
+are sent individually.  GemFire default is false (even though GemFire User Guide states it is true).
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="enable-subscription-conflation" type="xsd:string" default="false">
+		<xsd:attribute name="enable-subscription-conflation" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Indicates whether the region can conflate its messages to the client.
-                                ]]></xsd:documentation>
+Indicates whether the Region can conflate its messages to the client.  GemFire default is false.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="multicast-enabled" type="xsd:string">
@@ -978,15 +982,14 @@ up-to-date copy of the data.
 		<xsd:complexContent>
 			<xsd:extension base="baseRegionType">
 				<xsd:sequence>
-					<xsd:element name="subscription" minOccurs="0"
-								 maxOccurs="1">
+					<xsd:element name="subscription" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Subscription policy for the replicated region.
 							]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:complexType>
-							<xsd:attribute name="type" type="subscriptionPolicyType" />
+							<xsd:attribute name="type" type="subscriptionPolicyType"/>
 						</xsd:complexType>
 					</xsd:element>
 					<xsd:element name="eviction" minOccurs="0" maxOccurs="1">
@@ -998,8 +1001,7 @@ Eviction policy for the replicated region.
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType"
-												   fixed="OVERFLOW_TO_DISK">
+									<xsd:attribute name="action" type="evictionActionType" fixed="OVERFLOW_TO_DISK">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[
 The action to take when performing eviction.
@@ -1010,7 +1012,7 @@ The action to take when performing eviction.
 							</xsd:complexContent>
 						</xsd:complexType>
 					</xsd:element>
-					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded" />
+					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded"/>
 				</xsd:sequence>
 				<xsd:attributeGroup ref="distributedRegionAttributes"/>
 				<xsd:attribute name="concurrency-level">
@@ -1037,10 +1039,11 @@ stictly necessary, but if set, then the value must agree with the 'persistent' a
 						</xsd:restriction>
 					</xsd:simpleType>
 				</xsd:attribute>
-				<xsd:attribute name="is-lock-grantor" type="xsd:string" use="optional" default="false">
+				<xsd:attribute name="is-lock-grantor" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-Indicates whether the region is a lock grantor.This attribute is only relevant for regions with global scope, as only they allow locking.
+Indicates whether the Region is a lock grantor. This attribute is only relevant for Regions with global scope,
+as only they allow locking.  GemFire default is false.
                                 ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -1127,8 +1130,7 @@ in different members, for high availability in case of an application failure.
 		<xsd:complexContent>
 			<xsd:extension base="baseRegionType">
 				<xsd:sequence>
-					<xsd:element name="partition-resolver" type="beanDeclarationType"
-								 minOccurs="0" maxOccurs="1">
+					<xsd:element name="partition-resolver" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation source="com.gemstone.gemfire.cache.PartitionResolver"><![CDATA[
 The partition resolver definition for this region, allowing for custom partitioning. GemFire uses the resolver to
@@ -1174,8 +1176,7 @@ use inner bean declarations.
 							</xsd:attribute>
 						</xsd:complexType>
 					</xsd:element>
-					<xsd:element name="fixed-partition" minOccurs="0"
-								 maxOccurs="unbounded">
+					<xsd:element name="fixed-partition" minOccurs="0" maxOccurs="unbounded">
 						<xsd:annotation>
 							<xsd:documentation
 								source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
@@ -1211,8 +1212,7 @@ Specifies the number of buckets to allocate to the fixed partition
 							</xsd:attribute>
 						</xsd:complexType>
 					</xsd:element>
-					<xsd:element name="subscription" minOccurs="0"
-								 maxOccurs="1">
+					<xsd:element name="subscription" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Subscription policy for the partitioned region.
@@ -1231,8 +1231,7 @@ Eviction policy for the partitioned region.
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType"
-												   default="LOCAL_DESTROY">
+									<xsd:attribute name="action" type="evictionActionType" default="LOCAL_DESTROY">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[
 The action to take when performing eviction.
@@ -1245,11 +1244,12 @@ The action to take when performing eviction.
 					</xsd:element>
 				</xsd:sequence>
 				<xsd:attributeGroup ref="distributedRegionAttributes" />
-				<xsd:attribute name="copies" use="optional" default="0" type="xsd:string">
+				<xsd:attribute name="copies" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The number of copies (0-3) for each partition for high-availability. By default, no copies are created meaning there is no
-redundancy. Each copy provides extra backup at the expense of extra storages.
+The number of copies (0-3) of each partition for high-availability. By default, no copies are created meaning
+there is no redundancy. Each copy provides extra backup at the expense of extra storage. GemFire default is 0, or
+no redundancy.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -1277,9 +1277,9 @@ stictly necessary, but if set, then the value must agree with the 'persistent' a
 				<xsd:attribute name="local-max-memory" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The maximum amount of memory, in megabytes, to be used by the region in this process. If not set, a default of 90%
+The maximum amount of memory, in megabytes, to be used by the Region in this process. If not set, a default of 90%
 of available heap is used.
-							]]></xsd:documentation>
+						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="total-max-memory" type="xsd:string" use="optional">
@@ -1294,24 +1294,26 @@ Note: This setting must be the same in all processes using the region.
 				<xsd:attribute name="total-buckets" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The total number of hash buckets to be used by the region in all processes.
+The total number of hash buckets to be used by the Region in all processes.
 
-A bucket is the smallest unit of data management in a partitioned region. Entries are stored in buckets and buckets may
- move from one VM to another. Buckets may also have copies, depending on redundancy to provide high availability in the
-  face of VM failure.
-The number of buckets should be prime and as a rough guide at the least four times the number of partition VMs. However
-, there is significant overhead to managing a bucket, particularly for higher values of redundancy.
+A Bucket is the smallest unit of data management in a Partitioned Region. Entries are stored in Buckets and Buckets may
+move from one VM to another. Buckets may also have copies, depending on redundancy to provide high availability in the
+face of VM failure.
 
-Note: This setting must be the same in all processes using the region.
+The number of Buckets should be prime, and as a rough guide, at the least four times the number of partition VMs.
+However, there is significant overhead to managing a Bucket, particularly for higher values of redundancy.
+
+Note: This setting must be the same in all processes using the Region.
 							]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="recovery-delay" type="xsd:string" use="optional" default="-1">
+				<xsd:attribute name="recovery-delay" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes.
--1 (the default) indicates that redundancy will not be recovered after a failure.
-							]]></xsd:documentation>
+Applies when copies is greater than zero. The number of milliseconds to wait after a member crashes
+before reestablishing redundancy for the Region. A setting of -1 disables automatic recovery of redundancy
+after member failure. Gemfire default is -1.
+						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="shortcut" use="optional">
@@ -1337,12 +1339,14 @@ The RegionShortcut for this region. Allows easy initialization of the region bas
 						</xsd:restriction>
 					</xsd:simpleType>
 				</xsd:attribute>
-				<xsd:attribute name="startup-recovery-delay" type="xsd:string" use="optional" default="-1">
+				<xsd:attribute name="startup-recovery-delay" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-The delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members
-will not trigger redundancy recovery. The default is to recover redundancy immediately when a new member is added.
- 							]]></xsd:documentation>
+Applies when copies is greater than zero. The number of milliseconds a newly started member should wait
+before trying to satisfy redundancy of Region data stored on other members. A setting of -1 disables automatic recovery
+of redundancy after new members join.  GemFire default is 0, meaning the default is to recover redundancy immediately
+when a new member joins the cluster.
+						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 			</xsd:extension>
@@ -1888,8 +1892,7 @@ Eviction policy for the partitioned region.
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType"
-												   default="LOCAL_DESTROY">
+									<xsd:attribute name="action" type="evictionActionType" default="LOCAL_DESTROY">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[
 The action to take when performing eviction.
@@ -1923,8 +1926,7 @@ cache to differ from other caches.
 						</xsd:restriction>
 					</xsd:simpleType>
 				</xsd:attribute>
-				<xsd:attribute name="pool-name" type="xsd:string"
-							   use="optional">
+				<xsd:attribute name="pool-name" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 The name of the pool used by this client. If not set, a default pool (initialized when using client-cache) will be used.
