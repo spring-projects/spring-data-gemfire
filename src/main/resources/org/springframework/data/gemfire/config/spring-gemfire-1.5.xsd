@@ -1954,6 +1954,16 @@ The action to take when performing eviction.
 					</xsd:element>
 					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded"/>
 				</xsd:sequence>
+				<xsd:attribute name="concurrency-level">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Provides an estimate of the maximum number of application threads that will concurrently access a Region entry
+at one time.  This attribute does not apply to Partitioned Regions. This attribute helps GemFire optimize the use of
+system resources and reduce thread contention. This sets an initial parameter on the underlying
+java.util.ConcurrentHashMap used for storing Region entries.
+                        ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="data-policy" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[

@@ -46,7 +46,7 @@ class ClientRegionParser extends AbstractRegionParser {
 	}
 
 	@Override
-	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder regionBuilder,
 			boolean subRegion) {
 
 		validateDataPolicyShortcutAttributesMutualExclusion(element, parserContext);
@@ -54,23 +54,25 @@ class ClientRegionParser extends AbstractRegionParser {
 		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
 		if (!subRegion) {
-			builder.addPropertyReference("cache", resolvedCacheRef);
-			ParsingUtils.setPropertyValue(element, builder, "close");
-			ParsingUtils.setPropertyValue(element, builder, "destroy");
+			regionBuilder.addPropertyReference("cache", resolvedCacheRef);
+			ParsingUtils.setPropertyValue(element, regionBuilder, "close");
+			ParsingUtils.setPropertyValue(element, regionBuilder, "destroy");
 		}
 
-		ParsingUtils.setPropertyValue(element, builder, "name");
-		ParsingUtils.setPropertyValue(element, builder, "data-policy", "dataPolicyName");
-		ParsingUtils.setPropertyValue(element, builder, "ignore-if-exists", "lookupEnabled");
-		ParsingUtils.setPropertyValue(element, builder, "persistent");
-		ParsingUtils.setPropertyValue(element, builder, "pool-name");
-		ParsingUtils.setPropertyValue(element, builder, "shortcut");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "name");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "data-policy", "dataPolicyName");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "ignore-if-exists", "lookupEnabled");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "persistent");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "pool-name");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "shortcut");
 
-		parseDiskStoreAttribute(element, builder);
+		parseDiskStoreAttribute(element, regionBuilder);
 
 		// Client RegionAttributes for overflow/eviction, expiration and statistics
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			RegionAttributesFactoryBean.class);
+
+		mergeTemplateRegionAttributes(element, parserContext, regionBuilder, regionAttributesBuilder);
 
 		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
@@ -78,7 +80,7 @@ class ClientRegionParser extends AbstractRegionParser {
 		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseCompressor(parserContext, element, regionAttributesBuilder);
 
-		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
+		regionBuilder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
@@ -88,16 +90,16 @@ class ClientRegionParser extends AbstractRegionParser {
 			String subElementLocalName = subElement.getLocalName();
 
 			if ("cache-listener".equals(subElementLocalName)) {
-				builder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(
-					parserContext, subElement, builder));
+				regionBuilder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(
+					parserContext, subElement, regionBuilder));
 			}
 			else if ("cache-loader".equals(subElementLocalName)) {
-				builder.addPropertyValue("cacheLoader", ParsingUtils.parseRefOrNestedBeanDeclaration(
-					parserContext, subElement, builder));
+				regionBuilder.addPropertyValue("cacheLoader", ParsingUtils.parseRefOrNestedBeanDeclaration(
+					parserContext, subElement, regionBuilder));
 			}
 			else if ("cache-writer".equals(subElementLocalName)) {
-				builder.addPropertyValue("cacheWriter", ParsingUtils.parseRefOrNestedBeanDeclaration(
-					parserContext, subElement, builder));
+				regionBuilder.addPropertyValue("cacheWriter", ParsingUtils.parseRefOrNestedBeanDeclaration(
+					parserContext, subElement, regionBuilder));
 			}
 			else if ("key-interest".equals(subElementLocalName)) {
 				interests.add(parseKeyInterest(subElement, parserContext));
@@ -108,7 +110,7 @@ class ClientRegionParser extends AbstractRegionParser {
 		}
 
 		if (!interests.isEmpty()) {
-			builder.addPropertyValue("interests", interests);
+			regionBuilder.addPropertyValue("interests", interests);
 		}
 
 		if (!subRegion) {
