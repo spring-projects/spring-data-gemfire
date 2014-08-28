@@ -1270,21 +1270,38 @@ colocate data based on custom criterias (such as colocating trades by month and 
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element name="partition-listener" type="beanDeclarationType"
-								 minOccurs="0" maxOccurs="1">
+					<xsd:element name="partition-listener" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation
 								source="com.gemstone.gemfire.cache.partition.PartitionListener"><![CDATA[
-The partition listener definition for this region. Defines a callback for partitioned regions, invoked when a partition region
-is created or any bucket in a partitioned region becomes primary
+The PartitionListener definition for this Region. Defines a callback for Partitioned Regions, invoked when
+a Partition Region is created or any Bucket in a Partitioned Region becomes primary.
                                 ]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports
-										type="com.gemstone.gemfire.cache.partition.PartitionListener" />
+									<tool:exports type="com.gemstone.gemfire.cache.partition.PartitionListener" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[
+Inner bean definition of the ParitionListener.
+										]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:any>
+							</xsd:sequence>
+							<xsd:attribute name="ref" type="xsd:string" use="optional">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+The name of the PartitionListener bean referred to by this declaration. Used for convenience. If no reference exists,
+use inner bean declarations.
+									]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:attribute>
+						</xsd:complexType>
 					</xsd:element>
 					<xsd:element name="fixed-partition" minOccurs="0"
 								 maxOccurs="unbounded">

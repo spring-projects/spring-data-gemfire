@@ -48,24 +48,24 @@ class PartitionedRegionParser extends AbstractRegionParser {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
+	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder regionBuilder,
 			boolean subRegion) {
 
 		validateDataPolicyShortcutAttributesMutualExclusion(element, parserContext);
 
-		super.doParse(element, builder);
+		super.doParse(element, regionBuilder);
 
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			RegionAttributesFactoryBean.class);
 
-		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder, subRegion);
+		super.doParseCommonRegionConfiguration(element, parserContext, regionBuilder, regionAttributesBuilder, subRegion);
 
-		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
+		regionBuilder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
 		BeanDefinitionBuilder partitionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			PartitionAttributesFactoryBean.class);
 
-		parseColocatedWith(element, builder, partitionAttributesBuilder, "colocated-with");
+		parseColocatedWith(element, regionBuilder, partitionAttributesBuilder, "colocated-with");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "copies", "redundantCopies");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "local-max-memory");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "recovery-delay");
@@ -77,14 +77,14 @@ class PartitionedRegionParser extends AbstractRegionParser {
 
 		if (partitionResolverSubElement != null) {
 			partitionAttributesBuilder.addPropertyValue("partitionResolver",
-				parsePartitionResolver(partitionResolverSubElement, parserContext, builder));
+				parsePartitionResolver(partitionResolverSubElement, parserContext, regionBuilder));
 		}
 
 		Element partitionListenerSubElement = DomUtils.getChildElementByTagName(element, "partition-listener");
 
 		if (partitionListenerSubElement != null) {
 			partitionAttributesBuilder.addPropertyValue("partitionListeners",
-				parsePartitionListeners(partitionListenerSubElement, parserContext, builder));
+				parsePartitionListeners(partitionListenerSubElement, parserContext, regionBuilder));
 		}
 
 		List<Element> fixedPartitionSubElements = DomUtils.getChildElementsByTagName(element, "fixed-partition");
