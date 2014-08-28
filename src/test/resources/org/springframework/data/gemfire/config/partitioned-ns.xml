@@ -1,25 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+">
 
-	<gfe:cache />
+	<util:properties id="props">
+		<prop key="copies">1</prop>
+		<prop key="totalBuckets">4</prop>
+	</util:properties>
 
 	<context:property-placeholder properties-ref="props"/>
-	<util:properties id="props">
-		<prop key="totalBuckets">4</prop>
-        <prop key="copies">1</prop>
-	</util:properties>
-	<gfe:partitioned-region id="simple" />
 
-	<gfe:partitioned-region id="options" copies="${copies}" total-buckets="${totalBuckets}" name="redundant" close="true" destroy="false" statistics="true">
+	<gfe:cache/>
+
+	<gfe:partitioned-region id="simple"/>
+
+	<gfe:partitioned-region id="options" name="redundant" copies="${copies}" statistics="true" total-buckets="${totalBuckets}"
+							close="true" destroy="false">
 		<gfe:partition-resolver>
 			<bean class="org.springframework.data.gemfire.SimplePartitionResolver"/>
 		</gfe:partition-resolver>
@@ -32,9 +37,9 @@
 		</gfe:cache-listener>
 		<gfe:cache-loader ref="c-loader"/>
 		<gfe:cache-writer ref="c-writer"/>
-        <gfe:partition-listener>
-            <bean class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest.TestPartitionListener"/>
-        </gfe:partition-listener>
+		<gfe:partition-listener>
+			<bean class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest.TestPartitionListener"/>
+		</gfe:partition-listener>
 	</gfe:partitioned-region>
 
 	<gfe:partitioned-region id="fixed">
@@ -43,7 +48,21 @@
 		<gfe:fixed-partition partition-name="p3" primary="true"/>
 	</gfe:partitioned-region>
 
+	<gfe:partitioned-region id="listeners" persistent="false">
+		<gfe:partition-listener>
+			<bean class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest$TestPartitionListener" p:name="X"/>
+			<bean class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest$TestPartitionListener" p:name="Y"/>
+			<bean class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest$TestPartitionListener" p:name="Z"/>
+			<ref bean="p-listener"/>
+		</gfe:partition-listener>
+	</gfe:partitioned-region>
+
+	<gfe:partitioned-region id="listenerRef" persistent="false">
+		<gfe:partition-listener ref="p-listener"/>
+	</gfe:partitioned-region>
+
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
+	<bean id="p-listener" class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest$TestPartitionListener" p:name="ABC"/>
 	<bean id="c-loader" class="org.springframework.data.gemfire.SimpleCacheLoader"/>
 	<bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>
 

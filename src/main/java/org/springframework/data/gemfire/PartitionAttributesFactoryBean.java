@@ -27,23 +27,24 @@ import com.gemstone.gemfire.cache.PartitionResolver;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 
 /**
- * Spring-friendly bean for creating {@link PartitionAttributes}. Eliminates the
- * need of using a XML 'factory-method' tag and allows the attributes properties
- * to be set directly.
+ * Spring-friendly bean for creating {@link PartitionAttributes}. Eliminates the need of using
+ * a XML 'factory-method' tag and allows the attributes properties to be set directly.
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
 public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttributes>, InitializingBean {
 
-	private final com.gemstone.gemfire.cache.PartitionAttributesFactory paf = new com.gemstone.gemfire.cache.PartitionAttributesFactory();
+	private final com.gemstone.gemfire.cache.PartitionAttributesFactory partitionAttributesFactory =
+		new com.gemstone.gemfire.cache.PartitionAttributesFactory();
 
 	private List<PartitionListener> listeners;
 
 	@Override
 	public PartitionAttributes getObject() throws Exception {
-		return paf.create();
+		return partitionAttributesFactory.create();
 	}
 
 	@Override
@@ -57,21 +58,21 @@ public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttr
 	}
 
 	public void setColocatedWith(String colocatedRegionFullPath) {
-		paf.setColocatedWith(colocatedRegionFullPath);
+		partitionAttributesFactory.setColocatedWith(colocatedRegionFullPath);
 	}
 
 	public void setFixedPartitionAttributes(List<FixedPartitionAttributes> fixedPartitionAttributes) {
 		for (FixedPartitionAttributes fpa : fixedPartitionAttributes) {
-			paf.addFixedPartitionAttributes(fpa);
+			partitionAttributesFactory.addFixedPartitionAttributes(fpa);
 		}
 	}
 
 	public void setLocalMaxMemory(int mb) {
-		paf.setLocalMaxMemory(mb);
+		partitionAttributesFactory.setLocalMaxMemory(mb);
 	}
 
 	public void setPartitionResolver(PartitionResolver resolver) {
-		paf.setPartitionResolver(resolver);
+		partitionAttributesFactory.setPartitionResolver(resolver);
 	}
 
 	public void setPartitionListeners(List<PartitionListener> listeners) {
@@ -79,32 +80,33 @@ public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttr
 	}
 
 	public void setRecoveryDelay(long recoveryDelay) {
-		paf.setRecoveryDelay(recoveryDelay);
+		partitionAttributesFactory.setRecoveryDelay(recoveryDelay);
 	}
 
 	public void setRedundantCopies(int redundantCopies) {
-		paf.setRedundantCopies(redundantCopies);
+		partitionAttributesFactory.setRedundantCopies(redundantCopies);
 	}
 
 	public void setStartupRecoveryDelay(long startupRecoveryDelay) {
-		paf.setStartupRecoveryDelay(startupRecoveryDelay);
+		partitionAttributesFactory.setStartupRecoveryDelay(startupRecoveryDelay);
 	}
 
 	public void setTotalMaxMemory(long mb) {
-		paf.setTotalMaxMemory(mb);
+		partitionAttributesFactory.setTotalMaxMemory(mb);
 	}
 
 	public void setTotalNumBuckets(int numBuckets) {
-		paf.setTotalNumBuckets(numBuckets);
+		partitionAttributesFactory.setTotalNumBuckets(numBuckets);
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (listeners != null) {
 			for (PartitionListener listener : listeners) {
-				paf.addPartitionListener(listener);
+				partitionAttributesFactory.addPartitionListener(listener);
 			}
 		}
 
 	}
+
 }

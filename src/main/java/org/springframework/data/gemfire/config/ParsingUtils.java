@@ -111,7 +111,7 @@ abstract class ParsingUtils {
 		if (StringUtils.hasText(refAttributeValue)) {
 			if (!childElements.isEmpty()) {
 				parserContext.getReaderContext().error(String.format(
-					"Use either the '%1$s' attribute or a nested bean declaration for '%2$s' element, but not both",
+					"Use either the '%1$s' attribute or a nested bean declaration for '%2$s' element, but not both.",
 						refAttributeName, element.getLocalName()), element);
 			}
 
@@ -163,7 +163,7 @@ abstract class ParsingUtils {
 			// TODO also triggered when there are no child elements; need to change the message...
 			if (single) {
 				parserContext.getReaderContext().error(String.format(
-					"The element '%1$s' does not support multiple nested bean definitions",
+					"The element '%1$s' does not support multiple nested bean definitions.",
 						element.getLocalName()), element);
 			}
 		}
