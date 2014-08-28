@@ -51,15 +51,19 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
+import com.gemstone.gemfire.compression.Compressor;
 
 /**
+ * The ClientRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
+ * of GemFire Client Region namespace support in SDG.
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
  */
-@ContextConfiguration(locations="/org/springframework/data/gemfire/config/client-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="client-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class ClientRegionNamespaceTest {
 
 	@Autowired
@@ -152,7 +156,24 @@ public class ClientRegionNamespaceTest {
 		assertTrue(TestUtils.readField("cacheWriter", factory) instanceof TestCacheWriter);
 	}
 
-	@SuppressWarnings("unused")
+	@Test
+	public void testCompressedReplicateRegion() {
+		assertTrue(context.containsBean("compressed"));
+
+		Region<?, ?> compressed = context.getBean("compressed", Region.class);
+
+		assertNotNull("The 'compressed' Client Region was not properly configured and initialized!", compressed);
+		assertEquals("compressed", compressed.getName());
+		assertEquals(Region.SEPARATOR + "compressed", compressed.getFullPath());
+		assertNotNull(compressed.getAttributes());
+		assertEquals(DataPolicy.EMPTY, compressed.getAttributes().getDataPolicy());
+		assertEquals("gemfire-pool", compressed.getAttributes().getPoolName());
+		assertTrue(String.format("Expected 'TestCompressor'; but was '%1$s'!",
+			ObjectUtils.nullSafeClassName(compressed.getAttributes().getCompressor())),
+				compressed.getAttributes().getCompressor() instanceof TestCompressor);
+		assertEquals("STD", compressed.getAttributes().getCompressor().toString());
+	}
+
 	public static final class TestCacheLoader implements CacheLoader<Object, Object> {
 
 		@Override
@@ -168,4 +189,28 @@ public class ClientRegionNamespaceTest {
 	public static final class TestCacheWriter extends CacheWriterAdapter<Object, Object> {
 	}
 
+	public static class TestCompressor implements Compressor {
+
+		private String name;
+
+		public void setName(final String name) {
+			this.name = name;
+		}
+
+		@Override
+		public byte[] compress(final byte[] input) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public byte[] decompress(final byte[] input) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
+
+	}
 }

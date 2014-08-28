@@ -18,7 +18,7 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -40,14 +40,18 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.compression.Compressor;
 
 /**
+ * The LocalRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
+ * of GemFire's Local Region support in SDG.
+ *
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="local-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="local-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 public class LocalRegionNamespaceTest {
 
 	@Autowired
@@ -71,8 +75,8 @@ public class LocalRegionNamespaceTest {
 		assertFalse(attrs.getPublisher());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testComplexLocal() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
@@ -85,8 +89,8 @@ public class LocalRegionNamespaceTest {
 		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testLocalWithAttributes() throws Exception {
 		assertTrue(context.containsBean("local-with-attributes"));
 		Region region = context.getBean("local-with-attributes", Region.class);
@@ -99,8 +103,8 @@ public class LocalRegionNamespaceTest {
 		assertEquals(true, attrs.isDiskSynchronous());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testRegionLookup() throws Exception {
 		Cache cache = context.getBean(Cache.class);
 		Region existing = cache.createRegionFactory().create("existing");
@@ -111,11 +115,52 @@ public class LocalRegionNamespaceTest {
 		assertEquals(existing, context.getBean("lookup"));
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testLocalPersistent() {
 		Region region = context.getBean("persistent", Region.class);
 		RegionAttributes attrs = region.getAttributes();
 		assertTrue(attrs.getDataPolicy().withPersistence());
 	}
+
+	@Test
+	public void testCompressedLocalRegion() {
+		assertTrue(context.containsBean("compressed"));
+
+		Region<?, ?> compressed = context.getBean("compressed", Region.class);
+
+		assertNotNull("The 'compressed' Local Region was not properly configured and initialized!", compressed);
+		assertEquals("compressed", compressed.getName());
+		assertEquals(Region.SEPARATOR + "compressed", compressed.getFullPath());
+		assertNotNull(compressed.getAttributes());
+		assertEquals(DataPolicy.NORMAL, compressed.getAttributes().getDataPolicy());
+		assertEquals(Scope.LOCAL, compressed.getAttributes().getScope());
+		assertTrue(compressed.getAttributes().getCompressor() instanceof TestCompressor);
+		assertEquals("ABC", compressed.getAttributes().getCompressor().toString());
+	}
+
+	public static class TestCompressor implements Compressor {
+
+		private String name;
+
+		public void setName(final String name) {
+			this.name = name;
+		}
+
+		@Override
+		public byte[] compress(final byte[] input) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public byte[] decompress(final byte[] input) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
+	}
+
 }

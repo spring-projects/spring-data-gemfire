@@ -76,6 +76,7 @@ class ClientRegionParser extends AbstractRegionParser {
 		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
 		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseCompressor(parserContext, element, regionAttributesBuilder);
 
 		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 

@@ -522,6 +522,19 @@ use inner bean declarations.
 							</xsd:attribute>
 						</xsd:complexType>
 					</xsd:element>
+					<xsd:element name="compressor" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation source="com.gemstone.gemfire.compression.Compressor"><![CDATA[
+The Compressor definition for this Region. A Compressor registers a custom class that implements Compressor
+to support compression on a Region.
+							]]></xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation>
+									<tool:exports type="com.gemstone.gemfire.compression.Compressor"/>
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
 					<xsd:element name="region-ttl" type="expirationType"
 								 minOccurs="0" maxOccurs="1">
 						<xsd:annotation>

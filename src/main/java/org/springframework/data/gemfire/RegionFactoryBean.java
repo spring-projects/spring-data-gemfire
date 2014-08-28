@@ -345,6 +345,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			validateRegionAttributes(regionAttributes);
 
 			regionFactory.setCloningEnabled(regionAttributes.getCloningEnabled());
+			regionFactory.setCompressor(regionAttributes.getCompressor());
 			regionFactory.setConcurrencyChecksEnabled(regionAttributes.getConcurrencyChecksEnabled());
 			regionFactory.setConcurrencyLevel(regionAttributes.getConcurrencyLevel());
 			regionFactory.setCustomEntryIdleTimeout(regionAttributes.getCustomEntryIdleTimeout());

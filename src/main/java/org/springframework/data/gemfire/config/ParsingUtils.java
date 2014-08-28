@@ -432,6 +432,17 @@ abstract class ParsingUtils {
 		return false;
 	}
 
+	public static void parseCompressor(ParserContext parserContext, Element element,
+			BeanDefinitionBuilder regionAttributesBuilder) {
+
+		Element compressorElement = DomUtils.getChildElementByTagName(element, "compressor");
+
+		if (compressorElement != null) {
+			regionAttributesBuilder.addPropertyValue("compressor", parseRefOrSingleNestedBeanDeclaration(
+				parserContext, compressorElement, regionAttributesBuilder));
+		}
+	}
+
 	static String resolveCacheReference(final String cacheRef) {
 		return (StringUtils.hasText(cacheRef) ? cacheRef : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 	}

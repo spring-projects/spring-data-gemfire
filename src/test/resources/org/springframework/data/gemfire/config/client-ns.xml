@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:util="http://www.springframework.org/schema/util"
-	default-lazy-init="true"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+" default-lazy-init="true">
 
-	<gfe:client-cache />
+	<gfe:client-cache/>
 
 	<gfe:client-region id="simple" name="SimpleRegion"/>
 
@@ -52,5 +51,11 @@
 			<bean class="org.springframework.data.gemfire.config.ClientRegionNamespaceTest$TestCacheWriter"/>
 		</gfe:cache-writer>
 	</gfe:client-region>
+
+	<gfe:client-region id="compressed" pool-name="gemfire-pool" shortcut="PROXY">
+		<gfe:compressor ref="testCompressor"/>
+	</gfe:client-region>
+
+	<bean id="testCompressor" class="org.springframework.data.gemfire.config.ClientRegionNamespaceTest$TestCompressor" p:name="STD"/>
 
 </beans>

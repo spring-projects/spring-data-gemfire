@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -36,17 +37,23 @@ import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.compression.Compressor;
 
 /**
+ * The ReplicatedRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
+ * of GemFire Replicated Region support in SDG.
+ *
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="replicated-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="replicated-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class ReplicatedRegionNamespaceTest {
 
 	@Autowired
@@ -74,8 +81,8 @@ public class ReplicatedRegionNamespaceTest {
 		assertTrue(attrs.getConcurrencyChecksEnabled());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testComplexReplica() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
@@ -88,8 +95,8 @@ public class ReplicatedRegionNamespaceTest {
 		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testReplicaWithAttributes() throws Exception {
 		assertTrue(context.containsBean("replicated-with-attributes"));
 		Region region = context.getBean("replicated-with-attributes", Region.class);
@@ -111,8 +118,8 @@ public class ReplicatedRegionNamespaceTest {
 		assertEquals(true, attrs.getMulticastEnabled());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testRegionLookup() throws Exception {
 		Cache cache = context.getBean(Cache.class);
 		Region existing = cache.createRegionFactory().create("existing");
@@ -121,5 +128,45 @@ public class ReplicatedRegionNamespaceTest {
 		assertEquals("existing", TestUtils.readField("name", lfb));
 		assertEquals(existing, context.getBean("lookup"));
 	}
-	
+
+	@Test
+	public void testCompressedReplicateRegion() {
+		assertTrue(context.containsBean("compressed"));
+
+		Region<?, ?> compressed = context.getBean("compressed", Region.class);
+
+		assertNotNull("The 'compressed' REPLICATE Region was not properly configured and initialized!", compressed);
+		assertEquals("compressed", compressed.getName());
+		assertEquals(Region.SEPARATOR + "compressed", compressed.getFullPath());
+		assertNotNull(compressed.getAttributes());
+		assertEquals(DataPolicy.REPLICATE, compressed.getAttributes().getDataPolicy());
+		assertTrue(compressed.getAttributes().getCompressor() instanceof TestCompressor);
+		assertEquals("XYZ", compressed.getAttributes().getCompressor().toString());
+	}
+
+
+	public static class TestCompressor implements Compressor {
+
+		private String name;
+
+		public void setName(final String name) {
+			this.name = name;
+		}
+
+		@Override
+		public byte[] compress(final byte[] input) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public byte[] decompress(final byte[] input) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
+	}
+
 }

@@ -91,9 +91,10 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseSubscription(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
+		ParsingUtils.parseMembershipAttributes(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
 		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
-		ParsingUtils.parseMembershipAttributes(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseCompressor(parserContext, element, regionAttributesBuilder);
 
 		String enableGateway = element.getAttribute("enable-gateway");
 		String hubId = element.getAttribute("hub-id");
@@ -133,11 +134,11 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			}
 			else if (subElement.getLocalName().equals("cache-loader")) {
 				builder.addPropertyValue("cacheLoader",
-						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
+						ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, builder));
 			}
 			else if (subElement.getLocalName().equals("cache-writer")) {
 				builder.addPropertyValue("cacheWriter",
-						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
+						ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, builder));
 			}
 		}
 

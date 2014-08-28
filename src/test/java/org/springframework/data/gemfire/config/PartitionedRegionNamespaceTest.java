@@ -47,6 +47,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.partition.PartitionListenerAdapter;
+import com.gemstone.gemfire.compression.Compressor;
 
 /**
  * The PartitionRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
@@ -132,8 +133,23 @@ public class PartitionedRegionNamespaceTest {
 	}
 
 	@Test
+	public void testCompressedPartitionRegion() {
+		assertTrue(context.containsBean("compressed"));
+
+		Region<?, ?> compressed = context.getBean("compressed", Region.class);
+
+		assertNotNull("The 'compressed' PARTITION Region was not properly configured and initialized!", compressed);
+		assertEquals("compressed", compressed.getName());
+		assertEquals(Region.SEPARATOR + "compressed", compressed.getFullPath());
+		assertNotNull(compressed.getAttributes());
+		assertEquals(DataPolicy.PARTITION, compressed.getAttributes().getDataPolicy());
+		assertTrue(compressed.getAttributes().getCompressor() instanceof TestCompressor);
+		assertEquals("testCompressor", compressed.getAttributes().getCompressor().toString());
+	}
+
+	@Test
 	@SuppressWarnings("rawtypes")
-	public void testFixedPartition() throws Exception {
+	public void testFixedPartitionRegion() throws Exception {
 		RegionFactoryBean fixedRegionFactoryBean = context.getBean("&fixed", RegionFactoryBean.class);
 
 		assertNotNull(fixedRegionFactoryBean);
@@ -201,6 +217,30 @@ public class PartitionedRegionNamespaceTest {
 		assertEquals(1, listenersPartitionAttributes.getPartitionListeners().length);
 		assertTrue(listenersPartitionAttributes.getPartitionListeners()[0] instanceof TestPartitionListener);
 		assertEquals("ABC", listenersPartitionAttributes.getPartitionListeners()[0].toString());
+	}
+
+	public static class TestCompressor implements Compressor {
+
+		private String name;
+
+		public void setName(final String name) {
+			this.name = name;
+		}
+
+		@Override
+		public byte[] compress(final byte[] input) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public byte[] decompress(final byte[] input) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
 	}
 
 	public static class TestPartitionListener extends PartitionListenerAdapter {

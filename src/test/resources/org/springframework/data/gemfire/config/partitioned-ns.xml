@@ -42,6 +42,12 @@
 		</gfe:partition-listener>
 	</gfe:partitioned-region>
 
+	<gfe:partitioned-region id="compressed" persistent="false">
+		<gfe:compressor>
+			<bean class="org.springframework.data.gemfire.config.PartitionedRegionNamespaceTest$TestCompressor" p:name="testCompressor"/>
+		</gfe:compressor>
+	</gfe:partitioned-region>
+
 	<gfe:partitioned-region id="fixed">
 		<gfe:fixed-partition partition-name="p1" primary="true" num-buckets="3"/>
 		<gfe:fixed-partition partition-name="p2"/>
