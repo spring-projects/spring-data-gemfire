@@ -10,7 +10,7 @@
 
 	<gfe:cache/>
 	
-	<gfe:local-region id="simple" />
+	<gfe:local-region id="simple"/>
 
 	<gfe:local-region id="pub" name="publisher"/>
 
@@ -32,10 +32,11 @@
 					  index-update-type="asynchronous"
 					  initial-capacity="10"
 					  key-constraint="java.lang.String"
+					  load-factor="0.90"
 					  value-constraint="java.lang.String"
 	/>
 
-	<gfe:local-region id="compressed" persistent="false">
+	<gfe:local-region id="Compressed" persistent="false">
 		<gfe:compressor>
 			<bean class="org.springframework.data.gemfire.config.LocalRegionNamespaceTest$TestCompressor" p:name="ABC"/>
 		</gfe:compressor>
@@ -46,4 +47,5 @@
 	<bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>
 	
 	<gfe:lookup-region id="lookup" name="existing"/>
+
 </beans>

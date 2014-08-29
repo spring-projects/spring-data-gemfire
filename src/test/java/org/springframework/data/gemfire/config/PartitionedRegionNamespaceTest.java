@@ -56,6 +56,8 @@ import com.gemstone.gemfire.compression.Compressor;
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.PartitionedRegionParser
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "partitioned-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)

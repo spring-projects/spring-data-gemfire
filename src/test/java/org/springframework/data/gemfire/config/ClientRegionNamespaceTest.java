@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.SimpleCacheListener;
 import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
@@ -45,12 +47,12 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.compression.Compressor;
 
 /**
@@ -60,6 +62,8 @@ import com.gemstone.gemfire.compression.Compressor;
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.ClientRegionParser
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="client-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
@@ -82,66 +86,110 @@ public class ClientRegionNamespaceTest {
 	}
 
 	@Test
-	public void testBasicClient() throws Exception {
-		assertTrue(context.containsBean("simple"));
-	}
-
-	@Test
 	public void testBeanNames() throws Exception {
 		assertTrue(context.containsBean("SimpleRegion"));
-		assertTrue(context.containsBean("publisher"));
+		assertTrue(context.containsBean("Publisher"));
 		assertTrue(context.containsBean("ComplexRegion"));
 		assertTrue(context.containsBean("PersistentRegion"));
 		assertTrue(context.containsBean("OverflowRegion"));
+		assertTrue(context.containsBean("Compressed"));
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
-	public void testPublishingClient() throws Exception {
+	public void testSimpleClientRegion() throws Exception {
+		assertTrue(context.containsBean("simple"));
+
+		Region<?, ?> simple = context.getBean("simple", Region.class);
+
+		assertNotNull("The 'SimpleRegion' Client Region was not properly configured and initialized!", simple);
+		assertEquals("SimpleRegion", simple.getName());
+		assertEquals(Region.SEPARATOR + "SimpleRegion", simple.getFullPath());
+		assertNotNull(simple.getAttributes());
+		assertEquals(DataPolicy.NORMAL, simple.getAttributes().getDataPolicy());
+	}
+
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void testPublishingClientRegion() throws Exception {
 		assertTrue(context.containsBean("empty"));
-		ClientRegionFactoryBean fb = context.getBean("&empty", ClientRegionFactoryBean.class);
-		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", fb));
+
+		ClientRegionFactoryBean emptyClientRegionFactoryBean = context.getBean("&empty", ClientRegionFactoryBean.class);
+
+		assertNotNull(emptyClientRegionFactoryBean);
+		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", emptyClientRegionFactoryBean));
+		assertEquals("empty", TestUtils.readField("beanName", emptyClientRegionFactoryBean));
+		assertEquals("Publisher", TestUtils.readField("name", emptyClientRegionFactoryBean));
+		assertEquals("gemfire-pool", TestUtils.readField("poolName", emptyClientRegionFactoryBean));
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
-	public void testComplexClient() throws Exception {
+	@SuppressWarnings("rawtypes")
+	public void testComplexClientRegion() throws Exception {
 		assertTrue(context.containsBean("complex"));
-		ClientRegionFactoryBean fb = context.getBean("&complex", ClientRegionFactoryBean.class);
-		CacheListener[] listeners = TestUtils.readField("cacheListeners", fb);
-		assertFalse(ObjectUtils.isEmpty(listeners));
-		assertEquals(2, listeners.length);
-		assertSame(listeners[0], context.getBean("c-listener"));
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		assertEquals(500, attrs.getEntryTimeToLive().getTimeout());
-		assertEquals(0.5f,attrs.getLoadFactor(),0.001);
-		assertEquals(5, attrs.getEvictionAttributes().getMaximum());
+
+		ClientRegionFactoryBean complexClientRegionFactoryBean = context.getBean("&complex", ClientRegionFactoryBean.class);
+
+		assertNotNull(complexClientRegionFactoryBean);
+
+		CacheListener[] cacheListeners = TestUtils.readField("cacheListeners", complexClientRegionFactoryBean);
+
+		assertFalse(ObjectUtils.isEmpty(cacheListeners));
+		assertEquals(2, cacheListeners.length);
+		assertSame(cacheListeners[0], context.getBean("c-listener"));
+		assertTrue(cacheListeners[1] instanceof SimpleCacheListener);
+		assertNotSame(cacheListeners[0], cacheListeners[1]);
+
+		RegionAttributes complexRegionAttributes = TestUtils.readField("attributes", complexClientRegionFactoryBean);
+
+		assertNotNull(complexRegionAttributes);
+		assertEquals(0.5f, complexRegionAttributes.getLoadFactor(), 0.001);
+		assertEquals(ExpirationAction.INVALIDATE, complexRegionAttributes.getEntryTimeToLive().getAction());
+		assertEquals(500, complexRegionAttributes.getEntryTimeToLive().getTimeout());
+		assertEquals(5, complexRegionAttributes.getEvictionAttributes().getMaximum());
 	}
 
 	@Test
 	@SuppressWarnings({ "deprecation", "rawtypes" })
-	public void testPersistent() throws Exception {
+	public void testPersistentClientRegion() throws Exception {
 		assertTrue(context.containsBean("persistent"));
-		Region region = context.getBean("persistent", Region.class);
-		RegionAttributes attrs = region.getAttributes();
-		assertEquals("diskStore", attrs.getDiskStoreName());
-		assertEquals(10, attrs.getDiskDirSizes()[0]);
+
+		Region persistent = context.getBean("persistent", Region.class);
+
+		assertNotNull("The 'PersistentRegion' Region was not properly configured and initialized!", persistent);
+		assertEquals("PersistentRegion", persistent.getName());
+		assertEquals(Region.SEPARATOR + "PersistentRegion", persistent.getFullPath());
+
+		RegionAttributes persistentRegionAttributes = persistent.getAttributes();
+
+		assertEquals(DataPolicy.PERSISTENT_REPLICATE, persistentRegionAttributes.getDataPolicy());
+		assertEquals("diskStore", persistentRegionAttributes.getDiskStoreName());
+		assertEquals(10, persistentRegionAttributes.getDiskDirSizes()[0]);
+		assertEquals("gemfire-pool", persistentRegionAttributes.getPoolName());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
-	public void testOverflowToDisk() throws Exception {
+	@SuppressWarnings("rawtypes")
+	public void testOverflowClientRegion() throws Exception {
 		assertTrue(context.containsBean("overflow"));
-		ClientRegionFactoryBean fb = context.getBean("&overflow", ClientRegionFactoryBean.class);
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
-		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evicAttr.getAction());
-		assertEquals(EvictionAlgorithm.LRU_MEMORY, evicAttr.getAlgorithm());
-		// for some reason GemFire resets this to 56 on my machine (not sure
-		// why)
-		// assertEquals(10, evicAttr.getMaximum());
-		ObjectSizer sizer = evicAttr.getObjectSizer();
-		assertEquals(SimpleObjectSizer.class, sizer.getClass());
+
+		ClientRegionFactoryBean overflowClientRegionFactoryBean = context.getBean("&overflow", ClientRegionFactoryBean.class);
+
+		assertNotNull(overflowClientRegionFactoryBean);
+		assertEquals("diskStore", TestUtils.readField("diskStoreName", overflowClientRegionFactoryBean));
+		assertEquals("gemfire-pool", TestUtils.readField("poolName", overflowClientRegionFactoryBean));
+
+		RegionAttributes overflowRegionAttributes = TestUtils.readField("attributes", overflowClientRegionFactoryBean);
+
+		assertNotNull(overflowRegionAttributes);
+		assertEquals(DataPolicy.NORMAL, overflowRegionAttributes.getDataPolicy());
+
+		EvictionAttributes overflowEvictionAttributes = overflowRegionAttributes.getEvictionAttributes();
+
+		assertNotNull(overflowEvictionAttributes);
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, overflowEvictionAttributes.getAction());
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, overflowEvictionAttributes.getAlgorithm());
+		assertEquals(10, overflowEvictionAttributes.getMaximum());
+		assertTrue(overflowEvictionAttributes.getObjectSizer() instanceof SimpleObjectSizer);
 	}
 
 	@Test
@@ -151,6 +199,7 @@ public class ClientRegionNamespaceTest {
 		ClientRegionFactoryBean factory = context.getBean("&loadWithWrite", ClientRegionFactoryBean.class);
 
 		assertNotNull(factory);
+		assertEquals("LoadedFullOfWrites", TestUtils.readField("name", factory));
 		assertEquals(ClientRegionShortcut.LOCAL, TestUtils.readField("shortcut", factory));
 		assertTrue(TestUtils.readField("cacheLoader", factory) instanceof TestCacheLoader);
 		assertTrue(TestUtils.readField("cacheWriter", factory) instanceof TestCacheWriter);
@@ -158,19 +207,19 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testCompressedReplicateRegion() {
-		assertTrue(context.containsBean("compressed"));
+		assertTrue(context.containsBean("Compressed"));
 
-		Region<?, ?> compressed = context.getBean("compressed", Region.class);
+		Region<?, ?> compressed = context.getBean("Compressed", Region.class);
 
-		assertNotNull("The 'compressed' Client Region was not properly configured and initialized!", compressed);
-		assertEquals("compressed", compressed.getName());
-		assertEquals(Region.SEPARATOR + "compressed", compressed.getFullPath());
+		assertNotNull("The 'Compressed' Client Region was not properly configured and initialized!", compressed);
+		assertEquals("Compressed", compressed.getName());
+		assertEquals(Region.SEPARATOR + "Compressed", compressed.getFullPath());
 		assertNotNull(compressed.getAttributes());
 		assertEquals(DataPolicy.EMPTY, compressed.getAttributes().getDataPolicy());
 		assertEquals("gemfire-pool", compressed.getAttributes().getPoolName());
 		assertTrue(String.format("Expected 'TestCompressor'; but was '%1$s'!",
-			ObjectUtils.nullSafeClassName(compressed.getAttributes().getCompressor())),
-				compressed.getAttributes().getCompressor() instanceof TestCompressor);
+				ObjectUtils.nullSafeClassName(compressed.getAttributes().getCompressor())),
+			compressed.getAttributes().getCompressor() instanceof TestCompressor);
 		assertEquals("STD", compressed.getAttributes().getCompressor().toString());
 	}
 
@@ -213,4 +262,5 @@ public class ClientRegionNamespaceTest {
 		}
 
 	}
+
 }

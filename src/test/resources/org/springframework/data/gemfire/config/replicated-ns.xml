@@ -10,7 +10,7 @@
 
 	<gfe:cache/>
 
-	<gfe:replicated-region id="simple" close="false" concurrency-checks-enabled="false"/>
+	<gfe:replicated-region id="simple" concurrency-checks-enabled="false" close="false"/>
 
 	<gfe:replicated-region id="pub" name="publisher"/>
 
@@ -39,7 +39,7 @@
 						   scope="global"
 						   value-constraint="java.lang.String"/>
 
-	<gfe:replicated-region id="compressed" persistent="false">
+	<gfe:replicated-region id="Compressed" persistent="false">
 		<gfe:compressor ref="testCompressor"/>
 	</gfe:replicated-region>
 
