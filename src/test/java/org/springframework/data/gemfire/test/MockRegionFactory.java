@@ -110,6 +110,7 @@ public class MockRegionFactory<K,V>   {
 				Region subRegion = mockRegion(subRegionName);
 
 				cache.allRegions().put(subRegionName, subRegion);
+				cache.allRegions().put(name, subRegion);
 
 				return subRegion;
 			}
@@ -468,7 +469,7 @@ public class MockRegionFactory<K,V>   {
 			public Region answer(InvocationOnMock invocation) throws Throwable {
 				Region parent = (Region) invocation.getMock();
 
-				String parentRegionName = parent.getName();
+				String parentRegionName = parent.getFullPath();
 				String subRegionName = (String) invocation.getArguments()[0];
 				String subRegionPath = (parentRegionName.startsWith("/") ? parentRegionName+"/"+subRegionName
 					: "/"+parentRegionName+"/"+subRegionName);

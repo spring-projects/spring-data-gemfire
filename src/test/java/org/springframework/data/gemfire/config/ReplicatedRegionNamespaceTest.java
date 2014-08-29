@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -71,11 +72,13 @@ public class ReplicatedRegionNamespaceTest {
 
 		assertEquals("simple", TestUtils.readField("beanName", simpleRegionFactoryBean));
 		assertEquals(false, TestUtils.readField("close", simpleRegionFactoryBean));
+		assertNull(TestUtils.readField("scope", simpleRegionFactoryBean));
 
 		RegionAttributes simpleRegionAttributes = TestUtils.readField("attributes", simpleRegionFactoryBean);
 
 		assertNotNull(simpleRegionAttributes);
 		assertFalse(simpleRegionAttributes.getConcurrencyChecksEnabled());
+		assertEquals(Scope.DISTRIBUTED_NO_ACK, simpleRegionAttributes.getScope());
 	}
 
 	@Test
