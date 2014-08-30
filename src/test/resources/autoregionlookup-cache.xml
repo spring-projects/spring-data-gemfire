@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+	"http://www.gemstone.com/dtd/cache8_0.dtd">
+<cache>
+	<region name="NativePartitionedRegion" refid="PARTITION"/>
+
+	<region name="NativeReplicateParent" refid="REPLICATE">
+		<region name="NativeReplicateChild" refid="REPLICATE">
+			<region name="NativeReplicateGrandchild" refid="REPLICATE"/>
+		</region>
+	</region>
+</cache>

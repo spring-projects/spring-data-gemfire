@@ -25,7 +25,9 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
 /**
- * The AutoRegionLookupBeanDefinitionParser class...
+ * The AutoRegionLookupBeanDefinitionParser class is a Spring BeanDefinitionParser that registers a BeanPostProcessor
+ * that auto registers Regions defined in GemFire's native cache.xml format, or when using GemFire 8's cluster-based
+ * configuration service to define Regions, creating corresponding beans in the Spring context.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.config.BeanDefinition
@@ -33,10 +35,11 @@ import org.w3c.dom.Element;
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.xml.BeanDefinitionParser
  * @see org.springframework.beans.factory.xml.ParserContext
+ * @see org.springframework.data.gemfire.config.AutoRegionLookupBeanPostProcessor
  * @see org.w3c.dom.Element
  * @since 1.5.0
  */
-public class AutoRegionLookupBeanDefinitionParser implements BeanDefinitionParser {
+class AutoRegionLookupBeanDefinitionParser implements BeanDefinitionParser {
 
 	@Override
 	public BeanDefinition parse(final Element element, final ParserContext parserContext) {

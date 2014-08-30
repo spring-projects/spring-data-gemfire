@@ -33,7 +33,7 @@ import com.gemstone.gemfire.cache.Region;
 /**
  * The AutoRegionLookupBeanPostProcessor class is a Spring BeanPostProcessor that post processes a GemFireCache by
  * registering all Cache Regions that have not been explicitly defined in the Spring application context.  This is
- * usually the case for Regions that have been defined in GemFire native cache.xml or defined use GemFire 8's new
+ * usually the case for Regions that have been defined in GemFire's native cache.xml or defined use GemFire 8's new
  * cluster-based configuration service.
  *
  * @author John Blum
