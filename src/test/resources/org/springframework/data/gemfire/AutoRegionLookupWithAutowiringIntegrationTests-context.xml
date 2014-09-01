@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<bean class="org.springframework.data.gemfire.AutoRegionLookupWithAutowiringIntegrationTests$TestComponent"
+		  depends-on="gemfireCache"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">AutoRegionLookupWithAutowiringIntegrationTests</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties" cache-xml-location="/autoregionlookup-cache.xml"/>
+
+	<gfe:auto-region-lookup/>
+
+	<!--
+	 TestComponent bean creation fails since the test class has a dependency on the TestComponent class, which has
+	 dependencies on all the GemFire native Regions defined in cache.xml, which have not been defined yet since
+	 the test class's dependency on TestComponent forces an early creation of TestComponent before the GemFire Cache
+	 as been instantiated, configured and initialized.  Therefore, it does not matter what order the bean definitions
+	 are specified in the Spring context configuration meta-data, the developer must use the 'depends-on' attribute
+	 to force the correct initialization order.
+	-->
+	<!--
+	<bean class="org.springframework.data.gemfire.AutoRegionLookupWithAutowiringIntegrationTests$TestComponent"/>
+	-->
+
+</beans>
