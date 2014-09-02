@@ -28,8 +28,10 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply from: "$rootDir/maven.gradle"
 apply plugin: 'docbook-reference'
-apply plugin: 'bundlor'
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
+//apply plugin: 'bundlor'
+
+//project.bundlor.bundleSymbolicName = "${bundleSymbolicName}"
 
 if (project.hasProperty('platformVersion')) {
     apply plugin: 'spring-io'
@@ -315,4 +317,3 @@ task extractSharedResources(type: Copy) {
 
 assemble.dependsOn = ['jar', 'sourcesJar']
 defaultTasks 'build'
-
