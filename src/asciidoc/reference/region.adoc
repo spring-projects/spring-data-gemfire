@@ -9,7 +9,7 @@ GemFire implements the following types of regions:
 * *Partioned* - Data is partitioned into buckets among cache members that define the region. This provides high read and write performance and is suitable for very large data sets that are too big for a single node.
 * *Local* - Data only exists on the local node.
 * *Client* - Technically a client region is a local region that acts as a proxy to a replicated or partitioned region hosted on cache servers. It may hold data created or fetched locally. Alternately, it can be empty. Local updates are synchronized to the cache server. Also, a client region may subscribe to events in order to stay synchronized with changes originating from remote processes that access the same region.
-  
+
 For more information about the various region types and their capabilities as well as configuration options, please refer to the GemFire Developer's http://pubs.vmware.com/vfabricNoSuite/index.jsp?topic=/com.vmware.vfabric.gemfire.7.0/developing/book_intro.html[Guide] and community http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire[site].
 
 [[bootstrap:region:lookup]]
@@ -45,19 +45,19 @@ The `lookup-region` provides a simple way of retrieving existing, pre-configured
 [[bootstrap:region:overview]]
 == Configuring Regions
 
-Spring Data GemFire provides comprehensive support for configuring any type of GemFire Region via the following elements: 
+Spring Data GemFire provides comprehensive support for configuring any type of GemFire Region via the following elements:
 
 * Local Region `<local-region>`
 * Replicated Region `<replicated-region>`
 * Partitioned Region `<partitioned-region>`
-* Client Region `<client-region>`			
+* Client Region `<client-region>`
 
 For a comprehensive description of http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/developing/region_options/region_types.html[Region types] please consult the GemFire product documentation.
 
 [[bootstrap:region:common:attributes]]
 === Common Region Attributes
 
-The following table(s) list attributes available for various region types: 
+The following table(s) list attributes available for various region types:
 
 [cols="1,2,2", options="header"]
 .Common Region Attributes
@@ -65,7 +65,7 @@ The following table(s) list attributes available for various region types:
 | Name
 | Values
 | Description
-							  
+
 | cache-ref
 | *GemFire Cache bean name*
 | The name of the bean defining the GemFire Cache (by default 'gemfireCache').
@@ -79,7 +79,7 @@ The following table(s) list attributes available for various region types:
 | Determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to distributed Regions.
 
 | data-policy
-| *See GemFire's http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DataPolicy.html[Data Policy]*							  
+| *See GemFire's http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DataPolicy.html[Data Policy]*
 | The Region's Data Policy. Note, not all Data Policies are supported for every Region type.
 
 | destroy
@@ -146,7 +146,7 @@ The following table(s) list attributes available for various region types:
 [[bootstrap:region:common:cache-listener]]
 === Cache Listeners
 
-Cache Listeners are registered with a region to handle region events such as entries being created, updated, destroyed, etc. A Cache Listener can be any bean that implements the http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheListener.html[`CacheListener`] interface. A region may have multiple listeners, declared using the `cache-listener` element enclosed in a `*-region` element. In the example below, there are two `CacheListener`s declared. The first references a top-level named Spring bean; the second is an anonymous inner bean definition. 
+Cache Listeners are registered with a region to handle region events such as entries being created, updated, destroyed, etc. A Cache Listener can be any bean that implements the http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheListener.html[`CacheListener`] interface. A region may have multiple listeners, declared using the `cache-listener` element enclosed in a `*-region` element. In the example below, there are two `CacheListener`s declared. The first references a top-level named Spring bean; the second is an anonymous inner bean definition.
 
 [source,xml]
 ----
@@ -162,7 +162,7 @@ Cache Listeners are registered with a region to handle region events such as ent
 </gfe:replicated-region>
 ----
 
-The following example uses an alternate form of the `cache-listener` element with a `ref` attribute. This allows for more concise configuration for a single cache listener. Note that the namespace only allows a single `cache-listener` element so either the style above or below must be used. 
+The following example uses an alternate form of the `cache-listener` element with a `ref` attribute. This allows for more concise configuration for a single cache listener. Note that the namespace only allows a single `cache-listener` element so either the style above or below must be used.
 
 WARNING: Using `ref` and a nested declaration in a `cache-listener`, or similar element, is illegal. The two options are mutually exclusive and using both on the same element will result in an exception.
 
@@ -179,7 +179,7 @@ WARNING: Using `ref` and a nested declaration in a `cache-listener`, or similar 
 ----
 
 .Bean Reference Conventions
-[NOTE] 
+[NOTE]
 ====
 The `cache-listener` element is an example of a common pattern used in the namespace anywhere GemFire provides a callback interface to be implemented in order to invoke custom code in response to cache or region events. Using Spring's IoC container, the implementation is a standard Spring bean. In order to simplify the configuration, the schema allows a single occurrence of the `cache-listener` element, but it may contain nested bean references and inner bean definitions in any combination if multiple instances are permitted. The convention is to use the singular form (i.e., `cache-listener` vs `cache-listeners`) reflecting that the most common scenario will in fact be a single instance. We have already seen examples of this pattern in the <<null,advanced cache>> configuration example.
 ====
@@ -192,7 +192,7 @@ Similar to `cache-listener`, the namespace provides `cache-loader` and `cache-wr
 [[bootstrap:region:common:subregions]]
 === Subregions
 
-In Release 1.2.0, Spring Data GemFire added support for subregions, allowing regions to be arranged in a hierarchical relationship. For example, GemFire allows for a */Customer/Address* region and a different */Employee/Address* region. Additionally, a subregion may have it's own subregions and its own configuration. A subregion does not inherit attributes from the parent region. Regions types may be mixed and matched subject to GemFire constraints. A subregion is naturally declared as a child element of a region. The subregion's name attribute is the simple name. The above example might be configured as: [source,xml]
+In Release 1.2.0, Spring Data GemFire added support for subregions, allowing regions to be arranged in a hierarchical relationship. For example, GemFire allows for a */Customer/Address* region and a different */Employee/Address* region. Additionally, a subregion may have it's own subregions and its own configuration. A subregion does not inherit attributes from the parent region. Regions types may be mixed and matched subject to GemFire constraints. A subregion is naturally declared as a child element of a region. The subregion's name attribute is the simple name. The above example might be configured as: [source,nonxml]
 ----
 <beans>
 
@@ -375,7 +375,7 @@ For a detailed description of eviction policies, see the GemFire documentation (
 == Data Expiration
 
 GemFire allows you to control how long entries exist in the cache. Eviction is driven by elapsed time, as opposed to eviction which is driven by memory usage. Once an entry expires it may no longer be accessed from the cache. GemFire supports the following expiration types:
-      
+
 * *Time to live (TTL)* - The amount of time, in seconds, the object may remain in the cache after the last creation or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when the region is created and when an entry has its counter reset.
 * *Idle timeout* - The amount of time, in seconds, the object may remain in the cache after the last access. The idle timeout counter for an object is reset any time its TTL counter is reset. In addition, an entry’s idle timeout counter is reset any time the entry is accessed through a get operation or a netSearch . The idle timeout counter for a region is reset whenever the idle timeout is reset for one of its entries.
 

@@ -10,7 +10,7 @@ GemFire 7.0 introduces new APIs for WAN configuration. While the original APIs p
 [source,xml]
 ----
 <gfe:partitioned-region id="region-inner-gateway-sender" >
-    <gfe:gateway-sender 
+    <gfe:gateway-sender
         remote-distributed-system-id="1">
             <gfe:event-filter>
                 <bean class="org.springframework.data.gemfire.example.SomeEventFilter"/>
@@ -21,15 +21,15 @@ GemFire 7.0 introduces new APIs for WAN configuration. While the original APIs p
     </gfe:gateway-sender>
     <gfe:gateway-sender-ref bean="gateway-sender"/>
 </gfe:partitioned-region>
-    
-<gfe:async-event-queue id="async-event-queue" batch-size="10" persistent="true" disk-store-ref="diskstore" 
+
+<gfe:async-event-queue id="async-event-queue" batch-size="10" persistent="true" disk-store-ref="diskstore"
          maximum-queue-memory="50">
     <gfe:async-event-listener>
         <bean class="org.springframework.data.gemfire.example.SomeAsyncEventListener"/>
     </gfe:async-event-listener>
 </gfe:async-event-queue>
-        
-    
+
+
 <gfe:gateway-sender id="gateway-sender" remote-distributed-system-id="2">
     <gfe:event-filter>
          <ref bean="event-filter"/>
@@ -40,7 +40,7 @@ GemFire 7.0 introduces new APIs for WAN configuration. While the original APIs p
          <bean class="org.springframework.data.gemfire.example.SomeTransportFilter"/>
      </gfe:transport-filter>
 </gfe:gateway-sender>
-   
+
 <bean id="event-filter" class="org.springframework.data.gemfire.example.AnotherEventFilter"/>
 <bean id="transport-filter" class="org.springframework.data.gemfire.example.AnotherTransportFilter"/>
 ----
@@ -49,7 +49,7 @@ On the other end of a `GatewaySender` is a corresponding `GatewayReceiver` to re
 
 [source,xml]
 ----
-<gfe:gateway-receiver id="gateway-receiver" 
+<gfe:gateway-receiver id="gateway-receiver"
     start-port="12345" end-port="23456" bind-address="192.168.0.1">
         <gfe:transport-filter>
             <bean class="org.springframework.data.gemfire.example.SomeTransportFilter"/>
@@ -72,7 +72,7 @@ Please refer to the GemFire product document for a detailed explanation of all t
          <gfe:gateway-listener>
              <bean class="com.company.example.MyGatewayListener"/>
          </gfe:gateway-listener>
-         <gfe:gateway-queue maximum-queue-memory="5" batch-size="3" 
+         <gfe:gateway-queue maximum-queue-memory="5" batch-size="3"
                 batch-time-interval="10" />
      </gfe:gateway>
 

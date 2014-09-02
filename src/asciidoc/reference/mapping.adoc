@@ -40,8 +40,8 @@ public class Admin extends User {
 
 @Region("/Users/Guest")
 public class Guest extends User {
-  ...
-}		
+  …
+}
 ----
 
 Be sure to use the full-path of the GemFire Region, as defined in Spring Data GemFire XML namespace configuration meta-data, as specified in the `id` or `name` attributes of the `<*-region>` bean definition.
@@ -60,7 +60,7 @@ public interface PersonRepository extends GemfireRepository<Person, String> {
 @Region("Customers")
 public interface CustomerRepository extends GemfireRepository<Person, String> {
 ...
-}		
+}
 ----
 
 [[mapping.pdx-serializer]]
@@ -78,7 +78,7 @@ public class Person {
     // …
   }
 
-}  
+}
 ----
 ====
 

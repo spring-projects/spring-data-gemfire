@@ -1,6 +1,5 @@
 [[apis]]
 = Working with the GemFire APIs
-:referenceDir: 
 
 Once the GemFire Cache and Regions have been configured they can be injected and used inside application objects. This chapter describes the integration with Spring's Transaction Management functionality and `DaoException` hierarchy. It also covers support for dependency injection of GemFire managed objects.
 
@@ -82,10 +81,10 @@ NOTE: The example above can be simplified even more by eliminating the `cache-re
 
 Currently, GemFire supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee this isolation, developers should avoid making *in-place* changes that manually modify values present in the Cache. To prevent this from happening, the transaction manager configures the Cache to use *copy on read* semantics, meaning a clone of the actual value is created, each time a read is performed. This behavior can be disabled if needed through the `copyOnRead` property. For more information on the semantics of the underlying GemFire transaction manager, see the GemFire https://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/CacheTransactionManager.html[documentation].
 
-:leveloffset: 2
-include::{referenceDir}/cq-container.adoc[]
+:leveloffset: +1
+include::cq-container.adoc[]
+:leveloffset: -1
 
-:leveloffset: 1
 [[apis:declarable]]
 == Wiring `Declarable` components
 
@@ -152,7 +151,7 @@ public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <bean id="dataSource" ... />
@@ -182,14 +181,14 @@ In the scenario above, as no parameter was specified, a bean with the id/name `c
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <bean id="dataSource" ... />
 
-     <!-- template bean definition -->   
+     <!-- template bean definition -->
      <bean id="template-bean" abstract="true" p:dataSource-ref="dataSource"/>
-     
+
 </beans>
 ----
 
@@ -205,7 +204,7 @@ For example, the hypothetical `DBLoader` declaration above can be injected with 
 [source,java]
 ----
 public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
-  // use annotations to 'mark' the needed dependencies 
+  // use annotations to 'mark' the needed dependencies
   @javax.inject.Inject
   private DataSource dataSource;
 
@@ -228,14 +227,14 @@ public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context.xsd">
-            
-     <!-- enable annotation processing -->   
+
+     <!-- enable annotation processing -->
      <context:annotation-config/>
-     
+
 </beans>
 ----
 

@@ -1,7 +1,7 @@
 [[new-features]]
 = New Features
 
-NOTE: As of the 1.2.0 release, this project, formerly known as Spring GemFire, has been renamed to Spring Data GemFire 
+NOTE: As of the 1.2.0 release, this project, formerly known as Spring GemFire, has been renamed to Spring Data GemFire
 to reflect that it is now a component of the http://www.springsource.org/spring-data[Spring Data] project.
 
 [[new-in-1-2-0]]
@@ -81,3 +81,4 @@ for more details.
 * Enables Spring Data GemFire to be fully built and ran on JDK 7 and JDK 8 (Note, however, GemFire has not yet been fully tested and supported on JDK 8;
 See http://pubs.vmware.com/vfabric53/topic/com.vmware.vfabric.gemfire.7.0/getting_started/system_requirements/supported_configurations.html[GemFire User Guide]
 for additional details.
+
