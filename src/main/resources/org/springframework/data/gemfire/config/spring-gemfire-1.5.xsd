@@ -117,32 +117,21 @@ Configures a data source to be bound to a JNDI context for use with Gemfire tran
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
-		<xsd:attribute name="copy-on-read" type="xsd:string"
-					   use="optional" default="false">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Controls whether entry value retrieval methods return direct references to the entry value objects in the cache (false)
-or copies of the objects (true).
-                ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
 		<xsd:attribute name="id" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The name of the cache definition (by default "gemfireCache").]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="cache-xml-location" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="cache-xml-location" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation source="org.springframework.core.io.Resource"><![CDATA[
-The location of the GemFire cache xml file, as a Spring resource location: a URL, a "classpath:" pseudo URL,
-or a relative file path.
+The location of the GemFire cache.xml file as a Spring Resource location: a URL, a "classpath:" pseudo URL,
+or a relative file system path.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="properties-ref" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="properties-ref" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation source="java.util.Properties"><![CDATA[
 The bean name of a Java Properties object that will be used for property substitution. For loading properties
@@ -150,8 +139,16 @@ consider using a dedicated utility such as the <util:*/> namespace and its 'prop
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="use-bean-factory-locator" type="xsd:string"
-					   use="optional" default="true">
+		<xsd:attribute name="lazy-init" default="true">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Determines if the cache should be initialized automatically. Normally the cache will be lazily initialized,
+i.e., during creation of another bean references it. For cases in which there are no declared dependencies on the cache,
+set this attribute to false.
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="use-bean-factory-locator" type="xsd:string" use="optional" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether a bean factory locator is enabled (default) for this cache definition or not. The locator stores
@@ -160,60 +157,20 @@ when the same cache is used in multiple application context/bean factories insid
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="pdx-serializer-ref" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="close" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Sets the PDX serializer for the cache. If this serializer is set, it will be consulted to see if it can serialize any
-domain classes which are added to the cache in portable data exchange (PDX) format.
-				]]></xsd:documentation>
+Determines if the cache should be closed when the application context is closed. This value is true by default
+but should be set to false if deploying multiple applications in a jvm that share the same cache instance.
+            ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="pdx-disk-store" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="copy-on-read" type="xsd:string" use="optional" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Sets the name of the disk store to use for PDX meta data. When serializing objects in the PDX format,
-the type definitions are persisted to disk. This setting controls which disk store is used for that persistence.
-If not set, the metadata will go in the default disk store.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="pdx-persistent" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Control whether the type metadata for PDX objects is persisted to disk.
-Set to true if you are using persistent regions, WAN gateways or GemFire's JSON support.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="pdx-read-serialized" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Sets the object preference to PdxInstance type. When a cached object that was serialized as a PDX is read from the cache
-a PdxInstance will be returned instead of the actual domain class. The PdxInstance is an interface that provides run time
-access to the fields of a PDX without deserializing the entire PDX. The PdxInstance implementation is a light weight wrapper
-that simply refers to the raw bytes of the PDX that are kept in the cache. Using this method applications can choose to
-access PdxInstance instead of Java object.
-
-Note that a PdxInstance is only returned if a serialized PDX is found in the cache. If the cache contains a deserialized PDX,
-then a domain class instance is returned instead of a PdxInstance.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="pdx-ignore-unread-fields" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Controls whether pdx ignores fields that were unread during deserialization. The default is to preserve unread fields be
-including their data during serialization. But if you configure the cache to ignore unread fields then their data will be
-lost during serialization.
-
-You should only set this attribute to true if you know this member will only be reading cache data. In this use case you
-do not need to pay the cost of preserving the unread fields since you will never be reserializing pdx data.
-				]]></xsd:documentation>
+Controls whether entry value retrieval methods return direct references to the entry value objects in the cache (false)
+or copies of the objects (true).
+                ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="critical-heap-percentage">
@@ -237,21 +194,55 @@ JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more informa
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="close" default="true">
+		<xsd:attribute name="pdx-serializer-ref" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Determines if the cache should be closed when the application context is closed. This value is
-true by default but should be set to false if deploying multiple applications in a jvm that share the
-same cache instance.
-            ]]></xsd:documentation>
+Sets the PDX serializer for the cache. If this serializer is set, it will be consulted to see if it can serialize any
+domain classes which are added to the cache in portable data exchange (PDX) format.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="lazy-init" default="true">
+		<xsd:attribute name="pdx-disk-store" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Determines if the cache should be initialized automatically. Normally the cache will be lazily initialized, i.e., during creation of another bean references it.
-For cases in which there are no declared dependencies on the cache, set this attribute to false.
-            ]]></xsd:documentation>
+Sets the name of the disk store to use for PDX meta data. When serializing objects in the PDX format,
+the type definitions are persisted to disk. This setting controls which disk store is used for that persistence.
+If not set, the metadata will go in the default disk store.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="pdx-persistent" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Control whether the type metadata for PDX objects is persisted to disk.
+Set to true if you are using persistent Regions, WAN Gateways or GemFire's JSON support.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="pdx-read-serialized" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the object preference to PdxInstance type. When a cached object that was serialized as a PDX is read from the cache
+a PdxInstance will be returned instead of the actual domain class. The PdxInstance is an interface that provides run time
+access to the fields of a PDX without deserializing the entire PDX. The PdxInstance implementation is a light weight wrapper
+that simply refers to the raw bytes of the PDX that are kept in the cache. Using this method applications can choose to
+access PdxInstance instead of Java object.
+
+Note that a PdxInstance is only returned if a serialized PDX is found in the cache. If the cache contains a deserialized PDX,
+then a domain class instance is returned instead of a PdxInstance.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="pdx-ignore-unread-fields" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Controls whether pdx ignores fields that were unread during deserialization. The default is to preserve unread fields be
+including their data during serialization. But if you configure the cache to ignore unread fields then their data will be
+lost during serialization.
+
+You should only set this attribute to true if you know this member will only be reading cache data. In this use case you
+do not need to pay the cost of preserving the unread fields since you will never be reserializing pdx data.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>

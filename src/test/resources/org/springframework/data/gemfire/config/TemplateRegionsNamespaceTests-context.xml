@@ -19,7 +19,7 @@
 	<gfe:gateway-sender id="TestGatewaySender" remote-distributed-system-id="123" manual-start="true" persistent="false"
 						parallel="true" dispatcher-threads="8"/>
 
-	<!-- Generic Region -->
+	<!-- Region Templates -->
 
 	<gfe:region-template id="BaseRegion" cloning-enabled="true" concurrency-checks-enabled="false"
 						 disk-synchronous="true" ignore-jta="true" initial-capacity="1000"
@@ -34,7 +34,8 @@
 	</gfe:region-template>
 
 	<gfe:region-template id="ExtendedRegionWithOverrides" cloning-enabled="false" concurrency-checks-enabled="true"
-						 disk-synchronous="false" ignore-jta="false" key-constraint="java.lang.String" template="BaseRegion">
+						 disk-synchronous="false" ignore-jta="false" key-constraint="java.lang.String" persistent="false"
+						 template="BaseRegion">
 		<gfe:cache-listener>
 			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestCacheListener" p:name="Z"/>
 		</gfe:cache-listener>
@@ -45,7 +46,7 @@
 	<!-- REPLICATE Region -->
 
 	<gfe:replicated-region-template id="BaseReplicateRegion" concurrency-level="2" enable-async-conflation="true"
-									enable-subscription-conflation="true" template="BaseRegion">
+									enable-subscription-conflation="true" scope="global" template="BaseRegion">
 		<gfe:subscription type="CACHE_CONTENT"/>
 		<gfe:eviction type="ENTRY_COUNT" threshold="1000" action="OVERFLOW_TO_DISK"/>
 	</gfe:replicated-region-template>
@@ -53,19 +54,19 @@
 	<gfe:replicated-region id="SimpleReplicateRegion" persistent="true" concurrency-level="8" is-lock-grantor="true" scope="global"
 						   key-constraint="java.lang.Integer">
 		<gfe:cache-listener>
-			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestCacheListener" p:name="A"/>
+			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestCacheListener" p:name="Simple"/>
 		</gfe:cache-listener>
 	</gfe:replicated-region>
 
 	<gfe:replicated-region id="InheritedReplicateRegion" template="BaseReplicateRegion"/>
 
-	<gfe:replicated-region id="ComplexReplicateRegion" persistent="true" key-constraint="java.lang.Integer" cloning-enabled="false"
-						   template="BaseReplicateRegion">
+	<gfe:replicated-region id="ComplexReplicateRegion" persistent="true" key-constraint="java.lang.Integer" ignore-jta="false"
+						   enable-async-conflation="false" cloning-enabled="false" template="BaseReplicateRegion">
 		<gfe:cache-listener>
-			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestCacheListener" p:name="AAA"/>
+			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestCacheListener" p:name="ComplexListener"/>
 		</gfe:cache-listener>
 		<gfe:cache-loader>
-			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestCacheLoader" p:name="xyz"/>
+			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestCacheLoader" p:name="ComplexLoader"/>
 		</gfe:cache-loader>
 		<gfe:subscription type="ALL"/>
 		<gfe:eviction type="ENTRY_COUNT" threshold="1024" action="OVERFLOW_TO_DISK"/>
@@ -74,7 +75,8 @@
 	<!-- PARTITION Region -->
 
 	<gfe:partitioned-region-template id="BasePartitionRegion" copies="2" local-max-memory="1000" total-max-memory="4000"
-									 total-buckets="77" recovery-delay="1000" startup-recovery-delay="5000">
+									 total-buckets="77" recovery-delay="1000" startup-recovery-delay="5000"
+									 template="ExtendedRegionWithOverrides">
 		<gfe:partition-resolver>
 			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestPartitionResolver" p:name="A"/>
 		</gfe:partition-resolver>
@@ -84,6 +86,8 @@
 		<gfe:subscription type="ALL"/>
 		<gfe:eviction type="MEMORY_SIZE" threshold="4000" action="OVERFLOW_TO_DISK"/>
 	</gfe:partitioned-region-template>
+
+	<!-- LOCAL Region -->
 
 	<gfe:local-region-template id="BaseLocalRegion" concurrency-level="4">
 		<gfe:eviction type="ENTRY_COUNT" threshold="8192" action="LOCAL_DESTROY"/>
