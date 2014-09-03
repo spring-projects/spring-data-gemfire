@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:util="http://www.springframework.org/schema/util"
-	default-lazy-init="true"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+	   " default-lazy-init="true">
+
+	<gfe:pool id="gemfire-pool" subscription-enabled="false">
+		<gfe:locator host="localhost" port="40403"/>
+	</gfe:pool>
 
 	<gfe:client-cache />
 
@@ -24,13 +27,7 @@
 		<gfe:eviction threshold="5"/>
 	</gfe:client-region>
 
-	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
-
-	<gfe:pool id="gemfire-pool" subscription-enabled="false">
-		<gfe:locator host="localhost" port="40403"/>
-	</gfe:pool>
-
-	<gfe:client-region id="persistent" name="PersistentRegion" pool-name="gemfire-pool" persistent="true" disk-store-ref="diskStore" disk-synchronous="true"/>
+	<gfe:client-region id="persistent" name="PersistentRegion" pool-name="gemfire-pool" persistent="true" disk-synchronous="true" disk-store-ref="diskStore"/>
 
 	<gfe:disk-store id="diskStore" queue-size="50" auto-compact="true" max-oplog-size="10" time-interval="9999">
 		<gfe:disk-dir location="./" max-size="1"/>
@@ -52,5 +49,20 @@
 			<bean class="org.springframework.data.gemfire.config.ClientRegionNamespaceTest$TestCacheWriter"/>
 		</gfe:cache-writer>
 	</gfe:client-region>
+
+	<gfe:client-region id="client-with-attributes"
+					   cloning-enabled="false"
+					   concurrency-checks-enabled="true"
+					   concurrency-level="8"
+					   initial-capacity="64"
+					   key-constraint="java.lang.Long"
+					   load-factor="0.85"
+					   persistent="false"
+					   pool-name="gemfire-pool"
+					   shortcut="CACHING_PROXY"
+					   value-constraint="java.lang.String"/>
+
+	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
+	<bean id="testCompressor" class="org.springframework.data.gemfire.config.ClientRegionNamespaceTest$TestCompressor" p:name="STD"/>
 
 </beans>

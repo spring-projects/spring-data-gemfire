@@ -60,6 +60,7 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 @ContextConfiguration(locations="/org/springframework/data/gemfire/config/client-ns.xml",
 	initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unused")
 public class ClientRegionNamespaceTest {
 
 	@Autowired
@@ -152,7 +153,29 @@ public class ClientRegionNamespaceTest {
 		assertTrue(TestUtils.readField("cacheWriter", factory) instanceof TestCacheWriter);
 	}
 
-	@SuppressWarnings("unused")
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testClientRegionWithAttributes() {
+		assertTrue(context.containsBean("client-with-attributes"));
+
+		Region<Long, String> clientRegion = context.getBean("client-with-attributes", Region.class);
+
+		assertNotNull("The 'client-with-attributes' Client Region was not properly configured and initialized!", clientRegion);
+		assertEquals("client-with-attributes", clientRegion.getName());
+		assertEquals(Region.SEPARATOR + "client-with-attributes", clientRegion.getFullPath());
+		assertNotNull(clientRegion.getAttributes());
+		assertFalse(clientRegion.getAttributes().getCloningEnabled());
+		assertTrue(clientRegion.getAttributes().getConcurrencyChecksEnabled());
+		assertEquals(8, clientRegion.getAttributes().getConcurrencyLevel());
+		assertEquals(DataPolicy.NORMAL, clientRegion.getAttributes().getDataPolicy());
+		assertFalse(clientRegion.getAttributes().getDataPolicy().withPersistence());
+		assertEquals(64, clientRegion.getAttributes().getInitialCapacity());
+		assertEquals(Long.class, clientRegion.getAttributes().getKeyConstraint());
+		assertEquals("0.85", String.valueOf(clientRegion.getAttributes().getLoadFactor()));
+		assertEquals("gemfire-pool", clientRegion.getAttributes().getPoolName());
+		assertEquals(String.class, clientRegion.getAttributes().getValueConstraint());
+	}
+
 	public static final class TestCacheLoader implements CacheLoader<Object, Object> {
 
 		@Override
