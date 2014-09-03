@@ -81,27 +81,27 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			boolean subRegion);
 
 	protected void doParseCommonRegionConfiguration(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder, BeanDefinitionBuilder regionAttributesBuilder, boolean subRegion) {
+			BeanDefinitionBuilder regionBuilder, BeanDefinitionBuilder regionAttributesBuilder, boolean subRegion) {
 
-		mergeTemplateRegionAttributes(element, parserContext, builder, regionAttributesBuilder);
+		mergeTemplateRegionAttributes(element, parserContext, regionBuilder, regionAttributesBuilder);
 
 		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
 		if (!subRegion) {
-			builder.addPropertyReference("cache", resolvedCacheRef);
-			ParsingUtils.setPropertyValue(element, builder, "close");
-			ParsingUtils.setPropertyValue(element, builder, "destroy");
+			regionBuilder.addPropertyReference("cache", resolvedCacheRef);
+			ParsingUtils.setPropertyValue(element, regionBuilder, "close");
+			ParsingUtils.setPropertyValue(element, regionBuilder, "destroy");
 		}
 
-		ParsingUtils.setPropertyValue(element, builder, "name");
-		ParsingUtils.setPropertyValue(element, builder, "ignore-if-exists", "lookupEnabled");
-		ParsingUtils.setPropertyValue(element, builder, "data-policy");
-		ParsingUtils.setPropertyValue(element, builder, "persistent");
-		ParsingUtils.setPropertyValue(element, builder, "shortcut");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "name");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "ignore-if-exists", "lookupEnabled");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "data-policy");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "persistent");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "shortcut");
 
 		if (StringUtils.hasText(element.getAttribute("disk-store-ref"))) {
-			ParsingUtils.setPropertyValue(element, builder, "disk-store-ref", "diskStoreName");
-			builder.addDependsOn(element.getAttribute("disk-store-ref"));
+			ParsingUtils.setPropertyValue(element, regionBuilder, "disk-store-ref", "diskStoreName");
+			regionBuilder.addDependsOn(element.getAttribute("disk-store-ref"));
 		}
 
 		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
@@ -121,7 +121,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			}
 		}
 
-		ParsingUtils.setPropertyValue(element, builder, "enable-gateway");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "enable-gateway");
 
 		if (StringUtils.hasText(hubId)) {
 			if (GemfireUtils.isGemfireVersion7OrAbove()) {
@@ -133,27 +133,27 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			}
 		}
 
-		ParsingUtils.setPropertyValue(element, builder, "hub-id");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "hub-id");
 
-		parseCollectionOfCustomSubElements(element, parserContext, builder,
+		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder,
 			"com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue", "async-event-queue", "asyncEventQueues");
-		parseCollectionOfCustomSubElements(element, parserContext, builder,
+		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder,
 			"com.gemstone.gemfire.cache.wan.GatewaySender", "gateway-sender","gatewaySenders");
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
 		for (Element subElement : subElements) {
 			if (subElement.getLocalName().equals("cache-listener")) {
-				builder.addPropertyValue("cacheListeners",
-						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
+				regionBuilder.addPropertyValue("cacheListeners",
+					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, regionBuilder));
 			}
 			else if (subElement.getLocalName().equals("cache-loader")) {
-				builder.addPropertyValue("cacheLoader",
-						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
+				regionBuilder.addPropertyValue("cacheLoader",
+						ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, regionBuilder));
 			}
 			else if (subElement.getLocalName().equals("cache-writer")) {
-				builder.addPropertyValue("cacheWriter",
-						ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder));
+				regionBuilder.addPropertyValue("cacheWriter",
+						ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, regionBuilder));
 			}
 		}
 
@@ -164,26 +164,25 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 	void mergeTemplateRegionAttributes(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder regionBuilder, BeanDefinitionBuilder regionAttributesBuilder) {
-		String regionTemplate = getParentName(element);
 
-		if (StringUtils.hasText(regionTemplate)) {
-			if (parserContext.getRegistry().containsBeanDefinition(regionTemplate)) {
-				BeanDefinition regionTemplateDefinition = parserContext.getRegistry()
-					.getBeanDefinition(regionTemplate);
+		String regionTemplateName = getParentName(element);
 
-				BeanDefinition regionTemplateAttributesDefinition = getRegionAttributesBeanDefinition(
-					regionTemplateDefinition);
+		if (StringUtils.hasText(regionTemplateName)) {
+			if (parserContext.getRegistry().containsBeanDefinition(regionTemplateName)) {
+				BeanDefinition templateRegion = parserContext.getRegistry().getBeanDefinition(regionTemplateName);
 
-				if (regionTemplateAttributesDefinition != null) {
+				BeanDefinition templateRegionAttributes = getRegionAttributesBeanDefinition(templateRegion);
+
+				if (templateRegionAttributes != null) {
 					// NOTE we only need to merge the parent RegionAttributes with this since the parent will have
 					// already merged it's parent's RegionAttributes and so on...
-					regionAttributesBuilder.getRawBeanDefinition().overrideFrom(regionTemplateAttributesDefinition);
+					regionAttributesBuilder.getRawBeanDefinition().overrideFrom(templateRegionAttributes);
 				}
 			}
 			else {
 				parserContext.getReaderContext().error(String.format(
-					"The Region template [%1$s] must be defined in the Spring context configuration meta-data 'before' the Region [%2$s] using the template!",
-						regionTemplate, resolveId(element, regionBuilder.getRawBeanDefinition(), parserContext)), element);
+					"The Region template [%1$s] must be 'defined before' the Region [%2$s] referring to the template!",
+						regionTemplateName, resolveId(element, regionBuilder.getRawBeanDefinition(), parserContext)), element);
 			}
 		}
 	}
@@ -191,14 +190,14 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	BeanDefinition getRegionAttributesBeanDefinition(final BeanDefinition region) {
 		Assert.notNull(region, "The 'Region' BeanDefinition must not be null!");
 
-		Object regionAttributesDefinition = null;
+		Object regionAttributes = null;
 
 		if (region.getPropertyValues().contains("attributes")) {
-			PropertyValue regionAttributes = region.getPropertyValues().getPropertyValue("attributes");
-			regionAttributesDefinition = regionAttributes.getValue();
+			PropertyValue attributesProperty = region.getPropertyValues().getPropertyValue("attributes");
+			regionAttributes = attributesProperty.getValue();
 		}
 
-		return (regionAttributesDefinition instanceof BeanDefinition ? (BeanDefinition) regionAttributesDefinition : null);
+		return (regionAttributes instanceof BeanDefinition ? (BeanDefinition) regionAttributes : null);
 	}
 
 	private void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,
