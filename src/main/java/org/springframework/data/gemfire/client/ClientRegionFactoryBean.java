@@ -105,6 +105,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		// map region attributes onto the client region factory
 		if (attributes != null) {
 			factory.setCloningEnabled(attributes.getCloningEnabled());
+			factory.setConcurrencyChecksEnabled(attributes.getConcurrencyChecksEnabled());
 			factory.setConcurrencyLevel(attributes.getConcurrencyLevel());
 			factory.setCustomEntryIdleTimeout(attributes.getCustomEntryIdleTimeout());
 			factory.setCustomEntryTimeToLive(attributes.getCustomEntryTimeToLive());
