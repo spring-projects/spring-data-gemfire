@@ -29,7 +29,7 @@ apply plugin: 'idea'
 apply from: "$rootDir/maven.gradle"
 apply plugin: 'docbook-reference'
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
-//apply plugin: 'bundlor'
+apply plugin: 'bundlor'
 
 //project.bundlor.bundleSymbolicName = "${bundleSymbolicName}"
 
@@ -137,6 +137,9 @@ javadoc {
 }
 
 jar {
+
+    dependsOn = [ 'bundlor' ]
+
     manifest.attributes['Implementation-Title'] = 'spring-data-gemfire'
     manifest.attributes['Implementation-Version'] = project.version
 
@@ -146,6 +149,10 @@ jar {
         into "META-INF"
         expand(copyright: new Date().format('yyyy'), version: project.version)
     }
+}
+
+bundlor {
+    manifestTemplate = file("template.mf").text
 }
 
 // Reference documentation
