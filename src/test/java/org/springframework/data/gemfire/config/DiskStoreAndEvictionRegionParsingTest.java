@@ -17,8 +17,9 @@
 package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -42,6 +43,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CustomExpiry;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.EvictionAction;
@@ -58,10 +60,11 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 /**
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="diskstore-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="diskstore-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings({"rawtypes", "unused"})
 public class DiskStoreAndEvictionRegionParsingTest {
 
 	@Autowired
@@ -117,24 +120,33 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	@Test
-	public void testReplicaDataOptions() throws Exception {
+	public void testReplicatedDataRegionAttributes() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
-		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
-		assertTrue(fb instanceof ReplicatedRegionFactoryBean);
-		assertEquals(Scope.DISTRIBUTED_ACK, TestUtils.readField("scope", fb));
-		@SuppressWarnings("unused")
-		Region region = context.getBean("replicated-data", Region.class);
-		// eviction tests
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
-		assertEquals(EvictionAction.OVERFLOW_TO_DISK, evicAttr.getAction());
-		assertEquals(EvictionAlgorithm.LRU_ENTRY, evicAttr.getAlgorithm());
-		assertEquals(50, evicAttr.getMaximum());
-		assertNull(evicAttr.getObjectSizer());
+
+		RegionFactoryBean replicatedDataRegionFactoryBean = context.getBean("&replicated-data", RegionFactoryBean.class);
+
+		assertTrue(replicatedDataRegionFactoryBean instanceof ReplicatedRegionFactoryBean);
+		assertEquals(DataPolicy.REPLICATE, replicatedDataRegionFactoryBean.getDataPolicy());
+		assertFalse(replicatedDataRegionFactoryBean.getDataPolicy().withPersistence());
+		assertEquals("diskStore1", TestUtils.readField("diskStoreName", replicatedDataRegionFactoryBean));
+		assertNull(TestUtils.readField("scope", replicatedDataRegionFactoryBean));
+
+		Region replicatedDataRegion = context.getBean("replicated-data", Region.class);
+
+		RegionAttributes replicatedDataRegionAttributes = TestUtils.readField("attributes", replicatedDataRegionFactoryBean);
+
+		assertNotNull(replicatedDataRegionAttributes);
+		assertEquals(Scope.DISTRIBUTED_NO_ACK, replicatedDataRegionAttributes.getScope());
+
+		EvictionAttributes replicatedDataEvictionAttributes = replicatedDataRegionAttributes.getEvictionAttributes();
+
+		assertNotNull(replicatedDataEvictionAttributes);
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, replicatedDataEvictionAttributes.getAction());
+		assertEquals(EvictionAlgorithm.LRU_ENTRY, replicatedDataEvictionAttributes.getAlgorithm());
+		assertEquals(50, replicatedDataEvictionAttributes.getMaximum());
+		assertNull(replicatedDataEvictionAttributes.getObjectSizer());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void testPartitionDataOptions() throws Exception {
 		assertTrue(context.containsBean("partition-data"));
@@ -153,7 +165,6 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(SimpleObjectSizer.class, sizer.getClass());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void testEntryTtl() throws Exception {
 		assertTrue(context.containsBean("replicated-data"));
@@ -177,8 +188,6 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals(ExpirationAction.INVALIDATE, regionTTI.getAction());
 	}
 	
-
-	@SuppressWarnings("rawtypes") 
 	@Test
 	public void testCustomExpiry() throws Exception {
 		assertTrue(context.containsBean("replicated-data-custom-expiry"));

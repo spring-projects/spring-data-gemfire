@@ -18,6 +18,8 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -43,10 +45,11 @@ import com.gemstone.gemfire.cache.Scope;
 /**
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="replicated-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="replicated-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class ReplicatedRegionNamespaceTest {
 
 	@Autowired
@@ -55,10 +58,18 @@ public class ReplicatedRegionNamespaceTest {
 	@Test
 	public void testBasicReplica() throws Exception {
 		assertTrue(context.containsBean("simple"));
-		RegionFactoryBean fb = context.getBean("&simple", RegionFactoryBean.class);
-		assertEquals(false, TestUtils.readField("close", fb));
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		assertFalse(attrs.getConcurrencyChecksEnabled());
+
+		RegionFactoryBean simpleRegionFactoryBean = context.getBean("&simple", RegionFactoryBean.class);
+
+		assertEquals("simple", TestUtils.readField("beanName", simpleRegionFactoryBean));
+		assertEquals(false, TestUtils.readField("close", simpleRegionFactoryBean));
+		assertNull(TestUtils.readField("scope", simpleRegionFactoryBean));
+
+		RegionAttributes simpleRegionAttributes = TestUtils.readField("attributes", simpleRegionFactoryBean);
+
+		assertNotNull(simpleRegionAttributes);
+		assertFalse(simpleRegionAttributes.getConcurrencyChecksEnabled());
+		assertEquals(Scope.DISTRIBUTED_NO_ACK, simpleRegionAttributes.getScope());
 	}
 
 	@Test
@@ -74,8 +85,8 @@ public class ReplicatedRegionNamespaceTest {
 		assertTrue(attrs.getConcurrencyChecksEnabled());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testComplexReplica() throws Exception {
 		assertTrue(context.containsBean("complex"));
 		RegionFactoryBean fb = context.getBean("&complex", RegionFactoryBean.class);
@@ -88,8 +99,8 @@ public class ReplicatedRegionNamespaceTest {
 		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", fb));
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testReplicaWithAttributes() throws Exception {
 		assertTrue(context.containsBean("replicated-with-attributes"));
 		Region region = context.getBean("replicated-with-attributes", Region.class);
@@ -111,8 +122,8 @@ public class ReplicatedRegionNamespaceTest {
 		assertEquals(true, attrs.getMulticastEnabled());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testRegionLookup() throws Exception {
 		Cache cache = context.getBean(Cache.class);
 		Region existing = cache.createRegionFactory().create("existing");

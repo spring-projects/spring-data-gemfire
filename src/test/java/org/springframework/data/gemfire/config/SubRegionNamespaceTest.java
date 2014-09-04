@@ -48,13 +48,12 @@ import com.gemstone.gemfire.cache.Region;
  */
 @ContextConfiguration(locations = "subregion-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "deprecation", "rawtypes" })
 public class SubRegionNamespaceTest {
 
 	@Autowired
 	private ApplicationContext context;
 
-    @SuppressWarnings("rawtypes")
     @Test
     public void testNestedRegionsCreated() {
         Cache cache = context.getBean(Cache.class);
@@ -64,7 +63,6 @@ public class SubRegionNamespaceTest {
         assertNotNull(cache.getRegion("/parent/child/grandchild"));
     }
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void testNestedReplicatedRegions() {
         Region parent = context.getBean("parent", Region.class);
@@ -72,15 +70,17 @@ public class SubRegionNamespaceTest {
 		Region grandchild = context.getBean("/parent/child/grandchild", Region.class);
 
 		assertNotNull(child);
+		assertEquals("child", child.getName());
 		assertEquals("/parent/child", child.getFullPath());
 		assertSame(child, parent.getSubregion("child"));
 		assertNotNull(grandchild);
+		assertEquals("grandchild", grandchild.getName());
 		assertEquals("/parent/child/grandchild", grandchild.getFullPath());
 		assertSame(grandchild, child.getSubregion("grandchild"));
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testMixedNestedRegions() {
 		Region parent = context.getBean("replicatedParent", Region.class);
 		Region child = context.getBean("/replicatedParent/replicatedChild", Region.class);
@@ -94,7 +94,6 @@ public class SubRegionNamespaceTest {
 		assertSame(grandchild, child.getSubregion("partitionedGrandchild"));
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void testNestedRegionsWithSiblings() {
 		Region parent = context.getBean("parentWithSiblings", Region.class);
@@ -108,8 +107,8 @@ public class SubRegionNamespaceTest {
 		assertEquals("/parentWithSiblings/child1/grandChild11", grandchild1.getFullPath());
 	}
 
-	@SuppressWarnings({ "rawtypes", "unused" })
 	@Test
+	@SuppressWarnings("unused" )
 	public void testComplexNestedRegions() throws Exception {
 		Region parent = context.getBean("complexNested", Region.class);
 		Region child1 = context.getBean("/complexNested/child1", Region.class);
