@@ -25,10 +25,10 @@ import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
@@ -41,10 +41,13 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  */
 @Aspect
 public class JSONRegionAdvice {
+
 	private static Log log = LogFactory.getLog(JSONRegionAdvice.class);
-	private List<String> includedRegions;
+
 	private boolean convertReturnedCollections = true;
 	private boolean prettyPrint = false;
+
+	private List<String> includedRegions;
 
 	/**
 	 * Sets names of regions to be included for JSON conversion. By default, all regions will be included
@@ -276,4 +279,5 @@ public class JSONRegionAdvice {
 		}
 
 	}
+
 }

@@ -57,9 +57,8 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
  * @author David Turanski
  * @author John Blum
  */
-@ContextConfiguration(locations="/org/springframework/data/gemfire/config/client-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="client-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class ClientRegionNamespaceTest {
 

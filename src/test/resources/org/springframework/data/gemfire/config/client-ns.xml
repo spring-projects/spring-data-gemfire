@@ -63,6 +63,5 @@
 					   value-constraint="java.lang.String"/>
 
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
-	<bean id="testCompressor" class="org.springframework.data.gemfire.config.ClientRegionNamespaceTest$TestCompressor" p:name="STD"/>
 
 </beans>

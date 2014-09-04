@@ -133,7 +133,6 @@ public class TemplateClientRegionNamespaceTest {
 		assertNotNull("The Region must not be null!", region);
 		assertNotNull(String.format("The Region (%1$s) must have 'RegionAttributes' defined!",
 			region.getFullPath()), region.getAttributes());
-		assertNull(region.getAttributes().getCompressor());
 		assertNull(region.getAttributes().getCustomEntryIdleTimeout());
 		assertNull(region.getAttributes().getCustomEntryTimeToLive());
 		assertNull(region.getAttributes().getDiskStoreName());

@@ -18,14 +18,14 @@
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:async-event-queue id="TestAsyncEventQueue" persistent="false" parallel="true" dispatcher-threads="4">
+	<gfe:async-event-queue id="TestAsyncEventQueue" persistent="false" parallel="false" dispatcher-threads="4">
 		<gfe:async-event-listener>
 			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestAsyncEventListener"/>
 		</gfe:async-event-listener>
 	</gfe:async-event-queue>
 
 	<gfe:gateway-sender id="TestGatewaySender" remote-distributed-system-id="123" manual-start="true" persistent="false"
-						parallel="true" dispatcher-threads="8"/>
+						parallel="false" dispatcher-threads="8"/>
 
 	<!-- Template Regions -->
 
