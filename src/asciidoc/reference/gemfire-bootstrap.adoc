@@ -30,7 +30,7 @@ As of Spring Data GemFire 1.4, such an *Initializer* is already conveniently pro
       <string>classpath:application-context.xml</string>
     </parameter>
   </initializer>
-</cache>		
+</cache>
 ----
 
 The `SpringContextBootstrappingInitializer` class follows similar conventions as Spring's ContextLoaderListener class for bootstrapping a Spring context inside a Web Application, where application context configuration files are specified with the `contextConfigLocations` Servlet Context Parameter. In addition, the `SpringContextBootstrappingInitializer` class can also be used with a `basePackages` parameter to specify a comma-separated list of base package containing the appropriately annotated application components that the Spring container will search using component scanning and create Spring beans for:
@@ -48,7 +48,7 @@ The `SpringContextBootstrappingInitializer` class follows similar conventions as
       <string>org.mycompany.myapp.services,org.mycompany.myapp.dao,...</string>
     </parameter>
   </initializer>
-</cache>		
+</cache>
 ----
 
 Then, with a properly configured and constructed `CLASSPATH` along with the `cache.xml` file shown above specified as a command-line option when starting a GemFire Server in Gfsh, the command-line would be:
@@ -57,7 +57,7 @@ Then, with a properly configured and constructed `CLASSPATH` along with the `cac
 ----
 gfsh>start server --name=Server1 --log-level=config ...
 			--classpath="/path/to/spring-data-gemfire-1.4.0.jar:/path/to/application/classes.jar"
-			--cache-xml-file="/path/to/gemfire/cache.xml"		
+			--cache-xml-file="/path/to/gemfire/cache.xml"
 ----
 
 The `application-context.xml` can be any valid Spring context configuration meta-data including all the SDG namespace elements. The only limitation with this approach is that the GemFire Cache cannot be configured using the Spring Data GemFire namespace. In other words, none of the `<gfe:cache/>` element attributes, such as `cache-xml-location`, `properties-ref`, `critical-heap-percentage`, `pdx-serializer-ref`, `lock-lease`, etc can be specified. If used, these attributes will be ignored. The main reason for this is that GemFire itself has already created an initialized the Cache before the *Initializer* gets invoked. As such, the Cache will already exist and since it is a "Singleton", it cannot be re-initialized or have any of it's configuration augmented.
@@ -78,7 +78,7 @@ public static final class UserDataSourceCacheLoader extends LazyWiringDeclarable
   private DataSource userDataSource;
 
   ...
-}		
+}
 ----
 
 As implied by the CacheLoader example above, you might necessarily (although, rare) have defined both a Region and CacheListener component in GemFire `cache.xml`. The CacheLoader may need access to an application DAO, or perhaps Spring application context defined JDBC Data Source for loading "Users" into a GemFire Cache `REPLICATE` Region on start. Of course, one should be careful in mixing the different life-cycles of GemFire and the Spring Container together in this manner as not all use cases and scenarios are supported. The GemFire `cache.xml` configuration would be similar to the following (which comes from SDG's test suite):
@@ -105,6 +105,6 @@ As implied by the CacheLoader example above, you might necessarily (although, ra
       <string>org.springframework.data.gemfire.support.sample</string>
     </parameter>
   </initializer>
-</cache>		
+</cache>
 ----
 

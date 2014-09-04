@@ -17,7 +17,7 @@ For many applications, A basic connection to a GemFire grid, using default value
 
 The datasource tag is syntactically similar to `<gfe:pool>`. It may be configured with one or more locator or server tags to connect to an existing data grid. Additionally, all attributes available to configure a pool are supported. This configuration will automatically create ClientRegion beans for each region defined on members connected to the locator, so they may be seamlessly referenced by Spring Data mapping annotations, GemfireTemplate, and wired into application classes.
 
-Of course, you can explicitly configure client regions. For example, if you want to cache data in local memory: 
+Of course, you can explicitly configure client regions. For example, if you want to cache data in local memory:
 
 [source,xml]
 ----

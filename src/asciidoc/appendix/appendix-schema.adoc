@@ -1,16 +1,16 @@
 [[appendix-schema]]
+[appendix]
 = Spring Data GemFire Schema
 :resourcesDir: ../../main/resources
 
-
-Spring Data GemFire Core Schema (gfe)
+== Spring Data GemFire Core Schema (gfe)
 
 [source,xml]
 ----
 include::{resourcesDir}/org/springframework/data/gemfire/config/spring-gemfire-1.3.xsd[]
 ----
 
-Spring Data GemFire Data Access Schema (gfe-data)
+== Spring Data GemFire Data Access Schema (gfe-data)
 
 [source,xml]
 ----

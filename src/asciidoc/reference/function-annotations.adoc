@@ -42,17 +42,17 @@ The following example illustrates how annotations are used to expose a POJO as a
 
 [source,java]
 ----
-@Component 
+@Component
 public class MyFunctions {
    @GemfireFunction
-   public String function1(String s1, @RegionData Map<?,?> data, int i2) { ... } 
-   
-   @GemfireFunction("myFunction", HA=true, optimizedForWrite=true, batchSize=100) 
-   public List<String> function2(String s1, @RegionData Map<?,?> data, int i2, @Filter Set<?> keys) { ... } 
-   
+   public String function1(String s1, @RegionData Map<?,?> data, int i2) { ... }
+
+   @GemfireFunction("myFunction", HA=true, optimizedForWrite=true, batchSize=100)
+   public List<String> function2(String s1, @RegionData Map<?,?> data, int i2, @Filter Set<?> keys) { ... }
+
    @GemfireFunction(hasResult=true)
-   public void functionWithContext(FunctionContext functionContext) { ... } 
-} 
+   public void functionWithContext(FunctionContext functionContext) { ... }
+}
 ----
 
 Note that the class itself must be registered as a Spring bean. Here the `@Component` annotation is used, but you may register the bean by any method provided by Spring (e.g. XML configuration or Java configuration class). This allows the Spring container to create an instance of this class and wrap it in a https://github.com/SpringSource/spring-gemfire/blob/master/src/main/java/org/springframework/data/gemfire/function/PojoFunctionWrapper.java[PojoFunctionWrapper](PFW). Spring creates one PFW instance for each method annotated with `@GemfireFunction`. Each will all share the same target object instance to invoke the corresponding method.

@@ -44,9 +44,9 @@ In addition to referencing an external configuration file one can specify GemFir
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
-        
+
      <gfe:cache properties-ref="props"/>
- 
+
      <util:properties id="props" location="file:/vfabric/gemfire/gemfire.properties"/>
 </beans>
 ----
@@ -63,7 +63,7 @@ For advanced cache configuration, the `cache` element provides a number of confi
 <!--1-->
 <gfe:cache
         copy-on-read="true"
-        critical-heap-percentage="70" 
+        critical-heap-percentage="70"
         eviction-heap-percentage="60"
         lock-lease="120"
         lock-timeout="60"
@@ -75,18 +75,18 @@ For advanced cache configuration, the `cache` element provides a number of confi
         message-sync-interval="1"
         search-timeout="300"
         close="false"
-        lazy-init="true"
-    >
+        lazy-init="true">
+
      <gfe:transaction-listener ref="myTransactionListener"/><!--2-->
 
      <gfe:transaction-writer> <!--3-->
         <bean class="org.springframework.data.gemfire.example.TransactionListener"/>
       </gfe:transaction-writer>
-      
+
      <gfe:dynamic-region-factory/> <!--4-->
      <gfe:jndi-binding jndi-name="myDataSource" type="ManagedDataSource"/> <!--5-->
 </gfe:cache>
-    
+
 ----
 
 <1> Various cache options are supported by attributes. For further information regarding anything shown in this example, please consult the GemFire product http://www.vmware.com/support/pubs/vfabric-gemfire.html[documentation]
@@ -121,7 +121,7 @@ In Spring Data GemFire 1.1 dedicated support for configuring a http://www.vmware
 <beans xmlns="http://www.springframework.org/schema/beans"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:gfe="http://www.springframework.org/schema/gemfire"
-  xmlns:context="http://www.springframework.org/schema/context"	
+  xmlns:context="http://www.springframework.org/schema/context"
   xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
   http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
@@ -132,7 +132,7 @@ In Spring Data GemFire 1.1 dedicated support for configuring a http://www.vmware
   <gfe:cache-server id="advanced-config" auto-startup="true"
        bind-address="localhost" port="${gfe.port.6}" host-name-for-clients="localhost"
        load-poll-interval="2000" max-connections="22" max-threads="16"
-       max-message-count="1000" max-time-between-pings="30000"  
+       max-message-count="1000" max-time-between-pings="30000"
        groups="test-server">
 
      <gfe:subscription-config eviction-type="ENTRY" capacity="1000" disk-store="file://${java.io.tmpdir}"/>
@@ -157,7 +157,7 @@ Another configuration addition in Spring Data GemFire 1.1 is the dedicated suppo
 [source,xml]
 ----
 <beans>
-    <gfe:client-cache />   
+    <gfe:client-cache />
 </beans>
 ----
 

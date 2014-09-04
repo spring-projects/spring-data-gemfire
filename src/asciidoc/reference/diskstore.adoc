@@ -7,7 +7,7 @@ NOTE: Prior to Release 1.2.0, `disk-store` was a child element of `*-region`. If
 
 [source,xml]
 ----
-<gfe:disk-store id="diskStore1" queue-size="50" auto-compact="true" 
+<gfe:disk-store id="diskStore1" queue-size="50" auto-compact="true"
         max-oplog-size="10" time-interval="9999">
         <gfe:disk-dir location="/gemfire/store1/" max-size="20"/>
         <gfe:disk-dir location="/gemfire/store2/" max-size="20"/>

@@ -53,19 +53,18 @@ In particular, note how the above implementation of the `EventDelegate` interfac
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
 
-	
 	<gfe:client-cache pool-name="client"/>
-	
+
 	<gfe:pool id="client" subscription-enabled="true">
 	   <gfe:server host="localhost" port="40404"/>
 	</gfe:pool>
-	
+
 	<gfe:cq-listener-container>
 	   <!-- default handle method -->
 	   <gfe:listener ref="listener" query="SELECT * from /region"/ >
 	   <gfe:listener ref="another-listener" query="SELECT * from /another-region" name="my-query" method="handleQuery"/>
 	</gfe:cq-listener-container>
-  
+
 	<bean id="listener" class="gemfireexample.DefaultMessageDelegate"/>
 	<bean id="another-listener" class="gemfireexample.DefaultMessageDelegate"/>
   ...

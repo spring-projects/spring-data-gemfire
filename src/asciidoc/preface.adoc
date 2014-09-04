@@ -1,4 +1,3 @@
-[preface]
 = Preface
 
 Spring Data GemFire focuses on integrating the Spring Framework's powerful, non-invasive programming model and concepts with Pivotal GemFire, simplifying configuration, development and providing high-level abstractions. This document assumes the reader already has a basic familiarity with the Spring Framework and Pivotal GemFire concepts and APIs.
