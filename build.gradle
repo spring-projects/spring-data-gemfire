@@ -135,6 +135,9 @@ javadoc {
 }
 
 jar {
+
+    dependsOn = [ 'bundlor' ]
+
     manifest.attributes['Implementation-Title'] = 'spring-data-gemfire'
     manifest.attributes['Implementation-Version'] = project.version
 
@@ -144,6 +147,10 @@ jar {
         into "META-INF"
         expand(copyright: new Date().format('yyyy'), version: project.version)
     }
+}
+
+bundlor {
+    manifestTemplate = file("template.mf").text
 }
 
 // Reference documentation
