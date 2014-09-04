@@ -36,8 +36,8 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 /**
  * @author David Turanski
  */
-@ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
 @SuppressWarnings("unchecked")
 public class JSONRegionAdviceTest {
 

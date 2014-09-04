@@ -25,10 +25,10 @@ import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.CollectionUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
