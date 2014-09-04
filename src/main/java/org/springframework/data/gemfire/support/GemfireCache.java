@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2010-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.Region;
  *
  * @author Costin Leau
  * @author John Blum
- *
+ * @author Oliver Gierke
  */
 public class GemfireCache implements Cache {
 
@@ -68,8 +68,32 @@ public class GemfireCache implements Cache {
 	}
 
 	@SuppressWarnings("unchecked")
+	public <T> T get(final Object key, final Class<T> type) {
+
+		Object value = region.get(key);
+
+		if (value != null && type != null && !type.isInstance(value)) {
+			throw new IllegalStateException("Cached value is not of required type [" + type.getName() + "]: " + value);
+		}
+
+		return (T) value;
+	}
+
+	@SuppressWarnings("unchecked")
 	public void put(Object key, Object value) {
 		region.put(key, value);
 	}
 
+	/**
+	 * Implementation to satisfy extension of the {@link Cache} interface in Spring 4.1. Don't add the {@link Override}
+	 * annotation as this will break the compilation on 4.0.
+	 * 
+	 * @see org.springframework.cache.Cache#putIfAbsent(java.lang.Object, java.lang.Object)
+	 */
+	@SuppressWarnings("unchecked")
+	public ValueWrapper putIfAbsent(Object key, Object value) {
+
+		Object existingValue = region.putIfAbsent(key, value);
+		return existingValue == null ? null : new SimpleValueWrapper(existingValue);
+	}
 }
