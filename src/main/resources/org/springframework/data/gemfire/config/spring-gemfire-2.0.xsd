@@ -1789,7 +1789,28 @@ Sets the threshold at which an oplog will become compactable. Until it reaches t
 The threshold is a percentage in the range 0..100. When the amount of garbage in an oplog exceeds this percentage then when a
 compaction is done and this garbage will be cleaned up freeing up disk space. Garbage is created by entry destroys,
 entry updates, and region destroys.
-]]></xsd:documentation>
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="disk-usage-critical-percentage" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Disk usage above this threshold generates an error message and shuts down the member's cache. For example,
+if the threshold is set to 99%, then falling under 10 GB of free disk space on a 1 TB drive generates the error
+and shuts down the cache.
+
+Set to "0" (zero) to disable. GemFire default is 99%.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="disk-usage-warning-percentage" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Disk usage above this threshold generates a warning message. For example, if the threshold is set to 90%,
+then on a 1 TB drive falling under 100 GB of free disk space generates the warning.
+
+Set to "0" (zero) to disable.  GemFire default is 90%.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="max-oplog-size" type="xsd:string" default="1024">

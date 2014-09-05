@@ -75,6 +75,8 @@ public class DiskStoreParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "allow-force-compaction");
 		ParsingUtils.setPropertyValue(element, builder, "auto-compact");
 		ParsingUtils.setPropertyValue(element, builder, "compaction-threshold");
+		ParsingUtils.setPropertyValue(element, builder, "disk-usage-critical-percentage");
+		ParsingUtils.setPropertyValue(element, builder, "disk-usage-warning-percentage");
 		ParsingUtils.setPropertyValue(element, builder, "max-oplog-size");
 		ParsingUtils.setPropertyValue(element, builder, "queue-size");
 		ParsingUtils.setPropertyValue(element, builder, "time-interval");

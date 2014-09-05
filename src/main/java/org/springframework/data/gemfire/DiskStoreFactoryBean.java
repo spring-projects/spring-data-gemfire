@@ -55,6 +55,9 @@ public class DiskStoreFactoryBean implements BeanNameAware , FactoryBean<DiskSto
 	private Integer timeInterval;
 	private Integer writeBufferSize;
 
+	private Float diskUsageCriticalPercentage;
+	private Float diskUsageWarningPercentage;
+
 	private List<DiskDir> diskDirs;
 
 	private String name;
@@ -89,6 +92,12 @@ public class DiskStoreFactoryBean implements BeanNameAware , FactoryBean<DiskSto
 		}
 		if (compactionThreshold != null) {
 			diskStoreFactory.setCompactionThreshold(compactionThreshold);
+		}
+		if (diskUsageCriticalPercentage != null) {
+			diskStoreFactory.setDiskUsageCriticalPercentage(diskUsageCriticalPercentage);
+		}
+		if (diskUsageWarningPercentage != null) {
+			diskStoreFactory.setDiskUsageWarningPercentage(diskUsageWarningPercentage);
 		}
 		if (maxOplogSize != null) {
 			diskStoreFactory.setMaxOplogSize(maxOplogSize);
@@ -153,6 +162,14 @@ public class DiskStoreFactoryBean implements BeanNameAware , FactoryBean<DiskSto
 
 	public void setDiskDirs(List<DiskDir> diskDirs) {
 		this.diskDirs = diskDirs;
+	}
+
+	public void setDiskUsageCriticalPercentage(Float diskUsageCriticalPercentage) {
+		this.diskUsageCriticalPercentage = diskUsageCriticalPercentage;
+	}
+
+	public void setDiskUsageWarningPercentage(Float diskUsageWarningPercentage) {
+		this.diskUsageWarningPercentage = diskUsageWarningPercentage;
 	}
 
 	public void setMaxOplogSize(Integer maxOplogSize) {

@@ -25,7 +25,6 @@ import org.junit.Test;
  * The DiskStoreFactoryBeanTest class is a test suite of test cases testing the contract and functionality of the
  * DiskStoreFactoryBean class.
  *
- *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.DiskStoreFactoryBean

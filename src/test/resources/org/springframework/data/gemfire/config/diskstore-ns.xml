@@ -11,21 +11,45 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-    <gfe:cache/>
+	<util:properties id="gemfireProperties">
+		<prop key="name">DiskStoreNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+    <gfe:cache properties-ref="gemfireProperties"/>
 
     <util:properties id="props">
+        <prop key="allowForceCompaction">true</prop>
         <prop key="autoCompact">true</prop>
+        <prop key="compactionThreshold">70</prop>
+        <prop key="diskUsageCriticalPercentage">90</prop>
+        <prop key="diskUsageWarningPercentage">75</prop>
         <prop key="location">./build/tmp</prop>
-        <prop key="maxOpLogSize">1</prop>
+        <prop key="maxOplogSize">1</prop>
         <prop key="maxSize">10</prop>
         <prop key="queueSize">50</prop>
         <prop key="timeInterval">9999</prop>
+        <prop key="writeBufferSize">4096</prop>
         <prop key="ttl">300</prop>
     </util:properties>
 
     <context:property-placeholder properties-ref="props"/>
 
-    <gfe:disk-store id="diskStore1" auto-compact="${autoCompact}" max-oplog-size="${maxOpLogSize}"
+	<gfe:disk-store id="fullyConfiguredDiskStore"
+					allow-force-compaction="${allowForceCompaction}"
+					auto-compact="${autoCompact}"
+					compaction-threshold="${compactionThreshold}"
+					disk-usage-critical-percentage="${diskUsageCriticalPercentage}"
+					disk-usage-warning-percentage="${diskUsageWarningPercentage}"
+					max-oplog-size="${maxOplogSize}"
+					queue-size="${queueSize}"
+					time-interval="${timeInterval}"
+					write-buffer-size="${writeBufferSize}">
+		<gfe:disk-dir location="${location}" max-size="${maxSize}"/>
+	</gfe:disk-store>
+
+	<gfe:disk-store id="diskStore1" auto-compact="${autoCompact}" max-oplog-size="${maxOplogSize}"
 					queue-size="${queueSize}" time-interval="${timeInterval}">
         <gfe:disk-dir location="${location}" max-size="${maxSize}"/>
     </gfe:disk-store>
