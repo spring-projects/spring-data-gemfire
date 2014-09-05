@@ -3,6 +3,26 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.5.0.RELEASE (2014-09-05)
+---------------------------------------------
+* IMPORTANT: Upgrade to Gemfire 8.0 has been postponed to a 2.0 release.
+* SGF-319 - Release 1.5 GA.
+* SGF-318 - Upgrade to Spring Framework 4.0.7.
+* SGF-317 - Improve GemfireCache implementation to be able to build on Spring 4.1.
+* SGF-316 - Update Spring Data GemFire Reference Guide with 1.5 changes (e.g. Auto Region Lookups, Region Templates).
+* SGF-315 - Re-enable Bundlor plugin to create OSGi metadata.
+* SGF-314 - Upgrade to Spring Framework 4.0.7.
+* SGF-312 - The <gfe:partitioned-region> element in the SDG XSD does not properly support multiple PartitionListener bean definitions or references.
+* SGF-311 - ClientRegionFactoryBean does not properly set the 'concurrency-checks-enabled' attribute and property of GemFire's ClientRegionFactory class.
+* SGF-310 - The <gfe:client-region> element is missing the 'concurrency-level' attribute, which is supported by GemFire's ClientRegionFactory API.
+* SGF-307 - Remove all default values on strongly-typed Region elements in the SDG Schema in support of Region Templates.
+* SGF-305 - Move to Asciidoctor for reference documentation.
+* SGF-254 - Template Regions which can be used to reuse the same Region configuration for all Regions that reference it.
+* SGF-223 - Ability to create directories on-the-fly at runtime based on explicitly defined Disk Stores disk directory locations.
+* SGF-207 - No support for hierarchical, inherited Region attributes like there is in GemFire's cache.xml.
+* SGF-191 - Provide automated way to add all Regions defined in GemFire's cache.xml as beans in the Spring context.
+
+
 Changes in version 1.4.4.RELEASE (2014-08-27)
 ---------------------------------------------
 * SGF-308 - Release 1.4.4.
@@ -92,7 +112,7 @@ Changes in version 1.4 M1 (2014-03-31)
     * [SGF-246] - execute function always assumes arguments are passed
     * [SGF-247] - boolean based repository queries generate UnsupportedOperationException in non PDX serialized entities
     * [SGF-249] - The SDG XSD is restricting the use of property placeholder values on <gfe:disk-store/>, compaction-threshold attributes given the attribute type is a short and not string.
-    * [SGF-251] - Creating and using GemFire Repositories based on the Spring Data Commons Repository abstraction does not work properly for domain objects stored in Subregions. 
+    * [SGF-251] - Creating and using GemFire Repositories based on the Spring Data Commons Repository abstraction does not work properly for domain objects stored in Subregions.
     * [SGF-252] - Spring GemFire's Repository extension does not properly handle multiple, identically named Subregions for persisting corresponding application domain objects associated by way of the @Region annotation.
     * [SGF-255] - The <gfe:eviction> element's 'threshold' attribute is required even when the Eviction type is 'HEAP_PERCENTAGE'.
     * [SGF-258] - The SDG XML namespace <partitioned-region> element is missing the 'data-policy' attribute.
@@ -102,7 +122,7 @@ Changes in version 1.4 M1 (2014-03-31)
     * [SGF-88] - Create Regions in Spring Context with Region Shortcuts
     * [SGF-187] - Consider appending to the list of listener a new listener defined by another peer member
     * [SGF-201] - Create a Spring Boot Starter POM for Spring Data GemFire
-    * [SGF-204] - The existing RegionFactoryBean does a lookup of a Region before trying to create one. 
+    * [SGF-204] - The existing RegionFactoryBean does a lookup of a Region before trying to create one.
     * [SGF-209] - GemfireTemplate creates a temporary object for every operation.
     * [SGF-210] - GemfireRepository requires that there be an attribute in the entity class for the key.
     * [SGF-236] - Sub-Region Bean names require prepended "/" (vs. previous use of gfe:lookup-region for sub-regions)
@@ -189,7 +209,7 @@ Changes in version 1.3.1.RELEASE(2013-04-18)
 ** Bug
     * [SGF-159] - isRollbackOnCommitFailure flag is ignored by GemfireTransactionManager when transaction fails.
     * [SGF-169] - Unidirectional Gateway hubs cannot be created and fail with an exception
-    * [SGF-173] - Function Execution throws exception on void return. 
+    * [SGF-173] - Function Execution throws exception on void return.
 
 
 Changes in version 1.3.0.RELEASE (2013-03-14)
@@ -260,7 +280,7 @@ General
 Package org.springframework.data.gemfire
 * Fixed incorrect parsing of pdx-serializer (from value to reference)
 * Fixed incorrect parsing of use-bean-factory-locator
-* Fixed GemfireTransactionCommitException class hierarchy 
+* Fixed GemfireTransactionCommitException class hierarchy
 * Improved handling of GemFire 6.5+ transaction exceptions
 
 Package org.springframework.data.gemfire.client
