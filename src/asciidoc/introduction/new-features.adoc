@@ -68,17 +68,40 @@ in GemFire 7.0, enabling Spring AOP to perform the necessary conversions automat
 
 * Upgrades Spring Data GemFire to GemFire 7.0.2.
 * Upgrades Spring Data GemFire to Spring Data Commons 1.8.0.
-* Integrates Spring Data GemFire with Spring Boot, which includes both a *spring-boot-starter-data-gemfire* POM along with a Spring Boot Sample
-application demonstrating GemFire Cache Transactions configured with SDG bootstrapped with Spring Boot.
-* Support for bootstrapping a Spring Context in a GemFire Server when started from Gfsh. See <<gemfire-bootstrap>>.
-* Support for persisting application domain object/entities to multiple GemFire Cache Regions. See <<mapping.entities>> for more details.
-* Support for persisting application domain object/entities to GemFire Cache Sub-Regions, avoiding collisions when Sub-Regions are uniquely identifiable, but identically named.
+* Upgrades Spring Data GemFire to Spring Framework 3.2.9.
+* Integrates Spring Data GemFire with Spring Boot, which includes both a *spring-boot-starter-data-gemfire* POM
+along with a Spring Boot sample application demonstrating GemFire Cache Transactions configured with SDG
+and bootstrapped with Spring Boot.
+* Support for bootstrapping a Spring Context in a GemFire Server when started from Gfsh.
+See <<gemfire-bootstrap>> for more details.
+* Support for persisting application domain object/entities to multiple GemFire Cache Regions.
 See <<mapping.entities>> for more details.
-* Adds strict XSD type rules to, and full support for, Data Policies and Region Shortcuts on all GemFire Cache Region types.
-* Changed the default behavior of SDG `<*-region>` elements from lookup to always create a new Region along with an option to restore old behavior using the
-*ignore-if-exists* attribute. See <<bootstrap:region:common:attributes,Common Region Attributes>> and <<bootstrap:region:common:regions-subregions-lookups-caution>>
+* Support for persisting application domain object/entities to GemFire Cache Sub-Regions, avoiding collisions
+when Sub-Regions are uniquely identifiable, but identically named.
+See <<mapping.entities>> for more details.
+* Adds strict XSD type rules to, and full support for, Data Policies and Region Shortcuts on all GemFire
+Cache Region types.
+* Changed the default behavior of SDG `<*-region>` elements from lookup to always create a new Region
+along with an option to restore old behavior using the *ignore-if-exists* attribute.
+See <<bootstrap:region:common:attributes,Common Region Attributes>> and <<bootstrap:region:common:regions-subregions-lookups-caution>>
 for more details.
-* Enables Spring Data GemFire to be fully built and ran on JDK 7 and JDK 8 (Note, however, GemFire has not yet been fully tested and supported on JDK 8;
-See http://pubs.vmware.com/vfabric53/topic/com.vmware.vfabric.gemfire.7.0/getting_started/system_requirements/supported_configurations.html[GemFire User Guide]
+* Enables Spring Data GemFire to be fully built and ran on JDK 7 and JDK 8 (Note, however, GemFire has not yet
+been fully tested and supported on JDK 8;
+See http://gemfire.docs.pivotal.io/latest/userguide/index.html#supported_configs/supported_configs_and_system_reqs.html[GemFire User Guide]
 for additional details.
 
+[[new-in-1-5-0]]
+== New in the 1.5.0 Release
+
+* Upgrades Spring Data GemFire to Spring Data Commons 1.9.0
+* Upgrades Spring Data GemFire to Spring Framework 4.0.7
+* Reference Guide migrated to Asciidoc
+* Renewed support for deploying Spring Data GemFire in an OSGi container.
+* Removed all default values in the Spring Data GemFire XML namespace Region-type elements, relying on GemFire defaults
+instead.
+* Added convenience to automatically create Disk Store directory locations without the need to create them manually,
+as required by GemFire.
+* SDG annotated Functions can now be executed from Gfsh.
+* Enable GemFire GatewayReceivers to be started manually.
+* Support for Auto Region Lookups.  See <<bootstrap:region:auto-lookup>> for further details.
+* Support for Region Templates See <<bootstrap:region:common:region-templates>> for further details.
