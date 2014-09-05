@@ -8,7 +8,7 @@
 			targetNamespace="http://www.springframework.org/schema/gemfire"
 			elementFormDefault="qualified"
 			attributeFormDefault="unqualified"
-			version="1.5">
+			version="2.0">
 	<xsd:import namespace="http://www.springframework.org/schema/beans" />
 	<xsd:import namespace="http://www.springframework.org/schema/context" />
 	<xsd:import namespace="http://www.springframework.org/schema/tool" />
@@ -126,8 +126,8 @@ The name of the cache definition (by default "gemfireCache").]]></xsd:documentat
 		<xsd:attribute name="cache-xml-location" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation source="org.springframework.core.io.Resource"><![CDATA[
-The location of the GemFire cache.xml file as a Spring Resource location: a URL, a "classpath:" pseudo URL,
-or a relative file system path.
+The location of the GemFire cache xml file, as a Spring resource location: a URL, a "classpath:" pseudo URL,
+or a relative file path.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -142,9 +142,8 @@ consider using a dedicated utility such as the <util:*/> namespace and its 'prop
 		<xsd:attribute name="lazy-init" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Determines if the cache should be initialized automatically. Normally the cache will be lazily initialized,
-i.e., during creation of another bean references it. For cases in which there are no declared dependencies on the cache,
-set this attribute to false.
+Determines if the cache should be initialized automatically. Normally the cache will be lazily initialized, i.e., during creation of another bean references it.
+For cases in which there are no declared dependencies on the cache, set this attribute to false.
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -160,8 +159,9 @@ when the same cache is used in multiple application context/bean factories insid
 		<xsd:attribute name="close" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Determines if the cache should be closed when the application context is closed. This value is true by default
-but should be set to false if deploying multiple applications in a jvm that share the same cache instance.
+Determines if the cache should be closed when the application context is closed. This value is
+true by default but should be set to false if deploying multiple applications in a jvm that share the
+same cache instance.
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -202,20 +202,20 @@ domain classes which are added to the cache in portable data exchange (PDX) form
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="pdx-persistent" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Control whether the type metadata for PDX objects is persisted to disk.
+Set to true if you are using persistent regions, WAN gateways or GemFire's JSON support.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="pdx-disk-store" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the name of the disk store to use for PDX meta data. When serializing objects in the PDX format,
 the type definitions are persisted to disk. This setting controls which disk store is used for that persistence.
 If not set, the metadata will go in the default disk store.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="pdx-persistent" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Control whether the type metadata for PDX objects is persisted to disk.
-Set to true if you are using persistent Regions, WAN Gateways or GemFire's JSON support.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -262,14 +262,23 @@ Defines a GemFire Cache instance used for creating or retrieving 'regions'.
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="cacheBaseType">
-					<xsd:attribute name="lock-timeout" type="xsd:string"
-								   use="optional" default="60">
+					<xsd:attribute name="enable-auto-reconnect" type="xsd:string" use="optional" default="false">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The timeout, in seconds, for implicit object lock requests. This setting affects automatic locking only,
- and does not apply to manual locking. If a lock request does not return before the specified timeout period,
-  it is cancelled and returns with a failure.
-                  ]]></xsd:documentation>
+By default, GemFire 8.0 and later will attempt to reconnect and reinitialize the cache when the peer member has been
+forced out of the distributed system by a network-partition event, or has otherwise been shunned by other members.
+
+An auto-reconnect causes all GemFire component references (e.g. Cache, Regions, AEQs, Gateways, etc) that may have been
+injected into SDG application components to become stale.  Even when using GemFire's public Java API directly,
+GemFire makes no guarantees to automatically refresh any stale references used by application objects.
+
+Therefore, in Spring Data GemFire, the default behavior will be to not 'auto-reconnect'.  Automatically reconnecting
+is not recommended for applications that are also peer member Caches (i.e. GemFire Servers) that inject
+GemFire components, such as the Cache or Regions, into application objects (e.g. @Repository POJOs).
+
+Enabling 'auto-reconnect' is only recommended when bootstrapping a GemFire Server's within a Spring context using
+Spring Data GemFire XML namespace and configuration meta-data to configure GemFire instead of GemFire's cache.xml.
+							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="lock-lease" type="xsd:string"
@@ -279,6 +288,16 @@ The timeout, in seconds, for implicit object lock requests. This setting affects
 The timeout, in seconds, for implicit and explicit object lock leases. This affects both automatic locking and manual locking.
 Once a lock is obtained, it can remain in force for the lock lease time period before being automatically cleared by the system
                 ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="lock-timeout" type="xsd:string"
+								   use="optional" default="60">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+The timeout, in seconds, for implicit object lock requests. This setting affects automatic locking only,
+ and does not apply to manual locking. If a lock request does not return before the specified timeout period,
+  it is cancelled and returns with a failure.
+                  ]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="message-sync-interval" type="xsd:string"
@@ -297,6 +316,23 @@ that have already been processed by the clients.
 How many seconds a netSearch operation can wait for data before timing out.
 You may want to change this based on your knowledge of the network load or other factors.
                 ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="use-cluster-configuration" type="xsd:string" use="optional" default="false">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Enables this Spring Data GemFire configured peer member Cache node to participate in cluster-wide configuration
+by receiving it's configuration meta-data (in the form of cache.xml) from a Locator, with persistent configuration
+enabled, running in the cluster.
+
+The cluster-wide configuration is a shared, persistent and consistent view of the cluster when the member joins
+the cluster and requests the cluster configuration from the Locator.
+
+Spring Data GemFire disables this GemFire 8 feature by default assuming that the primary configuration for this
+member will be defined in Spring Data GemFire's XML namespace configuration meta-data.  However, this feature is useful
+in a production setting to set the base configuration of the member and augment that cluster-wide configuration
+with Spring configuration meta-data that is specific to the application's needs.
+							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 				</xsd:extension>
@@ -511,6 +547,19 @@ use inner bean declarations.
 								</xsd:annotation>
 							</xsd:attribute>
 						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="compressor" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation source="com.gemstone.gemfire.compression.Compressor"><![CDATA[
+The Compressor definition for this Region. A Compressor registers a custom class that implements Compressor
+to support compression on a Region.
+							]]></xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation>
+									<tool:exports type="com.gemstone.gemfire.compression.Compressor"/>
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
 					</xsd:element>
 					<xsd:element name="region-ttl" type="expirationType"
 								 minOccurs="0" maxOccurs="1">
