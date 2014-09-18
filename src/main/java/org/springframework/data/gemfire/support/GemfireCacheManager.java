@@ -84,8 +84,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 		Cache cache = super.getCache(name);
 
 		if (cache == null) {
-			// check the gemfire cache again
-			// in case the cache was added at runtime
+			// check the GemFire Cache again in case the Cache (Region) was added at runtime
 			Region<?, ?> region = gemfireCache.getRegion(name);
 
 			if (region != null) {
