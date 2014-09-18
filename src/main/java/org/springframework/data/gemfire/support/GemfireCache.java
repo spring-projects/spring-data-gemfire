@@ -69,19 +69,21 @@ public class GemfireCache implements Cache {
 
 	@SuppressWarnings("unchecked")
 	public <T> T get(final Object key, final Class<T> type) {
-
 		Object value = region.get(key);
 
 		if (value != null && type != null && !type.isInstance(value)) {
-			throw new IllegalStateException("Cached value is not of required type [" + type.getName() + "]: " + value);
+			throw new IllegalStateException(String.format("Cached value is not of required type [%1$s]: %2$s",
+				type.getName(), value));
 		}
 
 		return (T) value;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void put(Object key, Object value) {
-		region.put(key, value);
+	public void put(final Object key, final Object value) {
+		if (value != null) {
+			region.put(key, value);
+		}
 	}
 
 	/**
@@ -92,8 +94,9 @@ public class GemfireCache implements Cache {
 	 */
 	@SuppressWarnings("unchecked")
 	public ValueWrapper putIfAbsent(Object key, Object value) {
-
 		Object existingValue = region.putIfAbsent(key, value);
-		return existingValue == null ? null : new SimpleValueWrapper(existingValue);
+
+		return (existingValue == null ? null : new SimpleValueWrapper(existingValue));
 	}
+
 }
