@@ -24,9 +24,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.sql.DataSource;
 
@@ -69,14 +70,17 @@ import com.gemstone.gemfire.cache.Region;
 @SuppressWarnings("unused")
 public class SpringContextBootstrappingInitializerIntegrationTest {
 
-	private static final long CACHE_CLOSE_TIMEOUT = 15000l; // 15 seconds
+	private static final long CACHE_CLOSE_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
 	private static final Object MUTEX_LOCK = new Object();
 
 	protected static final String GEMFIRE_LOCATORS = "localhost[11235]";
-	protected static final String GEMFIRE_LOG_LEVEL = "config";
+	protected static final String GEMFIRE_LOG_LEVEL = "warning";
+	protected static final String GEMFIRE_JMX_MANAGER = "true";
+	protected static final String GEMFIRE_JMX_MANAGER_PORT = "1199";
+	protected static final String GEMFIRE_JMX_MANAGER_START = "true";
 	protected static final String GEMFIRE_MCAST_PORT = "0";
-	protected static final String GEMFIRE_NAME = "SpringContextBootstrappingInitializationTest";
+	protected static final String GEMFIRE_NAME = "SpringContextBootstrappingInitializationIntegrationTest";
 	protected static final String GEMFIRE_START_LOCATORS = "localhost[11235]";
 
 	@Before
@@ -99,7 +103,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 				}
 			}
 
-			fail(String.format("The Cache instance was not properly closed and shutdown by the timeout of %1$d seconds!%n",
+			fail(String.format("The Cache instance was not properly closed in the allotted timeout of %1$d seconds!%n",
 				(CACHE_CLOSE_TIMEOUT / 1000)));
 		}
 		catch (CacheClosedException ignore) {
@@ -108,7 +112,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 
 	@After
 	public void tearDown() {
-		SpringContextBootstrappingInitializer.applicationContext = null;
+		SpringContextBootstrappingInitializer.getApplicationContext().close();
 		UserDataStoreCacheLoader.INSTANCE.set(null);
 		tearDownCache();
 	}
@@ -145,15 +149,18 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 
 	protected void doSpringContextBootstrappingInitializationTest(final String cacheXmlFile) {
 		Cache gemfireCache = new CacheFactory()
+			.set("name", GEMFIRE_NAME)
+			.set("mcast-port", GEMFIRE_MCAST_PORT)
+			.set("log-level", GEMFIRE_LOG_LEVEL)
 			.set("cache-xml-file", cacheXmlFile)
 			//.set("locators", GEMFIRE_LOCATORS)
-			.set("log-level", GEMFIRE_LOG_LEVEL)
-			.set("mcast-port", GEMFIRE_MCAST_PORT)
-			.set("name", GEMFIRE_NAME)
 			//.set("start-locator", GEMFIRE_LOCATORS)
+			//.set("jmx-manager", GEMFIRE_JMX_MANAGER)
+			//.set("jmx-manager-port", GEMFIRE_JMX_MANAGER_PORT)
+			//.set("jmx-manager-start", GEMFIRE_JMX_MANAGER_START)
 			.create();
 
-		assertNotNull("The GemFire Cache was not properly created or initialized!", gemfireCache);
+		assertNotNull("The GemFire Cache was not properly created and initialized!", gemfireCache);
 		assertFalse("The GemFire Cache is closed!", gemfireCache.isClosed());
 
 		Set<Region<?, ?>> rootRegions = gemfireCache.rootRegions();
@@ -184,7 +191,6 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		// NOTE a GemFire declared component initialized by Spring!
 		UserDataStoreCacheLoader usersCacheLoader = UserDataStoreCacheLoader.getInstance();
 
-		assertNotNull(usersCacheLoader);
 		assertSame(userDataSource, usersCacheLoader.getDataSource());
 
 		Region<String, User> users = gemfireCache.getRegion("/Users");
@@ -201,14 +207,14 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 	}
 
 	@Test
-	public void testSpringContextBootstrappingInitialization() {
-		doSpringContextBootstrappingInitializationTest("cache-with-spring-context-bootstrap-initializer.xml");
-	}
-
-	@Test
 	public void testSpringContextBootstrappingInitializationUsingBasePackages() {
 		doSpringContextBootstrappingInitializationTest(
 			"cache-with-spring-context-bootstrap-initializer-using-base-packages.xml");
+	}
+
+	@Test
+	public void testSpringContextBootstrappingInitializationUsingContextConfigLocations() {
+		doSpringContextBootstrappingInitializationTest("cache-with-spring-context-bootstrap-initializer.xml");
 	}
 
 	public static final class TestDataSource extends DataSourceAdapter {
@@ -218,7 +224,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 
 		private static final AtomicReference<UserDataStoreCacheLoader> INSTANCE = new AtomicReference<UserDataStoreCacheLoader>();
 
-		private static final Map<String, User> USER_DATA = new HashMap<String, User>(3);
+		private static final Map<String, User> USER_DATA = new ConcurrentHashMap<String, User>(3);
 
 		static {
 			USER_DATA.put("jblum", new User("jblum"));
@@ -234,18 +240,19 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		}
 
 		protected static User createUser(final String username) {
-			return createUser(username, String.format("%1$s@xcompay.com", username), true, Calendar.getInstance());
+			return createUser(username, true, Calendar.getInstance(), String.format("%1$s@xcompay.com", username));
 		}
 
 		protected static User createUser(final String username, final Boolean active) {
-			return createUser(username, String.format("%1$s@xcompay.com", username), active, Calendar.getInstance());
+			return createUser(username, active, Calendar.getInstance(), String.format("%1$s@xcompay.com", username));
 		}
 
 		protected static User createUser(final String username, final Boolean active, final Calendar since) {
-			return createUser(username, String.format("%1$s@xcompay.com", username), active, since);
+			return createUser(username, active, since, String.format("%1$s@xcompay.com", username));
 		}
 
-		protected static User createUser(final String username, final String email, final Boolean active, final Calendar since) {
+		protected static User createUser(final String username, final Boolean active, final Calendar since,
+				final String email) {
 			User user = new User(username);
 			user.setActive(active);
 			user.setEmail(email);
