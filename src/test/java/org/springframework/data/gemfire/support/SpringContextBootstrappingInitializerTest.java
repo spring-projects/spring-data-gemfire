@@ -20,9 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,8 +35,10 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.util.ObjectUtils;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 
 /**
  * The SpringContextBootstrappingInitializerTest class is a test suite of test cases testing the contract
@@ -69,143 +71,15 @@ public class SpringContextBootstrappingInitializerTest {
 	@After
 	public void tearDown() {
 		SpringContextBootstrappingInitializer.applicationContext = null;
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testCreateApplicationContextWhenBasePackagesAndConfigLocationsAreBothUnspecified() {
-		try {
-			new SpringContextBootstrappingInitializer().createApplicationContext(null, null);
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("Either 'basePackages' or 'configLocations' must be specified to construct an instance of the ConfigurableApplicationContext.",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testCreateClassPathXmlApplicationContextWhenConfigLocationsAreUnspecified() {
-		try {
-			new SpringContextBootstrappingInitializer().createApplicationContext(null);
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("'configLocations' must be specified to construct an instance of the ClassPathXmlApplicationContext.",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testInitWithUnspecifiedBasePackagesAndContextConfigLocationsParameter() {
-		try {
-			new SpringContextBootstrappingInitializer().init(createParameters(createParameters(
-				SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER, ""),
-				SpringContextBootstrappingInitializer.BASE_PACKAGES_PARAMETER, ""));
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("Either 'basePackages' or the 'contextConfigLocations' parameter must be specified.",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void testInitWithExistingApplicationContext() {
-		try {
-			ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
-				"testInitWithExistingApplicationContext");
-
-			when(mockApplicationContext.getId()).thenReturn("testInitWithExistingApplicationContext");
-
-			SpringContextBootstrappingInitializer.applicationContext = mockApplicationContext;
-
-			new SpringContextBootstrappingInitializer().init(createParameters(
-				SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
-					"/path/to/spring/context/configuration/file.xml"));
-		}
-		catch (IllegalStateException expected) {
-			assertEquals("A Spring application context with ID (testInitWithExistingApplicationContext) has already been created.",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testInitWhenCreateApplicationContextReturnsNull() {
-		try {
-			SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
-				@Override
-				protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
-						final String[] configLocations) {
-					return null;
-				}
-			};
-
-			initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
-				"/path/to/spring/context/configuration/file.xml"));
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("The 'created' ConfigurableApplicationContext cannot be null!", expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void testInitWithNonActiveApplicationContext() {
-		final ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
-			"testInitWithNonActiveApplicationConstruct");
-
-		when(mockApplicationContext.getId()).thenReturn("testInitWithNonActiveApplicationContext");
-		when(mockApplicationContext.isActive()).thenReturn(false);
-
-		SpringContextBootstrappingInitializer initializer = null;
-
-		try {
-			initializer = new SpringContextBootstrappingInitializer() {
-				@Override
-				protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
-						final String[] configLocations) {
-					return mockApplicationContext;
-				}
-			};
-
-			initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
-				"/path/to/spring/context/configuration/file.xml"));
-		}
-		catch (IllegalStateException expected) {
-			assertEquals("The Spring application context (testInitWithNonActiveApplicationContext) has failed to be properly initialized with the following config files ([/path/to/spring/context/configuration/file.xml]) or base packages ([])!",
-				expected.getMessage());
-			throw expected;
-		}
-		finally {
-			verify(mockApplicationContext, times(1)).addApplicationListener(eq(initializer));
-			verify(mockApplicationContext, times(1)).registerShutdownHook();
-			verify(mockApplicationContext, times(1)).refresh();
-		}
+		SpringContextBootstrappingInitializer.contextRefreshedEvent = null;
 	}
 
 	@Test
-	public void testInitFollowedByGetApplicationContext() {
-		final ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
-			"testInitFollowedByGetApplicationContext");
+	public void testGetApplicationContext() {
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testGetApplicationContext");
 
-		when(mockApplicationContext.getId()).thenReturn("testInitFollowedByGetApplicationContext");
-		when(mockApplicationContext.isActive()).thenReturn(true);
-
-		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
-				@Override
-				protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
-						final String[] configLocations) {
-					return mockApplicationContext;
-				}
-			};
-
-		initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
-			"/path/to/spring/context/configuration/file.xml"));
-
-		verify(mockApplicationContext, times(1)).addApplicationListener(eq(initializer));
-		verify(mockApplicationContext, times(1)).registerShutdownHook();
-		verify(mockApplicationContext, times(1)).refresh();
+		SpringContextBootstrappingInitializer.applicationContext = mockApplicationContext;
 
 		assertSame(mockApplicationContext, SpringContextBootstrappingInitializer.getApplicationContext());
 	}
@@ -216,7 +90,77 @@ public class SpringContextBootstrappingInitializerTest {
 			SpringContextBootstrappingInitializer.getApplicationContext();
 		}
 		catch (IllegalStateException expected) {
-			assertEquals("The Spring ApplicationContext has not been created!", expected.getMessage());
+			assertEquals("The Spring ApplicationContext has not been properly configured and initialized!",
+				expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreateApplicationContextWhenBothBasePackagesAndConfigLocationsAreUnspecified() {
+		try {
+			new SpringContextBootstrappingInitializer().createApplicationContext(null, null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("'basePackages' or 'configLocations' must be specified to construct and configure"
+				+" an instance of the ConfigurableApplicationContext.", expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreateClassPathXmlApplicationContextWhenConfigLocationsAreUnspecified() {
+		try {
+			new SpringContextBootstrappingInitializer().createApplicationContext(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("'configLocations' must be specified to construct and configure an instance of the ClassPathXmlApplicationContext.",
+				expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test
+	public void testInitApplicationContext() {
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testInitApplicationContext");
+
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer();
+
+		initializer.initApplicationContext(mockApplicationContext);
+
+		verify(mockApplicationContext).addApplicationListener(same(initializer));
+		verify(mockApplicationContext).registerShutdownHook();
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testInitApplicationContextWithNullContext() {
+		try {
+			new SpringContextBootstrappingInitializer().initApplicationContext(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("The ConfigurableApplicationContext reference must not be null!", expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test
+	public void testRefreshApplicationContext() {
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testInitApplicationContext");
+
+		new SpringContextBootstrappingInitializer().refreshApplicationContext(mockApplicationContext);
+
+		verify(mockApplicationContext).refresh();
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testRefreshApplicationContextWithNullContext() {
+		try {
+			new SpringContextBootstrappingInitializer().refreshApplicationContext(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("The ConfigurableApplicationContext reference must not be null!", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -238,97 +182,390 @@ public class SpringContextBootstrappingInitializerTest {
 	}
 
 	@Test
-	public void testRegisterAndOnApplicationEvent() {
-		TestApplicationListener testListener = SpringContextBootstrappingInitializer.register(
-			new TestApplicationListener());
-
-		try {
-			ContextRefreshedEvent testEvent = new ContextRefreshedEvent(mock(ApplicationContext.class,
-				"testRegisterAndOnApplicationEvent"));
-
-			new SpringContextBootstrappingInitializer().onApplicationEvent(testEvent);
-
-			testListener.assertCalled();
-			testListener.assertSame(testEvent);
-		}
-		finally {
-			SpringContextBootstrappingInitializer.unregister(testListener);
-		}
-	}
-
-	@Test
-	public void testRegisterUnregisterAndOnApplicationEvent() {
-		TestApplicationListener testListener = SpringContextBootstrappingInitializer.unregister(
-			SpringContextBootstrappingInitializer.register(new TestApplicationListener()));
-
-		try {
-			ContextRefreshedEvent testEvent = new ContextRefreshedEvent(mock(ApplicationContext.class,
-				"testRegisterUnregisterAndOnApplicationEvent"));
-
-			new SpringContextBootstrappingInitializer().onApplicationEvent(testEvent);
-
-			testListener.assertNotCalled();
-		}
-		finally {
-			SpringContextBootstrappingInitializer.unregister(testListener);
-		}
-	}
-
-	@Test
-	public void testNotifyListenersOnContextRefreshedEventBeforeApplicationContextExists() {
-		TestApplicationListener testApplicationListener = new TestApplicationListener();
-
-		SpringContextBootstrappingInitializer.applicationContext = null;
-		SpringContextBootstrappingInitializer.register(testApplicationListener);
-
-		testApplicationListener.assertNotCalled();
-	}
-
-	@Test
-	public void testNotifyListenersOnContextRefreshedEventAfterApplicationContextRefreshed() {
+	public void testInitWithExistingApplicationContext() {
 		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
-			"testNotifyListenersOnContextRefreshedEventAfterApplicationContextRefreshed");
+			"testInitWithExistingApplicationContext");
 
-		ContextRefreshedEvent testEvent = new ContextRefreshedEvent(mockApplicationContext);
+		when(mockApplicationContext.isActive()).thenReturn(true);
+		when(mockApplicationContext.getId()).thenReturn("testInitWithExistingApplicationContext");
 
 		SpringContextBootstrappingInitializer.applicationContext = mockApplicationContext;
-		new SpringContextBootstrappingInitializer().onApplicationEvent(testEvent);
 
-		TestApplicationListener testApplicationListener = new TestApplicationListener();
+		assertSame(mockApplicationContext, SpringContextBootstrappingInitializer.getApplicationContext());
 
-		SpringContextBootstrappingInitializer.register(testApplicationListener);
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer();
 
-		testApplicationListener.assertCalled();
-		testApplicationListener.assertSame(testEvent);
+		initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
+			"/path/to/spring/application/context.xml"));
+
+		verify(mockApplicationContext, never()).addApplicationListener(same(initializer));
+		verify(mockApplicationContext, never()).registerShutdownHook();
+		verify(mockApplicationContext, never()).refresh();
+
+		assertSame(mockApplicationContext, SpringContextBootstrappingInitializer.getApplicationContext());
 	}
 
-	// TODO add additional multi-thread test cases once MultithreadedTC test framework is added to the SDP project
-	// to properly test concurrency of the notification and registration during Spring ApplicationContext creation.
+	@Test
+	public void testInitWhenApplicationContextIsNull() {
+		assertNull(SpringContextBootstrappingInitializer.applicationContext);
+
+		final ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testInitWhenApplicationContextIsNull");
+
+		when(mockApplicationContext.getId()).thenReturn("testInitWhenApplicationContextIsNull");
+		when(mockApplicationContext.isRunning()).thenReturn(true);
+
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
+			@Override
+			protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
+					final String[] configLocations) {
+				return mockApplicationContext;
+			}
+		};
+
+		initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
+			"/path/to/spring/application/context.xml"));
+
+		verify(mockApplicationContext, times(1)).addApplicationListener(same(initializer));
+		verify(mockApplicationContext, times(1)).registerShutdownHook();
+		verify(mockApplicationContext, times(1)).refresh();
+
+		assertSame(mockApplicationContext, SpringContextBootstrappingInitializer.getApplicationContext());
+	}
+
+	@Test
+	public void testInitWhenApplicationContextIsInactive() {
+		ConfigurableApplicationContext mockInactiveApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testInitWhenApplicationContextIsInactive.Inactive");
+
+		when(mockInactiveApplicationContext.isActive()).thenReturn(false);
+
+		SpringContextBootstrappingInitializer.applicationContext = mockInactiveApplicationContext;
+
+		assertSame(mockInactiveApplicationContext, SpringContextBootstrappingInitializer.getApplicationContext());
+
+		final ConfigurableApplicationContext mockNewApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testInitWhenApplicationContextIsInactive.New");
+
+		when(mockNewApplicationContext.getId()).thenReturn("testInitWhenApplicationContextIsInactive.New");
+		when(mockNewApplicationContext.isRunning()).thenReturn(true);
+
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
+			@Override
+			protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
+					final String[] configLocations) {
+				return mockNewApplicationContext;
+			}
+		};
+
+		initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
+			"/path/to/spring/application/context.xml"));
+
+		verify(mockNewApplicationContext, times(1)).addApplicationListener(same(initializer));
+		verify(mockNewApplicationContext, times(1)).registerShutdownHook();
+		verify(mockNewApplicationContext, times(1)).refresh();
+
+		assertSame(mockNewApplicationContext, SpringContextBootstrappingInitializer.getApplicationContext());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testInitWhenBothBasePackagesAndContextConfigLocationsParametersAreUnspecified() {
+		assertNull(SpringContextBootstrappingInitializer.applicationContext);
+
+		try {
+			new SpringContextBootstrappingInitializer().init(createParameters(createParameters(
+					SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER, ""),
+				SpringContextBootstrappingInitializer.BASE_PACKAGES_PARAMETER, ""));
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("Either 'basePackages' or the 'contextConfigLocations' parameter must be specified.",
+				expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testInitWhenApplicationContextIsNotRunning() {
+		assertNull(SpringContextBootstrappingInitializer.applicationContext);
+
+		final ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testInitWhenApplicationContextIsNotRunning");
+
+		when(mockApplicationContext.getId()).thenReturn("testInitWhenApplicationContextIsNotRunning");
+		when(mockApplicationContext.isRunning()).thenReturn(false);
+
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
+			@Override
+			protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
+					final String[] configLocations) {
+				return mockApplicationContext;
+			}
+		};
+
+		initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
+			"/path/to/spring/application/context.xml"));
+
+		verify(mockApplicationContext, times(1)).addApplicationListener(same(initializer));
+		verify(mockApplicationContext, times(1)).registerShutdownHook();
+		verify(mockApplicationContext, times(1)).refresh();
+
+		SpringContextBootstrappingInitializer.getApplicationContext();
+	}
+
+	protected static void assertNotifiedWithEvent(final TestApplicationListener listener, final ContextRefreshedEvent expectedEvent) {
+		Assert.assertTrue(listener.isNotified());
+		Assert.assertSame(expectedEvent, listener.getActualEvent());
+	}
+
+	protected static void assertUnnotified(final TestApplicationListener listener) {
+		assertFalse(listener.isNotified());
+		assertNull(listener.getActualEvent());
+	}
+
+	@Test
+	public void testOnApplicationEvent() {
+		TestApplicationListener testApplicationListener = new TestApplicationListener("testOnApplicationEvent");
+
+		try {
+			testApplicationListener = SpringContextBootstrappingInitializer.register(testApplicationListener);
+
+			assertUnnotified(testApplicationListener);
+
+			ContextRefreshedEvent testContextRefreshedEvent = new ContextRefreshedEvent(mock(ApplicationContext.class,
+				"testOnApplicationEvent"));
+
+			new SpringContextBootstrappingInitializer().onApplicationEvent(testContextRefreshedEvent);
+
+			assertNotifiedWithEvent(testApplicationListener, testContextRefreshedEvent);
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(testApplicationListener);
+		}
+	}
+
+	@Test
+	public void testOnApplicationEventWithContextStartedEvent() {
+		TestApplicationListener testApplicationListener = new TestApplicationListener(
+			"testOnApplicationEventWithContextStartedEvent");
+
+		try {
+			testApplicationListener = SpringContextBootstrappingInitializer.register(testApplicationListener);
+
+			assertUnnotified(testApplicationListener);
+
+			ContextStartedEvent testContextStartedEvent = mock(ContextStartedEvent.class,
+				"testOnApplicationEventWithContextStartedEvent");
+
+			new SpringContextBootstrappingInitializer().onApplicationEvent(testContextStartedEvent);
+
+			assertUnnotified(testApplicationListener);
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(testApplicationListener);
+		}
+	}
+
+	@Test
+	public void testOnApplicationEventWithMultipleRegisteredApplicationListeners() {
+		TestApplicationListener testApplicationListenerOne = new TestApplicationListener(
+			"testOnApplicationEventWithMultipleRegisteredApplicationListeners.1");
+
+		TestApplicationListener testApplicationListenerTwo = new TestApplicationListener(
+			"testOnApplicationEventWithMultipleRegisteredApplicationListeners.2");
+
+		TestApplicationListener testApplicationListenerThree = new TestApplicationListener(
+			"testOnApplicationEventWithMultipleRegisteredApplicationListeners.3");
+
+		try {
+			testApplicationListenerOne = SpringContextBootstrappingInitializer.register(testApplicationListenerOne);
+			testApplicationListenerTwo = SpringContextBootstrappingInitializer.register(testApplicationListenerTwo);
+			testApplicationListenerThree = SpringContextBootstrappingInitializer.register(testApplicationListenerThree);
+
+			assertUnnotified(testApplicationListenerOne);
+			assertUnnotified(testApplicationListenerTwo);
+			assertUnnotified(testApplicationListenerThree);
+
+			ContextRefreshedEvent testContextRefreshedEvent = new ContextRefreshedEvent(mock(ApplicationContext.class,
+				"testRegisterWithOnApplicationEvent"));
+
+			new SpringContextBootstrappingInitializer().onApplicationEvent(testContextRefreshedEvent);
+
+			assertNotifiedWithEvent(testApplicationListenerOne, testContextRefreshedEvent);
+			assertNotifiedWithEvent(testApplicationListenerTwo, testContextRefreshedEvent);
+			assertNotifiedWithEvent(testApplicationListenerThree, testContextRefreshedEvent);
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(testApplicationListenerOne);
+			SpringContextBootstrappingInitializer.unregister(testApplicationListenerTwo);
+			SpringContextBootstrappingInitializer.unregister(testApplicationListenerThree);
+		}
+	}
+
+	@Test
+	public void testOnApplicationEventWithUnregisteredApplicationListener() {
+		TestApplicationListener testApplicationListener = new TestApplicationListener(
+				"testOnApplicationEventWithUnregisteredApplicationListener");
+
+		try {
+			testApplicationListener = SpringContextBootstrappingInitializer.unregister(
+				SpringContextBootstrappingInitializer.register(testApplicationListener));
+
+			assertUnnotified(testApplicationListener);
+
+			ContextRefreshedEvent testContextRefreshedEvent = new ContextRefreshedEvent(mock(ApplicationContext.class,
+				"testRegisterThenUnregisterWithOnApplicationEvent"));
+
+			new SpringContextBootstrappingInitializer().onApplicationEvent(testContextRefreshedEvent);
+
+			assertUnnotified(testApplicationListener);
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(testApplicationListener);
+		}
+	}
+
+	@Test
+	public void testNotifyOnExistingContextRefreshedEventBeforeApplicationContextExists() {
+		assertNull(SpringContextBootstrappingInitializer.contextRefreshedEvent);
+
+		TestApplicationListener testApplicationListener = new TestApplicationListener(
+			"testNotifyOnExistingContextRefreshedEventBeforeApplicationContextExists");
+
+		try {
+			testApplicationListener = SpringContextBootstrappingInitializer.register(testApplicationListener);
+			assertUnnotified(testApplicationListener);
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(testApplicationListener);
+		}
+	}
+
+	@Test
+	public void testNotifyOnExistingContextRefreshedEventAfterContextRefreshed() {
+		ContextRefreshedEvent testContextRefreshedEvent = new ContextRefreshedEvent(mock(ApplicationContext.class));
+
+		new SpringContextBootstrappingInitializer().onApplicationEvent(testContextRefreshedEvent);
+
+		TestApplicationListener testApplicationListener = new TestApplicationListener(
+			"testNotifyApplicationListenersOnContextRefreshedEventAfterApplicationContextRefreshed");
+
+		try {
+			testApplicationListener = SpringContextBootstrappingInitializer.register(testApplicationListener);
+			assertNotifiedWithEvent(testApplicationListener, testContextRefreshedEvent);
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(testApplicationListener);
+   		}
+	}
+
+	@Test
+	public void testOnApplicationEventAndNotifyOnExistingContextRefreshedEvent() {
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testOnApplicationEventAndNotifyOnExistingContextRefreshedEvent");
+
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer();
+
+		TestApplicationListener testApplicationListenerOne = new TestApplicationListener(
+			"testOnApplicationEventAndNotifyOnExistingContextRefreshedEvent.1");
+
+		TestApplicationListener testApplicationListenerTwo = new TestApplicationListener(
+			"testOnApplicationEventAndNotifyOnExistingContextRefreshedEvent.2");
+
+		TestApplicationListener testApplicationListenerThree = new TestApplicationListener(
+			"testOnApplicationEventAndNotifyOnExistingContextRefreshedEvent.3");
+
+		try {
+			testApplicationListenerOne = SpringContextBootstrappingInitializer.register(testApplicationListenerOne);
+
+			assertUnnotified(testApplicationListenerOne);
+			assertUnnotified(testApplicationListenerTwo);
+			assertUnnotified(testApplicationListenerThree);
+
+			ContextRefreshedEvent testContextRefreshedEvent = new ContextRefreshedEvent(mockApplicationContext);
+
+			initializer.onApplicationEvent(testContextRefreshedEvent);
+
+			assertNotifiedWithEvent(testApplicationListenerOne, testContextRefreshedEvent);
+			assertUnnotified(testApplicationListenerTwo);
+			assertUnnotified(testApplicationListenerThree);
+
+			testApplicationListenerTwo = SpringContextBootstrappingInitializer.register(testApplicationListenerTwo);
+
+			assertNotifiedWithEvent(testApplicationListenerTwo, testContextRefreshedEvent);
+			assertUnnotified(testApplicationListenerOne);
+			assertUnnotified(testApplicationListenerThree);
+
+			ContextStoppedEvent contextStoppedEvent = new ContextStoppedEvent(mockApplicationContext);
+
+			initializer.onApplicationEvent(contextStoppedEvent);
+
+			assertUnnotified(testApplicationListenerOne);
+			assertUnnotified(testApplicationListenerTwo);
+			assertUnnotified(testApplicationListenerThree);
+
+			initializer.onApplicationEvent(testContextRefreshedEvent);
+
+			assertNotifiedWithEvent(testApplicationListenerOne, testContextRefreshedEvent);
+			assertNotifiedWithEvent(testApplicationListenerTwo, testContextRefreshedEvent);
+			assertUnnotified(testApplicationListenerThree);
+
+			ContextClosedEvent testContextClosedEvent = new ContextClosedEvent(mockApplicationContext);
+
+			initializer.onApplicationEvent(testContextClosedEvent);
+
+			assertUnnotified(testApplicationListenerOne);
+			assertUnnotified(testApplicationListenerTwo);
+			assertUnnotified(testApplicationListenerThree);
+
+			SpringContextBootstrappingInitializer.register(testApplicationListenerThree);
+
+			assertUnnotified(testApplicationListenerOne);
+			assertUnnotified(testApplicationListenerTwo);
+			assertUnnotified(testApplicationListenerThree);
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(testApplicationListenerOne);
+			SpringContextBootstrappingInitializer.unregister(testApplicationListenerTwo);
+			SpringContextBootstrappingInitializer.unregister(testApplicationListenerThree);
+		}
+	}
+
+	// TODO add additional multi-threaded test cases once MultithreadedTC test framework is added to the SDP project
+	// in order to properly test concurrency of notification and registration during Spring ApplicationContext creation.
 
 	protected static class TestApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
 
-		private volatile boolean called = false;
+		private volatile boolean notified = false;
 
 		private volatile ContextRefreshedEvent actualEvent;
 
-		public void assertCalled() {
-			assertTrue(String.format("Expected the (%1$s).onApplicationEvent(:ContextRefreshedEvent) method to be called!",
-				getClass().getName()), called);
+		private final String name;
+
+		public TestApplicationListener(final String name) {
+			this.name = name;
 		}
 
-		public void assertNotCalled() {
-			assertFalse(String.format("Expected the (%1$s).onApplicationEvent(:ContextRefreshedEvent) method to not be called for ApplicationEvent (%2$s)!",
-				getClass().getName(), ObjectUtils.nullSafeClassName(actualEvent)), called);
+		public ContextRefreshedEvent getActualEvent() {
+			ContextRefreshedEvent localActualEvent = this.actualEvent;
+			this.actualEvent = null;
+			return localActualEvent;
 		}
 
-		public void assertSame(final ContextRefreshedEvent expectedEvent) {
-			Assert.assertSame(expectedEvent, actualEvent);
+		public boolean isNotified() {
+			boolean localNotified = this.notified;
+			this.notified = false;
+			return localNotified;
 		}
 
 		@Override
 		public void onApplicationEvent(final ContextRefreshedEvent event) {
 			this.actualEvent = event;
-			called = true;
+			this.notified = true;
+		}
+
+		@Override
+		public String toString() {
+			return this.name;
 		}
 	}
 
