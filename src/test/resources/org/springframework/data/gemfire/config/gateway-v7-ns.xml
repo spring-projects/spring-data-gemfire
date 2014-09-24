@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-	   " default-lazy-init="true">
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+" default-lazy-init="true">
+
+	<util:properties id="gemfireProperties">
+	</util:properties>
 
 	<gfe:cache/>
 
@@ -17,6 +22,7 @@
 							batch-time-interval="3000"
 							dispatcher-threads="2"
 							disk-store-ref="diskstore"
+							disk-synchronous="true"
 							enable-batch-conflation="true"
 							maximum-queue-memory="50"
 							order-policy="THREAD"
@@ -61,7 +67,7 @@
 
     <!-- need manual-start=true for the unit test because GF will throw an exception if no locators are configured -->
     <gfe:gateway-sender id="gateway-sender" remote-distributed-system-id="2" alert-threshold="10" batch-size="11"
-						dispatcher-threads="12" manual-start="true">
+						dispatcher-threads="12" disk-synchronous="false" manual-start="true">
 		<gfe:event-filter>
 			<ref bean="event-filter"/>
 			<bean class="org.springframework.data.gemfire.config.GemfireV7GatewayNamespaceTest.TestEventFilter"/>
