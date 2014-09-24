@@ -122,8 +122,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 		when(gatewayReceiver.getBindAddress()).thenReturn(this.bindAddress);
 		when(gatewayReceiver.getEndPort()).thenReturn(this.endPort);
 		when(gatewayReceiver.getGatewayTransportFilters()).thenReturn(this.gatewayTransportFilters);
-		when(gatewayReceiver.getHost()).thenReturn(StringUtils.hasText(this.hostnameForSenders)
-			? this.hostnameForSenders : this.hostnameForClients);
+		when(gatewayReceiver.getHost()).thenReturn(this.hostnameForClients);
 		when(gatewayReceiver.getMaximumTimeBetweenPings()).thenReturn(this.maximumTimeBetweenPings);
 		when(gatewayReceiver.getSocketBufferSize()).thenReturn(this.socketBufferSize);
 		when(gatewayReceiver.getStartPort()).thenReturn(this.startPort);

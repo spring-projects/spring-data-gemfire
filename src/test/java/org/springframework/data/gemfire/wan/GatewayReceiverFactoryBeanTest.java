@@ -35,7 +35,8 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * The GatewayReceiverFactoryBeanTest class...
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory
  * @since 1.5.0
  */
 public class GatewayReceiverFactoryBeanTest {
@@ -62,7 +63,7 @@ public class GatewayReceiverFactoryBeanTest {
 		factoryBean.afterPropertiesSet();
 
 		verify(mockGatewayReceiverFactory).setBindAddress(eq("10.224.112.77"));
-		verify(mockGatewayReceiverFactory).setHostnameForSenders(eq("skullbox"));
+		verify(mockGatewayReceiverFactory).setHostnameForClients(eq("skullbox"));
 		verify(mockGatewayReceiverFactory).setStartPort(eq(2048));
 		verify(mockGatewayReceiverFactory).setEndPort(eq(4096));
 		verify(mockGatewayReceiverFactory).setMaximumTimeBetweenPings(eq(5000));
