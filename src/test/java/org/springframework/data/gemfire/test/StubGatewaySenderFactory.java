@@ -88,22 +88,22 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 		when(gatewaySender.getId()).thenReturn(name);
 		when(gatewaySender.getRemoteDSId()).thenReturn(remoteSystemId);
 		when(gatewaySender.getAlertThreshold()).thenReturn(this.alertThreshold);
-		when(gatewaySender.getBatchSize()).thenReturn(this.batchSize);
-		when(gatewaySender.getBatchTimeInterval()).thenReturn(this.batchTimeInterval);
-		when(gatewaySender.getDiskStoreName()).thenReturn(this.diskStoreName);
-		when(gatewaySender.getDispatcherThreads()).thenReturn(this.dispatcherThreads);
 		when(gatewaySender.getGatewayEventFilters()).thenReturn(this.eventFilters);
 		when(gatewaySender.getGatewayEventSubstitutionFilter()).thenReturn(gatewayEventSubstitutionFilter);
 		when(gatewaySender.getGatewayTransportFilters()).thenReturn(this.transportFilters);
-		when(gatewaySender.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
-		when(gatewaySender.getOrderPolicy()).thenReturn(this.orderPolicy);
+		when(gatewaySender.isManualStart()).thenReturn(this.manualStart);
 		when(gatewaySender.getSocketBufferSize()).thenReturn(this.socketBufferSize);
 		when(gatewaySender.getSocketReadTimeout()).thenReturn(this.socketReadTimeout);
-		when(gatewaySender.isManualStart()).thenReturn(this.manualStart);
 		when(gatewaySender.isBatchConflationEnabled()).thenReturn(this.batchConflationEnabled);
+		when(gatewaySender.getBatchSize()).thenReturn(this.batchSize);
+		when(gatewaySender.getBatchTimeInterval()).thenReturn(this.batchTimeInterval);
+		when(gatewaySender.getDiskStoreName()).thenReturn(this.diskStoreName);
 		when(gatewaySender.isDiskSynchronous()).thenReturn(this.diskSynchronous);
+		when(gatewaySender.getDispatcherThreads()).thenReturn(this.dispatcherThreads);
+		when(gatewaySender.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
 		when(gatewaySender.isParallel()).thenReturn(this.parallel);
 		when(gatewaySender.isPersistenceEnabled()).thenReturn(this.persistenceEnabled);
+		when(gatewaySender.getOrderPolicy()).thenReturn(this.orderPolicy);
 		when(gatewaySender.isRunning()).thenAnswer(new Answer<Boolean>() {
 			@Override
 			public Boolean answer(InvocationOnMock invocation) throws Throwable {
