@@ -26,18 +26,21 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
+import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
- * FactoryBean for creating a GemFire {@link GatewayReceiver}.
+ * Spring FactoryBean for creating a GemFire {@link GatewayReceiver}.
  * 
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
  * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.wan.GatewayReceiver
  * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory
  * @since 1.2.2
  */
+@SuppressWarnings("unused")
 public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<GatewayReceiver>
 		implements SmartLifecycle {
 
@@ -53,6 +56,7 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	private List<GatewayTransportFilter> transportFilters;
 
 	private String bindAddress;
+	private String hostnameForSenders;
 
 	/**
 	 * Constructs an instance of the GatewayReceiverFactoryBean class for configuring an initializing
@@ -84,17 +88,22 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 			}
 		}
 
-		if (bindAddress != null) {
+		if (StringUtils.hasText(bindAddress)) {
 			gatewayReceiverFactory.setBindAddress(bindAddress);
 		}
 
-		int minPort = (startPort != null ? startPort : GatewayReceiver.DEFAULT_START_PORT);
-		int maxPort = (endPort != null ? endPort : GatewayReceiver.DEFAULT_END_PORT);
+		if (StringUtils.hasText(hostnameForSenders)) {
+			gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
+		}
 
-		Assert.isTrue(minPort <= maxPort, String.format("'startPort' must be less than or equal to %1$d.", maxPort));
+		int localStartPort = (startPort != null ? startPort : GatewayReceiver.DEFAULT_START_PORT);
+		int localEndPort = (endPort != null ? endPort : GatewayReceiver.DEFAULT_END_PORT);
 
-		gatewayReceiverFactory.setStartPort(minPort);
-		gatewayReceiverFactory.setEndPort(maxPort);
+		Assert.isTrue(localStartPort <= localEndPort, String.format("'startPort' must be less than or equal to %1$d.",
+			localEndPort));
+
+		gatewayReceiverFactory.setStartPort(localStartPort);
+		gatewayReceiverFactory.setEndPort(localEndPort);
 
 		if (maximumTimeBetweenPings != null) {
 			gatewayReceiverFactory.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
@@ -113,6 +122,10 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 	public void setBindAddress(String bindAddress) {
 		this.bindAddress = bindAddress;
+	}
+
+	public void setHostnameForSenders(String hostnameForSenders) {
+		this.hostnameForSenders = hostnameForSenders;
 	}
 
 	public void setStartPort(Integer startPort) {
