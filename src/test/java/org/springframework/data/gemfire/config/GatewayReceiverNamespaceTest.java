@@ -64,6 +64,7 @@ public class GatewayReceiverNamespaceTest {
 
 		assertNotNull(defaultGatewayReceiver);
 		assertEquals("192.168.0.1", defaultGatewayReceiver.getBindAddress());
+		assertEquals("skullbox", defaultGatewayReceiver.getHost());
 		assertEquals(12345, defaultGatewayReceiver.getStartPort());
 		assertEquals(54321, defaultGatewayReceiver.getEndPort());
 		assertEquals(5000, defaultGatewayReceiver.getMaximumTimeBetweenPings());

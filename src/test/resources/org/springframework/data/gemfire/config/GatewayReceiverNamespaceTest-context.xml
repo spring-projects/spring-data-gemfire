@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<gfe:cache/>
+	<util:properties id="gemfireProperties">
+		<prop key="name">GatewayReceiverNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">config</prop>
+	</util:properties>
 
-	<gfe:gateway-receiver id="Default" bind-address="192.168.0.1" start-port="12345" end-port="54321"
-						  manual-start="true" maximum-time-between-pings="5000" socket-buffer-size="32768"/>
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:gateway-receiver id="Default" bind-address="192.168.0.1" hostname-for-senders="skullbox"
+						  start-port="12345" end-port="54321" manual-start="true"
+						  maximum-time-between-pings="5000" socket-buffer-size="32768"/>
 
 	<gfe:gateway-receiver id="Auto" manual-start="false"/>
 

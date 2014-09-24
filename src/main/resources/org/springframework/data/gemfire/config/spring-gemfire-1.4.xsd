@@ -2599,6 +2599,16 @@ Specifies the bind address (IP address or host name) for the gateway receiver
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="hostname-for-senders" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Attribute where you can specify an IP address or hostname for gateway sender connections.
+If you configure hostname-for-senders, locators will use the provided hostname or IP address
+when instructing gateway senders on how to connect to gateway receivers. If you provide ""
+or null as the value, by default the gateway receiver's bind-address will be sent to clients.
+            	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="start-port" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
