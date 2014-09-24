@@ -18,8 +18,7 @@
 	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:gateway-receiver id="Default" bind-address="192.168.0.1" hostname-for-senders="skullbox"
-						  start-port="12345" end-port="54321" manual-start="true"
-						  maximum-time-between-pings="5000" socket-buffer-size="32768"/>
+						  start-port="12345" end-port="54321" maximum-time-between-pings="5000" socket-buffer-size="32768"/>
 
 	<gfe:gateway-receiver id="Auto" manual-start="false"/>
 

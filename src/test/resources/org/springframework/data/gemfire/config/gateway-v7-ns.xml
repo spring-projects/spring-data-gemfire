@@ -10,9 +10,12 @@
 " default-lazy-init="true">
 
 	<util:properties id="gemfireProperties">
+		<prop key="name">GemfireV7GatewayNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">config</prop>
 	</util:properties>
 
-	<gfe:cache/>
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:partitioned-region id="region-inner-gateway-sender" >
         <gfe:gateway-sender remote-distributed-system-id="1"

@@ -93,7 +93,7 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 		}
 
 		if (StringUtils.hasText(hostnameForSenders)) {
-			gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
+			gatewayReceiverFactory.setHostnameForClients(hostnameForSenders);
 		}
 
 		int localStartPort = (startPort != null ? startPort : GatewayReceiver.DEFAULT_START_PORT);
