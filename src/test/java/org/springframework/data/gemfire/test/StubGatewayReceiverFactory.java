@@ -21,6 +21,7 @@ import java.util.List;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
+import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * @author David Turanski
@@ -133,7 +134,8 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 		when(gatewayReceiver.getBindAddress()).thenReturn(this.bindAddress);
 		when(gatewayReceiver.getEndPort()).thenReturn(this.endPort);
 		when(gatewayReceiver.getGatewayTransportFilters()).thenReturn(this.gatewayTransportFilters);
-		when(gatewayReceiver.getHost()).thenReturn(this.hostnameForClients);
+		when(gatewayReceiver.getHost()).thenReturn(StringUtils.hasText(this.hostnameForSenders)
+			? this.hostnameForSenders : this.hostnameForClients);
 		when(gatewayReceiver.getMaximumTimeBetweenPings()).thenReturn(this.maximumTimeBetweenPings);
 		when(gatewayReceiver.getSocketBufferSize()).thenReturn(this.socketBufferSize);
 		when(gatewayReceiver.getStartPort()).thenReturn(this.startPort);

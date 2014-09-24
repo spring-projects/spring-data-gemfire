@@ -23,9 +23,12 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
+ * Spring BeanDefinitionParser for the &lt;gfe:gateway-receiver&gt; SDG (GFE) XML XSD namespace element.
+ *
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
+ * @see org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean
  */
 class GatewayReceiverParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -43,6 +46,7 @@ class GatewayReceiverParser extends AbstractSimpleBeanDefinitionParser {
 		builder.setLazyInit(false);
 
 		ParsingUtils.setPropertyValue(element, builder, "bind-address");
+		ParsingUtils.setPropertyValue(element, builder, "hostname-for-senders");
 		ParsingUtils.setPropertyValue(element, builder, "start-port");
 		ParsingUtils.setPropertyValue(element, builder, "end-port");
 		ParsingUtils.setPropertyValue(element, builder, "manual-start");

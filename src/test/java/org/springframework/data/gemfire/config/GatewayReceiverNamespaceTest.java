@@ -58,12 +58,13 @@ public class GatewayReceiverNamespaceTest {
 	// TODO test the default value for "manual-start" (true) without explicitly setting the attribute in Spring XML
 	public void testDefault() throws Exception {
 		assertNotNull("The 'Default' GatewayReceiverFactoryBean was not properly configured and initialized!", defaultFactoryBean);
-		assertFalse(defaultFactoryBean.isAutoStartup());
+		assertTrue(defaultFactoryBean.isAutoStartup());
 
 		GatewayReceiver defaultGatewayReceiver = defaultFactoryBean.getObject();
 
 		assertNotNull(defaultGatewayReceiver);
 		assertEquals("192.168.0.1", defaultGatewayReceiver.getBindAddress());
+		assertEquals("skullbox", defaultGatewayReceiver.getHost());
 		assertEquals(12345, defaultGatewayReceiver.getStartPort());
 		assertEquals(54321, defaultGatewayReceiver.getEndPort());
 		assertEquals(5000, defaultGatewayReceiver.getMaximumTimeBetweenPings());
