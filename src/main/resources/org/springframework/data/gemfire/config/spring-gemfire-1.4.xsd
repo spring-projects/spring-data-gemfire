@@ -2477,6 +2477,14 @@ The maximum time interval that can elapse before a partial batch is sent from a 
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="disk-synchronous" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+For Regions that write to disk, a boolean that specifies whether disk writes are done synchronously (true)
+for the Region or asynchronously (false).
+            	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

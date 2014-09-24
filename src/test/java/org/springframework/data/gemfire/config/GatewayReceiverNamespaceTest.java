@@ -58,7 +58,7 @@ public class GatewayReceiverNamespaceTest {
 	// TODO test the default value for "manual-start" (true) without explicitly setting the attribute in Spring XML
 	public void testDefault() throws Exception {
 		assertNotNull("The 'Default' GatewayReceiverFactoryBean was not properly configured and initialized!", defaultFactoryBean);
-		assertFalse(defaultFactoryBean.isAutoStartup());
+		assertTrue(defaultFactoryBean.isAutoStartup());
 
 		GatewayReceiver defaultGatewayReceiver = defaultFactoryBean.getObject();
 

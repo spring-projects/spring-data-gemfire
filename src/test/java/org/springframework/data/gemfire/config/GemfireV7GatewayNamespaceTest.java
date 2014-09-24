@@ -82,10 +82,9 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	@AfterClass
 	public static void tearDown() {
 		for (String name : new File(".").list(new FilenameFilter() {
-
 			@Override
-			public boolean accept(File dir, String name) {
-				return name.startsWith("BACKUP");
+			public boolean accept(File file, String filename) {
+				return filename.startsWith("BACKUP");
 			}
 		})) {
 			new File(name).delete();
@@ -116,6 +115,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertEquals(10, TestUtils.readField("alertThreshold", gatewaySenderFactoryBean));
 		assertEquals(11, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
 		assertEquals(12, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
+		assertEquals(false, TestUtils.readField("diskSynchronous", gatewaySenderFactoryBean));
 		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
 
 		List<GatewayEventFilter> eventFilters = TestUtils.readField("eventFilters", gatewaySenderFactoryBean);
@@ -131,8 +131,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testInnerGatewaySender() throws Exception {
 		Region<?, ?> region = ctx.getBean("region-inner-gateway-sender", Region.class);
 
@@ -151,12 +151,13 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertNotNull(gatewaySender);
 		assertEquals(1, gatewaySender.getRemoteDSId());
 		assertEquals(false, gatewaySender.isManualStart());
-		assertEquals(true,gatewaySender.isRunning());
+		assertEquals(true, gatewaySender.isRunning());
 		assertEquals(10, gatewaySender.getAlertThreshold());
 		assertEquals(11, gatewaySender.getBatchSize());
 		assertEquals(3000, gatewaySender.getBatchTimeInterval());
 		assertEquals(2, gatewaySender.getDispatcherThreads());
 		assertEquals("diskstore", gatewaySender.getDiskStoreName());
+		assertEquals(true, gatewaySender.isDiskSynchronous());
 		assertTrue(gatewaySender.isBatchConflationEnabled());
 		assertEquals(50, gatewaySender.getMaximumQueueMemory());
 		assertEquals(OrderPolicy.THREAD, gatewaySender.getOrderPolicy());
