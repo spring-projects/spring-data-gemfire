@@ -251,13 +251,12 @@ abstract class ParsingUtils {
 
 		return false;
 	}
-	
 
 	static void parseTransportFilters(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		Element transportFilterElement = DomUtils.getChildElementByTagName(element, "transport-filter");
 		if (transportFilterElement != null) {
-			builder.addPropertyValue("transportFilters",
-					parseRefOrNestedBeanDeclaration(parserContext, transportFilterElement, builder));
+			builder.addPropertyValue("transportFilters", parseRefOrNestedBeanDeclaration(parserContext,
+				transportFilterElement, builder));
 		}
 	}
 

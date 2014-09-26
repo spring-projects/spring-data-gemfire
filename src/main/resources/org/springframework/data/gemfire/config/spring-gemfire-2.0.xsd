@@ -2572,39 +2572,9 @@ A gateway sender gateway definition (requires Gemfire 7.0 or later)
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="event-filter" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation
-						source="com.gemstone.gemfire.cache.wan.GatewayEventFilter"><![CDATA[
-A gateway event filter for this gateway sender
-                            ]]></xsd:documentation>
-					<xsd:appinfo>
-						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.wan.GatewayEventFilter" />
-						</tool:annotation>
-					</xsd:appinfo>
-				</xsd:annotation>
-				<xsd:complexType>
-					<xsd:sequence>
-						<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[
-Inner bean definition for the event filter.
-								]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:any>
-					</xsd:sequence>
-					<xsd:attribute name="ref" type="xsd:string" use="optional">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-The name of the event filter bean referred to by this declaration. Used for convenience. If no reference exists,
-use inner bean declarations.
-						]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
-				</xsd:complexType>
-			</xsd:element>
-			<xsd:element name="transport-filter" type="gatewayTransportFilterType" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="event-filter" type="gatewayEventFilterType" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="event-substitution-filter" type="gatewayEventSubstitutionFilterType" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="transport-filter" type="gatewayTransportFilterType" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
 		<xsd:attributeGroup ref="commonWANQueueAttributes" />
 		<xsd:attribute name="name" type="xsd:string" use="optional">
@@ -2629,8 +2599,7 @@ to when the acknowldgement was received from the gateway receiver.
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="batch-time-interval" type="xsd:string"
-					   use="optional">
+		<xsd:attribute name="batch-time-interval" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The maximum time interval that can elapse before a partial batch is sent from a GatewaySender to its corresponding GatewayReceiver.
@@ -3017,9 +2986,10 @@ The id of the function service (optional)
 	<xsd:simpleType name="scopeType">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
-Determines how updates to region entries are distributed to the other caches in the distributed system where the region and entry are defined.
-Scope also determines whether to allow remote invocation of some of the region’s event handlers
-]]></xsd:documentation>
+Determines how updates to Region Entries are distributed to the other Caches in the Distributed System where
+the Region and Entry are defined.  Scope also determines whether to allow remote invocation of some of
+the Region’s event handlers
+			]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="distributed-ack" />
@@ -3027,17 +2997,15 @@ Scope also determines whether to allow remote invocation of some of the region�
 			<xsd:enumeration value="global" />
 		</xsd:restriction>
 	</xsd:simpleType>
-
-	<xsd:complexType name="gatewayTransportFilterType">
+	<!-- -->
+	<xsd:complexType name="gatewayEventFilterType">
 		<xsd:annotation>
-			<xsd:documentation
-				source="com.gemstone.gemfire.cache.wan.GatewayTransportFilter"><![CDATA[
-A transport filter for this gateway component
-                            ]]></xsd:documentation>
+			<xsd:documentation source="com.gemstone.gemfire.cache.wan.GatewayEventFilter"><![CDATA[
+A Gateway Event Filter for this GatewaySender.
+			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports
-						type="com.gemstone.gemfire.cache.wan.GatewayTransportFilter" />
+					<tool:exports type="com.gemstone.gemfire.cache.wan.GatewayEventFilter"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -3045,16 +3013,77 @@ A transport filter for this gateway component
 			<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-Inner bean definition of the transport filter.
-                                        ]]></xsd:documentation>
+Inner bean definition(s) to declare and add GatewayEventFilter(s) to the GatewaySender.
+					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:any>
 		</xsd:sequence>
 		<xsd:attribute name="ref" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the transport filter bean referred to by this declaration. Used for convenience. If no reference exists,
-use inner bean declarations.
+The name of the GatewaySender Event Filter bean referred to by this declaration.
+Used for convenience. If no reference exists, use inner bean declarations.
+					]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<!-- -->
+	<!-- -->
+	<xsd:complexType name="gatewayEventSubstitutionFilterType">
+		<xsd:annotation>
+			<xsd:documentation source="com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter"><![CDATA[
+A Gateway Event Substitution Filter for this GatewaySender.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Inner bean definition to declare and add a single GatewayEventSubstitutionFilter to the GatewaySender.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:any>
+		</xsd:sequence>
+		<xsd:attribute name="ref" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the GatewaySender Event Sustitution Filter bean referred to by this declaration.
+Used for convenience. If no reference exists, use inner bean declarations.
+					]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:complexType name="gatewayTransportFilterType">
+		<xsd:annotation>
+			<xsd:documentation source="com.gemstone.gemfire.cache.wan.GatewayTransportFilter"><![CDATA[
+A Gateway Transport Filter for this GatewaySender.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.wan.GatewayTransportFilter"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Inner bean definition(s) for the Gateway Transport Filter(s) to add to this GatewaySender.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:any>
+		</xsd:sequence>
+		<xsd:attribute name="ref" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the GatewaySender Transport Filter bean referred to by this declaration.
+Used for convenience. If no reference exists, use inner bean declarations.
                 ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

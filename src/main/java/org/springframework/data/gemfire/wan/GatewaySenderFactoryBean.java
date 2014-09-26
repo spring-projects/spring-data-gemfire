@@ -24,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
@@ -59,6 +60,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	private Boolean enableBatchConflation;
 	private Boolean parallel;
 	private Boolean persistent;
+
+	private GatewayEventSubstitutionFilter eventSubstitutionFilter;
 
 	private Integer alertThreshold;
 	private Integer batchSize;
@@ -128,6 +131,10 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			for (GatewayEventFilter eventFilter : eventFilters) {
 				gatewaySenderFactory.addGatewayEventFilter(eventFilter);
 			}
+		}
+
+		if (eventSubstitutionFilter != null) {
+			gatewaySenderFactory.setGatewayEventSubstitutionFilter(eventSubstitutionFilter);
 		}
 
 		gatewaySenderFactory.setManualStart(true);
@@ -207,6 +214,10 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	public void setDispatcherThreads(Integer dispatcherThreads) {
 		this.dispatcherThreads = dispatcherThreads;
+	}
+
+	public void setEventSubstitutionFilter(final GatewayEventSubstitutionFilter eventSubstitutionFilter) {
+		this.eventSubstitutionFilter = eventSubstitutionFilter;
 	}
 
 	public void setManualStart(Boolean manualStart) {

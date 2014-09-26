@@ -44,7 +44,7 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 	private boolean manualStart;
 	private boolean parallel;
 	private boolean persistenceEnabled;
-	private boolean running = true;
+	private boolean running = false;
 
 	private int alertThreshold;
 	private int batchSize;
