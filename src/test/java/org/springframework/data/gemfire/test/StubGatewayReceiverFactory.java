@@ -12,11 +12,16 @@
  */
 package org.springframework.data.gemfire.test;
 
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
@@ -25,9 +30,12 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory
  */
 public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
+
+	private volatile boolean running;
 
 	private int endPort;
 	private int maximumTimeBetweenPings;
@@ -126,6 +134,23 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 		when(gatewayReceiver.getMaximumTimeBetweenPings()).thenReturn(this.maximumTimeBetweenPings);
 		when(gatewayReceiver.getSocketBufferSize()).thenReturn(this.socketBufferSize);
 		when(gatewayReceiver.getStartPort()).thenReturn(this.startPort);
+		when(gatewayReceiver.isRunning()).thenAnswer(new Answer<Boolean>() {
+			@Override
+			public Boolean answer(InvocationOnMock invocation) throws Throwable {
+				return running;
+			}
+		});
+		try {
+			doAnswer(new Answer<Void>() {
+				public Void answer(InvocationOnMock invocation) {
+					running = true;
+					return null;
+				}
+			}).when(gatewayReceiver).start();
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 
 		return gatewayReceiver;
 	}
