@@ -32,16 +32,17 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 import org.springframework.data.gemfire.test.support.IOUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
 
 /**
  * The ProcessUtils class is a utility class for working with process, or specifically instances
  * of the Java Process class.
  *
  * @author John Blum
+ * @see java.io.File
  * @see java.lang.Process
+ * @see java.lang.management.ManagementFactory
  * @see java.lang.management.RuntimeMXBean
  * see com.sun.tools.attach.VirtualMachine
  * @since 1.5.0
@@ -114,7 +115,7 @@ public abstract class ProcessUtils {
 	public static int findAndReadPid(final File workingDirectory) {
 		Assert.isTrue(workingDirectory != null && workingDirectory.isDirectory(), String.format(
 			"The file system pathname (%1$s) expected to contain a PID file is not a valid directory!",
-				workingDirectory));
+			workingDirectory));
 
 		File pidFile = findPidFile(workingDirectory);
 
