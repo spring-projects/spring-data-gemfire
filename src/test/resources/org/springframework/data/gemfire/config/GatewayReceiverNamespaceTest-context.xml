@@ -10,18 +10,32 @@
 ">
 
 	<util:properties id="gemfireProperties">
-		<prop key="name">GatewayReceiverNamespaceTest</prop>
+		<prop key="name">GatewayReceiverDefaultStartNamespaceTest</prop>
 		<prop key="mcast-port">0</prop>
 		<prop key="log-level">config</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:gateway-receiver id="Default" bind-address="192.168.0.1" hostname-for-senders="skullbox"
-						  start-port="12345" end-port="54321" maximum-time-between-pings="5000" socket-buffer-size="32768"/>
+	<beans profile="defaultStart">
+		<gfe:gateway-receiver id="Default" hostname-for-senders="skullbox"
+							  start-port="12345" end-port="54321" maximum-time-between-pings="5000"
+							  socket-buffer-size="32768"/>
+	</beans>
 
-	<gfe:gateway-receiver id="Auto" manual-start="false"/>
 
-	<gfe:gateway-receiver id="Manual" manual-start="true"/>
+	<beans profile="autoStart">
+		<gfe:gateway-receiver id="Auto" manual-start="false" hostname-for-senders="neo"
+							  start-port="15500" end-port="25500" maximum-time-between-pings="10000"
+							  socket-buffer-size="16384"/>
+	</beans>
+
+
+	<beans profile="manualStart">
+		<gfe:gateway-receiver id="Manual" manual-start="true" bind-address="192.168.0.1" hostname-for-senders="theOne"
+							  start-port="100" end-port="900" maximum-time-between-pings="1000"
+							  socket-buffer-size="8192"/>
+	</beans>
+
 
 </beans>
