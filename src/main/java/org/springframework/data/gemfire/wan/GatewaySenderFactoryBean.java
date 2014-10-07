@@ -57,7 +57,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	private List<GatewayTransportFilter> transportFilters;
 
 	private Boolean diskSynchronous;
-	private Boolean enableBatchConflation;
+	private Boolean batchConflationEnabled;
 	private Boolean parallel;
 	private Boolean persistent;
 
@@ -96,8 +96,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	@Override
 	protected void doInit() {
-		GatewaySenderFactory gatewaySenderFactory = (this.factory != null ? (GatewaySenderFactory) factory :
-			cache.createGatewaySenderFactory());
+		GatewaySenderFactory gatewaySenderFactory = (this.factory != null ? (GatewaySenderFactory) factory
+			: cache.createGatewaySenderFactory());
 
 		if (alertThreshold != null) {
 			gatewaySenderFactory.setAlertThreshold(alertThreshold);
@@ -123,8 +123,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
 		}
 
-		if (enableBatchConflation != null) {
-			gatewaySenderFactory.setBatchConflationEnabled(enableBatchConflation);
+		if (batchConflationEnabled != null) {
+			gatewaySenderFactory.setBatchConflationEnabled(batchConflationEnabled);
 		}
 
 		if (!CollectionUtils.isEmpty(eventFilters)) {
@@ -176,24 +176,24 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
         gatewaySender = wrapper;
 	}
 
-	public void setRemoteDistributedSystemId(int remoteDistributedSystemId) {
-		this.remoteDistributedSystemId = remoteDistributedSystemId;
-	}
-
-	public void setEventFilters(List<GatewayEventFilter> gatewayEventFilters) {
-		this.eventFilters = gatewayEventFilters;
-	}
-
-	public void setTransportFilters(List<GatewayTransportFilter> gatewayTransportFilters) {
-		this.transportFilters = gatewayTransportFilters;
-	}
-
 	public void setAlertThreshold(Integer alertThreshold) {
 		this.alertThreshold = alertThreshold;
 	}
 
+	public void setBatchConflationEnabled(Boolean batchConflationEnabled) {
+		this.batchConflationEnabled = batchConflationEnabled;
+	}
+
+	/**
+	 * Boolean value that determines whether GemFire should conflate messages.
+	 *
+	 * @param enableBatchConflation a boolean value indicating whether GemFire should conflate messages in the Queue.
+	 * @see #setBatchConflationEnabled(Boolean)
+	 * @deprecated use setBatchConflationEnabled(Boolean)
+	 */
+	@Deprecated
 	public void setEnableBatchConflation(Boolean enableBatchConflation) {
-		this.enableBatchConflation = enableBatchConflation;
+		this.batchConflationEnabled = enableBatchConflation;
 	}
 
 	public void setBatchSize(Integer batchSize) {
@@ -214,6 +214,10 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	public void setDispatcherThreads(Integer dispatcherThreads) {
 		this.dispatcherThreads = dispatcherThreads;
+	}
+
+	public void setEventFilters(List<GatewayEventFilter> gatewayEventFilters) {
+		this.eventFilters = gatewayEventFilters;
 	}
 
 	public void setEventSubstitutionFilter(final GatewayEventSubstitutionFilter eventSubstitutionFilter) {
@@ -256,12 +260,20 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		return Boolean.TRUE.equals(this.persistent);
 	}
 
+	public void setRemoteDistributedSystemId(int remoteDistributedSystemId) {
+		this.remoteDistributedSystemId = remoteDistributedSystemId;
+	}
+
 	public void setSocketBufferSize(Integer socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
 	public void setSocketReadTimeout(Integer socketReadTimeout) {
 		this.socketReadTimeout = socketReadTimeout;
+	}
+
+	public void setTransportFilters(List<GatewayTransportFilter> gatewayTransportFilters) {
+		this.transportFilters = gatewayTransportFilters;
 	}
 
 	/* (non-Javadoc)

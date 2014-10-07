@@ -69,8 +69,9 @@
     </gfe:gateway-receiver>
 
     <!-- need manual-start=true for the unit test because GF will throw an exception if no locators are configured -->
-    <gfe:gateway-sender id="gateway-sender" remote-distributed-system-id="2" alert-threshold="10" batch-size="11"
-						dispatcher-threads="12" disk-synchronous="false" manual-start="true">
+    <gfe:gateway-sender id="gateway-sender" remote-distributed-system-id="2" alert-threshold="10"
+						batch-conflation-enabled="true" batch-size="11" dispatcher-threads="12" disk-synchronous="false"
+						manual-start="true">
 		<gfe:event-filter>
 			<ref bean="event-filter"/>
 			<bean class="org.springframework.data.gemfire.config.GemfireV7GatewayNamespaceTest.TestEventFilter"/>
@@ -82,7 +83,8 @@
    </gfe:gateway-sender>
 
 	<gfe:gateway-sender id="gateway-sender-with-event-transport-filter-refs" remote-distributed-system-id="3"
-						batch-size="50" dispatcher-threads="10" manual-start="true">
+						batch-conflation-enabled="true" batch-size="50" dispatcher-threads="10" enable-batch-conflation="false"
+						manual-start="true">
 		<gfe:event-filter ref="event-filter"/>
 		<gfe:transport-filter ref="transport-filter"/>
 	</gfe:gateway-sender>

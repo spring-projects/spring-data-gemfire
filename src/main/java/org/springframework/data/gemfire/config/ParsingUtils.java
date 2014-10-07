@@ -49,33 +49,35 @@ abstract class ParsingUtils {
 
 	private static final Log log = LogFactory.getLog(ParsingUtils.class);
 
-	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
-			String propertyName, Object defaultValue) {
-		String attr = element.getAttribute(attributeName);
-		if (StringUtils.hasText(attr)) {
-			builder.addPropertyValue(propertyName, attr);
-		} else {
-			if (defaultValue != null) {
-				builder.addPropertyValue(propertyName, defaultValue);
-			}
+	static void setPropertyValue(Element element, BeanDefinitionBuilder builder,
+			String attributeName, String propertyName, Object defaultValue) {
+
+		String attributeValue = element.getAttribute(attributeName);
+
+		if (StringUtils.hasText(attributeValue)) {
+			builder.addPropertyValue(propertyName, attributeValue);
+		}
+		else if (defaultValue != null) {
+			builder.addPropertyValue(propertyName, defaultValue);
 		}
 	}
-	
-	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
-			String propertyName) {
-		setPropertyValue(element, builder, attributeName, propertyName,null);
+
+	static void setPropertyValue(Element element, BeanDefinitionBuilder builder,
+			String attributeName, String propertyName) {
+		setPropertyValue(element, builder, attributeName, propertyName, null);
 	}
-	
 
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName) {
 		setPropertyValue(element, builder, attributeName, Conventions.attributeNameToPropertyName(attributeName));
 	}
 
-	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attrName,
-			String propertyName) {
-		String attr = element.getAttribute(attrName);
-		if (StringUtils.hasText(attr)) {
-			builder.addPropertyReference(propertyName, attr);
+	static void setPropertyReference(Element element, BeanDefinitionBuilder builder,
+			String attributeName, String propertyName) {
+
+		String attributeValue = element.getAttribute(attributeName);
+
+		if (StringUtils.hasText(attributeValue)) {
+			builder.addPropertyReference(propertyName, attributeValue);
 		}
 	}
 
@@ -104,33 +106,25 @@ abstract class ParsingUtils {
 
 	static Object getBeanReference(ParserContext parserContext, Element element, String refAttributeName) {
 		String refAttributeValue = element.getAttribute(refAttributeName);
-
-		// check nested bean declarations
-		List<Element> childElements = DomUtils.getChildElements(element);
+		Object returnValue = null;
 
 		if (StringUtils.hasText(refAttributeValue)) {
-			if (!childElements.isEmpty()) {
+			if (!DomUtils.getChildElements(element).isEmpty()) {
 				parserContext.getReaderContext().error(String.format(
 					"Use either the '%1$s' attribute or a nested bean declaration for '%2$s' element, but not both.",
 						refAttributeName, element.getLocalName()), element);
 			}
 
-			return new RuntimeBeanReference(refAttributeValue);
+			returnValue = new RuntimeBeanReference(refAttributeValue);
 		}
-		else {
-			return null;
-		}
+
+		return returnValue;
 	}
 
 	static Object parseRefOrNestedCustomElement(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder builder) {
 		Object beanRef = ParsingUtils.getBeanReference(parserContext, element, "bean");
-		if (beanRef != null) {
-			return beanRef;
-		}
-		else {
-			return parserContext.getDelegate().parseCustomElement(element, builder.getBeanDefinition());
-		}
+		return (beanRef != null ? beanRef : parserContext.getDelegate().parseCustomElement(element, builder.getBeanDefinition()));
 	}
 
 	static Object parseRefOrSingleNestedBeanDeclaration(ParserContext parserContext, Element element,
@@ -145,6 +139,7 @@ abstract class ParsingUtils {
 
 	static Object parseRefOrNestedBeanDeclaration(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder builder, String refAttributeName, boolean single) {
+
 		Object beanReference = getBeanReference(parserContext, element, refAttributeName);
 
 		if (beanReference != null) {
@@ -254,6 +249,7 @@ abstract class ParsingUtils {
 
 	static void parseTransportFilters(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		Element transportFilterElement = DomUtils.getChildElementByTagName(element, "transport-filter");
+
 		if (transportFilterElement != null) {
 			builder.addPropertyValue("transportFilters", parseRefOrNestedBeanDeclaration(parserContext,
 				transportFilterElement, builder));

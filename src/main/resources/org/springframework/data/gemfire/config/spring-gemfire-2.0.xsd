@@ -2576,34 +2576,97 @@ A gateway sender gateway definition (requires Gemfire 7.0 or later)
 			<xsd:element name="event-substitution-filter" type="gatewayEventSubstitutionFilterType" minOccurs="0" maxOccurs="1"/>
 			<xsd:element name="transport-filter" type="gatewayTransportFilterType" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
-		<xsd:attributeGroup ref="commonWANQueueAttributes" />
 		<xsd:attribute name="name" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Optionally specifies the GemFire gateway sender id. By default this value is the bean id or a generated value if an inner bean.
+Optionally specifies the GemFire GatewaySender id. By default, this value is the bean id or a generated value
+if an inner bean.
                   ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="remote-distributed-system-id" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies the remote distributed system id, an integer value representing the remote distributed system
+Integer that uniquely identifies the remote GemFire cluster to which this GatewaySender will send Region Events.
+This value corresponds to the distributed-system-id property specified in Locators for the remote cluster.
+This attribute is required.
                   ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="alert-threshold" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies the alert threshold in miliseconds, indicating the maximum time elapsed from when the gateway sent the message
-to when the acknowldgement was received from the gateway receiver.
+Maximum number of milliseconds that a Region Event can remain in the GatewaySender Queue before GemFire logs an alert.
+            	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="enable-batch-conflation" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Boolean value that determines whether GemFire should conflate messages. GemFire default is false.
+NOTE, this attribute is deprecated in favor of the common WAN Queue attribute, 'batch-conflation-enabled'.  If both
+attributes are specified, then 'batch-conflation-enabled' takes precedence.
+            	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="manual-start" type="xsd:string" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Boolean value that specifies whether you need to manually start the GatewaySender. If you supply a null value,
+the default is "false" and the GatewaySender attempts to start automatically.
             ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Size of the socket buffer that sends messages to remote sites. This size should match the size of the
+socket-buffer-size attribute of remote GatewayReceivers that process Region Events.
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="socket-read-timeout" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Amount of time in milliseconds that the GatewaySender will wait to receive an acknowledgment from a remote site.
+By default this is set to 0, which means there is no timeout. If you do set this timeout, you must set it to
+a minimum of 30000 (milliseconds). Setting it to a lower number will generate an error message and reset the value
+to the default of 0.
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attributeGroup ref="commonWANQueueAttributes"/>
+	</xsd:complexType>
+	<!-- -->
+	<xsd:attributeGroup name="commonWANQueueAttributes">
+		<xsd:attribute name="batch-conflation-enabled" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Boolean value that determines whether GemFire should conflate messages.  GemFire default is false.
+                ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="batch-size" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Maximum number of messages that a batch can contain.
+            	]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="batch-time-interval" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The maximum time interval that can elapse before a partial batch is sent from a GatewaySender to its corresponding GatewayReceiver.
+Maximum number of milliseconds that can elapse between sending batches.
             ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="disk-store-ref" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Named DiskStore to use for storing the Queue overflow, or for persisting the Queue. If you specify a value,
+the named DiskStore must exist. If you specify a null value, GemFire uses the Default DiskStore for overflow
+and Queue persistence.
+            	]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="disk-synchronous" type="xsd:string" use="optional">
@@ -2617,84 +2680,51 @@ for the Region or asynchronously (false).
 		<xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies the number of dispatcher threads to allocate to the gateway sender
+Number of dispatcher threads that are used to process Region Events from a GatewaySender Queue
+or Asynchronous Event Queue.
             ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="enable-batch-conflation" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies whether batch conflation is enabled (true or false)
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="manual-start" type="xsd:string" default="false">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies if the gateway sender is manually (true) or automatically (false) started.  Default is an automatic start (false).
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="order-policy" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the order policy.  Order policy only applies if the gateway sender queue is serial:
-KEY: Indicates that events will be concurrently processed based on the event's key,
-PARTITION: Indicates that events will be concurrently processed based on the event's partition (using the PartitionResolver)
-THREAD: Indicates that events will be concurrently processed based on the event's originating member and thread
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the socket buffer size in bytes
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="socket-read-timeout" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the socket read timeout in milliseconds
-            ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	<!-- -->
-	<xsd:attributeGroup name="commonWANQueueAttributes">
-		<xsd:attribute name="batch-size" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the batch size
-            	]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="disk-store-ref" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Indicates the id of disk store to use for persistence
-            	]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="maximum-queue-memory" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies the maximum memory in MB to allocate for the queue
+Maximum amount of memory in megabytes that the Queue can consume before overflowing to disk.
             	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="order-policy" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+When the dispatcher-threads attribute is greater than 1, order-policy configures the way in which multiple
+dispatcher threads process Region Events from a serial Gateway Queue or serial Asynchronous Event Queue.
+This attribute can have one of the following values:
+
+KEY - When distributing Region Events from the local Queue, multiple dispatcher threads preserve the order of key updates.
+THREAD - When distributing Region Events from the local Queue, multiple dispatcher threads preserve the order
+in which a given thread added Region Events to the Queue.
+PARTITION - When distributing Region Events from the local Queue, multiple dispatcher threads preserve the order
+in which Region Events were added to the local Queue. For a Partitioned Region, this means that all Region Events
+delivered to a specific partition are delivered in the same order to the remote GemFire site. For a Distributed Region,
+this means that all key updates delivered to the local GatewaySender Queue are distributed to the remote site
+in the same order.
+
+You cannot configure the order-policy for a parallel Event Queue, because parallel Queues cannot preserve event
+ordering for Regions. Only the ordering of events for a given partition (or in a given Queue of a Distributed Region)
+can be preserved.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="parallel" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-                A value of "false" or "true" that specifies the type of queue GemFire creates, serial or parallel.
-            ]]></xsd:documentation>
+Value of "true" or "false" specifying the type of GatewaySender or AsyncEventQueue that GemFire creates.
+            	]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="persistent" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Specifies whether persistence is enabled: true or false(default)
+Boolean value that determines whether GemFire persists the Gateway Queue or AsyncEventQueue.
             	]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2795,16 +2825,15 @@ An async event queue definition (requires Gemfire 7.0 or later)
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="async-event-listener" minOccurs="1"
-						 maxOccurs="1">
+			<xsd:element name="async-event-listener" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation
 						source="com.gemstone.gemfire.cache.wan.AsyncEventListener"><![CDATA[
-An async event listener definition for this distributed system. (requires Gemfire 7.0)
+An AsyncEventListener bean definition for this AsyncEventQueue. (requires Gemfire 7.0)
                             ]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.wan.AsyncEventListener" />
+							<tool:exports type="com.gemstone.gemfire.cache.wan.AsyncEventListener"/>
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -2833,54 +2862,9 @@ use inner bean declarations.
 		<xsd:attribute name="name" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Optionally specifies the GemFire async event queue id. By default this value is the bean id or a generated value if an inner bean.
+Optionally specifies the GemFire AsyncEventQueue id. By default this value is the bean id or a generated value
+if an inner bean.
                   ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="batch-conflation-enabled" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Optionally specifies whether to conflate queued events (true or false)
- (only available in Gemfire 7.0.1 + )
-                  ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="batch-time-interval" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the maximum time interval that can elapse before a partial batch is sent from a the AsyncEventQueue
- (only available in Gemfire 7.0.1 + )
-                  ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="disk-synchronous" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies if disk writes should be synchronous (true or false) (only available in Gemfire 7.0.1 + )
-                  ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="dispatcher-threads" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Specifies the number of dispatcher threads to use (only available in Gemfire 7.0.1 + )
-                  ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="order-policy" type="xsd:string"
-					   use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-(Only available in GemFire 7.0.1 + )
-Specifies the order policy - This only applies if parallel is enabled:
-KEY: Indicates that events will be parallelized based on the event's key,
-PARTITION:Indicates that events will be parallelized based on the event's: partition (using the PartitionResolver)
-THREAD:Indicates that events will be parallelized based on the event's originating member and thread
-            ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attributeGroup ref="commonWANQueueAttributes" />

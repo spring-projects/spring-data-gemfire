@@ -93,16 +93,18 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	@Test
 	public void testAsyncEventQueue() {
-		AsyncEventQueue aseq = ctx.getBean("async-event-queue", AsyncEventQueue.class);
-		assertEquals(10, aseq.getBatchSize());
-		assertTrue(aseq.isPersistent());
-		assertFalse(aseq.isParallel());
-		assertEquals("diskstore", aseq.getDiskStoreName());
-		assertEquals(50, aseq.getMaximumQueueMemory());
-		assertEquals(3, aseq.getBatchTimeInterval());
-		assertEquals(OrderPolicy.KEY, aseq.getOrderPolicy());
-		assertEquals(true, aseq.isDiskSynchronous());
-		assertEquals(true, aseq.isBatchConflationEnabled());
+		AsyncEventQueue asyncEventQueue = ctx.getBean("async-event-queue", AsyncEventQueue.class);
+
+		assertNotNull(asyncEventQueue);
+		assertTrue(asyncEventQueue.isBatchConflationEnabled());
+		assertEquals(10, asyncEventQueue.getBatchSize());
+		assertEquals(3, asyncEventQueue.getBatchTimeInterval());
+		assertEquals("diskstore", asyncEventQueue.getDiskStoreName());
+		assertTrue(asyncEventQueue.isDiskSynchronous());
+		assertEquals(50, asyncEventQueue.getMaximumQueueMemory());
+		assertEquals(OrderPolicy.KEY, asyncEventQueue.getOrderPolicy());
+		assertFalse(asyncEventQueue.isParallel());
+		assertTrue(asyncEventQueue.isPersistent());
 	}
 
 	@Test
@@ -113,6 +115,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
 		assertEquals(2, TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean));
 		assertEquals(10, TestUtils.readField("alertThreshold", gatewaySenderFactoryBean));
+		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
 		assertEquals(11, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
 		assertEquals(12, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
 		assertEquals(false, TestUtils.readField("diskSynchronous", gatewaySenderFactoryBean));
@@ -187,6 +190,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
 		assertEquals(3, TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean));
+		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
 		assertEquals(50, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
 		assertEquals(10, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
 		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));

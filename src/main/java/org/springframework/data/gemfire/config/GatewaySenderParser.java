@@ -24,9 +24,13 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
+ * Bean definition parser for the &lt;gfe:gateway-sender&gt; element in the SDG XML namespace.
+ *
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
+ * @see org.springframework.beans.factory.xml.ParserContext
+ * @see org.springframework.data.gemfire.wan.GatewaySenderFactoryBean
  */
 class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -37,19 +41,17 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		String cacheRef = element.getAttribute("cache-ref");
-
-		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef
-			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+		parseCache(element, builder);
 
 		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
 		ParsingUtils.setPropertyValue(element, builder, "alert-threshold");
+		ParsingUtils.setPropertyValue(element, builder, "enable-batch-conflation", "batchConflationEnabled");
+		ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
 		ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
 		ParsingUtils.setPropertyValue(element, builder, "disk-store-ref");
 		ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
 		ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
-		ParsingUtils.setPropertyValue(element, builder, "enable-batch-conflation");
 		ParsingUtils.setPropertyValue(element, builder, "manual-start");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
 		ParsingUtils.setPropertyValue(element, builder, "order-policy");
@@ -83,17 +85,24 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 				String regionName = (StringUtils.hasText(region.getAttribute(NAME_ATTRIBUTE))
 					? region.getAttribute(NAME_ATTRIBUTE) : region.getAttribute(ID_ATTRIBUTE));
 
-				int number = 0;
+				int index = 0;
 
-				String gatewaySenderName = (regionName + ".gatewaySender#" + number);
+				String gatewaySenderName = (regionName + ".gatewaySender#" + index);
 
 				while (parserContext.getRegistry().isBeanNameInUse(gatewaySenderName)) {
-					gatewaySenderName = (regionName + ".gatewaySender#" + (++number));
+					gatewaySenderName = (regionName + ".gatewaySender#" + (++index));
 				}
 
 				builder.addPropertyValue("name", gatewaySenderName);
 			}
 		}
+	}
+
+	private void parseCache(final Element element, final BeanDefinitionBuilder builder) {
+		String cacheRef = element.getAttribute("cache-ref");
+
+		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef
+			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 	}
 
 }

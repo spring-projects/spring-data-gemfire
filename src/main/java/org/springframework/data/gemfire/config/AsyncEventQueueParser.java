@@ -26,10 +26,15 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
+ * Bean definition parse for the &lt;gfe:async-event-queue&gt; SDG XML namespace element.
+ *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
+ * @see org.springframework.beans.factory.xml.ParserContext
+ * @see org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean
  */
-public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
+class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
@@ -40,34 +45,18 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		builder.setLazyInit(false);
 
-		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
-
-		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext,
-			asyncEventListenerElement, builder);
-
-		builder.addPropertyValue("asyncEventListener", asyncEventListener);
-
-		if (asyncEventListener instanceof RuntimeBeanReference) {
-			builder.addDependsOn(((RuntimeBeanReference) asyncEventListener).getBeanName());
-		}
-
-		String cacheRefAttribute = element.getAttribute("cache-ref");
-
-		String cacheName = (StringUtils.hasText(cacheRefAttribute) ? cacheRefAttribute
-			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
-
-		builder.addConstructorArgReference(cacheName);
+		parseAsyncEventListener(element, parserContext, builder);
+		parseCache(element, builder);
+		parseDiskStore(element, builder);
 
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
-		ParsingUtils.setPropertyValue(element, builder, "persistent");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
-
-		parseDiskStore(element, builder);
+		ParsingUtils.setPropertyValue(element, builder, "persistent");
 
 		if (GemfireUtils.GEMFIRE_VERSION.compareTo("7.0.1") >= 0) {
+			ParsingUtils.setPropertyValue(element, builder, "enable-batch-conflation", "batchConflationEnabled");
 			ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
-			ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
 			ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
 			ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
 			ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
@@ -79,20 +68,45 @@ public class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		if (!StringUtils.hasText(element.getAttribute(NAME_ATTRIBUTE))) {
 			if (element.getParentNode().getNodeName().endsWith("region")) {
 				Element region = (Element) element.getParentNode();
-				String regionName = StringUtils.hasText(region.getAttribute("name")) ? region.getAttribute("name")
-						: region.getAttribute("id");
 
-				int i = 0;
-				String name = regionName + ".asyncEventQueue#" + i;
+				String regionName = StringUtils.hasText(region.getAttribute(NAME_ATTRIBUTE))
+					? region.getAttribute(NAME_ATTRIBUTE) : region.getAttribute(ID_ATTRIBUTE);
+
+				int index = 0;
+
+				String name = regionName + ".asyncEventQueue#" + index;
 
 				while (parserContext.getRegistry().isBeanNameInUse(name)) {
-					i++;
-					name = regionName + ".asyncEventQueue#" + i;
+					name = regionName + ".asyncEventQueue#" + (++index);
 				}
 
 				builder.addPropertyValue("name", name);
 			}
 		}
+	}
+
+	private void parseAsyncEventListener(final Element element, final ParserContext parserContext,
+			final BeanDefinitionBuilder builder) {
+
+		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
+
+		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext,
+			asyncEventListenerElement, builder);
+
+		builder.addPropertyValue("asyncEventListener", asyncEventListener);
+
+		if (asyncEventListener instanceof RuntimeBeanReference) {
+			builder.addDependsOn(((RuntimeBeanReference) asyncEventListener).getBeanName());
+		}
+	}
+
+	private void parseCache(final Element element, final BeanDefinitionBuilder builder) {
+		String cacheRefAttribute = element.getAttribute("cache-ref");
+
+		String cacheName = (StringUtils.hasText(cacheRefAttribute) ? cacheRefAttribute
+			: GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+
+		builder.addConstructorArgReference(cacheName);
 	}
 
 	private void parseDiskStore(final Element element, final BeanDefinitionBuilder builder) {

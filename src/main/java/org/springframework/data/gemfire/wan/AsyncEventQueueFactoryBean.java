@@ -30,6 +30,7 @@ import com.gemstone.gemfire.cache.util.Gateway;
  * @author David Turanski
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<AsyncEventQueue> {
 
 	private AsyncEventListener asyncEventListener;
@@ -150,20 +151,72 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		this.asyncEventListener = listener;
 	}
 
-	public void setDiskStoreRef(String diskStoreRef) {
-		this.diskStoreReference = diskStoreRef;
+	/**
+	 * @param asyncEventQueue overrides Async Event Queue returned by this FactoryBean.
+	 */
+	public void setAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
+		this.asyncEventQueue = asyncEventQueue;
+	}
+
+	/**
+	 * Enable or disable the Async Event Queue's (AEQ) should conflate messages.
+	 *
+	 * @param batchConflationEnabled a boolean value indicating whether to conflate queued events.
+	 */
+	public void setBatchConflationEnabled(Boolean batchConflationEnabled) {
+		this.batchConflationEnabled = batchConflationEnabled;
 	}
 
 	public void setBatchSize(Integer batchSize) {
 		this.batchSize = batchSize;
 	}
 
+	/**
+	 * Set the Aysync Event Queue's (AEQ) interval between sending batches.
+	 *
+	 * @param batchTimeInterval an integer value indicating the maximum number of milliseconds that can elapse
+	 * between sending batches.
+	 */
+	public void setBatchTimeInterval(Integer batchTimeInterval) {
+		this.batchTimeInterval = batchTimeInterval;
+	}
+
+	public void setDiskStoreRef(String diskStoreRef) {
+		this.diskStoreReference = diskStoreRef;
+	}
+
+	/**
+	 * Set the Async Event Queue (AEQ) disk write synchronization policy.
+	 *
+	 * @param diskSynchronous a boolean value indicating whether disk writes are synchronous.
+	 */
+	public void setDiskSynchronous(Boolean diskSynchronous) {
+		this.diskSynchronous = diskSynchronous;
+	}
+
+	/**
+	 * Set the number of dispatcher threads used to process Region Events from the associated Async Event Queue (AEQ).
+	 *
+	 * @param dispatcherThreads an Integer indicating the number of dispatcher threads used to process Region Events
+	 * from the associated Queue.
+	 */
+	public void setDispatcherThreads(Integer dispatcherThreads) {
+		this.dispatcherThreads = dispatcherThreads;
+	}
+
 	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
 		this.maximumQueueMemory = maximumQueueMemory;
 	}
 
-	public void setPersistent(Boolean persistent) {
-		this.persistent = persistent;
+	/**
+	 * Set the Async Event Queue (AEQ) ordering policy (e.g. KEY, PARTITION, THREAD). When dispatcher threads
+	 * are greater than 1, the ordering policy configures the way in which multiple dispatcher threads
+	 * process Region events from the queue.
+	 *
+	 * @param orderPolicy a String to indicate the AEQ order policy.
+	 */
+	public void setOrderPolicy(String orderPolicy) {
+		this.orderPolicy = orderPolicy;
 	}
 
 	public void setParallel(Boolean parallel) {
@@ -178,60 +231,8 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		return Boolean.TRUE.equals(parallel);
 	}
 
-	/**
-	 * @param asyncEventQueue overrides Async Event Queue returned by this FactoryBean.
-	 */
-	public void setAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
-		this.asyncEventQueue = asyncEventQueue;
-	}
-
-	/**
-	 * Set the number of dispatcher threads used to process Region events from the associated Aysnc Event Queue (AEQ).
-	 *
-	 * @param dispatcherThreads an integer indicating the number of dispatcher threads used to process Region events
-	 * from the associated queue.
-	 */
-	public void setDispatcherThreads(Integer dispatcherThreads) {
-		this.dispatcherThreads = dispatcherThreads;
-	}
-
-	/**
-	 * Set the Aysync Event Queue's (AEQ) interval between sending batches.
-	 *
-	 * @param batchTimeInterval an integer value indicating the maximum number of milliseconds that can elapse
-	 * between sending batches.
-	 */
-	public void setBatchTimeInterval(Integer batchTimeInterval) {
-		this.batchTimeInterval = batchTimeInterval;
-	}
-
-	/**
-	 * Enable or disable the Async Event Queue's (AEQ) should conflate messages.
-	 *
-	 * @param batchConflationEnabled a boolean value indicating whether to conflate queued events.
-	 */
-	public void setBatchConflationEnabled(Boolean batchConflationEnabled) {
-		this.batchConflationEnabled = batchConflationEnabled;
-	}
-
-	/**
-	 * Set the Async Event Queue (AEQ) disk write synchronization policy.
-	 *
-	 * @param diskSynchronous a boolean value indicating whether disk writes are synchronous.
-	 */
-	public void setDiskSynchronous(Boolean diskSynchronous) {
-		this.diskSynchronous = diskSynchronous;
-	}
-
-	/**
-	 * Set the Async Event Queue (AEQ) ordering policy (e.g. KEY, PARTITION, THREAD). When dispatcher threads
-	 * are greater than 1, the ordering policy configures the way in which multiple dispatcher threads
-	 * process Region events from the queue.
-	 *
-	 * @param orderPolicy a String to indicate the AEQ order policy.
-	 */
-	public void setOrderPolicy(String orderPolicy) {
-		this.orderPolicy = orderPolicy;
+	public void setPersistent(Boolean persistent) {
+		this.persistent = persistent;
 	}
 
 }
