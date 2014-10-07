@@ -34,15 +34,20 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.cache.lru.LRUCapacityController;
 
 /**
- * The RegionEvictionAttributesNamespaceTest class is a test suite of test cases testing the use of Eviction settings
- * (EvictionAttributes) in the SDG XML namespace.
+ * The RegionEvictionAttributesNamespaceTest class is a test suite of test cases testing the use of
+ * Eviction configuration settings (EvictionAttributes) in the SDG XML namespace.
  *
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.junit.runner.RunWith
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.3.4
  */
-@ContextConfiguration(locations = "regions-with-eviction-attributes-ns.xml",
-	initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class RegionEvictionAttributesNamespaceTest {
 
 	@Resource(name = "One")

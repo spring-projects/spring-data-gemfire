@@ -276,9 +276,9 @@ abstract class ParsingUtils {
 		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", regionAttributesBuilder);
 		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", regionAttributesBuilder);
 		result |= parseExpiration(element, "entry-tti", "entryIdleTimeout", regionAttributesBuilder);
-		result |= parseCustomExpiration(element, parserContext, "custom-entry-ttl","customEntryTimeToLive",
+		result |= parseCustomExpiration(element, parserContext, "custom-entry-ttl", "customEntryTimeToLive",
 			regionAttributesBuilder);
-		result |= parseCustomExpiration(element, parserContext, "custom-entry-tti","customEntryIdleTimeout",
+		result |= parseCustomExpiration(element, parserContext, "custom-entry-tti", "customEntryIdleTimeout",
 			regionAttributesBuilder);
 
 		if (result) {

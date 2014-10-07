@@ -510,8 +510,7 @@ The name of the region definition.]]></xsd:documentation>
 		<xsd:complexContent>
 			<xsd:extension base="basicRegionType">
 				<xsd:sequence>
-					<xsd:element name="cache-listener" minOccurs="0"
-								 maxOccurs="1">
+					<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
 A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
@@ -529,8 +528,7 @@ other thread for accessing the region and not waiting for it to complete its tas
 						</xsd:annotation>
 						<xsd:complexType>
 							<xsd:sequence>
-								<xsd:any namespace="##other" processContents="skip"
-										 minOccurs="0" maxOccurs="unbounded">
+								<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 									<xsd:annotation>
 										<xsd:documentation><![CDATA[
 Inner bean definition of the cache listener.
@@ -561,16 +559,14 @@ to support compression on a Region.
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element name="region-ttl" type="expirationType"
-								 minOccurs="0" maxOccurs="1">
+					<xsd:element name="region-ttl" type="expirationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[[
 Time to live configuration for the region itself. Default: no expiration.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element name="region-tti" type="expirationType"
-								 minOccurs="0" maxOccurs="1">
+					<xsd:element name="region-tti" type="expirationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[[
 Time to idle (or idle timeout) configuration for the region itself. Default: no expiration.
@@ -578,16 +574,14 @@ Time to idle (or idle timeout) configuration for the region itself. Default: no 
 						</xsd:annotation>
 					</xsd:element>
 					<xsd:choice>
-						<xsd:element name="entry-ttl" type="expirationType"
-									 minOccurs="0" maxOccurs="1">
+						<xsd:element name="entry-ttl" type="expirationType" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[[
 Time to live configuration for the region entries. Default: no expiration.
 							]]></xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
-						<xsd:element name="custom-entry-ttl" type="customExpirationType"
-									 minOccurs="0" maxOccurs="1">
+						<xsd:element name="custom-entry-ttl" type="customExpirationType" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:appinfo>
 									<tool:annotation>
@@ -595,7 +589,7 @@ Time to live configuration for the region entries. Default: no expiration.
 									</tool:annotation>
 								</xsd:appinfo>
 								<xsd:documentation><![CDATA[[
-CustomExpiry time to live configuration for the region entries. Default: no expiration.
+CustomExpiry Time-to-Live (TTL) configuration for the Region Entries. The default is no expiration.
 							]]></xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
@@ -609,8 +603,7 @@ Time to idle (or idle timeout) configuration for the region entries. Default: no
 							]]></xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
-						<xsd:element name="custom-entry-tti" type="customExpirationType"
-									 minOccurs="0" maxOccurs="1">
+						<xsd:element name="custom-entry-tti" type="customExpirationType" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:appinfo>
 									<tool:annotation>
@@ -618,7 +611,7 @@ Time to idle (or idle timeout) configuration for the region entries. Default: no
 									</tool:annotation>
 								</xsd:appinfo>
 								<xsd:documentation><![CDATA[[
-CustomExpiry Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
+CustomExpiry Time-to-Idle (or Idle Timeout, TTI) configuration for the Region entries. The default is no expiration.
 							]]></xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
@@ -1614,8 +1607,7 @@ When the region or cached object expires, it is destroyed locally only. Not supp
 	<!-- -->
 	<xsd:complexType name="customExpirationType">
 		<xsd:sequence>
-			<xsd:any namespace="##other" processContents="skip"
-					 minOccurs="0" maxOccurs="unbounded">
+			<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Inner bean definition of the CustomExpiry.
