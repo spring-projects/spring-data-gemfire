@@ -32,7 +32,7 @@ In this example, if the cache needs to be created, it will use the file named `c
 
 NOTE: Note that the configuration makes use of Spring's http://static.springsource.org/spring/docs/current/spring-framework-reference/html/resources.html[`Resource`] abstraction to locate the file. This allows various search patterns to be used, depending on the runtime environment or the prefix specified (if any) in the resource location.
 
-In addition to referencing an external configuration file one can specify GemFire http://pubs.vmware.com/vfabricNoSuite/topic/com.vmware.vfabric.gemfire.7.0/reference/topics/gemfire_properties.html[properties] using any of Spring's common properties support features. For example, one can use the `properties` element defined in the `util` namespace to define properties directly or load properties from properties files. The latter is recommended for externalizing environment specific settings outside the application configuration:
+In addition to referencing an external configuration file one can specify GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/gemfire_properties.html[properties] using any of Spring's common properties support features. For example, one can use the `properties` element defined in the `util` namespace to define properties directly or load properties from properties files. The latter is recommended for externalizing environment specific settings outside the application configuration:
 
 [source,xml]
 ----
@@ -89,12 +89,12 @@ For advanced cache configuration, the `cache` element provides a number of confi
 
 ----
 
-<1> Various cache options are supported by attributes. For further information regarding anything shown in this example, please consult the GemFire product http://www.vmware.com/support/pubs/vfabric-gemfire.html[documentation]
+<1> Various cache options are supported by attributes. For further information regarding anything shown in this example, please consult the GemFire product http://gemfire.docs.pivotal.io/index.html[documentation]
 The `close` attribute determines if the cache should be closed when the Spring application context is closed. The default is `true` however for cases in which multiple application contexts use the cache (common in web applications), set this value to `false`.
 The `lazy-init` attribute determines if the cache should be initialized before another bean references it. The default is `true` however in some cases it may be convenient to set this value to `false`.
-<2> An example of a `TransactionListener` callback declaration using a bean reference. The referenced bean must implement http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/TransactionListener.html[TransactionListener]
-<3> An example of a `TransactionWriter` callback declaration using an inner bean declaration this time. The bean must implement http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/TransactionWriter.html[TransactionWriter]
-<4> Enable GemFire's http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/DynamicRegionFactory.html[DynamicRegionFactory]
+<2> An example of a `TransactionListener` callback declaration using a bean reference. The referenced bean must implement http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionListener.html[TransactionListener]
+<3> An example of a `TransactionWriter` callback declaration using an inner bean declaration this time. The bean must implement http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionWriter.html[TransactionWriter]
+<4> Enable GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/DynamicRegionFactory.html[DynamicRegionFactory]
 <5> Declares a JNDI binding to enlist an external datasource in a GemFire transaction
 
 NOTE: The `use-bean-factory-locator` attribute (not shown) deserves a mention. The factory bean responsible for creating the cache uses an internal Spring type called a
@@ -113,7 +113,7 @@ The example above includes a number of attributes related to GemFire's enhanced 
 [[bootstrap:cache:server]]
 == Configuring a GemFire Cache Server
 
-In Spring Data GemFire 1.1 dedicated support for configuring a http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/server/CacheServer.html[CacheServer] was added, allowing complete configuration through the Spring container:
+In Spring Data GemFire 1.1 dedicated support for configuring a http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/server/CacheServer.html[CacheServer] was added, allowing complete configuration through the Spring container:
 
 [source,xml]
 ----
@@ -152,7 +152,7 @@ NOTE: To avoid initialization problems, the `CacheServer`s started by Spring Dat
 [[bootstrap:cache:client]]
 == Configuring a GemFire Client Cache
 
-Another configuration addition in Spring Data GemFire 1.1 is the dedicated support for configuring http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/client/ClientCache.html[ClientCache]. This is similar to a <<bootstrap:cache,cache>> in both usage and definition and supported by `org.springframework.data.gemfire.clientClientCacheFactoryBean`.
+Another configuration addition in Spring Data GemFire 1.1 is the dedicated support for configuring http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html[ClientCache]. This is similar to a <<bootstrap:cache,cache>> in both usage and definition and supported by `org.springframework.data.gemfire.clientClientCacheFactoryBean`.
 
 [source,xml]
 ----
@@ -176,7 +176,7 @@ Pools can be defined through the `pool` element; The client side `pool` can be u
 </beans>
 ----
 
-The <client-cache> tag also includes a `ready-for-events` attribute. If set to `true`, the client cache initialization will include http://www.vmware.com/support/developer/vfabric-gemfire/700-api/com/gemstone/gemfire/cache/client/ClientCache.html#readyForEvents()[ClientCache.readyForEvents()].
+The <client-cache> tag also includes a `ready-for-events` attribute. If set to `true`, the client cache initialization will include http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html#readyForEvents()[ClientCache.readyForEvents()].
 
 Client side configuration is covered in more detail in <<bootstrap:region:client>>.
 
