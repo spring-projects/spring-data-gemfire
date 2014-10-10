@@ -9,22 +9,21 @@
 			targetNamespace="http://www.springframework.org/schema/data/gemfire"
 			elementFormDefault="qualified"
 			attributeFormDefault="unqualified"
-			version="2.0">
+			version="1.6">
 	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
-	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
+	<xsd:import namespace="http://www.springframework.org/schema/context"
+				schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd" />
 	<xsd:import namespace="http://www.springframework.org/schema/data/repository"
 				schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
 	<xsd:import namespace="http://www.springframework.org/schema/gemfire"
 				schemaLocation="http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"/>
-	<xsd:import namespace="http://www.springframework.org/schema/context"
-				schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
 	<!-- -->
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
             Namespace support for the Spring Data GemFire Client side data access.
         ]]></xsd:documentation>
 	</xsd:annotation>
-	<!-- -->
 	<!-- Repositories -->
 	<xsd:element name="repositories">
 		<xsd:complexType>
@@ -37,6 +36,27 @@
 		</xsd:complexType>
 	</xsd:element>
 	<!-- -->
+	<xsd:attributeGroup name="gemfire-repository-attributes">
+		<xsd:attribute name="mapping-context-ref" type="mappingContextRef">
+			<xsd:annotation>
+				<xsd:documentation>
+					The reference to a MappingContext. If not set a default one will be created.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	<!-- -->
+	<xsd:simpleType name="mappingContextRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="org.springframework.data.gemfire.GemfireMappingContext"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+	<!-- Function Executions -->
 	<xsd:element name="function-executions">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
@@ -70,29 +90,7 @@
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
-	<!-- -->
-	<xsd:attributeGroup name="gemfire-repository-attributes">
-		<xsd:attribute name="mapping-context-ref" type="mappingContextRef">
-			<xsd:annotation>
-				<xsd:documentation>
-					The reference to a MappingContext. If not set a default one will be created.
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:attributeGroup>
-	<!-- -->
-	<xsd:simpleType name="mappingContextRef">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<tool:annotation kind="ref">
-					<tool:assignable-to type="org.springframework.data.gemfire.GemfireMappingContext"/>
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:union memberTypes="xsd:string"/>
-	</xsd:simpleType>
 	<!-- DataSource -->
-
 	<xsd:element name="datasource">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
@@ -145,6 +143,7 @@ Defines a connection from a Cache client to a set of GemFire Cache Servers.
 						   type="xsd:string" use="optional" />
 		</xsd:complexType>
 	</xsd:element>
+	<!-- JSON support -->
 	<xsd:element name="json-region-autoproxy">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
