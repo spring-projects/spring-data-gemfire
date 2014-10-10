@@ -55,7 +55,7 @@ public class MyFunctions {
 }
 ----
 
-Note that the class itself must be registered as a Spring bean. Here the `@Component` annotation is used, but you may register the bean by any method provided by Spring (e.g. XML configuration or Java configuration class). This allows the Spring container to create an instance of this class and wrap it in a https://github.com/SpringSource/spring-gemfire/blob/master/src/main/java/org/springframework/data/gemfire/function/PojoFunctionWrapper.java[PojoFunctionWrapper](PFW). Spring creates one PFW instance for each method annotated with `@GemfireFunction`. Each will all share the same target object instance to invoke the corresponding method.
+Note that the class itself must be registered as a Spring bean. Here the `@Component` annotation is used, but you may register the bean by any method provided by Spring (e.g. XML configuration or Java configuration class). This allows the Spring container to create an instance of this class and wrap it in a https://github.com/spring-projects/spring-data-gemfire/blob/master/src/main/java/org/springframework/data/gemfire/function/PojoFunctionWrapper.java[PojoFunctionWrapper](PFW). Spring creates one PFW instance for each method annotated with `@GemfireFunction`. Each will all share the same target object instance to invoke the corresponding method.
 
 NOTE: The fact that the function class is a Spring bean may offer other benefits since it shares the application context with GemFire components such as a Cache and Regions. These may be injected into the class if necessary.
 
@@ -119,7 +119,7 @@ The client side uses Spring's component scanning capability to discover annotate
 <gfe-data:function-executions base-package="org.example.myapp.functions"/>
 ----
 
-Note that the `function-executions` tag is provided in the `gfe-data` namespace. The `base-package` attribute is required to avoid scanning the entiire class path. Additional filters are provided as described in the Spring http://static.springsource.org/spring/docs/current/spring-framework-reference/html/beans.html#beans-scanning-filters[reference].
+Note that the `function-executions` tag is provided in the `gfe-data` namespace. The `base-package` attribute is required to avoid scanning the entiire class path. Additional filters are provided as described in the Spring http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-scanning-filters[reference].
 
 Or annotate your Java configuration class:
 

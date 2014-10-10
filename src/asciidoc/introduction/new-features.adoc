@@ -2,7 +2,7 @@
 = New Features
 
 NOTE: As of the 1.2.0 release, this project, formerly known as Spring GemFire, has been renamed to Spring Data GemFire
-to reflect that it is now a component of the http://www.springsource.org/spring-data[Spring Data] project.
+to reflect that it is now a component of the http://projects.spring.io/spring-data/[Spring Data] project.
 
 [[new-in-1-2-0]]
 == New in the 1.2.0 Release

@@ -6,7 +6,7 @@ Once the GemFire Cache and Regions have been configured they can be injected and
 [[apis:exception-translation]]
 == Exception Translation
 
-Using a new data access technology requires not only accommodating a new API but also handling exceptions specific to that technology. To accommodate this case, Spring Framework provides a technology agnostic, consistent http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/dao.html#dao-exceptions[exception hierarchy] that abstracts the application from proprietary (and usually checked) exceptions to a set of focused runtime exceptions. As mentioned in the Spring Framework documentation, http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/orm.html#orm-exception-translation[exception translation] can be applied transparently to your data access objects through the use of the `@Repository` annotation and AOP by defining a `PersistenceExceptionTranslationPostProcessor` bean. The same exception translation functionality is enabled when using GemFire as long as at least a `CacheFactoryBean` is declared, e.g. using a `<gfe:cache/>` declaration, as it acts as an exception translator which is automatically detected by the Spring infrastructure and used accordingly.
+Using a new data access technology requires not only accommodating a new API but also handling exceptions specific to that technology. To accommodate this case, Spring Framework provides a technology agnostic, consistent http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[exception hierarchy] that abstracts the application from proprietary (and usually checked) exceptions to a set of focused runtime exceptions. As mentioned in the Spring Framework documentation, http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#orm-exception-translation[exception translation] can be applied transparently to your data access objects through the use of the `@Repository` annotation and AOP by defining a `PersistenceExceptionTranslationPostProcessor` bean. The same exception translation functionality is enabled when using GemFire as long as at least a `CacheFactoryBean` is declared, e.g. using a `<gfe:cache/>` declaration, as it acts as an exception translator which is automatically detected by the Spring infrastructure and used accordingly.
 
 [[apis:template]]
 == GemfireTemplate
@@ -42,7 +42,7 @@ For accessing the full power of the GemFire query language, one can use the `fin
 [[apis:spring-cache-abstraction]]
 == Support for Spring Cache Abstraction
 
-Since 1.1, Spring Data GemFire provides an implementation of the Spring 3.1 http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#cache[cache abstraction]. To use GemFire as a backing implementation, simply add `GemfireCacheManager` to your configuration:
+Since 1.1, Spring Data GemFire provides an implementation of the Spring 3.1 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[cache abstraction]. To use GemFire as a backing implementation, simply add `GemfireCacheManager` to your configuration:
 
 [source,xml]
 ----
@@ -68,7 +68,7 @@ Since 1.1, Spring Data GemFire provides an implementation of the Spring 3.1 http
 [[apis:tx-mgmt]]
 == Transaction Management
 
-One of the most popular features of Spring Framework is http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#transaction[transaction management]. If you are not familiar with it, we strongly recommend http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#transaction-motivation[reading] about it as it offers a consistent programming model that works transparently across multiple APIs and can be configured either programmatically or declaratively (the most popular choice).
+One of the most popular features of Spring Framework is http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[transaction management]. If you are not familiar with it, we strongly recommend http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-motivation[reading] about it as it offers a consistent programming model that works transparently across multiple APIs and can be configured either programmatically or declaratively (the most popular choice).
 
 For GemFire, Spring Data GemFire provides a dedicated, per-cache, transaction manager that, once declared, allows Region operations to be executed atomically through Spring:
 
@@ -197,7 +197,7 @@ NOTE: The *template* bean definitions do not have to be declared in XML - any fo
 [[apis:declarable:autowiring]]
 === Configuration using auto-wiring and annotations
 
-If no bean definition is found, by default, `WiringDeclarableSupport` will http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#beans-factory-autowire[autowire] the declaring instance. This means that unless any dependency injection *metadata* is offered by the instance, the container will find the object setters and try to automatically satisfy these dependencies. However, one can also use JDK 5 annotations to provide additional information to the auto-wiring process. We strongly recommend reading the dedicated http://static.springsource.org/spring/docs/current/spring-framework-reference/htmlsingle/spring-framework-reference.html#beans-annotation-config[chapter] in the Spring documentation for more information on the supported annotations and enabling factors.
+If no bean definition is found, by default, `WiringDeclarableSupport` will http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-autowire[autowire] the declaring instance. This means that unless any dependency injection *metadata* is offered by the instance, the container will find the object setters and try to automatically satisfy these dependencies. However, one can also use JDK 5 annotations to provide additional information to the auto-wiring process. We strongly recommend reading the dedicated http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[chapter] in the Spring documentation for more information on the supported annotations and enabling factors.
 
 For example, the hypothetical `DBLoader` declaration above can be injected with a Spring-configured `DataSource` in the following way:
 

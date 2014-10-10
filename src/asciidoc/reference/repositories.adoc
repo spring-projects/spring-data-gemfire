@@ -3,7 +3,7 @@
 
 == Introduction
 
-Spring Data GemFire provides support to use the Spring Data repository abstraction to easily persist entities into GemFire and execute queries. A general introduction into the repository programming model is been provided http://static.springsource.org/spring-data/data-commons/docs/current/reference/html/#repositories[here].
+Spring Data GemFire provides support to use the Spring Data repository abstraction to easily persist entities into GemFire and execute queries. A general introduction into the repository programming model is been provided http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
 
 [[gemfire-repositories.spring-configuration]]
 == Spring configuration

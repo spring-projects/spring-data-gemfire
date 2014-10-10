@@ -17,7 +17,7 @@ In addition, IDEs such as the Spring Tool Suite (STS) provide excellent support 
 [[bootstrap:namespace]]
 == Using the Core Spring Data GemFire Namespace
 
-To simplify configuration, Spring Data GemFire provides a dedicated XML namespace for configuring core GemFire components. It is also possible to configure the beans directly through Spring's standard <bean> definition. However, as of Spring Data GemFire 1.2.0, all bean properties are exposed via the namespace so there is little benefit to using raw bean definitions. For more information about XML Schema-based configuration in Spring, see http://static.springsource.org/spring/docs/current/spring-framework-reference/html/xsd-config.html[this] appendix in the Spring Framework reference documentation.
+To simplify configuration, Spring Data GemFire provides a dedicated XML namespace for configuring core GemFire components. It is also possible to configure the beans directly through Spring's standard <bean> definition. However, as of Spring Data GemFire 1.2.0, all bean properties are exposed via the namespace so there is little benefit to using raw bean definitions. For more information about XML Schema-based configuration in Spring, see http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config[this] appendix in the Spring Framework reference documentation.
 
 NOTE: Spring Data Repository support uses a separate XML namespace. See <<gemfire-repositories>> for more information on how to configure GemFire Repositories.
 
