@@ -3,7 +3,7 @@
 
 Spring Data GemFire provides full configuration and initialization of the GemFire data grid through Spring's IoC container and provides several classes that simplify the configuration of GemFire components including Caches, Regions, WAN Gateways, Persistence Backup, and other Distributed System components to support a variety of scenarios with minimal effort.
 
-NOTE: This section assumes basic familiarity with GemFire. For more information see the http://www.vmware.com/products/application-platform/vfabric-gemfire[product] documentation.
+NOTE: This section assumes basic familiarity with GemFire. For more information see the http://www.pivotal.io/big-data/pivotal-gemfire[product] documentation.
 
 [[bootstrap:region:spring:config]]
 == Advantages of using Spring over GemFire `cache.xml`

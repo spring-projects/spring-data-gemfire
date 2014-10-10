@@ -2,8 +2,11 @@
 = Useful Links
 
 * http://projects.spring.io/spring-data-gemfire[Spring Data GemFire Home Page]
-* http://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html[Pivotal GemFire Home Page]
-* https://www.vmware.com/support/pubs/vfabric-gemfire.html[Pivotal GemFire Documentation]
-* http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire[Pivotal GemFire Community Home Page]
-* http://forum.spring.io/forum/spring-projects/data/gemfire[Spring Data GemFire Forum<]
+* http://www.pivotal.io/big-data/pivotal-gemfire[Pivotal GemFire Home Page]
+* http://gemfire.docs.pivotal.io/index.html[Pivotal GemFire Documentation]
+* https://support.pivotal.io/hc/en-us/categories/200072748-Pivotal-GemFire-Knowledge-Base[Pivotal GemFire Knowledge Base]
+* https://support.pivotal.io/hc/communities/public/topics/200053218-Pivotal-GemFire-General[Pivotal GemFire Community Home Page]
+* http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire[VMWare vFabric GemFire Community Home Page]
+* http://stackoverflow.com/questions/tagged/spring-data-gemfire[Spring Data GemFire Forum (StackOverflow)]
+* http://forum.spring.io/forum/spring-projects/data/gemfire[Spring Data GemFire Forum (spring.io archive)]
 
