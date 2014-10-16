@@ -58,10 +58,11 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
 
 /**
- * The GemfireTemplateTest class is a test suite of test case testing the contract and functionality of the
- * GemfirTemplate class.
+ * The GemfireTemplateTest class is a test suite of test cases testing the contract and functionality of the SDG
+ * GemfireTemplate class.
  *
  * @author Costin Leau
+ * @author David Turanski
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
@@ -69,8 +70,8 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  */
-@ContextConfiguration(locations="basic-template.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="basic-template.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class GemfireTemplateTest  {
 

@@ -16,8 +16,10 @@
 
 package org.springframework.data.gemfire.test.support;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * The CollectionUtils class is a utility class for working with the Java Collections Framework.
@@ -44,6 +46,14 @@ public abstract class CollectionUtils {
 				return iterator;
 			}
 		};
+	}
+
+	public static <T> List<T> subList(final List<T> source, final int... indices) {
+		List<T> result = new ArrayList<T>(indices.length);
+		for (int index : indices) {
+			result.add(source.get(index));
+		}
+		return result;
 	}
 
 }
