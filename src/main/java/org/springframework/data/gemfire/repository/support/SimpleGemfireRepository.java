@@ -3,7 +3,9 @@ package org.springframework.data.gemfire.repository.support;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.GemfireCallback;
@@ -18,10 +20,15 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
- * Basic repository implementation.
+ * Basic Repository implementation for GemFire.
  * 
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
+ * @see java.io.Serializable
+ * @see org.springframework.data.gemfire.GemfireTemplate
+ * @see org.springframework.data.gemfire.repository.GemfireRepository
+ * @see com.gemstone.gemfire.cache.Region
  */
 public class SimpleGemfireRepository<T, ID extends Serializable> implements GemfireRepository<T, ID> {
 
@@ -36,7 +43,6 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 * @param entityInformation must not be {@literal null}.
 	 */
 	public SimpleGemfireRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
-
 		Assert.notNull(template);
 		Assert.notNull(entityInformation);
 
@@ -58,41 +64,63 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.springframework.data.repository.CrudRepository#save(java.lang.Iterable
-	 * )
+	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
 	 */
 	@Override
 	public <U extends T> Iterable<U> save(Iterable<U> entities) {
-		List<U> result = new ArrayList<U>();
+		Map<ID, U> result = new HashMap<ID, U>();
+
 		for (U entity : entities) {
-			result.add(save(entity));
+			result.put(entityInformation.getId(entity), entity);
 		}
-		return result;
+
+		template.putAll(result);
+
+		return result.values();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * org.springframework.data.gemfire.repository.GemfireRepository#save(
+	 *   org.springframework.data.gemfire.repository.Wrapper)
+	 */
+	@Override
+	public T save(Wrapper<T, ID> wrapper) {
+		return template.put(wrapper.getKey(), wrapper.getEntity());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see org.springframework.data.repository.CrudRepository#count()
+	 */
+	@Override
+	public long count() {
+		SelectResults<Integer> results = template.find("SELECT count(*) FROM " + template.getRegion().getFullPath());
+		return (long) results.iterator().next();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.
-	 * Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
+	 */
+	@Override
+	public boolean exists(ID id) {
+		return (findOne(id) != null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public T findOne(ID id) {
-		Object object = template.get(id);
-		return (T) object;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.
-	 * Serializable)
-	 */
-	@Override
-	public boolean exists(ID id) {
-		return findOne(id) != null;
+		return (T) template.get(id);
 	}
 
 	/*
@@ -102,13 +130,13 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public Collection<T> findAll() {
-		SelectResults<T> results = template.find("select * from " + template.getRegion().getFullPath());
+		SelectResults<T> results = template.find("SELECT * FROM " + template.getRegion().getFullPath());
 		return results.asList();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.gemfire.repository.GemfireRepository.sor(:org.springframework.data.domain.Sort)
+	 * @see org.springframework.data.gemfire.repository.GemfireRepository.sort(:org.springframework.data.domain.Sort)
 	 */
 	@Override
 	public Iterable<T> findAll(final Sort sort) {
@@ -124,15 +152,13 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.springframework.data.repository.CrudRepository#findAll(java.lang.
-	 * Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public Collection<T> findAll(Iterable<ID> ids) {
-
 		List<ID> parameters = new ArrayList<ID>();
+
 		for (ID id : ids) {
 			parameters.add(id);
 		}
@@ -142,33 +168,30 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.data.repository.CrudRepository#count()
+	 *
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
 	 */
 	@Override
-	public long count() {
-		SelectResults<Integer> results = template.find("select count(*) from " + template.getRegion().getFullPath());
-		return (long)results.iterator().next();
+	public void delete(ID id) {
+		template.remove(id);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.springframework.data.repository.CrudRepository#delete(java.lang.Object
-	 * )
+	 * org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
 	 */
 	@Override
 	public void delete(T entity) {
-		template.remove(entityInformation.getId(entity));
+		delete(entityInformation.getId(entity));
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable
-	 * )
+	 * org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
 	 */
 	@Override
 	public void delete(Iterable<? extends T> entities) {
@@ -184,7 +207,6 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public void deleteAll() {
-
 		template.execute(new GemfireCallback<Void>() {
 			@Override
 			@SuppressWarnings("rawtypes")
@@ -192,7 +214,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 				//clear() does not work for partitioned regions
 				try {
 					region.clear();
-				} catch (UnsupportedOperationException e) {
+				}
+				catch (UnsupportedOperationException e) {
 					for (Object key : region.keySet()) {
 						region.remove(key);
 					}
@@ -203,26 +226,4 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.
-	 * Serializable)
-	 */
-	@Override
-	public void delete(ID id) {
-		template.remove(id);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.springframework.data.gemfire.repository.GemfireRepository#save(org
-	 * .springframework.data.gemfire.repository.Wrapper)
-	 */
-	@Override
-	public T save(Wrapper<T, ID> wrapper) {
-		return template.put(wrapper.getKey(), wrapper.getEntity());
-	}
 }

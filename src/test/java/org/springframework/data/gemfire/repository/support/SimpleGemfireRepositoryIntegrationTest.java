@@ -19,13 +19,13 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
-
 import javax.annotation.Resource;
 
 import org.junit.Before;
@@ -48,6 +48,9 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
  * Integration tests for {@link SimpleGemfireRepository}.
  * 
  * @author Oliver Gierke
+ * @author John Blum
+ * @see org.junit.Test
+ * @see org.springframework.data.gemfire.repository.support.SimpleGemfireRepository
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("../../basic-template.xml")
@@ -63,8 +66,8 @@ public class SimpleGemfireRepositoryIntegrationTest {
 
 	RegionClearListener regionClearListener;
 
-	@SuppressWarnings("unchecked")
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setUp() {
 		simpleRegion.clear();
 		regionClearListener = new RegionClearListener();
@@ -128,6 +131,24 @@ public class SimpleGemfireRepositoryIntegrationTest {
 		assertThat(result, not(hasItems(dave)));
 	}
 
+	@Test
+	public void testSaveEntities() {
+		assertTrue(template.getRegion().isEmpty());
+
+		Person johnBlum = new Person(1l, "John", "Blum");
+		Person jonBloom = new Person(2l, "Jon", "Bloom");
+		Person juanBlume = new Person(3l, "Juan", "Blume");
+
+		repository.save(Arrays.asList(johnBlum, jonBloom, juanBlume));
+
+		assertFalse(template.getRegion().isEmpty());
+		assertEquals(3, template.getRegion().size());
+
+		assertEquals(johnBlum, template.get(johnBlum.id));
+		assertEquals(jonBloom, template.get(jonBloom.id));
+		assertEquals(juanBlume, template.get(juanBlume.id));
+	}
+
 	@SuppressWarnings("rawtypes")
 	public static class RegionClearListener extends CacheListenerAdapter {
 		public boolean eventFired;
@@ -137,4 +158,5 @@ public class SimpleGemfireRepositoryIntegrationTest {
 			eventFired = true;
 		}
 	}
+
 }
