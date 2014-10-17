@@ -21,8 +21,7 @@
 	<!-- -->
 	<xsd:complexType name="cacheBaseType">
 		<xsd:sequence>
-			<xsd:element name="transaction-listener" type="beanDeclarationType"
-						 minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="transaction-listener" type="beanDeclarationType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Registers a bean as a TransactionListener with the CacheTransactionManager. The bean must implement com.gemstone.gemfire.cache.TransactionListener
@@ -30,8 +29,7 @@ and may be nested or referenced.
 			]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="transaction-writer" type="beanDeclarationType"
-						 minOccurs="0" maxOccurs="1">
+			<xsd:element name="transaction-writer" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Registers a bean as a TransactionWriter with the CacheTransactionManager. The bean must implement com.gemstone.gemfire.cache.TransactionWriter
@@ -39,8 +37,7 @@ and may be nested or referenced.
 			]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="gateway-conflict-resolver" minOccurs="0"
-						 maxOccurs="1">
+			<xsd:element name="gateway-conflict-resolver" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation
 						source="com.gemstone.gemfire.cache.util.GatewayConflictResolver"><![CDATA[
@@ -56,8 +53,7 @@ must implement com.gemstone.gemfire.cache.util.GatewayConflictResolver. Requires
 				</xsd:annotation>
 				<xsd:complexType>
 					<xsd:sequence>
-						<xsd:any namespace="##other" processContents="skip"
-								 minOccurs="0" maxOccurs="unbounded">
+						<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[
 Inner bean definition of the gateway conflict resolver.
@@ -75,8 +71,7 @@ use inner bean declarations.
 					</xsd:attribute>
 				</xsd:complexType>
 			</xsd:element>
-			<xsd:element name="dynamic-region-factory" minOccurs="0"
-						 maxOccurs="1">
+			<xsd:element name="dynamic-region-factory" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Enables Dynamic Regions and specifies their configuration.
@@ -108,8 +103,7 @@ Specifies whether dynamic regions register interest in all keys in a correspondi
 					</xsd:attribute>
 				</xsd:complexType>
 			</xsd:element>
-			<xsd:element name="jndi-binding" type="jndiBindingType"
-						 minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="jndi-binding" type="jndiBindingType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Configures a data source to be bound to a JNDI context for use with Gemfire transactions

@@ -1,9 +1,15 @@
 [[bootstrap:cache]]
 = Configuring the GemFire Cache
 
-In order to use GemFire, one needs to either create a new `Cache` or connect to an existing one. In the current version of GemFire, there can be only one opened cache per VM (or per classloader to be technically correct). In most cases the cache is created once.
+In order to use GemFire, a developer needs to either create a new `Cache` or connect to an existing one.
+In the current version of GemFire, there can be only one opened Cache per VM (or per `ClassLoader` to be
+technically correct). In most cases the Cache is only created once.
 
-NOTE: This section describes the creation and configuration of a full cache member, appropriate for peer to peer cache topologies and cache servers. A full cache is also commonly used for standalone applications, integration tests and proofs of concept. In a typical production system, most application processes will act as cache clients and will create a ClientCache instance instead. This is described in the sections <<bootstrap:cache:client>> and <<bootstrap:region:client>>
+NOTE: This section describes the creation and configuration of a full Cache member, appropriate for peer-to-peer
+cache topologies and cache servers. A full cache is also commonly used for standalone applications, integration tests
+and proofs of concept. In a typical production system, most application processes will act as cache clients
+and will create a `ClientCache` instance instead. This is described in the sections <<bootstrap:cache:client>>
+and <<bootstrap:region:client>>
 
 A cache with default configuration can be created with a very simple declaration:
 
@@ -12,103 +18,211 @@ A cache with default configuration can be created with a very simple declaration
 <gfe:cache/>
 ----
 
-A Spring application context containing this definition will, upon initialization, will register a `CacheFactoryBean` to create a Spring bean named `gemfireCache` referencing a GemFire `Cache` instance. This will be either an existing cache, or if one does not exist, a newly created one. Since no additional properties were specified, a newly created cache will apply the default cache configuration.
+Upon initialization, a Spring application context containing this cache definition will register a `CacheFactoryBean`
+to create a Spring bean named `gemfireCache` referencing a GemFire `Cache` instance. This will either be an
+existing cache, or if one does not exist, a newly created one. Since no additional properties were specified, a
+newly created cache will apply the default cache configuration.
 
-All Spring Data GemFire components which depend on the Cache respect this naming convention so that there is no need to explicitly declare the Cache dependency. If you prefer, you can make the dependence explicit via the `cache-ref` attribute provided by various namespace elements. Also you can easily override the Cache's bean name:
+All Spring Data GemFire components that depend on the cache respect this naming convention so that there is no need
+to explicitly declare the cache dependency. If you prefer, you can make the dependence explicit via the `cache-ref`
+attribute provided by various namespace elements. Also, you can easily override the cache's bean name:
 
 [source,xml]
 ----
 <gfe:cache id="my-cache"/>
 ----
 
-Starting with Spring Data GemFire 1.2.0, The GemFire Cache may be fully configured using Spring. However, GemFire's native XML configuration file (e.g., cache.xml) is also supported. For scenarios in which the GemFire cache needs to be configured natively, simply provide a reference the GemFire configuration file using the `cache-xml-location` attribute:
+Starting with Spring Data GemFire 1.2.0, the GemFire `Cache` may be fully configured using Spring. However, GemFire's
+native XML configuration file, `cache.xml`, is also supported. For scenarios in which the GemFire cache needs to be
+configured natively, simply provide a reference to the GemFire configuration file using the `cache-xml-location`
+attribute:
 
 [source,xml]
 ----
-<gfe:cache id="cache-with-xml" cache-xml-location="classpath:cache.xml"/>
+<gfe:cache id="cache-using-native-xml" cache-xml-location="classpath:cache.xml"/>
 ----
 
 In this example, if the cache needs to be created, it will use the file named `cache.xml` located in the classpath root.
 
-NOTE: Note that the configuration makes use of Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#resources[`Resource`] abstraction to locate the file. This allows various search patterns to be used, depending on the runtime environment or the prefix specified (if any) in the resource location.
+NOTE: Note that the configuration makes use of Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#resources[`Resource`]
+abstraction to locate the file. This allows various search patterns to be used, depending on the runtime environment
+or the prefix specified (if any) in the resource location.
 
-In addition to referencing an external configuration file one can specify GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/gemfire_properties.html[properties] using any of Spring's common properties support features. For example, one can use the `properties` element defined in the `util` namespace to define properties directly or load properties from properties files. The latter is recommended for externalizing environment specific settings outside the application configuration:
+In addition to referencing an external configuration file one can specify GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/gemfire_properties.html[properties]
+using any of Spring's common properties support features. For example, one can use the `properties` element
+defined in the `util` namespace to define properties directly or load properties from a properties files. The latter is
+recommended for externalizing environment specific settings outside the application configuration:
 
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:gfe="http://www.springframework.org/schema/gemfire"
-    xmlns:util="http://www.springframework.org/schema/util"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+  xmlns:gfe="http://www.springframework.org/schema/gemfire"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-     <gfe:cache properties-ref="props"/>
+  <util:properties id="gemfireProperties" location="file:/pivotal/gemfire/gemfire.properties"/>
 
-     <util:properties id="props" location="file:/vfabric/gemfire/gemfire.properties"/>
+  <gfe:cache properties-ref="gemfireProperties"/>
+
 </beans>
 ----
 
-NOTE: The cache settings apply only if a new cache needs to be created. If an open cache already exists in the JVM, these settings will be ignored.
+NOTE: The cache settings apply only if a new cache needs to be created. If an open cache already exists in the VM,
+these settings will be ignored.
 
 [[bootstrap:cache:advanced]]
 == Advanced Cache Configuration
 
-For advanced cache configuration, the `cache` element provides a number of configuration options exposed as attributes or child elements
+For advanced cache configuration, the `cache` element provides a number of configuration options exposed as attributes
+or child elements:
 
 [source,xml]
 ----
 <!--1-->
 <gfe:cache
-        copy-on-read="true"
-        critical-heap-percentage="70"
-        eviction-heap-percentage="60"
-        lock-lease="120"
-        lock-timeout="60"
-        pdx-serializer="myPdxSerializer"
-        pdx-disk-store="diskStore"
-        pdx-ignore-unread-fields="true"
-        pdx-persistent="true"
-        pdx-read-serialized="false"
-        message-sync-interval="1"
-        search-timeout="300"
-        close="false"
-        lazy-init="true">
+    close="false"
+    copy-on-read="true"
+    critical-heap-percentage="70"
+    eviction-heap-percentage="60"
+    enable-auto-reconnect="false" <!--2-->
+    lock-lease="120"
+    lock-timeout="60"
+    message-sync-interval="1"
+    pdx-serializer-ref="myPdxSerializer"
+    pdx-persistent="true"
+    pdx-disk-store="diskStore"
+    pdx-read-serialized="false"
+    pdx-ignore-unread-fields="true"
+    search-timeout="300"
+    use-cluster-configuration="false" <!--3-->
+    lazy-init="true">
 
-     <gfe:transaction-listener ref="myTransactionListener"/><!--2-->
+  <gfe:transaction-listener ref="myTransactionListener"/> <!--4-->
 
-     <gfe:transaction-writer> <!--3-->
-        <bean class="org.springframework.data.gemfire.example.TransactionListener"/>
-      </gfe:transaction-writer>
+  <gfe:transaction-writer> <!--5-->
+    <bean class="org.springframework.data.gemfire.example.TransactionListener"/>
+  </gfe:transaction-writer>
 
-     <gfe:dynamic-region-factory/> <!--4-->
-     <gfe:jndi-binding jndi-name="myDataSource" type="ManagedDataSource"/> <!--5-->
+  <gfe:gateway-conflict-resolver ref="myGatewayConflictResolver"/> <!--6-->
+
+  <gfe:dynamic-region-factory/> <!--7-->
+
+  <gfe:jndi-binding jndi-name="myDataSource" type="ManagedDataSource"/> <!--8-->
+
 </gfe:cache>
 
 ----
 
-<1> Various cache options are supported by attributes. For further information regarding anything shown in this example, please consult the GemFire product http://gemfire.docs.pivotal.io/index.html[documentation]
+<1> Various cache options are supported by attributes. For further information regarding anything shown in this example, please consult the GemFire http://gemfire.docs.pivotal.io/index.html[product documentation].
 The `close` attribute determines if the cache should be closed when the Spring application context is closed. The default is `true` however for cases in which multiple application contexts use the cache (common in web applications), set this value to `false`.
 The `lazy-init` attribute determines if the cache should be initialized before another bean references it. The default is `true` however in some cases it may be convenient to set this value to `false`.
-<2> An example of a `TransactionListener` callback declaration using a bean reference. The referenced bean must implement http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionListener.html[TransactionListener]
-<3> An example of a `TransactionWriter` callback declaration using an inner bean declaration this time. The bean must implement http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionWriter.html[TransactionWriter]
-<4> Enable GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/DynamicRegionFactory.html[DynamicRegionFactory]
-<5> Declares a JNDI binding to enlist an external datasource in a GemFire transaction
+<2> Setting the `enable-auto-reconnect` attribute to true (default is false), allows a disconnected GemFire member to automatically reconnect and rejoin a GemFire cluster.
+See the GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#relnotes/release_notes.html#topic_5mbwjl__section_wxb_v35_v4[product documentation] for more details.
+<3> Setting the `use-cluster-configuration` attribute to true (default is false) to enable a GemFire member to retrieve the common, shared Cluster-based configuration from a Locator.
+See the GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#relnotes/release_notes.html#topic_5mbwjl__section_zk2_p35_v4[product documentation] for more details.
+<4> An example of a `TransactionListener` callback declaration using a bean reference. The referenced bean must implement
+http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionListener.html[TransactionListener].
+`TransactionListener(s)` can be implemented to handle transaction related events.
+<5> An example of a `TransactionWriter` callback declaration using an inner bean declaration this time. The bean must implement
+http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionWriter.html[TransactionWriter].
+`TransactionWriter` is a callback that is allowed to veto a transaction.
+<6> An example of a `GatewayConflictResolver` declaration using a bean reference. The referenced bean must implement
+http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/util/GatewayConflictResolver.html[GatewayConflictResolver].
+GatewayConflictResolver is a Cache-level plugin that is called upon to decide what to do with events that originate in other systems and arrive through the WAN Gateway.
+<7> Enable GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/DynamicRegionFactory.html[DynamicRegionFactory],
+which provides a distributed region creation service.
+<8> Declares a JNDI binding to enlist an external DataSource in a GemFire transaction.
 
-NOTE: The `use-bean-factory-locator` attribute (not shown) deserves a mention. The factory bean responsible for creating the cache uses an internal Spring type called a
-`BeanFactoryLocator` to enable user classes declared in GemFire's native `cache.xml` to be registered as Spring beans. The `BeanFactoryLocator` implementation also permits
-only one bean definition for a cache with a given id. In certain situations, such as running JUnit integration tests from within Eclipse, it is necessary to disable
-the `BeanFactoryLocator` by setting this value to false to prevent an exception. This exception may also arise during JUnit tests running from a build script. In this
-case the test runner should be configured to fork a new JVM for each test (in maven, set `<forkmode>always</forkmode>`) . Generally there is no harm in setting this
-value to false.
+NOTE: The `use-bean-factory-locator` attribute (not shown) deserves a mention. The factory bean responsible for
+creating the cache uses an internal Spring type called a `BeanFactoryLocator` to enable user classes declared in
+GemFire's native `cache.xml` to be registered as Spring beans. The `BeanFactoryLocator` implementation also permits
+only one bean definition for a cache with a given id. In certain situations, such as running JUnit integration tests
+from within Eclipse, it is necessary to disable the `BeanFactoryLocator` by setting this value to false to prevent
+an exception. This exception may also arise during JUnit tests running from a build script. In this case the test runner
+should be configured to fork a new JVM for each test (in maven, set `<forkmode>always</forkmode>`) . Generally, there is
+no harm in setting this value to false.
 
 === Enabling PDX Serialization
 
-The example above includes a number of attributes related to GemFire's enhanced serialization framework, PDX. While a complete discussion of PDX is beyond the scope of this reference guide, it is important to note that PDX is enabled by registering a PDX serializer which is done via the `pdx-serializer` attribute. GemFire provides an implementation class `com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer`, however it is common for developers to provide their own implementation. The value of the attribute is simply a reference to a Spring bean that implements the required interface. More information on serialization support can be found in <<serialization>>
+The example above includes a number of attributes related to GemFire's enhanced serialization framework, PDX.
+While a complete discussion of PDX is beyond the scope of this reference guide, it is important to note that PDX
+is enabled by registering a PDX serializer which is done via the `pdx-serializer` attribute. GemFire provides
+an implementation class `com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer`, however it is common for developers
+to provide their own implementation. The value of the attribute is simply a reference to a Spring bean that implements
+the required interface. More information on serialization support can be found in <<serialization>>
 
+[[boostrap:cache:auto-reconnect]]
+=== Enabling auto-reconnect
 
+Setting the `<gfe:cache enable-auto-reconnect="[true|false*]>` attribute to true should be done with care.
+
+Generally, enabling 'auto-reconnect' should only be done in cases where Spring Data GemFire's XML namespace is used to
+configure and bootstrap a new GemFire Server data node to add to the cluster.  In other words, 'auto-reconnect'
+should not be used when Spring Data GemFire is used to develop and build an GemFire application that also happens
+to be a peer cache member of the GemFire cluster.
+
+The main reason is most GemFire applications use references to the GemFire cache or regions in order to perform
+data access operations.  The references are "injected" by the Spring container into application components (e.g. DAOs
+or Repositories) for use by the application.  When a member (such as the application) is forcefully disconnected
+from the rest of the cluster, presumably because the member (the application) has become unresponsive for
+a period of time, or network partition separates one or more members (along with the application peer cache member) into
+a group that is too small to act as the distributed system, the member will shutdown and all GemFire component references
+(e.g. Cache, Regions, etc) become invalid.
+
+Essentially, the current forced-disconnect processing in each member dismantles the system from the ground up.
+It shuts down the JGroups stack, puts the Distributed System in a shut-down state and then closes the Cache.
+This effectively loses all in-memory information.
+
+After being disconnected from a distributed system and successfully shutting down, the GemFire member then restarts in a
+"reconnecting" state, while periodically attempting to rejoin the distributed system. If the member succeeds in reconnecting,
+the member rebuilds its "view" of the distributed system from existing members and receives a new distributed system ID.
+
+This means the cache, regions and other GemFire components are reconstructed and all old references that may have been
+injected into application are now stale and no longer valid.
+
+GemFire makes no guarantee, even when using the GemFire public Java API, that application cache, region or other
+component references will be automatically refreshed by the reconnect operation. As such, applications must take care
+to refresh their own references.
+
+Unfortunately there is no way to be "notified" of a disconnect and subsequently a reconnect event. If so, the application
+developer would then have a clean way to know when to call ConfigurableApplicationContext.refresh(), if even applicable
+for an application to do so, which is why this "feature" of GemFire 8 is not recommended for peer cache GemFire applications.
+
+For more information about 'auto-reconnect', see GemFire's http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/autoreconnect/member-reconnect.html#concept_22EE6DDE677F4E8CAF5786E17B4183A9[product documentation].
+
+[[bootstrap:cache:cluster-configuration]]
+=== Using Cluster-based Configuration
+
+GemFire 8's new Cluster-based Configuration Service is a convenient way for a member joining the cluster to get a
+"consistent view" of the cluster, by using the shared, persistent configuration maintained by a Locator, ensuring
+the member's configuration will be compatible with the GemFire distributed system when the member joins.
+
+This feature of Spring Data GemFire (setting the `use-cluster-configuration` attribute to true) works in the same way
+as the `cache-xml-location` attribute, except the source of the GemFire configuration meta-data comes from a network
+Locator as opposed to a native `cache.xml` file.
+
+All GemFire native configuration meta-data, whether from `cache.xml` or from the Cluster Configuration Service,
+gets applied before any Spring XML configuration meta-data.  As such, Spring's config serves to "augment" the
+native GemFire configuration meta-data, which would most likely be specific to the application.
+
+Again, to enable this feature, just specify the following in the Spring XML config:
+
+[source,xml]
+----
+  <gfe:cache use-cluster-configuration="true"/>
+----
+
+NOTE: While certain GemFire tools, like Gfsh, have their actions "recorded" when any schema-like change is made
+(e.g. `gfsh>create region --name=Example --type=PARTITION`) to the cluster, Spring Data GemFire's configuration meta-data
+specified with the XML namespace is not recorded.  The same is true when using GemFire's public Java API directly;
+it too is not recorded.
+
+For more information on GemFire's Cluster Configuration Service, see the
+http://gemfire.docs.pivotal.io/latest/userguide/index.html#deploying/gfsh/gfsh_persist.html[product documentation].
 
 [[bootstrap:cache:server]]
 == Configuring a GemFire Cache Server

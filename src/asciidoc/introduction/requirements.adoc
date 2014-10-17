@@ -1,4 +1,5 @@
 [[requirements]]
 = Requirements
 
-Spring Data GemFire requires JDK 6.0 or above, http://projects.spring.io/spring-framework[Spring Framework] 3 and http://www.pivotal.io/big-data/pivotal-gemfire[Pivotal GemFire] 6.6 or above (version 7 or above is recommended).
+Spring Data GemFire requires JDK 6.0 or above, http://projects.spring.io/spring-framework[Spring Framework] 3
+and http://www.pivotal.io/big-data/pivotal-gemfire[Pivotal GemFire] 6.6 or above (version 7 or above is recommended).
