@@ -47,8 +47,8 @@ import org.springframework.util.Assert;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.3.4
  */
-@ContextConfiguration("lazy-wiring-declarable-support.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
 @SuppressWarnings("unused")
 public class LazyWiringDeclarableSupportIntegrationTest {
 
@@ -65,7 +65,7 @@ public class LazyWiringDeclarableSupportIntegrationTest {
 	public void testWiring() {
 		TestDeclarable declarable = new TestDeclarable();
 
-		declarable.init(createParameters("testParam1", "testValue1"));
+		declarable.init(createParameters("testParam", "testValue"));
 		declarable.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
 		declarable.assertInitialized();
 

@@ -17,9 +17,14 @@
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Properties;
@@ -30,6 +35,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer;
 
@@ -77,7 +83,7 @@ public class LazyWiringDeclarableSupportTest {
 			declarable.assertInitialized();
 		}
 		catch (IllegalStateException expected) {
-			assertEquals(String.format("This Declarable object (%1$s) has not ben properly configured and initialized!",
+			assertEquals(String.format("This Declarable object (%1$s) has not been properly configured and initialized!",
 				TestLazyWiringDeclarableSupport.class.getName()), expected.getMessage());
 			throw expected;
 		}
@@ -87,43 +93,115 @@ public class LazyWiringDeclarableSupportTest {
 	}
 
 	@Test
+	public void testAssertUninitialized() {
+		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport();
+
+		try {
+			declarable.assertUninitialized();
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(declarable);
+		}
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testAssertUninitializedWhenInitialized() {
+		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport() {
+			@Override protected boolean isInitialized() {
+				return true;
+			}
+		};
+
+		try {
+			declarable.assertUninitialized();
+		}
+		catch (IllegalStateException expected) {
+			assertEquals(String.format(
+				"This Declarable object (%1$s) has already been configured and initialized, and is currently active!",
+				declarable.getClass().getName()), expected.getMessage());
+			throw expected;
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(declarable);
+		}
+	}
+
+	@Test
 	public void testInit() {
-		new TestLazyWiringDeclarableSupport().init(createParameters("testParam1", "testValue1"));
+		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport();
+
+		try {
+			assertFalse(declarable.isInitialized());
+			declarable.init(createParameters("param", "value"));
+			declarable.init(createParameters("newParam", "newValue"));
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(declarable);
+		}
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testInitWhenInitialized() {
-		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport();
+		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport() {
+			@Override protected boolean isInitialized() {
+				return true;
+			}
+		};
 
 		try {
-			declarable.init(createParameters("testParam1", "testValue1"));
-		}
-		catch (IllegalStateException unexpected) {
-			fail("Calling init the first time should not throw an IllegalStateException!");
-		}
-
-		try {
-			declarable.init(createParameters("testParam2", "testValue1"));
+			declarable.init(createParameters("param", "value"));
 		}
 		catch (IllegalStateException expected) {
-			assertEquals(String.format("This Declarable (%1$s) has already been initialized.",
+			assertEquals(String.format(
+				"This Declarable object (%1$s) has already been configured and initialized, and is currently active!",
 				declarable.getClass().getName()), expected.getMessage());
 			throw expected;
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(declarable);
 		}
 	}
 
-	@Test(expected = IllegalStateException.class)
-	public void testOnApplicationEventWithNoParameters() {
+	@Test
+	public void testNullSafeGetParameters() {
 		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport();
 
 		try {
-			declarable.onApplicationEvent(new ContextRefreshedEvent(mock(ConfigurableApplicationContext.class,
-				"testOnApplicationEventWithNoParameters")));
+			declarable.init(createParameters("param", "value"));
+
+			Properties parameters = declarable.nullSafeGetParameters();
+
+			assertNotNull(parameters);
+			assertFalse(parameters.isEmpty());
+			assertEquals(1, parameters.size());
+			assertEquals("value", parameters.getProperty("param"));
+
+			declarable.init(createParameters("newParam", "newValue"));
+			parameters = declarable.nullSafeGetParameters();
+
+			assertNotNull(parameters);
+			assertFalse(parameters.isEmpty());
+			assertEquals(1, parameters.size());
+			assertFalse(parameters.containsKey("param"));
+			assertEquals("newValue", parameters.getProperty("newParam"));
 		}
-		catch (IllegalStateException expected) {
-			assertEquals(String.format("This Declarable object's (%1$s) init method has not been invoked!",
-				declarable.getClass().getName()), expected.getMessage());
-			throw expected;
+		finally {
+			SpringContextBootstrappingInitializer.unregister(declarable);
+		}
+	}
+
+	@Test
+	public void testNullSafeGetParametersWithNullReference() {
+		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport();
+
+		try {
+			Properties parameters = declarable.nullSafeGetParameters();
+
+			assertNotNull(parameters);
+			assertTrue(parameters.isEmpty());
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(declarable);
 		}
 	}
 
@@ -135,13 +213,15 @@ public class LazyWiringDeclarableSupportTest {
 		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport();
 
 		try {
-			declarable.init(createParameters("testParam1", "testValue1"));
 			declarable.onApplicationEvent(new ContextRefreshedEvent(mockApplicationContext));
 		}
 		catch (IllegalArgumentException expected) {
 			assertEquals(String.format("The Spring ApplicationContext (%1$s) must be an instance of ConfigurableApplicationContext.",
 				mockApplicationContext.getClass().getName()), expected.getMessage());
 			throw expected;
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(declarable);
 		}
 	}
 
@@ -155,23 +235,86 @@ public class LazyWiringDeclarableSupportTest {
 
 		when(mockApplicationContext.getBeanFactory()).thenReturn(mockBeanFactory);
 
-		Properties testParameters = createParameters("testParam1", "testValue1");
-
 		final AtomicBoolean doPostInitCalled = new AtomicBoolean(false);
 
 		TestLazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport() {
 			@Override protected void doPostInit(final Properties parameters) {
+				super.doPostInit(parameters);
 				assertInitialized();
 				doPostInitCalled.set(true);
 			}
 		};
 
-		declarable.init(testParameters);
-		declarable.onApplicationEvent(new ContextRefreshedEvent(mockApplicationContext));
-		declarable.assertEquals(testParameters);
-		declarable.assertSame(mockBeanFactory);
+		Properties parameters = createParameters("param", "value");
 
-		assertTrue(doPostInitCalled.get());
+		try {
+			declarable.init(parameters);
+			declarable.onApplicationEvent(new ContextRefreshedEvent(mockApplicationContext));
+			declarable.assertEquals(parameters);
+			declarable.assertSame(mockBeanFactory);
+
+			assertTrue(doPostInitCalled.get());
+
+			verify(mockApplicationContext, times(1)).getBeanFactory();
+		}
+		finally {
+			SpringContextBootstrappingInitializer.unregister(declarable);
+		}
+	}
+
+	@Test
+	public void testFullLifecycleIntegrationWithDestroy() throws Exception {
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testFullLifecycleIntegrationWithDestroy.ApplicationContext");
+
+		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class,
+			"testFullLifecycleIntegrationWithDestroy.BeanFactory");
+
+		when(mockApplicationContext.getBeanFactory()).thenReturn(mockBeanFactory);
+
+		final AtomicBoolean doPostInitCalled = new AtomicBoolean(false);
+
+		TestLazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport() {
+			@Override protected void doPostInit(final Properties parameters) {
+				super.doPostInit(parameters);
+				assertInitialized();
+				doPostInitCalled.set(true);
+			}
+		};
+
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer();
+
+		Properties parameters = createParameters("param", "value");
+
+		try {
+			declarable.init(parameters);
+
+			assertFalse(declarable.isInitialized());
+			assertFalse(doPostInitCalled.get());
+			assertSame(parameters, declarable.nullSafeGetParameters());
+
+			initializer.onApplicationEvent(new ContextRefreshedEvent(mockApplicationContext));
+
+			assertTrue(declarable.isInitialized());
+			assertTrue(doPostInitCalled.get());
+			declarable.assertEquals(parameters);
+			declarable.assertSame(mockBeanFactory);
+
+			declarable.destroy();
+			doPostInitCalled.set(false);
+
+			assertFalse(declarable.isInitialized());
+			assertFalse(doPostInitCalled.get());
+			assertNotSame(parameters, declarable.nullSafeGetParameters());
+
+			initializer.onApplicationEvent(new ContextRefreshedEvent(mockApplicationContext));
+
+			assertFalse(declarable.isInitialized());
+			assertFalse(doPostInitCalled.get());
+		}
+		finally {
+			initializer.onApplicationEvent(new ContextClosedEvent(mockApplicationContext));
+		}
 	}
 
 	protected static class TestLazyWiringDeclarableSupport extends LazyWiringDeclarableSupport {
