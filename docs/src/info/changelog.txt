@@ -3,6 +3,20 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.5.1.RELEASE (2014-10-30)
+---------------------------------------------
+* SGF-347 - Release 1.5.1.
+* SGF-346 - Enable LazyWiringDeclarableSupport-based GemFire components to be used inside both cache.xml and Spring config, especially in the context of GemFire 8's Cluster Configuration.
+* SGF-343 - Optimize the SDG implementation of CrudRepository.save(Iterable<S> enttiies) to use GemFire's Region.putAll(Map<K, V> values) operation.
+* SGF-340 - Change a SpringSource-based links in the SDG Reference Guide to Spring.io-based links.
+* SGF-339 - Change all VMWare-based links in the SDG Reference Guide to Pivotal-based links.
+* SGF-337 - SDG's XML Schema (XSD) does not allow the developer to specify 'timeout' and 'action' values for CustomExpiry (<gfe:custom-entry-[ttl|tti]>) on Region attributes.
+* SGF-333 - The SpringContextBootstrappingInitializer needs to handle the case when it's init(:Properties) method maybe called more than once on initialization.
+* SGF-330 - Add missing 'disk-synchronous' attribute to the <gfe:gateway-sender> element in the SDG XML namespace (XSD).
+* SGF-328 - Add missing 'hostname-for-senders' attribute on the <gfe:gateway-receiver> element in the SDG XML namespace (XSD).
+* SGF-327 - Avoid setting null values with GemFire's Cache Region put(key, value) operation when GemFire is used as the caching provider in Spring's Cache Abstraction (@Cacheable).
+
+
 Changes in version 1.5.0.RELEASE (2014-09-05)
 ---------------------------------------------
 * IMPORTANT: Upgrade to Gemfire 8.0 has been postponed to a 2.0 release.
