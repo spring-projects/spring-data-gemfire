@@ -3,6 +3,41 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+
+Changes in version 1.5.1.RELEASE (2014-10-30)
+---------------------------------------------
+* SGF-347 - Release 1.5.1.
+* SGF-346 - Enable LazyWiringDeclarableSupport-based GemFire components to be used inside both cache.xml and Spring config, especially in the context of GemFire 8's Cluster Configuration.
+* SGF-343 - Optimize the SDG implementation of CrudRepository.save(Iterable<S> enttiies) to use GemFire's Region.putAll(Map<K, V> values) operation.
+* SGF-340 - Change a SpringSource-based links in the SDG Reference Guide to Spring.io-based links.
+* SGF-339 - Change all VMWare-based links in the SDG Reference Guide to Pivotal-based links.
+* SGF-337 - SDG's XML Schema (XSD) does not allow the developer to specify 'timeout' and 'action' values for CustomExpiry (<gfe:custom-entry-[ttl|tti]>) on Region attributes.
+* SGF-333 - The SpringContextBootstrappingInitializer needs to handle the case when it's init(:Properties) method maybe called more than once on initialization.
+* SGF-330 - Add missing 'disk-synchronous' attribute to the <gfe:gateway-sender> element in the SDG XML namespace (XSD).
+* SGF-328 - Add missing 'hostname-for-senders' attribute on the <gfe:gateway-receiver> element in the SDG XML namespace (XSD).
+* SGF-327 - Avoid setting null values with GemFire's Cache Region put(key, value) operation when GemFire is used as the caching provider in Spring's Cache Abstraction (@Cacheable).
+
+
+Changes in version 1.5.0.RELEASE (2014-09-05)
+---------------------------------------------
+* IMPORTANT: Upgrade to Gemfire 8.0 has been postponed to a 2.0 release.
+* SGF-319 - Release 1.5 GA.
+* SGF-318 - Upgrade to Spring Framework 4.0.7.
+* SGF-317 - Improve GemfireCache implementation to be able to build on Spring 4.1.
+* SGF-316 - Update Spring Data GemFire Reference Guide with 1.5 changes (e.g. Auto Region Lookups, Region Templates).
+* SGF-315 - Re-enable Bundlor plugin to create OSGi metadata.
+* SGF-314 - Upgrade to Spring Framework 4.0.7.
+* SGF-312 - The <gfe:partitioned-region> element in the SDG XSD does not properly support multiple PartitionListener bean definitions or references.
+* SGF-311 - ClientRegionFactoryBean does not properly set the 'concurrency-checks-enabled' attribute and property of GemFire's ClientRegionFactory class.
+* SGF-310 - The <gfe:client-region> element is missing the 'concurrency-level' attribute, which is supported by GemFire's ClientRegionFactory API.
+* SGF-307 - Remove all default values on strongly-typed Region elements in the SDG Schema in support of Region Templates.
+* SGF-305 - Move to Asciidoctor for reference documentation.
+* SGF-254 - Template Regions which can be used to reuse the same Region configuration for all Regions that reference it.
+* SGF-223 - Ability to create directories on-the-fly at runtime based on explicitly defined Disk Stores disk directory locations.
+* SGF-207 - No support for hierarchical, inherited Region attributes like there is in GemFire's cache.xml.
+* SGF-191 - Provide automated way to add all Regions defined in GemFire's cache.xml as beans in the Spring context.
+
+
 Changes in version 1.4.4.RELEASE (2014-08-27)
 ---------------------------------------------
 * SGF-308 - Release 1.4.4.
