@@ -43,8 +43,8 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.4.0
  */
-@ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
 @SuppressWarnings("unused")
 public class AlgorithmRepositoryTest {
 

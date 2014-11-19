@@ -1,26 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	default-lazy-init="true"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
-		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+" default-lazy-init="true">
 
-		<gfe:cache/>
-        <gfe:replicated-region id="replicALL">
-			<gfe:subscription type="ALL"/>	
-        </gfe:replicated-region>
+	<util:properties id="gemfireProperties">
+		<prop key="name">SubscriptionNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
 
-        <gfe:partitioned-region id="partCACHE_CONTENT">
-        	<gfe:subscription type="CACHE_CONTENT"/>
-        	<gfe:eviction threshold="70"/>
-        </gfe:partitioned-region>
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:replicated-region id="replicALL">
+		<gfe:subscription type="ALL"/>
+	</gfe:replicated-region>
+
+	<gfe:partitioned-region id="partCACHE_CONTENT">
+		<gfe:subscription type="CACHE_CONTENT"/>
+		<gfe:eviction threshold="70"/>
+	</gfe:partitioned-region>
 
 
-        <gfe:partitioned-region id="partDEFAULT">
-        	<gfe:subscription/>
-        </gfe:partitioned-region>
-        
+	<gfe:partitioned-region id="partDEFAULT">
+		<gfe:subscription/>
+	</gfe:partitioned-region>
+
 </beans>

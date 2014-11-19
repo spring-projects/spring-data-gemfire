@@ -9,13 +9,13 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
 ">
 
-	<util:properties id="peerCacheConfigurationSettings">
-		<prop key="name">springGemFireRegionBeanDefinitionOverridesAllowedTest</prop>
-		<prop key="log-level">config</prop>
+	<util:properties id="gemfireProperties">
+		<prop key="name">AllowBeanDefinitionOverridesTest</prop>
 		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="peerCacheConfigurationSettings" use-bean-factory-locator="false"/>
+	<gfe:cache properties-ref="gemfireProperties" use-bean-factory-locator="false"/>
 
 	<gfe:replicated-region id="regionOne" name="AppDataRegion" persistent="false"
 						   multicast-enabled="true" scope="distributed-no-ack"

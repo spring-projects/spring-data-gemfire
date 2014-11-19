@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	   xmlns:p="http://www.springframework.org/schema/p"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
   ">
 
-	<util:properties id="peerCacheConfigurationSettings">
-		<prop key="log-level">config</prop>
+	<util:properties id="gemfireProperties">
 		<prop key="name">pdxDiskStoreTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
 	</util:properties>
 	<!--
 	  <util:properties id="peerCacheConfigurationSettings" location="classpath:gemfire.properties"/>
@@ -40,7 +40,7 @@
 	  </gfe:disk-store>
 	  -->
 
-	<gfe:cache properties-ref="peerCacheConfigurationSettings" pdx-serializer-ref="autoSerializer" pdx-persistent="true" pdx-disk-store="pdxStore"/>
+	<gfe:cache properties-ref="gemfireProperties" pdx-serializer-ref="autoSerializer" pdx-persistent="true" pdx-disk-store="pdxStore"/>
 
 	<gfe:disk-store id="dataStore" auto-compact="true" compaction-threshold="75" queue-size="50" max-oplog-size="10" time-interval="600000">
 		<gfe:disk-dir location="./gemfire/data-store/" max-size="50"/>

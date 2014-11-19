@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xmlns:gfe="http://www.springframework.org/schema/gemfire"
-		xmlns:task="http://www.springframework.org/schema/task"
-		xmlns:util="http://www.springframework.org/schema/util"
-		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-				http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
-				http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-				http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
-
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:task="http://www.springframework.org/schema/task"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
 
 	<util:properties id="props">
-		<prop key="mcast-port">0</prop>
 		<prop key="name">cq-client</prop>
+		<prop key="mcast-port">0</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
-	
+
 	<gfe:client-cache use-bean-factory-locator="false"/>
 
 	<gfe:pool id="client" subscription-enabled="true">
 		<gfe:server host="localhost" port="40404"/>
 	</gfe:pool>
-	 
-	<task:executor id="testTaskExecutor" />
-	 			
+
+	<task:executor id="testTaskExecutor"/>
+
 	<gfe:cq-listener-container id="testContainerId" cache="gemfireCache" pool-name="client">
 		<!-- default handle method -->
 		<gfe:listener ref="testBean1" query="SELECT * from /test-cq"/>
 		<gfe:listener ref="testBean1" query="SELECT * from /test-cq" name="test-bean-1" method="handleQuery"/>
 		<gfe:listener ref="testBean2" query="SELECT * from /test-cq" durable="false"/>
 	</gfe:cq-listener-container>
-	
+
 	<bean id="testBean1" class="org.springframework.data.gemfire.listener.GemfireMDP"/>
 	<bean id="testBean2" class="org.springframework.data.gemfire.listener.ThrowableEventListener"/>
-	
+
 	<bean id="handler" class="org.springframework.data.gemfire.listener.StubErrorHandler"/>
-	
+
 </beans>

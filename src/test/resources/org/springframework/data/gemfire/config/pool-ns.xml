@@ -1,29 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
 
-	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
-	<!-- as there can be only one cache per VM -->
-	
-	
+	<util:properties id="gemfireProperties">
+		<prop key="name">PoolNamespaceConfig</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<context:property-placeholder location="classpath:port.properties"/>
+
 	<gfe:pool>
 		<gfe:locator host="localhost" port="${gfe.port}"/>
 	</gfe:pool>
-	
-	<gfe:cache />
-	
+
 	<gfe:pool id="complex" free-connection-timeout="6000" retry-attempts="30" ping-interval="5000" subscription-enabled="true" multi-user-authentication="false" pr-single-hop-enabled="true">
 		<gfe:server host="localhost" port="${gfe.port.4}"/>
 		<gfe:server host="localhost" port="40405"/>
 	</gfe:pool>
-	
-	<context:property-placeholder location="classpath:port.properties"/>
+
 </beans>

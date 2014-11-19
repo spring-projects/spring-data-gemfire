@@ -9,17 +9,17 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="clientCacheConfigurationSettings">
+	<util:properties id="gemfireProperties">
 		<prop key="name">springGemFireNoClientRegionLookupTest</prop>
-		<prop key="log-level">config</prop>
 		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
 	</util:properties>
 
 	<gfe:pool min-connections="1" max-connections="1">
 		<gfe:server host="localhost" port="54321"/>
 	</gfe:pool>
 
-	<gfe:client-cache cache-xml-location="/clientcache-with-regions.xml" properties-ref="clientCacheConfigurationSettings"/>
+	<gfe:client-cache cache-xml-location="/clientcache-with-regions.xml" properties-ref="gemfireProperties"/>
 
 	<gfe:client-region id="NativeClientRegion" ignore-if-exists="true"
 		cloning-enabled="true"

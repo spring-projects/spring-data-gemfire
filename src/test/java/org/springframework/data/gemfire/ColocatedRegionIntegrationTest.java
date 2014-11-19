@@ -39,7 +39,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.3.3
  */
-@ContextConfiguration("/org/springframework/data/gemfire/colocated-region.xml")
+@ContextConfiguration("colocated-region.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class ColocatedRegionIntegrationTest {

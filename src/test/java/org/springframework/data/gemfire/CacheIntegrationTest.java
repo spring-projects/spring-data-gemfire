@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import static org.junit.Assert.assertEquals;
+
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -36,10 +38,10 @@ import com.gemstone.gemfire.cache.Cache;
  * Made abstract to avoid multiple caches running at the same time.
  * 
  * @author Costin Leau
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/org/springframework/data/gemfire/basic-cache.xml",
-		initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "basic-cache.xml", initializers = GemfireTestApplicationContextInitializer.class)
 public class CacheIntegrationTest {
 
 	@Autowired ApplicationContext ctx;
@@ -54,15 +56,15 @@ public class CacheIntegrationTest {
 	public void testCacheWithProps() throws Exception {
 		cache = ctx.getBean("cache-with-props", Cache.class);
 		// the name property seems to be ignored
-		Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
-		Assert.assertEquals("cache-with-props", cache.getName());
+		assertEquals("cache-with-props", cache.getDistributedSystem().getName());
+		assertEquals("cache-with-props", cache.getName());
 	}
 
 	@Test
 	public void testNamedCache() throws Exception {
 		cache = ctx.getBean("named-cache", Cache.class);
-		Assert.assertEquals("cache-with-props", cache.getDistributedSystem().getName());
-		Assert.assertEquals("cache-with-props", cache.getName());
+		assertEquals("named-cache", cache.getDistributedSystem().getName());
+		assertEquals("named-cache", cache.getName());
 	}
 
 	@Test

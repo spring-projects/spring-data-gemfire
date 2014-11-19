@@ -43,9 +43,8 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.3.3
  */
-@ContextConfiguration(locations = "/org/springframework/data/gemfire/config/cache-using-pdx-ns.xml",
-	initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "cache-using-pdx-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class CacheUsingPdxNamespaceTest {
 

@@ -10,13 +10,13 @@
 	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 ">
 
-	<util:properties id="gemfireCacheConfigurationSettings">
+	<util:properties id="gemfireProperties">
 		<prop key="name">GemfireTemplateIntegrationTest</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">config</prop>
+		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="gemfireCacheConfigurationSettings"/>
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:replicated-region id="Users" persistent="false"/>
 

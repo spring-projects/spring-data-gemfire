@@ -32,11 +32,13 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 /**
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/org/springframework/data/gemfire/config/function-service-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="function-service-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class FunctionServiceNamespaceTest  {
+
 	@Test
 	public void testFunctionsRegistered() throws Exception {
 		assertEquals(2, FunctionService.getRegisteredFunctions().size());
@@ -49,8 +51,6 @@ public class FunctionServiceNamespaceTest  {
 
 		@Override
 		public void execute(FunctionContext arg0) {
-			// TODO Auto-generated method stub
-
 		}
 
 		@Override
@@ -65,8 +65,6 @@ public class FunctionServiceNamespaceTest  {
 
 		@Override
 		public void execute(FunctionContext arg0) {
-			// TODO Auto-generated method stub
-
 		}
 
 		@Override
@@ -75,4 +73,5 @@ public class FunctionServiceNamespaceTest  {
 		}
 
 	}
+
 }

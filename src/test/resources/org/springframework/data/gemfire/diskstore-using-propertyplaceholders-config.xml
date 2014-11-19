@@ -23,7 +23,13 @@
 
 	<context:property-placeholder properties-ref="diskStoreConfiguration"/>
 
-	<gfe:cache/>
+	<util:properties id="gemfireProperties">
+		<prop key="name">DiskStoreUsingPropertyPlaceholdersTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:disk-store id="TestDataStore"
 					allow-force-compaction="${allowForceCompaction}"

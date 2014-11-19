@@ -9,13 +9,13 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="gemfirePeerCacheConfigurationSettings">
+	<util:properties id="gemfireProperties">
 		<prop key="name">CacheAutoReconnectIntegrationTests</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">config</prop>
+		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="gemfirePeerCacheConfigurationSettings" use-bean-factory-locator="false"
+	<gfe:cache properties-ref="gemfireProperties" use-bean-factory-locator="false"
 			   enable-auto-reconnect="false" lazy-init="false"/>
 
 </beans>

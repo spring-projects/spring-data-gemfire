@@ -46,8 +46,8 @@ import com.gemstone.gemfire.cache.client.ClientCache;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.4.0
  */
-@ContextConfiguration("clientcache-with-subregion-config.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("clientcache-with-subregion-config.xml")
 @SuppressWarnings("unused")
 public class ClientSubRegionTest {
 

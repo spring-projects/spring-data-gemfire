@@ -1,29 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire-1.0.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
 
-  
- <gfe:cache/>
- 
- <gfe:replicated-region id="someRegion" />
-   
- 
- <bean id="functionTemplate" 
- 	class="org.springframework.data.gemfire.function.GemfireFunctionTemplate">
- 	<constructor-arg ref="gemfire-cache"/>
- 	<property name="timeout" value="1000"/>
- </bean>
- 
- <bean id="foo" class="org.springframework.data.gemfire.function.GemfireFunctionProxyFactoryBean">
-    <constructor-arg value="org.springframework.data.gemfire.function.foo.IFoo"/>
-    <constructor-arg value="org.springframework.data.gemfire.function.foo.Foo"/>
-    <constructor-arg ref="functionTemplate"/>
-    <property name="regionName" value="someRegion"/>
- </bean>
+	<util:properties id="gemfireProperties">
+		<prop key="name">GemfireFunctionProxyFactoryBeanTest</prop>
+		<prop key="statistic-sampling-enabled">false</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">config</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:replicated-region id="someRegion"/>
+
+	<bean id="functionTemplate"
+		  class="org.springframework.data.gemfire.function.GemfireFunctionTemplate">
+		<constructor-arg ref="gemfire-cache"/>
+		<property name="timeout" value="1000"/>
+	</bean>
+
+	<bean id="foo" class="org.springframework.data.gemfire.function.GemfireFunctionProxyFactoryBean">
+		<constructor-arg value="org.springframework.data.gemfire.function.foo.IFoo"/>
+		<constructor-arg value="org.springframework.data.gemfire.function.foo.Foo"/>
+		<constructor-arg ref="functionTemplate"/>
+		<property name="regionName" value="someRegion"/>
+	</bean>
 
 </beans>

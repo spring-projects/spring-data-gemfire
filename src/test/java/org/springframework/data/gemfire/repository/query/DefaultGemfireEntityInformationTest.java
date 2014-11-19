@@ -84,6 +84,7 @@ public class DefaultGemfireEntityInformationTest {
 		assertEquals("Algorithms", entityInfo.getRegionName());
 		assertTrue(Algorithm.class.isAssignableFrom(entityInfo.getJavaType()));
 		assertEquals(String.class, entityInfo.getIdType());
+		assertEquals("QuickSort", entityInfo.getId(new QuickSort()));
 		assertEquals("Quick Sort", entityInfo.getId(createAlgorithm("Quick Sort")));
 	}
 
@@ -154,6 +155,14 @@ public class DefaultGemfireEntityInformationTest {
 			catch (NumberFormatException e) {
 				this.id = null;
 			}
+		}
+	}
+
+	protected static class QuickSort implements Algorithm {
+
+		@Override
+		public String getName() {
+			return getClass().getSimpleName();
 		}
 	}
 

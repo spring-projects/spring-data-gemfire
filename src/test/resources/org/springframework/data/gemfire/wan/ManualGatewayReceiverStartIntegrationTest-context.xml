@@ -9,13 +9,13 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="gemfirePeerCacheConfigurationSettings">
-		<prop key="name">SpringDataGemFirePeerCache</prop>
+	<util:properties id="gemfireProperties">
+		<prop key="name">ManualGatewayReceiverStartIntegrationTest</prop>
 		<prop key="mcast-port">0</prop>
 		<prop key="log-level">config</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="gemfirePeerCacheConfigurationSettings"/>
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:replicated-region id="Example" persistent="false"/>
 

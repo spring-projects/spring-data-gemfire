@@ -12,6 +12,12 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<util:properties id="gemfireProperties">
+		<prop key="name">PartitionedNamespaceConfig</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
 	<util:properties id="props">
 		<prop key="copies">1</prop>
 		<prop key="totalBuckets">4</prop>
@@ -19,7 +25,7 @@
 
 	<context:property-placeholder properties-ref="props"/>
 
-	<gfe:cache/>
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:partitioned-region id="simple"/>
 

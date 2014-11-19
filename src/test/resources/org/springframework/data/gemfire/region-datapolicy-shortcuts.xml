@@ -4,18 +4,18 @@
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
   ">
 
-	<util:properties id="peerCacheConfigurationSettings">
+	<util:properties id="gemfireProperties">
 		<prop key="name">springGemFireRegionDataPolicyShortcutsIntegrationTest</prop>
-		<prop key="log-level">config</prop>
 		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="peerCacheConfigurationSettings"/>
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:local-region id="LocalWithDataPolicy" data-policy="NORMAL"/>
 	<gfe:local-region id="LocalWithShortcut" shortcut="LOCAL_PERSISTENT"/>

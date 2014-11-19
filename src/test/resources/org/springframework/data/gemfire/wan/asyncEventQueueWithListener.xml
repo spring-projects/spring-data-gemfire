@@ -10,13 +10,13 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="peerCacheConfigurationSettings">
-		<prop key="name">springGemFirePeerCache</prop>
+	<util:properties id="gemfireProperties">
+		<prop key="name">AsyncEventQueueWithListenerTest</prop>
 		<prop key="log-level">config</prop>
 		<prop key="mcast-port">0</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="peerCacheConfigurationSettings"/>
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:async-event-queue id="Q1" name="QueueOne" persistent="false" parallel="false" maximum-queue-memory="50"
 						   dispatcher-threads="4">

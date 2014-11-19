@@ -31,16 +31,19 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="client-readyforevents-cache.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "client-cache-ready-for-events.xml",
+	initializers = GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class ClientReadyForEventsTest {
 	
-	@Autowired ApplicationContext ctx;
+	@Autowired
+	private ApplicationContext context;
 	
 	@Test
 	public void testReadyForEvents() throws Exception {
-		ClientCacheFactoryBean cfb = (ClientCacheFactoryBean) ctx.getBean("&gemfireCache");
-		Boolean readyforevents = (Boolean) TestUtils.readField("readyForEvents", cfb);
-		assertTrue( readyforevents );
+		ClientCacheFactoryBean clientCacheFactoryBean = context.getBean("&gemfireCache", ClientCacheFactoryBean.class);
+		Boolean readyForEvents = TestUtils.readField("readyForEvents", clientCacheFactoryBean);
+		assertTrue(readyForEvents);
 	}
+
 }

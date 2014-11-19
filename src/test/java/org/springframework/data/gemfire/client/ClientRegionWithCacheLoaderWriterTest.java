@@ -58,9 +58,9 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
  * @see com.gemstone.gemfire.cache.Region
  * @since 1.3.3
  */
-@ContextConfiguration(locations = "/org/springframework/data/gemfire/client/clientcache-with-region-using-cache-loader-writer.xml",
-	initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "clientcache-with-region-using-cache-loader-writer.xml",
+	initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class ClientRegionWithCacheLoaderWriterTest {
 

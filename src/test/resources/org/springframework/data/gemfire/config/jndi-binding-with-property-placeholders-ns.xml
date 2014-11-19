@@ -11,6 +11,12 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<util:properties id="gemfireProperties">
+		<prop key="name">JndiBindingWithPropertyPlaceholdersNamespaceConfig</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
 	<util:properties id="jndi-binding-settings">
 		<prop key="jndi.binding.name">testDataSource</prop>
 		<prop key="jndi.binding.type">XAPoolDataSource</prop>
@@ -36,7 +42,7 @@
 
 	<context:property-placeholder properties-ref="jndi-binding-settings"/>
 
-	<gfe:cache lazy-init="true">
+	<gfe:cache properties-ref="gemfireProperties" lazy-init="true">
 		<gfe:jndi-binding jndi-name="${jndi.binding.name}"
 						  type="${jndi.binding.type}"
 						  blocking-timeout-seconds="${jndi.binding.blocking.timeout.seconds}"
