@@ -21,8 +21,12 @@ import org.springframework.core.convert.converter.Converter;
 import com.gemstone.gemfire.cache.DataPolicy;
 
 /**
+ * The DataPolicyConverter class converts String values into GemFire DataPolicy enumerated values.
+ *
  * @author David Turanski
- * 
+ * @author John Blum
+ * @see org.springframework.core.convert.converter.Converter
+ * @see com.gemstone.gemfire.cache.DataPolicy
  */
 public class DataPolicyConverter implements Converter<String, DataPolicy> {
 

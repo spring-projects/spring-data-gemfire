@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:p="http://www.springframework.org/schema/p"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 " default-lazy-init="true">
@@ -31,6 +33,10 @@
 		<gfe:cache-writer ref="c-writer"/>
 	</gfe:replicated-region>
 
+	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
+	<bean id="c-loader" class="org.springframework.data.gemfire.SimpleCacheLoader"/>
+	<bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>
+
     <gfe:replicated-region id="replicated-with-attributes"
 						   cloning-enabled="false"
 						   concurrency-level="10"
@@ -47,13 +53,18 @@
 						   scope="global"
 						   value-constraint="java.lang.String"/>
 
+	<util:properties id="regionConfigurationSettings">
+		<prop key="gemfire.index-update-type">synchronous</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="regionConfigurationSettings"/>
+
+	<gfe:replicated-region id="replicated-with-synchronous-index-updates" index-update-type="${gemfire.index-update-type}"/>
+
 	<gfe:replicated-region id="Compressed" persistent="false">
 		<gfe:compressor ref="testCompressor"/>
 	</gfe:replicated-region>
 
-	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
-	<bean id="c-loader" class="org.springframework.data.gemfire.SimpleCacheLoader"/>
-	<bean id="c-writer" class="org.springframework.data.gemfire.SimpleCacheWriter"/>
 	<bean id="testCompressor" class="org.springframework.data.gemfire.config.ReplicatedRegionNamespaceTest$TestCompressor" p:name="XYZ"/>
 
 	<gfe:lookup-region id="lookup" name="existing"/>

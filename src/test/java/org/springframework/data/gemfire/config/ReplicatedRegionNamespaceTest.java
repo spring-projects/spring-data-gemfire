@@ -148,6 +148,21 @@ public class ReplicatedRegionNamespaceTest {
 	}
 
 	@Test
+	public void testReplicatedWithSynchronousIndexUpdates() {
+		assertTrue(context.containsBean("replicated-with-synchronous-index-updates"));
+
+		Region region = context.getBean("replicated-with-synchronous-index-updates", Region.class);
+
+		assertNotNull(String.format("The '%1$s' Region was not properly configured and initialized!",
+			"replicated-with-synchronous-index-updates"), region);
+
+		RegionAttributes regionAttributes = region.getAttributes();
+
+		assertNotNull(regionAttributes);
+		assertTrue(regionAttributes.getIndexMaintenanceSynchronous());
+	}
+
+	@Test
 	@SuppressWarnings("rawtypes")
 	public void testRegionLookup() throws Exception {
 		Cache cache = context.getBean(Cache.class);

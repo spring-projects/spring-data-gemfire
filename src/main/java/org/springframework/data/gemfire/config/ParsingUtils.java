@@ -307,6 +307,7 @@ abstract class ParsingUtils {
 		setPropertyValue(element, regionAttributesBuilder, "enable-async-conflation");
 		setPropertyValue(element, regionAttributesBuilder, "enable-subscription-conflation");
 		setPropertyValue(element, regionAttributesBuilder, "ignore-jta", "ignoreJTA");
+		setPropertyValue(element, regionAttributesBuilder, "index-update-type");
 		setPropertyValue(element, regionAttributesBuilder, "initial-capacity");
 		setPropertyValue(element, regionAttributesBuilder, "is-lock-grantor", "lockGrantor");
 		setPropertyValue(element, regionAttributesBuilder, "key-constraint");
@@ -315,18 +316,11 @@ abstract class ParsingUtils {
 		setPropertyValue(element, regionAttributesBuilder, "publisher");
 		setPropertyValue(element, regionAttributesBuilder, "value-constraint");
 
-		String indexUpdateType = element.getAttribute("index-update-type");
-
-		if (StringUtils.hasText(indexUpdateType)) {
-			regionAttributesBuilder.addPropertyValue("indexMaintenanceSynchronous",
-				"synchronous".equals(indexUpdateType));
-		}
-
 		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
 
 		if (StringUtils.hasText(concurrencyChecksEnabled)) {
 			if (!GemfireUtils.isGemfireVersion7OrAbove()) {
-				log.warn("Setting 'concurrency-checks-enabled' is only available in Gemfire 7.0 or above");
+				log.warn("Setting 'concurrency-checks-enabled' is only available in Gemfire 7.0 or above!");
 			}
 			else {
 				ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");

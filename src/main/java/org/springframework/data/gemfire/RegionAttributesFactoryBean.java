@@ -19,11 +19,11 @@ package org.springframework.data.gemfire;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
- * Spring-friendly bean for creating {@link RegionAttributes}. Eliminates the need of using
- * a XML 'factory-method' tag.
+ * Spring-friendly bean for creating {@link RegionAttributes}. Eliminates the need of using a XML 'factory-method' tag.
  *
  * @author Costin Leau
  * @author John Blum
@@ -32,9 +32,9 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * @see com.gemstone.gemfire.cache.AttributesFactory
  * @see com.gemstone.gemfire.cache.RegionAttributes
  */
-@SuppressWarnings("deprecation")
-public class RegionAttributesFactoryBean extends com.gemstone.gemfire.cache.AttributesFactory
-		implements FactoryBean<RegionAttributes>, InitializingBean {
+@SuppressWarnings({ "deprecation", "unused" })
+public class RegionAttributesFactoryBean extends AttributesFactory implements FactoryBean<RegionAttributes>,
+		InitializingBean {
 
 	private RegionAttributes attributes;
 
@@ -51,6 +51,10 @@ public class RegionAttributesFactoryBean extends com.gemstone.gemfire.cache.Attr
 	@Override
 	public boolean isSingleton() {
 		return true;
+	}
+
+	public void setIndexUpdateType(final IndexMaintenanceType indexUpdateType) {
+		indexUpdateType.setIndexMaintenance(this);
 	}
 
 	@Override

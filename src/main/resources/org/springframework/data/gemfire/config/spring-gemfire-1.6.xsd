@@ -896,19 +896,13 @@ Specifies if WAN Gateway hub id if enable-gateway is true. (Deprecated since Gem
                                 ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="index-update-type" use="optional">
+				<xsd:attribute name="index-update-type" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Specifies whether Region indexes are maintained synchronously with Region modifications, or asynchronously
 in a background thread.  GemFire default is synchronous.
 						]]></xsd:documentation>
 					</xsd:annotation>
-					<xsd:simpleType>
-						<xsd:restriction base="xsd:string">
-							<xsd:enumeration value="asynchronous"/>
-							<xsd:enumeration value="synchronous"/>
-						</xsd:restriction>
-					</xsd:simpleType>
 				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>

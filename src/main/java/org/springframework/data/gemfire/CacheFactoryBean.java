@@ -33,6 +33,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -908,6 +909,15 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		return lazyInitialize;
 	}
 
+	/* (non-Javadoc) */
+	private void initBeanFactory() {
+		if (getBeanFactory() instanceof ConfigurableBeanFactory) {
+			((ConfigurableBeanFactory) getBeanFactory()).registerCustomEditor(IndexMaintenanceType.class,
+				IndexMaintenanceTypeConverter.class);
+		}
+	}
+
+	/* (non-Javadoc) */
 	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
 		if (GemfireUtils.isGemfireVersion8OrAbove()) {
 			gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
@@ -917,11 +927,13 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		initBeanFactory();
 		postProcessPropertiesBeforeInitialization(getProperties());
 
 		if (!isLazyInitialize()) {
