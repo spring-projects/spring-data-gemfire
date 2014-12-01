@@ -3,6 +3,43 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+
+Changes in version 1.6.0.M1 (2014-12-01)
+----------------------------------------
+* SGF-356 - local-region on client side.
+* SGF-355 - Release 1.6 M1.
+* SGF-350 - Upgrade to Spring Data Commons 1.10.
+* SGF-348 - Upgrade to Spring Framework 4.0.8.RELEASE.
+* SGF-346 - Enable LazyWiringDeclarableSupport-based GemFire components to be used inside both cache.xml and Spring config, especially in the context of GemFire 8's Cluster Configuration.
+* SGF-343 - Optimize the SDG implementation of CrudRepository.save(Iterable<S> enttiies) to use GemFire's Region.putAll(Map<K, V> values) operation.
+* SGF-342 - Update Spring Data GemFire Reference Guide with GemFire 8 functional support.
+* SGF-340 - Change a SpringSource-based links in the SDG Reference Guide to Spring.io-based links.
+* SGF-339 - Change all VMWare-based links in the SDG Reference Guide to Pivotal-based links.
+* SGF-338 - Both <gfe:custom-entry-ttl> and <gfe:custom-entry-tti> SDG XML namespace elements allow for more than one 'CustomExpiry' bean to be set in the Region Expiration Attributes although GemFire only allows one!.
+* SGF-337 - SDG's XML Schema (XSD) does not allow the developer to specify 'timeout' and 'action' values for CustomExpiry (<gfe:custom-entry-[ttl|tti]>) on Region attributes.
+* SGF-333 - The SpringContextBootstrappingInitializer needs to handle the case when it's init(:Properties) method maybe called more than once on initialization.
+* SGF-332 - Add support for the GatewaySender 'eventSubstitutionFilter' property in the SDG XSD and GatewaySenderFactoryBean API.
+* SGF-331 - Pull common WAN attributes from GatewaySenders and AsyncEventQueues in the SDG XSD into the 'commonWANQueueAttributes' attributes group.
+* SGF-330 - Add missing 'disk-synchronous' attribute to the <gfe:gateway-sender> element in the SDG XML namespace (XSD).
+* SGF-328 - Add missing 'hostname-for-senders' attribute on the <gfe:gateway-receiver> element in the SDG XML namespace (XSD).
+* SGF-327 - Avoid setting null values with GemFire's Cache Region put(key, value) operation when GemFire is used as the caching provider in Spring's Cache Abstraction (@Cacheable).
+* SGF-326 - Create spring-gemfire-1.6.xsd and spring-data-gemfire-1.6.xsd for SDG 1.6.
+* SGF-325 - Create spring-gemfire-2.0.xsd and spring-data-gemfire-2.0.xsd for SDG 2.
+* SGF-323 - Add support for GemFire 8's DiskStore 'diskUsageCriticalPercentage' and 'diskUsageWarningPercentage' properties in the SDG XML namespace (XSD) and DiskStoreFactoryBean API.
+* SGF-318 - Upgrade to Spring Framework 4.0.7.
+* SGF-317 - Improve GemfireCache implementation to be able to build on Spring 4.1.
+* SGF-316 - Update Spring Data GemFire Reference Guide with 1.5 changes (e.g. Auto Region Lookups, Region Templates).
+* SGF-314 - Upgrade to Spring Framework 4.0.7.
+* SGF-313 - SDG 1.6 support for both GemFire 7 and GemFire 8.
+* SGF-309 - Add support for Region Data Compression with the new 'Compressor' property on the RegionAttributes class.
+* SGF-291 - Upgrade Spring Data GemFire 1.5 to GemFire 8.0.
+* SGF-270 - Remove the validation logic in the AsyncEventQueueFactoryBean restricting the specification of Dispatcher Threads when a 'Parallel' AsyncEventQueue is used.
+* SGF-269 - Remove the validation logic in the GatewaySenderFactoryBean restricting the specification of Dispatcher Threads when a 'Parallel' GatewaySender is used.
+* SGF-264 - Completely remove the 'data-policy' and 'shortcut' attributes from the SDG XML namespace Region elements.
+* SGF-227 - Support for 'auto-reconnect' functionality when peers are forcefully disconnected from the cluster.
+* SGF-226 - Support for requesting a peer member's configuration from a GemFire Locator/Manager using the new Cluster-based Configuration Service.
+
+
 Changes in version 1.5.1.RELEASE (2014-10-30)
 ---------------------------------------------
 * SGF-347 - Release 1.5.1.
