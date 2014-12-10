@@ -27,6 +27,8 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
 import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
 import org.springframework.data.gemfire.EvictionType;
+import org.springframework.data.gemfire.ExpirationActionType;
+import org.springframework.data.gemfire.ExpirationActionTypeConverter;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.SubscriptionAttributesFactoryBean;
 import org.springframework.data.gemfire.SubscriptionType;
@@ -290,6 +292,7 @@ abstract class ParsingUtils {
 			// turn on statistics
 			regionAttributesBuilder.addPropertyValue("statisticsEnabled", Boolean.TRUE);
 		}
+
 		return result;
 	}
 
@@ -380,24 +383,13 @@ abstract class ParsingUtils {
 
 		if (expirationElement != null) {
 			String timeoutAttribute = expirationElement.getAttribute("timeout");
-			String expirationTimeout = (StringUtils.hasText(timeoutAttribute) ? timeoutAttribute : null);
+			String expirationTimeout = (StringUtils.hasText(timeoutAttribute) ? timeoutAttribute : "0");
 
 			String actionAttribute = StringUtils.trimAllWhitespace(expirationElement.getAttribute("action"));
-			ExpirationAction expirationAction;
 
-			// TODO refactor this using an Enum and ExpirationActionConverter!
-			if ("DESTROY".equalsIgnoreCase(actionAttribute)) {
-				expirationAction = ExpirationAction.DESTROY;
-			}
-			else if ("LOCAL_DESTROY".equalsIgnoreCase(actionAttribute)) {
-				expirationAction = ExpirationAction.LOCAL_DESTROY;
-			}
-			else if ("LOCAL_INVALIDATE".equalsIgnoreCase(actionAttribute)) {
-				expirationAction = ExpirationAction.LOCAL_INVALIDATE;
-			}
-			else {
-				expirationAction = ExpirationAction.INVALIDATE;
-			}
+			ExpirationActionType expirationActionType = new ExpirationActionTypeConverter().convert(actionAttribute);
+			ExpirationAction expirationAction = (expirationActionType != null
+				? expirationActionType.getExpirationAction() : ExpirationAction.INVALIDATE);
 
 			BeanDefinitionBuilder expirationAttributes = BeanDefinitionBuilder.genericBeanDefinition(
 				ExpirationAttributes.class);

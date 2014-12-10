@@ -1553,43 +1553,18 @@ Defines a template for creating multiple GemFire Local Regions that all share a 
 		<xsd:attribute name="timeout" type="xsd:string" default="0">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The amount of time before the expiration action takes place. Defaults to zero (which means never timeout).
+Number of seconds before a region or an entry expires. If timeout is not specified, it defaults to zero
+(which means no expiration).
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="action" default="INVALIDATE">
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="INVALIDATE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-When the region or cached object expires, it is invalidated.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="DESTROY">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-When the region or cached object expires, it is destroyed.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="LOCAL_INVALIDATE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-When the region or cached object expires, it is invalidated locally only. Not supported on partitioned regions.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="LOCAL_DESTROY">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-When the region or cached object expires, it is destroyed locally only. Not supported on partitioned regions.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
+		<xsd:attribute name="action" type="xsd:string" default="INVALIDATE">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Action that should take place when a Region or an Entry expires.  Valid values include: DESTROY, INVALIDATE,
+LOCAL_DESTROY, LOCAL_INVALIDATE.  Note, the default GemFire Expiration Action is INVALIDATE.
+				]]></xsd:documentation>
+			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
 	<!-- -->
