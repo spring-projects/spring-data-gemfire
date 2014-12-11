@@ -16,6 +16,9 @@ import org.springframework.data.gemfire.repository.query.QueryString;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.SelectResults;
 
@@ -202,6 +205,52 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
+	 *
+	 * @see com.gemstone.gemfire.cache.Region#getAttributes()
+	 * @see com.gemstone.gemfire.cache.RegionAttributes#getDataPolicy()
+	 */
+	boolean isPartitioned(final Region region) {
+		return (region != null && region.getAttributes() != null
+			&& isPartitioned(region.getAttributes().getDataPolicy()));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see com.gemstone.gemfire.cache.DataPolicy#withPartitioning()
+	 */
+	boolean isPartitioned(final DataPolicy dataPolicy) {
+		return (dataPolicy != null && dataPolicy.withPartitioning());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see com.gemstone.gemfire.cache.Region#getRegionService()
+	 * @see com.gemstone.gemfire.cache.Cache#getCacheTransactionManager()
+	 */
+	boolean isTransactionPresent(final Region region) {
+		return (region.getRegionService() instanceof Cache
+			&& isTransactionPresent(((Cache) region.getRegionService()).getCacheTransactionManager()));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see com.gemstone.gemfire.cache.CacheTransactionManager#exists()
+	 */
+	boolean isTransactionPresent(final CacheTransactionManager cacheTransactionManager) {
+		return (cacheTransactionManager != null && cacheTransactionManager.exists());
+	}
+
+	void doRegionClear(final Region region) {
+		for (Object key : region.keySet()) {
+			region.remove(key);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * 
 	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
 	 */
@@ -210,14 +259,16 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 		template.execute(new GemfireCallback<Void>() {
 			@Override
 			@SuppressWarnings("rawtypes")
-			public Void doInGemfire(Region region) {
-				//clear() does not work for partitioned regions
-				try {
-					region.clear();
+			public Void doInGemfire(final Region region) {
+				if (isPartitioned(region) || isTransactionPresent(region)) {
+					doRegionClear(region);
 				}
-				catch (UnsupportedOperationException e) {
-					for (Object key : region.keySet()) {
-						region.remove(key);
+				else {
+					try {
+						region.clear();
+					}
+					catch (UnsupportedOperationException ignore) {
+						doRegionClear(region);
 					}
 				}
 
