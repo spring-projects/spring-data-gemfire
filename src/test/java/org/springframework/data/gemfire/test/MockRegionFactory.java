@@ -94,13 +94,7 @@ public class MockRegionFactory<K,V>   {
 			@Override public Region answer(InvocationOnMock invocation) throws Throwable {
 				Region parent = (Region) invocation.getArguments()[0];
 				String name = (String) invocation.getArguments()[1];
-				String parentRegionName = null;
-
-				for (String key: cache.allRegions().keySet()) {
-					if (cache.allRegions().get(key).equals(parent)) {
-						parentRegionName = key;
-					}
-				}
+				String parentRegionName = parent.getFullPath();
 
 				assert parentRegionName != null : "The parent Region name was null!";
 
