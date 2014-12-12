@@ -22,23 +22,27 @@ import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 
 /**
  * @author David Turanski
+ * @author John Blum
  */
 public class GemfireTestBeanPostProcessor implements BeanPostProcessor {
 
 	private static Log logger = LogFactory.getLog(GemfireTestBeanPostProcessor.class);
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)
 	 */
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof CacheFactoryBean) {
+			String beanTypeName = bean.getClass().getName();
+
 			bean = (bean instanceof ClientCacheFactoryBean
 				? new MockClientCacheFactoryBean((ClientCacheFactoryBean) bean)
 				: new MockCacheFactoryBean((CacheFactoryBean) bean));
 
-			logger.info(String.format("Replacing the '%1$s' bean definition having type '%2$s' with mock...",
-				beanName, bean.getClass().getName()));
+			logger.info(String.format("Replacing the '%1$s' bean definition having type '%2$s' with mock (%3$s)...",
+				beanName, beanTypeName, bean.getClass().getName()));
 		}
 		else if (bean instanceof CacheServerFactoryBean) {
 			((CacheServerFactoryBean) bean).setCache(new StubCache());
@@ -47,7 +51,8 @@ public class GemfireTestBeanPostProcessor implements BeanPostProcessor {
 		return bean;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization(java.lang.Object, java.lang.String)
 	 */
 	@Override
