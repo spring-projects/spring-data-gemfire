@@ -41,74 +41,70 @@ public class PojoFunctionWrapper implements Function {
 	private static transient Log logger = LogFactory.getLog(PojoFunctionWrapper.class);
 
 	private volatile boolean HA;
-	private volatile boolean optimizeForWrite;
 	private volatile boolean hasResult;
-	private final Object target;
-	private final Method method;
-	private final String id;
+	private volatile boolean optimizeForWrite;
+
 	private volatile int batchSize;
 
 	private final FunctionArgumentResolver functionArgumentResolver;
 
+	private final Method method;
+
+	private final Object target;
+
+	private final String id;
+
 	public PojoFunctionWrapper(Object target, Method method, String id) {
-
 		this.functionArgumentResolver = new FunctionContextInjectingArgumentResolver(method);
-
-		this.id = StringUtils.hasText(id) ? id : method.getName();
 		this.target = target;
 		this.method = method;
-
+		this.id = (StringUtils.hasText(id) ? id : method.getName());
 		this.HA = false;
-
 		this.hasResult = !(method.getReturnType().equals(void.class));
-
 		this.optimizeForWrite = false;
-	}
-
-	//@Override	 
-	public String getId() {
-		return this.id;
-	}
-
-	//@Override	 
-	public boolean hasResult() {
-		return this.hasResult;
-	}
-
-	//@Override	
-	public boolean isHA() {
-		return this.HA;
-	}
-
-	public void setHA(boolean HA) {
-		this.HA = HA;
-	}
-
-	//@Override	
-	public boolean optimizeForWrite() {
-		return this.optimizeForWrite;
-	}
-
-	public void setOptimizeForWrite(boolean optimizeForWrite) {
-		this.optimizeForWrite = optimizeForWrite;
 	}
 
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
 	}
 
+	public void setHA(boolean HA) {
+		this.HA = HA;
+	}
+
+	@Override
+	public boolean isHA() {
+		return this.HA;
+	}
+
 	public void setHasResult(boolean hasResult) {
 		this.hasResult = hasResult;
 	}
 
-	//@Override
-	public void execute(FunctionContext functionContext) {
+	@Override
+	public boolean hasResult() {
+		return this.hasResult;
+	}
 
+	@Override
+	public String getId() {
+		return this.id;
+	}
+
+	public void setOptimizeForWrite(boolean optimizeForWrite) {
+		this.optimizeForWrite = optimizeForWrite;
+	}
+
+	@Override
+	public boolean optimizeForWrite() {
+		return this.optimizeForWrite;
+	}
+
+	@Override
+	public void execute(final FunctionContext functionContext) {
 		Object[] args = this.functionArgumentResolver.resolveFunctionArguments(functionContext);
 
-		Object result = null;
-
-		result = invokeTargetMethod(args);
+		Object result = invokeTargetMethod(args);
 
 		if (hasResult()) {
 			sendResults(functionContext.getResultSender(), result);
@@ -116,32 +112,33 @@ public class PojoFunctionWrapper implements Function {
 	}
 
 	protected final Object invokeTargetMethod(Object[] args) {
-
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("about to invoke method %s on class %s as function %s", method.getName(), target
-					.getClass().getName(), this.id));
+			logger.debug(String.format("about to invoke method %s on class %s as function %s", method.getName(),
+				target.getClass().getName(), this.id));
 
 			for (Object arg : args) {
 				logger.debug("arg:" + arg.getClass().getName() + " " + arg.toString());
 			}
-
 		}
 
-		return (Object) ReflectionUtils.invokeMethod(method, target, (Object[]) args);
+		return ReflectionUtils.invokeMethod(method, target, (Object[]) args);
 	}
 
 	private void sendResults(ResultSender<Object> resultSender, Object result) {
 		if (result == null) {
 			resultSender.lastResult(null);
-			return;
 		}
-
-		if (ObjectUtils.isArray(result)) {	
-			new BatchingResultSender(batchSize, resultSender).sendArrayResults(result);
-		} else if (Iterable.class.isAssignableFrom(result.getClass())) {
-			new BatchingResultSender(batchSize, resultSender).sendResults((Iterable<?>) result);
-		} else {
-			resultSender.lastResult(result);
+		else {
+			if (ObjectUtils.isArray(result)) {
+				new BatchingResultSender(batchSize, resultSender).sendArrayResults(result);
+			}
+			else if (Iterable.class.isAssignableFrom(result.getClass())) {
+				new BatchingResultSender(batchSize, resultSender).sendResults((Iterable<?>) result);
+			}
+			else {
+				resultSender.lastResult(result);
+			}
 		}
 	}
+
 }

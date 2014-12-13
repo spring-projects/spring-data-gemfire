@@ -12,6 +12,8 @@
  */
 package org.springframework.data.gemfire.function;
 
+import java.lang.reflect.Method;
+
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 
 /**
@@ -23,7 +25,19 @@ class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
 
 	private static final Object[] EMPTY_ARRAY = new Object[0];
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.reflect.Method
+	 */
+	@Override
+	public Method getFunctionAnnotatedMethod() {
+		throw new UnsupportedOperationException("Not Implemented!");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see org.springframework.data.gemfire.function.FunctionArgumentResolver#resolveFunctionArguments(com.gemstone.gemfire.cache.execute.FunctionContext)
 	 */
 	@Override

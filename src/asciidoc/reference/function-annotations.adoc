@@ -3,25 +3,65 @@
 
 == Introduction
 
-Spring Data GemFire 1.3.0 introduces annotation support to simplify working with http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/function_exec/chapter_overview.html[GemFire function execution]. The GemFire API provides classes to implement and register http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Function.html[Functions] deployed to cache servers that may be invoked remotely by member applications, typically cache clients. Functions may execute in parallel, distributed among multiple servers, combining results in a map-reduce pattern, or may be targeted to a single server. A Function execution may be also be targeted to a specific region.
+Spring Data GemFire 1.3.0 introduces annotation support to simplify working with
+http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/function_exec/chapter_overview.html[GemFire Function Execution].
+The GemFire API provides classes to implement and register http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Function.html[Functions]
+deployed to Cache servers that may be invoked remotely by member applications, typically cache clients.
+Functions may execute in parallel, distributed among multiple servers, combining results in a map-reduce pattern,
+or may be targeted at a single server. A Function execution may be also be targeted to a specific Region.
 
-GemFire's also provides APIs to support remote execution of functions targeted to various defined scopes (region, member groups, servers, etc.) and the ability to aggregate results. The API also provides certain runtime options. The implementation and execution of remote functions, as with any RPC protocol, requires some boilerplate code. Spring Data GemFire, true to Spring's core value proposition, aims to hide the mechanics of remote function execution and allow developers to focus on POJO programming and business logic. To this end, Spring Data GemFire introduces annotations to declaratively register public methods as functions, and the ability to invoke registered functions remotely via annotated interfaces.
+GemFire also provides APIs to support remote execution of Functions targeted to various defined scopes
+(Region, member groups, servers, etc.) and the ability to aggregate results. The API also provides certain
+runtime options. The implementation and execution of remote Functions, as with any RPC protocol, requires
+some boilerplate code. Spring Data GemFire, true to Spring's core value proposition, aims to hide the mechanics
+of remote Function execution and allow developers to focus on POJO programming and business logic. To this end,
+Spring Data GemFire introduces annotations to declaratively register public methods as GemFire Functions, and
+the ability to invoke registered Functions remotely via annotated interfaces.
 
 == Implementation vs Execution
 
-There are two separate concerns to address. First is the function implementation (server) which must interact with the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/FunctionContext.html[FunctionContext] to obtain the invocation arguments, the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultSender.html[ResultsSender] and other execution context information. The function implementation typically accesses the Cache and or Region and is typically registered with the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/FunctionService.html[FunctionService] under a unique Id. The application invoking a function (the client) does not depend on the implementation. To invoke a function remotely, the application instantiates an http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Execution.html[Execution] providing the function ID, invocation arguments, the function target or scope (region, server, servers, member, members). If the function produces a result, the invoker uses a http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultCollector.html[ResultCollector] to aggregate and acquire the execution results. In certain scenarios, a custom ResultCollector implementation is required and may be registered with the Execution.
+There are two separate concerns to address. First is the Function implementation (server) which must interact with
+the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/FunctionContext.html[FunctionContext]
+to obtain the invocation arguments, the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultSender.html[ResultsSender]
+and other execution context information. The Function implementation typically accesses the Cache and or Region
+and is typically registered with the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/FunctionService.html[FunctionService]
+under a unique Id. The application invoking a Function (the client) does not depend on the implementation. To invoke
+a Function remotely, the application instantiates an http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Execution.html[Execution]
+providing the Function ID, invocation arguments, the Function target or scope (Region, server, servers,
+member, members). If the Function produces a result, the invoker uses a http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultCollector.html[ResultCollector]
+to aggregate and acquire the execution results. In certain scenarios, a custom ResultCollector implementation
+is required and may be registered with the Execution.
 
-NOTE: 'Client' and 'Server' are used here in the context of function execution which may have a different meaning then client and server in a client-server cache topology. While it is common for a member with a Client Cache to invoke a function on one or more Cache Server members it is also possible to execute functions in a peer-to-peer configuration
+NOTE: 'Client' and 'Server' are used here in the context of Function execution which may have a different meaning
+than client and server in a client-server Cache topology. While it is common for a member with a Client Cache
+to invoke a Function on one or more Cache Server members it is also possible to execute Functions in a peer-to-peer
+(P2P) configuration
 
 == Implementing a Function
 
-Using GemFire APIs, the FunctionContext provides a runtime invocation context including the client's calling arguments and a ResultSender interface to send results back to the client. Additionally, if the function is executed on a Region, the FunctionContext is an instance of RegionFunctionContext which provides additional context such as the target Region and any Filter (set of specific keys) associated with the Execution. If the Region is a Partition Region, the function should use the PartitionRegionHelper to extract only the local data.
+Using GemFire APIs, the FunctionContext provides a runtime invocation context including the client's calling arguments
+and a ResultSender interface to send results back to the client. Additionally, if the Function is executed on a Region,
+the FunctionContext is an instance of RegionFunctionContext which provides additional context such as the target Region
+and any Filter (set of specific keys) associated with the Execution. If the Region is a PARTITION Region, the Function
+should use the PartitionRegionHelper to extract only the local data.
 
-Using Spring, one can write a simple POJO and enable the Spring container bind one or more of it's public methods to a Function. The signature for a POJO method intended to be used as a function must generally conform to the the client's execution arguments. However, in the case of a region execution, the region data must also be provided (presumably the data held in the local partition if the region is a partition region). Additionally the function may require the filter that was applied, if any. This suggests that the client and server may share a contract for the calling arguments but that the method signature may include additional parameters to pass values provided by the FunctionContext. One possibility is that the client and server share a common interface, but this is not required. The only constraint is that the method signature includes the same sequence of calling arguments with which the function was invoked after the additional parameters are resolved. For example, suppose the client provides a String and int as the calling arguments. These are provided by the FunctionContext as an array:
+Using Spring, a developer can write a simple POJO and enable the Spring container to bind one or more of it's
+public methods to a Function. The signature for a POJO method intended to be used as a Function must generally
+conform to the the client's execution arguments. However, in the case of a Region execution, the Region data
+must also be provided (presumably the data held in the local partition if the Region is a PARTITION Region).
+Additionally the Function may require the Filter that was applied, if any. This suggests that the client and server
+may share a contract for the calling arguments but that the method signature may include additional parameters
+to pass values provided by the FunctionContext. One possibility is that the client and server share a common interface,
+but this is not required. The only constraint is that the method signature includes the same sequence
+of calling arguments with which the Function was invoked after the additional parameters are resolved.
+
+For example, suppose the client provides a String and int as the calling arguments. These are provided
+by the FunctionContext as an array:
 
 `Object[] args = new Object[]{"hello", 123}`
 
-Then the Spring container should be able to bind to any method signature similar to the following. Let's ignore the return type for the moment:
+Then the Spring container should be able to bind to any method signature similar to the following. Let's ignore
+the return type for the moment:
 
 [source,java]
 ----
@@ -34,40 +74,68 @@ public void method5(String s1, ResultSender rs, int i2);
 public void method6(FunctionContest fc);
 ----
 
-The general rule is that once any additional arguments, i.e., region data and filter, are resolved the remaining arguments must correspond exactly, in order and type, to the expected calling parameters. The method's return type must be void or a type that may be serialized (either java.io.Serializable, DataSerializable, or PDX serializable). The latter is also a requirement for the calling arguments. The Region data should normally be defined as a Map, to facilitate unit testing, but may also be of type Region if necessary. As shown in the example above, it is also valid to pass the FunctionContext itself, or the ResultSender, if you need to control how the results are returned to the client.
+The general rule is that once any additional arguments, i.e. Region data and Filter, are resolved,
+the remaining arguments must correspond exactly, in order and type, to the expected calling parameters.
+The method's return type must be void or a type that may be serialized (either java.io.Serializable,
+DataSerializable, or PDX serializable). The latter is also a requirement for the calling arguments.
+The Region data should normally be defined as a Map, to facilitate unit testing, but may also be of type Region
+if necessary. As shown in the example above, it is also valid to pass the FunctionContext itself, or the ResultSender,
+if you need to control how the results are returned to the client.
 
 === Annotations for Function Implementation
 
-The following example illustrates how annotations are used to expose a POJO as a GemFire function:
+The following example illustrates how annotations are used to expose a POJO as a GemFire Function:
 
 [source,java]
 ----
 @Component
-public class MyFunctions {
+public class ApplicationFunctions {
+
    @GemfireFunction
-   public String function1(String s1, @RegionData Map<?,?> data, int i2) { ... }
+   public String function1(String value, @RegionData Map<?,?> data, int i2) { ... }
 
    @GemfireFunction("myFunction", HA=true, optimizedForWrite=true, batchSize=100)
-   public List<String> function2(String s1, @RegionData Map<?,?> data, int i2, @Filter Set<?> keys) { ... }
+   public List<String> function2(String value, @RegionData Map<?,?> data, int i2, @Filter Set<?> keys) { ... }
 
    @GemfireFunction(hasResult=true)
    public void functionWithContext(FunctionContext functionContext) { ... }
+
 }
 ----
 
-Note that the class itself must be registered as a Spring bean. Here the `@Component` annotation is used, but you may register the bean by any method provided by Spring (e.g. XML configuration or Java configuration class). This allows the Spring container to create an instance of this class and wrap it in a https://github.com/spring-projects/spring-data-gemfire/blob/master/src/main/java/org/springframework/data/gemfire/function/PojoFunctionWrapper.java[PojoFunctionWrapper](PFW). Spring creates one PFW instance for each method annotated with `@GemfireFunction`. Each will all share the same target object instance to invoke the corresponding method.
+Note that the class itself must be registered as a Spring bean. Here the `@Component` annotation is used, but you may
+register the bean by any method provided by Spring (e.g. XML configuration or Java configuration class). This allows
+the Spring container to create an instance of this class and wrap it in a
+https://github.com/spring-projects/spring-data-gemfire/blob/master/src/main/java/org/springframework/data/gemfire/function/PojoFunctionWrapper.java[PojoFunctionWrapper] (PFW).
+Spring creates one PFW instance for each method annotated with `@GemfireFunction`. Each will all share the same
+target object instance to invoke the corresponding method.
 
-NOTE: The fact that the function class is a Spring bean may offer other benefits since it shares the application context with GemFire components such as a Cache and Regions. These may be injected into the class if necessary.
+NOTE: The fact that the Function class is a Spring bean may offer other benefits since it shares the ApplicationContext
+with GemFire components such as a Cache and Regions. These may be injected into the class if necessary.
 
-Spring creates the wrapper class, and registers the function with GemFire's Function Service. The function id used to register the functions must be unique. By convention it defaults to the simple (unqualified) method name. Note that this annotation also provides configuration attributes, `HA` and `optimizedForWrite` which correspond to properties defined by GemFire's Function interface. If the method's return type is void, then the `hasResult` property is automatically set to `false`; otherwise it is `true`.
+Spring creates the wrapper class and registers the Function with GemFire's Function Service. The Function id used
+to register the Functions must be unique. By convention it defaults to the simple (unqualified) method name. Note that
+this annotation also provides configuration attributes, `HA` and `optimizedForWrite` which correspond to properties
+defined by GemFire's Function interface. If the method's return type is void, then the `hasResult` property
+is automatically set to `false`; otherwise it is set to `true`.
 
-For `void` return types, the annotation provides a `hasResult` attribute that can be set to true to override this convention, as shown in the `functionWithContext` method above. Presumably, the intention is to use the ResultSender directly to send results to the caller.
+For `void` return types, the annotation provides a `hasResult` attribute that can be set to true to override
+this convention, as shown in the `functionWithContext` method above. Presumably, the intention is to use the
+ResultSender directly to send results to the caller.
 
-The PFW implements GemFire's Function interface, binds the method parameters, and invokes the target method in its `execute()` method. It also sends the method's return value using the ResultSender.
+The PFW implements GemFire's Function interface, binds the method parameters, and invokes the target method in
+its `execute()` method. It also sends the method's return value using the ResultSender.
 
 ==== Batching Results
 
-If the return type is a Collection or Array, then some consideration must be given to how the results are returned. By default, the PFW returns the entire collection at once. If the number of items is large, this may incur a performance penalty. To divide the payload into small sections (sometimes called chunking), you can set the `batchSize` attribute, as illustrated in `function2`, above. NOTE: If you need more control of the ResultSender, especially if the method itself would use too much memory to create the collection, you can pass the ResultSender, or access it via the FunctionContext, to use it directly within the method.
+If the return type is a Collection or Array, then some consideration must be given to how the results are returned.
+By default, the PFW returns the entire Collection at once. If the number of items is large, this may incur
+a performance penalty. To divide the payload into small sections (sometimes called chunking), you can set
+the `batchSize` attribute, as illustrated in `function2`, above.
+
+NOTE: If you need more control of the ResultSender, especially if the method itself would use too much memory
+to create the Collection, you can pass the ResultSender, or access it via the FunctionContext, to use it directly
+within the method.
 
 ==== Enabling Annotation Processing
 
@@ -88,13 +156,26 @@ or by annotating a Java configuration class:
 [[function-execution]]
 == Executing a Function
 
-A process invoking a remote function needs to provide calling arguments, a function id, the execution target (onRegion, onServers, onServer, onMember, onMembers) and optionally a Filter set. All you need to do is define an interface supported by annotations. Spring will create a dynamic proxy the interface which will use the FunctionService to create an Execution, invoke the execution and coerce the results to a defined return type, if necessary. This technique is very similar to the way Spring Data repositories work, thus some of the configuration and concepts should be familiar. Generally a single interface definition maps to multiple function executions, one corresponding to each method defined in the interface.
+A process invoking a remote Function needs to provide calling arguments, a Function id, the execution target
+(onRegion, onServers, onServer, onMember, onMembers) and optionally a Filter set. All a developer need do is
+define an interface supported by annotations. Spring will create a dynamic proxy for the interface which will
+use the FunctionService to create an Execution, invoke the Execution and coerce the results to a defined return type,
+if necessary. This technique is very similar to the way Spring Data Repositories work, thus some of the configuration
+and concepts should be familiar. Generally a single interface definition maps to multiple Function executions,
+one corresponding to each method defined in the interface.
 
 === Annotations for Function Execution
 
-To support client side function execution, the following annotations are provided: `@OnRegion`, `@OnServer`, `@OnServers`, `@OnMember`, `@OnMembers`. These correspond to the Execution implementations GemFire's FunctionService provides. Each annotation exposes the appropriate attributes. These annotations also provide an optional `resultCollector` attribute whose value is the name of a Spring bean implementing http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultCollector.html[ResultCollector] to use for the execution.
+To support client-side Function execution, the following annotations are provided: `@OnRegion`, `@OnServer`,
+`@OnServers`, `@OnMember`, `@OnMembers`. These correspond to the Execution implementations GemFire's FunctionService
+provides. Each annotation exposes the appropriate attributes. These annotations also provide an optional
+`resultCollector` attribute whose value is the name of a Spring bean implementing
+http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultCollector.html[ResultCollector]
+to use for the execution.
 
-NOTE: The proxy interface binds all declared methods to the same execution configuration. Although it is expected that single method interfaces will be common, all methods in the interface are backed by the same proxy instance and therefore are all share the same configuration.
+NOTE: The proxy interface binds all declared methods to the same execution configuration. Although it is expected
+that single method interfaces will be common, all methods in the interface are backed by the same proxy instance
+and therefore all share the same configuration.
 
 Here are some examples:
 
@@ -102,26 +183,33 @@ Here are some examples:
 ----
 @OnRegion(region="someRegion", resultCollector="myCollector")
 public interface FunctionExecution {
+
      @FunctionId("function1")
-     public String doIt(String s1, int i2);
-     public String getString(Object arg1, @Filter Set<Object> keys) ;
+     String doIt(String s1, int i2);
+
+     String getString(Object arg1, @Filter Set<Object> keys) ;
+
 }
 ----
 
-By default, the function id is the simple (unqualified) method name. `@FunctionId` is used to bind this invocation to a different function id.
+By default, the Function id is the simple (unqualified) method name. `@FunctionId` is used to bind this invocation
+to a different Function id.
 
 ==== Enabling Annotation Processing
 
-The client side uses Spring's component scanning capability to discover annotated interfaces. To enable function execution annotation processing, you can use XML:
+The client-side uses Spring's component scanning capability to discover annotated interfaces. To enable
+Function execution annotation processing, you can use XML:
 
 [source,xml]
 ----
 <gfe-data:function-executions base-package="org.example.myapp.functions"/>
 ----
 
-Note that the `function-executions` tag is provided in the `gfe-data` namespace. The `base-package` attribute is required to avoid scanning the entiire class path. Additional filters are provided as described in the Spring http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-scanning-filters[reference].
+Note that the `function-executions` element is provided in the `gfe-data` namespace. The `base-package` attribute
+is required to avoid scanning the entire classpath. Additional filters are provided as described in the Spring
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-scanning-filters[reference].
 
-Or annotate your Java configuration class:
+Optionally, a developer can annotate her Java configuration class:
 
 [source,java]
 ----
@@ -130,7 +218,8 @@ Or annotate your Java configuration class:
 
 == Programmatic Function Execution
 
-Using the annotated interface as described in the previous section, simply wire your interface into a bean that will invoke the function:
+Using the annotated interface as described in the previous section, simply wire your interface into a bean
+that will invoke the Function:
 
 [source,java]
 ----
@@ -146,7 +235,8 @@ Using the annotated interface as described in the previous section, simply wire 
 }
 ----
 
-Alternately, you can use a Function Execution template directly. For example GemfireOnRegionFunctionTemplate creates an onRegion execution. For example:
+Alternately, you can use a Function Execution template directly. For example `GemfireOnRegionFunctionTemplate` creates
+an `onRegion` Function execution. For example:
 
 [source,java]
 ----
@@ -156,5 +246,149 @@ GemfireOnRegionOperations template = new GemfireOnRegionFunctionTemplate(myRegio
 String result = template.executeAndExtract("someFunction",myFilter,"hello","world",1234);
 ----
 
-Internally, function executions always return a List. `executeAndExtract` assumes a singleton list containing the result and will attempt to coerce that value into the requested type. There is also an `execute` method that returns the List itself. The first parameter is the function id. The filter argument is optional. The following arguments are a variable argument list.
+Internally, Function executions always return a List. `executeAndExtract` assumes a singleton List containing the result
+and will attempt to coerce that value into the requested type. There is also an `execute` method that returns the List
+itself. The first parameter is the Function id. The Filter argument is optional. The following arguments are a
+variable argument List.
 
+== Function Execution with PDX
+
+When using Spring Data GemFire's Function annotation support combined with GemFire's http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/data_serialization/gemfire_pdx_serialization.html[PDX serialization],
+there are a few logistical things to keep in mind.
+
+As explained above, and by way of example, typically developers will define GemFire Functions using POJO classes
+annotated with Spring Data GemFire http://docs.spring.io/spring-data-gemfire/docs/1.6.0.M1/api/org/springframework/data/gemfire/function/annotation/package-frame.html[Function annotations]
+as so...
+
+[source,java]
+----
+public class OrderFunctions {
+
+  @GemfireFunction(...)
+  Order process(@RegionData data, Order order, OrderSource orderSourceEnum, Integer count);
+
+}
+----
+
+NOTE: the Integer count parameter is an arbitrary argument as is the separation of the Order and OrderSource Enum,
+which might be logical to combine. However, the arguments were setup this way to demonstrate the problem with
+Function executions in the context of PDX.
+
+Your Order and OrderSource enum might be as follows...
+
+[source,java]
+----
+public class Order ... {
+
+  private Long orderNumber;
+  private Calendar orderDateTime;
+  private Customer customer;
+  private List<Item> items
+
+  ...
+}
+
+
+public enum OrderSource {
+  ONLINE,
+  PHONE,
+  POINT_OF_SALE
+  ...
+}
+----
+
+Of course, a developer may define a Function Execution interface to call the 'process' GemFire Server Function...
+
+[source,java]
+----
+@OnServer
+public interface OrderProcessingFunctions {
+  Order process(Order order, OrderSource orderSourceEnum, Integer count);
+}
+----
+
+Clearly, this `process(..)` Order Function is being called from a client-side, client Cache (`<gfe:client-cache/>`)
+member-based application.  This means that the Function arguments must be serializable.  The same is true when
+invoking peer-to-peer member Functions (`@OnMember(s)) between peers in the cluster.  Any form of `distribution`
+requires the data transmitted between client and server, or peers to be serializable.
+
+Now, if the developer has configured GemFire to use PDX for serialization (instead of Java serialization, for instance)
+it is common for developers to set the `read-serialized` attribute to *true* on the GemFire server(s)...
+
+`<gfe:cache ... pdx-read-serialized="true"/>`
+
+This causes all values read from the Cache (i.e. Regions) as well as information passed between client and servers,
+or peers to remain in serialized form, include, but not limited to Function arguments.
+
+GemFire will only serialize application domain object types that you have specifically configured (registered),
+either using GemFire's http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/data_serialization/auto_serialization.html[ReflectionBasedAutoSerializer],
+or specifically (and recommended) using a "custom" GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/data_serialization/use_pdx_serializer.html[PdxSerializer]
+for your application domain types.
+
+What is less than apparent, is that GemFire automatically handles Java Enum types regardless of whether they are
+explicitly configured (registered with a `ReflectionBasedAutoSerializer` regex pattern to the `classes` parameter,
+or handled by a "custom" GemFire `PdxSerializer`) or not, and despite the fact that Java Enums implement
+`java.io.Serializable`.
+
+So, when a developer has `pdx-read-serialized` set to *true* on the GemFire Servers on which the GemFire Functions
+(including Spring Data GemFire registered, Function annotated POJO classes), then the developer may encounter surprising
+behavior when invoking the Function Execution.
+
+What the developer may pass as arguments when invoking the Function is...
+
+[source,java]
+----
+  orderProcessingFunctions.process(new Order(123, customer, Calendar.getInstance(), items), OrderSource.ONLINE, 400);
+----
+
+But, in actuality, what GemFire executes the Function on the Server is...
+
+[source,java]
+----
+  process(regionData, order:PdxInstance, :PdxInstanceEnum, 400);
+----
+
+Notice that the `Order` and `OrderSource` have passed to the Function as http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/pdx/PdxInstance.html[PDX instances].
+Again, this is all because `read-serialized` is set to true on the GemFire Server, which may be necessary in cases
+where the GemFire Servers are interacting with multiple different client types (e.g. native clients).
+
+This flies in the face of Spring Data GemFire's, "strongly-typed", Function annotated POJO class method signatures,
+as the developer is expecting application domain object types (not PDX serialized objects).
+
+So, as of Spring Data GemFire (SDG) *1.6*, SDG introduces enhanced Function support to automatically convert method
+arguments that are of type PDX to the desired application domain object types when the developer of the Function
+expects his Function arguments to be "strongly-typed".
+
+However, this also requires the developer to explicitly register a GemFire `PdxSerializer` on the GemFire Servers
+where the SDG annotated POJO Function is registered and used, e.g. ...
+
+[source,java]
+----
+
+<bean id="customPdxSerializer" class="x.y.z.serialization.pdx.MyCustomPdxSerializer"/>
+
+<gfe:cache ... pdx-serializer-ref="customPdxSerializeer" pdx-read-serialized="true"/>
+----
+
+Alternatively, a developer my use GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/pdx/ReflectionBasedAutoSerializer.html[ReflectionBasedAutoSerializer].
+Of course, it is recommend to use a "custom" `PdxSerializer` where possible given the performance implications of using
+Java's Reflection functionality.
+
+Finally, Spring Data GemFire is careful not to convert your Function arguments if you really want to treat your
+Function arguments generically, or as one of GemFire's PDX types...
+
+[source,java]
+----
+@GemfireFunction
+public Object genericFunction(String value, Object domainObject, PdxInstanceEnum enum) {
+ ...
+}
+----
+
+Spring Data GemFire will only convert PDX type data to corresponding application domain object types
+if and only if the corresponding application domain object types are on the classpath the the Function annotated
+POJO method expects it.
+
+For a good example of "custom", "composed" application-specific GemFire `PdxSerializers` as well as appropriate
+POJO Function parameter type handling based on the method signature, see Spring Data GemFire's
+https://github.com/spring-projects/spring-data-gemfire/blob/master/src/test/java/org/springframework/data/gemfire/function/ClientCacheFunctionExecutionWithPdxIntegrationTest.java[ClientCacheFunctionExecutionWithPdxIntegrationTest] class.
