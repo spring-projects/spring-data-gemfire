@@ -12,14 +12,23 @@
  */
 package org.springframework.data.gemfire.function;
 
+import java.lang.reflect.Method;
+
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 
 /**
- * Strategy Interface for resolving function invocation arguments, given a {@link FunctionContext}
- * @author David Turanski
- * @since 1.3.0
+ * The FunctionArgumentResolver interface is a Strategy Interface for resolving Function invocation arguments,
+ * given a {@link FunctionContext}.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.execute.FunctionContext
+ * @since 1.3.0
  */
 interface FunctionArgumentResolver {
+
+	Method getFunctionAnnotatedMethod();
+
 	Object[] resolveFunctionArguments(FunctionContext functionContext);
+
 }

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="clientProperties">
+		<prop key="client.server.host">localhost</prop>
+		<prop key="client.server.port">12480</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="clientProperties"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="log-level">config</prop>
+	</util:properties>
+
+	<gfe:pool id="serverConnectionPool">
+		<gfe:server host="${client.server.host}" port="${client.server.port}"/>
+	</gfe:pool>
+
+	<bean id="addressPdxSerializer" class="org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWithPdxIntegrationTest$AddressPdxSerializer"/>
+
+	<bean id="personPdxSerializer" class="org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWithPdxIntegrationTest$PersonPdxSerializer"/>
+
+	<bean id="domainBasedPdxSerializer" class="org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWithPdxIntegrationTest$ComposablePdxSerializerFactoryBean">
+		<property name="pdxSerializers">
+			<list>
+				<ref bean="addressPdxSerializer"/>
+				<ref bean="personPdxSerializer"/>
+			</list>
+		</property>
+	</bean>
+
+	<gfe:client-cache properties-ref="gemfireProperties" pool-name="serverConnectionPool" pdx-serializer-ref="domainBasedPdxSerializer"/>
+
+	<gfe-data:function-executions base-package="org.springframework.data.gemfire.function.sample">
+		<gfe-data:include-filter type="assignable" expression="org.springframework.data.gemfire.function.sample.ApplicationDomainFunctionExecutions"/>
+	</gfe-data:function-executions>
+
+</beans>
