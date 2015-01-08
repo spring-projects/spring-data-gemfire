@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire.config;
+package org.springframework.data.gemfire;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
  * @see com.gemstone.gemfire.cache.util.ObjectSizer
  */
 @SuppressWarnings("unused")
-class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, InitializingBean {
+public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, InitializingBean {
 
 	// TODO remove this reference to the GemFire internal class when the Gem team fixes the EvictionAttributes bug!!!
 	protected static final int DEFAULT_LRU_MAXIMUM_ENTRIES = LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES;

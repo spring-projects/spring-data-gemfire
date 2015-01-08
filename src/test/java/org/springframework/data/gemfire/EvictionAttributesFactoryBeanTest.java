@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire.config;
+package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -37,7 +37,7 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.config.EvictionAttributesFactoryBean
+ * @see org.springframework.data.gemfire.EvictionAttributesFactoryBean
  * @see com.gemstone.gemfire.cache.EvictionAttributes
  * @since 1.3.4
  */

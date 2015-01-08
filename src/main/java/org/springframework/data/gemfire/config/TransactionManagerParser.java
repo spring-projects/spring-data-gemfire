@@ -26,9 +26,10 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;transaction-manager&gt; definitions.
+ * Parser for &lt;transaction-manager&gt; element bean definitions.
  * 
  * @author Costin Leau
+ * @author John Blum
  */
 class TransactionManagerParser extends AbstractSingleBeanDefinitionParser {
 
@@ -53,11 +54,15 @@ class TransactionManagerParser extends AbstractSingleBeanDefinitionParser {
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
+
 		if (!StringUtils.hasText(name)) {
-			name = GemfireConstants.DEFAULT_GEMFIRE_TXMANAGER_NAME;
+			name = GemfireConstants.DEFAULT_GEMFIRE_TRANSACTION_MANAGER_NAME;
 			//For backward compatibility
-			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_TXMANAGER_NAME, "gemfire-transaction-manager");
+			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_TRANSACTION_MANAGER_NAME,
+				"gemfire-transaction-manager");
 		}
+
 		return name;
 	}
+
 }

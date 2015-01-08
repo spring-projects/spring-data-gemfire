@@ -25,7 +25,11 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
+import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
+import org.springframework.data.gemfire.EvictionType;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.SubscriptionAttributesFactoryBean;
+import org.springframework.data.gemfire.SubscriptionType;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -236,10 +240,11 @@ abstract class ParsingUtils {
 			String type = subscriptionElement.getAttribute("type");
 
 			if (StringUtils.hasText(type)) {
-				subscriptionAttributesBuilder.addPropertyValue("type", SubscriptionType.valueOf(type.toUpperCase()));
+				subscriptionAttributesBuilder.addPropertyValue("type", SubscriptionType.valueOfIgnoreCase(type));
 			}
 
-			regionAttributesBuilder.addPropertyValue("subscriptionAttributes", subscriptionAttributesBuilder.getBeanDefinition());
+			regionAttributesBuilder.addPropertyValue("subscriptionAttributes",
+				subscriptionAttributesBuilder.getBeanDefinition());
 
 			return true;
 		}

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.gemfire.config;
+package org.springframework.data.gemfire;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -25,58 +25,43 @@ import com.gemstone.gemfire.cache.SubscriptionAttributes;
  * Simple utility class used for defining nested factory-method like definitions w/o polluting the container with useless beans.
  * 
  * @author Lyndon Adams
- * @since 12 March 2013
+ * @author John Blum
+ * @since 1.3.0
  */
 public class SubscriptionAttributesFactoryBean implements FactoryBean<SubscriptionAttributes>, InitializingBean {
 
-	SubscriptionAttributes subscriptionAttri;
-	InterestPolicy policy;
-	SubscriptionType type = SubscriptionType.ALL;
-	
-	
+	private SubscriptionAttributes subscriptionAttributes;
+
+	private SubscriptionType type;
+
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if( policy == null ){
-			policy = InterestPolicy.DEFAULT;
-		}
-		subscriptionAttri = createAttributes();
+		subscriptionAttributes = new SubscriptionAttributes(getPolicy());
 	}
 	
-	private SubscriptionAttributes createAttributes(){
-		switch( type ){
-		case ALL : 
-				policy = InterestPolicy.ALL;
-				break;
-		case CACHE_CONTENT : 
-			policy = InterestPolicy.CACHE_CONTENT;
-			break;	
-		default : 
-			policy = InterestPolicy.DEFAULT;
-		}		
-		return new SubscriptionAttributes( policy );
-	}
-	
-	
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	@Override
 	public SubscriptionAttributes getObject() throws Exception {
-		return subscriptionAttri;
+		return subscriptionAttributes;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
 	@Override
 	public Class<?> getObjectType() {
-		return ( subscriptionAttri != null ) ? subscriptionAttri.getClass() : SubscriptionAttributes.class;
+		return (subscriptionAttributes != null ? subscriptionAttributes.getClass() : SubscriptionAttributes.class);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
 	 */
 	@Override
@@ -84,19 +69,20 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 		return true;
 	}
 
-	public InterestPolicy getPolicy() {
-		return policy;
-	}
-
-	public SubscriptionType getType() {
-		return type;
-	}
-
-	public void setPolicy(InterestPolicy policy) {
-		this.policy = policy;
-	}
-
 	public void setType(SubscriptionType type) {
 		this.type = type;
 	}
+
+	public SubscriptionType getType() {
+		return (type != null ? type : SubscriptionType.DEFAULT);
+	}
+
+	public void setPolicy(InterestPolicy policy) {
+		setType(SubscriptionType.valueOf(policy));
+	}
+
+	public InterestPolicy getPolicy() {
+		return getType().getInterestPolicy();
+	}
+
 }

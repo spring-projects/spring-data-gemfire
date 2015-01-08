@@ -16,7 +16,8 @@
 
 package org.springframework.data.gemfire.config;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -36,45 +37,60 @@ import com.gemstone.gemfire.cache.SubscriptionAttributes;
  * Test to ensure subscription policy can be applied to server regions.
  * 
  * @author Lyndon Adams
- * @since 13 March 2013
+ * @author John Blum
+ * @since 1.3.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/org/springframework/data/gemfire/config/subscription-ns.xml")
+@ContextConfiguration("subscription-ns.xml")
+@SuppressWarnings("unused")
 public class CacheSubscriptionTest{
 	
-	@Autowired ApplicationContext context;
+	@Autowired
+	private ApplicationContext context;
 	
-	@SuppressWarnings("rawtypes")
 	@Test
-	public void testRRSubscriptionAllPolicy() throws Exception {
+	public void testReplicatedRegionSubscriptionAllPolicy() throws Exception {
 		assertTrue(context.containsBean("replicALL"));
-		RegionFactoryBean fb = context.getBean("&replicALL", RegionFactoryBean.class);
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		
-		SubscriptionAttributes sa = attrs.getSubscriptionAttributes();
-		assertEquals(InterestPolicy.ALL, sa.getInterestPolicy() );
+
+		RegionFactoryBean regionFactoryBean = context.getBean("&replicALL", RegionFactoryBean.class);
+		RegionAttributes regionAttributes = TestUtils.readField("attributes", regionFactoryBean);
+
+		assertNotNull(regionAttributes);
+
+		SubscriptionAttributes subscriptionAttributes = regionAttributes.getSubscriptionAttributes();
+
+		assertNotNull(subscriptionAttributes);
+		assertEquals(InterestPolicy.ALL, subscriptionAttributes.getInterestPolicy());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
-	public void testPRSubscriptionCacheContentPolicy() throws Exception {
+	public void testPartitionRegionSubscriptionCacheContentPolicy() throws Exception {
 		assertTrue(context.containsBean("partCACHE_CONTENT"));
-		RegionFactoryBean fb = context.getBean("&partCACHE_CONTENT", RegionFactoryBean.class);
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		
-		SubscriptionAttributes sa = attrs.getSubscriptionAttributes();
-		assertEquals(InterestPolicy.CACHE_CONTENT, sa.getInterestPolicy() );
+
+		RegionFactoryBean regionFactoryBean = context.getBean("&partCACHE_CONTENT", RegionFactoryBean.class);
+		RegionAttributes regionAttributes = TestUtils.readField("attributes", regionFactoryBean);
+
+		assertNotNull(regionAttributes);
+
+		SubscriptionAttributes subscriptionAttributes = regionAttributes.getSubscriptionAttributes();
+
+		assertNotNull(subscriptionAttributes);
+		assertEquals(InterestPolicy.CACHE_CONTENT, subscriptionAttributes.getInterestPolicy());
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@Test
-	public void testPRSubscriptionDefaultPolicy() throws Exception {
+	public void testPartitionRegionSubscriptionDefaultPolicy() throws Exception {
 		assertTrue(context.containsBean("partDEFAULT"));
-		RegionFactoryBean fb = context.getBean("&partDEFAULT", RegionFactoryBean.class);
-		RegionAttributes attrs = TestUtils.readField("attributes", fb);
-		
-		SubscriptionAttributes sa = attrs.getSubscriptionAttributes();
-		assertEquals(InterestPolicy.ALL, sa.getInterestPolicy() );
+
+		RegionFactoryBean regionFactoryBean = context.getBean("&partDEFAULT", RegionFactoryBean.class);
+		RegionAttributes regionAttributes = TestUtils.readField("attributes", regionFactoryBean);
+
+		assertNotNull(regionAttributes);
+
+		SubscriptionAttributes subscriptionAttributes = regionAttributes.getSubscriptionAttributes();
+
+		assertNotNull(subscriptionAttributes);
+		assertEquals(InterestPolicy.DEFAULT, subscriptionAttributes.getInterestPolicy());
 	}
 	
 }
