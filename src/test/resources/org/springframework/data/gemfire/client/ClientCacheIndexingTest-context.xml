@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<gfe:pool id="serverConnectionPool">
+		<gfe:server host="localhost" port="42424"/>
+	</gfe:pool>
+
+	<gfe:client-cache pool-name="serverConnectionPool"/>
+
+	<gfe:client-region id="Example" shortcut="LOCAL"/>
+
+	<gfe:index id="ExampleIndex" expression="id" from="/Example" type="HASH"/>
+
+</beans>

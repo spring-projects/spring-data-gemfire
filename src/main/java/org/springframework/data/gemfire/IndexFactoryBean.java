@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import java.util.Collection;
+
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -30,103 +32,131 @@ import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
- * Factory bean for easy declarative creation of GemFire Indexes.
+ * Spring FactoryBean for easy declarative creation of GemFire Indexes.
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.beans.factory.BeanNameAware
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see com.gemstone.gemfire.cache.RegionService
+ * @see com.gemstone.gemfire.cache.query.Index
+ * @see com.gemstone.gemfire.cache.query.QueryService
+ * @since 1.0.0
  */
-public class IndexFactoryBean implements InitializingBean, BeanNameAware, FactoryBean<Index> {
+public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, BeanNameAware {
+
+	private boolean override = true;
 
 	private Index index;
+
+	private IndexType indexType;
+
 	private QueryService queryService;
+
 	private RegionService cache;
+
 	private String beanName;
-	private String name;
 	private String expression;
 	private String from;
 	private String imports;
-	private String type;
-	private boolean override = true;
+	private String name;
 
 	public void afterPropertiesSet() throws Exception {
-		if (queryService == null) {
-			if (cache != null) {
-				queryService = cache.getQueryService();
-			}
+		Assert.notNull(cache, "The GemFire Cache reference must not be null!");
+
+		queryService = lookupQueryService();
+
+		Assert.notNull(queryService, "A QueryService is required for Index creation!");
+		Assert.hasText(expression, "The Index 'expression' is required!");
+		Assert.hasText(from, "The Index 'from' clause (a Region's full-path) is required!");
+
+		if (IndexType.isKey(indexType)) {
+			Assert.isNull(imports, "The 'imports' property is not supported for a Key Index.");
 		}
 
-		Assert.notNull(queryService, "Query service required for index creation");
-		Assert.hasText(expression, "Index expression is required");
-		Assert.hasText(from, "Index from clause (regionPath) is required");
+		String indexName = (StringUtils.hasText(name) ? name : beanName);
 
-		if (StringUtils.hasText(type)) {
-			if (type.equalsIgnoreCase("KEY") || type.equalsIgnoreCase("PRIMARY_KEY")) {
-				Assert.isNull(imports, "The imports property is not supported for a key index");
-			}
-		}
-
-		String indexName = StringUtils.hasText(name) ? name : beanName;
-
-		Assert.hasText(indexName, "Index bean id or name is required");
+		Assert.hasText(indexName, "The Index bean id or name is required!");
 
 		index = createIndex(queryService, indexName);
 	}
 
-	private Index createIndex(QueryService queryService, String indexName) throws Exception {
+	QueryService lookupQueryService() {
+		return (queryService != null ? queryService
+			: (cache instanceof ClientCache ? ((ClientCache) cache).getLocalQueryService()
+				: cache.getQueryService()));
+	}
 
-		Index existingIndex = null;
-		
-		for (Index idx : queryService.getIndexes()) {
-			if (idx.getName().equals(indexName)) {
-				existingIndex = idx;
- 				break;
-			}
-		}
+	Index createIndex(QueryService queryService, String indexName) throws Exception {
+		Index existingIndex = getExistingIndex(queryService, indexName);
+
 		if (existingIndex != null) {
-			if (!override) {
-				return existingIndex;
-			} else {
+			if (override) {
 				queryService.removeIndex(existingIndex);
 			}
+			else {
+				return existingIndex;
+			}
 		}
 
-		Index index = null;
 		try {
-			if ("KEY".equalsIgnoreCase(type) || "PRIMARY_KEY".equalsIgnoreCase(type)) {
-
-				index = queryService.createKeyIndex(indexName, expression, from);
-
-			} else if ("HASH".equalsIgnoreCase(type)) {
-				if (StringUtils.hasText(imports)) {
-					index = queryService.createHashIndex(indexName, expression, from, imports);	
-				} else {
-					index = queryService.createHashIndex(indexName, expression, from);
-				}
-			} else {
-				if (StringUtils.hasText(imports)) {
-					index = queryService.createIndex(indexName, expression, from, imports);
-				} else {
-					index = queryService.createIndex(indexName, expression, from);
-				}
+			if (IndexType.isKey(indexType)) {
+				return queryService.createKeyIndex(indexName, expression, from);
 			}
-			return index;
-
-		} catch (IndexExistsException e) {
-			for (Index idx : queryService.getIndexes()) {
-				if (idx.getName().equals(indexName)) {
-					return idx;
-				}
+			else if (IndexType.isHash(indexType)) {
+				return createHashIndex(queryService, indexName, expression, from, imports);
 			}
-		} catch (Exception e) {
+			else {
+				return createFunctionalIndex(queryService, indexName, expression, from, imports);
+			}
+		}
+		catch (IndexExistsException e) {
+			return getExistingIndex(queryService, indexName);
+		}
+		catch (Exception e) {
 			if (existingIndex != null) {
-				if (CollectionUtils.isEmpty(queryService.getIndexes())
-						|| !queryService.getIndexes().contains(existingIndex)) {
+				Collection<Index> indexes = queryService.getIndexes();
+
+				if (CollectionUtils.isEmpty(indexes) || !indexes.contains(existingIndex)) {
 					queryService.getIndexes().add(existingIndex);
+					return existingIndex;
 				}
+			}
+
+			throw e;
+		}
+	}
+
+	Index createFunctionalIndex(QueryService queryService, String indexName, String expression, String from,
+			String imports) throws Exception {
+		if (StringUtils.hasText(imports)) {
+			return queryService.createIndex(indexName, expression, from, imports);
+		}
+		else {
+			return queryService.createIndex(indexName, expression, from);
+		}
+	}
+
+	Index createHashIndex(QueryService queryService, String indexName, String expression, String from,
+			String imports) throws Exception {
+		if (StringUtils.hasText(imports)) {
+			return queryService.createHashIndex(indexName, expression, from, imports);
+		}
+		else {
+			return queryService.createHashIndex(indexName, expression, from);
+		}
+	}
+
+	Index getExistingIndex(QueryService queryService, String indexName) {
+		for (Index index : queryService.getIndexes()) {
+			if (index.getName().equalsIgnoreCase(indexName)) {
+				return index;
 			}
 		}
 
-		return index;
+		return null;
 	}
 
 	public Index getObject() {
@@ -195,7 +225,18 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	 * @param type the type to set
 	 */
 	public void setType(String type) {
-		this.type = type;
+		setType(IndexType.valueOfIgnoreCase(type));
+	}
+
+	/**
+	 * Sets the type of GemFire Index to create.
+	 *
+	 * @param indexType the IndexType enumerated value indicating the type of GemFire Index
+	 * that will be created by this Spring FactoryBean.
+	 * @see org.springframework.data.gemfire.IndexType
+	 */
+	public void setType(IndexType indexType) {
+		this.indexType = indexType;
 	}
 
 	/**
@@ -204,4 +245,5 @@ public class IndexFactoryBean implements InitializingBean, BeanNameAware, Factor
 	public void setOverride(boolean override) {
 		this.override = override;
 	}
+
 }
