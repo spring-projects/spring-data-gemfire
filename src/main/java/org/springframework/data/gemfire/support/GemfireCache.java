@@ -89,8 +89,11 @@ public class GemfireCache implements Cache {
 	/**
 	 * Implementation to satisfy extension of the {@link Cache} interface in Spring 4.1. Don't add the {@link Override}
 	 * annotation as this will break the compilation on 4.0.
-	 * 
-	 * @see org.springframework.cache.Cache#putIfAbsent(java.lang.Object, java.lang.Object)
+	 *
+	 * @param key the key to put (if absent) in the Cache.
+	 * @param value the value to put with the key in the Cache.
+	 * @return the existing value mapped to the key in the Cache or null if the key does not exist.
+	 * see org.springframework.cache.Cache#putIfAbsent(java.lang.Object, java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
 	public ValueWrapper putIfAbsent(Object key, Object value) {
