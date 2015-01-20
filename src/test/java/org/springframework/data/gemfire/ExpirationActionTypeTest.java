@@ -36,6 +36,12 @@ import com.gemstone.gemfire.cache.ExpirationAction;
 public class ExpirationActionTypeTest {
 
 	@Test
+	public void testDefault() {
+		assertEquals(ExpirationActionType.INVALIDATE, ExpirationActionType.DEFAULT);
+		assertEquals(ExpirationAction.INVALIDATE, ExpirationActionType.DEFAULT.getExpirationAction());
+	}
+
+	@Test
 	public void testValueOf() {
 		assertEquals(ExpirationActionType.DESTROY, ExpirationActionType.valueOf(ExpirationAction.DESTROY));
 		assertEquals(ExpirationActionType.INVALIDATE, ExpirationActionType.valueOf(ExpirationAction.INVALIDATE));

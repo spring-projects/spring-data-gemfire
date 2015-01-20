@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
+
+	<util:properties id="evictionProperties">
+		<prop key="eviction.type">heap_percentage</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="evictionProperties"/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">RegionEvictionAttributesNamespaceTest</prop>
@@ -26,11 +34,11 @@
 	</gfe:partitioned-region>
 
 	<gfe:replicated-region id="Three">
-		<gfe:eviction type="HEAP_PERCENTAGE" action="OVERFLOW_TO_DISK"/>
+		<gfe:eviction type="${eviction.type}" action="OVERFLOW_TO_DISK"/>
 	</gfe:replicated-region>
 
 	<gfe:partitioned-region id="Four">
-		<gfe:eviction type="HEAP_PERCENTAGE" action="OVERFLOW_TO_DISK"/>
+		<gfe:eviction type="${eviction.type}" action="OVERFLOW_TO_DISK"/>
 	</gfe:partitioned-region>
 
 	<gfe:replicated-region id="Five">

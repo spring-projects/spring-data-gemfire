@@ -32,6 +32,8 @@ public enum ExpirationActionType {
 	LOCAL_DESTROY(ExpirationAction.LOCAL_DESTROY),
 	LOCAL_INVALIDATE(ExpirationAction.LOCAL_INVALIDATE);
 
+	public static final ExpirationActionType DEFAULT = ExpirationActionType.INVALIDATE;
+
 	private final ExpirationAction expirationAction;
 
 	/**

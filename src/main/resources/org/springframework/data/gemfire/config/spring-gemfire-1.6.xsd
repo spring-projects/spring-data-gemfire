@@ -1603,38 +1603,20 @@ Entity computing sizes for objects stored into the grid.
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
-		<xsd:attribute name="type" default="ENTRY_COUNT">
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="ENTRY_COUNT">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Considers the number of entries in the region before performing an eviction.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="MEMORY_SIZE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Considers the amount of memory consumed by the region before performing an eviction.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="HEAP_PERCENTAGE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Considers the amount of heap used (through the GemFire resource manager) before performing an eviction.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
+		<xsd:attribute name="type" type="xsd:string" default="ENTRY_COUNT">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The 'type' of eviction performed, or algorithm used to perform eviction on the Region entries.  Eviction types include:
+ENTRY_COUNT: Considers the number of entries in the Region before performing an eviction.
+HEAP_PERCENTAGE: Considers the amount of heap used (through the GemFire resource manager) before performing an eviction.
+MEMORY_SIZE: Considers the amount of memory consumed by the Region before performing an eviction.
+				]]></xsd:documentation>
+			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="threshold" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The threshold (or limit) against which the eviction algorithm runs. Once the threashold is reached, eviction is
-performed.
+The threshold (or limit) against which the eviction algorithm runs. Once the threshold is reached, eviction is performed.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

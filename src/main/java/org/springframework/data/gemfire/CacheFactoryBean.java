@@ -912,8 +912,13 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	/* (non-Javadoc) */
 	private void initBeanFactory() {
 		if (getBeanFactory() instanceof ConfigurableBeanFactory) {
-			((ConfigurableBeanFactory) getBeanFactory()).registerCustomEditor(IndexMaintenanceType.class,
-				IndexMaintenanceTypeConverter.class);
+			ConfigurableBeanFactory beanFactory = (ConfigurableBeanFactory) getBeanFactory();
+
+			beanFactory.registerCustomEditor(EvictionType.class, EvictionTypeConverter.class);
+			beanFactory.registerCustomEditor(ExpirationActionType.class, ExpirationActionTypeConverter.class);
+			beanFactory.registerCustomEditor(IndexMaintenanceType.class, IndexMaintenanceTypeConverter.class);
+			beanFactory.registerCustomEditor(IndexType.class, IndexTypeConverter.class);
+			beanFactory.registerCustomEditor(SubscriptionType.class, SubscriptionTypeConverter.class);
 		}
 	}
 

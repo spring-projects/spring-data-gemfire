@@ -26,9 +26,9 @@ import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
 import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
-import org.springframework.data.gemfire.EvictionType;
 import org.springframework.data.gemfire.ExpirationActionType;
 import org.springframework.data.gemfire.ExpirationActionTypeConverter;
+import org.springframework.data.gemfire.ExpirationAttributesFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.SubscriptionAttributesFactoryBean;
 import org.springframework.data.gemfire.SubscriptionType;
@@ -198,10 +198,10 @@ abstract class ParsingUtils {
 			setPropertyValue(evictionElement, evictionAttributesBuilder, "action");
 			setPropertyValue(evictionElement, evictionAttributesBuilder, "threshold");
 
-			String evictionType = evictionElement.getAttribute("type");
+			String typeAttributeValue = evictionElement.getAttribute("type");
 
-			if (StringUtils.hasText(evictionType)) {
-				evictionAttributesBuilder.addPropertyValue("type", EvictionType.valueOf(evictionType.toUpperCase()));
+			if (StringUtils.hasText(typeAttributeValue)) {
+				evictionAttributesBuilder.addPropertyValue("type", StringUtils.trimWhitespace(typeAttributeValue));
 			}
 
 			Element objectSizerElement = DomUtils.getChildElementByTagName(evictionElement, "object-sizer");
@@ -212,7 +212,8 @@ abstract class ParsingUtils {
 				evictionAttributesBuilder.addPropertyValue("ObjectSizer", sizer);
 			}
 
-			regionAttributesBuilder.addPropertyValue("evictionAttributes", evictionAttributesBuilder.getBeanDefinition());
+			regionAttributesBuilder.addPropertyValue("evictionAttributes",
+				evictionAttributesBuilder.getBeanDefinition());
 
 			return true;
 		}
@@ -263,8 +264,8 @@ abstract class ParsingUtils {
 		}
 	}
 
-	static void parseStatistics(Element element, BeanDefinitionBuilder attrBuilder) {
-		setPropertyValue(element, attrBuilder, "statistics", "statisticsEnabled");
+	static void parseStatistics(Element element, BeanDefinitionBuilder regionAttributesBuilder) {
+		setPropertyValue(element, regionAttributesBuilder, "statistics", "statisticsEnabled");
 	}
 
 	/**
@@ -379,23 +380,19 @@ abstract class ParsingUtils {
 
 	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName,
 			BeanDefinitionBuilder regionAttributesBuilder) {
+
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
 		if (expirationElement != null) {
-			String timeoutAttribute = expirationElement.getAttribute("timeout");
-			String expirationTimeout = (StringUtils.hasText(timeoutAttribute) ? timeoutAttribute : "0");
+			String actionAttributeValue = expirationElement.getAttribute("action");
+			String timeoutAttributeValue = expirationElement.getAttribute("timeout");
 
-			String actionAttribute = StringUtils.trimAllWhitespace(expirationElement.getAttribute("action"));
+			BeanDefinitionBuilder expirationAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+				ExpirationAttributesFactoryBean.class);
 
-			ExpirationActionType expirationActionType = new ExpirationActionTypeConverter().convert(actionAttribute);
-			ExpirationAction expirationAction = (expirationActionType != null
-				? expirationActionType.getExpirationAction() : ExpirationAction.INVALIDATE);
-
-			BeanDefinitionBuilder expirationAttributes = BeanDefinitionBuilder.genericBeanDefinition(
-				ExpirationAttributes.class);
-			expirationAttributes.addConstructorArgValue(expirationTimeout);
-			expirationAttributes.addConstructorArgValue(expirationAction);
-			regionAttributesBuilder.addPropertyValue(propertyName, expirationAttributes.getBeanDefinition());
+			expirationAttributesBuilder.addPropertyValue("action", actionAttributeValue);
+			expirationAttributesBuilder.addPropertyValue("timeout", timeoutAttributeValue);
+			regionAttributesBuilder.addPropertyValue(propertyName, expirationAttributesBuilder.getBeanDefinition());
 
 			return true;
 		}
