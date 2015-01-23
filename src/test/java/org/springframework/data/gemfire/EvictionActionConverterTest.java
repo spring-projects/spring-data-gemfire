@@ -22,18 +22,20 @@ import static org.junit.Assert.assertNull;
 import org.junit.After;
 import org.junit.Test;
 
+import com.gemstone.gemfire.cache.EvictionAction;
+
 /**
- * The EvictionTypeConverterTest class is a test suite of test cases testing the contract and functionality
- * of the EvictionTypeConverter class.
+ * The EvictionActionTypeConverterTest class is a test suite of test cases testing the contract and functionality
+ * of the EvictionActionTypeConverter.
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.EvictionTypeConverter
+ * @see EvictionActionConverter
  * @since 1.6.0
  */
-public class EvictionTypeConverterTest {
+public class EvictionActionConverterTest {
 
-	private final EvictionTypeConverter converter = new EvictionTypeConverter();
+	private EvictionActionConverter converter = new EvictionActionConverter();
 
 	@After
 	public void tearDown() {
@@ -42,19 +44,18 @@ public class EvictionTypeConverterTest {
 
 	@Test
 	public void testConvert() {
-		assertEquals(EvictionType.ENTRY_COUNT, converter.convert("entry_count"));
-		assertEquals(EvictionType.HEAP_PERCENTAGE, converter.convert("Heap_Percentage"));
-		assertEquals(EvictionType.MEMORY_SIZE, converter.convert("MEMorY_SiZe"));
-		assertEquals(EvictionType.NONE, converter.convert("NONE"));
+		assertEquals(EvictionAction.LOCAL_DESTROY, converter.convert("local_destroy"));
+		assertEquals(EvictionAction.NONE, converter.convert("None"));
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, converter.convert("OverFlow_TO_dIsk"));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testConvertIllegalValue() {
 		try {
-			converter.convert("LIFO_MEMORY");
+			converter.convert("invalid_value");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("(LIFO_MEMORY) is not a valid EvictionType!", expected.getMessage());
+			assertEquals("(invalid_value) is not a valid EvictionAction!", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -62,20 +63,20 @@ public class EvictionTypeConverterTest {
 	@Test
 	public void testSetAsText() {
 		assertNull(converter.getValue());
-		converter.setAsText("heap_percentage");
-		assertEquals(EvictionType.HEAP_PERCENTAGE, converter.getValue());
-		converter.setAsText("NOne");
-		assertEquals(EvictionType.NONE, converter.getValue());
+		converter.setAsText("Local_Destroy");
+		assertEquals(EvictionAction.LOCAL_DESTROY, converter.getValue());
+		converter.setAsText("overflow_to_disk");
+		assertEquals(EvictionAction.OVERFLOW_TO_DISK, converter.getValue());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testSetAsTextWithIllegalValue() {
 		try {
 			assertNull(converter.getValue());
-			converter.setAsText("LRU_COUNT");
+			converter.setAsText("destroy");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("(LRU_COUNT) is not a valid EvictionType!", expected.getMessage());
+			assertEquals("(destroy) is not a valid EvictionAction!", expected.getMessage());
 			throw expected;
 		}
 		finally {

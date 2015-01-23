@@ -19,6 +19,7 @@ package org.springframework.data.gemfire;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 
 /**
@@ -37,13 +38,14 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 
 	protected static final int DEFAULT_TIMEOUT = 0;
 
-	protected static final ExpirationActionType DEFAULT_EXPIRATION_ACTION = ExpirationActionType.DEFAULT;
+	protected static final ExpirationAction DEFAULT_EXPIRATION_ACTION =
+		ExpirationActionType.DEFAULT.getExpirationAction();
+
+	private ExpirationAction action;
 
 	private ExpirationAttributes expirationAttributes;
 
 	private Integer timeout;
-
-	private ExpirationActionType action;
 
 	/* non-Javadoc */
 	@Override
@@ -67,9 +69,9 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 	 * Sets the action to perform when a Region or an Entry expire.
 	 *
 	 * @param action the type of action to perform on expiration
-	 * @see org.springframework.data.gemfire.ExpirationActionType
+	 * @see com.gemstone.gemfire.cache.ExpirationAction
 	 */
-	public void setAction(ExpirationActionType action) {
+	public void setAction(final ExpirationAction action) {
 		this.action = action;
 	}
 
@@ -80,7 +82,7 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 	 * @see org.springframework.data.gemfire.ExpirationActionType
 	 * @see com.gemstone.gemfire.cache.ExpirationAttributes#getAction()
 	 */
-	public ExpirationActionType getAction() {
+	public ExpirationAction getAction() {
 		return (action != null ? action : DEFAULT_EXPIRATION_ACTION);
 	}
 
@@ -114,7 +116,7 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		expirationAttributes = new ExpirationAttributes(getTimeout(), getAction().getExpirationAction());
+		expirationAttributes = new ExpirationAttributes(getTimeout(), getAction());
 	}
 
 }

@@ -26,8 +26,6 @@ import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
 import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
-import org.springframework.data.gemfire.ExpirationActionType;
-import org.springframework.data.gemfire.ExpirationActionTypeConverter;
 import org.springframework.data.gemfire.ExpirationAttributesFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.SubscriptionAttributesFactoryBean;
@@ -36,8 +34,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.LossAction;
 import com.gemstone.gemfire.cache.MembershipAttributes;
 import com.gemstone.gemfire.cache.ResumptionAction;
@@ -197,19 +193,14 @@ abstract class ParsingUtils {
 
 			setPropertyValue(evictionElement, evictionAttributesBuilder, "action");
 			setPropertyValue(evictionElement, evictionAttributesBuilder, "threshold");
-
-			String typeAttributeValue = evictionElement.getAttribute("type");
-
-			if (StringUtils.hasText(typeAttributeValue)) {
-				evictionAttributesBuilder.addPropertyValue("type", StringUtils.trimWhitespace(typeAttributeValue));
-			}
+			setPropertyValue(evictionElement, evictionAttributesBuilder, "type");
 
 			Element objectSizerElement = DomUtils.getChildElementByTagName(evictionElement, "object-sizer");
 
 			if (objectSizerElement != null) {
 				Object sizer = parseRefOrNestedBeanDeclaration(parserContext, objectSizerElement,
 					evictionAttributesBuilder);
-				evictionAttributesBuilder.addPropertyValue("ObjectSizer", sizer);
+				evictionAttributesBuilder.addPropertyValue("objectSizer", sizer);
 			}
 
 			regionAttributesBuilder.addPropertyValue("evictionAttributes",
@@ -384,14 +375,11 @@ abstract class ParsingUtils {
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
 		if (expirationElement != null) {
-			String actionAttributeValue = expirationElement.getAttribute("action");
-			String timeoutAttributeValue = expirationElement.getAttribute("timeout");
-
 			BeanDefinitionBuilder expirationAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 				ExpirationAttributesFactoryBean.class);
 
-			expirationAttributesBuilder.addPropertyValue("action", actionAttributeValue);
-			expirationAttributesBuilder.addPropertyValue("timeout", timeoutAttributeValue);
+			setPropertyValue(expirationElement, expirationAttributesBuilder, "action");
+			setPropertyValue(expirationElement, expirationAttributesBuilder, "timeout");
 			regionAttributesBuilder.addPropertyValue(propertyName, expirationAttributesBuilder.getBeanDefinition());
 
 			return true;

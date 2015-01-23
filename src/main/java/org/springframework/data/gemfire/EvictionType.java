@@ -19,7 +19,7 @@ package org.springframework.data.gemfire;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 
 /**
- * Simple enumeration for the various GemFire Eviction types.
+ * The EvictionType enum is an enumeration of all GemFire Eviction policy types.
  * 
  * @author Costin Leau
  * @author John Blum
@@ -35,10 +35,9 @@ public enum EvictionType {
 	private final EvictionAlgorithm evictionAlgorithm;
 
 	/**
-	 * Constructs an instance (enumeration) of the EvictionType enumerated type initialized with the corresponding
-	 * GemFire EvictionAlgorithm.
+	 * Constructs an instance of the EvictionType enum initialized with the matching GemFire EvictionAlgorithm.
 	 *
-	 * @param evictionAlgorithm the GemFire EvictionAlgorithm represented by this EvictionType.
+	 * @param evictionAlgorithm the GemFire EvictionAlgorithm represented by this EvictionType enumerated value.
 	 * @see com.gemstone.gemfire.cache.EvictionAlgorithm
 	 */
 	EvictionType(final EvictionAlgorithm evictionAlgorithm) {
@@ -46,13 +45,23 @@ public enum EvictionType {
 	}
 
 	/**
-	 * Returns the corresponding SDG EvictionType enumerated value for the GemFire EvictionAlgorithm.
+	 * A null-safe operation to extract the GemFire EvictionAlgorithm from the given EvictionType enumerated value.
 	 *
-	 * @param evictionAlgorithm the GemFire EvictionAlgorithm used to lookup the corresponding EvictionType.
-	 * @return a EvictionType representing the specified GemFire EvictionAlgorithm.  Returns null if no EvictionType
-	 * represents the given GemFire EvictionAlgorithm.
+	 * @param evictionType the EvictionType from which to extract the GemFire EvictionAlgorithm.
+	 * @return the GemFire EvictionAlgorithm for the corresponding EvictionType or null if evictionType is null.
 	 * @see #getEvictionAlgorithm()
+	 */
+	public static EvictionAlgorithm getEvictionAlgorithm(final EvictionType evictionType) {
+		return (evictionType != null ? evictionType.getEvictionAlgorithm() : null);
+	}
+
+	/**
+	 * Returns an EvictionType enumerated value matching the given GemFire EvictionAlgorithm.
+	 *
+	 * @param evictionAlgorithm the GemFire EvictionAlgorithm used to lookup and match the EvictionType.
+	 * @return an EvictionType matching the specified GemFire EvictionAlgorithm or null if no match was found.
 	 * @see com.gemstone.gemfire.cache.EvictionAlgorithm
+	 * @see #getEvictionAlgorithm()
 	 */
 	public static EvictionType valueOf(final EvictionAlgorithm evictionAlgorithm) {
 		for (EvictionType evictionType : values()) {
@@ -65,15 +74,16 @@ public enum EvictionType {
 	}
 
 	/**
-	 * Returns an EvictionType enumerated value for the given, named EvictionType, ignoring case.
+	 * Returns an EvictionType enumerated value given the named, case-insensitive eviction policy.
 	 *
-	 * @param value a String value indicating the name of the desired EvictionType enumerated value.
-	 * @return an EvictionType corresponding to the given, named enumerated value.
-	 * @see java.lang.Enum#name()
+	 * @param name a String indicating the name of the eviction policy used to match EvictionType.
+	 * @return an EvictionType matching the given the named, case-insensitive eviction policy.
+	 * @see java.lang.String#equalsIgnoreCase(String)
+	 * @see #name()
 	 */
-	public static EvictionType valueOfIgnoreCase(final String value) {
+	public static EvictionType valueOfIgnoreCase(final String name) {
 		for (EvictionType evictionType : values()) {
-			if (evictionType.name().equalsIgnoreCase(value)) {
+			if (evictionType.name().equalsIgnoreCase(name)) {
 				return evictionType;
 			}
 		}
@@ -84,7 +94,7 @@ public enum EvictionType {
 	/**
 	 * Gets the GemFire EvictionAlgorithm represented by this enumerated value.
 	 *
-	 * @return the corresponding GemFire EvictionAlgorithm.
+	 * @return the GemFire EvictionAlgorithm represented by this enum.
 	 * @see com.gemstone.gemfire.cache.EvictionAlgorithm
 	 */
 	public EvictionAlgorithm getEvictionAlgorithm() {

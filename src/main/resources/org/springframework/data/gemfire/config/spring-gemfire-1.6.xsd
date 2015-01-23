@@ -1041,11 +1041,14 @@ Eviction policy for the replicated region.
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType" fixed="OVERFLOW_TO_DISK">
+									<xsd:attribute name="action" type="xsd:string" fixed="OVERFLOW_TO_DISK">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[
-The action to take when performing eviction.
-                                                ]]></xsd:documentation>
+Set to the following Eviction Actions (Note LOCAL_DESTROY is not available for Replicated Regions):
+
+OVERFLOW_TO_DISK - Entry is overflowed to disk and the value set to null in memory. For Partitioned Regions,
+this provides the most reliable read behavior across the region.
+											]]></xsd:documentation>
 										</xsd:annotation>
 									</xsd:attribute>
 								</xsd:extension>
@@ -1271,11 +1274,16 @@ Eviction policy for the partitioned region.
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType" default="LOCAL_DESTROY">
+									<xsd:attribute name="action" type="xsd:string" default="LOCAL_DESTROY">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[
-The action to take when performing eviction.
-												]]></xsd:documentation>
+Set to one of the following Eviction Actions:
+
+LOCAL_DESTROY - Entry is destroyed locally. Not available for Replicated Regions.
+
+OVERFLOW_TO_DISK - Entry is overflowed to disk and the value set to null in memory. For Partitioned Regions,
+this provides the most reliable read behavior across the region.
+											]]></xsd:documentation>
 										</xsd:annotation>
 									</xsd:attribute>
 								</xsd:extension>
@@ -1456,11 +1464,16 @@ Eviction policy for the replicated region.
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType">
+									<xsd:attribute name="action" type="xsd:string">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[
-The action to take when performing eviction.
-                                                ]]></xsd:documentation>
+Set to one of the following Eviction Actions:
+
+LOCAL_DESTROY - Entry is destroyed locally. Not available for Replicated Regions.
+
+OVERFLOW_TO_DISK - Entry is overflowed to disk and the value set to null in memory. For Partitioned Regions,
+this provides the most reliable read behavior across the region.
+											]]></xsd:documentation>
 										</xsd:annotation>
 									</xsd:attribute>
 								</xsd:extension>
@@ -1621,28 +1634,6 @@ The threshold (or limit) against which the eviction algorithm runs. Once the thr
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<!-- -->
-	<xsd:simpleType name="evictionActionType">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="LOCAL_DESTROY">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-The LRU (least-recently-used) region entries is locally destroyed.
-
-Note: this option is not compatible with replicated regions (as it render the replica region incomplete).
-							]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="OVERFLOW_TO_DISK">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to
-reclaim memory.
-							]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-		</xsd:restriction>
-	</xsd:simpleType>
 	<!-- -->
 	<xsd:simpleType name="subscriptionPolicyType">
 		<xsd:restriction base="xsd:string">
@@ -1909,11 +1900,16 @@ Eviction policy for the partitioned region.
 						<xsd:complexType>
 							<xsd:complexContent>
 								<xsd:extension base="evictionType">
-									<xsd:attribute name="action" type="evictionActionType" default="LOCAL_DESTROY">
+									<xsd:attribute name="action" type="xsd:string" default="LOCAL_DESTROY">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[
-The action to take when performing eviction.
-												]]></xsd:documentation>
+Set to one of the following Eviction Actions:
+
+LOCAL_DESTROY - Entry is destroyed locally. Not available for Replicated Regions.
+
+OVERFLOW_TO_DISK - Entry is overflowed to disk and the value set to null in memory. For Partitioned Regions,
+this provides the most reliable read behavior across the region.
+											]]></xsd:documentation>
 										</xsd:annotation>
 									</xsd:attribute>
 								</xsd:extension>

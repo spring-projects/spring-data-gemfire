@@ -17,7 +17,6 @@
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
@@ -31,9 +30,30 @@ import com.gemstone.gemfire.cache.ExpirationAction;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.ExpirationActionType
+ * @see com.gemstone.gemfire.cache.ExpirationAction
  * @since 1.6.0
  */
 public class ExpirationActionTypeTest {
+
+	@Test
+	public void testStaticGetExpirationAction() {
+		assertEquals(ExpirationAction.DESTROY, ExpirationActionType.getExpirationAction(ExpirationActionType.DESTROY));
+		assertEquals(ExpirationAction.LOCAL_DESTROY, ExpirationActionType.getExpirationAction(
+			ExpirationActionType.LOCAL_DESTROY));
+	}
+
+	@Test
+	public void testStaticGetExpirationActionWithNull() {
+		assertNull(ExpirationActionType.getExpirationAction(null));
+	}
+
+	@Test
+	public void testGetExpirationAction() {
+		assertEquals(ExpirationAction.DESTROY, ExpirationActionType.DESTROY.getExpirationAction());
+		assertEquals(ExpirationAction.INVALIDATE, ExpirationActionType.INVALIDATE.getExpirationAction());
+		assertEquals(ExpirationAction.LOCAL_DESTROY, ExpirationActionType.LOCAL_DESTROY.getExpirationAction());
+		assertEquals(ExpirationAction.LOCAL_INVALIDATE, ExpirationActionType.LOCAL_INVALIDATE.getExpirationAction());
+	}
 
 	@Test
 	public void testDefault() {
@@ -54,11 +74,17 @@ public class ExpirationActionTypeTest {
 	public void testValueOfExpirationActionOrdinalValues() {
 		try {
 			for (int ordinal = 0; ordinal < Integer.MAX_VALUE; ordinal++) {
-				assertNotNull(ExpirationActionType.valueOf(ExpirationAction.fromOrdinal(ordinal)));
+				ExpirationAction expirationAction = ExpirationAction.fromOrdinal(ordinal);
+				assertEquals(expirationAction, ExpirationActionType.valueOf(expirationAction).getExpirationAction());
 			}
 		}
 		catch (ArrayIndexOutOfBoundsException ignore) {
 		}
+	}
+
+	@Test
+	public void testValueOfWithNull() {
+		assertNull(ExpirationActionType.valueOf((ExpirationAction) null));
 	}
 
 	@Test
@@ -70,9 +96,12 @@ public class ExpirationActionTypeTest {
 	}
 
 	@Test
-	public void testValueOfIgnoreCaseWithInvalidStringValues() {
+	public void testValueOfIgnoreCaseWithInvalidValues() {
 		assertNull(ExpirationActionType.valueOfIgnoreCase("Invalid"));
 		assertNull(ExpirationActionType.valueOfIgnoreCase("local destroy"));
+		assertNull(ExpirationActionType.valueOfIgnoreCase("  "));
+		assertNull(ExpirationActionType.valueOfIgnoreCase(""));
+		assertNull(ExpirationActionType.valueOfIgnoreCase(null));
 	}
 
 }

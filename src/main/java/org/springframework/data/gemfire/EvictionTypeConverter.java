@@ -16,54 +16,31 @@
 
 package org.springframework.data.gemfire;
 
-import java.beans.PropertyEditorSupport;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.Assert;
+import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
 
 /**
  * The EvictionTypeConverter class is a Spring Converter used to convert a String value into
  * a corresponding EvictionType enumerated value.
  *
  * @author John Blum
- * @see java.beans.PropertyEditorSupport
- * @see org.springframework.core.convert.converter.Converter
  * @see org.springframework.data.gemfire.EvictionType
+ * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
  * @since 1.6.0
  */
-public class EvictionTypeConverter extends PropertyEditorSupport implements Converter<String, EvictionType> {
-
-	/* non-javadoc */
-	private EvictionType assertConverted(final String source, final EvictionType evictionType) {
-		Assert.notNull(evictionType, String.format("Source (%1$s) is not a valid EvictionType!", source));
-		return evictionType;
-	}
+public class EvictionTypeConverter extends AbstractPropertyEditorConverterSupport<EvictionType> {
 
 	/**
-	 * Converts the given String value into an appropriate ExpirationActionType.
+	 * Converts the given String into a matching EvictionType.
 	 *
-	 * @param source the String value to convert into an ExpirationActionType.
-	 * @return an ExpirationActionType for the given String value.
-	 * @throws java.lang.IllegalArgumentException if the String value does not represent a valid ExpirationActionType.
+	 * @param source the String value to convert into an EvictionType.
+	 * @return the EvictionType matching the given String.
+	 * @throws java.lang.IllegalArgumentException if the String value does not represent a valid EvictionType.
 	 * @see org.springframework.data.gemfire.EvictionType#valueOfIgnoreCase(String)
+	 * @see #assertConverted(String, Object, Class)
 	 */
 	@Override
 	public EvictionType convert(final String source) {
-		return assertConverted(source, EvictionType.valueOfIgnoreCase(source));
-	}
-
-	/**
-	 * Sets the EvictionType by parsing the given text String. May throw a java.lang.IllegalArgumentException
-	 * if either the text is badly formatted or the text cannot be expressed as an EvictionType.
-	 *
-	 * @param text the String value to express as (convert to) an EvictionType.
-	 * @throws java.lang.IllegalArgumentException if the String value does not represent a valid EvictionType.
-	 * @see #convert(String)
-	 * @see #setValue(Object)
-	 */
-	@Override
-	public void setAsText(final String text) throws IllegalArgumentException {
-		setValue(convert(text));
+		return assertConverted(source, EvictionType.valueOfIgnoreCase(source), EvictionType.class);
 	}
 
 }

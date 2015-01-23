@@ -12,6 +12,7 @@
 ">
 
 	<util:properties id="evictionProperties">
+		<prop key="eviction.action">Overflow_To_Disk</prop>
 		<prop key="eviction.type">heap_percentage</prop>
 	</util:properties>
 
@@ -46,7 +47,7 @@
 	</gfe:replicated-region>
 
 	<gfe:partitioned-region id="Six" local-max-memory="512">
-		<gfe:eviction threshold="256" type="MEMORY_SIZE" action="OVERFLOW_TO_DISK"/>
+		<gfe:eviction threshold="256" type="MEMORY_SIZE" action="${eviction.action}"/>
 	</gfe:partitioned-region>
 
 </beans>

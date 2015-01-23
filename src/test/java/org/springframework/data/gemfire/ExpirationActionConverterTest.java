@@ -17,9 +17,12 @@
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.After;
 import org.junit.Test;
+
+import com.gemstone.gemfire.cache.ExpirationAction;
 
 /**
  * The ExpirationActionTypeConverterTest class is a test suite of test cases testing the contract and functionality
@@ -27,12 +30,12 @@ import org.junit.Test;
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.ExpirationActionTypeConverter
+ * @see ExpirationActionConverter
  * @since 1.6.0
  */
-public class ExpirationActionTypeConverterTest {
+public class ExpirationActionConverterTest {
 
-	private final ExpirationActionTypeConverter converter = new ExpirationActionTypeConverter();
+	private final ExpirationActionConverter converter = new ExpirationActionConverter();
 
 	@After
 	public void tearDown() {
@@ -41,19 +44,19 @@ public class ExpirationActionTypeConverterTest {
 
 	@Test
 	public void testConvert() {
-		assertEquals(ExpirationActionType.DESTROY, converter.convert("destroy"));
-		assertEquals(ExpirationActionType.INVALIDATE, converter.convert("InvalidAte"));
-		assertEquals(ExpirationActionType.LOCAL_DESTROY, converter.convert("LOCAL_dEsTrOy"));
-		assertEquals(ExpirationActionType.LOCAL_INVALIDATE, converter.convert("Local_Invalidate"));
+		assertEquals(ExpirationAction.DESTROY, converter.convert("destroy"));
+		assertEquals(ExpirationAction.INVALIDATE, converter.convert("inValidAte"));
+		assertEquals(ExpirationAction.LOCAL_DESTROY, converter.convert("LOCAL_dEsTrOy"));
+		assertEquals(ExpirationAction.LOCAL_INVALIDATE, converter.convert("Local_Invalidate"));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testConvertThrowsIllegalArgumentException() {
+	public void testConvertIllegalValue() {
 		try {
-			converter.convert("blow_up");
+			converter.convert("invalid_value");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Source (blow_up) is not a valid ExpirationActionType!", expected.getMessage());
+			assertEquals("(invalid_value) is not a valid ExpirationAction!", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -61,19 +64,23 @@ public class ExpirationActionTypeConverterTest {
 	@Test
 	public void testSetAsText() {
 		converter.setAsText("InValidAte");
-		assertEquals(ExpirationActionType.INVALIDATE, converter.getValue());
+		assertEquals(ExpirationAction.INVALIDATE, converter.getValue());
 		converter.setAsText("Local_Destroy");
-		assertEquals(ExpirationActionType.LOCAL_DESTROY, converter.getValue());
+		assertEquals(ExpirationAction.LOCAL_DESTROY, converter.getValue());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testSetAsTextThrowsIllegalArgumentException() {
 		try {
+			assertNull(converter.getValue());
 			converter.setAsText("destruction");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Source (destruction) is not a valid ExpirationActionType!", expected.getMessage());
+			assertEquals("(destruction) is not a valid ExpirationAction!", expected.getMessage());
 			throw expected;
+		}
+		finally {
+			assertNull(converter.getValue());
 		}
 	}
 

@@ -49,9 +49,9 @@ public class ExpirationAttributesFactoryBeanTest {
 		assertEquals(ExpirationAttributesFactoryBean.DEFAULT_EXPIRATION_ACTION,
 			expirationAttributesFactoryBean.getAction());
 
-		expirationAttributesFactoryBean.setAction(ExpirationActionType.LOCAL_DESTROY);
+		expirationAttributesFactoryBean.setAction(ExpirationAction.LOCAL_DESTROY);
 
-		assertEquals(ExpirationActionType.LOCAL_DESTROY, expirationAttributesFactoryBean.getAction());
+		assertEquals(ExpirationAction.LOCAL_DESTROY, expirationAttributesFactoryBean.getAction());
 
 		expirationAttributesFactoryBean.setAction(null);
 
@@ -81,7 +81,7 @@ public class ExpirationAttributesFactoryBeanTest {
 		assertNull(expirationAttributesFactoryBean.getObject());
 		assertEquals(ExpirationAttributes.class, expirationAttributesFactoryBean.getObjectType());
 
-		expirationAttributesFactoryBean.setAction(ExpirationActionType.DESTROY);
+		expirationAttributesFactoryBean.setAction(ExpirationAction.DESTROY);
 		expirationAttributesFactoryBean.setTimeout(8192);
 		expirationAttributesFactoryBean.afterPropertiesSet();
 

@@ -30,17 +30,41 @@ import com.gemstone.gemfire.cache.EvictionAlgorithm;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.EvictionType
+ * @see com.gemstone.gemfire.cache.EvictionAlgorithm
  * @since 1.6.0
  */
 public class EvictionTypeTest {
 
 	@Test
-	@SuppressWarnings("deprecation")
+	public void testStaticGetEvictionAlgorithm() {
+		assertEquals(EvictionAlgorithm.LRU_HEAP, EvictionType.getEvictionAlgorithm(EvictionType.HEAP_PERCENTAGE));
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, EvictionType.getEvictionAlgorithm(EvictionType.MEMORY_SIZE));
+	}
+
+	@Test
+	public void testStaticGetEvictionAlgorithmWithNull() {
+		assertNull(EvictionType.getEvictionAlgorithm(null));
+	}
+
+	@Test
+	public void testGetEvictionAlgorithm() {
+		assertEquals(EvictionAlgorithm.LRU_ENTRY, EvictionType.ENTRY_COUNT.getEvictionAlgorithm());
+		assertEquals(EvictionAlgorithm.LRU_HEAP, EvictionType.HEAP_PERCENTAGE.getEvictionAlgorithm());
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, EvictionType.MEMORY_SIZE.getEvictionAlgorithm());
+		assertEquals(EvictionAlgorithm.NONE, EvictionType.NONE.getEvictionAlgorithm());
+	}
+
+	@Test
 	public void testValueOfEvictionAlgorithms() {
 		assertEquals(EvictionType.ENTRY_COUNT, EvictionType.valueOf(EvictionAlgorithm.LRU_ENTRY));
 		assertEquals(EvictionType.HEAP_PERCENTAGE, EvictionType.valueOf(EvictionAlgorithm.LRU_HEAP));
 		assertEquals(EvictionType.MEMORY_SIZE, EvictionType.valueOf(EvictionAlgorithm.LRU_MEMORY));
 		assertEquals(EvictionType.NONE, EvictionType.valueOf(EvictionAlgorithm.NONE));
+	}
+
+	@Test
+	@SuppressWarnings("deprecation")
+	public void testValueOfInvalidEvictionAlgorithms() {
 		assertNull(EvictionType.valueOf(EvictionAlgorithm.LIFO_ENTRY));
 		assertNull(EvictionType.valueOf(EvictionAlgorithm.LIFO_MEMORY));
 		assertNull(EvictionType.valueOf((EvictionAlgorithm) null));
@@ -56,6 +80,7 @@ public class EvictionTypeTest {
 
 	@Test
 	public void testValueOfIgnoreCaseWithInvalidValues() {
+		assertNull(EvictionType.valueOfIgnoreCase("number_of_entries"));
 		assertNull(EvictionType.valueOfIgnoreCase("heap_%"));
 		assertNull(EvictionType.valueOfIgnoreCase("mem_size"));
 		assertNull(EvictionType.valueOfIgnoreCase("memory_space"));

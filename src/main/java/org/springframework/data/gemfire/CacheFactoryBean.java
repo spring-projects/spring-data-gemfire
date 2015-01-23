@@ -47,6 +47,8 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
@@ -914,8 +916,9 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		if (getBeanFactory() instanceof ConfigurableBeanFactory) {
 			ConfigurableBeanFactory beanFactory = (ConfigurableBeanFactory) getBeanFactory();
 
+			beanFactory.registerCustomEditor(EvictionAction.class, EvictionActionConverter.class);
 			beanFactory.registerCustomEditor(EvictionType.class, EvictionTypeConverter.class);
-			beanFactory.registerCustomEditor(ExpirationActionType.class, ExpirationActionTypeConverter.class);
+			beanFactory.registerCustomEditor(ExpirationAction.class, ExpirationActionConverter.class);
 			beanFactory.registerCustomEditor(IndexMaintenanceType.class, IndexMaintenanceTypeConverter.class);
 			beanFactory.registerCustomEditor(IndexType.class, IndexTypeConverter.class);
 			beanFactory.registerCustomEditor(SubscriptionType.class, SubscriptionTypeConverter.class);
