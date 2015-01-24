@@ -34,30 +34,35 @@ import com.gemstone.gemfire.cache.RegionFactory;
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.IndexMaintenanceType
+ * @see IndexMaintenancePolicyType
  * @since 1.6.0
  */
-public class IndexMaintenanceTypeTest {
+public class IndexMaintenancePolicyTypeTest {
 
 	@Test
-	public void testValueOfIgnoreCase() {
-		assertEquals(IndexMaintenanceType.SYNCHRONOUS, IndexMaintenanceType.valueOfIgnoreCase("SYNCHRONOUS"));
-		assertEquals(IndexMaintenanceType.SYNCHRONOUS, IndexMaintenanceType.valueOfIgnoreCase("Synchronous"));
-		assertEquals(IndexMaintenanceType.SYNCHRONOUS, IndexMaintenanceType.valueOfIgnoreCase("synchronous"));
-		assertEquals(IndexMaintenanceType.SYNCHRONOUS, IndexMaintenanceType.valueOfIgnoreCase("SynCHrOnOus"));
-		assertEquals(IndexMaintenanceType.ASYNCHRONOUS, IndexMaintenanceType.valueOfIgnoreCase("ASYNChronous"));
+	public void testDefault() {
+		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, IndexMaintenancePolicyType.DEFAULT);
 	}
 
 	@Test
-	public void testValueOfIgnoreCaseIsNull() {
-		assertNull(IndexMaintenanceType.valueOfIgnoreCase("synchronicity"));
-		assertNull(IndexMaintenanceType.valueOfIgnoreCase("SYNC"));
-		assertNull(IndexMaintenanceType.valueOfIgnoreCase("ASYNC"));
-		assertNull(IndexMaintenanceType.valueOfIgnoreCase("CONCURRENT"));
-		assertNull(IndexMaintenanceType.valueOfIgnoreCase("parallel"));
-		assertNull(IndexMaintenanceType.valueOfIgnoreCase("  "));
-		assertNull(IndexMaintenanceType.valueOfIgnoreCase(""));
-		assertNull(IndexMaintenanceType.valueOfIgnoreCase(null));
+	public void testValueOfIgnoreCase() {
+		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, IndexMaintenancePolicyType.valueOfIgnoreCase("SYNCHRONOUS"));
+		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, IndexMaintenancePolicyType.valueOfIgnoreCase("Synchronous"));
+		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, IndexMaintenancePolicyType.valueOfIgnoreCase("synchronous"));
+		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, IndexMaintenancePolicyType.valueOfIgnoreCase("SynCHrOnOus"));
+		assertEquals(IndexMaintenancePolicyType.ASYNCHRONOUS, IndexMaintenancePolicyType.valueOfIgnoreCase("ASYNChronous"));
+	}
+
+	@Test
+	public void testValueOfIgnoreCaseWithInvalidValues() {
+		assertNull(IndexMaintenancePolicyType.valueOfIgnoreCase("synchronicity"));
+		assertNull(IndexMaintenancePolicyType.valueOfIgnoreCase("SYNC"));
+		assertNull(IndexMaintenancePolicyType.valueOfIgnoreCase("ASYNC"));
+		assertNull(IndexMaintenancePolicyType.valueOfIgnoreCase("Concurrent"));
+		assertNull(IndexMaintenancePolicyType.valueOfIgnoreCase("parallel"));
+		assertNull(IndexMaintenancePolicyType.valueOfIgnoreCase("  "));
+		assertNull(IndexMaintenancePolicyType.valueOfIgnoreCase(""));
+		assertNull(IndexMaintenancePolicyType.valueOfIgnoreCase(null));
 	}
 
 	@Test
@@ -66,7 +71,7 @@ public class IndexMaintenanceTypeTest {
 		AttributesFactory mockAttributesFactory = mock(AttributesFactory.class,
 			"testAttributesFactorySetIndexMaintenanceAsynchronous");
 
-		IndexMaintenanceType.ASYNCHRONOUS.setIndexMaintenance(mockAttributesFactory);
+		IndexMaintenancePolicyType.ASYNCHRONOUS.setIndexMaintenance(mockAttributesFactory);
 
 		verify(mockAttributesFactory).setIndexMaintenanceSynchronous(eq(false));
 	}
@@ -77,7 +82,7 @@ public class IndexMaintenanceTypeTest {
 		AttributesFactory mockAttributesFactory = mock(AttributesFactory.class,
 			"testAttributesFactorySetIndexMaintenanceAsynchronous");
 
-		IndexMaintenanceType.SYNCHRONOUS.setIndexMaintenance(mockAttributesFactory);
+		IndexMaintenancePolicyType.SYNCHRONOUS.setIndexMaintenance(mockAttributesFactory);
 
 		verify(mockAttributesFactory).setIndexMaintenanceSynchronous(eq(true));
 	}
@@ -86,7 +91,7 @@ public class IndexMaintenanceTypeTest {
 	public void testRegionFactorySetIndexMaintenanceAsynchronous() {
 		RegionFactory mockRegionFactory = mock(RegionFactory.class, "testRegionFactorySetIndexMaintenanceAsynchronous");
 
-		IndexMaintenanceType.ASYNCHRONOUS.setIndexMaintenance(mockRegionFactory);
+		IndexMaintenancePolicyType.ASYNCHRONOUS.setIndexMaintenance(mockRegionFactory);
 
 		verify(mockRegionFactory).setIndexMaintenanceSynchronous(eq(false));
 	}
@@ -95,7 +100,7 @@ public class IndexMaintenanceTypeTest {
 	public void testRegionFactorySetIndexMaintenanceSynchronous() {
 		RegionFactory mockRegionFactory = mock(RegionFactory.class, "testRegionFactorySetIndexMaintenanceSynchronous");
 
-		IndexMaintenanceType.SYNCHRONOUS.setIndexMaintenance(mockRegionFactory);
+		IndexMaintenancePolicyType.SYNCHRONOUS.setIndexMaintenance(mockRegionFactory);
 
 		verify(mockRegionFactory).setIndexMaintenanceSynchronous(eq(true));
 	}

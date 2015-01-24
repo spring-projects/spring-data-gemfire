@@ -23,17 +23,18 @@ import org.junit.After;
 import org.junit.Test;
 
 /**
- * The EvictionTypeConverterTest class is a test suite of test cases testing the contract and functionality
- * of the EvictionTypeConverter class.
+ * The IndexMaintenanceTypeConverterTest class is a test suite of test case testing the contract and functionality
+ * of the IndexMaintenancePolicyConverter class.
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.EvictionTypeConverter
+ * @see org.springframework.data.gemfire.IndexMaintenancePolicyConverter
+ * @see org.springframework.data.gemfire.IndexMaintenancePolicyType
  * @since 1.6.0
  */
-public class EvictionTypeConverterTest {
+public class IndexMaintenancePolicyConverterTest {
 
-	private final EvictionTypeConverter converter = new EvictionTypeConverter();
+	private final IndexMaintenancePolicyConverter converter = new IndexMaintenancePolicyConverter();
 
 	@After
 	public void tearDown() {
@@ -42,40 +43,37 @@ public class EvictionTypeConverterTest {
 
 	@Test
 	public void testConvert() {
-		assertEquals(EvictionType.ENTRY_COUNT, converter.convert("entry_count"));
-		assertEquals(EvictionType.HEAP_PERCENTAGE, converter.convert("Heap_Percentage"));
-		assertEquals(EvictionType.MEMORY_SIZE, converter.convert("MEMorY_SiZe"));
-		assertEquals(EvictionType.NONE, converter.convert("NONE"));
+		assertEquals(IndexMaintenancePolicyType.ASYNCHRONOUS, converter.convert("asynchronous"));
+		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, converter.convert("Synchronous"));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testConvertIllegalValue() {
 		try {
-			converter.convert("LIFO_MEMORY");
+			converter.convert("sync");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("(LIFO_MEMORY) is not a valid EvictionType!", expected.getMessage());
+			assertEquals("(sync) is not a valid IndexMaintenancePolicyType!", expected.getMessage());
 			throw expected;
 		}
 	}
 
 	@Test
 	public void testSetAsText() {
-		assertNull(converter.getValue());
-		converter.setAsText("heap_percentage");
-		assertEquals(EvictionType.HEAP_PERCENTAGE, converter.getValue());
-		converter.setAsText("NOne");
-		assertEquals(EvictionType.NONE, converter.getValue());
+		converter.setAsText("aSynchronous");
+		assertEquals(IndexMaintenancePolicyType.ASYNCHRONOUS, converter.getValue());
+		converter.setAsText("synchrONoUS");
+		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, converter.getValue());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testSetAsTextWithIllegalValue() {
+	public void testSetAsTextThrowsIllegalArgumentException() {
 		try {
 			assertNull(converter.getValue());
-			converter.setAsText("LRU_COUNT");
+			converter.setAsText("async");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("(LRU_COUNT) is not a valid EvictionType!", expected.getMessage());
+			assertEquals("(async) is not a valid IndexMaintenancePolicyType!", expected.getMessage());
 			throw expected;
 		}
 		finally {

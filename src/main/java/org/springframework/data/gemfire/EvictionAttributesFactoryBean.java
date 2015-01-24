@@ -47,7 +47,7 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 
 	private EvictionAttributes evictionAttributes;
 
-	private EvictionType type = EvictionType.ENTRY_COUNT;
+	private EvictionPolicyType type = EvictionPolicyType.ENTRY_COUNT;
 
 	private Integer threshold = null;
 
@@ -154,9 +154,9 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 	 * to implement on the Region.
 	 *
 	 * @param type the type of eviction policy/algorithm to implement on the Region.
-	 * @see org.springframework.data.gemfire.EvictionType
+	 * @see EvictionPolicyType
 	 */
-	public void setType(final EvictionType type) {
+	public void setType(final EvictionPolicyType type) {
 		this.type = type;
 	}
 
@@ -164,9 +164,9 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 	 * Gets the eviction policy and algorithm used by the Region.
 	 *
 	 * @return the eviction policy and algorithm in use by the Region.
-	 * @see org.springframework.data.gemfire.EvictionType
+	 * @see EvictionPolicyType
 	 */
-	public EvictionType getType() {
+	public EvictionPolicyType getType() {
 		return type;
 	}
 

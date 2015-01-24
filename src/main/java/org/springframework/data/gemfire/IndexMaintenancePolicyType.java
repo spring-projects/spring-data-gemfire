@@ -29,24 +29,26 @@ import com.gemstone.gemfire.cache.RegionFactory;
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
-public enum IndexMaintenanceType {
+public enum IndexMaintenancePolicyType {
 	SYNCHRONOUS,
 	ASYNCHRONOUS;
 
+	public static final IndexMaintenancePolicyType DEFAULT = IndexMaintenancePolicyType.SYNCHRONOUS;
+
 	/**
-	 * Determines the appropriate IndexMaintenanceType given a String value.  This method is null-safe
-	 * and case-insensitive.
+	 * Return an IndexMaintenanceType enumerated value given a case-insensitive, named String value
+	 * describing the type of Index maintenance.
 	 *
-	 * @param value the String value indicating the type of Index maintenance (update).
-	 * @return a IndexMaintenanceType enumerated value based on the given String value, or null
-	 * if the String representation does not match a IndexMaintenanceType.
-	 * @see java.lang.Enum#name()
+	 * @param name the String value indicating the type of Index maintenance (update).
+	 * @return an IndexMaintenanceType enumerated value given a case-insensitive, named String value describing
+	 * the type of Index maintenance, or null if no match was found.
 	 * @see java.lang.String#equalsIgnoreCase(String)
+	 * @see #name()
 	 */
-	public static IndexMaintenanceType valueOfIgnoreCase(final String value) {
-		for (IndexMaintenanceType indexMaintenanceType : values()) {
-			if (indexMaintenanceType.name().equalsIgnoreCase(value)) {
-				return indexMaintenanceType;
+	public static IndexMaintenancePolicyType valueOfIgnoreCase(final String name) {
+		for (IndexMaintenancePolicyType indexMaintenancePolicyType : values()) {
+			if (indexMaintenancePolicyType.name().equalsIgnoreCase(name)) {
+				return indexMaintenancePolicyType;
 			}
 		}
 
@@ -55,7 +57,7 @@ public enum IndexMaintenanceType {
 
 	/**
 	 * Sets the GemFire AttributesFactory's 'indexMaintenanceSynchronous' property appropriately based on
-	 * this IndexMaintenanceType.
+	 * this IndexMaintenancePolicyType.
 	 *
 	 * @param attributesFactory the AttributesFactory instance on which to set the indexMaintenanceProperty.
 	 * @throws java.lang.NullPointerException if the AttributesFactory reference is null.
@@ -68,7 +70,7 @@ public enum IndexMaintenanceType {
 
 	/**
 	 * Sets the GemFire RegionFactory's 'indexMaintenanceSynchronous' property appropriately based on
-	 * this IndexMaintenanceType.
+	 * this IndexMaintenancePolicyType.
 	 *
 	 * @param regionFactory the RegionFactory instance on which to set the indexMaintenanceProperty.
 	 * @throws java.lang.NullPointerException if the RegionFactory reference is null.

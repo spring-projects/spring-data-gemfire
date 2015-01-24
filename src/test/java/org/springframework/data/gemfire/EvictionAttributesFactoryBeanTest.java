@@ -70,7 +70,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(null);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(1024);
-		factoryBean.setType(EvictionType.ENTRY_COUNT);
+		factoryBean.setType(EvictionPolicyType.ENTRY_COUNT);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -87,7 +87,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.LOCAL_DESTROY);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(128);
-		factoryBean.setType(EvictionType.ENTRY_COUNT);
+		factoryBean.setType(EvictionPolicyType.ENTRY_COUNT);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -104,7 +104,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.NONE);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(null);
-		factoryBean.setType(EvictionType.ENTRY_COUNT);
+		factoryBean.setType(EvictionPolicyType.ENTRY_COUNT);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -121,7 +121,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.OVERFLOW_TO_DISK);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(null);
-		factoryBean.setType(EvictionType.ENTRY_COUNT);
+		factoryBean.setType(EvictionPolicyType.ENTRY_COUNT);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -137,7 +137,7 @@ public class EvictionAttributesFactoryBeanTest {
 	public void testCreateHeapPercentageEvictionAttributesWithNullAction() {
 		factoryBean.setAction(null);
 		factoryBean.setObjectSizer(mockObjectSizer);
-		factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
+		factoryBean.setType(EvictionPolicyType.HEAP_PERCENTAGE);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -153,7 +153,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.LOCAL_DESTROY);
 		factoryBean.setObjectSizer(null);
 		factoryBean.setThreshold(null);
-		factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
+		factoryBean.setType(EvictionPolicyType.HEAP_PERCENTAGE);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -169,7 +169,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.NONE);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(null);
-		factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
+		factoryBean.setType(EvictionPolicyType.HEAP_PERCENTAGE);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -185,7 +185,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.OVERFLOW_TO_DISK);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(null);
-		factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
+		factoryBean.setType(EvictionPolicyType.HEAP_PERCENTAGE);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -201,7 +201,7 @@ public class EvictionAttributesFactoryBeanTest {
 		EvictionAttributesFactoryBean factoryBean = new EvictionAttributesFactoryBean();
 
 		try {
-			factoryBean.setType(EvictionType.HEAP_PERCENTAGE);
+			factoryBean.setType(EvictionPolicyType.HEAP_PERCENTAGE);
 			factoryBean.setThreshold(85);
 			factoryBean.afterPropertiesSet();
 		}
@@ -209,7 +209,7 @@ public class EvictionAttributesFactoryBeanTest {
 			assertEquals("HEAP_PERCENTAGE (LRU_HEAP algorithm) does not support threshold (a.k.a. maximum)!",
 				expected.getMessage());
 			assertEquals(85, factoryBean.getThreshold().intValue());
-			assertEquals(EvictionType.HEAP_PERCENTAGE, factoryBean.getType());
+			assertEquals(EvictionPolicyType.HEAP_PERCENTAGE, factoryBean.getType());
 			throw expected;
 		}
 	}
@@ -219,7 +219,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(null);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(null);
-		factoryBean.setType(EvictionType.MEMORY_SIZE);
+		factoryBean.setType(EvictionPolicyType.MEMORY_SIZE);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -236,7 +236,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.LOCAL_DESTROY);
 		factoryBean.setObjectSizer(mockObjectSizer);
 		factoryBean.setThreshold(1024);
-		factoryBean.setType(EvictionType.MEMORY_SIZE);
+		factoryBean.setType(EvictionPolicyType.MEMORY_SIZE);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -253,7 +253,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.NONE);
 		factoryBean.setObjectSizer(null);
 		factoryBean.setThreshold(256);
-		factoryBean.setType(EvictionType.MEMORY_SIZE);
+		factoryBean.setType(EvictionPolicyType.MEMORY_SIZE);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();
@@ -270,7 +270,7 @@ public class EvictionAttributesFactoryBeanTest {
 		factoryBean.setAction(EvictionAction.OVERFLOW_TO_DISK);
 		factoryBean.setObjectSizer(null);
 		factoryBean.setThreshold(null);
-		factoryBean.setType(EvictionType.MEMORY_SIZE);
+		factoryBean.setType(EvictionPolicyType.MEMORY_SIZE);
 		factoryBean.afterPropertiesSet();
 
 		EvictionAttributes evictionAttributes = factoryBean.getObject();

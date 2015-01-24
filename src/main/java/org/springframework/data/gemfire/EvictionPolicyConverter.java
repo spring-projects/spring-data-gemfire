@@ -23,11 +23,11 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
  * a corresponding EvictionType enumerated value.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.EvictionType
+ * @see EvictionPolicyType
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
  * @since 1.6.0
  */
-public class EvictionTypeConverter extends AbstractPropertyEditorConverterSupport<EvictionType> {
+public class EvictionPolicyConverter extends AbstractPropertyEditorConverterSupport<EvictionPolicyType> {
 
 	/**
 	 * Converts the given String into a matching EvictionType.
@@ -35,12 +35,12 @@ public class EvictionTypeConverter extends AbstractPropertyEditorConverterSuppor
 	 * @param source the String value to convert into an EvictionType.
 	 * @return the EvictionType matching the given String.
 	 * @throws java.lang.IllegalArgumentException if the String value does not represent a valid EvictionType.
-	 * @see org.springframework.data.gemfire.EvictionType#valueOfIgnoreCase(String)
+	 * @see EvictionPolicyType#valueOfIgnoreCase(String)
 	 * @see #assertConverted(String, Object, Class)
 	 */
 	@Override
-	public EvictionType convert(final String source) {
-		return assertConverted(source, EvictionType.valueOfIgnoreCase(source), EvictionType.class);
+	public EvictionPolicyType convert(final String source) {
+		return assertConverted(source, EvictionPolicyType.valueOfIgnoreCase(source), EvictionPolicyType.class);
 	}
 
 }
