@@ -42,48 +42,28 @@ public class SubscriptionAttributesFactoryBeanTest {
 	}
 
 	@Test
-	public void testGetObjectAndObjectTypeForSubscriptionType() throws Exception {
+	public void testSetAndGetInterestPolicy() {
 		SubscriptionAttributesFactoryBean factoryBean = new SubscriptionAttributesFactoryBean();
 
-		factoryBean.setType(SubscriptionType.CACHE_CONTENT);
-		factoryBean.afterPropertiesSet();
+		assertEquals(InterestPolicy.DEFAULT, factoryBean.getInterestPolicy());
 
-		assertEquals(SubscriptionType.CACHE_CONTENT, factoryBean.getType());
-		assertEquals(InterestPolicy.CACHE_CONTENT, factoryBean.getPolicy());
+		factoryBean.setInterestPolicy(InterestPolicy.CACHE_CONTENT);
 
-		SubscriptionAttributes subscriptionAttributes = factoryBean.getObject();
+		assertEquals(InterestPolicy.CACHE_CONTENT, factoryBean.getInterestPolicy());
 
-		assertNotNull(subscriptionAttributes);
-		assertEquals(InterestPolicy.CACHE_CONTENT, subscriptionAttributes.getInterestPolicy());
-		assertTrue(SubscriptionAttributes.class.isAssignableFrom(factoryBean.getObjectType()));
+		factoryBean.setInterestPolicy(null);
+
+		assertEquals(InterestPolicy.DEFAULT, factoryBean.getInterestPolicy());
 	}
 
 	@Test
-	public void testGetObjectAndObjectTypeForDefaultSubscriptionType() throws Exception {
+	public void testGetObjectAndObjectTypeForAllInterestPolicy() throws Exception {
 		SubscriptionAttributesFactoryBean factoryBean = new SubscriptionAttributesFactoryBean();
 
-		factoryBean.setType(null);
+		factoryBean.setInterestPolicy(InterestPolicy.ALL);
 		factoryBean.afterPropertiesSet();
 
-		assertEquals(SubscriptionType.DEFAULT, factoryBean.getType());
-		assertEquals(InterestPolicy.DEFAULT, factoryBean.getPolicy());
-
-		SubscriptionAttributes subscriptionAttributes = factoryBean.getObject();
-
-		assertNotNull(subscriptionAttributes);
-		assertEquals(InterestPolicy.DEFAULT, subscriptionAttributes.getInterestPolicy());
-		assertTrue(SubscriptionAttributes.class.isAssignableFrom(factoryBean.getObjectType()));
-	}
-
-	@Test
-	public void testGetObjectAndObjectTypeForInterestPolicy() throws Exception {
-		SubscriptionAttributesFactoryBean factoryBean = new SubscriptionAttributesFactoryBean();
-
-		factoryBean.setPolicy(InterestPolicy.ALL);
-		factoryBean.afterPropertiesSet();
-
-		assertEquals(SubscriptionType.ALL, factoryBean.getType());
-		assertEquals(InterestPolicy.ALL, factoryBean.getPolicy());
+		assertEquals(InterestPolicy.ALL, factoryBean.getInterestPolicy());
 
 		SubscriptionAttributes subscriptionAttributes = factoryBean.getObject();
 
@@ -93,14 +73,44 @@ public class SubscriptionAttributesFactoryBeanTest {
 	}
 
 	@Test
+	public void testGetObjectAndObjectTypeForCacheContentInterestPolicy() throws Exception {
+		SubscriptionAttributesFactoryBean factoryBean = new SubscriptionAttributesFactoryBean();
+
+		factoryBean.setInterestPolicy(InterestPolicy.CACHE_CONTENT);
+		factoryBean.afterPropertiesSet();
+
+		assertEquals(InterestPolicy.CACHE_CONTENT, factoryBean.getInterestPolicy());
+
+		SubscriptionAttributes subscriptionAttributes = factoryBean.getObject();
+
+		assertNotNull(subscriptionAttributes);
+		assertEquals(InterestPolicy.CACHE_CONTENT, subscriptionAttributes.getInterestPolicy());
+		assertTrue(SubscriptionAttributes.class.isAssignableFrom(factoryBean.getObjectType()));
+	}
+
+	@Test
+	public void testGetObjectAndObjectTypeForDefaultInterestPolicy() throws Exception {
+		SubscriptionAttributesFactoryBean factoryBean = new SubscriptionAttributesFactoryBean();
+
+		factoryBean.afterPropertiesSet();
+
+		assertEquals(InterestPolicy.DEFAULT, factoryBean.getInterestPolicy());
+
+		SubscriptionAttributes subscriptionAttributes = factoryBean.getObject();
+
+		assertNotNull(subscriptionAttributes);
+		assertEquals(InterestPolicy.DEFAULT, subscriptionAttributes.getInterestPolicy());
+		assertTrue(SubscriptionAttributes.class.isAssignableFrom(factoryBean.getObjectType()));
+	}
+
+	@Test
 	public void testGetObjectAndObjectTypeForNullInterestPolicy() throws Exception {
 		SubscriptionAttributesFactoryBean factoryBean = new SubscriptionAttributesFactoryBean();
 
-		factoryBean.setPolicy(null);
+		factoryBean.setInterestPolicy(null);
 		factoryBean.afterPropertiesSet();
 
-		assertEquals(SubscriptionType.DEFAULT, factoryBean.getType());
-		assertEquals(InterestPolicy.DEFAULT, factoryBean.getPolicy());
+		assertEquals(InterestPolicy.DEFAULT, factoryBean.getInterestPolicy());
 
 		SubscriptionAttributes subscriptionAttributes = factoryBean.getObject();
 

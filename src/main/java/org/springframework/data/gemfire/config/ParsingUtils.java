@@ -28,8 +28,8 @@ import org.springframework.core.Conventions;
 import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
 import org.springframework.data.gemfire.ExpirationAttributesFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.InterestPolicyType;
 import org.springframework.data.gemfire.SubscriptionAttributesFactoryBean;
-import org.springframework.data.gemfire.SubscriptionType;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -230,12 +230,7 @@ abstract class ParsingUtils {
 			BeanDefinitionBuilder subscriptionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 				SubscriptionAttributesFactoryBean.class);
 
-			// do manual conversion since the enum is not public
-			String type = subscriptionElement.getAttribute("type");
-
-			if (StringUtils.hasText(type)) {
-				subscriptionAttributesBuilder.addPropertyValue("type", SubscriptionType.valueOfIgnoreCase(type));
-			}
+			setPropertyValue(subscriptionElement, subscriptionAttributesBuilder, "type", "interestPolicy");
 
 			regionAttributesBuilder.addPropertyValue("subscriptionAttributes",
 				subscriptionAttributesBuilder.getBeanDefinition());

@@ -17,22 +17,26 @@
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.After;
 import org.junit.Test;
 
+import com.gemstone.gemfire.cache.InterestPolicy;
+
 /**
- * The SubscriptionTypeConverterTest class is a test suite of test cases testing the contract and functionality
- * of the SubscriptionTypeConverter class.
+ * The InterestPolicyConverterTest class is a test suite of test cases testing the contract and functionality
+ * of the InterestPolicyConverter class.
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.SubscriptionTypeConverter
- * @since 1.5.0
+ * @see org.springframework.data.gemfire.InterestPolicyConverter
+ * @see com.gemstone.gemfire.cache.InterestPolicy
+ * @since 1.6.0
  */
-public class SubscriptionTypeConverterTest {
+public class InterestPolicyConverterTest {
 
-	private SubscriptionTypeConverter converter = new SubscriptionTypeConverter();
+	private InterestPolicyConverter converter = new InterestPolicyConverter();
 
 	@After
 	public void tearDown() {
@@ -41,18 +45,19 @@ public class SubscriptionTypeConverterTest {
 
 	@Test
 	public void testConvert() {
-		assertEquals(SubscriptionType.ALL, converter.convert("all"));
-		assertEquals(SubscriptionType.CACHE_CONTENT, converter.convert("Cache_Content"));
-		assertEquals(SubscriptionType.DEFAULT, converter.convert("DeFault"));
+		assertEquals(InterestPolicy.ALL, converter.convert("all"));
+		assertEquals(InterestPolicy.CACHE_CONTENT, converter.convert("Cache_Content"));
+		assertEquals(InterestPolicy.CACHE_CONTENT, converter.convert("CACHE_ConTent"));
+		assertEquals(InterestPolicy.ALL, converter.convert("ALL"));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testConvertWithInvalidValue() {
+	public void testConvertIllegalValueValue() {
 		try {
 			converter.convert("invalid");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Source (invalid) is not a valid SubscriptionType!", expected.getMessage());
+			assertEquals("(invalid) is not a valid InterestPolicy!", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -60,19 +65,23 @@ public class SubscriptionTypeConverterTest {
 	@Test
 	public void testSetAsText() {
 		converter.setAsText("aLl");
-		assertEquals(SubscriptionType.ALL, converter.getValue());
-		converter.setAsText("CACHE_content");
-		assertEquals(SubscriptionType.CACHE_CONTENT, converter.getValue());
+		assertEquals(InterestPolicy.ALL, converter.getValue());
+		converter.setAsText("Cache_CoNTeNT");
+		assertEquals(InterestPolicy.CACHE_CONTENT, converter.getValue());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testSetAsTextWithInvalidValue() {
 		try {
+			assertNull(converter.getValue());
 			converter.setAsText("none");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Source (none) is not a valid SubscriptionType!", expected.getMessage());
+			assertEquals("(none) is not a valid InterestPolicy!", expected.getMessage());
 			throw expected;
+		}
+		finally {
+			assertNull(converter.getValue());
 		}
 	}
 

@@ -64,7 +64,7 @@ public class EvictionActionTypeTest {
 	}
 
 	@Test
-	public void testValueOfWithInvalidValue() {
+	public void testValueOfWithNull() {
 		assertNull(EvictionActionType.valueOf((EvictionAction) null));
 	}
 
@@ -77,7 +77,7 @@ public class EvictionActionTypeTest {
 	}
 
 	@Test
-	public void testValueOfIgnoreCaseWithInvalidValue() {
+	public void testValueOfIgnoreCaseWithInvalidValues() {
 		assertNull(EvictionActionType.valueOfIgnoreCase("REMOTE_DESTROY"));
 		assertNull(EvictionActionType.valueOfIgnoreCase("All"));
 		assertNull(EvictionActionType.valueOfIgnoreCase(" none  "));

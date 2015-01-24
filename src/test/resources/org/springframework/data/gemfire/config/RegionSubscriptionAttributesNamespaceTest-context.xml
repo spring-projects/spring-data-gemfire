@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="subscriptionProperties">
+		<prop key="subscription.interest.policy">ALL</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="subscriptionProperties"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">RegionSubscriptionAttributesNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">config</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:replicated-region id="NoSubscriptionRegion" persistent="false"/>
+
+	<gfe:replicated-region id="AllSubscriptionRegion" persistent="false">
+		<gfe:subscription type="${subscription.interest.policy}"/>
+	</gfe:replicated-region>
+
+	<gfe:partitioned-region id="CacheContentSubscriptionRegion">
+		<gfe:subscription type="Cache_ConTENt"/>
+	</gfe:partitioned-region>
+
+	<gfe:partitioned-region id="DefaultSubscriptionRegion">
+		<gfe:subscription/>
+	</gfe:partitioned-region>
+
+</beans>

@@ -57,8 +57,8 @@ public class ExpirationActionTypeTest {
 
 	@Test
 	public void testDefault() {
-		assertEquals(ExpirationActionType.INVALIDATE, ExpirationActionType.DEFAULT);
 		assertEquals(ExpirationAction.INVALIDATE, ExpirationActionType.DEFAULT.getExpirationAction());
+		assertEquals(ExpirationActionType.INVALIDATE, ExpirationActionType.DEFAULT);
 	}
 
 	@Test

@@ -22,24 +22,31 @@ import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
 
 /**
- * Simple utility class used for defining nested factory-method like definitions w/o polluting the container with useless beans.
+ * The SubscriptionAttributesFactoryBean class is a Spring FactoryBean used for defining and constructing
+ * a GemFire SubscriptionAttributes object, which determines the Subscription policy used by Regions to
+ * declared their data interests.
  * 
  * @author Lyndon Adams
  * @author John Blum
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see com.gemstone.gemfire.cache.InterestPolicy
+ * @see com.gemstone.gemfire.cache.SubscriptionAttributes
  * @since 1.3.0
  */
 public class SubscriptionAttributesFactoryBean implements FactoryBean<SubscriptionAttributes>, InitializingBean {
 
+	private InterestPolicy interestPolicy;
+
 	private SubscriptionAttributes subscriptionAttributes;
 
-	private SubscriptionType type;
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		subscriptionAttributes = new SubscriptionAttributes(getPolicy());
+		subscriptionAttributes = new SubscriptionAttributes(getInterestPolicy());
 	}
 	
 	/*
@@ -69,20 +76,40 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 		return true;
 	}
 
-	public void setType(SubscriptionType type) {
-		this.type = type;
+	/**
+	 * Sets GemFire's InterestPolicy specified on the SubscriptionAttributes in order to define/declare
+	 * the data interests and distribution of changes.
+	 *
+	 * @param interestPolicy the GemFire InterestsPolicy to set for Subscription.
+	 * @see com.gemstone.gemfire.cache.InterestPolicy
+	 * @see com.gemstone.gemfire.cache.SubscriptionAttributes#SubscriptionAttributes(com.gemstone.gemfire.cache.InterestPolicy)
+	 */
+	public void setInterestPolicy(final InterestPolicy interestPolicy) {
+		this.interestPolicy = interestPolicy;
 	}
 
-	public SubscriptionType getType() {
-		return (type != null ? type : SubscriptionType.DEFAULT);
+	/**
+	 * Gets GemFire's InterestPolicy specified on the SubscriptionAttributes which defines data interests
+	 * and distribution of changes.
+	 *
+	 * @return the GemFire InterestsPolicy set for Subscription.
+	 * @see com.gemstone.gemfire.cache.InterestPolicy
+	 * @see com.gemstone.gemfire.cache.SubscriptionAttributes#getInterestPolicy()
+	 */
+	public InterestPolicy getInterestPolicy() {
+		return (interestPolicy != null ? interestPolicy : InterestPolicy.DEFAULT);
 	}
 
+	/* non-Javadoc */
+	@Deprecated
 	public void setPolicy(InterestPolicy policy) {
-		setType(SubscriptionType.valueOf(policy));
+		setInterestPolicy(policy);
 	}
 
+	/* non-Javadoc */
+	@Deprecated
 	public InterestPolicy getPolicy() {
-		return getType().getInterestPolicy();
+		return getInterestPolicy();
 	}
 
 }
