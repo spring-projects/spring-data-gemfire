@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.4.5.RELEASE (2015-01-27)
+---------------------------------------------
+* SGF-367 - Release 1.4.5.
+* SGF-317 - Improve GemfireCache implementation to be able to build on Spring 4.1.
+
+
 Changes in version 1.6.0.M1 (2014-12-01)
 ----------------------------------------
 * SGF-356 - local-region on client side.
