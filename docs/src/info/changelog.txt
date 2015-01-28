@@ -3,6 +3,13 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.5.2.RELEASE (2015-01-28)
+---------------------------------------------
+* SGF-368 - Release 1.5.2.
+* SGF-360 - Failures in SubRegionNamespaceTests when built with Java 8.
+* SGF-354 - SimpleGemfireRepository.deleteAll that supports transactions.
+
+
 Changes in version 1.4.5.RELEASE (2015-01-27)
 ---------------------------------------------
 * SGF-367 - Release 1.4.5.
