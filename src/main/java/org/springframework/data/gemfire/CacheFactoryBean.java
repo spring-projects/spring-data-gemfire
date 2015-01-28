@@ -37,6 +37,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -51,6 +52,7 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.InterestPolicy;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
@@ -82,6 +84,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
  */
+@SuppressWarnings("unused")
 public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
 		InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
@@ -923,6 +926,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			beanFactory.registerCustomEditor(IndexMaintenancePolicyType.class, IndexMaintenancePolicyConverter.class);
 			beanFactory.registerCustomEditor(IndexType.class, IndexTypeConverter.class);
 			beanFactory.registerCustomEditor(InterestPolicy.class, InterestPolicyConverter.class);
+			beanFactory.registerCustomEditor(InterestResultPolicy.class, InterestResultPolicyConverter.class);
 		}
 	}
 

@@ -37,10 +37,10 @@ public class EvictionPolicyTypeTest {
 
 	@Test
 	public void testStaticGetEvictionAlgorithm() {
-		assertEquals(EvictionAlgorithm.LRU_HEAP, EvictionPolicyType
-			.getEvictionAlgorithm(EvictionPolicyType.HEAP_PERCENTAGE));
-		assertEquals(EvictionAlgorithm.LRU_MEMORY, EvictionPolicyType
-			.getEvictionAlgorithm(EvictionPolicyType.MEMORY_SIZE));
+		assertEquals(EvictionAlgorithm.LRU_HEAP, EvictionPolicyType.getEvictionAlgorithm(
+			EvictionPolicyType.HEAP_PERCENTAGE));
+		assertEquals(EvictionAlgorithm.LRU_MEMORY, EvictionPolicyType.getEvictionAlgorithm(
+			EvictionPolicyType.MEMORY_SIZE));
 	}
 
 	@Test
@@ -57,7 +57,7 @@ public class EvictionPolicyTypeTest {
 	}
 
 	@Test
-	public void testValueOfEvictionAlgorithms() {
+	public void testValueOf() {
 		assertEquals(EvictionPolicyType.ENTRY_COUNT, EvictionPolicyType.valueOf(EvictionAlgorithm.LRU_ENTRY));
 		assertEquals(EvictionPolicyType.HEAP_PERCENTAGE, EvictionPolicyType.valueOf(EvictionAlgorithm.LRU_HEAP));
 		assertEquals(EvictionPolicyType.MEMORY_SIZE, EvictionPolicyType.valueOf(EvictionAlgorithm.LRU_MEMORY));
@@ -69,6 +69,10 @@ public class EvictionPolicyTypeTest {
 	public void testValueOfInvalidEvictionAlgorithms() {
 		assertNull(EvictionPolicyType.valueOf(EvictionAlgorithm.LIFO_ENTRY));
 		assertNull(EvictionPolicyType.valueOf(EvictionAlgorithm.LIFO_MEMORY));
+	}
+
+	@Test
+	public void testValueOfWithNull() {
 		assertNull(EvictionPolicyType.valueOf((EvictionAlgorithm) null));
 	}
 

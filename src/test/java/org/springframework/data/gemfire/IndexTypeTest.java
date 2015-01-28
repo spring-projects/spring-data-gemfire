@@ -36,7 +36,7 @@ import org.junit.Test;
 public class IndexTypeTest {
 
 	@Test
-	public void testGetGemFireIndexType() {
+	public void testGetGemfireIndexType() {
 		assertEquals(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, IndexType.FUNCTIONAL.getGemfireIndexType());
 		assertEquals(com.gemstone.gemfire.cache.query.IndexType.HASH, IndexType.HASH.getGemfireIndexType());
 		assertEquals(com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY, IndexType.KEY.getGemfireIndexType());
@@ -44,11 +44,15 @@ public class IndexTypeTest {
 	}
 
 	@Test
-	public void testValueOfGemFireIndexType() {
-		assertNull(IndexType.valueOf((com.gemstone.gemfire.cache.query.IndexType) null));
+	public void testValueOf() {
 		assertEquals(IndexType.FUNCTIONAL, IndexType.valueOf(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL));
 		assertEquals(IndexType.HASH, IndexType.valueOf(com.gemstone.gemfire.cache.query.IndexType.HASH));
 		assertEquals(IndexType.PRIMARY_KEY, IndexType.valueOf(com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY));
+	}
+
+	@Test
+	public void testValueOfWithNull() {
+		assertNull(IndexType.valueOf((com.gemstone.gemfire.cache.query.IndexType) null));
 	}
 
 	@Test
@@ -61,12 +65,12 @@ public class IndexTypeTest {
 
 	@Test
 	public void testValueOfIgnoreCaseWithInvalidValues() {
-		assertNull(IndexType.valueOfIgnoreCase(null));
-		assertNull(IndexType.valueOfIgnoreCase(""));
-		assertNull(IndexType.valueOfIgnoreCase("  "));
 		assertNull(IndexType.valueOfIgnoreCase("Prime_Index"));
 		assertNull(IndexType.valueOfIgnoreCase("SECONDARY_INDEX"));
 		assertNull(IndexType.valueOfIgnoreCase("unique_index"));
+		assertNull(IndexType.valueOfIgnoreCase(null));
+		assertNull(IndexType.valueOfIgnoreCase("  "));
+		assertNull(IndexType.valueOfIgnoreCase(""));
 	}
 
 	@Test

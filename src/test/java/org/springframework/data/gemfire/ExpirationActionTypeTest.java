@@ -17,7 +17,9 @@
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 
@@ -58,7 +60,7 @@ public class ExpirationActionTypeTest {
 	@Test
 	public void testDefault() {
 		assertEquals(ExpirationAction.INVALIDATE, ExpirationActionType.DEFAULT.getExpirationAction());
-		assertEquals(ExpirationActionType.INVALIDATE, ExpirationActionType.DEFAULT);
+		assertSame(ExpirationActionType.INVALIDATE, ExpirationActionType.DEFAULT);
 	}
 
 	@Test
@@ -67,7 +69,6 @@ public class ExpirationActionTypeTest {
 		assertEquals(ExpirationActionType.INVALIDATE, ExpirationActionType.valueOf(ExpirationAction.INVALIDATE));
 		assertEquals(ExpirationActionType.LOCAL_DESTROY, ExpirationActionType.valueOf(ExpirationAction.LOCAL_DESTROY));
 		assertEquals(ExpirationActionType.LOCAL_INVALIDATE, ExpirationActionType.valueOf(ExpirationAction.LOCAL_INVALIDATE));
-
 	}
 
 	@Test
@@ -75,7 +76,10 @@ public class ExpirationActionTypeTest {
 		try {
 			for (int ordinal = 0; ordinal < Integer.MAX_VALUE; ordinal++) {
 				ExpirationAction expirationAction = ExpirationAction.fromOrdinal(ordinal);
-				assertEquals(expirationAction, ExpirationActionType.valueOf(expirationAction).getExpirationAction());
+				ExpirationActionType expirationActionType = ExpirationActionType.valueOf(expirationAction);
+
+				assertNotNull(expirationActionType);
+				assertEquals(expirationAction, expirationActionType.getExpirationAction());
 			}
 		}
 		catch (ArrayIndexOutOfBoundsException ignore) {
@@ -92,7 +96,7 @@ public class ExpirationActionTypeTest {
 		assertEquals(ExpirationActionType.DESTROY, ExpirationActionType.valueOfIgnoreCase("destroy"));
 		assertEquals(ExpirationActionType.INVALIDATE, ExpirationActionType.valueOfIgnoreCase("Invalidate"));
 		assertEquals(ExpirationActionType.LOCAL_DESTROY, ExpirationActionType.valueOfIgnoreCase("LOCAL_DESTROY"));
-		assertEquals(ExpirationActionType.LOCAL_INVALIDATE, ExpirationActionType.valueOfIgnoreCase("Local_Invalidate"));
+		assertEquals(ExpirationActionType.LOCAL_INVALIDATE, ExpirationActionType.valueOfIgnoreCase("LocaL_InValidAte"));
 	}
 
 	@Test

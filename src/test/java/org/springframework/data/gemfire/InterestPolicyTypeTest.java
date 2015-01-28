@@ -19,6 +19,7 @@ package org.springframework.data.gemfire;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 
@@ -55,16 +56,17 @@ public class InterestPolicyTypeTest {
 
 	@Test
 	public void testDefault() {
-		assertEquals(InterestPolicy.DEFAULT, InterestPolicyType.valueOf(InterestPolicy.DEFAULT).getInterestPolicy());
-		assertEquals(InterestPolicyType.CACHE_CONTENT, InterestPolicyType.DEFAULT);
+		assertEquals(InterestPolicy.DEFAULT, InterestPolicyType.DEFAULT.getInterestPolicy());
+		assertSame(InterestPolicyType.CACHE_CONTENT, InterestPolicyType.DEFAULT);
 	}
 
 	@Test
-	public void testValueOfInterestPolicies() {
+	public void testValueOf() {
 		try {
 			for (byte ordinal = 0; ordinal < Byte.MAX_VALUE; ordinal++) {
 				InterestPolicy interestPolicy = InterestPolicy.fromOrdinal(ordinal);
 				InterestPolicyType interestPolicyType = InterestPolicyType.valueOf(interestPolicy);
+
 				assertNotNull(interestPolicyType);
 				assertEquals(interestPolicy, interestPolicyType.getInterestPolicy());
 			}
@@ -74,7 +76,7 @@ public class InterestPolicyTypeTest {
 	}
 
 	@Test
-	public void testValueOfInterestPolicyWithNull() {
+	public void testValueOfWithNull() {
 		assertNull(InterestPolicyType.valueOf((InterestPolicy) null));
 	}
 

@@ -18,6 +18,7 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -41,7 +42,7 @@ public class IndexMaintenancePolicyTypeTest {
 
 	@Test
 	public void testDefault() {
-		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, IndexMaintenancePolicyType.DEFAULT);
+		assertSame(IndexMaintenancePolicyType.SYNCHRONOUS, IndexMaintenancePolicyType.DEFAULT);
 	}
 
 	@Test

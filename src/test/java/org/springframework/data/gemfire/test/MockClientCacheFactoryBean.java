@@ -36,9 +36,9 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 		this();
 		if (cacheFactoryBean != null) {
 			this.factoryLocator = cacheFactoryBean.getBeanFactoryLocator();
+			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();
 			this.beanFactory = cacheFactoryBean.getBeanFactory();
 			this.beanName = cacheFactoryBean.getBeanName();
-			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();
 			this.cacheXml = cacheFactoryBean.getCacheXml();
 			this.copyOnRead = cacheFactoryBean.getCopyOnRead();
 			this.criticalHeapPercentage = cacheFactoryBean.getCriticalHeapPercentage();
@@ -54,16 +54,17 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 			this.pdxPersistent = cacheFactoryBean.getPdxPersistent();
 			this.pdxSerializer = cacheFactoryBean.getPdxSerializer();
 			this.properties = cacheFactoryBean.getProperties();
+			this.readyForEvents = cacheFactoryBean.getReadyForEvents();
 			this.searchTimeout = cacheFactoryBean.getSearchTimeout();
 			this.transactionListeners = cacheFactoryBean.getTransactionListeners();
 			this.transactionWriter = cacheFactoryBean.getTransactionWriter();
-			this.readyForEvents = cacheFactoryBean.getReadyForEvents();
 		}
 	}
- 
+
 	@Override
 	protected Object createFactory(Properties gemfireProperties) {
-		((StubCache)cache).setProperties(gemfireProperties);
+		setProperties(gemfireProperties);
 		return new ClientCacheFactory(gemfireProperties);
 	}
+
 }

@@ -18,6 +18,7 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 
@@ -54,6 +55,12 @@ public class EvictionActionTypeTest {
 		assertEquals(EvictionAction.NONE, EvictionActionType.NONE.getEvictionAction());
 		assertEquals(EvictionAction.OVERFLOW_TO_DISK, EvictionActionType.OVERFLOW_TO_DISK.getEvictionAction());
 		assertEquals(EvictionAction.DEFAULT_EVICTION_ACTION, EvictionActionType.DEFAULT.getEvictionAction());
+	}
+
+	@Test
+	public void testDefault() {
+		assertEquals(EvictionAction.DEFAULT_EVICTION_ACTION, EvictionActionType.DEFAULT.getEvictionAction());
+		assertSame(EvictionActionType.LOCAL_DESTROY, EvictionActionType.DEFAULT);
 	}
 
 	@Test

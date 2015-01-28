@@ -1106,10 +1106,10 @@ The RegionShortcut for this region. Allows easy initialization of the region bas
 					<xsd:simpleType>
 						<xsd:restriction base="xsd:string">
 							<xsd:enumeration value="REPLICATE"/>
-							<xsd:enumeration value="REPLICATE_PERSISTENT"/>
-							<xsd:enumeration value="REPLICATE_OVERFLOW"/>
-							<xsd:enumeration value="REPLICATE_PERSISTENT_OVERFLOW"/>
 							<xsd:enumeration value="REPLICATE_HEAP_LRU"/>
+							<xsd:enumeration value="REPLICATE_OVERFLOW"/>
+							<xsd:enumeration value="REPLICATE_PERSISTENT"/>
+							<xsd:enumeration value="REPLICATE_PERSISTENT_OVERFLOW"/>
 							<xsd:enumeration value="REPLICATE_PROXY"/>
 						</xsd:restriction>
 					</xsd:simpleType>
@@ -1373,17 +1373,17 @@ The RegionShortcut for this region. Allows easy initialization of the region bas
 					<xsd:simpleType>
 						<xsd:restriction base="xsd:string">
 							<xsd:enumeration value="PARTITION"/>
-							<xsd:enumeration value="PARTITION_REDUNDANT"/>
-							<xsd:enumeration value="PARTITION_PERSISTENT"/>
-							<xsd:enumeration value="PARTITION_REDUNDANT_PERSISTENT"/>
-							<xsd:enumeration value="PARTITION_OVERFLOW"/>
-							<xsd:enumeration value="PARTITION_REDUNDANT_OVERFLOW"/>
-							<xsd:enumeration value="PARTITION_PERSISTENT_OVERFLOW"/>
-							<xsd:enumeration value="PARTITION_REDUNDANT_PERSISTENT_OVERFLOW"/>
 							<xsd:enumeration value="PARTITION_HEAP_LRU"/>
-							<xsd:enumeration value="PARTITION_REDUNDANT_HEAP_LRU"/>
+							<xsd:enumeration value="PARTITION_OVERFLOW"/>
+							<xsd:enumeration value="PARTITION_PERSISTENT"/>
+							<xsd:enumeration value="PARTITION_PERSISTENT_OVERFLOW"/>
 							<xsd:enumeration value="PARTITION_PROXY"/>
 							<xsd:enumeration value="PARTITION_PROXY_REDUNDANT"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT_HEAP_LRU"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT_OVERFLOW"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT_PERSISTENT"/>
+							<xsd:enumeration value="PARTITION_REDUNDANT_PERSISTENT_OVERFLOW"/>
 						</xsd:restriction>
 					</xsd:simpleType>
 				</xsd:attribute>
@@ -1514,9 +1514,9 @@ The RegionShortcut for this region. Allows easy initialization of the region bas
 					<xsd:simpleType>
 						<xsd:restriction base="xsd:string">
 							<xsd:enumeration value="LOCAL"/>
-							<xsd:enumeration value="LOCAL_PERSISTENT"/>
 							<xsd:enumeration value="LOCAL_HEAP_LRU"/>
 							<xsd:enumeration value="LOCAL_OVERFLOW"/>
+							<xsd:enumeration value="LOCAL_PERSISTENT"/>
 							<xsd:enumeration value="LOCAL_PERSISTENT_OVERFLOW"/>
 						</xsd:restriction>
 					</xsd:simpleType>
@@ -1822,8 +1822,7 @@ to any key in this region in the CacheServer to be pushed to the client.
 								<xsd:complexContent>
 									<xsd:extension base="interestType">
 										<xsd:sequence minOccurs="0" maxOccurs="1">
-											<xsd:any namespace="##other" processContents="skip"
-													 minOccurs="0" maxOccurs="unbounded">
+											<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 												<xsd:annotation>
 													<xsd:documentation><![CDATA[
 Inner bean definition of the client key interest.
@@ -1831,8 +1830,7 @@ Inner bean definition of the client key interest.
 												</xsd:annotation>
 											</xsd:any>
 										</xsd:sequence>
-										<xsd:attribute name="key-ref" type="xsd:string"
-													   use="optional">
+										<xsd:attribute name="key-ref" type="xsd:string" use="optional">
 											<xsd:annotation>
 												<xsd:documentation><![CDATA[
 The name of the client key interest bean referred by this declaration. Used as a convenience method. If no reference exists,
@@ -2006,40 +2004,30 @@ The port number of the connection (between 1 and 65535 inclusive).
 	</xsd:complexType>
 	<!-- -->
 	<xsd:complexType name="interestType" abstract="true">
-		<xsd:attribute name="durable" type="xsd:string" use="optional"
-					   default="false">
+		<xsd:attribute name="durable" type="xsd:string" use="optional" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Indicates whether or not the registered interest is durable or not. Default is false.
+Indicates whether the Registered Interest is durable or not. Default is false.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="result-policy" use="optional"
-					   default="KEYS_VALUES">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The result policy for this interest. Can be one of 'KEYS' or 'KEYS_VALUES' (the default) or 'NONE'.
-
-KEYS - Initializes the local cache with the keys satisfying the request.
-KEYS-VALUES - initializes the local cache with the keys and current values satisfying the request.
-NONE -  Does not initialize the local cache.
-					]]></xsd:documentation>
-			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="KEYS" />
-					<xsd:enumeration value="KEYS_VALUES" />
-					<xsd:enumeration value="NONE" />
-				</xsd:restriction>
-			</xsd:simpleType>
-		</xsd:attribute>
-		<xsd:attribute name="receive-values" type="xsd:string"
-					   use="optional" default="true">
+		<xsd:attribute name="receive-values" type="xsd:string" use="optional" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether values are received with create and update events on keys of interest (true)
 or only invalidations are received and the value will be received on the next get instead (false).
 Default is true.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="result-policy" type="xsd:string" use="optional" default="KEYS_VALUES">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The result policy for this interest. Can be one of 'KEYS', 'KEYS_VALUES' (the default) or 'NONE'.
+
+KEYS - Initializes the local Cache with the keys satisfying the request.
+KEYS_VALUES - Initializes the local Cache with the keys and current values satisfying the request.
+NONE - Does not initialize the local Cache.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2134,8 +2122,7 @@ The client subscription configuration that is used to control a clients use of s
 				]]></xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
-						<xsd:attribute name="eviction-type" use="optional"
-									   default="NONE">
+						<xsd:attribute name="eviction-type" use="optional" default="NONE">
 							<xsd:simpleType>
 								<xsd:restriction base="xsd:string">
 									<xsd:enumeration value="NONE" />

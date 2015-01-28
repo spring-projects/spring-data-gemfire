@@ -50,7 +50,7 @@ public class IndexTypeConverterTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testConvertWithInvalidValue() {
+	public void testConvertWithIllegalValue() {
 		try {
 			converter.convert("function");
 		}
@@ -72,11 +72,15 @@ public class IndexTypeConverterTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testSetAsTextWithIllegalValue() {
 		try {
+			assertNull(converter.getValue());
 			converter.setAsText("invalid");
 		}
 		catch (IllegalArgumentException expected) {
 			assertEquals("Failed to convert String (invalid) into an IndexType!", expected.getMessage());
 			throw expected;
+		}
+		finally {
+			assertNull(converter.getValue());
 		}
 	}
 

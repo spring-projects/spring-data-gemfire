@@ -53,10 +53,10 @@ public class ExpirationActionConverterTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testConvertIllegalValue() {
 		try {
-			converter.convert("invalid_value");
+			converter.convert("illegal_value");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("(invalid_value) is not a valid ExpirationAction!", expected.getMessage());
+			assertEquals("(illegal_value) is not a valid ExpirationAction!", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -70,7 +70,7 @@ public class ExpirationActionConverterTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testSetAsTextThrowsIllegalArgumentException() {
+	public void testSetAsTextWithIllegalValue() {
 		try {
 			assertNull(converter.getValue());
 			converter.setAsText("destruction");

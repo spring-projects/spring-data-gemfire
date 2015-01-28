@@ -23,29 +23,31 @@ import org.springframework.util.Assert;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 
 /**
- * Basic holder class for registering an interest. Useful for configuring Gemfire caches through XML
- * and or JavaBeans means.
+ * The Interest class holds details for registering a client interest.
  * 
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see com.gemstone.gemfire.cache.InterestResultPolicy
+ * @since 1.0.0
  */
+@SuppressWarnings("unused")
 public class Interest<K> implements InitializingBean {
 
 	private static final Constants constants = new Constants(InterestResultPolicy.class);
 
-	private K key;
-	private InterestResultPolicy policy = InterestResultPolicy.DEFAULT;
 	private boolean durable = false;
 	private boolean receiveValues = true;
+
+	private InterestResultPolicy policy = InterestResultPolicy.DEFAULT;
+
+	private K key;
 
 	public Interest() {
 	}
 
 	public Interest(K key) {
 		this(key, InterestResultPolicy.DEFAULT, false);
-	}
-
-	public Interest(K key, InterestResultPolicy policy) {
-		this(key, policy, false);
 	}
 
 	public Interest(K key, String policy) {
@@ -60,6 +62,10 @@ public class Interest<K> implements InitializingBean {
 		this(key, (InterestResultPolicy) constants.asObject(policy), durable, receiveValues);
 	}
 
+	public Interest(K key, InterestResultPolicy policy) {
+		this(key, policy, false);
+	}
+
 	public Interest(K key, InterestResultPolicy policy, boolean durable) {
 		this(key, policy, durable, true);
 	}
@@ -69,6 +75,7 @@ public class Interest<K> implements InitializingBean {
 		this.policy = policy;
 		this.durable = durable;
 		this.receiveValues = receiveValues;
+
 		afterPropertiesSet();
 	}
 
@@ -81,7 +88,7 @@ public class Interest<K> implements InitializingBean {
 	 * 
 	 * @return the key
 	 */
-	protected K getKey() {
+	public K getKey() {
 		return key;
 	}
 
@@ -99,7 +106,7 @@ public class Interest<K> implements InitializingBean {
 	 * 
 	 * @return the policy
 	 */
-	protected InterestResultPolicy getPolicy() {
+	public InterestResultPolicy getPolicy() {
 		return policy;
 	}
 
@@ -114,13 +121,12 @@ public class Interest<K> implements InitializingBean {
 		if (policy instanceof InterestResultPolicy) {
 			this.policy = (InterestResultPolicy) policy;
 		}
+		else if (policy instanceof String) {
+			this.policy = (InterestResultPolicy) constants.asObject(String.valueOf(policy));
+		}
 		else {
-			if (policy instanceof String) {
-				this.policy = (InterestResultPolicy) constants.asObject((String) policy);
-			}
-			else {
-				throw new IllegalArgumentException("Unknown argument type for property 'policy'" + policy);
-			}
+			throw new IllegalArgumentException(String.format("Unknown argument type (%1$s) for property 'policy'!",
+				policy));
 		}
 	}
 
@@ -129,7 +135,7 @@ public class Interest<K> implements InitializingBean {
 	 * 
 	 * @return the durable
 	 */
-	protected boolean isDurable() {
+	public boolean isDurable() {
 		return durable;
 	}
 
@@ -147,7 +153,7 @@ public class Interest<K> implements InitializingBean {
 	 * 
 	 * @return the receiveValues
 	 */
-	protected boolean isReceiveValues() {
+	public boolean isReceiveValues() {
 		return receiveValues;
 	}
 
@@ -159,4 +165,5 @@ public class Interest<K> implements InitializingBean {
 	public void setReceiveValues(boolean receiveValues) {
 		this.receiveValues = receiveValues;
 	}
+
 }

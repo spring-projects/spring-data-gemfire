@@ -52,12 +52,12 @@ public class InterestPolicyConverterTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testConvertIllegalValueValue() {
+	public void testConvertIllegalValue() {
 		try {
-			converter.convert("invalid");
+			converter.convert("invalid_value");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("(invalid) is not a valid InterestPolicy!", expected.getMessage());
+			assertEquals("(invalid_value) is not a valid InterestPolicy!", expected.getMessage());
 			throw expected;
 		}
 	}

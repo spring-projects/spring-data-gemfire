@@ -22,19 +22,29 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.SimpleCacheListener;
 import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.client.Interest;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -48,9 +58,11 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAction;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.compression.Compressor;
@@ -243,6 +255,85 @@ public class ClientRegionNamespaceTest {
 		assertEquals("0.85", String.valueOf(clientRegion.getAttributes().getLoadFactor()));
 		assertEquals("gemfire-pool", clientRegion.getAttributes().getPoolName());
 		assertEquals(String.class, clientRegion.getAttributes().getValueConstraint());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testClientRegionWithRegisteredInterests() throws Exception {
+		assertTrue(context.containsBean("client-with-interests"));
+
+		ClientRegionFactoryBean factory = context.getBean("&client-with-interests", ClientRegionFactoryBean.class);
+
+		assertNotNull(factory);
+
+		Interest<?>[] interests = TestUtils.readField("interests", factory);
+
+		assertNotNull(interests);
+		assertEquals(2, interests.length);
+
+		assertInterest(true, false, InterestResultPolicy.KEYS, getInterestWithKey(".*", interests));
+		assertInterest(true, false, InterestResultPolicy.KEYS_VALUES, getInterestWithKey("keyPrefix.*", interests));
+
+		Region mockClientRegion = MockCacheFactoryBean.MOCK_REGION_REF.get();
+
+		assertNotNull(mockClientRegion);
+
+		verify(mockClientRegion, times(1)).registerInterest(eq(".*"), eq(InterestResultPolicy.KEYS),
+			eq(true), eq(false));
+		verify(mockClientRegion, times(1)).registerInterestRegex(eq("keyPrefix.*"), eq(InterestResultPolicy.KEYS_VALUES),
+			eq(true), eq(false));
+	}
+
+	protected void assertInterest(final boolean expectedDurable, final boolean expectedReceiveValues,
+			final InterestResultPolicy expectedPolicy, final Interest actualInterest) {
+		assertNotNull(actualInterest);
+		assertEquals(expectedDurable, actualInterest.isDurable());
+		assertEquals(expectedReceiveValues, actualInterest.isReceiveValues());
+		assertEquals(expectedPolicy, actualInterest.getPolicy());
+	}
+
+	protected Interest getInterestWithKey(final String key, final Interest... interests) {
+		for (Interest interest : interests) {
+			if (interest.getKey().equals(key)) {
+				return interest;
+			}
+		}
+
+		return null;
+	}
+
+	public static final class MockCacheFactoryBean implements FactoryBean<ClientCache>, InitializingBean {
+
+		protected static final AtomicReference<Region> MOCK_REGION_REF = new AtomicReference<Region>(null);
+
+		private ClientCache mockClientCache;
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public void afterPropertiesSet() throws Exception {
+			mockClientCache = mock(ClientCache.class, ClientRegionNamespaceTest.class.getSimpleName()
+				.concat(".MockClientCache"));
+
+			MOCK_REGION_REF.compareAndSet(null, mock(Region.class, ClientRegionNamespaceTest.class.getSimpleName()
+				.concat(".MockClientRegion")));
+
+			when(mockClientCache.getRegion(anyString())).thenReturn(MOCK_REGION_REF.get());
+		}
+
+		@Override
+		public ClientCache getObject() throws Exception {
+			return mockClientCache;
+		}
+
+		@Override
+		public Class<?> getObjectType() {
+			return ClientCache.class;
+		}
+
+		@Override
+		public boolean isSingleton() {
+			return true;
+		}
 	}
 
 	public static final class TestCacheLoader implements CacheLoader<Object, Object> {

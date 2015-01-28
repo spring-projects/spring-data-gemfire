@@ -22,6 +22,7 @@ import com.gemstone.gemfire.cache.InterestPolicy;
  *
  * @author Lyndon Adams
  * @author John Blum
+ * @see com.gemstone.gemfire.cache.InterestPolicy
  * @since 1.3.0
  */
 @SuppressWarnings("unused")

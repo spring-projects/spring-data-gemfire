@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -22,19 +22,22 @@ import static org.junit.Assert.assertNull;
 import org.junit.After;
 import org.junit.Test;
 
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+
 /**
- * The IndexMaintenanceTypeConverterTest class is a test suite of test case testing the contract and functionality
- * of the IndexMaintenancePolicyConverter class.
+ * The InterestResultPolicyConverterTest class is a test suite of test cases testing the contract and functionality
+ * of the InterestResultPolicyConverter class.
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.IndexMaintenancePolicyConverter
- * @see org.springframework.data.gemfire.IndexMaintenancePolicyType
+ * @see org.springframework.data.gemfire.client.InterestResultPolicyConverter
+ * @see org.springframework.data.gemfire.client.InterestResultPolicyType
+ * @see com.gemstone.gemfire.cache.InterestResultPolicy
  * @since 1.6.0
  */
-public class IndexMaintenancePolicyConverterTest {
+public class InterestResultPolicyConverterTest {
 
-	private final IndexMaintenancePolicyConverter converter = new IndexMaintenancePolicyConverter();
+	private final InterestResultPolicyConverter converter = new InterestResultPolicyConverter();
 
 	@After
 	public void tearDown() {
@@ -43,37 +46,40 @@ public class IndexMaintenancePolicyConverterTest {
 
 	@Test
 	public void testConvert() {
-		assertEquals(IndexMaintenancePolicyType.ASYNCHRONOUS, converter.convert("asynchronous"));
-		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, converter.convert("Synchronous"));
+		assertEquals(InterestResultPolicy.NONE, converter.convert("NONE"));
+		assertEquals(InterestResultPolicy.KEYS, converter.convert("Keys"));
+		assertEquals(InterestResultPolicy.KEYS_VALUES, converter.convert("kEyS_ValUes"));
+		assertEquals(InterestResultPolicy.NONE, converter.convert("nONe"));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testConvertIllegalValue() {
 		try {
-			converter.convert("sync");
+			converter.convert("illegal_value");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("(sync) is not a valid IndexMaintenancePolicyType!", expected.getMessage());
+			assertEquals("(illegal_value) is not a valid InterestResultPolicy!", expected.getMessage());
 			throw expected;
 		}
 	}
 
 	@Test
 	public void testSetAsText() {
-		converter.setAsText("aSynchronous");
-		assertEquals(IndexMaintenancePolicyType.ASYNCHRONOUS, converter.getValue());
-		converter.setAsText("synchrONoUS");
-		assertEquals(IndexMaintenancePolicyType.SYNCHRONOUS, converter.getValue());
+		assertNull(converter.getValue());
+		converter.setAsText("NOne");
+		assertEquals(InterestResultPolicy.NONE, converter.getValue());
+		converter.setAsText("KeYs");
+		assertEquals(InterestResultPolicy.KEYS, converter.getValue());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testSetAsTextWithIllegalValue() {
 		try {
 			assertNull(converter.getValue());
-			converter.setAsText("async");
+			converter.setAsText("illegal_value");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("(async) is not a valid IndexMaintenancePolicyType!", expected.getMessage());
+			assertEquals("(illegal_value) is not a valid InterestResultPolicy!", expected.getMessage());
 			throw expected;
 		}
 		finally {

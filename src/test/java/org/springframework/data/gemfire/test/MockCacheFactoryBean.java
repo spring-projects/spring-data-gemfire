@@ -30,9 +30,6 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 		this.useBeanFactoryLocator = false;
 	}
 
-	/**
-	 * @param bean
-	 */
 	public MockCacheFactoryBean(CacheFactoryBean cacheFactoryBean) {
 		this();
 		if (cacheFactoryBean != null) {
@@ -70,8 +67,9 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 		return new CacheFactory(gemfireProperties);
 	}
 
+	@Override
 	protected GemFireCache fetchCache() {
-		((StubCache) cache).setProperties(this.properties);
+		((StubCache) cache).setProperties(getProperties());
 		return cache;
 	}
  
