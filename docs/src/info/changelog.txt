@@ -6,13 +6,30 @@ http://www.springsource.org/spring-gemfire
 Changes in version 1.5.2.RELEASE (2015-01-28)
 ---------------------------------------------
 * SGF-368 - Release 1.5.2.
+* SGF-366 - Unable to create local-only, client-based Region Indexes using SDG's <gfe:index> and corresponding IndexFactoryBean functionality.
+* SGF-363 - Upgrade to Spring Framework 4.0.9.RELEASE.
 * SGF-360 - Failures in SubRegionNamespaceTests when built with Java 8.
+* SGF-358 - Enhance SDG's Function annotation support to allow strongly-typed arguments in the context of PDX even when read-serialized is set to true.
 * SGF-354 - SimpleGemfireRepository.deleteAll that supports transactions.
+* SGF-352 - Change all Artifact Repository URLs to use HTTPS.
+* SGF-348 - Upgrade to Spring Framework 4.0.8.RELEASE.
 
 
 Changes in version 1.4.5.RELEASE (2015-01-27)
 ---------------------------------------------
+* SGF-369 - Fix Javadoc so that 1.4.x builds on Java 8.
 * SGF-367 - Release 1.4.5.
+* SGF-362 - Upgrade to Spring Framework 3.2.13.RELEASE.
+* SGF-352 - Change all Artifact Repository URLs to use HTTPS.
+* SGF-349 - Upgrade to Spring Framework 3.2.12.RELEASE.
+* SGF-346 - Enable LazyWiringDeclarableSupport-based GemFire components to be used inside both cache.xml and Spring config, especially in the context of GemFire 8's Cluster Configuration.
+* SGF-343 - Optimize the SDG implementation of CrudRepository.save(Iterable<S> enttiies) to use GemFire's Region.putAll(Map<K, V> values) operation.
+* SGF-337 - SDG's XML Schema (XSD) does not allow the developer to specify 'timeout' and 'action' values for CustomExpiry (<gfe:custom-entry-[ttl|tti]>) on Region attributes.
+* SGF-336 - Upgrade to Spring Framework 3.2.11.RELEASE.
+* SGF-333 - The SpringContextBootstrappingInitializer needs to handle the case when it's init(:Properties) method maybe called more than once on initialization.
+* SGF-330 - Add missing 'disk-synchronous' attribute to the <gfe:gateway-sender> element in the SDG XML namespace (XSD).
+* SGF-328 - Add missing 'hostname-for-senders' attribute on the <gfe:gateway-receiver> element in the SDG XML namespace (XSD).
+* SGF-327 - Avoid setting null values with GemFire's Cache Region put(key, value) operation when GemFire is used as the caching provider in Spring's Cache Abstraction (@Cacheable).
 * SGF-317 - Improve GemfireCache implementation to be able to build on Spring 4.1.
 
 
