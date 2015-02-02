@@ -55,7 +55,7 @@ public class IndexTypeConverterTest {
 			converter.convert("function");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Failed to convert String (function) into an IndexType!", expected.getMessage());
+			assertEquals("(function) is not a valid IndexType!", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -76,7 +76,7 @@ public class IndexTypeConverterTest {
 			converter.setAsText("invalid");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Failed to convert String (invalid) into an IndexType!", expected.getMessage());
+			assertEquals("(invalid) is not a valid IndexType!", expected.getMessage());
 			throw expected;
 		}
 		finally {

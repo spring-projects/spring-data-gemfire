@@ -33,13 +33,9 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
-import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
-import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -50,11 +46,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
@@ -918,22 +910,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/* (non-Javadoc) */
-	private void initBeanFactory() {
-		if (getBeanFactory() instanceof ConfigurableBeanFactory) {
-			ConfigurableBeanFactory beanFactory = (ConfigurableBeanFactory) getBeanFactory();
-
-			beanFactory.registerCustomEditor(EvictionAction.class, EvictionActionConverter.class);
-			beanFactory.registerCustomEditor(EvictionPolicyType.class, EvictionPolicyConverter.class);
-			beanFactory.registerCustomEditor(ExpirationAction.class, ExpirationActionConverter.class);
-			beanFactory.registerCustomEditor(IndexMaintenancePolicyType.class, IndexMaintenancePolicyConverter.class);
-			beanFactory.registerCustomEditor(IndexType.class, IndexTypeConverter.class);
-			beanFactory.registerCustomEditor(InterestPolicy.class, InterestPolicyConverter.class);
-			beanFactory.registerCustomEditor(InterestResultPolicy.class, InterestResultPolicyConverter.class);
-			beanFactory.registerCustomEditor(SubscriptionEvictionPolicy.class, SubscriptionEvictionPolicyConverter.class);
-		}
-	}
-
-	/* (non-Javadoc) */
 	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
 		if (GemfireUtils.isGemfireVersion8OrAbove()) {
 			gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
@@ -949,7 +925,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		initBeanFactory();
 		postProcessPropertiesBeforeInitialization(getProperties());
 
 		if (!isLazyInitialize()) {

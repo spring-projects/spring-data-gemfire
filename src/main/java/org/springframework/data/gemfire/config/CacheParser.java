@@ -54,6 +54,8 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
+		registerCustomGemFireBeanFactoryPostProcessors(parserContext);
+
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
 		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
 		ParsingUtils.setPropertyValue(element, builder, "lazy-init","lazyInitialize");
@@ -109,6 +111,11 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 		parseDynamicRegionFactory(element, builder);
 		parseJndiBindings(element, builder);
+	}
+
+	private void registerCustomGemFireBeanFactoryPostProcessors(final ParserContext parserContext) {
+		BeanDefinitionReaderUtils.registerWithGeneratedName(BeanDefinitionBuilder.genericBeanDefinition(
+			CustomEditorRegistrationBeanFactoryPostProcessor.class).getBeanDefinition(), parserContext.getRegistry());
 	}
 
 	private void parsePdxDiskStore(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {

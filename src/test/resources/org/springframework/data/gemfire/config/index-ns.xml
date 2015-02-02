@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 " default-lazy-init="true">
+
+	<util:properties id="indexConfiguration">
+		<prop key="index.complex.type">HASH</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="indexConfiguration"/>
 
 	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
 	<!-- as there can be only one cache per VM -->
@@ -20,8 +28,9 @@
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:index id="simple" expression="status" from="/test-index" type="FUNCTIONAL"/>
+	<gfe:index id="simple" expression="status" from="/TestIndexRegion" type="functional"/>
 
-	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/test-index tsi" type="HASH" imports="import java.util"/>
+	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/TestIndexRegion tsi"
+			   imports="import java.util" type="${index.complex.type}"/>
 
 </beans>

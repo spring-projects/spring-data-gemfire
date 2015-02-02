@@ -23,9 +23,14 @@ import org.springframework.data.gemfire.IndexFactoryBean;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;index;gt; definitions.
+ * Namespace parser for &lt;index;gt; bean definitions.
  * 
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
+ * @see org.springframework.data.gemfire.IndexFactoryBean
+ * @since 1.1.0
  */
 class IndexParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -34,16 +39,14 @@ class IndexParser extends AbstractSimpleBeanDefinitionParser {
 	}
 
 	@Override
+	protected boolean isEligibleAttribute(String attributeName) {
+		return (!"cache-ref".equals(attributeName) && super.isEligibleAttribute(attributeName));
+	}
+
+	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		ParsingUtils.setPropertyReference(element, builder, "cache-ref", "cache");
 		super.doParse(element, parserContext, builder);
 	}
 
-	@Override
-	protected boolean isEligibleAttribute(String attributeName) {
-		if ("cache-ref".equals(attributeName)) {
-			return false;
-		}
-		return super.isEligibleAttribute(attributeName);
-	}
 }

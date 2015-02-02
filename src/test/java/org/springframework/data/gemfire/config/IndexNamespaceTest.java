@@ -18,61 +18,70 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 
+import javax.annotation.Resource;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.Index;
 
 /**
+ * The IndexNamespaceTest is a test suite of test cases testing the functionality of GemFire Index creation using
+ * the Spring Data GemFire XML namespace (XSD).
+ *
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.data.gemfire.IndexFactoryBean
+ * @see org.springframework.data.gemfire.config.IndexParser
+ * @since 1.1.0
  */
-@ContextConfiguration(locations="index-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-@SuppressWarnings("deprecation")
+@ContextConfiguration(locations="index-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings({ "deprecation", "unused" })
 public class IndexNamespaceTest {
 
-	private final String name = "test-index";
+	private static final String TEST_REGION_NAME = "TestIndexRegion";
 
 	@Autowired
-	private ApplicationContext context;
+	private Cache cache;
+
+	@Resource(name = "simple")
+	private Index simple;
+
+	@Resource(name = "complex")
+	private Index complex;
 
 	@Before
 	public void setUp() throws Exception {
-		Cache cache = (Cache) context.getBean("gemfireCache");
-
-		if (cache.getRegion(name) == null) {
-			cache.createRegionFactory().create("test-index");
+		if (cache.getRegion(TEST_REGION_NAME) == null) {
+			cache.createRegionFactory().create(TEST_REGION_NAME);
 		}
 	}
 
 	@Test
 	public void testBasicIndex() throws Exception {
-		Index idx = (Index) context.getBean("simple");
-
-		assertEquals("/test-index", idx.getFromClause());
-		assertEquals("status", idx.getIndexedExpression());
-		assertEquals("simple", idx.getName());
-		assertEquals(name, idx.getRegion().getName());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, idx.getType());
+		assertEquals("simple", simple.getName());
+		assertEquals("status", simple.getIndexedExpression());
+		assertEquals(Region.SEPARATOR + TEST_REGION_NAME, simple.getFromClause());
+		assertEquals(TEST_REGION_NAME, simple.getRegion().getName());
+		assertEquals(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, simple.getType());
 	}
 
 	@Test
 	public void testComplexIndex() throws Exception {
-		Index idx = (Index) context.getBean("complex");
-
-		assertEquals("/test-index tsi", idx.getFromClause());
-		assertEquals("tsi.name", idx.getIndexedExpression());
-		assertEquals("complex-index", idx.getName());
-		assertEquals(name, idx.getRegion().getName());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.HASH, idx.getType());
+		assertEquals("complex-index", complex.getName());
+		assertEquals("tsi.name", complex.getIndexedExpression());
+		assertEquals(Region.SEPARATOR + TEST_REGION_NAME + " tsi", complex.getFromClause());
+		assertEquals(TEST_REGION_NAME, complex.getRegion().getName());
+		assertEquals(com.gemstone.gemfire.cache.query.IndexType.HASH, complex.getType());
 	}
 
 }

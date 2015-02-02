@@ -2321,14 +2321,12 @@ The name of the index bean definition. If property 'name' is not set, it will be
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="type" use="optional">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="HASH" />
-						<xsd:enumeration value="PRIMARY_KEY" />
-						<xsd:enumeration value="FUNCTIONAL" />
-					</xsd:restriction>
-				</xsd:simpleType>
+			<xsd:attribute name="type" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The type of index: FUNCTIONAL, HASH, PRIMARY_KEY.
+					]]></xsd:documentation>
+				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="name" type="xsd:string" use="optional">
 				<xsd:annotation>
@@ -2346,16 +2344,14 @@ Corresponds to the regionPath parameter in createIndex methods.
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="imports" type="xsd:string" use="optional" />
-			<xsd:attribute name="override" type="xsd:string" use="optional"
-						   default="true">
+			<xsd:attribute name="override" type="xsd:string" use="optional" default="true">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Indicates whether the index is created even if there is an index with the same name (default) or not.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="cache-ref" type="xsd:string" use="optional"
-						   default="gemfireCache">
+			<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The name of the bean defining the GemFire cache (by default 'gemfireCache').
