@@ -11,23 +11,28 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<util:properties id="cacheServerConfiguration">
+		<prop key="server.port">40406</prop>
+		<prop key="subscription.eviction.policy">ENTRY</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="cacheServerConfiguration"/>
+
 	<util:properties id="gemfireProperties">
-		<prop key="name">ServerNamespaceConfig</prop>
+		<prop key="name">CacheServerNamespaceTest</prop>
 		<prop key="mcast-port">0</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<context:property-placeholder location="classpath:port.properties"/>
-
 	<bean id="bean1" class="org.springframework.data.gemfire.Init"/>
 
 	<!-- Advanced example depicting various cache server configuration options -->
-	<gfe:cache-server id="advanced-config" auto-startup="true" bind-address="localhost" port="${gfe.port.6}"
+	<gfe:cache-server id="advanced-config" auto-startup="true" bind-address="localhost" port="${server.port}"
 					  host-name-for-clients="localhost" groups="test-server" load-poll-interval="2000"
 					  max-connections="22" max-threads="16" max-message-count="1000" max-time-between-pings="30000">
-		<gfe:subscription-config eviction-type="ENTRY" capacity="1000"/>
+		<gfe:subscription-config eviction-type="${subscription.eviction.policy}" capacity="1000"/>
 	</gfe:cache-server>
 
 	<bean id="bean2" class="org.springframework.data.gemfire.Init"/>

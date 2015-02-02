@@ -38,6 +38,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
+import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
+import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -927,6 +929,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			beanFactory.registerCustomEditor(IndexType.class, IndexTypeConverter.class);
 			beanFactory.registerCustomEditor(InterestPolicy.class, InterestPolicyConverter.class);
 			beanFactory.registerCustomEditor(InterestResultPolicy.class, InterestResultPolicyConverter.class);
+			beanFactory.registerCustomEditor(SubscriptionEvictionPolicy.class, SubscriptionEvictionPolicyConverter.class);
 		}
 	}
 

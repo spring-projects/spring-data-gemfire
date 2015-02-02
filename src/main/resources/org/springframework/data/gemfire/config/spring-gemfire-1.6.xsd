@@ -2122,17 +2122,8 @@ The client subscription configuration that is used to control a clients use of s
 				]]></xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
-						<xsd:attribute name="eviction-type" use="optional" default="NONE">
-							<xsd:simpleType>
-								<xsd:restriction base="xsd:string">
-									<xsd:enumeration value="NONE" />
-									<xsd:enumeration value="MEM" />
-									<xsd:enumeration value="ENTRY" />
-								</xsd:restriction>
-							</xsd:simpleType>
-						</xsd:attribute>
-						<xsd:attribute name="capacity" type="xsd:string"
-									   use="optional" default="1" />
+						<xsd:attribute name="eviction-type" type="xsd:string" use="optional" default="NONE"/>
+						<xsd:attribute name="capacity" type="xsd:string" use="optional" default="1"/>
 						<xsd:attribute name="disk-store" type="xsd:string" use="optional"/>
 					</xsd:complexType>
 				</xsd:element>

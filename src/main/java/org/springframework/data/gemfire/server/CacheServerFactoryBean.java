@@ -71,8 +71,7 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 
 	private String[] serverGroups = {};
 
-	private SubscriptionEvictionPolicy subscriptionEvictionPolicy = SubscriptionEvictionPolicy.valueOf(
-		ClientSubscriptionConfig.DEFAULT_EVICTION_POLICY.toUpperCase());
+	private SubscriptionEvictionPolicy subscriptionEvictionPolicy = SubscriptionEvictionPolicy.DEFAULT;
 
 	public CacheServer getObject() {
 		return cacheServer;
@@ -112,11 +111,24 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		ClientSubscriptionConfig config = cacheServer.getClientSubscriptionConfig();
 
 		config.setCapacity(subscriptionCapacity);
-		config.setEvictionPolicy(subscriptionEvictionPolicy.name().toLowerCase());
+		getSubscriptionEvictionPolicy().setEvictionPolicy(config);
 
 		if (StringUtils.hasText(subscriptionDiskStore)) {
 			config.setDiskStoreName(subscriptionDiskStore);
 		}
+	}
+
+	public boolean isAutoStartup() {
+		return autoStartup;
+	}
+
+	public boolean isRunning() {
+		return (cacheServer != null && cacheServer.isRunning());
+	}
+
+	public int getPhase() {
+		// start at the latest possible moment
+		return Integer.MAX_VALUE;
 	}
 
 	public void destroy() {
@@ -124,30 +136,18 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		cacheServer = null;
 	}
 
-	public boolean isAutoStartup() {
-		return autoStartup;
-	}
-
-	public void stop(Runnable callback) {
-		stop();
-		callback.run();
-	}
-
-	public int getPhase() {
-		// start the latest
-		return Integer.MAX_VALUE;
-	}
-
-	public boolean isRunning() {
-		return (cacheServer != null && cacheServer.isRunning());
-	}
-
 	public void start() {
 		try {
 			cacheServer.start();
-		} catch (IOException ex) {
-			throw new BeanInitializationException("Cannot start cache server", ex);
 		}
+		catch (IOException e) {
+			throw new BeanInitializationException("Cannot start cache server", e);
+		}
+	}
+
+	public void stop(final Runnable callback) {
+		stop();
+		callback.run();
 	}
 
 	public void stop() {
@@ -160,52 +160,20 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		this.autoStartup = autoStartup;
 	}
 
-	public void setPort(int port) {
-		this.port = port;
-	}
-
-	public void setMaxConnections(int maxConnections) {
-		this.maxConnections = maxConnections;
-	}
-
-	public void setMaxThreads(int maxThreads) {
-		this.maxThreads = maxThreads;
-	}
-
-	public void setNotifyBySubscription(boolean notifyBySubscription) {
-		this.notifyBySubscription = notifyBySubscription;
-	}
-
-	public void setSocketBufferSize(int socketBufferSize) {
-		this.socketBufferSize = socketBufferSize;
-	}
-
-	public void setMaxTimeBetweenPings(int maxTimeBetweenPings) {
-		this.maxTimeBetweenPings = maxTimeBetweenPings;
-	}
-
-	public void setMaxMessageCount(int maxMessageCount) {
-		this.maxMessageCount = maxMessageCount;
-	}
-
-	public void setMessageTimeToLive(int messageTimeToLive) {
-		this.messageTimeToLive = messageTimeToLive;
-	}
-
-	public void setServerGroups(String[] serverGroups) {
-		this.serverGroups = serverGroups;
-	}
-
-	public void setServerLoadProbe(ServerLoadProbe serverLoadProbe) {
-		this.serverLoadProbe = serverLoadProbe;
-	}
-
-	public void setLoadPollInterval(long loadPollInterval) {
-		this.loadPollInterval = loadPollInterval;
-	}
-
 	public void setBindAddress(String bindAddress) {
 		this.bindAddress = bindAddress;
+	}
+
+	public void setCache(final Cache cache) {
+		this.cache = cache;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * For testing purposes only!
+	 */
+	void setCacheServer(final CacheServer cacheServer) {
+		this.cacheServer = cacheServer;
 	}
 
 	public void setHostNameForClients(String hostNameForClients) {
@@ -216,26 +184,64 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		this.listeners = listeners;
 	}
 
-	public void setCache(Cache cache) {
-		this.cache = cache;
+	public void setLoadPollInterval(long loadPollInterval) {
+		this.loadPollInterval = loadPollInterval;
 	}
 
-	/**
-	 * @param evictionPolicy the subscriptionEvictionPolicy to set
-	 */
-	public void setSubscriptionEvictionPolicy(SubscriptionEvictionPolicy evictionPolicy) {
-		this.subscriptionEvictionPolicy = evictionPolicy;
+	public void setMaxConnections(int maxConnections) {
+		this.maxConnections = maxConnections;
 	}
 
-	/**
-	 * @param subscriptionCapacity the subscriptionCapacity to set
-	 */
+	public void setMaxMessageCount(int maxMessageCount) {
+		this.maxMessageCount = maxMessageCount;
+	}
+
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
+	}
+
+	public void setMaxTimeBetweenPings(int maxTimeBetweenPings) {
+		this.maxTimeBetweenPings = maxTimeBetweenPings;
+	}
+
+	public void setMessageTimeToLive(int messageTimeToLive) {
+		this.messageTimeToLive = messageTimeToLive;
+	}
+
+	public void setNotifyBySubscription(boolean notifyBySubscription) {
+		this.notifyBySubscription = notifyBySubscription;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public void setServerGroups(String[] serverGroups) {
+		this.serverGroups = serverGroups;
+	}
+
+	public void setServerLoadProbe(ServerLoadProbe serverLoadProbe) {
+		this.serverLoadProbe = serverLoadProbe;
+	}
+
+	public void setSocketBufferSize(int socketBufferSize) {
+		this.socketBufferSize = socketBufferSize;
+	}
+
 	public void setSubscriptionCapacity(int subscriptionCapacity) {
 		this.subscriptionCapacity = subscriptionCapacity;
 	}
 
 	public void setSubscriptionDiskStore(String diskStoreName) {
 		this.subscriptionDiskStore = diskStoreName;
+	}
+
+	SubscriptionEvictionPolicy getSubscriptionEvictionPolicy() {
+		return (subscriptionEvictionPolicy != null ? subscriptionEvictionPolicy : SubscriptionEvictionPolicy.DEFAULT);
+	}
+
+	public void setSubscriptionEvictionPolicy(SubscriptionEvictionPolicy evictionPolicy) {
+		this.subscriptionEvictionPolicy = evictionPolicy;
 	}
 
 }

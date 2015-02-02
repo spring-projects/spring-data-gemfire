@@ -32,6 +32,11 @@ import org.w3c.dom.Element;
  *
  * @author Costin Leau
  * @author John Blum
+ * @see org.springframework.beans.factory.support.AbstractBeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
+ * @see org.springframework.data.gemfire.server.CacheServerFactoryBean
+ * @since 1.1.0
  */
 class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -42,18 +47,15 @@ class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
-		throws BeanDefinitionStoreException {
+			throws BeanDefinitionStoreException {
 		String name = super.resolveId(element, definition, parserContext);
-		if (!StringUtils.hasText(name)) {
-			name = "gemfireServer";
-		}
-		return name;
+		return (StringUtils.hasText(name) ? name : "gemfireServer");
 	}
 
 	@Override
 	protected boolean isEligibleAttribute(Attr attribute, ParserContext parserContext) {
-		return super.isEligibleAttribute(attribute, parserContext) && !"groups".equals(attribute.getName())
-			&& !"cache-ref".equals(attribute.getName());
+		return (super.isEligibleAttribute(attribute, parserContext) && !"groups".equals(attribute.getName())
+			&& !"cache-ref".equals(attribute.getName()));
 	}
 
 	@Override
@@ -69,10 +71,10 @@ class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 			builder.addPropertyValue("serverGroups", StringUtils.commaDelimitedListToStringArray(groupsAttribute));
 		}
 
-		parseSubscription(builder, element);
+		parseSubscription(element, builder);
 	}
 
-	private void parseSubscription(BeanDefinitionBuilder builder, Element element) {
+	private void parseSubscription(Element element, BeanDefinitionBuilder builder) {
 		Element subscriptionConfigElement = DomUtils.getChildElementByTagName(element, "subscription-config");
 
 		if (subscriptionConfigElement != null) {
@@ -82,7 +84,7 @@ class CacheServerParser extends AbstractSimpleBeanDefinitionParser {
 			String evictionTypeAttribute = subscriptionConfigElement.getAttribute("eviction-type");
 
 			if (StringUtils.hasText(evictionTypeAttribute)) {
-				builder.addPropertyValue("subscriptionEvictionPolicy", evictionTypeAttribute.toUpperCase());
+				builder.addPropertyValue("subscriptionEvictionPolicy", evictionTypeAttribute);
 			}
 		}
 	}
