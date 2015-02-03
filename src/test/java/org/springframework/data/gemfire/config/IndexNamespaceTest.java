@@ -20,15 +20,12 @@ import static org.junit.Assert.assertEquals;
 
 import javax.annotation.Resource;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.Index;
 
@@ -41,6 +38,9 @@ import com.gemstone.gemfire.cache.query.Index;
  * @author John Blum
  * @see org.springframework.data.gemfire.IndexFactoryBean
  * @see org.springframework.data.gemfire.config.IndexParser
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.1.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -48,23 +48,13 @@ import com.gemstone.gemfire.cache.query.Index;
 @SuppressWarnings({ "deprecation", "unused" })
 public class IndexNamespaceTest {
 
-	private static final String TEST_REGION_NAME = "TestIndexRegion";
-
-	@Autowired
-	private Cache cache;
+	private static final String TEST_REGION_NAME = "IndexedRegion";
 
 	@Resource(name = "simple")
 	private Index simple;
 
 	@Resource(name = "complex")
 	private Index complex;
-
-	@Before
-	public void setUp() throws Exception {
-		if (cache.getRegion(TEST_REGION_NAME) == null) {
-			cache.createRegionFactory().create(TEST_REGION_NAME);
-		}
-	}
 
 	@Test
 	public void testBasicIndex() throws Exception {

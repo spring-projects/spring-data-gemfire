@@ -188,6 +188,7 @@ public class ReplicatedRegionNamespaceTest {
 		assertEquals(Region.SEPARATOR + "Compressed", compressed.getFullPath());
 		assertNotNull(compressed.getAttributes());
 		assertEquals(DataPolicy.REPLICATE, compressed.getAttributes().getDataPolicy());
+		assertEquals(Scope.DISTRIBUTED_NO_ACK, compressed.getAttributes().getScope());
 		assertTrue(compressed.getAttributes().getCompressor() instanceof TestCompressor);
 		assertEquals("XYZ", compressed.getAttributes().getCompressor().toString());
 	}

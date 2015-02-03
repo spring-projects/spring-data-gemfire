@@ -9,7 +9,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
-" default-lazy-init="true">
+">
 
 	<util:properties id="indexConfiguration">
 		<prop key="index.complex.type">HASH</prop>
@@ -28,9 +28,11 @@
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:index id="simple" expression="status" from="/TestIndexRegion" type="functional"/>
+	<gfe:replicated-region id="IndexedRegion" persistent="false"/>
 
-	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/TestIndexRegion tsi"
+	<gfe:index id="simple" expression="status" from="/IndexedRegion" type="functional"/>
+
+	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/IndexedRegion tsi"
 			   imports="import java.util" type="${index.complex.type}"/>
 
 </beans>

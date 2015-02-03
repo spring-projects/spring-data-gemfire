@@ -32,6 +32,7 @@ import org.springframework.data.gemfire.IndexMaintenancePolicyType;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.IndexTypeConverter;
 import org.springframework.data.gemfire.InterestPolicyConverter;
+import org.springframework.data.gemfire.ScopeConverter;
 import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConverter;
@@ -40,6 +41,7 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The CustomEditorRegistrationBeanFactoryPostProcessorTest class...
@@ -66,12 +68,12 @@ public class CustomEditorRegistrationBeanFactoryPostProcessorTest {
 			eq(ExpirationActionConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(IndexMaintenancePolicyType.class),
 			eq(IndexMaintenancePolicyConverter.class));
-		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(IndexType.class),
-			eq(IndexTypeConverter.class));
+		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(IndexType.class), eq(IndexTypeConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(InterestPolicy.class),
 			eq(InterestPolicyConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(InterestResultPolicy.class),
 			eq(InterestResultPolicyConverter.class));
+		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(Scope.class), eq(ScopeConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(SubscriptionEvictionPolicy.class),
 			eq(SubscriptionEvictionPolicyConverter.class));
 	}

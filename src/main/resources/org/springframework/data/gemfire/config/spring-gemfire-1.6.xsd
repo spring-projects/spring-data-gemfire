@@ -1090,10 +1090,14 @@ as only they allow locking.  GemFire default is false.
                                 ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="scope" type="xsd:string">
+				<xsd:attribute name="scope" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-Specifies the scope for this region: distributed-ack,distributed-no-ack, global
+Specifies the Scope for this Region: distributed-ack, distributed-no-ack, global
+
+Scope determines how updates to Region Entries are distributed to the other Caches in the Distributed System where
+the Region and Entry are defined.  Scope also determines whether to allow remote invocation of some of
+the Region’s event handlers.
                         ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -2841,21 +2845,6 @@ The id of the function service (optional)
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
-	<!-- -->
-	<xsd:simpleType name="scopeType">
-		<xsd:annotation>
-			<xsd:documentation><![CDATA[
-Determines how updates to Region Entries are distributed to the other Caches in the Distributed System where
-the Region and Entry are defined.  Scope also determines whether to allow remote invocation of some of
-the Region’s event handlers
-			]]></xsd:documentation>
-		</xsd:annotation>
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="distributed-ack" />
-			<xsd:enumeration value="distributed-no-ack" />
-			<xsd:enumeration value="global" />
-		</xsd:restriction>
-	</xsd:simpleType>
 	<!-- -->
 	<xsd:complexType name="gatewayEventFilterType">
 		<xsd:annotation>

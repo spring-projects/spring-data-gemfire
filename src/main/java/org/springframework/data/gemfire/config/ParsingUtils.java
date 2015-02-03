@@ -360,7 +360,7 @@ abstract class ParsingUtils {
 		String scopeAttributeValue = element.getAttribute("scope");
 
 		if (StringUtils.hasText(scopeAttributeValue)) {
-			builder.addPropertyValue("scope", Scope.fromString(scopeAttributeValue.toUpperCase().replace("-", "_")));
+			builder.addPropertyValue("scope", scopeAttributeValue);
 		}
 	}
 

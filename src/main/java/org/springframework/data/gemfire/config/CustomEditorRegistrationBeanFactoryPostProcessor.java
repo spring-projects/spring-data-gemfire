@@ -28,6 +28,7 @@ import org.springframework.data.gemfire.IndexMaintenancePolicyType;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.IndexTypeConverter;
 import org.springframework.data.gemfire.InterestPolicyConverter;
+import org.springframework.data.gemfire.ScopeConverter;
 import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConverter;
@@ -36,6 +37,7 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The CustomEditorRegistrationBeanFactoryPostProcessor class is a Spring BeanFactoryPostProcessor used to register
@@ -58,6 +60,7 @@ public class CustomEditorRegistrationBeanFactoryPostProcessor implements BeanFac
 		beanFactory.registerCustomEditor(IndexType.class, IndexTypeConverter.class);
 		beanFactory.registerCustomEditor(InterestPolicy.class, InterestPolicyConverter.class);
 		beanFactory.registerCustomEditor(InterestResultPolicy.class, InterestResultPolicyConverter.class);
+		beanFactory.registerCustomEditor(Scope.class, ScopeConverter.class);
 		beanFactory.registerCustomEditor(SubscriptionEvictionPolicy.class, SubscriptionEvictionPolicyConverter.class);
 	}
 

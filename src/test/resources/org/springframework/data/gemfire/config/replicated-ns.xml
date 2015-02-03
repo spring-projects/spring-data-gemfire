@@ -55,13 +55,14 @@
 
 	<util:properties id="regionConfigurationSettings">
 		<prop key="gemfire.index-update-type">synchronous</prop>
+		<prop key="gemfire.scope">distributed-No_ACK</prop>
 	</util:properties>
 
 	<context:property-placeholder properties-ref="regionConfigurationSettings"/>
 
 	<gfe:replicated-region id="replicated-with-synchronous-index-updates" index-update-type="${gemfire.index-update-type}"/>
 
-	<gfe:replicated-region id="Compressed" persistent="false">
+	<gfe:replicated-region id="Compressed" persistent="false" scope="${gemfire.scope}">
 		<gfe:compressor ref="testCompressor"/>
 	</gfe:replicated-region>
 
