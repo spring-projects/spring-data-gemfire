@@ -32,10 +32,12 @@ import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
- * The GatewayReceiverFactoryBeanTest class...
+ * The GatewayReceiverFactoryBeanTest class is a test suite of test cases testing the contract and functionality
+ * of the GatewayReceiverFactoryBean class.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.
+ * @see org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean
+ * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory
  * @since 1.5.0
  */
 public class GatewayReceiverFactoryBeanTest {
@@ -65,6 +67,7 @@ public class GatewayReceiverFactoryBeanTest {
 		verify(mockGatewayReceiverFactory).setHostnameForSenders(eq("skullbox"));
 		verify(mockGatewayReceiverFactory).setStartPort(eq(2048));
 		verify(mockGatewayReceiverFactory).setEndPort(eq(4096));
+		verify(mockGatewayReceiverFactory).setManualStart(eq(true));
 		verify(mockGatewayReceiverFactory).setMaximumTimeBetweenPings(eq(5000));
 		verify(mockGatewayReceiverFactory).setSocketBufferSize(eq(16384));
 		verify(mockGatewayReceiverFactory).addGatewayTransportFilter(same(mockGatewayTransportFilter));

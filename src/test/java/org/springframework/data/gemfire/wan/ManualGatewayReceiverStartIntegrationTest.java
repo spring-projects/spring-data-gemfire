@@ -26,6 +26,7 @@ import javax.annotation.Resource;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -38,12 +39,13 @@ import com.gemstone.gemfire.cache.wan.GatewayReceiver;
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.5.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class ManualGatewayReceiverStartIntegrationTest {
 
@@ -53,17 +55,24 @@ public class ManualGatewayReceiverStartIntegrationTest {
 	@Resource(name = "Manual")
 	private GatewayReceiver manualGatewayReceiver;
 
+	protected void assertGreaterThanEqualToLessThanEqualTo(final String message,
+			final int actualValue, final int lowerBound, final int upperBound) {
+		assertTrue(message, actualValue >= lowerBound && actualValue <= upperBound);
+	}
+
 	@Test
 	public void testAutoGatewayReceiver() {
 		assertNotNull("The 'Auto' GatewayReceiver was not properly configured or initialized!", autoGatewayReceiver);
+		assertTrue(autoGatewayReceiver.isRunning());
 		assertEquals(7070, autoGatewayReceiver.getStartPort());
 		assertEquals(7700, autoGatewayReceiver.getEndPort());
-		assertTrue(autoGatewayReceiver.isRunning());
 
 		final int gatewayReceiverPort = autoGatewayReceiver.getPort();
 
-		assertTrue(gatewayReceiverPort >= autoGatewayReceiver.getStartPort()
-			&& gatewayReceiverPort <= autoGatewayReceiver.getEndPort());
+		assertGreaterThanEqualToLessThanEqualTo(String.format(
+			"GatewayReceiver 'port' (%1$d) was not greater than equal to (%2$d) and less than equal to (%3$d)!",
+				gatewayReceiverPort, autoGatewayReceiver.getStartPort(), autoGatewayReceiver.getEndPort()),
+					gatewayReceiverPort, autoGatewayReceiver.getStartPort(), autoGatewayReceiver.getEndPort());
 
 		autoGatewayReceiver.stop();
 
@@ -81,10 +90,12 @@ public class ManualGatewayReceiverStartIntegrationTest {
 
 		assertTrue(manualGatewayReceiver.isRunning());
 
-		final int gateReceiverPort = manualGatewayReceiver.getPort();
+		final int gatewayReceiverPort = manualGatewayReceiver.getPort();
 
-		assertTrue(gateReceiverPort >= manualGatewayReceiver.getStartPort()
-			&& gateReceiverPort <= manualGatewayReceiver.getEndPort());
+		assertGreaterThanEqualToLessThanEqualTo(String.format(
+			"GatewayReceiver 'port' (%1$d) was not greater than equal to (%2$d) and less than equal to (%3$d)!",
+				gatewayReceiverPort, manualGatewayReceiver.getStartPort(), manualGatewayReceiver.getEndPort()),
+					gatewayReceiverPort, manualGatewayReceiver.getStartPort(), manualGatewayReceiver.getEndPort());
 
 		manualGatewayReceiver.stop();
 

@@ -96,6 +96,10 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 			gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
 		}
 
+		if (maximumTimeBetweenPings != null) {
+			gatewayReceiverFactory.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
+		}
+
 		int localStartPort = (startPort != null ? startPort : GatewayReceiver.DEFAULT_START_PORT);
 		int localEndPort = (endPort != null ? endPort : GatewayReceiver.DEFAULT_END_PORT);
 
@@ -104,10 +108,7 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 		gatewayReceiverFactory.setStartPort(localStartPort);
 		gatewayReceiverFactory.setEndPort(localEndPort);
-
-		if (maximumTimeBetweenPings != null) {
-			gatewayReceiverFactory.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
-		}
+		gatewayReceiverFactory.setManualStart(true);
 
 		if (socketBufferSize != null) {
 			gatewayReceiverFactory.setSocketBufferSize(socketBufferSize);

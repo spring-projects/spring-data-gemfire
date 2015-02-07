@@ -10,6 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.test;
 
 import static org.mockito.Mockito.doAnswer;
@@ -19,6 +20,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -37,6 +39,8 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 
 	private volatile boolean running;
+
+	private boolean manualStart;
 
 	private int endPort;
 	private int maximumTimeBetweenPings;
@@ -131,9 +135,24 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#create()
+	/*
+	 * (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setManualStart(boolean)
 	 */
+	@Override
+	public GatewayReceiverFactory setManualStart(final boolean manualStart) {
+		this.manualStart = manualStart;
+		return this;
+	}
+
+	private int generatePort() {
+		final int portIncrement = new Random(System.currentTimeMillis()).nextInt(this.endPort - this.startPort);
+		return Math.min(this.startPort + portIncrement, this.endPort);
+	}
+
+	/* (non-Javadoc)
+	* @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#create()
+	*/
 	@Override
 	public GatewayReceiver create() {
 		GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
@@ -143,19 +162,23 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 		when(gatewayReceiver.getGatewayTransportFilters()).thenReturn(this.gatewayTransportFilters);
 		when(gatewayReceiver.getHost()).thenReturn(StringUtils.hasText(this.hostnameForSenders)
 			? this.hostnameForSenders : this.hostnameForClients);
+		when(gatewayReceiver.isManualStart()).thenReturn(this.manualStart);
 		when(gatewayReceiver.getMaximumTimeBetweenPings()).thenReturn(this.maximumTimeBetweenPings);
+		when(gatewayReceiver.getPort()).thenReturn(generatePort());
 		when(gatewayReceiver.getSocketBufferSize()).thenReturn(this.socketBufferSize);
 		when(gatewayReceiver.getStartPort()).thenReturn(this.startPort);
+
 		when(gatewayReceiver.isRunning()).thenAnswer(new Answer<Boolean>() {
 			@Override
 			public Boolean answer(InvocationOnMock invocation) throws Throwable {
-				return running;
+				return StubGatewayReceiverFactory.this.running;
 			}
 		});
+
 		try {
 			doAnswer(new Answer<Void>() {
 				public Void answer(InvocationOnMock invocation) {
-					running = true;
+					StubGatewayReceiverFactory.this.running = true;
 					return null;
 				}
 			}).when(gatewayReceiver).start();
@@ -163,6 +186,13 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 		catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+
+		doAnswer(new Answer<Void>() {
+			public Void answer(final InvocationOnMock invocation) throws Throwable {
+				StubGatewayReceiverFactory.this.running = false;
+				return null;
+			}
+		}).when(gatewayReceiver).stop();
 
 		return gatewayReceiver;
 	}
