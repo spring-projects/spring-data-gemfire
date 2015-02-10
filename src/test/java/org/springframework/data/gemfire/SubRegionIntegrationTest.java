@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -56,7 +57,7 @@ import com.gemstone.gemfire.cache.SubscriptionAttributes;
  * @since 1.4.0
  * @since 7.0.1 (GemFire)
  */
-@ContextConfiguration("complex-subregion.xml")
+@ContextConfiguration(value = "complex-subregion.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class SubRegionIntegrationTest {

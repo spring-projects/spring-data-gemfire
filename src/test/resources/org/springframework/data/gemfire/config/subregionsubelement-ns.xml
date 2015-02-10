@@ -38,7 +38,7 @@
 
 	<gfe:replicated-region id="Orders" persistent="false">
 		<gfe:replicated-region name="Items" persistent="false">
-			<gfe:gateway-sender remote-distributed-system-id="21" name="testSender" parallel="true"
+			<gfe:gateway-sender remote-distributed-system-id="21" name="testSender" parallel="false"
 								manual-start="true"/>
 		</gfe:replicated-region>
 	</gfe:replicated-region>

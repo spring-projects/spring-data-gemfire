@@ -153,10 +153,10 @@ public class TemplateRegionsNamespaceTests {
 	}
 
 	protected void assertEvictionAttributes(final EvictionAttributes evictionAttributes,
-											final EvictionAction expectedAction,
-											final EvictionAlgorithm expectedAlgorithm,
-											final int expectedMaximum,
-											final ObjectSizer expectedObjectSizer)
+		final EvictionAction expectedAction,
+		final EvictionAlgorithm expectedAlgorithm,
+		final int expectedMaximum,
+		final ObjectSizer expectedObjectSizer)
 	{
 		assertNotNull("The 'EvictionAttributes' must not be null!", evictionAttributes);
 		assertEquals(expectedAction, evictionAttributes.getAction());
@@ -172,8 +172,8 @@ public class TemplateRegionsNamespaceTests {
 	}
 
 	protected void assertExpirationAttributes(final ExpirationAttributes expirationAttributes,
-											  final ExpirationAction expectedAction,
-											  final int expectedTimeout)
+		final ExpirationAction expectedAction,
+		final int expectedTimeout)
 	{
 		assertNotNull("The 'ExpirationAttributes' must not be null!", expirationAttributes);
 		assertEquals(expectedAction, expirationAttributes.getAction());
@@ -197,9 +197,9 @@ public class TemplateRegionsNamespaceTests {
 	}
 
 	protected void assertMembershipAttributes(final MembershipAttributes membershipAttributes,
-											  final LossAction expectedLossAction,
-											  final ResumptionAction expectedResumptionAction,
-											  final String... expectedRequiredRoles)
+		final LossAction expectedLossAction,
+		final ResumptionAction expectedResumptionAction,
+		final String... expectedRequiredRoles)
 	{
 		assertNotNull("The 'MembershipAttributes' must not be null!", membershipAttributes);
 		assertEquals(expectedLossAction, membershipAttributes.getLossAction());
@@ -257,7 +257,7 @@ public class TemplateRegionsNamespaceTests {
 	}
 
 	protected void assertSubscriptionAttributes(final SubscriptionAttributes subscriptionAttributes,
-												final InterestPolicy expectedInterestPolicy)
+		final InterestPolicy expectedInterestPolicy)
 	{
 		assertNotNull("The 'SubscriptionAttributes' must not be null!", subscriptionAttributes);
 		assertEquals(expectedInterestPolicy, subscriptionAttributes.getInterestPolicy());

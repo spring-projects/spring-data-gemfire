@@ -18,7 +18,7 @@
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:async-event-queue id="TestAsyncEventQueue" persistent="false" parallel="true" dispatcher-threads="4">
+	<gfe:async-event-queue id="TestAsyncEventQueue" persistent="true" parallel="true" dispatcher-threads="4">
 		<gfe:async-event-listener>
 			<bean class="org.springframework.data.gemfire.config.TemplateRegionsNamespaceTests$TestAsyncEventListener"
 				  p:name="AEL"/>

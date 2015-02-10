@@ -39,16 +39,19 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.junit.runner.RunWith
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see com.gemstone.gemfire.cache.Region
  * @link https://jira.springsource.org/browse/SGF-219
  * @link https://jira.springsource.org/browse/SGF-220
  * @link https://jira.springsource.org/browse/SGF-221
  * @since 1.3.3
  */
+@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "subregionsubelement-ns.xml",
 	initializers = GemfireTestApplicationContextInitializer.class)
-@RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class SubRegionSubElementNamespaceTest {
 
