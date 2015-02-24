@@ -129,9 +129,6 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 				queueAttributes.setEnablePersistence(queue.getPersistent());
 
 				if (queue.getDiskStoreRef() != null) {
-					// TODO what about "overflow"?
-					boolean persistent = (queue.getPersistent() == null || queue.getPersistent());
-					Assert.isTrue(persistent, "specifying a disk store requires persistent property to be true");
 					queueAttributes.setDiskStoreName(queue.getDiskStoreRef());
 				}
 			}

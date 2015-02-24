@@ -1,6 +1,5 @@
 package org.springframework.data.gemfire.test;
 
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -46,10 +45,8 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.cache.util.GatewayHub;
-import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -64,9 +61,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 @SuppressWarnings({ "deprecation", "unused" })
 public class StubCache implements Cache {
 
-	protected static final String NOT_IMPLEMENTED = "Not Implemented!";
-
-	private CacheTransactionManager cacheTransactionManager;
+	protected static final String NOT_IMPLEMENTED = "Not Implemented";
 
 	private boolean closed;
 	private boolean copyOnRead;
@@ -79,6 +74,8 @@ public class StubCache implements Cache {
 	private int lockTimeout;
 	private int messageSyncInterval;
 	private int searchTimeout;
+
+	private CacheTransactionManager cacheTransactionManager;
 
 	private Context jndiContext;
 
@@ -108,7 +105,8 @@ public class StubCache implements Cache {
 	private String name;
 
 	public StubCache(){
-		this.allRegions = new HashMap<String,Region>();
+		allRegions = new HashMap<String,Region>();
+		gatewayHubs = new ArrayList<GatewayHub>();
 	}
 	
 	/* (non-Javadoc)
@@ -135,6 +133,7 @@ public class StubCache implements Cache {
 		if (cacheTransactionManager == null) {
 			cacheTransactionManager = new StubCacheTransactionMananger();
 		}
+
 		return cacheTransactionManager;
 	}
 
@@ -401,8 +400,11 @@ public class StubCache implements Cache {
 	 * @see com.gemstone.gemfire.cache.Cache#addGatewayHub(java.lang.String, int)
 	 */
 	@Override
-	public GatewayHub addGatewayHub(String name, int port) {
-		return mockGatewayHub();
+	public GatewayHub addGatewayHub(final String id, final int port) {
+		GatewayHub gatewayHub = getGatewayHub(id);
+		gatewayHub = (gatewayHub != null ? gatewayHub : new MockGatewayHubFactory().mockGatewayHub(id, port));
+		gatewayHubs.add(gatewayHub);
+		return gatewayHub;
 	}
 
 	/* (non-Javadoc)
@@ -547,15 +549,21 @@ public class StubCache implements Cache {
 	@Override
 	@Deprecated
 	public GatewayHub getGatewayHub() {
-		return mockGatewayHub();
+		return (gatewayHubs.isEmpty() ? null : gatewayHubs.get(0));
 	}
 
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHub(java.lang.String)
 	 */
 	@Override
-	public GatewayHub getGatewayHub(String name) {
-		return mockGatewayHub();
+	public GatewayHub getGatewayHub(final String id) {
+		for (GatewayHub gatewayHub : gatewayHubs) {
+			if (gatewayHub.getId().equals(id)) {
+				return gatewayHub;
+			}
+		}
+
+		return null;
 	}
 
 	/* (non-Javadoc)
@@ -767,24 +775,6 @@ public class StubCache implements Cache {
 
 	CacheServer mockCacheServer() {
 		return new StubCacheServer();
-	}
-
-	GatewayHub mockGatewayHub() {
-		final Gateway gateway = mock(Gateway.class);
-
-	    when(gateway.getQueueAttributes()).thenReturn(mock(GatewayQueueAttributes.class));
-
-		GatewayHub gatewayHub = mock(GatewayHub.class);
-
-		when(gatewayHub.addGateway(anyString(),anyInt())).thenAnswer(new Answer<Gateway>() {
-			@Override
-			public Gateway answer(InvocationOnMock invocation) throws Throwable {
-				return gateway;
-			}
-
-		});
-
-		return gatewayHub;
 	}
 
 	QueryService mockQueryService() throws RegionNotFoundException, IndexInvalidException, IndexNameConflictException, IndexExistsException, UnsupportedOperationException {

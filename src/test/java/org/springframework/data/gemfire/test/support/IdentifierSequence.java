@@ -16,25 +16,23 @@
 
 package org.springframework.data.gemfire.test.support;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * The ThrowableUtils class is a utility class for working with Throwable, Exception and Error objects.
+ * The IdentifierSequence class is an Identifier (ID) generator generating unique IDs in sequence.
  *
  * @author John Blum
- * @see java.lang.Error
- * @see java.lang.Exception
- * @see java.lang.Throwable
- * @since 1.5.0
+ * @see java.lang.System#currentTimeMillis()
+ * @see java.util.concurrent.atomic.AtomicLong
+ * @since 1.5.3
  */
 @SuppressWarnings("unused")
-public abstract class ThrowableUtils {
+public abstract class IdentifierSequence {
 
-	public static String toString(final Throwable t) {
-		StringWriter writer = new StringWriter();
-		t.printStackTrace(new PrintWriter(writer));
-		return writer.toString();
+	private static final AtomicLong ID_SEQUENCE = new AtomicLong(System.currentTimeMillis());
+
+	public static long nextId() {
+		return ID_SEQUENCE.incrementAndGet();
 	}
 
 }

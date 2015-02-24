@@ -14,27 +14,25 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire.test.support;
+package org.springframework.data.gemfire.test;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.springframework.data.gemfire.test.support.IdentifierSequence;
+import org.springframework.data.gemfire.test.support.StackTraceUtils;
 
 /**
- * The ThrowableUtils class is a utility class for working with Throwable, Exception and Error objects.
+ * The AbstractMockery class is an abstract base class supporting the creation and use of mock objects in unit tests.
  *
  * @author John Blum
- * @see java.lang.Error
- * @see java.lang.Exception
- * @see java.lang.Throwable
- * @since 1.5.0
+ * @since 1.5.3
  */
 @SuppressWarnings("unused")
-public abstract class ThrowableUtils {
+public abstract class AbstractMockerySupport {
 
-	public static String toString(final Throwable t) {
-		StringWriter writer = new StringWriter();
-		t.printStackTrace(new PrintWriter(writer));
-		return writer.toString();
+	protected static final String NOT_IMPLEMENTED = "Not Implemented";
+
+	protected Object getMockId() {
+		StackTraceElement element = StackTraceUtils.getTestCaller();
+		return (element != null ? StackTraceUtils.getCallerSimpleName(element): IdentifierSequence.nextId());
 	}
 
 }

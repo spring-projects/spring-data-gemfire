@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -261,7 +260,6 @@ public class GatewayHubFactoryBeanTest {
 	}
 
 	@Test
-	@Ignore
 	public void testGatewayQueueWithOverflowNoPersistence() throws Exception {
 		String gatewayHubName = "testGatewayQueueWithOverflowNoPersistence";
 
