@@ -48,7 +48,7 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 
 	private GatewayHub gatewayHub;
 
-	private Integer maxConnections;
+	//private Integer maxConnections;
 	private Integer maximumTimeBetweenPings;
 	private Integer port;
 	private Integer socketBufferSize;

@@ -83,7 +83,7 @@ public class GatewayHubNamespaceTest {
 		assertEquals("localhost", gatewayHub.getBindAddress());
 		assertEquals("testGatewayHub", gatewayHub.getId());
 		assertTrue(gatewayHub.getManualStart());
-		//assertEquals(GatewayHub.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, gatewayHub.getMaximumTimeBetweenPings());
+		assertEquals(5000, gatewayHub.getMaximumTimeBetweenPings());
 		assertEquals(45123, gatewayHub.getPort());
 		assertEquals(16384, gatewayHub.getSocketBufferSize());
 		assertEquals("primary", gatewayHub.getStartupPolicy());

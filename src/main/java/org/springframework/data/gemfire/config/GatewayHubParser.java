@@ -73,7 +73,7 @@ Sets the maximum amount of time between client pings.
 		ParsingUtils.setPropertyValue(element, builder, "bind-address");
 		ParsingUtils.setPropertyValue(element, builder, "manual-start");
 		//ParsingUtils.setPropertyValue(element, builder, "max-connections");
-		//ParsingUtils.setPropertyValue(element, builder, "max-time-between-pings", "maximumTimeBetweenPings");
+		ParsingUtils.setPropertyValue(element, builder, "max-time-between-pings", "maximumTimeBetweenPings");
 		ParsingUtils.setPropertyValue(element, builder, "port");
 		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
 		ParsingUtils.setPropertyValue(element, builder, "startup-policy");
