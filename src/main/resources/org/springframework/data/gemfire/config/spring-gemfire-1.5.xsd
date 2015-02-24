@@ -2997,8 +2997,7 @@ Deprecated as of Gemfire 7
 ]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="gateway" type="gatewayType" minOccurs="0"
-						 maxOccurs="unbounded">
+			<xsd:element name="gateway" type="gatewayType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Deprecated as of Gemfire 7

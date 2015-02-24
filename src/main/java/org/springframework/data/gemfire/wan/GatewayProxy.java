@@ -38,7 +38,7 @@ public class GatewayProxy {
 
 	private Integer concurrencyLevel = Gateway.DEFAULT_CONCURRENCY_LEVEL;
 	private Integer socketBufferSize = Gateway.DEFAULT_SOCKET_BUFFER_SIZE;
-	//private Integer socketReadTimeout = Gateway.DEFAULT_SOCKET_READ_TIMEOUT;
+	private Integer socketReadTimeout = Gateway.DEFAULT_SOCKET_READ_TIMEOUT;
 
 	private List<GatewayEndpoint> endpoints;
 	private List<GatewayEventListener> listeners;
@@ -101,7 +101,6 @@ public class GatewayProxy {
 		return (socketBufferSize != null ? socketBufferSize : Gateway.DEFAULT_SOCKET_BUFFER_SIZE);
 	}
 
-	/*
 	public void setSocketReadTimeout(final Integer socketReadTimeout) {
 		this.socketReadTimeout = socketReadTimeout;
 	}
@@ -109,7 +108,6 @@ public class GatewayProxy {
 	public Integer getSocketReadTimeout() {
 		return (socketReadTimeout != null ? socketReadTimeout : Gateway.DEFAULT_SOCKET_READ_TIMEOUT);
 	}
-	*/
 
 	public static class GatewayEndpoint {
 

@@ -100,7 +100,7 @@ public class GatewayHubNamespaceTest {
 		assertEquals(8, gatewayOne.getConcurrencyLevel());
 		assertEquals(Gateway.OrderPolicy.THREAD, gatewayOne.getOrderPolicy());
 		assertEquals(65536, gatewayOne.getSocketBufferSize());
-		//assertEquals(120, gatewayOne.getSocketReadTimeout());
+		assertEquals(15000, gatewayOne.getSocketReadTimeout());
 		assertNotNull(gatewayOne.getListeners());
 		assertFalse(gatewayOne.getListeners().isEmpty());
 		assertEquals(1, gatewayOne.getListeners().size());

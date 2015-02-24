@@ -115,7 +115,7 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 
 			gateway.setOrderPolicy(gatewayProxy.getOrderPolicy());
 			gateway.setSocketBufferSize(gatewayProxy.getSocketBufferSize());
-			//gateway.setSocketReadTimeout(gatewayProxy.getSocketReadTimeout());
+			gateway.setSocketReadTimeout(gatewayProxy.getSocketReadTimeout());
 
 			if (gatewayProxy.getQueue() != null) {
 				GatewayQueue queue = gatewayProxy.getQueue();

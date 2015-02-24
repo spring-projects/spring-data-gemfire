@@ -25,7 +25,8 @@
 
 	<gfe:gateway-hub id="testGatewayHub" bind-address="localhost" manual-start="true" max-time-between-pings="5000"
 					 port="45123" socket-buffer-size="16384" startup-policy="primary">
-		<gfe:gateway gateway-id="gateway1" concurrency-level="8" order-policy="thread" socket-buffer-size="65536">
+		<gfe:gateway gateway-id="gateway1" concurrency-level="8" order-policy="thread" socket-buffer-size="65536"
+					 socket-read-timeout="15000">
 			<gfe:gateway-listener>
 				<bean class="org.springframework.data.gemfire.config.GatewayHubNamespaceTest.TestGatewayListener"/>
 			</gfe:gateway-listener>
