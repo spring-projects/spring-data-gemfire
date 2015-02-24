@@ -32,12 +32,16 @@ import org.springframework.data.gemfire.ScopeConverter;
 import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConverter;
+import org.springframework.data.gemfire.wan.OrderPolicyConverter;
+import org.springframework.data.gemfire.wan.StartupPolicyConverter;
+import org.springframework.data.gemfire.wan.StartupPolicyType;
 
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.util.Gateway;
 
 /**
  * The CustomEditorRegistrationBeanFactoryPostProcessor class is a Spring BeanFactoryPostProcessor used to register
@@ -48,7 +52,7 @@ import com.gemstone.gemfire.cache.Scope;
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
  * @since 1.6.0
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({ "deprecation", "unused" })
 public class CustomEditorRegistrationBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
 	@Override
@@ -60,7 +64,9 @@ public class CustomEditorRegistrationBeanFactoryPostProcessor implements BeanFac
 		beanFactory.registerCustomEditor(IndexType.class, IndexTypeConverter.class);
 		beanFactory.registerCustomEditor(InterestPolicy.class, InterestPolicyConverter.class);
 		beanFactory.registerCustomEditor(InterestResultPolicy.class, InterestResultPolicyConverter.class);
+		beanFactory.registerCustomEditor(Gateway.OrderPolicy.class, OrderPolicyConverter.class);
 		beanFactory.registerCustomEditor(Scope.class, ScopeConverter.class);
+		beanFactory.registerCustomEditor(StartupPolicyType.class, StartupPolicyConverter.class);
 		beanFactory.registerCustomEditor(SubscriptionEvictionPolicy.class, SubscriptionEvictionPolicyConverter.class);
 	}
 

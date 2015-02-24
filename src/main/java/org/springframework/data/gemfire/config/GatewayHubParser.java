@@ -17,6 +17,7 @@ package org.springframework.data.gemfire.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
@@ -24,89 +25,143 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.wan.GatewayHubFactoryBean;
 import org.springframework.data.gemfire.wan.GatewayProxy;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
+ * Parser for the &lt;gateway-hub&gt; SDG XML namespace element used to create GemFire GatewayHubs.
+ *
  * @author David Turanski
- * 
+ * @author John Blum
+ * @see org.springframework.beans.factory.config.BeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.support.ManagedList
+ * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
+ * @see org.springframework.beans.factory.xml.ParserContext
+ * @see org.springframework.data.gemfire.wan.GatewayHubFactoryBean
+ * @see org.springframework.data.gemfire.wan.GatewayProxy
  */
 class GatewayHubParser extends AbstractSimpleBeanDefinitionParser {
+
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return GatewayHubFactoryBean.class;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	/*
+		<xsd:attribute name="max-connections" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the maximum number of Gateway connections allowed.
+            	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="max-time-between-pings" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the maximum amount of time between client pings.
+            	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	 */
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		builder.addConstructorArgReference(ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref")));
 		builder.setLazyInit(false);
-		String cacheRef = element.getAttribute("cache-ref");
-		// add cache reference (fallback to default if nothing is specified)
-		builder.addConstructorArgReference((StringUtils.hasText(cacheRef) ? cacheRef : "gemfireCache"));
+
 		ParsingUtils.setPropertyValue(element, builder, "bind-address");
 		ParsingUtils.setPropertyValue(element, builder, "manual-start");
+		//ParsingUtils.setPropertyValue(element, builder, "max-connections");
+		//ParsingUtils.setPropertyValue(element, builder, "max-time-between-pings", "maximumTimeBetweenPings");
+		ParsingUtils.setPropertyValue(element, builder, "port");
 		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
 		ParsingUtils.setPropertyValue(element, builder, "startup-policy");
-		ParsingUtils.setPropertyValue(element, builder, "port");
-		
+
+		parseGateways(element, parserContext, builder);
+	}
+
+	private void parseGateways(Element element, ParserContext parserContext, BeanDefinitionBuilder gatewayHubBuilder) {
 		List<Element> gatewayElements = DomUtils.getChildElementsByTagName(element, "gateway");
+
 		if (!CollectionUtils.isEmpty(gatewayElements)) {
-			ManagedList gateways = new ManagedList();
+			ManagedList<BeanDefinition> gateways = new ManagedList<BeanDefinition>();
+
 			for (Element gatewayElement : gatewayElements) {
 				BeanDefinitionBuilder gatewayBuilder = BeanDefinitionBuilder.genericBeanDefinition(GatewayProxy.class);
+
 				ParsingUtils.setPropertyValue(gatewayElement, gatewayBuilder, "gateway-id", "id");
 				ParsingUtils.setPropertyValue(gatewayElement, gatewayBuilder, "concurrency-level");
-				ParsingUtils.setPropertyValue(gatewayElement, gatewayBuilder, "socket-read-timeout");
-				ParsingUtils.setPropertyValue(gatewayElement, gatewayBuilder, "socket-buffer-size");
 				ParsingUtils.setPropertyValue(gatewayElement, gatewayBuilder, "order-policy");
-				List<Element> endpointElements = DomUtils.getChildElementsByTagName(gatewayElement, "gateway-endpoint");
-				if (!CollectionUtils.isEmpty(endpointElements)) {
-					ManagedList endpoints = new ManagedList();
-					for (Element endpointElement : endpointElements) {
-						BeanDefinitionBuilder endpointBuilder = BeanDefinitionBuilder
-								.genericBeanDefinition(GatewayProxy.GatewayEndpoint.class);
-						ParsingUtils.setPropertyValue(endpointElement, endpointBuilder, "host");
-						ParsingUtils.setPropertyValue(endpointElement, endpointBuilder, "port");
-						ParsingUtils.setPropertyValue(endpointElement, endpointBuilder, "endpoint-id", "id");
-						endpoints.add(endpointBuilder.getBeanDefinition());
-					}
-					gatewayBuilder.addPropertyValue("endpoints", endpoints);
-				}
+				ParsingUtils.setPropertyValue(gatewayElement, gatewayBuilder, "socket-buffer-size");
+				ParsingUtils.setPropertyValue(gatewayElement, gatewayBuilder, "socket-read-timeout");
 
-				Element gatewayListenerElement = DomUtils.getChildElementByTagName(gatewayElement, "gateway-listener");
-				if (gatewayListenerElement != null) {
-					Object obj = ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, gatewayListenerElement,
-							gatewayBuilder);
-					gatewayBuilder.addPropertyValue("listeners", obj);
-				}
+				parseGatewayEndpoints(gatewayElement, gatewayBuilder);
+				parseGatewayListeners(gatewayElement, parserContext, gatewayBuilder);
+				parseGatewayQueue(gatewayElement, gatewayBuilder);
 
-				Element gatewayQueueElement = DomUtils.getChildElementByTagName(gatewayElement, "gateway-queue");
-				if (gatewayQueueElement != null) {
-					BeanDefinitionBuilder queueBuilder = BeanDefinitionBuilder
-							.genericBeanDefinition(GatewayProxy.GatewayQueue.class);
-					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "alert-threshold");
-					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "batch-size");
-					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "batch-time-interval");
-					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "maximum-queue-memory");
-					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "persistent");
-					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "disk-store-ref");
-					/*
-					 * Make sure any disk store is created first
-					 */
-					if (gatewayQueueElement.hasAttribute("disk-store-ref")) {
-						gatewayBuilder.getBeanDefinition().setDependsOn(
-								new String[] {gatewayQueueElement.getAttribute("disk-store-ref")});
-					}
-					ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "enable-batch-conflation");
-					gatewayBuilder.addPropertyValue("queue", queueBuilder.getBeanDefinition());
-					
-					
-				}
 				gateways.add(gatewayBuilder.getBeanDefinition());
 			}
-			builder.addPropertyValue("gateways", gateways);
+
+			gatewayHubBuilder.addPropertyValue("gateways", gateways);
 		}
 	}
+
+	private void parseGatewayEndpoints(Element gatewayElement, BeanDefinitionBuilder gatewayBuilder) {
+		List<Element> endpointElements = DomUtils.getChildElementsByTagName(gatewayElement, "gateway-endpoint");
+
+		if (!CollectionUtils.isEmpty(endpointElements)) {
+			ManagedList<BeanDefinition> endpoints = new ManagedList<BeanDefinition>();
+
+			for (Element endpointElement : endpointElements) {
+				BeanDefinitionBuilder endpointBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+					GatewayProxy.GatewayEndpoint.class);
+
+				ParsingUtils.setPropertyValue(endpointElement, endpointBuilder, "endpoint-id", "id");
+				ParsingUtils.setPropertyValue(endpointElement, endpointBuilder, "host");
+				ParsingUtils.setPropertyValue(endpointElement, endpointBuilder, "port");
+
+				endpoints.add(endpointBuilder.getBeanDefinition());
+			}
+
+			gatewayBuilder.addPropertyValue("endpoints", endpoints);
+		}
+	}
+
+	private void parseGatewayListeners(Element gatewayElement, ParserContext parserContext,
+			BeanDefinitionBuilder gatewayBuilder) {
+
+		Element gatewayListenerElement = DomUtils.getChildElementByTagName(gatewayElement, "gateway-listener");
+
+		if (gatewayListenerElement != null) {
+			gatewayBuilder.addPropertyValue("listeners", ParsingUtils.parseRefOrNestedBeanDeclaration(
+				parserContext, gatewayListenerElement, gatewayBuilder));
+		}
+	}
+
+	private void parseGatewayQueue(Element gatewayElement, BeanDefinitionBuilder gatewayBuilder) {
+		Element gatewayQueueElement = DomUtils.getChildElementByTagName(gatewayElement, "gateway-queue");
+
+		if (gatewayQueueElement != null) {
+			BeanDefinitionBuilder queueBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+				GatewayProxy.GatewayQueue.class);
+
+			ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "alert-threshold");
+			ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "batch-size");
+			ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "batch-time-interval");
+			ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "disk-store-ref");
+			ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "enable-batch-conflation");
+			ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "maximum-queue-memory");
+			ParsingUtils.setPropertyValue(gatewayQueueElement, queueBuilder, "persistent");
+
+			/* Make sure any disk store is created first */
+			if (gatewayQueueElement.hasAttribute("disk-store-ref")) {
+				gatewayBuilder.getBeanDefinition().setDependsOn(new String[] {
+					gatewayQueueElement.getAttribute("disk-store-ref") });
+			}
+
+			gatewayBuilder.addPropertyValue("queue", queueBuilder.getBeanDefinition());
+		}
+	}
+
 }
