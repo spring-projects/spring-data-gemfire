@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -66,6 +67,16 @@ public class GatewayHubNamespaceTest {
 	@Autowired
 	private GatewayHub gatewayHub;
 
+	protected Gateway getGatewayById(final List<Gateway> gateways, final String id) {
+		for (Gateway gateway : gateways) {
+			if (gateway.getId().equals(id)) {
+				return gateway;
+			}
+		}
+
+		return null;
+	}
+
 	@Test
 	public void testRegionConfiguration() {
 		assertNotNull("The '/Example' Region was not properly initialized!", example);
@@ -79,9 +90,9 @@ public class GatewayHubNamespaceTest {
 
 	@Test
 	public void testGatewayConfiguration() {
-		assertNotNull("The 'testGatewayHub' GatewayHub was not properly initialized!", gatewayHub);
+		assertNotNull("The 'TestGatewayHub' GatewayHub was not properly initialized!", gatewayHub);
 		assertEquals("localhost", gatewayHub.getBindAddress());
-		assertEquals("testGatewayHub", gatewayHub.getId());
+		assertEquals("TestGatewayHub", gatewayHub.getId());
 		assertTrue(gatewayHub.getManualStart());
 		assertEquals(5000, gatewayHub.getMaximumTimeBetweenPings());
 		assertEquals(45123, gatewayHub.getPort());
@@ -92,19 +103,27 @@ public class GatewayHubNamespaceTest {
 
 		assertNotNull(gateways);
 		assertFalse(gateways.isEmpty());
-		assertEquals(2, gateways.size());
+		assertEquals(3, gateways.size());
 
-		Gateway gatewayOne = gateways.get(0);
+		Gateway gatewayOne = getGatewayById(gateways, "gateway1");
 
+		assertNotNull(gatewayOne);
 		assertEquals("gateway1", gatewayOne.getId());
 		assertEquals(8, gatewayOne.getConcurrencyLevel());
 		assertEquals(Gateway.OrderPolicy.THREAD, gatewayOne.getOrderPolicy());
 		assertEquals(65536, gatewayOne.getSocketBufferSize());
-		assertEquals(15000, gatewayOne.getSocketReadTimeout());
-		assertNotNull(gatewayOne.getListeners());
-		assertFalse(gatewayOne.getListeners().isEmpty());
-		assertEquals(1, gatewayOne.getListeners().size());
-		assertTrue(gatewayOne.getListeners().get(0) instanceof TestGatewayListener);
+		assertEquals(75000, gatewayOne.getSocketReadTimeout());
+		assertTrue(gatewayOne.getEndpoints() == null || gatewayOne.getEndpoints().isEmpty());
+
+		List<GatewayEventListener> gatewayEventListeners = gatewayOne.getListeners();
+
+		assertNotNull(gatewayEventListeners);
+		assertFalse(gatewayEventListeners.isEmpty());
+		assertEquals(2, gatewayEventListeners.size());
+		assertTrue(gatewayEventListeners.get(0) instanceof TestGatewayListener);
+		assertEquals("ListenerOne", gatewayEventListeners.get(0).toString());
+		assertTrue(gatewayEventListeners.get(1) instanceof TestGatewayListener);
+		assertEquals("ListenerTwo", gatewayEventListeners.get(1).toString());
 
 		GatewayQueueAttributes gatewayQueueAttributes = gatewayOne.getQueueAttributes();
 
@@ -113,12 +132,19 @@ public class GatewayHubNamespaceTest {
 		assertTrue(gatewayQueueAttributes.getBatchConflation());
 		assertEquals(3, gatewayQueueAttributes.getBatchSize());
 		assertEquals(10, gatewayQueueAttributes.getBatchTimeInterval());
-		assertEquals(5, gatewayQueueAttributes.getMaximumQueueMemory());
+		assertEquals("TestGatewayQueueDiskStore", gatewayQueueAttributes.getDiskStoreName());
 		assertFalse(gatewayQueueAttributes.getEnablePersistence());
+		assertEquals(5, gatewayQueueAttributes.getMaximumQueueMemory());
 
-		Gateway gatewayTwo = gateways.get(1);
+		Gateway gatewayTwo = getGatewayById(gateways, "gateway2");
 
+		assertNotNull(gatewayTwo);
 		assertEquals("gateway2", gatewayTwo.getId());
+		assertEquals(Gateway.DEFAULT_CONCURRENCY_LEVEL, gatewayTwo.getConcurrencyLevel());
+		assertNull(gatewayTwo.getOrderPolicy());
+		assertEquals(Gateway.DEFAULT_SOCKET_BUFFER_SIZE, gatewayTwo.getSocketBufferSize());
+		assertEquals(Gateway.DEFAULT_SOCKET_READ_TIMEOUT, gatewayTwo.getSocketReadTimeout());
+		assertTrue(gatewayTwo.getListeners() == null || gatewayTwo.getListeners().isEmpty());
 
 		List gatewayEndpoints = gatewayTwo.getEndpoints();
 
@@ -137,9 +163,44 @@ public class GatewayHubNamespaceTest {
 		assertEquals("endpoint2", gatewayEndpointTwo.getId());
 		assertEquals("localhost", gatewayEndpointTwo.getHost());
 		assertEquals(4321, gatewayEndpointTwo.getPort());
+
+		gatewayQueueAttributes = gatewayTwo.getQueueAttributes();
+
+		assertNotNull(gatewayQueueAttributes);
+		assertEquals(GatewayQueueAttributes.DEFAULT_ALERT_THRESHOLD, gatewayQueueAttributes.getAlertThreshold());
+		assertFalse(gatewayQueueAttributes.getBatchConflation());
+		assertEquals(6, gatewayQueueAttributes.getBatchSize());
+		assertEquals(20, gatewayQueueAttributes.getBatchTimeInterval());
+		assertNull(gatewayQueueAttributes.getDiskStoreName());
+		assertTrue(gatewayQueueAttributes.getEnablePersistence());
+		assertEquals(GatewayQueueAttributes.DEFAULT_MAXIMUM_QUEUE_MEMORY, gatewayQueueAttributes.getMaximumQueueMemory());
+
+		Gateway gatewayThree = getGatewayById(gateways, "gateway3");
+
+		assertNotNull(gatewayThree);
+		assertEquals("gateway3", gatewayThree.getId());
+		assertEquals(Gateway.DEFAULT_CONCURRENCY_LEVEL, gatewayThree.getConcurrencyLevel());
+		assertNull(gatewayThree.getOrderPolicy());
+		assertEquals(Gateway.DEFAULT_SOCKET_BUFFER_SIZE, gatewayThree.getSocketBufferSize());
+		assertEquals(Gateway.DEFAULT_SOCKET_READ_TIMEOUT, gatewayThree.getSocketReadTimeout());
+		assertTrue(gatewayThree.getEndpoints() == null || gatewayThree.getEndpoints().isEmpty());
+
+		gatewayEventListeners = gatewayThree.getListeners();
+
+		assertNotNull(gatewayEventListeners);
+		assertFalse(gatewayEventListeners.isEmpty());
+		assertEquals(1, gatewayEventListeners.size());
+		assertTrue(gatewayEventListeners.get(0) instanceof TestGatewayListener);
+		assertEquals("ListenerTwo", gatewayEventListeners.get(0).toString());
 	}
 
 	public static final class TestGatewayListener implements GatewayEventListener {
+
+		private String name;
+
+		public void setName(final String name) {
+			this.name = name;
+		}
 
 		@Override
 		public boolean processEvents(final List<GatewayEvent> events) {
@@ -148,6 +209,11 @@ public class GatewayHubNamespaceTest {
 
 		@Override
 		public void close() {
+		}
+
+		@Override
+		public String toString() {
+			return name;
 		}
 	}
 
