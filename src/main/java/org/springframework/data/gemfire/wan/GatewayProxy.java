@@ -15,40 +15,73 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.util.GatewayEventListener;
+import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
 
 /**
- * This class used to allow decoupling of 'gateway' parsing from 'gateway-hub'
- * parsing
+ * This class used to allow decoupling of 'gateway' parsing from 'gateway-hub' parsing.
  * 
  * @author David Turanski
- * 
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.util.Gateway
  */
+@SuppressWarnings({ "deprecation", "unused" })
 public class GatewayProxy {
 
+	private GatewayQueue queue;
+
+	private Integer concurrencyLevel;
+	private Integer socketBufferSize;
+	//private Integer socketReadTimeout;
+
 	private List<GatewayEndpoint> endpoints;
-
-	private Integer concurrencyLevel = Gateway.DEFAULT_CONCURRENCY_LEVEL;
-
-	private String id;
-
 	private List<GatewayEventListener> listeners;
 
+	private String id;
 	private String orderPolicy;
 
-	private int socketBufferSize = Gateway.DEFAULT_SOCKET_BUFFER_SIZE;
+	public void setConcurrencyLevel(Integer concurrencyLevel) {
+		this.concurrencyLevel = concurrencyLevel;
+	}
 
-	private GatewayQueue queue;
+	public Integer getConcurrencyLevel() {
+		return (concurrencyLevel != null ? concurrencyLevel : Gateway.DEFAULT_CONCURRENCY_LEVEL);
+	}
 
 	public void setEndpoints(List<GatewayEndpoint> endpoints) {
 		this.endpoints = endpoints;
 	}
 
+	public List<GatewayEndpoint> getEndpoints() {
+		return (endpoints != null ? endpoints : Collections.<GatewayEndpoint>emptyList());
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getId() {
+		return id;
+	}
+
 	public void setListeners(List<GatewayEventListener> listeners) {
 		this.listeners = listeners;
+	}
+
+	public List<GatewayEventListener> getListeners() {
+		return (listeners != null ? listeners : Collections.<GatewayEventListener>emptyList());
+	}
+
+	public void setOrderPolicy(String orderPolicy) {
+		this.orderPolicy = orderPolicy;
+	}
+
+	public String getOrderPolicy() {
+		return orderPolicy;
 	}
 
 	public void setQueue(GatewayQueue queue) {
@@ -56,52 +89,33 @@ public class GatewayProxy {
 	}
 
 	public GatewayQueue getQueue() {
-		return this.queue;
-	}
-
-	public Integer getConcurrencyLevel() {
-		return this.concurrencyLevel;
-	}
-
-	public List<GatewayEndpoint> getEndpoints() {
-		return endpoints;
-	}
-
-	public String getId() {
-		return this.id;
-	}
-
-	public List<GatewayEventListener> getListeners() {
-		return this.listeners;
-	}
-
-	public String getOrderPolicy() {
-		return this.orderPolicy;
-	}
-
-	public Integer getSocketBufferSize() {
-		return this.socketBufferSize;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public void setOrderPolicy(String orderPolicy) {
-		this.orderPolicy = orderPolicy;
+		return queue;
 	}
 
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
-
 	}
 
-	public static class GatewayEndpoint {
-		private String host;
+	public Integer getSocketBufferSize() {
+		return (socketBufferSize != null ? socketBufferSize : Gateway.DEFAULT_SOCKET_BUFFER_SIZE);
+	}
 
-		private String id;
+	/*
+	public void setSocketReadTimeout(final Integer socketReadTimeout) {
+		this.socketReadTimeout = socketReadTimeout;
+	}
+
+	public Integer getSocketReadTimeout() {
+		return (socketReadTimeout != null ? socketReadTimeout : Gateway.DEFAULT_SOCKET_READ_TIMEOUT);
+	}
+	*/
+
+	public static class GatewayEndpoint {
 
 		private int port;
+
+		private String id;
+		private String host;
 
 		public String getHost() {
 			return host;
@@ -129,75 +143,74 @@ public class GatewayProxy {
 	}
 
 	public static class GatewayQueue {
-		private Integer alertThreshold;
 
 		private Boolean enableBatchConflation;
-
-		private Integer batchTimeInterval;
-
-		private Integer batchSize;
-
 		private Boolean persistent;
 
-		private String diskStoreRef;
-
+		private Integer alertThreshold;
+		private Integer batchSize;
+		private Integer batchTimeInterval;
 		private Integer maximumQueueMemory;
 
-		public Integer getAlertThreshold() {
-			return alertThreshold;
-		}
+		private String diskStoreRef;
 
 		public void setAlertThreshold(Integer alertThreshold) {
 			this.alertThreshold = alertThreshold;
 		}
 
-		public Boolean getEnableBatchConflation() {
-			return enableBatchConflation;
-		}
-
-		public void setEnableBatchConflation(Boolean enableBatchConflation) {
-			this.enableBatchConflation = enableBatchConflation;
-		}
-
-		public Integer getBatchTimeInterval() {
-			return batchTimeInterval;
-		}
-
-		public void setBatchTimeInterval(Integer batchTimeInterval) {
-			this.batchTimeInterval = batchTimeInterval;
-		}
-
-		public Integer getBatchSize() {
-			return batchSize;
+		public Integer getAlertThreshold() {
+			return (alertThreshold != null ? alertThreshold : GatewayQueueAttributes.DEFAULT_ALERT_THRESHOLD);
 		}
 
 		public void setBatchSize(Integer batchSize) {
 			this.batchSize = batchSize;
 		}
 
-		public Boolean getPersistent() {
-			return persistent;
+		public Integer getBatchSize() {
+			return (batchSize != null ? batchSize : GatewayQueueAttributes.DEFAULT_BATCH_SIZE);
 		}
 
-		public void setPersistent(Boolean persistent) {
-			this.persistent = persistent;
+		public void setBatchTimeInterval(Integer batchTimeInterval) {
+			this.batchTimeInterval = batchTimeInterval;
 		}
 
-		public String getDiskStoreRef() {
-			return diskStoreRef;
+		public Integer getBatchTimeInterval() {
+			return (batchTimeInterval != null ? batchTimeInterval : GatewayQueueAttributes.DEFAULT_BATCH_TIME_INTERVAL);
 		}
 
 		public void setDiskStoreRef(String diskStoreRef) {
 			this.diskStoreRef = diskStoreRef;
 		}
 
-		public Integer getMaximumQueueMemory() {
-			return maximumQueueMemory;
+		public String getDiskStoreRef() {
+			return diskStoreRef;
+		}
+
+		public void setEnableBatchConflation(Boolean enableBatchConflation) {
+			this.enableBatchConflation = enableBatchConflation;
+		}
+
+		public Boolean getEnableBatchConflation() {
+			return (enableBatchConflation != null ? enableBatchConflation
+				: GatewayQueueAttributes.DEFAULT_BATCH_CONFLATION);
 		}
 
 		public void setMaximumQueueMemory(Integer maximumQueueMemory) {
 			this.maximumQueueMemory = maximumQueueMemory;
 		}
 
+		public Integer getMaximumQueueMemory() {
+			return (maximumQueueMemory != null ? maximumQueueMemory
+				: GatewayQueueAttributes.DEFAULT_MAXIMUM_QUEUE_MEMORY);
+		}
+
+		public void setPersistent(Boolean persistent) {
+			this.persistent = persistent;
+		}
+
+		public Boolean getPersistent() {
+			return (persistent != null ? persistent : GatewayQueueAttributes.DEFAULT_ENABLE_PERSISTENCE);
+		}
 	}
+
 }

@@ -17,11 +17,11 @@ package org.springframework.data.gemfire.wan;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.gemfire.wan.GatewayProxy.GatewayQueue;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.util.Gateway;
@@ -29,36 +29,43 @@ import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
 import com.gemstone.gemfire.cache.util.GatewayEventListener;
 import com.gemstone.gemfire.cache.util.GatewayHub;
 import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
+import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
- * FactoryBean for creating a GemFire {@link GatewayHub} (deprecated in Gemfire
- * 7)
+ * FactoryBean for creating a GemFire {@link GatewayHub} (deprecated in Gemfire 7).
+ *
  * @author David Turanski
- * 
+ * @author John Blum
+ * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.util.Gateway
+ * @see com.gemstone.gemfire.cache.util.GatewayHub
+ * @see com.gemstone.gemfire.cache.util.GatewayEventListener
+ * @see com.gemstone.gemfire.cache.util.GatewayQueueAttributes
  */
+@SuppressWarnings({ "deprecation", "unused" })
 public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<GatewayHub> {
-	private static List<String> validStartupPolicyValues = Arrays.asList("none", "primary", "secondary");
 
-	private static List<String> validOrderPolicyValues = Arrays.asList("KEY,PARTITION,THREAD");
+	private static List<String> validOrderPolicyValues = Arrays.asList("key, partition, thread");
 
-	private GatewayHub gatewayHub;
-
-	private Integer port;
-
-	private String bindAddress;
-
-	private Integer maximumTimeBetweenPings;
-
-	private Integer socketBufferSize;
-
-	private String startupPolicy;
+	private static List<String> validStartupPolicyValues = Arrays.asList(GatewayHub.STARTUP_POLICY_NONE,
+		GatewayHub.STARTUP_POLICY_PRIMARY, GatewayHub.STARTUP_POLICY_SECONDARY);
 
 	private Boolean manualStart;
 
+	private GatewayHub gatewayHub;
+
+	private Integer maximumTimeBetweenPings;
+	private Integer port;
+	private Integer socketBufferSize;
+
 	private List<GatewayProxy> gateways;
 
+	private String bindAddress;
+	private String startupPolicy;
+
 	/**
-	 * @param cache the Gemfire cache
+	 * @param cache a reference to the GemFire Cache.
 	 */
 	public GatewayHubFactoryBean(Cache cache) {
 		super(cache);
@@ -71,134 +78,143 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 
 	@Override
 	public Class<?> getObjectType() {
-		return GatewayHub.class;
+		return (gatewayHub != null ? gatewayHub.getClass() : GatewayHub.class);
 	}
 
 	@Override
 	protected void doInit() {
-		String name = getName();
-		gatewayHub = cache.addGatewayHub(name, port == null ? GatewayHub.DEFAULT_PORT : port);
+		gatewayHub = cache.addGatewayHub(getName(), getPort());
 
 		if (log.isDebugEnabled()) {
-			log.debug("added gateway hub " + name);
+			log.debug(String.format("Adding GemFire GatewayHub (%1$s)", getName()));
 		}
 
-		Assert.notNull(cache.getGatewayHub(name));
+		Assert.notNull(cache.getGatewayHub(getName()));
 
-		if (bindAddress != null) {
-			gatewayHub.setBindAddress(bindAddress);
-		}
-		if (manualStart != null) {
-			gatewayHub.setManualStart(manualStart);
-		}
-		if (socketBufferSize != null) {
-			gatewayHub.setSocketBufferSize(socketBufferSize);
-		}
-		if (startupPolicy != null) {
-			Assert.isTrue(validStartupPolicyValues.contains(startupPolicy), "The value of startup policy:'"
-					+ startupPolicy + "' is invalid");
-			gatewayHub.setStartupPolicy(startupPolicy);
-		}
-		if (maximumTimeBetweenPings != null) {
-			gatewayHub.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
-		}
-		
-		if (!CollectionUtils.isEmpty(gateways)) {
-			configureGateways();
-		}
-		
-		if (gatewayHub.getManualStart() == false) {
-			try {
-				gatewayHub.start();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+		gatewayHub.setBindAddress(getBindAddress());
+		gatewayHub.setManualStart(isManualStart(GatewayHub.DEFAULT_MANUAL_START));
+		gatewayHub.setMaximumTimeBetweenPings(getMaximumTimeBetweenPings());
+		gatewayHub.setSocketBufferSize(getSocketBufferSize());
+
+		String localStartupPolicy = getStartupPolicy().trim().toLowerCase();
+
+		Assert.isTrue(validStartupPolicyValues.contains(localStartupPolicy), String.format(
+			"The specified startup-policy '%1$s' is not valid!", localStartupPolicy));
+
+		gatewayHub.setStartupPolicy(localStartupPolicy);
+
+		configureGateways();
+		autoStart();
 	}
 
-	public void setPort(Integer port) {
-		this.port = port;
-	}
-
-	public void setBindAddress(String bindAddress) {
-		this.bindAddress = bindAddress;
-	}
-
-	public void setMaximumTimeBetweenPings(Integer maximumTimeBetweenPings) {
-		this.maximumTimeBetweenPings = maximumTimeBetweenPings;
-	}
-
-	public void setSocketBufferSize(Integer socketBufferSize) {
-		this.socketBufferSize = socketBufferSize;
-	}
-
-	public void setStartupPolicy(String startupPolicy) {
-		this.startupPolicy = startupPolicy;
-	}
-
-	public void setManualStart(Boolean manualStart) {
-		this.manualStart = manualStart;
-	}
-
-	public void setGateways(List<GatewayProxy> gateways) {
-		this.gateways = gateways;
-	}
-	
 	private void configureGateways() {
-		for (GatewayProxy gateway : gateways) {
-			Gateway gw = gatewayHub.addGateway(
-					gateway.getId(),
-					gateway.getConcurrencyLevel() == null ? Gateway.DEFAULT_CONCURRENCY_LEVEL : gateway
-							.getConcurrencyLevel());
-			if (!CollectionUtils.isEmpty(gateway.getEndpoints())) {
-				for (GatewayProxy.GatewayEndpoint endpoint : gateway.getEndpoints()) {
-					gw.addEndpoint(endpoint.getId(), endpoint.getHost(), endpoint.getPort());
-				}
-			}
-			if (!CollectionUtils.isEmpty(gateway.getListeners())) {
-				for (GatewayEventListener listener : gateway.getListeners()) {
-					gw.addListener(listener);
-				}
-			}
-			if (gateway.getOrderPolicy() != null) {
-				Assert.isTrue(validOrderPolicyValues.contains(gateway.getOrderPolicy()),
-						"The value of order policy:'" + gateway.getOrderPolicy() + "' is invalid");
-				gw.setOrderPolicy(OrderPolicy.valueOf(gateway.getOrderPolicy()));
-			}
-			if (gateway.getSocketBufferSize() != null) {
-				gw.setSocketBufferSize(gateway.getSocketBufferSize());
+		for (GatewayProxy gatewayProxy : getGateways()) {
+			Gateway gateway = gatewayHub.addGateway(gatewayProxy.getId(), gatewayProxy.getConcurrencyLevel());
+
+			for (GatewayProxy.GatewayEndpoint endpoint : gatewayProxy.getEndpoints()) {
+				gateway.addEndpoint(endpoint.getId(), endpoint.getHost(), endpoint.getPort());
 			}
 
-			if (gateway.getQueue() != null) {
-				GatewayQueue queue = gateway.getQueue();
-				GatewayQueueAttributes queueAttributes = gw.getQueueAttributes();
-				if (queue.getAlertThreshold() != null) {
-					queueAttributes.setAlertThreshold(queue.getAlertThreshold());
-				}
-				if (queue.getEnableBatchConflation() != null) {
-					queueAttributes.setBatchConflation(queue.getEnableBatchConflation());
-				}
-				if (queue.getBatchSize() != null) {
-					queueAttributes.setBatchSize(queue.getBatchSize());
-				}
-				if (queue.getBatchTimeInterval() != null) {
-					queueAttributes.setBatchTimeInterval(queue.getBatchTimeInterval());
-				}
+			for (GatewayEventListener listener : gatewayProxy.getListeners()) {
+				gateway.addListener(listener);
+			}
+
+			if (StringUtils.hasText(gatewayProxy.getOrderPolicy())) {
+				String orderPolicyValue = gatewayProxy.getOrderPolicy().trim().toUpperCase();
+				OrderPolicy orderPolicy = OrderPolicy.valueOf(orderPolicyValue);
+				Assert.notNull(orderPolicy, String.format("The specified order-policy '%1$s' is not valid!",
+					orderPolicyValue));
+				gateway.setOrderPolicy(orderPolicy);
+			}
+
+			gateway.setSocketBufferSize(gatewayProxy.getSocketBufferSize());
+
+			if (gatewayProxy.getQueue() != null) {
+				GatewayQueue queue = gatewayProxy.getQueue();
+				GatewayQueueAttributes queueAttributes = gateway.getQueueAttributes();
+
+				queueAttributes.setAlertThreshold(queue.getAlertThreshold());
+				queueAttributes.setBatchConflation(queue.getEnableBatchConflation());
+				queueAttributes.setBatchSize(queue.getBatchSize());
+				queueAttributes.setBatchTimeInterval(queue.getBatchTimeInterval());
+				queueAttributes.setEnablePersistence(queue.getPersistent());
+				queueAttributes.setMaximumQueueMemory(queue.getMaximumQueueMemory());
 
 				if (queue.getDiskStoreRef() != null) {
 					boolean persistent = (queue.getPersistent() == null) ? Boolean.TRUE : queue.getPersistent();
 					Assert.isTrue(persistent, "specifying a disk store requires persistent property to be true");
 					queueAttributes.setDiskStoreName(queue.getDiskStoreRef());
 				}
-
-				if (queue.getPersistent() != null) {
-					queueAttributes.setEnablePersistence(queue.getPersistent());
-				}
-
-				if (queue.getMaximumQueueMemory() != null) {
-					queueAttributes.setMaximumQueueMemory(queue.getMaximumQueueMemory());
-				}
 			}
 		}
 	}
+
+	private void autoStart() {
+		if (!gatewayHub.getManualStart()) {
+			try {
+				gatewayHub.start();
+			}
+			catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	public void setBindAddress(String bindAddress) {
+		this.bindAddress = bindAddress;
+	}
+
+	String getBindAddress() {
+		return (StringUtils.hasText(bindAddress) ? bindAddress : GatewayHub.DEFAULT_BIND_ADDRESS);
+	}
+
+	public void setGateways(List<GatewayProxy> gateways) {
+		this.gateways = gateways;
+	}
+
+	List<GatewayProxy> getGateways() {
+		return (gateways != null ? gateways : Collections.<GatewayProxy>emptyList());
+	}
+
+	public void setManualStart(Boolean manualStart) {
+		this.manualStart = manualStart;
+	}
+
+	boolean isManualStart(final boolean defaultManualStart) {
+		return (manualStart != null ? manualStart : defaultManualStart);
+	}
+
+	public void setMaximumTimeBetweenPings(Integer maximumTimeBetweenPings) {
+		this.maximumTimeBetweenPings = maximumTimeBetweenPings;
+	}
+
+	Integer getMaximumTimeBetweenPings() {
+		return (maximumTimeBetweenPings != null ? maximumTimeBetweenPings
+			: GatewayHub.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
+	}
+
+	public void setPort(Integer port) {
+		this.port = port;
+	}
+
+	Integer getPort() {
+		return (port != null ? port : GatewayHub.DEFAULT_PORT);
+	}
+
+	public void setSocketBufferSize(Integer socketBufferSize) {
+		this.socketBufferSize = socketBufferSize;
+	}
+
+	Integer getSocketBufferSize() {
+		return (socketBufferSize != null ? socketBufferSize : GatewayHub.DEFAULT_SOCKET_BUFFER_SIZE);
+	}
+
+	public void setStartupPolicy(String startupPolicy) {
+		this.startupPolicy = startupPolicy;
+	}
+
+	String getStartupPolicy() {
+		return (StringUtils.hasText(startupPolicy) ? startupPolicy : GatewayHub.DEFAULT_STARTUP_POLICY);
+	}
+
 }

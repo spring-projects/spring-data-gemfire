@@ -35,8 +35,8 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
  * @author David Turanski
  * @author John Blum
  */
-public abstract class AbstractWANComponentFactoryBean<T> implements BeanNameAware, FactoryBean<T>, InitializingBean,
-		DisposableBean {
+public abstract class AbstractWANComponentFactoryBean<T> implements BeanNameAware, FactoryBean<T>,
+		InitializingBean, DisposableBean {
 
 	protected static final List<String> VALID_ORDER_POLICIES = Arrays.asList("KEY", "PARTITION", "THREAD");
 
@@ -67,7 +67,7 @@ public abstract class AbstractWANComponentFactoryBean<T> implements BeanNameAwar
 	}
 
 	public String getName() {
-		return (StringUtils.hasText(name) ? name: beanName);
+		return (StringUtils.hasText(name) ? name : beanName);
 	}
 
 	@Override
@@ -83,8 +83,8 @@ public abstract class AbstractWANComponentFactoryBean<T> implements BeanNameAwar
 
 	@Override
 	public final void afterPropertiesSet() throws Exception {
-		Assert.notNull(getName(), "Name must not be null.");
 		Assert.notNull(cache, "Cache must not be null.");
+		Assert.notNull(getName(), "Name must not be null.");
 		doInit();
 	}
 
