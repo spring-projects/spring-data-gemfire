@@ -120,10 +120,9 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 			}
 
 			if (StringUtils.hasText(gatewayProxy.getOrderPolicy())) {
-				String orderPolicyValue = gatewayProxy.getOrderPolicy().trim().toUpperCase();
-				OrderPolicy orderPolicy = OrderPolicy.valueOf(orderPolicyValue);
+				OrderPolicy orderPolicy = getOrderPolicyEnum(gatewayProxy.getOrderPolicy());
 				Assert.notNull(orderPolicy, String.format("The specified order-policy '%1$s' is not valid!",
-					orderPolicyValue));
+					gatewayProxy.getOrderPolicy()));
 				gateway.setOrderPolicy(orderPolicy);
 			}
 
@@ -141,11 +140,18 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 				queueAttributes.setMaximumQueueMemory(queue.getMaximumQueueMemory());
 
 				if (queue.getDiskStoreRef() != null) {
-					boolean persistent = (queue.getPersistent() == null) ? Boolean.TRUE : queue.getPersistent();
-					Assert.isTrue(persistent, "specifying a disk store requires persistent property to be true");
 					queueAttributes.setDiskStoreName(queue.getDiskStoreRef());
 				}
 			}
+		}
+	}
+
+	private Gateway.OrderPolicy getOrderPolicyEnum(final String value) {
+		try {
+			return OrderPolicy.valueOf(value.trim().toUpperCase());
+		}
+		catch (IllegalArgumentException ignore) {
+			return null;
 		}
 	}
 

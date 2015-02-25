@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
@@ -96,17 +97,6 @@ public class GatewayHubFactoryBeanTest {
 		factoryBean.setManualStart(null);
 		assertEquals(GatewayHub.DEFAULT_MANUAL_START, factoryBean.isManualStart(GatewayHub.DEFAULT_MANUAL_START));
 	}
-
-	/*
-	@Test
-	public void testSetAndGetMaxConnections() {
-		assertEquals(GatewayHub.DEFAULT_MAX_CONNECTIONS, factoryBean.getMaxConnections().intValue());
-		factoryBean.setMaxConnections(8192);
-		assertEquals(8192, factoryBean.getMaxConnections().intValue());
-		factoryBean.setMaxConnections(null);
-		assertEquals(GatewayHub.DEFAULT_MAX_CONNECTIONS, factoryBean.getMaxConnections().intValue());
-	}
-	*/
 
 	@Test
 	public void testSetAndGetMaximumTimeBetweenPings() {
@@ -257,6 +247,61 @@ public class GatewayHubFactoryBeanTest {
 		verify(mockGatewayQueueAttributes, times(1)).setDiskStoreName(eq(gatewayQueue.getDiskStoreRef()));
 		verify(mockGatewayQueueAttributes, times(1)).setMaximumQueueMemory(eq(gatewayQueue.getMaximumQueueMemory()));
 		verify(mockGatewayQueueAttributes, times(1)).setEnablePersistence(eq(gatewayQueue.getPersistent()));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testGatewayHubWithInvalidStartupPolicy() throws Exception {
+		try {
+			GatewayHub mockGatewayHub = mock(GatewayHub.class, "testGatewayHubWithInvalidStartupPolicy.MockGatewayHub");
+
+			when(mockCache.addGatewayHub(eq("testGatewayHubWithInvalidStartupPolicy"), eq(1234))).thenReturn(mockGatewayHub);
+			when(mockCache.getGatewayHub(eq("testGatewayHubWithInvalidStartupPolicy"))).thenReturn(mockGatewayHub);
+
+			factoryBean.setName("testGatewayHubWithInvalidStartupPolicy");
+			factoryBean.setPort(1234);
+			factoryBean.setStartupPolicy("invalid");
+			factoryBean.afterPropertiesSet();
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("The specified startup-policy 'invalid' is not valid!", expected.getMessage());
+			throw expected;
+		}
+		finally {
+			verify(mockCache, times(1)).addGatewayHub(eq("testGatewayHubWithInvalidStartupPolicy"), eq(1234));
+			verify(mockCache, times(1)).getGatewayHub(eq("testGatewayHubWithInvalidStartupPolicy"));
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testGatewayQueueWithInvalidOrderPolicy() throws Exception {
+		GatewayHub mockGatewayHub = mock(GatewayHub.class, "testGatewayQueueWithInvalidOrderPolicy.MockGatewayHub");
+		Gateway mockGateway = mock(Gateway.class, "testGatewayQueueWithInvalidOrderPolicy.MockGateway");
+
+		try {
+			GatewayProxy gatewayProxy = new GatewayProxy();
+
+			gatewayProxy.setId("123");
+			gatewayProxy.setConcurrencyLevel(8);
+			gatewayProxy.setOrderPolicy("values");
+
+			when(mockCache.addGatewayHub(eq("testGatewayQueueWithInvalidOrderPolicy"), anyInt())).thenReturn(mockGatewayHub);
+			when(mockCache.getGatewayHub(eq("testGatewayQueueWithInvalidOrderPolicy"))).thenReturn(mockGatewayHub);
+			when(mockGatewayHub.addGateway(eq("123"), eq(8))).thenReturn(mockGateway);
+
+			factoryBean.setGateways(Arrays.asList(gatewayProxy));
+			factoryBean.setName("testGatewayQueueWithInvalidOrderPolicy");
+			factoryBean.setPort(1234);
+			factoryBean.afterPropertiesSet();
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("The specified order-policy 'values' is not valid!", expected.getMessage());
+			throw expected;
+		}
+		finally {
+			verify(mockCache, times(1)).addGatewayHub(eq("testGatewayQueueWithInvalidOrderPolicy"), eq(1234));
+			verify(mockCache, times(1)).getGatewayHub(eq("testGatewayQueueWithInvalidOrderPolicy"));
+			verify(mockGatewayHub, times(1)).addGateway(eq("123"), eq(8));
+		}
 	}
 
 	@Test
