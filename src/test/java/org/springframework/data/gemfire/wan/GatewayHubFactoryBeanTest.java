@@ -97,7 +97,6 @@ public class GatewayHubFactoryBeanTest {
 		assertEquals(GatewayHub.DEFAULT_MANUAL_START, factoryBean.isManualStart(GatewayHub.DEFAULT_MANUAL_START));
 	}
 
-	/*
 	@Test
 	public void testSetAndGetMaxConnections() {
 		assertEquals(GatewayHub.DEFAULT_MAX_CONNECTIONS, factoryBean.getMaxConnections().intValue());
@@ -106,7 +105,6 @@ public class GatewayHubFactoryBeanTest {
 		factoryBean.setMaxConnections(null);
 		assertEquals(GatewayHub.DEFAULT_MAX_CONNECTIONS, factoryBean.getMaxConnections().intValue());
 	}
-	*/
 
 	@Test
 	public void testSetAndGetMaximumTimeBetweenPings() {
@@ -225,7 +223,7 @@ public class GatewayHubFactoryBeanTest {
 		factoryBean.setBindAddress("10.124.210.42");
 		factoryBean.setGateways(Arrays.asList(gatewayProxy));
 		factoryBean.setManualStart(false);
-		//factoryBean.setMaxConnections(50);
+		factoryBean.setMaxConnections(50);
 		factoryBean.setMaximumTimeBetweenPings(20480);
 		factoryBean.setName(gatewayHubName);
 		factoryBean.setPort(8484);
@@ -235,7 +233,7 @@ public class GatewayHubFactoryBeanTest {
 
 		verify(mockGatewayHub, times(1)).setBindAddress(eq("10.124.210.42"));
 		verify(mockGatewayHub, times(1)).setManualStart(eq(false));
-		//verify(mockGatewayHub, times(1)).setMaxConnections(eq(50));
+		verify(mockGatewayHub, times(1)).setMaxConnections(eq(50));
 		verify(mockGatewayHub, times(1)).setMaximumTimeBetweenPings(eq(20480));
 		verify(mockGatewayHub, times(1)).setSocketBufferSize(eq(4096));
 		verify(mockGatewayHub, times(1)).setStartupPolicy(eq(StartupPolicyType.PRIMARY.getName()));
@@ -305,6 +303,7 @@ public class GatewayHubFactoryBeanTest {
 
 		verify(mockGatewayHub, times(1)).setBindAddress(eq(GatewayHub.DEFAULT_BIND_ADDRESS));
 		verify(mockGatewayHub, times(1)).setManualStart(eq(GatewayHub.DEFAULT_MANUAL_START));
+		verify(mockGatewayHub, times(1)).setMaxConnections(GatewayHub.DEFAULT_MAX_CONNECTIONS);
 		verify(mockGatewayHub, times(1)).setMaximumTimeBetweenPings(eq(GatewayHub.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS));
 		verify(mockGatewayHub, times(1)).setSocketBufferSize(eq(GatewayHub.DEFAULT_SOCKET_BUFFER_SIZE));
 		verify(mockGatewayHub, times(1)).setStartupPolicy(eq(GatewayHub.DEFAULT_STARTUP_POLICY));

@@ -48,22 +48,6 @@ class GatewayHubParser extends AbstractSimpleBeanDefinitionParser {
 		return GatewayHubFactoryBean.class;
 	}
 
-	/*
-		<xsd:attribute name="max-connections" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Sets the maximum number of Gateway connections allowed.
-            	]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="max-time-between-pings" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Sets the maximum amount of time between client pings.
-            	]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	 */
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
@@ -72,7 +56,7 @@ Sets the maximum amount of time between client pings.
 
 		ParsingUtils.setPropertyValue(element, builder, "bind-address");
 		ParsingUtils.setPropertyValue(element, builder, "manual-start");
-		//ParsingUtils.setPropertyValue(element, builder, "max-connections");
+		ParsingUtils.setPropertyValue(element, builder, "max-connections");
 		ParsingUtils.setPropertyValue(element, builder, "max-time-between-pings", "maximumTimeBetweenPings");
 		ParsingUtils.setPropertyValue(element, builder, "port");
 		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");

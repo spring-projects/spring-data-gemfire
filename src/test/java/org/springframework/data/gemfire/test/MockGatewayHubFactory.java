@@ -51,7 +51,7 @@ public class MockGatewayHubFactory extends AbstractMockerySupport {
 
 	private Boolean manualStart = GatewayHub.DEFAULT_MANUAL_START;
 
-	//private Integer maximumConnections = GatewayHub.DEFAULT_MAXIMUM_CONNECTIONS;
+	private Integer maximumConnections = GatewayHub.DEFAULT_MAX_CONNECTIONS;
 	private Integer maximumTimeBetweenPings = GatewayHub.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
 	private Integer socketBufferSize = GatewayHub.DEFAULT_SOCKET_BUFFER_SIZE;
 
@@ -94,20 +94,18 @@ public class MockGatewayHubFactory extends AbstractMockerySupport {
 			}
 		});
 
-		/*
 		doAnswer(new Answer<Void>() {
 			@Override public Void answer(final InvocationOnMock invocation) throws Throwable {
 				maximumConnections = invocation.getArgumentAt(0, Integer.class);
 				return null;
 			}
-		}).when(mockGatewayHub).setMaximumConnections(anyInt());
+		}).when(mockGatewayHub).setMaxConnections(anyInt());
 
-		when(mockGatewayHub.getMaximumConnections()).thenAnswer(new Answer<Integer>() {
+		when(mockGatewayHub.getMaxConnections()).thenAnswer(new Answer<Integer>() {
 			@Override public Integer answer(final InvocationOnMock invocation) throws Throwable {
 				return maximumConnections;
 			}
 		});
-		*/
 
 		doAnswer(new Answer<Void>() {
 			@Override public Void answer(final InvocationOnMock invocation) throws Throwable {

@@ -2986,6 +2986,20 @@ Specifies if the gateway hub is manually (true) or automatically(false) started
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="max-connections" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the maximum number of Gateway connections allowed.
+            	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="max-time-between-pings" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the maximum amount of time between client pings.
+            	]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -3008,12 +3022,9 @@ Specifies the startup policy (primary,secondary, none) for the gateway hub
 Deprecated as of Gemfire 7
 ]]></xsd:documentation>
 		</xsd:annotation>
-		<xsd:attribute name="endpoint-id" type="xsd:string" use="required">
-		</xsd:attribute>
-		<xsd:attribute name="host" type="xsd:string" use="required">
-		</xsd:attribute>
-		<xsd:attribute name="port" type="xsd:string" use="required">
-		</xsd:attribute>
+		<xsd:attribute name="endpoint-id" type="xsd:string" use="required"/>
+		<xsd:attribute name="host" type="xsd:string" use="required"/>
+		<xsd:attribute name="port" type="xsd:string" use="required"/>
 	</xsd:complexType>
 	<!-- -->
 	<xsd:complexType name="gatewayQueueType">
@@ -3097,8 +3108,7 @@ An gateway event listener definition for the gateway
 					</xsd:annotation>
 					<xsd:complexType>
 						<xsd:sequence>
-							<xsd:any namespace="##other" processContents="skip"
-									 minOccurs="0" maxOccurs="unbounded">
+							<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
 Inner bean definition of the gateway event listener

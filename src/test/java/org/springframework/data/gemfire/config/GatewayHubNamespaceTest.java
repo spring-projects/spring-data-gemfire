@@ -94,6 +94,7 @@ public class GatewayHubNamespaceTest {
 		assertEquals("localhost", gatewayHub.getBindAddress());
 		assertEquals("TestGatewayHub", gatewayHub.getId());
 		assertTrue(gatewayHub.getManualStart());
+		assertEquals(125, gatewayHub.getMaxConnections());
 		assertEquals(5000, gatewayHub.getMaximumTimeBetweenPings());
 		assertEquals(45123, gatewayHub.getPort());
 		assertEquals(16384, gatewayHub.getSocketBufferSize());

@@ -48,7 +48,7 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 
 	private GatewayHub gatewayHub;
 
-	//private Integer maxConnections;
+	private Integer maxConnections;
 	private Integer maximumTimeBetweenPings;
 	private Integer port;
 	private Integer socketBufferSize;
@@ -92,7 +92,7 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 
 		gatewayHub.setBindAddress(getBindAddress());
 		gatewayHub.setManualStart(isManualStart(GatewayHub.DEFAULT_MANUAL_START));
-		//gatewayHub.setMaxConnections(getMaxConnections());
+		gatewayHub.setMaxConnections(getMaxConnections());
 		gatewayHub.setMaximumTimeBetweenPings(getMaximumTimeBetweenPings());
 		gatewayHub.setSocketBufferSize(getSocketBufferSize());
 		gatewayHub.setStartupPolicy(getStartupPolicy().getName());
@@ -173,7 +173,6 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 		return (manualStart != null ? manualStart :  defaultManualStart);
 	}
 
-	/*
 	public void setMaxConnections(Integer maxConnections) {
 		this.maxConnections = maxConnections;
 	}
@@ -182,7 +181,6 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 	Integer getMaxConnections() {
 		return (maxConnections != null ? maxConnections : GatewayHub.DEFAULT_MAX_CONNECTIONS);
 	}
-	*/
 
 	public void setMaximumTimeBetweenPings(Integer maximumTimeBetweenPings) {
 		this.maximumTimeBetweenPings = maximumTimeBetweenPings;
