@@ -56,7 +56,7 @@ class GatewayHubParser extends AbstractSimpleBeanDefinitionParser {
 
 		ParsingUtils.setPropertyValue(element, builder, "bind-address");
 		ParsingUtils.setPropertyValue(element, builder, "manual-start");
-		//ParsingUtils.setPropertyValue(element, builder, "max-time-between-pings", "maximumTimeBetweenPings");
+		ParsingUtils.setPropertyValue(element, builder, "max-time-between-pings", "maximumTimeBetweenPings");
 		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
 		ParsingUtils.setPropertyValue(element, builder, "startup-policy");
 		ParsingUtils.setPropertyValue(element, builder, "port");

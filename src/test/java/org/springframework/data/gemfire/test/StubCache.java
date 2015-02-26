@@ -411,8 +411,11 @@ public class StubCache implements Cache {
 	 * @see com.gemstone.gemfire.cache.Cache#addGatewayHub(java.lang.String, int)
 	 */
 	@Override
-	public GatewayHub addGatewayHub(String name, int port) {
-		return mockGatewayHub();
+	public GatewayHub addGatewayHub(String id, int port) {
+		GatewayHub gatewayHub = getGatewayHub(id);
+		gatewayHub = (gatewayHub != null ? gatewayHub : new MockGatewayHubFactory().mockGatewayHub(id, port));
+		gatewayHubs.add(gatewayHub);
+		return gatewayHub;
 	}
 
 	/* (non-Javadoc)
@@ -557,15 +560,21 @@ public class StubCache implements Cache {
 	@Override
 	@Deprecated
 	public GatewayHub getGatewayHub() {
-		return mockGatewayHub();
+		return (gatewayHubs.isEmpty() ? null : gatewayHubs.get(0));
 	}
 
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHub(java.lang.String)
 	 */
 	@Override
-	public GatewayHub getGatewayHub(String name) {
-		return mockGatewayHub();
+	public GatewayHub getGatewayHub(String id) {
+		for (GatewayHub gatewayHub : gatewayHubs) {
+			if (gatewayHub.getId().equals(id)) {
+				return gatewayHub;
+			}
+		}
+
+		return null;
 	}
 
 	/* (non-Javadoc)
