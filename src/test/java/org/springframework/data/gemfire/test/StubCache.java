@@ -117,8 +117,9 @@ public class StubCache implements Cache {
 
 	private HashMap<String, Region> allRegions;
 
-	public StubCache(){
+	public StubCache() {
 		this.allRegions = new HashMap<String,Region>();
+		this.gatewayHubs = new ArrayList<GatewayHub>();
 	}
 	
 	/* (non-Javadoc)

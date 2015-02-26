@@ -196,7 +196,7 @@ public class GatewayHubFactoryBeanTest {
 		gatewayProxy.setOrderPolicy(" thReAD  ");
 		gatewayProxy.setQueue(gatewayQueue);
 		gatewayProxy.setSocketBufferSize(16384);
-		//gatewayProxy.setSocketReadTimeout(300);
+		gatewayProxy.setSocketReadTimeout(300);
 
 		GatewayHub mockGatewayHub = mock(GatewayHub.class, "testDoInit.MockGatewayHub");
 
@@ -215,7 +215,6 @@ public class GatewayHubFactoryBeanTest {
 		factoryBean.setBindAddress("10.124.210.42");
 		factoryBean.setGateways(Arrays.asList(gatewayProxy));
 		factoryBean.setManualStart(false);
-		//factoryBean.setMaxConnections(50);
 		factoryBean.setMaximumTimeBetweenPings(20480);
 		factoryBean.setName(gatewayHubName);
 		factoryBean.setPort(8484);
@@ -225,7 +224,6 @@ public class GatewayHubFactoryBeanTest {
 
 		verify(mockGatewayHub, times(1)).setBindAddress(eq("10.124.210.42"));
 		verify(mockGatewayHub, times(1)).setManualStart(eq(false));
-		//verify(mockGatewayHub, times(1)).setMaxConnections(eq(50));
 		verify(mockGatewayHub, times(1)).setMaximumTimeBetweenPings(eq(20480));
 		verify(mockGatewayHub, times(1)).setSocketBufferSize(eq(4096));
 		verify(mockGatewayHub, times(1)).setStartupPolicy(eq("primary"));
@@ -238,7 +236,7 @@ public class GatewayHubFactoryBeanTest {
 		verify(mockGateway, times(1)).addListener(same(mockGatewayListener));
 		verify(mockGateway, times(1)).setOrderPolicy(eq(Gateway.OrderPolicy.THREAD));
 		verify(mockGateway, times(1)).setSocketBufferSize(eq(gatewayProxy.getSocketBufferSize()));
-		//verify(mockGateway, times(1)).setSocketReadTimeout(eq(gatewayProxy.getSocketReadTimeout()));
+		verify(mockGateway, times(1)).setSocketReadTimeout(eq(gatewayProxy.getSocketReadTimeout()));
 		verify(mockGateway, times(1)).getQueueAttributes();
 		verify(mockGatewayQueueAttributes, times(1)).setAlertThreshold(eq(gatewayQueue.getAlertThreshold()));
 		verify(mockGatewayQueueAttributes, times(1)).setBatchConflation(eq(gatewayQueue.getEnableBatchConflation()));
@@ -327,7 +325,7 @@ public class GatewayHubFactoryBeanTest {
 		gatewayProxy.setOrderPolicy(" thREAD  ");
 		gatewayProxy.setQueue(gatewayQueue);
 		gatewayProxy.setSocketBufferSize(4096);
-		//gatewayProxy.setSocketReadTimeout(60);
+		gatewayProxy.setSocketReadTimeout(60);
 
 		GatewayHub mockGatewayHub = mock(GatewayHub.class, "testGatewayQueueWithOverflowNoPersistence.MockGatewayHub");
 
@@ -357,7 +355,7 @@ public class GatewayHubFactoryBeanTest {
 		verify(mockGatewayHub, times(1)).addGateway(eq(gatewayProxy.getId()), eq(gatewayProxy.getConcurrencyLevel()));
 		verify(mockGateway, times(1)).setOrderPolicy(eq(Gateway.OrderPolicy.THREAD));
 		verify(mockGateway, times(1)).setSocketBufferSize(eq(gatewayProxy.getSocketBufferSize()));
-		//verify(mockGateway, times(1)).setSocketReadTimeout(eq(gatewayProxy.getSocketReadTimeout()));
+		verify(mockGateway, times(1)).setSocketReadTimeout(eq(gatewayProxy.getSocketReadTimeout()));
 		verify(mockGatewayQueueAttributes, times(1)).setAlertThreshold(gatewayQueue.getAlertThreshold());
 		verify(mockGatewayQueueAttributes, times(1)).setBatchConflation(gatewayQueue.getEnableBatchConflation());
 		verify(mockGatewayQueueAttributes, times(1)).setBatchSize(gatewayQueue.getBatchSize());

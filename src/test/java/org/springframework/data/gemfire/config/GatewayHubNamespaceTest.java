@@ -90,6 +90,25 @@ public class GatewayHubNamespaceTest {
 
 	@Test
 	public void testGatewayConfiguration() {
+		// NOTE don't ask!!!  From GemFire 7.0.2 source (GatewayImpl.setSocketReadTimeout(..)) ...
+/*
+  public void setSocketReadTimeout(int socketReadTimeout)
+  {
+    synchronized (this.controlLock) {
+      checkRunning();
+      getLogger().warning(LocalizedStrings.GatewayImpl_GATEWAY_SOCKET_READ_TIMEOUT_DISABLED);
+      // do nothing on purpose...
+      // setSocketReadTimeout is now optional and this impl ignores it
+      // setSocketReadTimeout was causing too many problems because customers
+      //    kept using too small of a value
+    }
+*/
+		// This was changed in GemFire 8 and 8.1 to respect the user specified value (argh!!!).
+
+		final int expectedSocketReadTimeout =
+			(Boolean.getBoolean(GemfireTestApplicationContextInitializer.GEMFIRE_TEST_RUNNER_DISABLED)
+				? Gateway.DEFAULT_SOCKET_READ_TIMEOUT : 75000);
+
 		assertNotNull("The 'TestGatewayHub' GatewayHub was not properly initialized!", gatewayHub);
 		assertEquals("localhost", gatewayHub.getBindAddress());
 		assertEquals("TestGatewayHub", gatewayHub.getId());
@@ -112,7 +131,7 @@ public class GatewayHubNamespaceTest {
 		assertEquals(8, gatewayOne.getConcurrencyLevel());
 		assertEquals(Gateway.OrderPolicy.THREAD, gatewayOne.getOrderPolicy());
 		assertEquals(65536, gatewayOne.getSocketBufferSize());
-		//assertEquals(75000, gatewayOne.getSocketReadTimeout());
+		assertEquals(expectedSocketReadTimeout, gatewayOne.getSocketReadTimeout());
 		assertTrue(gatewayOne.getEndpoints() == null || gatewayOne.getEndpoints().isEmpty());
 
 		List<GatewayEventListener> gatewayEventListeners = gatewayOne.getListeners();
