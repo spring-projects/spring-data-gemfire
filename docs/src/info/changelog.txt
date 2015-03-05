@@ -3,6 +3,23 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.6.0.RC1 (2015-03-05)
+-----------------------------------------
+* SGF-380 - Release 1.6 RC1.
+* SGF-379 - Specifying multiple or a single Gateway Endpoint with one or more GatewayListeners is not permitted by the SDG XML namespace (XSD) gatewayType element definition.
+* SGF-378 - SDG completely ignores the 'socket-read-timeout' attribute on the Gateway element nested in a GatewayHub.
+* SGF-376 - The GemFire WAN GatewayHub support needs refactoring and test coverage.
+* SGF-375 - The <gfe:gateway-hub> XML namespace element is missing the 'max-time-between-pings' attribute.
+* SGF-374 - Specifying a disk-store on a GatewayHub forces the GatewayHub to be persistent.
+* SGF-366 - Unable to create local-only, client-based Region Indexes using SDG's <gfe:index> and corresponding IndexFactoryBean functionality.
+* SGF-364 - Move EvictionAttributesFactoryBean and SubscriptionAttributesFactoryBean along with supporting enum types from the ..data.gemfire.config package to ..data.gemfire.
+* SGF-363 - Upgrade to Spring Framework 4.0.9.RELEASE.
+* SGF-360 - Failures in SubRegionNamespaceTests when built with Java 8.
+* SGF-358 - Enhance SDG's Function annotation support to allow strongly-typed arguments in the context of PDX even when read-serialized is set to true.
+* SGF-354 - SimpleGemfireRepository.deleteAll that supports transactions.
+* SGF-289 - Enumeration restrictions (xsd:enumeration) should be avoided in the XML schema.
+
+
 Changes in version 1.5.2.RELEASE (2015-01-28)
 ---------------------------------------------
 * SGF-368 - Release 1.5.2.
