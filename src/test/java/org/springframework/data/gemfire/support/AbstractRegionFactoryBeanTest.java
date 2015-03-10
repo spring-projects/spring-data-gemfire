@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.support;
 
 import java.io.File;
@@ -31,33 +32,18 @@ import com.gemstone.gemfire.cache.GemFireCache;
 
 /**
  * @author David Turanski
- * 
+ * @author John Blum
  */
 public abstract class AbstractRegionFactoryBeanTest {
-	protected GemFireCache cache;
 
-	Map<String, RegionFactoryBeanConfig> regionFactoryBeanConfigs = new HashMap<String, RegionFactoryBeanConfig>();
+	private GemFireCache cache;
 
-	@Before
-	public void setUp() throws Exception {
- 
-		cache = new StubCache();
-	}
-
-	@Test
-	public void testAll() throws Exception {
-		createRegionFactoryBeanConfigs();
-		for (RegionFactoryBeanConfig rfbc : regionFactoryBeanConfigs.values()) {
-			rfbc.test();
-		}
-	}
+	private Map<String, RegionFactoryBeanConfig> regionFactoryBeanConfigs = new HashMap<String, RegionFactoryBeanConfig>();
 
 	@AfterClass
 	public static void cleanUp() {
 		for (String name : new File(".").list(new FilenameFilter() {
-
-			@Override
-			public boolean accept(File dir, String name) {
+			@Override public boolean accept(File dir, String name) {
 				return name.startsWith("BACKUP");
 			}
 		})) {
@@ -65,49 +51,69 @@ public abstract class AbstractRegionFactoryBeanTest {
 		}
 	}
 
-	protected void addRFBConfig(RegionFactoryBeanConfig rfbc) {
-		if (regionFactoryBeanConfigs.containsKey(rfbc.regionName)) {
-			throw new RuntimeException("duplicate region name " + rfbc.regionName);
-		}
-		regionFactoryBeanConfigs.put(rfbc.regionName, rfbc);
+	@Before
+	public void setUp() throws Exception {
+		cache = new StubCache();
 	}
 
 	@After
 	public void tearDown() {
 		cache.close();
+		cache = null;
 	}
 
+	@Test
+	public void testAll() throws Exception {
+		createRegionFactoryBeanConfigs();
+
+		for (RegionFactoryBeanConfig regionFactoryBeanConfig : regionFactoryBeanConfigs.values()) {
+			regionFactoryBeanConfig.test();
+		}
+	}
+
+	protected void add(RegionFactoryBeanConfig regionFactoryBeanConfig) {
+		if (regionFactoryBeanConfigs.containsKey(regionFactoryBeanConfig.regionName)) {
+			throw new RuntimeException("duplicate region name " + regionFactoryBeanConfig.regionName);
+		}
+
+		regionFactoryBeanConfigs.put(regionFactoryBeanConfig.regionName, regionFactoryBeanConfig);
+	}
+
+	protected abstract void createRegionFactoryBeanConfigs();
+
 	public abstract class RegionFactoryBeanConfig {
+
+		public Exception exception;
+
 		@SuppressWarnings("rawtypes")
 		public final RegionFactoryBean regionFactoryBean;
 
 		public final String regionName;
 
-		public Exception exception;
-
 		@SuppressWarnings("rawtypes")
-		public RegionFactoryBeanConfig(RegionFactoryBean rfb, String regionName) {
-			this.regionFactoryBean = rfb;
+		public RegionFactoryBeanConfig(RegionFactoryBean regionFactoryBean, String regionName) {
+			this.regionFactoryBean = regionFactoryBean;
 			this.regionName = regionName;
-			rfb.setBeanName(regionName);
-			rfb.setCache(cache);
+			regionFactoryBean.setBeanName(regionName);
+			regionFactoryBean.setCache(cache);
 		}
+
+		public abstract void configureRegionFactoryBean();
 
 		public void test() {
 			configureRegionFactoryBean();
+
 			try {
 				regionFactoryBean.afterPropertiesSet();
 			}
 			catch (Exception e) {
 				this.exception = e;
 			}
+
 			verify();
 		}
-
-		public abstract void configureRegionFactoryBean();
 
 		public abstract void verify();
 	}
 
-	protected abstract void createRegionFactoryBeanConfigs();
 }
