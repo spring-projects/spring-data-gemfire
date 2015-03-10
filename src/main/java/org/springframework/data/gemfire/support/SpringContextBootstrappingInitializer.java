@@ -19,7 +19,10 @@ package org.springframework.data.gemfire.support;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -67,6 +70,8 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	/* package-private */ static volatile ConfigurableApplicationContext applicationContext;
 
 	/* package-private */ static volatile ContextRefreshedEvent contextRefreshedEvent;
+
+	protected final Log logger = initLogger();
 
 	/**
 	 * Gets a reference to the Spring ApplicationContext constructed, configured and initialized inside the GemFire
@@ -145,6 +150,17 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 		}
 
 		return listener;
+	}
+
+	/**
+	 * Initialization method for the logger used to log important messages from this initializer.
+	 *
+	 * @return a Apache Commons Log used to log messages from this initializer
+	 * @see org.apache.commons.logging.LogFactory#getLog(Class)
+	 * @see org.apache.commons.logging.Log
+	 */
+	protected Log initLogger() {
+		return LogFactory.getLog(getClass());
 	}
 
 	/**
@@ -257,6 +273,8 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @param parameters a Properties object containing the configuration parameters and settings defined in the
 	 * GemFire cache.xml &lt;initializer&gt; block for the declared SpringContextBootstrappingInitializer
 	 * GemFire Declarable object.
+	 * @throws org.springframework.context.ApplicationContextException if the Spring ApplicationContext could not be
+	 * successfully created, configured and initialized.
 	 * @see #createApplicationContext(String[], String[])
 	 * @see #initApplicationContext(org.springframework.context.ConfigurableApplicationContext)
 	 * @see #refreshApplicationContext(org.springframework.context.ConfigurableApplicationContext)
@@ -264,30 +282,37 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 */
 	@Override
 	public void init(final Properties parameters) {
-		synchronized (SpringContextBootstrappingInitializer.class) {
-			if (applicationContext == null || !applicationContext.isActive()) {
-				String basePackages = parameters.getProperty(BASE_PACKAGES_PARAMETER);
-				String contextConfigLocations = parameters.getProperty(CONTEXT_CONFIG_LOCATIONS_PARAMETER);
+		try {
+			synchronized (SpringContextBootstrappingInitializer.class) {
+				if (applicationContext == null || !applicationContext.isActive()) {
+					String basePackages = parameters.getProperty(BASE_PACKAGES_PARAMETER);
+					String contextConfigLocations = parameters.getProperty(CONTEXT_CONFIG_LOCATIONS_PARAMETER);
 
-				Assert.isTrue(StringUtils.hasText(basePackages) || StringUtils.hasText(contextConfigLocations),
-					"Either 'basePackages' or the 'contextConfigLocations' parameter must be specified.");
+					Assert.isTrue(StringUtils.hasText(basePackages) || StringUtils.hasText(contextConfigLocations),
+						"Either 'basePackages' or the 'contextConfigLocations' parameter must be specified.");
 
-				String[] basePackagesArray = StringUtils.delimitedListToStringArray(basePackages,
-					COMMA_DELIMITER, CHARS_TO_DELETE);
+					String[] basePackagesArray = StringUtils.delimitedListToStringArray(basePackages,
+						COMMA_DELIMITER, CHARS_TO_DELETE);
 
-				String[] contextConfigLocationsArray = StringUtils.delimitedListToStringArray(contextConfigLocations,
-					COMMA_DELIMITER, CHARS_TO_DELETE);
+					String[] contextConfigLocationsArray = StringUtils.delimitedListToStringArray(contextConfigLocations,
+						COMMA_DELIMITER, CHARS_TO_DELETE);
 
-				ConfigurableApplicationContext localApplicationContext = refreshApplicationContext(
-					initApplicationContext(createApplicationContext( basePackagesArray, contextConfigLocationsArray)));
+					ConfigurableApplicationContext localApplicationContext = refreshApplicationContext(
+						initApplicationContext(createApplicationContext(basePackagesArray, contextConfigLocationsArray)));
 
-				Assert.state(localApplicationContext.isRunning(), String.format(
-					"The Spring ApplicationContext (%1$s) failed to be properly initialized with the context config files (%2$s) or base packages (%3$s)!",
-						nullSafeGetApplicationContextId(applicationContext), Arrays.toString(contextConfigLocationsArray),
-							Arrays.toString(basePackagesArray)));
+					Assert.state(localApplicationContext.isRunning(), String.format(
+						"The Spring ApplicationContext (%1$s) failed to be properly initialized with the context config files (%2$s) or base packages (%3$s)!",
+							nullSafeGetApplicationContextId(localApplicationContext), Arrays.toString(contextConfigLocationsArray),
+								Arrays.toString(basePackagesArray)));
 
-				applicationContext = localApplicationContext;
+					applicationContext = localApplicationContext;
+				}
 			}
+		}
+		catch (Throwable cause) {
+			String message = "Failed to bootstrap the Spring ApplicationContext!";
+			logger.error(message, cause);
+			throw new ApplicationContextException(message, cause);
 		}
 	}
 
