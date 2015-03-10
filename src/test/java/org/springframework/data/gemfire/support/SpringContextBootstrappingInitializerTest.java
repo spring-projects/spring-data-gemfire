@@ -20,6 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -29,10 +32,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
@@ -274,46 +279,88 @@ public class SpringContextBootstrappingInitializerTest {
 
 		try {
 			new SpringContextBootstrappingInitializer().init(createParameters(createParameters(
-					SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER, ""),
-				SpringContextBootstrappingInitializer.BASE_PACKAGES_PARAMETER, ""));
+				SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER, ""),
+					SpringContextBootstrappingInitializer.BASE_PACKAGES_PARAMETER, ""));
 		}
-		catch (IllegalArgumentException expected) {
+		catch (ApplicationContextException expected) {
+			assertTrue(expected.getMessage().contains("Failed to bootstrap the Spring ApplicationContext!"));
+			assertTrue(expected.getCause() instanceof IllegalArgumentException);
 			assertEquals("Either 'basePackages' or the 'contextConfigLocations' parameter must be specified.",
-				expected.getMessage());
-			throw expected;
+				expected.getCause().getMessage());
+			throw (IllegalArgumentException) expected.getCause();
 		}
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testInitWhenApplicationContextIsNotRunning() {
-		assertNull(SpringContextBootstrappingInitializer.applicationContext);
+		try {
+			assertNull(SpringContextBootstrappingInitializer.applicationContext);
 
-		final ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
-			"testInitWhenApplicationContextIsNotRunning");
+			final ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+				"testInitWhenApplicationContextIsNotRunning");
 
-		when(mockApplicationContext.getId()).thenReturn("testInitWhenApplicationContextIsNotRunning");
-		when(mockApplicationContext.isRunning()).thenReturn(false);
+			when(mockApplicationContext.getId()).thenReturn("testInitWhenApplicationContextIsNotRunning");
+			when(mockApplicationContext.isRunning()).thenReturn(false);
+
+			SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
+				@Override
+				protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
+						final String[] configLocations) {
+					return mockApplicationContext;
+				}
+			};
+
+			initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
+				"/path/to/spring/application/context.xml"));
+
+			verify(mockApplicationContext, times(1)).addApplicationListener(same(initializer));
+			verify(mockApplicationContext, times(1)).registerShutdownHook();
+			verify(mockApplicationContext, times(1)).refresh();
+
+			SpringContextBootstrappingInitializer.getApplicationContext();
+		}
+		catch (ApplicationContextException expected) {
+			assertTrue(expected.getMessage().contains("Failed to bootstrap the Spring ApplicationContext!"));
+			assertTrue(expected.getCause() instanceof IllegalStateException);
+			assertEquals("The Spring ApplicationContext (testInitWhenApplicationContextIsNotRunning) failed to be properly initialized with the context config files ([/path/to/spring/application/context.xml]) or base packages ([])!",
+				expected.getCause().getMessage());
+			throw (IllegalStateException) expected.getCause();
+		}
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testInitLogsErrors() throws Throwable {
+		final Log mockLogger = mock(Log.class, "testInitLogsErrors.MockLog");
 
 		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
-			@Override
-			protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
+			@Override protected Log initLogger() {
+				return mockLogger;
+			}
+
+			@Override protected ConfigurableApplicationContext createApplicationContext(final String[] basePackages,
 					final String[] configLocations) {
-				return mockApplicationContext;
+				throw new IllegalStateException("TEST");
 			}
 		};
 
-		initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
-			"/path/to/spring/application/context.xml"));
-
-		verify(mockApplicationContext, times(1)).addApplicationListener(same(initializer));
-		verify(mockApplicationContext, times(1)).registerShutdownHook();
-		verify(mockApplicationContext, times(1)).refresh();
-
-		SpringContextBootstrappingInitializer.getApplicationContext();
+		try {
+			initializer.init(createParameters(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
+				"classpath/to/spring/application/context.xml"));
+		}
+		catch (ApplicationContextException expected) {
+			assertTrue(expected.getMessage().contains("Failed to bootstrap the Spring ApplicationContext!"));
+			assertTrue(expected.getCause() instanceof IllegalStateException);
+			assertEquals("TEST", expected.getCause().getMessage());
+			throw expected.getCause();
+		}
+		finally {
+			verify(mockLogger, times(1)).error(eq("Failed to bootstrap the Spring ApplicationContext!"),
+				any(RuntimeException.class));
+		}
 	}
 
 	protected static void assertNotifiedWithEvent(final TestApplicationListener listener, final ContextRefreshedEvent expectedEvent) {
-		Assert.assertTrue(listener.isNotified());
+		assertTrue(listener.isNotified());
 		Assert.assertSame(expectedEvent, listener.getActualEvent());
 	}
 
