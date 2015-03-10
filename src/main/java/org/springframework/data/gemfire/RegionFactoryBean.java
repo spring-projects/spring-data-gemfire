@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -104,7 +105,8 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	@Override
 	@SuppressWarnings("deprecation")
 	protected Region<K, V> lookupFallback(GemFireCache gemfireCache, String regionName) throws Exception {
-		Assert.isTrue(gemfireCache instanceof Cache, "Unable to create Regions from " + gemfireCache);
+		Assert.isTrue(gemfireCache instanceof Cache, String.format("Unable to create Regions from '%1$s'.",
+			gemfireCache));
 
 		Cache cache = (Cache) gemfireCache;
 
@@ -112,7 +114,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 
 		if (hubId != null) {
 			enableGateway = (enableGateway == null || enableGateway);
-			Assert.isTrue(enableGateway, "The 'hubId' requires the 'enableGateway' property to be true");
+			Assert.isTrue(enableGateway, "The 'hubId' requires the 'enableGateway' property to be true.");
 			regionFactory.setGatewayHubId(hubId);
 		}
 
@@ -193,77 +195,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		return region;
 	}
 
-	private boolean isDiskStoreConfigurationAllowed() {
-		boolean allow = (diskStoreName != null);
-
-		allow &= (getDataPolicy().withPersistence() || (getAttributes() != null
-			&& getAttributes().getEvictionAttributes() != null
-			&& EvictionAction.OVERFLOW_TO_DISK.equals(attributes.getEvictionAttributes().getAction())));
-
-		return allow;
-	}
-
-	/**
-	 * Validates that the settings for Data Policy and the 'persistent' attribute in &lt;gfe:*-region&gt; elements
-	 * are compatible.
-	 *
-	 * @param resolvedDataPolicy the GemFire Data Policy resolved form the Spring GemFire XML namespace configuration
-	 * meta-data.
-	 * @see #isPersistent()
-	 * @see #isNotPersistent()
-	 * @see com.gemstone.gemfire.cache.DataPolicy
-	 */
-	protected void assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy resolvedDataPolicy) {
-		if (resolvedDataPolicy.withPersistence()) {
-			Assert.isTrue(isPersistentUnspecified() || isPersistent(), String.format(
-				"Data Policy '%1$s' is invalid when persistent is false.", resolvedDataPolicy));
-		}
-		else {
-			// NOTE otherwise, the Data Policy is not persistent, so...
-			Assert.isTrue(isPersistentUnspecified() || isNotPersistent(), String.format(
-				"Data Policy '%1$s' is invalid when persistent is true.", resolvedDataPolicy));
-		}
-	}
-
-	/**
-	 * Determines whether the user explicitly set the 'persistent' attribute or not.
-	 *
-	 * @return a boolean value indicating whether the user explicitly set the 'persistent' attribute to true or false.
-	 * @see #isPersistent()
-	 * @see #isNotPersistent()
-	 */
-	protected boolean isPersistentUnspecified() {
-		return (persistent == null);
-	}
-
-	/**
-	 * Returns true when the user explicitly specified a value for the persistent attribute and it is true.  If the
-	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
-	 * and will be determined by the Data Policy.
-	 *
-	 * @return true when the user specified an explicit value for the persistent attribute and it is true;
-	 * false otherwise.
-	 * @see #isNotPersistent()
-	 * @see #isPersistentUnspecified()
-	 */
-	protected boolean isPersistent() {
-		return Boolean.TRUE.equals(persistent);
-	}
-
-	/**
-	 * Returns true when the user explicitly specified a value for the persistent attribute and it is false.  If the
-	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
-	 * and will be determined by the Data Policy.
-	 *
-	 * @return true when the user specified an explicit value for the persistent attribute and it is false;
-	 * false otherwise.
-	 * @see #isPersistent()
-	 * @see #isPersistentUnspecified()
-	 */
-	protected boolean isNotPersistent() {
-		return Boolean.FALSE.equals(persistent);
-	}
-
 	/**
 	 * Creates an instance of RegionFactory using the given Cache instance used to configure and construct the Region
 	 * created by this FactoryBean.
@@ -291,7 +222,14 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/*
-	 * (non-Javadoc) - this method is meant strictly to be overridden for testing purposes!
+	 * (non-Javadoc) - This method should not be considered part of the RegionFactoryBean API
+	 * and is strictly for testing purposes!
+	 *
+	 * NOTE cannot pass RegionAttributes.class as the "targetType" in the second invocation of getFieldValue(..)
+	 * since the "regionAttributes" field is naively declared as a instance of the implementation class type
+	 * (RegionAttributesImpl) rather than the interface type (RegionAttributes)...
+	 * so much for 'programming to interfaces' in GemFire!
+	 *
 	 * @see com.gemstone.gemfire.cache.RegionFactory#attrsFactory
 	 * @see com.gemstone.gemfire.cache.AttributesFactory#regionAttributes
 	 * @see com.gemstone.gemfire.cache.RegionAttributes#getDataPolicy
@@ -299,16 +237,11 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	DataPolicy getDataPolicy(final RegionFactory regionFactory) {
-		// NOTE cannot pass RegionAttributes.class as the "targetType" on the second invocation of getFieldValue(..)
-		// since the "regionAttributes" field is naively of the implementation class type rather than the interface
-		// type... so much for programming to interfaces.
-		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory",
-			com.gemstone.gemfire.cache.AttributesFactory.class), "regionAttributes", null)).getDataPolicy();
+		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory", AttributesFactory.class),
+			"regionAttributes", null)).getDataPolicy();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 */
+	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	private <T> T getFieldValue(final Object source, final String fieldName, final Class<T> targetType) {
 		Field field = ReflectionUtils.findField(source.getClass(), fieldName, targetType);
@@ -330,7 +263,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * @param regionAttributes the RegionAttributes containing the Region configuration settings to merge to the
 	 * RegionFactory.
 	 * @return the RegionFactory with the configuration settings of the RegionAttributes merged.
-	 * @see #hasUserSpecifiedEvictionAttributes(com.gemstone.gemfire.cache.RegionAttributes)
+	 * @see #isUserSpecifiedEvictionAttributes(com.gemstone.gemfire.cache.RegionAttributes)
 	 * @see #validateRegionAttributes(com.gemstone.gemfire.cache.RegionAttributes)
 	 * @see com.gemstone.gemfire.cache.RegionAttributes
 	 * @see com.gemstone.gemfire.cache.RegionFactory
@@ -357,7 +290,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			regionFactory.setEntryTimeToLive(regionAttributes.getEntryTimeToLive());
 
 			// NOTE EvictionAttributes are created by certain RegionShortcuts; need the null check!
-			if (hasUserSpecifiedEvictionAttributes(regionAttributes)) {
+			if (isUserSpecifiedEvictionAttributes(regionAttributes)) {
 				regionFactory.setEvictionAttributes(regionAttributes.getEvictionAttributes());
 			}
 
@@ -381,7 +314,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		return regionFactory;
 	}
 
-	protected <K, V> void mergePartitionAttributes(final RegionFactory<K, V> regionFactory, final RegionAttributes<K, V> regionAttributes) {
+	protected <K, V> void mergePartitionAttributes(final RegionFactory<K, V> regionFactory,
+			final RegionAttributes<K, V> regionAttributes) {
+
 		// NOTE PartitionAttributes are created by certain RegionShortcuts; need the null check since RegionAttributes
 		// can technically return null!
 		// NOTE most likely, the PartitionAttributes will never be null since the PartitionRegionFactoryBean always
@@ -410,22 +345,98 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	}
 
 	/*
-	 * (non-Javadoc) - this method is meant strictly to be overridden for testing purposes!
-	 * NOTE unfortunately, must resort to using a GemFire internal class, ugh!
-	 * @see com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
-	 */
-	boolean hasUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
-		return (regionAttributes instanceof UserSpecifiedRegionAttributes
-			&& ((UserSpecifiedRegionAttributes) regionAttributes).hasEvictionAttributes());
-	}
-
-	/*
-	 * (non-Javadoc) - this method is meant strictly to be overridden for testing purposes!
+	 * (non-Javadoc) - This method should not be considered part of the RegionFactoryBean API
+	 * and is strictly for testing purposes!
+	 *
 	 * @see com.gemstone.gemfire.cache.AttributesFactory#validateAttributes(:RegionAttributes)
 	 */
 	@SuppressWarnings("deprecation")
 	void validateRegionAttributes(final RegionAttributes regionAttributes) {
 		com.gemstone.gemfire.cache.AttributesFactory.validateAttributes(regionAttributes);
+	}
+
+	/*
+	 * (non-Javadoc) - This method should not be considered part of the RegionFactoryBean API
+	 * and is strictly for testing purposes!
+	 *
+	 * NOTE unfortunately, must resort to using a GemFire internal class, ugh!
+	 * @see com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
+	 */
+	boolean isUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
+		return (regionAttributes instanceof UserSpecifiedRegionAttributes
+			&& ((UserSpecifiedRegionAttributes) regionAttributes).hasEvictionAttributes());
+	}
+
+	/* (non-Javadoc) */
+	private boolean isDiskStoreConfigurationAllowed() {
+		boolean allow = (diskStoreName != null);
+
+		allow &= (getDataPolicy().withPersistence() || (getAttributes() != null
+			&& getAttributes().getEvictionAttributes() != null
+			&& EvictionAction.OVERFLOW_TO_DISK.equals(attributes.getEvictionAttributes().getAction())));
+
+		return allow;
+	}
+
+	/**
+	 * Returns true when the user explicitly specified a value for the persistent attribute and it is true.  If the
+	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
+	 * and will be determined by the Data Policy.
+	 *
+	 * @return true when the user specified an explicit value for the persistent attribute and it is true;
+	 * false otherwise.
+	 * @see #isNotPersistent()
+	 * @see #isPersistentUnspecified()
+	 */
+	protected boolean isPersistent() {
+		return Boolean.TRUE.equals(persistent);
+	}
+
+	/**
+	 * Determines whether the user explicitly set the 'persistent' attribute or not.
+	 *
+	 * @return a boolean value indicating whether the user explicitly set the 'persistent' attribute to true or false.
+	 * @see #isPersistent()
+	 * @see #isNotPersistent()
+	 */
+	protected boolean isPersistentUnspecified() {
+		return (persistent == null);
+	}
+
+	/**
+	 * Returns true when the user explicitly specified a value for the persistent attribute and it is false.  If the
+	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
+	 * and will be determined by the Data Policy.
+	 *
+	 * @return true when the user specified an explicit value for the persistent attribute and it is false;
+	 * false otherwise.
+	 * @see #isPersistent()
+	 * @see #isPersistentUnspecified()
+	 */
+	protected boolean isNotPersistent() {
+		return Boolean.FALSE.equals(persistent);
+	}
+
+	/**
+	 * Validates that the settings for Data Policy and the 'persistent' attribute in &lt;gfe:*-region&gt; elements
+	 * are compatible.
+	 *
+	 * @param resolvedDataPolicy the GemFire Data Policy resolved form the Spring GemFire XML namespace configuration
+	 * meta-data.
+	 * @see #isPersistent()
+	 * @see #isNotPersistent()
+	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 */
+	protected void assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy resolvedDataPolicy) {
+		if (resolvedDataPolicy.withPersistence()) {
+			Assert.isTrue(isPersistentUnspecified() || isPersistent(), String.format(
+				"Data Policy '%1$s' is invalid when persistent is false.", resolvedDataPolicy));
+		}
+		else {
+			// NOTE otherwise, the Data Policy is not persistent, so...
+			Assert.isTrue(isPersistentUnspecified() || isNotPersistent(), String.format(
+				"Data Policy '%1$s' is invalid when persistent is true.", resolvedDataPolicy));
+		}
 	}
 
 	/**
@@ -493,11 +504,20 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 			setDataPolicy(resolvedDataPolicy);
 		}
 		else {
-			DataPolicy resolvedDataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.DEFAULT);
+			DataPolicy regionAttributesDataPolicy = getDataPolicy(getAttributes(), DataPolicy.DEFAULT);
+			DataPolicy resolvedDataPolicy = (isPersistent() && DataPolicy.DEFAULT.equals(regionAttributesDataPolicy)
+				? DataPolicy.PERSISTENT_REPLICATE : regionAttributesDataPolicy);
+
+			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
 
 			regionFactory.setDataPolicy(resolvedDataPolicy);
 			setDataPolicy(resolvedDataPolicy);
 		}
+	}
+
+	/* (non-Javadoc) */
+	private DataPolicy getDataPolicy(final RegionAttributes regionAttributes, final DataPolicy defaultDataPolicy) {
+		return (regionAttributes != null ? regionAttributes.getDataPolicy() : defaultDataPolicy);
 	}
 
 	@Override
@@ -620,8 +640,9 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 * @see #setDataPolicy(com.gemstone.gemfire.cache.DataPolicy)
 	 * @deprecated as of 1.4.0, use setDataPolicy(:DataPolicy) instead.
 	 */
+	@Deprecated
 	public void setDataPolicy(String dataPolicyName) {
-		this.dataPolicy = new DataPolicyConverter().convert(dataPolicyName);
+		setDataPolicy(new DataPolicyConverter().convert(dataPolicyName));
 	}
 
 	/**
@@ -677,13 +698,6 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 		this.scope = scope;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 */
-	protected final RegionShortcut getShortcut() {
-		return shortcut;
-	}
-
 	/**
 	 * Configures the Region with a RegionShortcut.
 	 *
@@ -693,6 +707,11 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 	 */
 	public void setShortcut(RegionShortcut shortcut) {
 		this.shortcut = shortcut;
+	}
+
+	/* (non-Javadoc) */
+	protected final RegionShortcut getShortcut() {
+		return shortcut;
 	}
 
 	/**
@@ -723,6 +742,7 @@ public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> imple
 				}
 			}
 		}
+
 		this.running = true;
 	}
 

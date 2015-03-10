@@ -21,9 +21,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.util.ReflectionUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -78,6 +80,10 @@ public class MockRegionFactory<K,V>   {
 		}
 
 		final RegionFactory<K, V> regionFactory = mock(RegionFactory.class);
+
+		Field attrsFactory = ReflectionUtils.findField(RegionFactory.class, "attrsFactory");
+		ReflectionUtils.makeAccessible(attrsFactory);
+		ReflectionUtils.setField(attrsFactory, regionFactory, attributesFactory);
 
 		when(regionFactory.create(anyString())).thenAnswer(new Answer<Region>() {
 			@Override public Region answer(InvocationOnMock invocation) throws Throwable {

@@ -35,12 +35,11 @@ import com.gemstone.gemfire.cache.RegionShortcut;
  * The PartitionedRegionFactoryBeanTest class is a test suite of test cases testing the component functionality
  * and correct behavior of the PartitionedRegionFactoryBean class.
  *
- *
  * @author David Turanski
  * @author John Blum
  * @see org.mockito.Mockito
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
+ * @see org.springframework.data.gemfire.LocalRegionFactoryBean
  * @since 1.3.x
  */
 @SuppressWarnings("unchecked")
@@ -83,8 +82,8 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	@Override
 	protected void createRegionFactoryBeanConfigs() {
-		addRFBConfig(defaultConfig());
-		addRFBConfig(invalidConfig());
+		add(defaultConfig());
+		add(invalidConfig());
 	}
 
 	protected RegionFactory<?, ?> createMockRegionFactory() {
