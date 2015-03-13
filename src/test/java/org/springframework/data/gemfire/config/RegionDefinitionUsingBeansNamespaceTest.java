@@ -24,12 +24,18 @@ import javax.annotation.Resource;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * The RawRegionBeanDefinitionTest class is a test suite of test cases testing the contract and functionality
@@ -37,6 +43,7 @@ import com.gemstone.gemfire.cache.Region;
  * when used as raw bean definition in Spring XML configuration meta-data.
  *
  * @author John Blum
+ * @see org.junit.Test
  * @see org.springframework.data.gemfire.PartitionAttributesFactoryBean
  * @see org.springframework.data.gemfire.RegionAttributesFactoryBean
  * @see org.springframework.data.gemfire.RegionFactoryBean
@@ -52,12 +59,18 @@ import com.gemstone.gemfire.cache.Region;
 @SuppressWarnings("unused")
 public class RegionDefinitionUsingBeansNamespaceTest {
 
+	@Autowired
+	private ApplicationContext context;
+
 	@Resource(name = "Example")
 	private Region<?, ?> example;
 
+	@Resource(name = "AnotherExample")
+	private Region<?, ?> anotherExample;
+
 	@Test
 	public void testExampleRegionBeanDefinitionConfiguration() {
-		assertNotNull("The 'Example' Region was not properly configured and initialized!", example);
+		assertNotNull("The '/Example' Region was not properly configured and initialized!", example);
 		assertEquals("Example", example.getName());
 		assertEquals("/Example", example.getFullPath());
 		assertNotNull(example.getAttributes());
@@ -66,6 +79,38 @@ public class RegionDefinitionUsingBeansNamespaceTest {
 		assertNotNull(example.getAttributes().getPartitionAttributes());
 		assertEquals(1, example.getAttributes().getPartitionAttributes().getRedundantCopies());
 		assertEquals(0, example.getAttributes().getPartitionAttributes().getRecoveryDelay());
+	}
+
+	@Test
+	public void testAnotherExampleRegionFactoryBeanConfiguration() throws Exception {
+		RegionFactoryBean<?, ?> anotherExampleRegionFactoryBean = context.getBean("&AnotherExample",
+			RegionFactoryBean.class);
+
+		assertNotNull(anotherExampleRegionFactoryBean);
+		assertEquals(DataPolicy.PERSISTENT_PARTITION, anotherExampleRegionFactoryBean.getDataPolicy());
+		assertTrue(Boolean.TRUE.equals(TestUtils.readField("persistent", anotherExampleRegionFactoryBean)));
+
+		RegionAttributes<?, ?> anotherExampleRegionAttributes = TestUtils.readField("attributes",
+			anotherExampleRegionFactoryBean);
+
+		assertNotNull(anotherExampleRegionAttributes);
+		assertEquals(DataPolicy.PARTITION, anotherExampleRegionAttributes.getDataPolicy());
+
+		PartitionAttributes<?, ?> anotherExamplePartitionAttributes = anotherExampleRegionAttributes.getPartitionAttributes();
+
+		assertNotNull(anotherExamplePartitionAttributes);
+		assertEquals(2, anotherExamplePartitionAttributes.getRedundantCopies());
+	}
+
+	@Test
+	public void testAnotherExampleRegionDefinitionConfiguration() {
+		assertNotNull("The '/AnotherExample' Region was not properly configured and initialized!", anotherExample);
+		assertEquals("AnotherExample", anotherExample.getName());
+		assertEquals("/AnotherExample", anotherExample.getFullPath());
+		assertNotNull(anotherExample.getAttributes());
+		assertEquals(DataPolicy.PERSISTENT_PARTITION, anotherExample.getAttributes().getDataPolicy());
+		assertNotNull(anotherExample.getAttributes().getPartitionAttributes());
+		assertEquals(2, anotherExample.getAttributes().getPartitionAttributes().getRedundantCopies());
 	}
 
 }

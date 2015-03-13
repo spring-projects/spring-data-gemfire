@@ -11,7 +11,7 @@
 ">
 
 	<util:properties id="gemfireProperties">
-		<prop key="name">RawRegionBeanDefinitionTest</prop>
+		<prop key="name">RegionDefinitionUsingBeansNamespaceTest</prop>
 		<prop key="mcast-port">0</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
@@ -26,6 +26,17 @@
 				<property name="partitionAttributes">
 					<bean class="org.springframework.data.gemfire.PartitionAttributesFactoryBean"
 						  p:redundantCopies="1" p:recoveryDelay="0"/>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="AnotherExample" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="gemfireCache"
+		  p:dataPolicy="PERSISTENT_PARTITION" p:persistent="true">
+		<property name="attributes">
+			<bean class="org.springframework.data.gemfire.RegionAttributesFactoryBean" p:dataPolicy="PARTITION">
+				<property name="partitionAttributes">
+					<bean class="org.springframework.data.gemfire.PartitionAttributesFactoryBean" p:redundantCopies="2"/>
 				</property>
 			</bean>
 		</property>
