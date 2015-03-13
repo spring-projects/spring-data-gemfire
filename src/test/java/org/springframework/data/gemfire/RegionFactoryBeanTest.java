@@ -72,7 +72,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 @SuppressWarnings("unchecked")
 public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
-	private final RegionFactoryBean factoryBean = new RegionFactoryBean();
+	private final RegionFactoryBean factoryBean = new TestRegionFactoryBean();
 
 	@After
 	public void tearDown() {
@@ -82,7 +82,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	@SuppressWarnings("rawtypes")
 	private RegionFactoryBeanConfig defaultConfig() {
-		return new RegionFactoryBeanConfig(new RegionFactoryBean(), "default") {
+		return new RegionFactoryBeanConfig(new TestRegionFactoryBean(), "default") {
 			@Override
 			public void configureRegionFactoryBean() {
 			}
@@ -97,7 +97,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	@SuppressWarnings("rawtypes")
 	private RegionFactoryBeanConfig persistentConfig() {
-		return new RegionFactoryBeanConfig(new RegionFactoryBean(), "persistent") {
+		return new RegionFactoryBeanConfig(new TestRegionFactoryBean(), "persistent") {
 			@Override
 			public void configureRegionFactoryBean() {
 				regionFactoryBean.setPersistent(true);
@@ -113,7 +113,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	@SuppressWarnings({ "deprecation", "rawtypes" })
 	private RegionFactoryBeanConfig invalidPersistentConfig() {
-		return new RegionFactoryBeanConfig(new RegionFactoryBean(), "invalid-persistence") {
+		return new RegionFactoryBeanConfig(new TestRegionFactoryBean(), "invalid-persistence") {
 			@Override
 			public void configureRegionFactoryBean() {
 				regionFactoryBean.setDataPolicy("persistent_replicate");
@@ -169,7 +169,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	}
 	@Test
 	public void testAssertDataPolicyAndPersistentAttributesAreCompatible() {
-		RegionFactoryBean<?, ?> factoryBean = new RegionFactoryBean<Object, Object>();
+		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<Object, Object>();
 
 		factoryBean.setPersistent(null);
 		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PARTITION);
@@ -187,7 +187,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testAssertNonPersistentDataPolicyWithPersistentAttribute() {
 		try {
-			RegionFactoryBean<?, ?> factoryBean = new RegionFactoryBean<Object, Object>();
+			RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<Object, Object>();
 			factoryBean.setPersistent(true);
 			factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.REPLICATE);
 		}
@@ -200,7 +200,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testAssertPersistentDataPolicyWithNonPersistentAttribute() {
 		try {
-			RegionFactoryBean<?, ?> factoryBean = new RegionFactoryBean<Object, Object>();
+			RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<Object, Object>();
 			factoryBean.setPersistent(false);
 			factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PERSISTENT_PARTITION);
 		}
@@ -213,7 +213,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	@Test
 	public void testIsPersistent() {
-		RegionFactoryBean<?, ?> factoryBean = new RegionFactoryBean<Object, Object>();
+		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<Object, Object>();
 
 		assertFalse(factoryBean.isPersistent());
 
@@ -228,7 +228,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	@Test
 	public void testIsPersistentUnspecified() {
-		RegionFactoryBean<?, ?> factoryBean = new RegionFactoryBean<Object, Object>();
+		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<Object, Object>();
 
 		assertTrue(factoryBean.isPersistentUnspecified());
 
@@ -247,7 +247,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	@Test
 	public void testIsNotPersistent() {
-		RegionFactoryBean<?, ?> factoryBean = new RegionFactoryBean<Object, Object>();
+		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<Object, Object>();
 
 		assertFalse(factoryBean.isNotPersistent());
 
@@ -306,12 +306,11 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		Cache mockCache = mock(Cache.class);
 
 		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
-
-		final RegionFactory mockRegionFactory = createMockRegionFactory();
+		RegionFactory mockRegionFactory = createMockRegionFactory();
 
 		when(mockCache.createRegionFactory(eq(mockRegionAttributes))).thenReturn(mockRegionFactory);
 
-		RegionFactoryBean factoryBean = new RegionFactoryBean();
+		RegionFactoryBean factoryBean = new TestRegionFactoryBean();
 
 		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setShortcut(null);
@@ -324,12 +323,11 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	@Test
 	public void testCreateRegionFactory() {
 		Cache mockCache = mock(Cache.class);
-
-		final RegionFactory mockRegionFactory = createMockRegionFactory();
+		RegionFactory mockRegionFactory = createMockRegionFactory();
 
 		when(mockCache.createRegionFactory()).thenReturn(mockRegionFactory);
 
-		RegionFactoryBean factoryBean = new RegionFactoryBean();
+		RegionFactoryBean factoryBean = new TestRegionFactoryBean();
 
 		factoryBean.setAttributes(null);
 		factoryBean.setShortcut(null);
@@ -1052,6 +1050,9 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		protected TestRegionFactory() {
 			super((GemFireCacheImpl) null);
 		}
+	}
+
+	protected static class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	}
 
 }

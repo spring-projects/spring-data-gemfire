@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.gemfire.RegionFactoryBean;
 
 /**
  * The InvalidRegionDefinitionUsingBeansNamespaceTest class is a test suite of test cases testing the definition of
@@ -46,6 +47,10 @@ public class InvalidRegionDefinitionUsingBeansNamespaceTest {
 			assertEquals("Data Policy 'REPLICATE' is invalid when persistent is true.", expected.getCause().getMessage());
 			throw (IllegalArgumentException) expected.getCause();
 		}
+	}
+
+	@SuppressWarnings("unused")
+	public static final class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	}
 
 }

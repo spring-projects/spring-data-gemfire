@@ -18,7 +18,7 @@ package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.LookupRegionFactoryBean;
 import org.w3c.dom.Element;
 
 /**
@@ -32,7 +32,7 @@ class LookupRegionParser extends AbstractRegionParser {
 
 	@Override
 	protected Class<?> getRegionFactoryClass() {
-		return RegionLookupFactoryBean.class;
+		return LookupRegionFactoryBean.class;
 	}
 
 	@Override

@@ -20,8 +20,8 @@
 
 	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
 
-	<bean id="Example" class="org.springframework.data.gemfire.RegionFactoryBean" p:cache-ref="gemfireCache"
-		  p:persistent="true">
+	<bean id="Example" class="org.springframework.data.gemfire.config.InvalidRegionDefinitionUsingBeansNamespaceTest$TestRegionFactoryBean"
+		  p:cache-ref="gemfireCache" p:persistent="true">
 		<property name="attributes">
 			<bean class="org.springframework.data.gemfire.RegionAttributesFactoryBean" p:dataPolicy="REPLICATE"/>
 		</property>

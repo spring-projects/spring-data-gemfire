@@ -66,7 +66,7 @@ public class SubRegionTest extends RecreatingContextTest {
 		assertEquals("/Outer", outer.getFullPath());
 		assertSame(outer, cache.getRegion("/Outer"));
 
-		RegionFactoryBean subRegionFactory = new RegionFactoryBean();
+		RegionFactoryBean subRegionFactory = new RegionFactoryBean() { };
 
 		subRegionFactory.setCache(cache);
 		subRegionFactory.setParent(outer);

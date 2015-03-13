@@ -63,7 +63,7 @@ import com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes;
  * @author John Blum
  */
 @SuppressWarnings("unused")
-public class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean, SmartLifecycle {
+public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean, SmartLifecycle {
 
 	protected final Log log = LogFactory.getLog(getClass());
 

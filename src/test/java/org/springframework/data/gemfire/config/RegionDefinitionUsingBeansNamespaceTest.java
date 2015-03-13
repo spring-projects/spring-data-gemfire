@@ -113,4 +113,7 @@ public class RegionDefinitionUsingBeansNamespaceTest {
 		assertEquals(2, anotherExample.getAttributes().getPartitionAttributes().getRedundantCopies());
 	}
 
+	public static final class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
+	}
+
 }

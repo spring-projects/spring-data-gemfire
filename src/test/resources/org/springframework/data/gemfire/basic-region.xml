@@ -17,7 +17,7 @@
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<bean id="replicate-persistent-region" class="org.springframework.data.gemfire.RegionFactoryBean">
+	<bean id="replicate-persistent-region" class="org.springframework.data.gemfire.RegionFactoryBeanTest$TestRegionFactoryBean">
 		<property name="cache" ref="gemfireCache"/>
 		<property name="dataPolicy" value="REPLICATE_PERSISTENT"/>
 	</bean>
