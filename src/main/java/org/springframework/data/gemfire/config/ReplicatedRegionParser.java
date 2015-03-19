@@ -47,7 +47,7 @@ class ReplicatedRegionParser extends AbstractRegionParser {
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			RegionAttributesFactoryBean.class);
 
-		super.doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder, subRegion);
+		doParseCommonRegionConfiguration(element, parserContext, builder, regionAttributesBuilder, subRegion);
 
 		builder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 	}

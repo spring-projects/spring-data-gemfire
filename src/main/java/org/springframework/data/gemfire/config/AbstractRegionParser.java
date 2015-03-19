@@ -73,8 +73,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 		builder.setAbstract(isRegionTemplate(element));
-		boolean subRegion = isSubRegion(element);
-        doParseRegion(element, parserContext, builder, subRegion);
+        doParseRegion(element, parserContext, builder, isSubRegion(element));
 	}
 
 	protected abstract void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
@@ -117,7 +116,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		// Factory will enable gateway if it is not set and hub-id is set.
 		if (StringUtils.hasText(enableGateway)) {
 			if (GemfireUtils.isGemfireVersion7OrAbove()) {
-				log.warn("'enable-gateway' is deprecated since Gemfire 7.0");
+				log.warn("'enable-gateway' has been deprecated since Gemfire 7.0");
 			}
 		}
 
@@ -125,11 +124,11 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		if (StringUtils.hasText(hubId)) {
 			if (GemfireUtils.isGemfireVersion7OrAbove()) {
-				log.warn("'hub-id' is deprecated since Gemfire 7.0");
+				log.warn("'hub-id' has been deprecated since Gemfire 7.0");
 			}
 			if (!CollectionUtils.isEmpty(DomUtils.getChildElementsByTagName(element, "gateway-sender"))) {
-				parserContext.getReaderContext().error("It is invalid to specify both 'hub-id' and 'gateway-sender'",
-						element);
+				parserContext.getReaderContext().error("specifying both 'hub-id' and 'gateway-sender' is invalid",
+					element);
 			}
 		}
 

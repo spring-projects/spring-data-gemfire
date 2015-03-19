@@ -58,7 +58,7 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			RegionAttributesFactoryBean.class);
 
-		super.doParseCommonRegionConfiguration(element, parserContext, regionBuilder, regionAttributesBuilder, subRegion);
+		doParseCommonRegionConfiguration(element, parserContext, regionBuilder, regionAttributesBuilder, subRegion);
 
 		regionBuilder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
