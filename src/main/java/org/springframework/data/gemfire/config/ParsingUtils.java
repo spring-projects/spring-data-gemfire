@@ -20,6 +20,8 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
@@ -28,7 +30,6 @@ import org.springframework.core.Conventions;
 import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
 import org.springframework.data.gemfire.ExpirationAttributesFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
-import org.springframework.data.gemfire.InterestPolicyType;
 import org.springframework.data.gemfire.SubscriptionAttributesFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -37,7 +38,6 @@ import org.w3c.dom.Element;
 import com.gemstone.gemfire.cache.LossAction;
 import com.gemstone.gemfire.cache.MembershipAttributes;
 import com.gemstone.gemfire.cache.ResumptionAction;
-import com.gemstone.gemfire.cache.Scope;
 
 /**
  * Utilities used by the Spring Data GemFire XML Namespace parsers.
@@ -51,8 +51,23 @@ abstract class ParsingUtils {
 
 	private static final Log log = LogFactory.getLog(ParsingUtils.class);
 
-	static void setPropertyValue(Element element, BeanDefinitionBuilder builder,
-			String attributeName, String propertyName, Object defaultValue) {
+	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attributeName,
+			String propertyName) {
+
+		String attributeValue = element.getAttribute(attributeName);
+
+		if (StringUtils.hasText(attributeValue)) {
+			builder.addPropertyReference(propertyName, attributeValue);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attributeName) {
+		setPropertyReference(element, builder, attributeName, Conventions.attributeNameToPropertyName(attributeName));
+	}
+
+	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
+			String propertyName, Object defaultValue) {
 
 		String attributeValue = element.getAttribute(attributeName);
 
@@ -64,8 +79,8 @@ abstract class ParsingUtils {
 		}
 	}
 
-	static void setPropertyValue(Element element, BeanDefinitionBuilder builder,
-			String attributeName, String propertyName) {
+	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
+			String propertyName) {
 		setPropertyValue(element, builder, attributeName, propertyName, null);
 	}
 
@@ -73,14 +88,22 @@ abstract class ParsingUtils {
 		setPropertyValue(element, builder, attributeName, Conventions.attributeNameToPropertyName(attributeName));
 	}
 
-	static void setPropertyReference(Element element, BeanDefinitionBuilder builder,
-			String attributeName, String propertyName) {
+	static void setPropertyValue(BeanDefinitionBuilder builder, BeanDefinition source, String propertyName,
+			boolean withDependsOn) {
 
-		String attributeValue = element.getAttribute(attributeName);
+		PropertyValue propertyValue = source.getPropertyValues().getPropertyValue(propertyName);
 
-		if (StringUtils.hasText(attributeValue)) {
-			builder.addPropertyReference(propertyName, attributeValue);
+		if (propertyValue != null) {
+			builder.addPropertyValue(propertyValue.getName(), propertyValue.getValue());
+
+			if (withDependsOn && propertyValue.getValue() instanceof RuntimeBeanReference) {
+				builder.addDependsOn(((RuntimeBeanReference) propertyValue.getValue()).getBeanName());
+			}
 		}
+	}
+
+	static void setPropertyValue(BeanDefinitionBuilder builder, BeanDefinition source, String propertyName) {
+		setPropertyValue(builder, source, propertyName, false);
 	}
 
 	/**
@@ -126,7 +149,8 @@ abstract class ParsingUtils {
 	static Object parseRefOrNestedCustomElement(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder builder) {
 		Object beanRef = ParsingUtils.getBeanReference(parserContext, element, "bean");
-		return (beanRef != null ? beanRef : parserContext.getDelegate().parseCustomElement(element, builder.getBeanDefinition()));
+		return (beanRef != null ? beanRef : parserContext.getDelegate().parseCustomElement(
+			element, builder.getBeanDefinition()));
 	}
 
 	static Object parseRefOrSingleNestedBeanDeclaration(ParserContext parserContext, Element element,
@@ -287,10 +311,6 @@ abstract class ParsingUtils {
 	static void parseOptionalRegionAttributes(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder regionAttributesBuilder) {
 
-		if (!("partitioned-region".equals(element.getLocalName()))) {
-			setPropertyValue(element, regionAttributesBuilder, "persistent", "persistBackup");
-		}
-
 		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
 		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
 		setPropertyValue(element, regionAttributesBuilder, "disk-synchronous");
@@ -309,11 +329,11 @@ abstract class ParsingUtils {
 		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
 
 		if (StringUtils.hasText(concurrencyChecksEnabled)) {
-			if (!GemfireUtils.isGemfireVersion7OrAbove()) {
-				log.warn("Setting 'concurrency-checks-enabled' is only available in Gemfire 7.0 or above!");
+			if (GemfireUtils.isGemfireVersion7OrAbove()) {
+				ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
 			}
 			else {
-				ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
+				log.warn("Setting 'concurrency-checks-enabled' is only available in Gemfire 7.0 or above!");
 			}
 		}
 	}

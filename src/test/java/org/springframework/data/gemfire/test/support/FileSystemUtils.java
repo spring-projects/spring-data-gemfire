@@ -30,17 +30,43 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
  *
  * @author John Blum
  * @see java.io.File
+ * @see java.io.FileFilter
+ * @see org.springframework.data.gemfire.test.support.FileUtils
  * @see org.springframework.data.gemfire.test.support.IOUtils
  * @since 1.5.0
  */
 @SuppressWarnings("unused")
-public abstract class FileSystemUtils extends IOUtils {
+public abstract class FileSystemUtils extends FileUtils {
 
 	public static final File JAVA_HOME = new File(System.getProperty("java.home"));
-
 	public static final File USER_HOME = new File(System.getProperty("user.home"));
-
 	public static final File WORKING_DIRECTORY = new File(System.getProperty("user.dir"));
+
+	public static boolean deleteRecursive(final File path) {
+		assert path != null;
+
+		boolean success = true;
+
+		if (path.isDirectory()) {
+			for (File file : safeListFiles(path)) {
+				success &= deleteRecursive(file);
+			}
+		}
+
+		return (path.delete() && success);
+	}
+
+	public static File getRootRelativeToWorkingDirectoryOrPath(final File path) {
+		File localPath = path;
+
+		if (isDirectory(localPath)) {
+			while (localPath != null && !WORKING_DIRECTORY.equals(localPath.getParentFile())) {
+				localPath = localPath.getParentFile();
+			}
+		}
+
+		return (localPath != null ? localPath : path);
+	}
 
 	public static File[] listFiles(final File directory, final FileFilter fileFilter) {
 		Assert.isTrue(directory != null && directory.isDirectory(), String.format(
@@ -60,9 +86,23 @@ public abstract class FileSystemUtils extends IOUtils {
 		return results.toArray(new File[results.size()]);
 	}
 
+	private static File[] safeListFiles(final File directory) {
+		return safeListFiles(directory, AllFiles.INSTANCE);
+	}
+
 	private static File[] safeListFiles(final File directory, final FileFilter fileFilter) {
 		File[] files = (directory != null ? directory.listFiles(fileFilter) : new File[0]);
 		return (files != null ? files : new File[0]);
+	}
+
+	public static final class AllFiles implements FileFilter {
+
+		public static final AllFiles INSTANCE = new AllFiles();
+
+		@Override
+		public boolean accept(final File pathname) {
+			return true;
+		}
 	}
 
 }

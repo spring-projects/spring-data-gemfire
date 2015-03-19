@@ -32,6 +32,8 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
  *
  * @author John Blum
  * @see java.io.File
+ * @see java.io.FileReader
+ * @see java.io.FileWriter
  * @see org.springframework.data.gemfire.test.support.IOUtils
  * @since 1.5.0
  */
@@ -40,7 +42,15 @@ public abstract class FileUtils extends IOUtils {
 
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-	// TODO refactor and perhaps replace with org.springframework.util.FileCopytUtils.copyToString(:Reader)
+	public static boolean isDirectory(final File path) {
+		return (path != null && path.isDirectory());
+	}
+
+	public static boolean isFile(final File path) {
+		return (path != null && path.isFile());
+	}
+
+	// TODO refactor and perhaps replace with org.springframework.util.FileCopyUtils.copyToString(:Reader)
 	public static String read(final File file) throws IOException {
 		Assert.isTrue(file != null && file.isFile(), String.format(
 			"The File reference (%1$s) from which to read the contents is not a valid file!", file));
@@ -64,7 +74,7 @@ public abstract class FileUtils extends IOUtils {
 		}
 	}
 
-	// TODO refactor and perhaps replace with org.springframework.util.FileCopytUtils.copy(:String, :Writer)
+	// TODO refactor and perhaps replace with org.springframework.util.FileCopyUtils.copy(:String, :Writer)
 	public static void write(final File file, final String contents) throws IOException {
 		Assert.notNull(file, "The File to write to must not be null!");
 		Assert.isTrue(StringUtils.hasText(contents), "The 'contents' of the file cannot be null or empty!");
