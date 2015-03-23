@@ -3,6 +3,15 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.6.0.RELEASE (2015-03-23)
+---------------------------------------------
+* SGF-386 - Release 1.6 GA.
+* SGF-385 - Local region does remote put in addition to local put in client cache.
+* SGF-384 - Issue with partitioned-region-template when persistence is enabled.
+* SGF-382 - Add logging to the SpringContextBootstrappingInitializer init method to capture any Spring context/GemFire errors on startup.
+* SGF-381 - Enable RegionFactoryBean to respect the Data Policy specified on a nested or referenced RegionAttributes bean definition.
+
+
 Changes in version 1.6.0.RC1 (2015-03-05)
 -----------------------------------------
 * SGF-380 - Release 1.6 RC1.
