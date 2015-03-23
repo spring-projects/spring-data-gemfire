@@ -17,7 +17,6 @@
 package org.springframework.data.gemfire.client;
 
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.Properties;
 
 import org.springframework.beans.factory.BeanInitializationException;
@@ -42,6 +41,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @author Lyndon Adams
  * @author John Blum
  */
+@SuppressWarnings("unused")
 public class ClientCacheFactoryBean extends CacheFactoryBean {
 
 	/**
@@ -53,14 +53,13 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 
 		private ClientCacheFactory factory;
 
-		PdxOptions(ClientCacheFactory factory) {
+		private PdxOptions(ClientCacheFactory factory) {
 			this.factory = factory;
 		}
 
 		public void run() {
 			if (pdxSerializer != null) {
-				Assert.isAssignable(PdxSerializer.class,
-						pdxSerializer.getClass(), "Invalid pdx serializer used");
+				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
 				factory.setPdxSerializer((PdxSerializer) pdxSerializer);
 			}
 			if (pdxDiskStoreName != null) {
@@ -79,10 +78,15 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		}
 	}
 
-	private String poolName;
-	private Pool pool;
-	
 	protected Boolean readyForEvents = false;
+
+	private Pool pool;
+
+	private String poolName;
+
+	@Override
+	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
+	}
 
 	@Override
 	protected GemFireCache createCache(Object factory) {
@@ -107,93 +111,97 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	protected GemFireCache fetchCache() {
 		return ClientCacheFactory.getAnyInstance();
 	}
-	
+
+	/**
+	 * Initialize the Pool settings on the ClientCacheFactory.
+	 *
+	 * @param clientCacheFactory the GemFire ClientCacheFactory used to configure and create a GemFire ClientCache.
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+	 */
 	private void initializePool(ClientCacheFactory clientCacheFactory) {
+		initializeClientCacheFactoryPoolSettings(clientCacheFactory, resolvePool(this.pool));
+	}
+
+	/**
+	 * Resolves the appropriate GemFire Pool from configuration used to configure the ClientCache.
+	 *
+	 * @param pool the preferred GemFire Pool to use in the configuration of the ClientCache.
+	 * @return the resolved GemFire Pool.
+	 * @see com.gemstone.gemfire.cache.client.Pool
+	 * @see com.gemstone.gemfire.cache.client.PoolManager#find(String)
+	 */
+	private Pool resolvePool(final Pool pool) {
 		Pool localPool = pool;
 
 		if (localPool == null) {
-			if (StringUtils.hasText(poolName)) {
-				localPool = PoolManager.find(poolName);
-			}
-			
-		   // Bind this client cache to a pool that hasn't been created yet.
+			localPool = PoolManager.find(poolName);
+
 			if (localPool == null) {
-				PoolFactoryBean.connectToTemporaryDs(this.properties);
-			}
-			
-			if (StringUtils.hasText(poolName)) {
 				try {
-					getBeanFactory().isTypeMatch(poolName, Pool.class);
-					localPool = getBeanFactory().getBean(poolName, Pool.class);
+					if (StringUtils.hasText(poolName) && getBeanFactory().isTypeMatch(poolName, Pool.class)) {
+						localPool = getBeanFactory().getBean(poolName, Pool.class);
+					}
+					else {
+						localPool = getBeanFactory().getBean(Pool.class);
+						this.poolName = localPool.getName();
+					}
 				}
 				catch (Exception e) {
-					String message = String.format("No bean found with name '%1$s' of type '%2$s'.%3$s", poolName,
-						Pool.class.getName(), (GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME.equals(poolName)
-							? " A client cache requires a pool." : ""));
-
-					throw new BeanInitializationException(message);
+					throw new BeanInitializationException(String.format(
+						"No bean of type '%1$s' having name '%2$s' was found.%3$s", Pool.class.getName(), poolName,
+						(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME.equals(poolName)
+							? " A client cache requires a pool." : "")), e);
 				}
 			}
-			else {
-				if (log.isDebugEnabled()) {
-					log.debug("Checking for a unique pool...");
-				}
-
-				localPool = getBeanFactory().getBean(Pool.class);
-				this.poolName = localPool.getName();
-			}
-		 
 		}
 
-		if (localPool != null) {
-			// copy the pool settings - this way if the pool is not found, at
-			// least the cache will have a similar config
-			clientCacheFactory.setPoolFreeConnectionTimeout(localPool.getFreeConnectionTimeout());
-			clientCacheFactory.setPoolIdleTimeout(localPool.getIdleTimeout());
-			clientCacheFactory.setPoolLoadConditioningInterval(localPool.getLoadConditioningInterval());
-			clientCacheFactory.setPoolMaxConnections(localPool.getMaxConnections());
-			clientCacheFactory.setPoolMinConnections(localPool.getMinConnections());
-			clientCacheFactory.setPoolMultiuserAuthentication(localPool.getMultiuserAuthentication());
-			clientCacheFactory.setPoolPingInterval(localPool.getPingInterval());
-			clientCacheFactory.setPoolPRSingleHopEnabled(localPool.getPRSingleHopEnabled());
-			clientCacheFactory.setPoolReadTimeout(localPool.getReadTimeout());
-			clientCacheFactory.setPoolRetryAttempts(localPool.getRetryAttempts());
-			clientCacheFactory.setPoolServerGroup(localPool.getServerGroup());
-			clientCacheFactory.setPoolSocketBufferSize(localPool.getSocketBufferSize());
-			clientCacheFactory.setPoolStatisticInterval(localPool.getStatisticInterval());
-			clientCacheFactory.setPoolSubscriptionAckInterval(localPool.getSubscriptionAckInterval());
-			clientCacheFactory.setPoolSubscriptionEnabled(localPool.getSubscriptionEnabled());
-			clientCacheFactory.setPoolSubscriptionMessageTrackingTimeout(localPool.getSubscriptionMessageTrackingTimeout());
-			clientCacheFactory.setPoolSubscriptionRedundancy(localPool.getSubscriptionRedundancy());
-			clientCacheFactory.setPoolThreadLocalConnections(localPool.getThreadLocalConnections());
+		return localPool;
+	}
 
-			List<InetSocketAddress> locators = localPool.getLocators();
+	/**
+	 * Copy the Pool settings to the ClientCacheFactory so the ClientCache will have a matching configuration.
+	 *
+	 * @param clientCacheFactory the GemFire ClientCacheFactory used to create an instance of the ClientCache.
+	 * @param pool the GemFire Pool from which to copy the pool settings.
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+	 * @see com.gemstone.gemfire.cache.client.Pool
+	 */
+	private void initializeClientCacheFactoryPoolSettings(ClientCacheFactory clientCacheFactory, Pool pool) {
+		if (pool != null) {
+			clientCacheFactory.setPoolFreeConnectionTimeout(pool.getFreeConnectionTimeout());
+			clientCacheFactory.setPoolIdleTimeout(pool.getIdleTimeout());
+			clientCacheFactory.setPoolLoadConditioningInterval(pool.getLoadConditioningInterval());
+			clientCacheFactory.setPoolMaxConnections(pool.getMaxConnections());
+			clientCacheFactory.setPoolMinConnections(pool.getMinConnections());
+			clientCacheFactory.setPoolMultiuserAuthentication(pool.getMultiuserAuthentication());
+			clientCacheFactory.setPoolPingInterval(pool.getPingInterval());
+			clientCacheFactory.setPoolPRSingleHopEnabled(pool.getPRSingleHopEnabled());
+			clientCacheFactory.setPoolReadTimeout(pool.getReadTimeout());
+			clientCacheFactory.setPoolRetryAttempts(pool.getRetryAttempts());
+			clientCacheFactory.setPoolServerGroup(pool.getServerGroup());
+			clientCacheFactory.setPoolSocketBufferSize(pool.getSocketBufferSize());
+			clientCacheFactory.setPoolStatisticInterval(pool.getStatisticInterval());
+			clientCacheFactory.setPoolSubscriptionAckInterval(pool.getSubscriptionAckInterval());
+			clientCacheFactory.setPoolSubscriptionEnabled(pool.getSubscriptionEnabled());
+			clientCacheFactory.setPoolSubscriptionMessageTrackingTimeout(pool.getSubscriptionMessageTrackingTimeout());
+			clientCacheFactory.setPoolSubscriptionRedundancy(pool.getSubscriptionRedundancy());
+			clientCacheFactory.setPoolThreadLocalConnections(pool.getThreadLocalConnections());
 
-			if (locators != null) {
-				for (InetSocketAddress socketAddress : locators) {
-					clientCacheFactory.addPoolLocator(socketAddress.getHostName(), socketAddress.getPort());
-				}
+			for (InetSocketAddress socketAddress : nullSafeCollection(pool.getLocators())) {
+				clientCacheFactory.addPoolLocator(socketAddress.getHostName(), socketAddress.getPort());
 			}
 
-			List<InetSocketAddress> servers = localPool.getServers();
-
-			if (servers != null) {
-				for (InetSocketAddress socketAddress : servers) {
-					clientCacheFactory.addPoolServer(socketAddress.getHostName(), socketAddress.getPort());
-				}
+			for (InetSocketAddress socketAddress : nullSafeCollection(pool.getServers())) {
+				clientCacheFactory.addPoolServer(socketAddress.getHostName(), socketAddress.getPort());
 			}
 		}
 	}
 
 	@Override
-	protected void applyPdxOptions(Object factory) {
+	protected void setPdxOptions(Object factory) {
 		if (factory instanceof ClientCacheFactory) {
 			new PdxOptions((ClientCacheFactory) factory).run();
 		}
-	}
-
-	@Override
-	protected void postProcessPropertiesBeforeInitialization(final Properties gemfireProperties) {
 	}
 
 	/**
@@ -228,7 +236,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @param pool the GemFire pool used by the Client Cache to obtain connections to the GemFire cluster.
 	 */
 	public void setPool(Pool pool) {
-		Assert.notNull(pool, "pool cannot be null");
+		Assert.notNull(pool, "The GemFire Pool must not be null!");
 		this.pool = pool;
 	}
 
@@ -238,7 +246,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @param poolName set the name of the GemFire Pool used by the GemFire Client Cache.
 	 */
 	public void setPoolName(String poolName) {
-		Assert.hasText(poolName, "pool name is required");
+		Assert.hasText(poolName, "The Pool 'name' is required!");
 		this.poolName = poolName;
 	}
 

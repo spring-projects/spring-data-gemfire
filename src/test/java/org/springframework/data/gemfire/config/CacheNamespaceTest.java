@@ -177,7 +177,7 @@ public class CacheNamespaceTest{
 
 		CacheFactoryBean cacheFactoryBean = context.getBean("&no-bean-factory-locator", CacheFactoryBean.class);
 
-		assertThat(ReflectionTestUtils.getField(cacheFactoryBean, "factoryLocator"), is(nullValue()));
+		assertThat(ReflectionTestUtils.getField(cacheFactoryBean, "beanFactoryLocator"), is(nullValue()));
 
 		GemfireBeanFactoryLocator beanFactoryLocator = new GemfireBeanFactoryLocator();
 

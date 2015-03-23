@@ -33,7 +33,7 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 	public MockCacheFactoryBean(CacheFactoryBean cacheFactoryBean) {
 		this();
 		if (cacheFactoryBean != null) {
-			this.factoryLocator = cacheFactoryBean.getBeanFactoryLocator();
+			this.beanFactoryLocator = cacheFactoryBean.getBeanFactoryLocator();
 			this.lazyInitialize = cacheFactoryBean.isLazyInitialize();
 			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();
 			this.beanFactory = cacheFactoryBean.getBeanFactory();

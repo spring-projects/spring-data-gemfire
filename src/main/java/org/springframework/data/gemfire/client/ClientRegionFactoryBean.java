@@ -91,63 +91,58 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	@Override
 	@SuppressWarnings("deprecation")
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
-		Assert.isTrue(cache instanceof ClientCache, String.format("Unable to create regions from %1$s", cache));
+		Assert.isTrue(cache instanceof ClientCache, String.format("Unable to create Regions from %1$s!", cache));
 
-		// TODO reference to an internal GemFire class!
 		if (cache instanceof GemFireCacheImpl) {
-			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required.");
+			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A ClientCache instance is required!");
 		}
 
 		ClientCache clientCache = (ClientCache) cache;
 
-		ClientRegionFactory<K, V> factory = clientCache.createClientRegionFactory(resolveClientRegionShortcut());
+		ClientRegionFactory<K, V> clientRegionFactory = clientCache.createClientRegionFactory(resolveClientRegionShortcut());
 
-		// map region attributes onto the client region factory
+		// map Region attributes onto the ClientRegionFactory...
 		if (attributes != null) {
-			factory.setCloningEnabled(attributes.getCloningEnabled());
-			factory.setCompressor(attributes.getCompressor());
-			factory.setConcurrencyChecksEnabled(attributes.getConcurrencyChecksEnabled());
-			factory.setConcurrencyLevel(attributes.getConcurrencyLevel());
-			factory.setCustomEntryIdleTimeout(attributes.getCustomEntryIdleTimeout());
-			factory.setCustomEntryTimeToLive(attributes.getCustomEntryTimeToLive());
-			factory.setDiskStoreName(attributes.getDiskStoreName());
-			factory.setDiskSynchronous(attributes.isDiskSynchronous());
-			factory.setEntryIdleTimeout(attributes.getEntryIdleTimeout());
-			factory.setEntryTimeToLive(attributes.getEntryTimeToLive());
-			factory.setEvictionAttributes(attributes.getEvictionAttributes());
-			factory.setInitialCapacity(attributes.getInitialCapacity());
-			factory.setKeyConstraint(attributes.getKeyConstraint());
-			factory.setLoadFactor(attributes.getLoadFactor());
-			factory.setPoolName(attributes.getPoolName());
-			factory.setRegionIdleTimeout(attributes.getRegionIdleTimeout());
-			factory.setRegionTimeToLive(attributes.getRegionTimeToLive());
-			factory.setStatisticsEnabled(attributes.getStatisticsEnabled());
-			factory.setValueConstraint(attributes.getValueConstraint());
+			clientRegionFactory.setCloningEnabled(attributes.getCloningEnabled());
+			clientRegionFactory.setCompressor(attributes.getCompressor());
+			clientRegionFactory.setConcurrencyChecksEnabled(attributes.getConcurrencyChecksEnabled());
+			clientRegionFactory.setConcurrencyLevel(attributes.getConcurrencyLevel());
+			clientRegionFactory.setCustomEntryIdleTimeout(attributes.getCustomEntryIdleTimeout());
+			clientRegionFactory.setCustomEntryTimeToLive(attributes.getCustomEntryTimeToLive());
+			clientRegionFactory.setDiskStoreName(attributes.getDiskStoreName());
+			clientRegionFactory.setDiskSynchronous(attributes.isDiskSynchronous());
+			clientRegionFactory.setEntryIdleTimeout(attributes.getEntryIdleTimeout());
+			clientRegionFactory.setEntryTimeToLive(attributes.getEntryTimeToLive());
+			clientRegionFactory.setEvictionAttributes(attributes.getEvictionAttributes());
+			clientRegionFactory.setInitialCapacity(attributes.getInitialCapacity());
+			clientRegionFactory.setKeyConstraint(attributes.getKeyConstraint());
+			clientRegionFactory.setLoadFactor(attributes.getLoadFactor());
+			clientRegionFactory.setPoolName(attributes.getPoolName());
+			clientRegionFactory.setRegionIdleTimeout(attributes.getRegionIdleTimeout());
+			clientRegionFactory.setRegionTimeToLive(attributes.getRegionTimeToLive());
+			clientRegionFactory.setStatisticsEnabled(attributes.getStatisticsEnabled());
+			clientRegionFactory.setValueConstraint(attributes.getValueConstraint());
 		}
 
-		addCacheListeners(factory);
+		addCacheListeners(clientRegionFactory);
 
 		if (StringUtils.hasText(poolName)) {
 			// try to eagerly initialize the pool name, if defined as a bean
 			if (beanFactory.isTypeMatch(poolName, Pool.class)) {
 				if (log.isDebugEnabled()) {
-					log.debug(String.format("Found bean definition for pool '%1$s'. Eagerly initializing...", poolName));
+					log.debug(String.format("Found bean definition for pool '%1$s'; Eagerly initializing...", poolName));
 				}
 				beanFactory.getBean(poolName, Pool.class);
 			}
-			factory.setPoolName(poolName);
-		}
-		else {
-			Pool pool = beanFactory.getBean(Pool.class);
-			factory.setPoolName(pool.getName());
+			clientRegionFactory.setPoolName(poolName);
 		}
 
 		if (diskStoreName != null) {
-			factory.setDiskStoreName(diskStoreName);
+			clientRegionFactory.setDiskStoreName(diskStoreName);
 		}
 
-		Region<K, V> clientRegion = (getParent() != null ? factory.createSubregion(getParent(), regionName)
-			: factory.create(regionName));
+		Region<K, V> clientRegion = (getParent() != null ? clientRegionFactory.createSubregion(getParent(), regionName)
+			: clientRegionFactory.create(regionName));
 
 		if (log.isInfoEnabled()) {
 			if (getParent() != null) {
@@ -193,7 +188,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				resolvedShortcut = (isPersistent() ? ClientRegionShortcut.LOCAL_PERSISTENT
 					: ClientRegionShortcut.LOCAL);
 			}
-
 		}
 
 		// NOTE the ClientRegionShortcut and Persistent attribute will be compatible if the shortcut was derived from
@@ -472,15 +466,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the name of disk store to use for overflow and persistence
-	 *
-	 * @param diskStoreName a String specifying the 'name' of the client Region Disk Store.
-	 */
-	public void setDiskStoreName(String diskStoreName) {
-		this.diskStoreName = diskStoreName;
-	}
-
-	/**
 	 * An alternate way to set the Data Policy, using the String name of the enumerated value.
 	 *
 	 * @param dataPolicyName the enumerated value String name of the Data Policy.
@@ -488,10 +473,20 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * @see #setDataPolicy(com.gemstone.gemfire.cache.DataPolicy)
 	 * @deprecated use setDataPolicy(:DataPolicy) instead.
 	 */
+	@Deprecated
 	public void setDataPolicyName(String dataPolicyName) {
-		final DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicyName);
+		DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicyName);
 		Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicyName));
 		setDataPolicy(resolvedDataPolicy);
+	}
+
+	/**
+	 * Sets the name of disk store to use for overflow and persistence
+	 *
+	 * @param diskStoreName a String specifying the 'name' of the client Region Disk Store.
+	 */
+	public void setDiskStoreName(String diskStoreName) {
+		this.diskStoreName = diskStoreName;
 	}
 
 	protected boolean isPersistentUnspecified() {

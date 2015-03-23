@@ -32,10 +32,11 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;pool;gt; definitions.
+ * Parser for GFE &lt;pool;gt; bean definitions.
  *  
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
  */
 class PoolParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -47,6 +48,7 @@ class PoolParser extends AbstractSimpleBeanDefinitionParser {
 	@Override
 	protected void postProcess(BeanDefinitionBuilder builder, Element element) {
 		List<Element> subElements = DomUtils.getChildElements(element);
+
 		ManagedList<Object> locators = new ManagedList<Object>(subElements.size());
 		ManagedList<Object> servers = new ManagedList<Object>(subElements.size());
 
@@ -71,30 +73,42 @@ class PoolParser extends AbstractSimpleBeanDefinitionParser {
 		}
 	}
 
-	private Object parseServer(Element subElement) {
-		return parseConnection(subElement);
+	/* (non-Javadoc) */
+	private BeanDefinition parseConnection(Element element) {
+		BeanDefinitionBuilder inetSocketAddressBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			InetSocketAddress.class);
+
+		inetSocketAddressBuilder.addConstructorArgValue(element.getAttribute("host"));
+		inetSocketAddressBuilder.addConstructorArgValue(element.getAttribute("port"));
+
+		return inetSocketAddressBuilder.getBeanDefinition();
 	}
 
+	/* (non-Javadoc) */
 	private Object parseLocator(Element subElement) {
 		return parseConnection(subElement);
 	}
 
-	private BeanDefinition parseConnection(Element element) {
-		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(InetSocketAddress.class);
-		defBuilder.addConstructorArgValue(element.getAttribute("host"));
-		defBuilder.addConstructorArgValue(element.getAttribute("port"));
-		return defBuilder.getBeanDefinition();
+	/* (non-Javadoc) */
+	private Object parseServer(Element subElement) {
+		return parseConnection(subElement);
 	}
 
+	/* (non-Javadoc) */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
-		String name = super.resolveId(element, definition, parserContext);
-		if (!StringUtils.hasText(name)) {
-			name = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
-			//For backward compatibility
+
+		String id = super.resolveId(element, definition, parserContext);
+
+		if (!StringUtils.hasText(id)) {
+			id = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
+			// for backward compatibility
+			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, "gemfirePool");
 			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, "gemfire-pool");
 		}
-		return name;
+
+		return id;
 	}
+
 }

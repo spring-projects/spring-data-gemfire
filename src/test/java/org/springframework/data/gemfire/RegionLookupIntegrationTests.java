@@ -49,7 +49,8 @@ import com.gemstone.gemfire.cache.Scope;
 public class RegionLookupIntegrationTests {
 
 	@BeforeClass
-	public static void preTestSuiteSetup() {
+	@SuppressWarnings("deprecation")
+	public static void testSuiteSetup() {
 		ForkUtil.startCacheServer(SpringCacheServerProcess.class.getName() + " "
 			+ "/org/springframework/data/gemfire/RegionLookupIntegrationTests-server-context.xml");
 	}

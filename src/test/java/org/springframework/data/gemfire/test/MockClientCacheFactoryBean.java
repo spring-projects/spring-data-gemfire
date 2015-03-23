@@ -29,13 +29,10 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 		this.cache = new StubCache();
 	}
 
-	/**
-	 * @param bean
-	 */
 	public MockClientCacheFactoryBean(ClientCacheFactoryBean cacheFactoryBean) {
 		this();
 		if (cacheFactoryBean != null) {
-			this.factoryLocator = cacheFactoryBean.getBeanFactoryLocator();
+			this.beanFactoryLocator = cacheFactoryBean.getBeanFactoryLocator();
 			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();
 			this.beanFactory = cacheFactoryBean.getBeanFactory();
 			this.beanName = cacheFactoryBean.getBeanName();

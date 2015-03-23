@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -33,22 +34,23 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 
 /**
- * 
  * @author David Turanski
- *
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "client-cache.xml", initializers = GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class ClientCacheTest {
-	@Resource(name = "challengeQuestionsRegion")
-	Region<?, ?> region;
 
 	@Autowired
-	ClientCache cache;
+	private ClientCache cache;
+
+	@Resource(name = "challengeQuestionsRegion")
+	private Region<?, ?> region;
 
 	@Test
-	public void test() {
-		assertEquals("gemfirePool", region.getAttributes().getPoolName());
+	public void testPoolName() {
+		assertEquals(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, region.getAttributes().getPoolName());
 	}
 
 	@Test
@@ -58,4 +60,5 @@ public class ClientCacheTest {
 		ctx.close();
 		assertFalse(cache.isClosed());
 	}
+
 }
