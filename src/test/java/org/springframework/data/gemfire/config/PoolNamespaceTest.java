@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.InetSocketAddress;
@@ -38,54 +39,63 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 
 /**
  * @author Costin Leau
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="pool-ns.xml",
-	initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="pool-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class PoolNamespaceTest {
-   
+
 	@Autowired
 	private ApplicationContext context;
 
 	@Test
-	public void testAll() throws Exception {
-		testBasicClient();
-		testComplexPool();
-	}
-
-	private void testBasicClient() throws Exception {
+	public void testBasicClient() throws Exception {
+		assertTrue(context.containsBean("DEFAULT"));
 		assertTrue(context.containsBean("gemfirePool"));
-		//Check old style alias also registered
 		assertTrue(context.containsBean("gemfire-pool"));
-		
-		assertEquals(context.getBean("gemfirePool"), PoolManager.find("gemfirePool"));
-		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&gemfirePool");
-		Collection<InetSocketAddress> locators = TestUtils.readField("locators", pfb);
+		assertEquals(context.getBean("gemfirePool"), PoolManager.find("DEFAULT"));
+
+		PoolFactoryBean poolFactoryBean = (PoolFactoryBean) context.getBean("&gemfirePool");
+		Collection<InetSocketAddress> locators = TestUtils.readField("locators", poolFactoryBean);
+
+		assertNotNull(locators);
 		assertEquals(1, locators.size());
+
 		InetSocketAddress locator = locators.iterator().next();
+
 		assertEquals("localhost", locator.getHostName());
 		assertEquals(40403, locator.getPort());
 	}
 
-	private void testComplexPool() throws Exception {
+	@Test
+	public void testComplexPool() throws Exception {
 		assertTrue(context.containsBean("complex"));
-		PoolFactoryBean pfb = (PoolFactoryBean) context.getBean("&complex");
-		assertEquals(30, TestUtils.readField("retryAttempts", pfb));
-		assertEquals(6000, TestUtils.readField("freeConnectionTimeout", pfb));
-		assertEquals(5000l, TestUtils.readField("pingInterval", pfb));
-		assertTrue((Boolean) TestUtils.readField("subscriptionEnabled", pfb));
-		assertFalse((Boolean) TestUtils.readField("multiUserAuthentication", pfb));
-		assertTrue((Boolean) TestUtils.readField("prSingleHopEnabled", pfb));
 
-		Collection<InetSocketAddress> servers = TestUtils.readField("servers", pfb);
+		PoolFactoryBean poolFactoryBean = (PoolFactoryBean) context.getBean("&complex");
+
+		assertEquals(30, TestUtils.readField("retryAttempts", poolFactoryBean));
+		assertEquals(6000, TestUtils.readField("freeConnectionTimeout", poolFactoryBean));
+		assertEquals(5000l, TestUtils.readField("pingInterval", poolFactoryBean));
+		assertTrue((Boolean) TestUtils.readField("subscriptionEnabled", poolFactoryBean));
+		assertFalse((Boolean) TestUtils.readField("multiUserAuthentication", poolFactoryBean));
+		assertTrue((Boolean) TestUtils.readField("prSingleHopEnabled", poolFactoryBean));
+
+		Collection<InetSocketAddress> servers = TestUtils.readField("servers", poolFactoryBean);
+
+		assertNotNull(servers);
 		assertEquals(2, servers.size());
+
 		Iterator<InetSocketAddress> iterator = servers.iterator();
 		InetSocketAddress server = iterator.next();
+
 		assertEquals("localhost", server.getHostName());
 		assertEquals(40404, server.getPort());
 
 		server = iterator.next();
+
 		assertEquals("localhost", server.getHostName());
 		assertEquals(40405, server.getPort());
 	}
+
 }

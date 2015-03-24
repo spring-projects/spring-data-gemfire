@@ -71,30 +71,38 @@ class PoolParser extends AbstractSimpleBeanDefinitionParser {
 		}
 	}
 
-	private Object parseServer(Element subElement) {
-		return parseConnection(subElement);
+	private BeanDefinition parseConnection(Element element) {
+		BeanDefinitionBuilder inetSocketAddressBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			InetSocketAddress.class);
+
+		inetSocketAddressBuilder.addConstructorArgValue(element.getAttribute("host"));
+		inetSocketAddressBuilder.addConstructorArgValue(element.getAttribute("port"));
+
+		return inetSocketAddressBuilder.getBeanDefinition();
 	}
 
 	private Object parseLocator(Element subElement) {
 		return parseConnection(subElement);
 	}
 
-	private BeanDefinition parseConnection(Element element) {
-		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(InetSocketAddress.class);
-		defBuilder.addConstructorArgValue(element.getAttribute("host"));
-		defBuilder.addConstructorArgValue(element.getAttribute("port"));
-		return defBuilder.getBeanDefinition();
+	private Object parseServer(Element subElement) {
+		return parseConnection(subElement);
 	}
 
+	/* (non-Javadoc) */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
-			throws BeanDefinitionStoreException {
-		String name = super.resolveId(element, definition, parserContext);
-		if (!StringUtils.hasText(name)) {
-			name = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
-			//For backward compatibility
+		throws BeanDefinitionStoreException {
+
+		String id = super.resolveId(element, definition, parserContext);
+
+		if (!StringUtils.hasText(id)) {
+			id = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
+			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, "gemfirePool");
 			parserContext.getRegistry().registerAlias(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, "gemfire-pool");
 		}
-		return name;
+
+		return id;
 	}
+
 }

@@ -17,7 +17,9 @@
 package org.springframework.data.gemfire;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +40,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.CollectionUtils;
 
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
@@ -58,24 +59,32 @@ import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
- * Factory used for configuring a Gemfire Cache manager. Allows either retrieval
- * of an existing, opened cache or the creation of a new one.
- * 
+ * FactoryBean used for configuring a Gemfire Cache instance. Allows either the retrieval of an existing
+ * opened Cache instance or the creation of a new Cache instance.
  * <p>
  * This class implements the
  * {@link org.springframework.dao.support.PersistenceExceptionTranslator}
  * interface, as auto-detected by Spring's
- * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor}
- * , for AOP-based translation of native exceptions to Spring
- * DataAccessExceptions. Hence, the presence of this class automatically enables
- * a PersistenceExceptionTranslationPostProcessor to translate GemFire
- * exceptions.
+ * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor},
+ * for AOP-based translation of native exceptions to Spring DataAccessExceptions. Hence, the presence
+ * of this class automatically enables a PersistenceExceptionTranslationPostProcessor to translate GemFire Exceptions.
  * 
  * @author Costin Leau
  * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.BeanNameAware
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.dao.support.PersistenceExceptionTranslator
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.CacheFactory
  */
-public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware, InitializingBean,
-		DisposableBean, FactoryBean<Cache>, PersistenceExceptionTranslator {
+@SuppressWarnings("unused")
+public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
+		InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
 	protected static final List<String> VALID_JNDI_DATASOURCE_TYPE_NAMES = Collections.unmodifiableList(
 		Arrays.asList("ManagedDataSource", "PooledDataSource", "SimpleDataSource", "XAPooledDataSource"));
@@ -102,7 +111,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected Float criticalHeapPercentage;
 	protected Float evictionHeapPercentage;
 
-	protected GemfireBeanFactoryLocator factoryLocator;
+	protected GemfireBeanFactoryLocator beanFactoryLocator;
 
 	protected Integer lockLease;
 	protected Integer lockTimeout;
@@ -122,12 +131,13 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	protected Resource cacheXml;
 
 	protected String beanName;
+	private String cacheResolutionMessagePrefix;
 	protected String pdxDiskStoreName;
 
 	protected TransactionWriter transactionWriter;
 
 	public static class DynamicRegionSupport {
-		private String diskDir;
+		private String diskDirectory;
 
 		private String poolName;
 
@@ -136,11 +146,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		private Boolean registerInterest = Boolean.TRUE;
 
 		public String getDiskDir() {
-			return diskDir;
+			return diskDirectory;
 		}
 
 		public void setDiskDir(String diskDir) {
-			this.diskDir = diskDir;
+			this.diskDirectory = diskDir;
 		}
 
 		public Boolean getPersistent() {
@@ -168,12 +178,11 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 
 		public void initializeDynamicRegionFactory() {
-			DynamicRegionFactory.Config config = null;
-			if (diskDir == null) {
-				config = new DynamicRegionFactory.Config(null, poolName, persistent, registerInterest);
-			} else {
-				config = new DynamicRegionFactory.Config(new File(diskDir), poolName, persistent, registerInterest);
-			}
+			File localDiskDirectory = (this.diskDirectory == null ? null : new File(this.diskDirectory));
+
+			DynamicRegionFactory.Config config = new DynamicRegionFactory.Config(localDiskDirectory, poolName,
+				persistent, registerInterest);
+
 			DynamicRegionFactory.get().open(config);
 		}
 	}
@@ -210,7 +219,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 		private final CacheFactory factory;
 
-		PdxOptions(CacheFactory factory) {
+		private PdxOptions(CacheFactory factory) {
 			this.factory = factory;
 		}
 
@@ -235,111 +244,61 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		}
 	}
 
-	private void init() throws Exception {
-		if (useBeanFactoryLocator && factoryLocator == null) {
-			factoryLocator = new GemfireBeanFactoryLocator();
-			factoryLocator.setBeanFactory(beanFactory);
-			factoryLocator.setBeanName(beanName);
-			factoryLocator.afterPropertiesSet();
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		postProcessPropertiesBeforeInitialization(getProperties());
+
+		if (!isLazyInitialize()) {
+			init();
+		}
+	}
+
+	/* (non-Javadoc) */
+	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
+	}
+
+	/* (non-Javadoc) */
+	private Cache init() throws Exception {
+		if (useBeanFactoryLocator && beanFactoryLocator == null) {
+			beanFactoryLocator = new GemfireBeanFactoryLocator();
+			beanFactoryLocator.setBeanFactory(beanFactory);
+			beanFactoryLocator.setBeanName(beanName);
+			beanFactoryLocator.afterPropertiesSet();
 		}
 
 		final ClassLoader originalThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
 		try {
-			String messagePrefix;
-
-			// use bean ClassLoader to load GemFire Declarable classes
+			// use bean ClassLoader to load Spring configured, GemFire Declarable classes
 			Thread.currentThread().setContextClassLoader(beanClassLoader);
 
-			try {
-				cache = (Cache) fetchCache();
-				messagePrefix = "Retrieved existing";
-			}
-			catch (CacheClosedException ex) {
-				initializeDynamicRegionFactory();
-
-				Object factory = createFactory(this.properties);
-
-				// GemFire 6.6 specific options
-				if (isPdxSettingsSpecified()) {
-					Assert.isTrue(ClassUtils.isPresent("com.gemstone.gemfire.pdx.PdxSerializer", beanClassLoader),
-						"Cannot set PDX options since GemFire 6.6 not detected.");
-					applyPdxOptions(factory);
-				}
-
-				// fall back to cache creation
-				cache = (Cache) createCache(factory);
-				messagePrefix = "Created new";
-			}
-
-			if (this.copyOnRead != null) {
-				cache.setCopyOnRead(this.copyOnRead);
-			}
-			if (lockLease != null) {
-				cache.setLockLease(lockLease);
-			}
-			if (lockTimeout != null) {
-				cache.setLockTimeout(lockTimeout);
-			}
-			if (searchTimeout != null) {
-				cache.setSearchTimeout(searchTimeout);
-			}
-			if (messageSyncInterval != null) {
-				cache.setMessageSyncInterval(messageSyncInterval);
-			}
-			if (gatewayConflictResolver != null) {
-				cache.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
-			}
+			this.cache = postProcess(resolveCache());
 
 			DistributedSystem system = cache.getDistributedSystem();
 
 			DistributedMember member = system.getDistributedMember();
 
-			log.info(String.format("Connected to Distributed System [%1$s] as Member [%2$s] on Host [%3$s].",
-				system.getName(), member.getId(), member.getHost()));
+			log.info(String.format("Connected to Distributed System [%1$s] as Member [%2$s]"
+					.concat("in Group(s) [%3$s] with Role(s) [%4$s] on Host [%5$s] having PID [%6$d]."),
+				system.getName(), member.getId(), member.getGroups(), member.getRoles(), member.getHost(),
+				member.getProcessId()));
 
-			log.info(String.format("%1$s GemFire v.%2$s Cache [%3$s].", messagePrefix, CacheFactory.getVersion(),
-				cache.getName()));
+			log.info(String.format("%1$s GemFire v.%2$s Cache [%3$s].", cacheResolutionMessagePrefix,
+				CacheFactory.getVersion(), cache.getName()));
 
-			// load/init cache.xml
-			if (cacheXml != null) {
-				cache.loadCacheXml(cacheXml.getInputStream());
-
-				if (log.isDebugEnabled()) {
-					log.debug("Initialized cache from " + cacheXml);
-				}
-			}
-
-			setHeapPercentages();
-			registerTransactionListeners();
-			registerTransactionWriter();
-			registerJndiDataSources();
+			return cache;
 		}
 		finally {
 			Thread.currentThread().setContextClassLoader(originalThreadContextClassLoader);
 		}
 	}
 
-	private boolean isPdxSettingsSpecified() {
-		return (pdxSerializer != null || pdxPersistent != null || pdxReadSerialized != null
-			|| pdxIgnoreUnreadFields != null || pdxDiskStoreName != null);
-	}
-
 	/**
-	 * Sets the PDX properties for the given object. Note this is implementation
-	 * specific as it depends on the type of the factory passed in.
-	 *
-	 * @param factory the GemFire CacheFactory used to apply the PDX configuration settings.
-	 */
-	protected void applyPdxOptions(Object factory) {
-		if (factory instanceof CacheFactory) {
-			new PdxOptions((CacheFactory) factory).run();
-		}
-	}
-
-	/**
-	 * If dynamic regions are enabled, create a DynamicRegionFactory before
-	 * creating the cache
+	 * If Dynamic Regions are enabled, create and initialize a DynamicRegionFactory before creating the Cache.
 	 */
 	private void initializeDynamicRegionFactory() {
 		if (dynamicRegionSupport != null) {
@@ -348,82 +307,219 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	}
 
 	/**
-	 * Register all declared transaction listeners
+	 * Resolves the GemFire Cache by first attempting to lookup and find an existing Cache instance in the VM;
+	 * if an existing Cache could not be found, then this method proceeds in attempting to create a new Cache instance.
+	 *
+	 * @return the resolved GemFire Cache instance.
+	 * @see com.gemstone.gemfire.cache.Cache
+	 * @see #fetchCache()
+	 * @see #createFactory(java.util.Properties)
+	 * @see #initializeFactory(Object)
+	 * @see #createCache(Object)
 	 */
-	protected void registerTransactionListeners() {
-		if (!CollectionUtils.isEmpty(transactionListeners)) {
-			for (TransactionListener transactionListener : transactionListeners) {
-				cache.getCacheTransactionManager().addListener(transactionListener);
-			}
+	protected Cache resolveCache() {
+		try {
+			cacheResolutionMessagePrefix = "Found existing";
+			return (Cache) fetchCache();
+		}
+		catch (CacheClosedException ex) {
+			cacheResolutionMessagePrefix = "Created new";
+			initializeDynamicRegionFactory();
+			return (Cache) createCache(initializeFactory(createFactory(getProperties())));
 		}
 	}
 
 	/**
-	 * Register a transaction writer if declared
+	 * Fetches the GemFire Cache by looking up any existing GemFire Cache instance.
+	 *
+	 * @return the existing GemFire Cache instance if available.
+	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see com.gemstone.gemfire.cache.CacheFactory#getAnyInstance()
 	 */
-	protected void registerTransactionWriter() {
-		if (transactionWriter != null) {
-			cache.getCacheTransactionManager().setWriter(transactionWriter);
+	protected GemFireCache fetchCache() {
+		return (cache != null ? cache : CacheFactory.getAnyInstance());
+	}
+
+	/**
+	 * Creates a new GemFire cache instance using the provided factory.
+	 *
+	 * @param factory the appropriate GemFire factory used to create a cache instance.
+	 * @return an instance of the GemFire cache.
+	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see com.gemstone.gemfire.cache.CacheFactory#create()
+	 */
+	protected GemFireCache createCache(Object factory) {
+		return (cache != null ? cache : ((CacheFactory) factory).create());
+	}
+
+	/**
+	 * Creates an instance of GemFire factory initialized with the given GemFire System Properties
+	 * to create an instance of the cache.
+	 *
+	 * @param gemfireProperties a Properties object containing GemFire System Properties.
+	 * @return an instance of a GemFire factory used to create a GemFire cache instance.
+	 * @see java.util.Properties
+	 * @see com.gemstone.gemfire.cache.CacheFactory
+	 */
+	protected Object createFactory(Properties gemfireProperties) {
+		return new CacheFactory(gemfireProperties);
+	}
+
+	/**
+	 * Initializes the GemFire factory used to create the GemFire cache instance.  Sets PDX options
+	 * specified by the user.
+	 *
+	 * @param factory the GemFire factory used to create an instance of the cache.
+	 * @return the initialized GemFire factory.
+	 * @see #setPdxOptions(Object)
+	 */
+	protected Object initializeFactory(Object factory) {
+		if (isPdxOptionsSpecified()) {
+			Assert.isTrue(ClassUtils.isPresent("com.gemstone.gemfire.pdx.PdxSerializer", beanClassLoader),
+				"Unable set PDX options since GemFire 6.6 or later was not detected.");
+			setPdxOptions(factory);
+		}
+
+		return factory;
+	}
+
+	/**
+	 * Determines whether the user specified PDX options.
+	 *
+	 * @return a boolean value indicating whether the user specified PDX options or not.
+	 */
+	protected boolean isPdxOptionsSpecified() {
+		return (pdxSerializer != null || pdxReadSerialized != null || pdxPersistent != null
+			|| pdxIgnoreUnreadFields != null || pdxDiskStoreName != null);
+	}
+
+	/**
+	 * Sets the PDX properties for the given Cache factory. Note, this is implementation specific
+	 * as it depends on the type of Cache factory used to create the Cache.
+	 *
+	 * @param factory the GemFire CacheFactory used to apply the PDX configuration settings.
+	 * @see com.gemstone.gemfire.cache.CacheFactory
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+	 */
+	protected void setPdxOptions(Object factory) {
+		if (factory instanceof CacheFactory) {
+			new PdxOptions((CacheFactory) factory).run();
 		}
 	}
 
-	private void registerJndiDataSources() {
-		if (jndiDataSources != null) {
-			for (JndiDataSource jndiDataSource : jndiDataSources) {
-				validate(jndiDataSource);
-				JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
+	/**
+	 * Post processes the GemFire Cache instance by loading any cache.xml, applying settings specified in SDG XML
+	 * configuration meta-data, and registering the appropriate Transaction Listeners, Writer and JNDI settings.
+	 *
+	 * @param cache the GemFire Cache instance to process.
+	 * @return the GemFire Cache instance after processing.
+	 * @throws IOException if the cache.xml Resource could not be loaded and applied to the Cache instance.
+	 * @see com.gemstone.gemfire.cache.Cache#loadCacheXml(java.io.InputStream)
+	 * @see #getCacheXml()
+	 * @see #setHeapPercentages(com.gemstone.gemfire.cache.Cache)
+	 * @see #registerTransactionListeners(com.gemstone.gemfire.cache.Cache)
+	 * @see #registerTransactionWriter(com.gemstone.gemfire.cache.Cache)
+	 * @see #registerJndiDataSources()
+	 */
+	protected Cache postProcess(Cache cache) throws IOException {
+		Resource localCacheXml = getCacheXml();
+
+		// load cache.xml Resource and initialize the Cache
+		if (localCacheXml != null) {
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("initializing Cache with '%1$s'", cacheXml));
 			}
+
+			cache.loadCacheXml(localCacheXml.getInputStream());
 		}
+
+		if (this.copyOnRead != null) {
+			cache.setCopyOnRead(this.copyOnRead);
+		}
+		if (gatewayConflictResolver != null) {
+			cache.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
+		}
+		if (lockLease != null) {
+			cache.setLockLease(lockLease);
+		}
+		if (lockTimeout != null) {
+			cache.setLockTimeout(lockTimeout);
+		}
+		if (messageSyncInterval != null) {
+			cache.setMessageSyncInterval(messageSyncInterval);
+		}
+		if (searchTimeout != null) {
+			cache.setSearchTimeout(searchTimeout);
+		}
+
+		setHeapPercentages(cache);
+		registerTransactionListeners(cache);
+		registerTransactionWriter(cache);
+		registerJndiDataSources();
+
+		return cache;
 	}
 
-	private void validate(final JndiDataSource jndiDataSource) {
-		Map<String, String> attributes = jndiDataSource.getAttributes();
-		String typeAttributeValue = attributes.get("type");
-		Assert.isTrue(VALID_JNDI_DATASOURCE_TYPE_NAMES.contains(typeAttributeValue),
-			String.format("The 'jndi-binding', 'type' [%1$s] is invalid; the 'type' must be one of %2$s.",
-				typeAttributeValue, VALID_JNDI_DATASOURCE_TYPE_NAMES));
-	}
-
-	private void setHeapPercentages() {
+	/* (non-Javadoc) */
+	private void setHeapPercentages(Cache cache) {
 		if (criticalHeapPercentage != null) {
 			Assert.isTrue(criticalHeapPercentage > 0.0 && criticalHeapPercentage <= 100.0,
-				String.format("Invalid value specified for 'criticalHeapPercentage' (%1$s). Must be > 0.0 and <= 100.0.",
+				String.format("'criticalHeapPercentage' (%1$s) is invalid; must be > 0.0 and <= 100.0",
 					criticalHeapPercentage));
 			cache.getResourceManager().setCriticalHeapPercentage(criticalHeapPercentage);
 		}
 
 		if (evictionHeapPercentage != null) {
 			Assert.isTrue(evictionHeapPercentage > 0.0 && evictionHeapPercentage <= 100.0,
-				String.format("Invalid value specified for 'evictionHeapPercentage' (%1$s). Must be > 0.0 and <= 100.0.",
+				String.format("'evictionHeapPercentage' (%1$s) is invalid; must be > 0.0 and <= 100.0",
 					evictionHeapPercentage));
 			cache.getResourceManager().setEvictionHeapPercentage(evictionHeapPercentage);
 		}
 	}
 
-	protected GemFireCache createCache(Object factory) {
-		return (cache != null ? cache : ((CacheFactory) factory).create());
+	/* (non-Javadoc) */
+	private void registerTransactionListeners(Cache cache) {
+		for (TransactionListener transactionListener : nullSafeCollection(transactionListeners)) {
+			cache.getCacheTransactionManager().addListener(transactionListener);
+		}
 	}
 
-	protected GemFireCache fetchCache() {
-		return (cache != null ? cache : CacheFactory.getAnyInstance());
+	/* (non-Javadoc) */
+	private void registerTransactionWriter(Cache cache) {
+		if (transactionWriter != null) {
+			cache.getCacheTransactionManager().setWriter(transactionWriter);
+		}
 	}
 
-	protected Object createFactory(Properties props) {
-		return new CacheFactory(props);
+	/* (non-Javadoc) */
+	private void registerJndiDataSources() {
+		for (JndiDataSource jndiDataSource : nullSafeCollection(jndiDataSources)) {
+			String typeAttributeValue = jndiDataSource.getAttributes().get("type");
+			Assert.isTrue(VALID_JNDI_DATASOURCE_TYPE_NAMES.contains(typeAttributeValue),
+				String.format("'jndi-binding' 'type' [%1$s] is invalid; 'type' must be one of %2$s",
+					typeAttributeValue, VALID_JNDI_DATASOURCE_TYPE_NAMES));
+			JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
+		}
+	}
+
+	protected <T> Collection<T> nullSafeCollection(final Collection<T> collection) {
+		return (collection != null ? collection : Collections.<T>emptyList());
 	}
 
 	@Override
 	public void destroy() throws Exception {
 		if (close) {
-			if (cache != null && !cache.isClosed()) {
-				cache.close();
+			Cache localCache = (Cache) fetchCache();
+
+			if (localCache != null && !localCache.isClosed()) {
+				localCache.close();
 			}
 
-			cache = null;
+			this.cache = null;
 
-			if (factoryLocator != null) {
-				factoryLocator.destroy();
-				factoryLocator = null;
+			if (beanFactoryLocator != null) {
+				beanFactoryLocator.destroy();
+				beanFactoryLocator = null;
 			}
 		}
 	}
@@ -452,8 +548,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 
 	@Override
 	public Cache getObject() throws Exception {
-		init();
-		return cache;
+		return init();
 	}
 
 	@Override
@@ -852,7 +947,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 * @return the beanFactoryLocator
 	 */
 	public GemfireBeanFactoryLocator getBeanFactoryLocator() {
-		return factoryLocator;
+		return beanFactoryLocator;
 	}
 
 	/**
@@ -864,13 +959,4 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 		return lazyInitialize;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (!lazyInitialize) {
-			init();
-		}
-	}
 }

@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -48,7 +49,7 @@ public class ClientCacheTest {
 
 	@Test
 	public void test() {
-		assertEquals("gemfirePool", region.getAttributes().getPoolName());
+		assertEquals(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, region.getAttributes().getPoolName());
 	}
 
 	@Test

@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.client;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -39,58 +40,64 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 
 /**
- * Factory bean for easy declaration and configuration of a GemFire pool. If a
- * new pool is created, its life-cycle is bound to that of the declaring
- * container.
- * 
- * Note that if the pool already exists, it will be returned as is, without any
- * modifications and its life cycle untouched by this factory.
- * 
- * @see PoolManager
- * @see PoolFactory
- * @see Pool
- * 
+ * FactoryBean for easy declaration and configuration of a GemFire Pool. If a new Pool is created,
+ * its lifecycle is bound to that of the declaring container.
+ *
+ * Note, if the Pool already exists, the existing Pool will be returned as is without any modifications
+ * and its lifecycle will be unaffected by this factory.
+ *
  * @author Costin Leau
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.client.Pool
+ * @see com.gemstone.gemfire.cache.client.PoolFactory
+ * @see com.gemstone.gemfire.cache.client.PoolManager
  */
 @SuppressWarnings("unused")
-public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
-		DisposableBean, BeanNameAware, BeanFactoryAware {
+public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean, BeanNameAware,
+		BeanFactoryAware {
 
 	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
 
-	// whether the pool has been created internally or not
-	private boolean internalPool = true;
-
-	private Pool pool;
-
-	// pool settings
-	private String beanName;
-	private String name;
-	private Collection<InetSocketAddress> locators;
-	private Collection<InetSocketAddress> servers;
+	// indicates whether the Pool has been created internally (by this FactoryBean) or not
+	private volatile boolean internalPool = true;
 
 	private BeanFactory beanFactory;
 
+	private Collection<InetSocketAddress> locators;
+	private Collection<InetSocketAddress> servers;
+
+	private Pool pool;
+
+	private String beanName;
+	private String name;
+
+	// GemFire Pool Configuration Settings
 	private boolean keepAlive = false;
+	private boolean multiUserAuthentication = PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION;
+	private boolean prSingleHopEnabled = PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED;
+	private boolean subscriptionEnabled = PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED;
+	private boolean threadLocalConnections = PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
 
 	private int freeConnectionTimeout = PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT;
-	private long idleTimeout = PoolFactory.DEFAULT_IDLE_TIMEOUT;
 	private int loadConditioningInterval = PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL;
 	private int maxConnections = PoolFactory.DEFAULT_MAX_CONNECTIONS;
 	private int minConnections = PoolFactory.DEFAULT_MIN_CONNECTIONS;
-	private boolean multiUserAuthentication = PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION;
-	private long pingInterval = PoolFactory.DEFAULT_PING_INTERVAL;
-	private boolean prSingleHopEnabled = PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED;
 	private int readTimeout = PoolFactory.DEFAULT_READ_TIMEOUT;
 	private int retryAttempts = PoolFactory.DEFAULT_RETRY_ATTEMPTS;
-	private String serverGroup = PoolFactory.DEFAULT_SERVER_GROUP;
 	private int socketBufferSize = PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE;
 	private int statisticInterval = PoolFactory.DEFAULT_STATISTIC_INTERVAL;
 	private int subscriptionAckInterval = PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
-	private boolean subscriptionEnabled = PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED;
 	private int subscriptionMessageTrackingTimeout = PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT;
 	private int subscriptionRedundancy = PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
-	private boolean threadLocalConnections = PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
+
+	private long idleTimeout = PoolFactory.DEFAULT_IDLE_TIMEOUT;
+	private long pingInterval = PoolFactory.DEFAULT_PING_INTERVAL;
+
+	private String serverGroup = PoolFactory.DEFAULT_SERVER_GROUP;
+
+	public Pool getObject() throws Exception {
+		return pool;
+	}
 
 	public Class<?> getObjectType() {
 		return (pool != null ? pool.getClass() : Pool.class);
@@ -100,66 +107,35 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 		return true;
 	}
 
-	public Pool getObject() throws Exception {
-		return pool;
-	}
-
 	public void afterPropertiesSet() throws Exception {
 		if (!StringUtils.hasText(name)) {
-			Assert.hasText(beanName, "the pool name is required");
+			Assert.hasText(beanName, "The Pool name is required!");
 			name = beanName;
-		}
-
-		// eagerly initialize cache (if needed)
-		if (InternalDistributedSystem.getAnyInstance() == null) {
-			Properties properties = null;
-			try {
-				ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
-				properties = clientCacheFactoryBean.getProperties();
-			}
-			catch (Exception ignore) {
-			}
-
-			connectToTemporaryDs(properties);
-			
 		}
 
 		// first check the configured pools
 		Pool existingPool = PoolManager.find(name);
-		if (existingPool != null) {
-			pool = existingPool;
-			internalPool = false;
-			if (log.isDebugEnabled())
-				log.debug("Pool '" + name
-						+ " already exists; using found instance...");
-		} else {
-			if (log.isDebugEnabled())
-				log.debug("No pool named '" + name
-						+ "' found. Creating a new once...");
 
-			if (CollectionUtils.isEmpty(locators)
-					&& CollectionUtils.isEmpty(servers)) {
-				throw new IllegalArgumentException(
-						"at least one locator or server is required");
+		if (existingPool != null) {
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("A Pool with name '%1$s' already exists; using existing Pool.", name));
+			}
+
+			internalPool = false;
+			pool = existingPool;
+		}
+		else {
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("No Pool with name '%1$s' was found. Creating a new Pool...", name));
+			}
+
+			if (CollectionUtils.isEmpty(locators) && CollectionUtils.isEmpty(servers)) {
+				throw new IllegalArgumentException("At least one locator or server is required!");
 			}
 
 			internalPool = true;
 
 			PoolFactory poolFactory = PoolManager.createFactory();
-
-			if (!CollectionUtils.isEmpty(locators)) {
-				for (InetSocketAddress connection : locators) {
-					poolFactory.addLocator(connection.getHostName(),
-							connection.getPort());
-				}
-			}
-
-			if (!CollectionUtils.isEmpty(servers)) {
-				for (InetSocketAddress connection : servers) {
-					poolFactory.addServer(connection.getHostName(),
-							connection.getPort());
-				}
-			}
 
 			poolFactory.setFreeConnectionTimeout(freeConnectionTimeout);
 			poolFactory.setIdleTimeout(idleTimeout);
@@ -174,13 +150,25 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 			poolFactory.setServerGroup(serverGroup);
 			poolFactory.setSocketBufferSize(socketBufferSize);
 			poolFactory.setStatisticInterval(statisticInterval);
-			poolFactory.setSubscriptionEnabled(subscriptionEnabled);
 			poolFactory.setSubscriptionAckInterval(subscriptionAckInterval);
-			poolFactory
-					.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
+			poolFactory.setSubscriptionEnabled(subscriptionEnabled);
+			poolFactory.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
 			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
 			poolFactory.setThreadLocalConnections(threadLocalConnections);
-		 
+
+			for (InetSocketAddress connection : nullSafeCollection(locators)) {
+				poolFactory.addLocator(connection.getHostName(), connection.getPort());
+			}
+
+			for (InetSocketAddress connection : nullSafeCollection(servers)) {
+				poolFactory.addServer(connection.getHostName(), connection.getPort());
+			}
+
+			// eagerly initialize ClientCache (if needed)
+			if (InternalDistributedSystem.getAnyInstance() == null) {
+				doDistributedSystemConnect(resolveGemfireProperties());
+			}
+
 			pool = poolFactory.create(name);
 		}
 	}
@@ -190,217 +178,145 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean,
 			if (!pool.isDestroyed()) {
 				pool.releaseThreadLocalConnection();
 				pool.destroy(keepAlive);
+
 				if (log.isDebugEnabled()) {
-					log.debug("Destroyed pool '" + name + "'...");
+					log.debug(String.format("Destroyed Pool '%1$s'.", name));
 				}
 			}
 		}
 	}
 
-	public void setBeanName(String name) {
-		this.beanName = name;
+	/**
+	 * A workaround to create a Pool if no ClientCache has been created yet. Initialize a client-like
+	 * Distributed System before initializing the Pool.
+	 *
+	 * @param properties GemFire System Properties.
+	 * @see java.util.Properties
+	 * @see com.gemstone.gemfire.distributed.DistributedSystem#connect(java.util.Properties)
+	 */
+	@SuppressWarnings("deprecation")
+	static void doDistributedSystemConnect(Properties properties) {
+		Properties gemfireProperties = (properties != null ? (Properties) properties.clone() : new Properties());
+		gemfireProperties.setProperty("locators", "");
+		gemfireProperties.setProperty("mcast-port", "0");
+		DistributedSystem.connect(gemfireProperties);
 	}
 
-	/**
-	 * @param pool
-	 *            the pool to set
-	 */
-	public void setPool(Pool pool) {
-		this.pool = pool;
+	/* (non-Javadoc) */
+	private <T> Collection<T> nullSafeCollection(final Collection<T> list) {
+		return (list != null ? list : Collections.<T>emptyList());
 	}
 
-	/**
-	 * @param name
-	 *            the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 * @param locators
-	 *            the locators to set
-	 */
-	public void setLocators(Collection<InetSocketAddress> locators) {
-		this.locators = locators;
-	}
-
-	/**
-	 * @param servers
-	 *            the servers to set
-	 */
-	public void setServers(Collection<InetSocketAddress> servers) {
-		this.servers = servers;
-	}
-
-	/**
-	 * @param keepAlive
-	 *            the keepAlive to set
-	 */
-	public void setKeepAlive(boolean keepAlive) {
-		this.keepAlive = keepAlive;
-	}
-
-	/**
-	 * @param freeConnectionTimeout
-	 *            the freeConnectionTimeout to set
-	 */
-	public void setFreeConnectionTimeout(int freeConnectionTimeout) {
-		this.freeConnectionTimeout = freeConnectionTimeout;
-	}
-
-	/**
-	 * @param idleTimeout
-	 *            the idleTimeout to set
-	 */
-	public void setIdleTimeout(long idleTimeout) {
-		this.idleTimeout = idleTimeout;
-	}
-
-	/**
-	 * @param loadConditioningInterval
-	 *            the loadConditioningInterval to set
-	 */
-	public void setLoadConditioningInterval(int loadConditioningInterval) {
-		this.loadConditioningInterval = loadConditioningInterval;
-	}
-
-	/**
-	 * @param maxConnections
-	 *            the maxConnections to set
-	 */
-	public void setMaxConnections(int maxConnections) {
-		this.maxConnections = maxConnections;
-	}
-
-	/**
-	 * @param minConnections
-	 *            the minConnections to set
-	 */
-	public void setMinConnections(int minConnections) {
-		this.minConnections = minConnections;
-	}
-
-	/**
-	 * @param pingInterval
-	 *            the pingInterval to set
-	 */
-	public void setPingInterval(long pingInterval) {
-		this.pingInterval = pingInterval;
-	}
-
-	/**
-	 * @param readTimeout
-	 *            the readTimeout to set
-	 */
-	public void setReadTimeout(int readTimeout) {
-		this.readTimeout = readTimeout;
-	}
-
-	/**
-	 * @param retryAttempts
-	 *            the retryAttempts to set
-	 */
-	public void setRetryAttempts(int retryAttempts) {
-		this.retryAttempts = retryAttempts;
-	}
-
-	/**
-	 * @param serverGroup
-	 *            the serverGroup to set
-	 */
-	public void setServerGroup(String serverGroup) {
-		this.serverGroup = serverGroup;
-	}
-
-	/**
-	 * @param socketBufferSize
-	 *            the socketBufferSize to set
-	 */
-	public void setSocketBufferSize(int socketBufferSize) {
-		this.socketBufferSize = socketBufferSize;
-	}
-
-	/**
-	 * @param statisticInterval
-	 *            the statisticInterval to set
-	 */
-	public void setStatisticInterval(int statisticInterval) {
-		this.statisticInterval = statisticInterval;
-	}
-
-	/**
-	 * @param subscriptionAckInterval
-	 *            the subscriptionAckInterval to set
-	 */
-	public void setSubscriptionAckInterval(int subscriptionAckInterval) {
-		this.subscriptionAckInterval = subscriptionAckInterval;
-	}
-
-	/**
-	 * @param subscriptionEnabled
-	 *            the subscriptionEnabled to set
-	 */
-	public void setSubscriptionEnabled(boolean subscriptionEnabled) {
-		this.subscriptionEnabled = subscriptionEnabled;
-	}
-
-	/**
-	 * @param subscriptionMessageTrackingTimeout
-	 *            the subscriptionMessageTrackingTimeout to set
-	 */
-	public void setSubscriptionMessageTrackingTimeout(
-			int subscriptionMessageTrackingTimeout) {
-		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
-	}
-
-	/**
-	 * @param subscriptionRedundancy
-	 *            the subscriptionRedundancy to set
-	 */
-	public void setSubscriptionRedundancy(int subscriptionRedundancy) {
-		this.subscriptionRedundancy = subscriptionRedundancy;
-	}
-
-	/**
-	 * @param threadLocalConnections
-	 *            the threadLocalConnections to set
-	 */
-	public void setThreadLocalConnections(boolean threadLocalConnections) {
-		this.threadLocalConnections = threadLocalConnections;
+	/* (non-Javadoc) */
+	private Properties resolveGemfireProperties() {
+		try {
+			ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
+			return clientCacheFactoryBean.getProperties();
+		}
+		catch (Exception ignore) {
+			return null;
+		}
 	}
 
 	public void setBeanFactory(BeanFactory beanFactory) {
 		this.beanFactory = beanFactory;
 	}
 
-	/**
-	 * @param multiUserAuthentication
-	 *            the multiUserAuthentication to set
-	 */
+	public void setBeanName(String name) {
+		this.beanName = name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setPool(Pool pool) {
+		this.pool = pool;
+	}
+
+	public void setFreeConnectionTimeout(int freeConnectionTimeout) {
+		this.freeConnectionTimeout = freeConnectionTimeout;
+	}
+
+	public void setIdleTimeout(long idleTimeout) {
+		this.idleTimeout = idleTimeout;
+	}
+
+	public void setKeepAlive(boolean keepAlive) {
+		this.keepAlive = keepAlive;
+	}
+
+	public void setLoadConditioningInterval(int loadConditioningInterval) {
+		this.loadConditioningInterval = loadConditioningInterval;
+	}
+
+	public void setLocators(Collection<InetSocketAddress> locators) {
+		this.locators = locators;
+	}
+
+	public void setMaxConnections(int maxConnections) {
+		this.maxConnections = maxConnections;
+	}
+
+	public void setMinConnections(int minConnections) {
+		this.minConnections = minConnections;
+	}
+
 	public void setMultiUserAuthentication(boolean multiUserAuthentication) {
 		this.multiUserAuthentication = multiUserAuthentication;
 	}
 
-	/**
-	 * @param prSingleHopEnabled
-	 *            the prSingleHopEnabled to set
-	 */
+	public void setPingInterval(long pingInterval) {
+		this.pingInterval = pingInterval;
+	}
+
+	public void setReadTimeout(int readTimeout) {
+		this.readTimeout = readTimeout;
+	}
+
+	public void setRetryAttempts(int retryAttempts) {
+		this.retryAttempts = retryAttempts;
+	}
+
+	public void setServerGroup(String serverGroup) {
+		this.serverGroup = serverGroup;
+	}
+
+	public void setServers(Collection<InetSocketAddress> servers) {
+		this.servers = servers;
+	}
+
+	public void setSocketBufferSize(int socketBufferSize) {
+		this.socketBufferSize = socketBufferSize;
+	}
+
+	public void setStatisticInterval(int statisticInterval) {
+		this.statisticInterval = statisticInterval;
+	}
+
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
 	}
-	
-	/*
-	 *  A work around to create a pool if no cache has been created yet 
-	 *  initialize a client-like Distributed System before initializing
-	 *  the pool
-	 */
-	@SuppressWarnings("deprecation")
-	static void connectToTemporaryDs(Properties properties) {
-		Properties props = properties != null? (Properties) properties.clone() : new Properties();
-		props.setProperty("mcast-port", "0");
-		props.setProperty("locators", "");
-		DistributedSystem.connect(props);
+
+	public void setSubscriptionAckInterval(int subscriptionAckInterval) {
+		this.subscriptionAckInterval = subscriptionAckInterval;
+	}
+
+	public void setSubscriptionEnabled(boolean subscriptionEnabled) {
+		this.subscriptionEnabled = subscriptionEnabled;
+	}
+
+	public void setSubscriptionMessageTrackingTimeout(
+		int subscriptionMessageTrackingTimeout) {
+		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
+	}
+
+	public void setSubscriptionRedundancy(int subscriptionRedundancy) {
+		this.subscriptionRedundancy = subscriptionRedundancy;
+	}
+
+	public void setThreadLocalConnections(boolean threadLocalConnections) {
+		this.threadLocalConnections = threadLocalConnections;
 	}
 
 }

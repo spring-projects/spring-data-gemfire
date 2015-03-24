@@ -25,6 +25,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.DataPolicyConverter;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -93,60 +94,58 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		Assert.isTrue(cache instanceof ClientCache, String.format("Unable to create regions from %1$s", cache));
 
-		// TODO reference to an internal GemFire class!
 		if (cache instanceof GemFireCacheImpl) {
 			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A client-cache instance is required.");
 		}
 
 		ClientCache clientCache = (ClientCache) cache;
 
-		ClientRegionFactory<K, V> factory = clientCache.createClientRegionFactory(resolveClientRegionShortcut());
+		ClientRegionFactory<K, V> clientRegionFactory = clientCache.createClientRegionFactory(resolveClientRegionShortcut());
 
 		// map region attributes onto the client region factory
 		if (attributes != null) {
-			factory.setCloningEnabled(attributes.getCloningEnabled());
-			factory.setConcurrencyChecksEnabled(attributes.getConcurrencyChecksEnabled());
-			factory.setConcurrencyLevel(attributes.getConcurrencyLevel());
-			factory.setCustomEntryIdleTimeout(attributes.getCustomEntryIdleTimeout());
-			factory.setCustomEntryTimeToLive(attributes.getCustomEntryTimeToLive());
-			factory.setDiskStoreName(attributes.getDiskStoreName());
-			factory.setDiskSynchronous(attributes.isDiskSynchronous());
-			factory.setEntryIdleTimeout(attributes.getEntryIdleTimeout());
-			factory.setEntryTimeToLive(attributes.getEntryTimeToLive());
-			factory.setEvictionAttributes(attributes.getEvictionAttributes());
-			factory.setInitialCapacity(attributes.getInitialCapacity());
-			factory.setKeyConstraint(attributes.getKeyConstraint());
-			factory.setLoadFactor(attributes.getLoadFactor());
-			factory.setPoolName(attributes.getPoolName());
-			factory.setRegionIdleTimeout(attributes.getRegionIdleTimeout());
-			factory.setRegionTimeToLive(attributes.getRegionTimeToLive());
-			factory.setStatisticsEnabled(attributes.getStatisticsEnabled());
-			factory.setValueConstraint(attributes.getValueConstraint());
+			clientRegionFactory.setCloningEnabled(attributes.getCloningEnabled());
+			clientRegionFactory.setConcurrencyChecksEnabled(attributes.getConcurrencyChecksEnabled());
+			clientRegionFactory.setConcurrencyLevel(attributes.getConcurrencyLevel());
+			clientRegionFactory.setCustomEntryIdleTimeout(attributes.getCustomEntryIdleTimeout());
+			clientRegionFactory.setCustomEntryTimeToLive(attributes.getCustomEntryTimeToLive());
+			clientRegionFactory.setDiskStoreName(attributes.getDiskStoreName());
+			clientRegionFactory.setDiskSynchronous(attributes.isDiskSynchronous());
+			clientRegionFactory.setEntryIdleTimeout(attributes.getEntryIdleTimeout());
+			clientRegionFactory.setEntryTimeToLive(attributes.getEntryTimeToLive());
+			clientRegionFactory.setEvictionAttributes(attributes.getEvictionAttributes());
+			clientRegionFactory.setInitialCapacity(attributes.getInitialCapacity());
+			clientRegionFactory.setKeyConstraint(attributes.getKeyConstraint());
+			clientRegionFactory.setLoadFactor(attributes.getLoadFactor());
+			clientRegionFactory.setPoolName(attributes.getPoolName());
+			clientRegionFactory.setRegionIdleTimeout(attributes.getRegionIdleTimeout());
+			clientRegionFactory.setRegionTimeToLive(attributes.getRegionTimeToLive());
+			clientRegionFactory.setStatisticsEnabled(attributes.getStatisticsEnabled());
+			clientRegionFactory.setValueConstraint(attributes.getValueConstraint());
 		}
 
-		addCacheListeners(factory);
+		addCacheListeners(clientRegionFactory);
 
 		if (StringUtils.hasText(poolName)) {
 			// try to eagerly initialize the pool name, if defined as a bean
 			if (beanFactory.isTypeMatch(poolName, Pool.class)) {
 				if (log.isDebugEnabled()) {
-					log.debug(String.format("Found bean definition for pool '%1$s'. Eagerly initializing...", poolName));
+					log.debug(String.format("Found bean definition for pool '%1$s'; Eagerly initializing...", poolName));
 				}
 				beanFactory.getBean(poolName, Pool.class);
 			}
-			factory.setPoolName(poolName);
+			clientRegionFactory.setPoolName(poolName);
 		}
-		else {
-			Pool pool = beanFactory.getBean(Pool.class);
-			factory.setPoolName(pool.getName());
+		else if (!isLocal(resolveClientRegionShortcut())) {
+			clientRegionFactory.setPoolName(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
 		}
 
 		if (diskStoreName != null) {
-			factory.setDiskStoreName(diskStoreName);
+			clientRegionFactory.setDiskStoreName(diskStoreName);
 		}
 
-		Region<K, V> clientRegion = (getParent() != null ? factory.createSubregion(getParent(), regionName)
-			: factory.create(regionName));
+		Region<K, V> clientRegion = (getParent() != null ? clientRegionFactory.createSubregion(getParent(), regionName)
+			: clientRegionFactory.create(regionName));
 
 		if (log.isInfoEnabled()) {
 			if (getParent() != null) {
@@ -163,6 +162,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		}
 
 		return clientRegion;
+	}
+
+	private boolean isLocal(final ClientRegionShortcut clientRegionShortcut) {
+		return (clientRegionShortcut != null && clientRegionShortcut.name().startsWith("LOCAL"));
 	}
 
 	protected ClientRegionShortcut resolveClientRegionShortcut() {

@@ -30,13 +30,10 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 		this.useBeanFactoryLocator = false;
 	}
 
-	/**
-	 * @param bean
-	 */
 	public MockCacheFactoryBean(CacheFactoryBean cacheFactoryBean) {
 		this();
 		if (cacheFactoryBean != null) {
-			this.factoryLocator = cacheFactoryBean.getBeanFactoryLocator();
+			this.beanFactoryLocator = cacheFactoryBean.getBeanFactoryLocator();
 			this.beanFactory = cacheFactoryBean.getBeanFactory();
 			this.beanName = cacheFactoryBean.getBeanName();
 			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();

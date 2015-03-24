@@ -12,15 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.config;
+
 /**
  * 
  * @author David Turanski
- *
+ * @author John Blum
  */
 public interface GemfireConstants {
-	static final String DEFAULT_GEMFIRE_POOL_NAME = "gemfirePool";
 	static final String DEFAULT_GEMFIRE_CACHE_NAME = "gemfireCache";
-	static final String DEFAULT_GEMFIRE_TXMANAGER_NAME = "gemfireTransactionManager";
 	static final String DEFAULT_GEMFIRE_FUNCTION_SERVICE_NAME = "gemfireFunctionService";
+	static final String DEFAULT_GEMFIRE_POOL_NAME = "DEFAULT";
+	static final String DEFAULT_GEMFIRE_TXMANAGER_NAME = "gemfireTransactionManager";
 }

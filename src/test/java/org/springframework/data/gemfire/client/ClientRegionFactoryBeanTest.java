@@ -21,17 +21,28 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.InputStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.TestUtils;
 
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -56,28 +67,183 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean = null;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void testLookupFallbackFailingToUseProvidedShortcut() throws Exception {
+	@SuppressWarnings({ "deprecation", "unchecked" })
+	public void testLookupFallbackUsingDefaultShortcut() throws Exception {
+		final String testRegionName = "TestRegion";
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+		ClientRegionFactory mockClientRegionFactory = mock(ClientRegionFactory.class);
+		Region mockRegion = mock(Region.class);
+
+		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.LOCAL))).thenReturn(mockClientRegionFactory);
+		when(mockClientRegionFactory.create(eq(testRegionName))).thenReturn(mockRegion);
+
+		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegionAttributes.getCloningEnabled()).thenReturn(false);
+		when(mockRegionAttributes.getConcurrencyChecksEnabled()).thenReturn(true);
+		when(mockRegionAttributes.getConcurrencyLevel()).thenReturn(8);
+		when(mockRegionAttributes.getCustomEntryIdleTimeout()).thenReturn(null);
+		when(mockRegionAttributes.getCustomEntryTimeToLive()).thenReturn(null);
+		when(mockRegionAttributes.getDiskStoreName()).thenReturn("TestDiskStoreOne");
+		when(mockRegionAttributes.isDiskSynchronous()).thenReturn(false);
+		when(mockRegionAttributes.getEntryIdleTimeout()).thenReturn(mock(ExpirationAttributes.class));
+		when(mockRegionAttributes.getEntryTimeToLive()).thenReturn(mock(ExpirationAttributes.class));
+		when(mockRegionAttributes.getEvictionAttributes()).thenReturn(mock(EvictionAttributes.class));
+		when(mockRegionAttributes.getInitialCapacity()).thenReturn(101);
+		when(mockRegionAttributes.getKeyConstraint()).thenReturn(Long.class);
+		when(mockRegionAttributes.getLoadFactor()).thenReturn(0.75f);
+		when(mockRegionAttributes.getPoolName()).thenReturn("TestPoolOne");
+		when(mockRegionAttributes.getRegionIdleTimeout()).thenReturn(mock(ExpirationAttributes.class));
+		when(mockRegionAttributes.getRegionTimeToLive()).thenReturn(mock(ExpirationAttributes.class));
+		when(mockRegionAttributes.getStatisticsEnabled()).thenReturn(true);
+		when(mockRegionAttributes.getValueConstraint()).thenReturn(Number.class);
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+		Pool mockPool = mock(Pool.class);
+		Resource mockSnapshot = mock(Resource.class, "Snapshot");
+
+		when(mockBeanFactory.isTypeMatch(eq("TestPoolTwo"), eq(Pool.class))).thenReturn(true);
+		when(mockBeanFactory.getBean(eq("TestPoolTwo"))).thenReturn(mockPool);
+		when(mockPool.getName()).thenReturn("TestPoolTwo");
+		when(mockSnapshot.getInputStream()).thenReturn(mock(InputStream.class));
+
+		factoryBean.setAttributes(mockRegionAttributes);
+		factoryBean.setBeanFactory(mockBeanFactory);
+		factoryBean.setDiskStoreName("TestDiskStoreTwo");
+		factoryBean.setPersistent(false);
+		factoryBean.setPoolName("TestPoolTwo");
+		factoryBean.setSnapshot(mockSnapshot);
+		factoryBean.setShortcut(null);
+
+		Region actualRegion = factoryBean.lookupFallback(mockClientCache, testRegionName);
+
+		assertSame(mockRegion, actualRegion);
+
+		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL));
+		verify(mockClientRegionFactory, times(1)).setCloningEnabled(eq(false));
+		verify(mockClientRegionFactory, times(1)).setConcurrencyChecksEnabled(eq(true));
+		verify(mockClientRegionFactory, times(1)).setConcurrencyLevel(eq(8));
+		verify(mockClientRegionFactory, times(1)).setCustomEntryIdleTimeout(null);
+		verify(mockClientRegionFactory, times(1)).setCustomEntryTimeToLive(null);
+		verify(mockClientRegionFactory, times(1)).setDiskStoreName(eq("TestDiskStoreOne"));
+		verify(mockClientRegionFactory, times(1)).setDiskSynchronous(eq(false));
+		verify(mockClientRegionFactory, times(1)).setEntryIdleTimeout(any(ExpirationAttributes.class));
+		verify(mockClientRegionFactory, times(1)).setEntryTimeToLive(any(ExpirationAttributes.class));
+		verify(mockClientRegionFactory, times(1)).setEvictionAttributes(any(EvictionAttributes.class));
+		verify(mockClientRegionFactory, times(1)).setInitialCapacity(eq(101));
+		verify(mockClientRegionFactory, times(1)).setKeyConstraint(eq(Long.class));
+		verify(mockClientRegionFactory, times(1)).setLoadFactor(eq(0.75f));
+		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolOne"));
+		verify(mockClientRegionFactory, times(1)).setRegionIdleTimeout(any(ExpirationAttributes.class));
+		verify(mockClientRegionFactory, times(1)).setRegionTimeToLive(any(ExpirationAttributes.class));
+		verify(mockClientRegionFactory, times(1)).setStatisticsEnabled(eq(true));
+		verify(mockClientRegionFactory, times(1)).setValueConstraint(eq(Number.class));
+		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolTwo"));
+		verify(mockClientRegionFactory, times(1)).setDiskStoreName(eq("TestDiskStoreTwo"));
+		verify(mockClientRegionFactory, times(1)).create(eq(testRegionName));
+		verify(mockRegion, times(1)).loadSnapshot(any(InputStream.class));
+	}
+
+	@Test
+	@SuppressWarnings({ "deprecation", "unchecked" })
+	public void testLookupFallbackUsingDefaultPersistentShortcut() throws Exception {
+		ClientCache mockClientCache = mock(ClientCache.class);
+		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+		Region<Object, Object> mockRegion = mock(Region.class);
+
+		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_PERSISTENT))).thenReturn(mockClientRegionFactory);
+		when(mockClientRegionFactory.create(eq("TestRegion"))).thenReturn(mockRegion);
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		when(mockBeanFactory.isTypeMatch(eq("TestPool"), eq(Pool.class))).thenReturn(false);
+
+		factoryBean.setAttributes(null);
+		factoryBean.setBeanFactory(mockBeanFactory);
+		factoryBean.setPersistent(true);
+		factoryBean.setPoolName("TestPool");
+		factoryBean.setShortcut(null);
+
+		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
+
+		assertSame(mockRegion, actualRegion);
+
+		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_PERSISTENT));
+		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPool"));
+		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
+		verify(mockBeanFactory, never()).getBean(eq("TestPool"));
+		verify(mockRegion, never()).loadSnapshot(any(InputStream.class));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testLookupFallbackWithSpecifiedShortcut() throws Exception {
+		ClientCache mockClientCache = mock(ClientCache.class);
+		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+		Region<Object, Object> mockRegion = mock(Region.class);
+
+		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY))).thenReturn(mockClientRegionFactory);
+		when(mockClientRegionFactory.create(eq("TestRegion"))).thenReturn(mockRegion);
+
+		factoryBean.setAttributes(null);
+		factoryBean.setBeanFactory(null);
 		factoryBean.setShortcut(ClientRegionShortcut.CACHING_PROXY);
 
-		BeanFactory beanFactory = mock(BeanFactory.class);
-		Pool pool = mock(Pool.class);
+		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
 
-		when(beanFactory.getBean(Pool.class)).thenReturn(pool);
+		assertSame(mockRegion, actualRegion);
 
-		factoryBean.setBeanFactory(beanFactory);
+		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY));
+		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
+	}
 
-		ClientCache cache = mock(ClientCache.class);
-		ClientRegionFactory<Object, Object> clientRegionFactory = mock(ClientRegionFactory.class);
-		Region<Object, Object> expectedRegion = mock(Region.class);
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testLookupFallbackWithSubRegionCreation() throws Exception {
+		ClientCache mockClientCache = mock(ClientCache.class);
+		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+		Region<Object, Object> mockParentRegion = mock(Region.class, "Parent");
+		Region<Object, Object> mockSubRegion = mock(Region.class, "SubRegion");
 
-		when(cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)).thenReturn(clientRegionFactory);
-		when(clientRegionFactory.create("testRegion")).thenReturn(expectedRegion);
+		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.PROXY))).thenReturn(mockClientRegionFactory);
+		when(mockClientRegionFactory.createSubregion(eq(mockParentRegion), eq("TestSubRegion"))).thenReturn(mockSubRegion);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(cache, "testRegion");
+		factoryBean.setAttributes(null);
+		factoryBean.setBeanFactory(null);
+		factoryBean.setParent(mockParentRegion);
+		factoryBean.setShortcut(ClientRegionShortcut.PROXY);
 
-		assertSame(expectedRegion, actualRegion);
+		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestSubRegion");
+
+		assertSame(mockSubRegion, actualRegion);
+
+		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.PROXY));
+		verify(mockClientRegionFactory, times(1)).createSubregion(eq(mockParentRegion), eq("TestSubRegion"));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testLookupFallbackWithUnspecifiedPool() throws Exception {
+		ClientCache mockClientCache = mock(ClientCache.class);
+		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+		Region<Object, Object> mockRegion = mock(Region.class);
+
+		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_HEAP_LRU))).thenReturn(mockClientRegionFactory);
+		when(mockClientRegionFactory.create(eq("TestRegion"))).thenReturn(mockRegion);
+
+		factoryBean.setAttributes(null);
+		factoryBean.setBeanFactory(null);
+		factoryBean.setShortcut(ClientRegionShortcut.LOCAL_HEAP_LRU);
+
+		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
+
+		assertSame(mockRegion, actualRegion);
+
+		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_HEAP_LRU));
+		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
+		verify(mockClientRegionFactory, never()).setPoolName(any(String.class));
 	}
 
 	@Test
