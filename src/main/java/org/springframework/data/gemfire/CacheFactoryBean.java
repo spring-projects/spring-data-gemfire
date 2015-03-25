@@ -273,7 +273,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			beanFactoryLocator.afterPropertiesSet();
 		}
 
-		final ClassLoader originalThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
+		final ClassLoader currentThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
 		try {
 			// use bean ClassLoader to load Spring configured, GemFire Declarable classes
@@ -296,7 +296,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			return cache;
 		}
 		finally {
-			Thread.currentThread().setContextClassLoader(originalThreadContextClassLoader);
+			Thread.currentThread().setContextClassLoader(currentThreadContextClassLoader);
 		}
 	}
 
@@ -610,66 +610,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
-	 * Controls whether auto-reconnect functionality introduced in GemFire 8 is enabled or not.
-	 *
-	 * @param enableAutoReconnect a boolean value to enable/disable auto-reconnect functionality.
-	 * @since GemFire 8.0
-	 */
-	public void setEnableAutoReconnect(Boolean enableAutoReconnect) {
-		this.enableAutoReconnect = enableAutoReconnect;
-	}
-
-	/**
-	 * Sets the {@link PdxSerializable} for this cache. Applicable on GemFire
-	 * 6.6 or higher. The argument is of type object for compatibility with
-	 * GemFire 6.5.
-	 * 
-	 * @param serializer pdx serializer configured for this cache.
-	 */
-	public void setPdxSerializer(Object serializer) {
-		this.pdxSerializer = serializer;
-	}
-
-	/**
-	 * Sets the object preference to PdxInstance. Applicable on GemFire 6.6 or higher.
-	 *
-	 * @param pdxReadSerialized a boolean value indicating the PDX instance should be returned from Region.get(key)
-	 * when available.
-	 */
-	public void setPdxReadSerialized(Boolean pdxReadSerialized) {
-		this.pdxReadSerialized = pdxReadSerialized;
-	}
-
-	/**
-	 * Controls whether type metadata for PDX objects is persisted to disk. Applicable on GemFire 6.6 or higher.
-	 *
-	 * @param pdxPersistent a boolean value indicating that PDX type meta-data should be persisted to disk.
-	 */
-	public void setPdxPersistent(Boolean pdxPersistent) {
-		this.pdxPersistent = pdxPersistent;
-	}
-
-	/**
-	 * Controls whether pdx ignores fields that were unread during
-	 * deserialization. Applicable on GemFire 6.6 or higher.
-	 * 
-	 * @param pdxIgnoreUnreadFields the pdxIgnoreUnreadFields to set
-	 */
-	public void setPdxIgnoreUnreadFields(Boolean pdxIgnoreUnreadFields) {
-		this.pdxIgnoreUnreadFields = pdxIgnoreUnreadFields;
-	}
-
-	/**
-	 * Set the disk store that is used for PDX meta data. Applicable on GemFire
-	 * 6.6 or higher.
-	 * 
-	 * @param pdxDiskStoreName the pdxDiskStoreName to set
-	 */
-	public void setPdxDiskStoreName(String pdxDiskStoreName) {
-		this.pdxDiskStoreName = pdxDiskStoreName;
-	}
-
-	/**
 	 * Set whether the Cache should be closed.
 	 *
 	 * @param close set to false if destroy() should not close the cache
@@ -697,12 +637,48 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
+	 * Sets an instance of the DynamicRegionSupport to support Dynamic Regions in this GemFire Cache.
+	 *
+	 * @param dynamicRegionSupport the DynamicRegionSupport class to setup Dynamic Regions in this Cache.
+	 */
+	public void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
+		this.dynamicRegionSupport = dynamicRegionSupport;
+	}
+
+	/**
+	 * Controls whether auto-reconnect functionality introduced in GemFire 8 is enabled or not.
+	 *
+	 * @param enableAutoReconnect a boolean value to enable/disable auto-reconnect functionality.
+	 * @since GemFire 8.0
+	 */
+	public void setEnableAutoReconnect(Boolean enableAutoReconnect) {
+		this.enableAutoReconnect = enableAutoReconnect;
+	}
+
+	/**
 	 * Set the Cache's eviction heap percentage attribute.
 	 *
 	 * @param evictionHeapPercentage float-point value indicating the Cache's heap use percentage to trigger eviction.
 	 */
 	public void setEvictionHeapPercentage(Float evictionHeapPercentage) {
 		this.evictionHeapPercentage = evictionHeapPercentage;
+	}
+
+	/**
+	 * Requires GemFire 7.0 or higher
+	 * @param gatewayConflictResolver defined as Object in the signature for backward
+	 * compatibility with Gemfire 6 compatibility. This must be an instance of
+	 * {@link com.gemstone.gemfire.cache.util.GatewayConflictResolver}
+	 */
+	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
+		this.gatewayConflictResolver = gatewayConflictResolver;
+	}
+
+	/**
+	 * @param jndiDataSources the list of configured JndiDataSources to use with this Cache.
+	 */
+	public void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
+		this.jndiDataSources = jndiDataSources;
 	}
 
 	/**
@@ -736,6 +712,56 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
+	 * Sets the {@link PdxSerializable} for this cache. Applicable on GemFire
+	 * 6.6 or higher. The argument is of type object for compatibility with
+	 * GemFire 6.5.
+	 *
+	 * @param serializer pdx serializer configured for this cache.
+	 */
+	public void setPdxSerializer(Object serializer) {
+		this.pdxSerializer = serializer;
+	}
+
+	/**
+	 * Sets the object preference to PdxInstance. Applicable on GemFire 6.6 or higher.
+	 *
+	 * @param pdxReadSerialized a boolean value indicating the PDX instance should be returned from Region.get(key)
+	 * when available.
+	 */
+	public void setPdxReadSerialized(Boolean pdxReadSerialized) {
+		this.pdxReadSerialized = pdxReadSerialized;
+	}
+
+	/**
+	 * Controls whether type metadata for PDX objects is persisted to disk. Applicable on GemFire 6.6 or higher.
+	 *
+	 * @param pdxPersistent a boolean value indicating that PDX type meta-data should be persisted to disk.
+	 */
+	public void setPdxPersistent(Boolean pdxPersistent) {
+		this.pdxPersistent = pdxPersistent;
+	}
+
+	/**
+	 * Controls whether pdx ignores fields that were unread during
+	 * deserialization. Applicable on GemFire 6.6 or higher.
+	 *
+	 * @param pdxIgnoreUnreadFields the pdxIgnoreUnreadFields to set
+	 */
+	public void setPdxIgnoreUnreadFields(Boolean pdxIgnoreUnreadFields) {
+		this.pdxIgnoreUnreadFields = pdxIgnoreUnreadFields;
+	}
+
+	/**
+	 * Set the disk store that is used for PDX meta data. Applicable on GemFire
+	 * 6.6 or higher.
+	 *
+	 * @param pdxDiskStoreName the pdxDiskStoreName to set
+	 */
+	public void setPdxDiskStoreName(String pdxDiskStoreName) {
+		this.pdxDiskStoreName = pdxDiskStoreName;
+	}
+
+	/**
 	 * Set the number of seconds a netSearch operation can wait for data before timing out.
 	 *
 	 * @param searchTimeout an integer value indicating the netSearch timeout value.
@@ -764,32 +790,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 */
 	public void setTransactionWriter(TransactionWriter transactionWriter) {
 		this.transactionWriter = transactionWriter;
-	}
-
-	/**
-	 * Sets an instance of the DynamicRegionSupport to support Dynamic Regions in this GemFire Cache.
-	 *
-	 * @param dynamicRegionSupport the DynamicRegionSupport class to setup Dynamic Regions in this Cache.
-	 */
-	public void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
-		this.dynamicRegionSupport = dynamicRegionSupport;
-	}
-
-	/**
-	 * Requires GemFire 7.0 or higher
-	 * @param gatewayConflictResolver defined as Object in the signature for backward
-	 * compatibility with Gemfire 6 compatibility. This must be an instance of
-	 * {@link com.gemstone.gemfire.cache.util.GatewayConflictResolver}
-	 */
-	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
-		this.gatewayConflictResolver = gatewayConflictResolver;
-	}
-
-	/**
-	 * @param jndiDataSources the list of configured JndiDataSources to use with this Cache.
-	 */
-	public void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
-		this.jndiDataSources = jndiDataSources;
 	}
 
 	/**
@@ -894,6 +894,13 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
+	 * @return the dynamicRegionSupport
+	 */
+	public DynamicRegionSupport getDynamicRegionSupport() {
+		return dynamicRegionSupport;
+	}
+
+	/**
 	 * Gets the value for the auto-reconnect setting.
 	 *
 	 * @return a boolean value indicating whether auto-reconnect was specified (non-null) and whether it was enabled
@@ -908,6 +915,20 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 */
 	public Float getEvictionHeapPercentage() {
 		return evictionHeapPercentage;
+	}
+
+	/**
+	 * @return the gatewayConflictResolver
+	 */
+	public Object getGatewayConflictResolver() {
+		return gatewayConflictResolver;
+	}
+
+	/**
+	 * @return the list of configured JndiDataSources.
+	 */
+	public List<JndiDataSource> getJndiDataSources() {
+		return jndiDataSources;
 	}
 
 	/**
@@ -985,27 +1006,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 */
 	public TransactionWriter getTransactionWriter() {
 		return transactionWriter;
-	}
-
-	/**
-	 * @return the dynamicRegionSupport
-	 */
-	public DynamicRegionSupport getDynamicRegionSupport() {
-		return dynamicRegionSupport;
-	}
-
-	/**
-	 * @return the gatewayConflictResolver
-	 */
-	public Object getGatewayConflictResolver() {
-		return gatewayConflictResolver;
-	}
-
-	/**
-	 * @return the list of configured JndiDataSources.
-	 */
-	public List<JndiDataSource> getJndiDataSources() {
-		return jndiDataSources;
 	}
 
 	/**
