@@ -83,9 +83,6 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
 		InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
-	protected static final List<String> VALID_JNDI_DATASOURCE_TYPE_NAMES = Collections.unmodifiableList(
-		Arrays.asList("ManagedDataSource", "PooledDataSource", "SimpleDataSource", "XAPooledDataSource"));
-
 	protected boolean close = true;
 	protected boolean lazyInitialize = true;
 	protected boolean useBeanFactoryLocator = true;
@@ -501,9 +498,13 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	private void registerJndiDataSources() {
 		for (JndiDataSource jndiDataSource : nullSafeCollection(jndiDataSources)) {
 			String typeAttributeValue = jndiDataSource.getAttributes().get("type");
-			Assert.isTrue(VALID_JNDI_DATASOURCE_TYPE_NAMES.contains(typeAttributeValue),
-				String.format("'jndi-binding' 'type' [%1$s] is invalid; 'type' must be one of %2$s",
-					typeAttributeValue, VALID_JNDI_DATASOURCE_TYPE_NAMES));
+			JndiDataSourceType jndiDataSourceType = JndiDataSourceType.valueOfIgnoreCase(typeAttributeValue);
+
+			Assert.notNull(jndiDataSourceType, String.format(
+				"'jndi-binding' 'type' [%1$s] is invalid; 'type' must be one of %2$s", typeAttributeValue,
+					Arrays.toString(JndiDataSourceType.values())));
+
+			jndiDataSource.getAttributes().put("type", jndiDataSourceType.getName());
 			JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
 		}
 	}
