@@ -263,12 +263,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	/* (non-Javadoc) */
 	private Cache init() throws Exception {
-		if (useBeanFactoryLocator && beanFactoryLocator == null) {
-			beanFactoryLocator = new GemfireBeanFactoryLocator();
-			beanFactoryLocator.setBeanFactory(beanFactory);
-			beanFactoryLocator.setBeanName(beanName);
-			beanFactoryLocator.afterPropertiesSet();
-		}
+		initBeanFactoryLocator();
 
 		final ClassLoader currentThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -297,10 +292,20 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		}
 	}
 
+	/* (non-Javadoc) */
+	private void initBeanFactoryLocator() {
+		if (useBeanFactoryLocator && beanFactoryLocator == null) {
+			beanFactoryLocator = new GemfireBeanFactoryLocator();
+			beanFactoryLocator.setBeanFactory(beanFactory);
+			beanFactoryLocator.setBeanName(beanName);
+			beanFactoryLocator.afterPropertiesSet();
+		}
+	}
+
 	/**
 	 * If Dynamic Regions are enabled, create and initialize a DynamicRegionFactory before creating the Cache.
 	 */
-	private void initializeDynamicRegionFactory() {
+	private void initDynamicRegionFactory() {
 		if (dynamicRegionSupport != null) {
 			dynamicRegionSupport.initializeDynamicRegionFactory();
 		}
@@ -314,7 +319,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * @see com.gemstone.gemfire.cache.Cache
 	 * @see #fetchCache()
 	 * @see #createFactory(java.util.Properties)
-	 * @see #initializeFactory(Object)
+	 * @see #prepareFactory(Object)
 	 * @see #createCache(Object)
 	 */
 	protected Cache resolveCache() {
@@ -324,8 +329,8 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		}
 		catch (CacheClosedException ex) {
 			cacheResolutionMessagePrefix = "Created new";
-			initializeDynamicRegionFactory();
-			return (Cache) createCache(initializeFactory(createFactory(getProperties())));
+			initDynamicRegionFactory();
+			return (Cache) createCache(prepareFactory(createFactory(getProperties())));
 		}
 	}
 
@@ -373,7 +378,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * @return the initialized GemFire factory.
 	 * @see #setPdxOptions(Object)
 	 */
-	protected Object initializeFactory(Object factory) {
+	protected Object prepareFactory(Object factory) {
 		if (isPdxOptionsSpecified()) {
 			Assert.isTrue(ClassUtils.isPresent("com.gemstone.gemfire.pdx.PdxSerializer", beanClassLoader),
 				"Unable set PDX options since GemFire 6.6 or later was not detected.");
@@ -871,7 +876,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	@Override
-	public Class<? extends Cache> getObjectType() {
+	public Class<? extends GemFireCache> getObjectType() {
 		return (cache != null ? cache.getClass() : Cache.class);
 	}
 

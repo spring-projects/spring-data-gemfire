@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.client;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 
@@ -25,6 +26,7 @@ import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -89,27 +91,18 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	@Override
+	protected GemFireCache fetchCache() {
+		return ClientCacheFactory.getAnyInstance();
+	}
+
+	@Override
 	protected GemFireCache createCache(Object factory) {
-		ClientCacheFactory clientCacheFactory = (ClientCacheFactory) factory;
-
-		initializePool(clientCacheFactory);
-
-		GemFireCache cache = clientCacheFactory.create();
-
-		// register for events after Pool and Regions been created and iff non-durable client...
-		readyForEvents();
-
-		return cache;
+		return initializePool((ClientCacheFactory) factory).create();
 	}
 
 	@Override
 	protected Object createFactory(Properties gemfireProperties) {
 		return new ClientCacheFactory(gemfireProperties);
-	}
-
-	@Override
-	protected GemFireCache fetchCache() {
-		return ClientCacheFactory.getAnyInstance();
 	}
 
 	/**
@@ -118,8 +111,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @param clientCacheFactory the GemFire ClientCacheFactory used to configure and create a GemFire ClientCache.
 	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
 	 */
-	private void initializePool(ClientCacheFactory clientCacheFactory) {
-		initializeClientCacheFactoryPoolSettings(clientCacheFactory, resolvePool(this.pool));
+	private ClientCacheFactory initializePool(ClientCacheFactory clientCacheFactory) {
+		return initializeClientCacheFactoryPool(clientCacheFactory, resolvePool(this.pool));
 	}
 
 	/**
@@ -148,9 +141,9 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 				}
 				catch (Exception e) {
 					throw new BeanInitializationException(String.format(
-						"No bean of type '%1$s' having name '%2$s' was found.%3$s", Pool.class.getName(), poolName,
-						(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME.equals(poolName)
-							? " A client cache requires a pool." : "")), e);
+						"no Bean of type '%1$s' having name '%2$s' was found%3$s", Pool.class.getName(), poolName,
+							(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME.equals(poolName)
+								? "; a ClientCache requires a Pool" : "")), e);
 				}
 			}
 		}
@@ -166,7 +159,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
 	 * @see com.gemstone.gemfire.cache.client.Pool
 	 */
-	private void initializeClientCacheFactoryPoolSettings(ClientCacheFactory clientCacheFactory, Pool pool) {
+	private ClientCacheFactory initializeClientCacheFactoryPool(ClientCacheFactory clientCacheFactory, Pool pool) {
 		if (pool != null) {
 			clientCacheFactory.setPoolFreeConnectionTimeout(pool.getFreeConnectionTimeout());
 			clientCacheFactory.setPoolIdleTimeout(pool.getIdleTimeout());
@@ -195,6 +188,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 				clientCacheFactory.addPoolServer(socketAddress.getHostName(), socketAddress.getPort());
 			}
 		}
+
+		return clientCacheFactory;
 	}
 
 	@Override
@@ -210,7 +205,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	private void readyForEvents(){
 		ClientCache clientCache = ClientCacheFactory.getAnyInstance();
 
-		if (Boolean.TRUE.equals(readyForEvents) && !clientCache.isClosed()) {
+		if (Boolean.TRUE.equals(getReadyForEvents()) && !clientCache.isClosed()) {
 			try {
 				clientCache.readyForEvents();
 			}
@@ -220,14 +215,36 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 		}
 	}
 
+	/**
+	 * Register for events after Pool and Regions have been created and iff non-durable client...
+	 *
+	 * @param cache the GemFire Cache instance to process.
+	 * @return the processed GemFire Cache instance after ready for events.
+	 * @throws IOException if an error occurs during post processing.
+	 * @see org.springframework.data.gemfire.CacheFactoryBean#postProcess(com.gemstone.gemfire.cache.Cache)
+	 * @see #readyForEvents()
+	 * @see com.gemstone.gemfire.cache.Cache
+	 */
+	@Override
+	protected Cache postProcess(final Cache cache) throws IOException {
+		Cache localCache = super.postProcess(cache);
+		readyForEvents();
+		return localCache;
+	}
+
+	@Override
+	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
+		throw new UnsupportedOperationException("Auto-reconnect is not supported on ClientCache.");
+	}
+
 	@Override
 	public final Boolean getEnableAutoReconnect() {
 		return Boolean.FALSE;
 	}
 
 	@Override
-	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
-		throw new UnsupportedOperationException("Auto-reconnect is not supported on ClientCache.");
+	public Class<? extends GemFireCache> getObjectType() {
+		return (cache != null ? cache.getClass() : ClientCache.class);
 	}
 
 	/**
@@ -236,7 +253,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @param pool the GemFire pool used by the Client Cache to obtain connections to the GemFire cluster.
 	 */
 	public void setPool(Pool pool) {
-		Assert.notNull(pool, "The GemFire Pool must not be null!");
+		Assert.notNull(pool, "GemFire Pool must not be null");
 		this.pool = pool;
 	}
 
@@ -246,7 +263,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @param poolName set the name of the GemFire Pool used by the GemFire Client Cache.
 	 */
 	public void setPoolName(String poolName) {
-		Assert.hasText(poolName, "The Pool 'name' is required!");
+		Assert.hasText(poolName, "Pool 'name' is required");
 		this.poolName = poolName;
 	}
 
@@ -267,17 +284,17 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @return a boolean value indicating the state of the 'readyForEvents' property.
 	 */
 	public Boolean getReadyForEvents(){
-		return this.readyForEvents;
-	}
-
-	@Override
-	public final Boolean getUseClusterConfiguration() {
-		return Boolean.FALSE;
+		return readyForEvents;
 	}
 
 	@Override
 	public final void setUseClusterConfiguration(Boolean useClusterConfiguration) {
 		throw new UnsupportedOperationException("Shared, cluster configuration is not applicable to clients.");
+	}
+
+	@Override
+	public final Boolean getUseClusterConfiguration() {
+		return Boolean.FALSE;
 	}
 
 }

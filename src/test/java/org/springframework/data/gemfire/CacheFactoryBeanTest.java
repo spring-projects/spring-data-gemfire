@@ -204,6 +204,41 @@ public class CacheFactoryBeanTest {
 		assertSame(mockCache, actualCache);
 	}
 
+	@Test
+	public void testCreateFactory() {
+		Properties gemfireProperties = new Properties();
+		Object cacheFactoryReference = new CacheFactoryBean().createFactory(gemfireProperties);
+
+		assertTrue(gemfireProperties.isEmpty());
+		assertTrue(cacheFactoryReference instanceof CacheFactory);
+
+		CacheFactory cacheFactory = (CacheFactory) cacheFactoryReference;
+
+		cacheFactory.set("name", "TestCreateCacheFactory");
+
+		assertTrue(gemfireProperties.containsKey("name"));
+		assertEquals("TestCreateCacheFactory", gemfireProperties.getProperty("name"));
+	}
+
+	@Test
+	public void testPrepareFactory() {
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		cacheFactoryBean.setPdxSerializer(mock(PdxSerializer.class, "MockGemFirePdxSerializer"));
+		cacheFactoryBean.setPdxReadSerialized(true);
+		cacheFactoryBean.setPdxIgnoreUnreadFields(false);
+
+		CacheFactory mockCacheFactory = mock(CacheFactory.class, "MockGemFireCacheFactory");
+
+		cacheFactoryBean.prepareFactory(mockCacheFactory);
+
+		verify(mockCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
+		verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
+		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
+		verify(mockCacheFactory, never()).setPdxPersistent(any(Boolean.class));
+		verify(mockCacheFactory, times(1)).setPdxReadSerialized(eq(true));
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void testPostProcessCacheWithInvalidCriticalHeapPercentage() throws Exception {
 		try {
