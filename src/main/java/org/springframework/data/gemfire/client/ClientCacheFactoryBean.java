@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -180,11 +181,11 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 			clientCacheFactory.setPoolSubscriptionRedundancy(pool.getSubscriptionRedundancy());
 			clientCacheFactory.setPoolThreadLocalConnections(pool.getThreadLocalConnections());
 
-			for (InetSocketAddress socketAddress : nullSafeCollection(pool.getLocators())) {
+			for (InetSocketAddress socketAddress : CollectionUtils.nullSafeCollection(pool.getLocators())) {
 				clientCacheFactory.addPoolLocator(socketAddress.getHostName(), socketAddress.getPort());
 			}
 
-			for (InetSocketAddress socketAddress : nullSafeCollection(pool.getServers())) {
+			for (InetSocketAddress socketAddress : CollectionUtils.nullSafeCollection(pool.getServers())) {
 				clientCacheFactory.addPoolServer(socketAddress.getHostName(), socketAddress.getPort());
 			}
 		}

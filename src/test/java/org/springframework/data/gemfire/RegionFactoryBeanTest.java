@@ -156,7 +156,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	protected RegionAttributes createMockRegionAttributes(final DataPolicy... dataPolicies) {
 		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
-		when(mockRegionAttributes.getDataPolicy()).thenReturn(ArrayUtils.getFirst(DataPolicy.DEFAULT, dataPolicies));
+		when(mockRegionAttributes.getDataPolicy()).thenReturn(ArrayUtils.getFirst(dataPolicies, DataPolicy.DEFAULT));
 		return mockRegionAttributes;
 	}
 

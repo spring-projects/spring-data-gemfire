@@ -19,8 +19,6 @@ package org.springframework.data.gemfire;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,6 +36,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -487,7 +486,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	/* (non-Javadoc) */
 	private void registerTransactionListeners(Cache cache) {
-		for (TransactionListener transactionListener : nullSafeCollection(transactionListeners)) {
+		for (TransactionListener transactionListener : CollectionUtils.nullSafeCollection(transactionListeners)) {
 			cache.getCacheTransactionManager().addListener(transactionListener);
 		}
 	}
@@ -501,7 +500,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	/* (non-Javadoc) */
 	private void registerJndiDataSources() {
-		for (JndiDataSource jndiDataSource : nullSafeCollection(jndiDataSources)) {
+		for (JndiDataSource jndiDataSource : CollectionUtils.nullSafeCollection(jndiDataSources)) {
 			String typeAttributeValue = jndiDataSource.getAttributes().get("type");
 			JndiDataSourceType jndiDataSourceType = JndiDataSourceType.valueOfIgnoreCase(typeAttributeValue);
 
@@ -512,10 +511,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			jndiDataSource.getAttributes().put("type", jndiDataSourceType.getName());
 			JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
 		}
-	}
-
-	protected <T> Collection<T> nullSafeCollection(final Collection<T> collection) {
-		return (collection != null ? collection : Collections.<T>emptyList());
 	}
 
 	@Override

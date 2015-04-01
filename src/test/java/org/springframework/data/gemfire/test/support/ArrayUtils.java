@@ -20,25 +20,19 @@ package org.springframework.data.gemfire.test.support;
  * ArrayUtils is a utility class for working with Java arrays.
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.util.ArrayUtils
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
-public class ArrayUtils {
+// TODO replace with org.springframework.data.gemfire.util.ArrayUtils
+public class ArrayUtils extends org.springframework.data.gemfire.util.ArrayUtils {
 
 	public static <T> T getFirst(T... array) {
-		return getFirst(null, array);
+		return getFirst(array, null);
 	}
 
-	public static <T> T getFirst(T defaultValue, T... array) {
+	public static <T> T getFirst(T[] array, T defaultValue) {
 		return (isEmpty(array) ? defaultValue : array[0]);
-	}
-
-	public static boolean isEmpty(final Object... array) {
-		return (array == null || array.length == 0);
-	}
-
-	public static int length(final Object... array) {
-		return (array != null ? array.length : 0);
 	}
 
 }

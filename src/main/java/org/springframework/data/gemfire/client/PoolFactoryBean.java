@@ -18,7 +18,6 @@ package org.springframework.data.gemfire.client;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -29,8 +28,8 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.client.Pool;
@@ -59,7 +58,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
 
 	// indicates whether the Pool has been created internally (by this FactoryBean) or not
-	private volatile boolean internalPool = true;
+	private volatile boolean springBasedPool = true;
 
 	private BeanFactory beanFactory;
 
@@ -109,7 +108,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	public void afterPropertiesSet() throws Exception {
 		if (!StringUtils.hasText(name)) {
-			Assert.hasText(beanName, "The Pool name is required!");
+			Assert.hasText(beanName, "Pool 'name' is required");
 			name = beanName;
 		}
 
@@ -121,7 +120,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 				log.debug(String.format("A Pool with name '%1$s' already exists; using existing Pool.", name));
 			}
 
-			internalPool = false;
+			springBasedPool = false;
 			pool = existingPool;
 		}
 		else {
@@ -130,12 +129,12 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			}
 
 			if (CollectionUtils.isEmpty(locators) && CollectionUtils.isEmpty(servers)) {
-				throw new IllegalArgumentException("At least one locator or server is required!");
+				throw new IllegalArgumentException("at least one GemFire Locator or Server is required");
 			}
 
-			internalPool = true;
+			springBasedPool = true;
 
-			PoolFactory poolFactory = PoolManager.createFactory();
+			PoolFactory poolFactory = createPoolFactory();
 
 			poolFactory.setFreeConnectionTimeout(freeConnectionTimeout);
 			poolFactory.setIdleTimeout(idleTimeout);
@@ -156,33 +155,41 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
 			poolFactory.setThreadLocalConnections(threadLocalConnections);
 
-			for (InetSocketAddress connection : nullSafeCollection(locators)) {
+			for (InetSocketAddress connection : CollectionUtils.nullSafeCollection(locators)) {
 				poolFactory.addLocator(connection.getHostName(), connection.getPort());
 			}
 
-			for (InetSocketAddress connection : nullSafeCollection(servers)) {
+			for (InetSocketAddress connection : CollectionUtils.nullSafeCollection(servers)) {
 				poolFactory.addServer(connection.getHostName(), connection.getPort());
 			}
 
-			// eagerly initialize ClientCache (if needed)
-			if (InternalDistributedSystem.getAnyInstance() == null) {
-				doDistributedSystemConnect(resolveGemfireProperties());
-			}
+			// eagerly initialize the GemFire DistributedSystem (if needed)
+			resolveDistributedSystem();
 
 			pool = poolFactory.create(name);
 		}
 	}
 
-	public void destroy() throws Exception {
-		if (internalPool && pool != null) {
-			if (!pool.isDestroyed()) {
-				pool.releaseThreadLocalConnection();
-				pool.destroy(keepAlive);
+	/* (non-Javadoc) */
+	protected PoolFactory createPoolFactory() {
+		return PoolManager.createFactory();
+	}
 
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("Destroyed Pool '%1$s'.", name));
-				}
-			}
+	/* (non-Javadoc) */
+	void resolveDistributedSystem() {
+		if (InternalDistributedSystem.getAnyInstance() == null) {
+			doDistributedSystemConnect(resolveGemfireProperties());
+		}
+	}
+
+	/* (non-Javadoc) */
+	Properties resolveGemfireProperties() {
+		try {
+			ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
+			return clientCacheFactoryBean.getProperties();
+		}
+		catch (Exception ignore) {
+			return null;
 		}
 	}
 
@@ -195,26 +202,22 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	 * @see com.gemstone.gemfire.distributed.DistributedSystem#connect(java.util.Properties)
 	 */
 	@SuppressWarnings("deprecation")
-	static void doDistributedSystemConnect(Properties properties) {
+	void doDistributedSystemConnect(Properties properties) {
 		Properties gemfireProperties = (properties != null ? (Properties) properties.clone() : new Properties());
 		gemfireProperties.setProperty("locators", "");
 		gemfireProperties.setProperty("mcast-port", "0");
 		DistributedSystem.connect(gemfireProperties);
 	}
 
-	/* (non-Javadoc) */
-	private <T> Collection<T> nullSafeCollection(final Collection<T> list) {
-		return (list != null ? list : Collections.<T>emptyList());
-	}
+	public void destroy() throws Exception {
+		if (springBasedPool && pool != null && !pool.isDestroyed()) {
+			pool.releaseThreadLocalConnection();
+			pool.destroy(keepAlive);
+			pool = null;
 
-	/* (non-Javadoc) */
-	private Properties resolveGemfireProperties() {
-		try {
-			ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
-			return clientCacheFactoryBean.getProperties();
-		}
-		catch (Exception ignore) {
-			return null;
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Destroyed Pool '%1$s'.", name));
+			}
 		}
 	}
 

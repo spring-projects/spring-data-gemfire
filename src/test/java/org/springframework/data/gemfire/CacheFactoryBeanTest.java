@@ -34,7 +34,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -385,19 +384,6 @@ public class CacheFactoryBeanTest {
 	@Test
 	public void testIsSingleton() {
 		assertTrue(new CacheFactoryBean().isSingleton());
-	}
-
-	@Test
-	public void testNullSafeCollectionWithNonNullCollection() {
-		assertNotNull(new CacheFactoryBean().nullSafeCollection(Collections.emptyList()));
-	}
-
-	@Test
-	public void testNullSafeCollectionWithNullCollection() {
-		Collection<?> collection = new CacheFactoryBean().nullSafeCollection(null);
-
-		assertNotNull(collection);
-		assertTrue(collection.isEmpty());
 	}
 
 	@Test

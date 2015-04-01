@@ -27,10 +27,12 @@ import java.util.List;
  * @author John Blum
  * @see java.util.Collection
  * @see java.util.Collections
+ * @see org.springframework.data.gemfire.util.CollectionUtils
  * @since 1.5.0
  */
 @SuppressWarnings("unused")
-public abstract class CollectionUtils {
+// TODO replace with org.springframework.data.gemfire.util.CollectionUtils
+public abstract class CollectionUtils extends org.springframework.data.gemfire.util.CollectionUtils {
 
 	public static <T> Iterable<T> iterable(final Enumeration<T> enumeration) {
 		return new Iterable<T>() {
