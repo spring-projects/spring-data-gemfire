@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN"
+	"http://www.gemstone.com/dtd/cache8_0.dtd">
+<cache>
+	<region name="Example">
+		<region-attributes data-policy="replicate" cloning-enabled="false" initial-capacity="13" load-factor="0.85"
+						   statistics-enabled="true">
+			<eviction-attributes>
+				<lru-entry-count action="overflow-to-disk" maximum="500"/>
+			</eviction-attributes>
+		</region-attributes>
+	</region>
+</cache>

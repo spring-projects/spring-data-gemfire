@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">LookupRegionMutationIntegrationTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache cache-xml-location="/lookup-region-mutation-cache.xml" properties-ref="gemfireProperties"/>
+
+	<bean id="B" class="org.springframework.data.gemfire.LookupRegionMutationIntegrationTest.TestCacheListener"/>
+
+	<gfe:lookup-region id="Example" cloning-enabled="true" eviction-maximum="1000">
+		<gfe:cache-listener>
+			<bean class="org.springframework.data.gemfire.LookupRegionMutationIntegrationTest.TestCacheListener" p:name="A"/>
+			<ref bean="B"/>
+		</gfe:cache-listener>
+		<gfe:cache-loader>
+			<bean class="org.springframework.data.gemfire.LookupRegionMutationIntegrationTest$TestCacheLoader" p:name="C"/>
+		</gfe:cache-loader>
+		<gfe:cache-writer>
+			<bean class="org.springframework.data.gemfire.LookupRegionMutationIntegrationTest$TestCacheWriter" p:name="D"/>
+		</gfe:cache-writer>
+		<gfe:region-ttl timeout="120" action="LOCAL_DESTROY"/>
+		<gfe:region-tti timeout="60" action="INVALIDATE"/>
+		<gfe:entry-ttl timeout="30" action="DESTROY"/>
+		<gfe:custom-entry-tti>
+			<bean class="org.springframework.data.gemfire.LookupRegionMutationIntegrationTest$TestCustomExpiry" p:name="E"/>
+		</gfe:custom-entry-tti>
+		<gfe:gateway-sender name="GWS" remote-distributed-system-id="123" manual-start="true"/>
+		<gfe:async-event-queue name="AEQ" persistent="false" parallel="true" dispatcher-threads="8">
+			<gfe:async-event-listener>
+				<bean class="org.springframework.data.gemfire.LookupRegionMutationIntegrationTest$TestAsyncEventListener" p:name="F"/>
+			</gfe:async-event-listener>
+		</gfe:async-event-queue>
+	</gfe:lookup-region>
+
+</beans>

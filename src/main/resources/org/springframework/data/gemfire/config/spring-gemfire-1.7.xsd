@@ -448,7 +448,174 @@ Defines a lookup Subregion
 		</xsd:annotation>
 		<xsd:complexContent>
 			<xsd:extension base="basicRegionType">
-				<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded" />
+				<xsd:sequence>
+					<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
+A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
+various operations on the region). Multiple listeners can be declared in a nested manner.
+
+Note: Avoid the risk of deadlock. Since the listener is invoked while holding a lock on the entry generating the event,
+it is easy to generate a deadlock by interacting with the region. For this reason, it is highly recommended to use some
+other thread for accessing the region and not waiting for it to complete its task.
+							]]></xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation>
+									<tool:exports type="com.gemstone.gemfire.cache.CacheListener" />
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[
+Inner bean definition of the cache listener.
+										]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:any>
+							</xsd:sequence>
+							<xsd:attribute name="ref" type="xsd:string" use="optional">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+The name of the cache listener bean referred by this declaration. Used as a convenience method. If no reference exists,
+use inner bean declarations.
+									]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:attribute>
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="cache-loader" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
+The cache loader definition for this region. A cache loader allows data to be placed into a region.
+							]]></xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation>
+									<tool:exports type="com.gemstone.gemfire.cache.CacheLoader" />
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="cache-writer" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation source="com.gemstone.gemfire.cache.CacheWriter"><![CDATA[
+The cache writer definition for this region. A cache writer acts as a dedicated synchronous listener that is notified
+before a region or an entry is modified. A typical example would be a writer that updates the database.
+
+Note: Only one CacheWriter is invoked. GemFire will always prefer the local one (if it exists) otherwise it will
+arbitrarily pick one.
+							]]></xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation>
+									<tool:exports type="com.gemstone.gemfire.cache.CacheWriter" />
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="region-ttl" type="expirationType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[[
+Time to live configuration for the region itself. Default: no expiration.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="region-tti" type="expirationType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[[
+Time to idle (or idle timeout) configuration for the region itself. Default: no expiration.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:choice>
+						<xsd:element name="entry-ttl" type="expirationType" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[[
+Time to live configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="custom-entry-ttl" type="customExpirationType" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:appinfo>
+									<tool:annotation>
+										<tool:exports type="com.gemstone.gemfire.cache.CustomExpiry" />
+									</tool:annotation>
+								</xsd:appinfo>
+								<xsd:documentation><![CDATA[[
+CustomExpiry Time-to-Live (TTL) configuration for the Region Entries. The default is no expiration.
+							]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:choice>
+					<xsd:choice>
+						<xsd:element name="entry-tti" type="expirationType" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[[
+Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.
+							]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="custom-entry-tti" type="customExpirationType" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:appinfo>
+									<tool:annotation>
+										<tool:exports type="com.gemstone.gemfire.cache.CustomExpiry" />
+									</tool:annotation>
+								</xsd:appinfo>
+								<xsd:documentation><![CDATA[[
+CustomExpiry Time-to-Idle (or Idle Timeout, TTI) configuration for the Region entries. The default is no expiration.
+							]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:choice>
+					<xsd:choice minOccurs="0" maxOccurs="unbounded">
+						<xsd:element name="gateway-sender" type="baseGatewaySenderType"/>
+						<xsd:element name="gateway-sender-ref">
+							<xsd:complexType>
+								<xsd:attribute name="bean" type="xsd:string" use="optional">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[
+The name of the gateway sender bean referred by this declaration. Used as a convenience method. If no reference exists,
+use inner bean declarations.
+                               ]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:choice>
+					<xsd:choice minOccurs="0" maxOccurs="unbounded">
+						<xsd:element name="async-event-queue" type="baseAsyncEventQueueType"/>
+						<xsd:element name="async-event-queue-ref">
+							<xsd:complexType>
+								<xsd:attribute name="bean" type="xsd:string" use="optional">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[
+The name of the gateway sender bean referred by this declaration. Used as a convenience method. If no reference exists,
+use inner bean declarations.
+                               ]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:choice>
+					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded"/>
+				</xsd:sequence>
+				<xsd:attribute name="cloning-enabled" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[[
+Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied
+to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place
+in the cache. GemFire default is false.
+							]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="eviction-maximum" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[[
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -589,8 +756,7 @@ CustomExpiry Time-to-Live (TTL) configuration for the Region Entries. The defaul
 						</xsd:element>
 					</xsd:choice>
 					<xsd:choice>
-						<xsd:element name="entry-tti" type="expirationType"
-									 minOccurs="0" maxOccurs="1">
+						<xsd:element name="entry-tti" type="expirationType" minOccurs="0" maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[[
 Time to idle (or idle timeout) configuration for the region entries. Default: no expiration.

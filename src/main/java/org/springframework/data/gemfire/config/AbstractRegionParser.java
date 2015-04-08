@@ -36,6 +36,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
+
 /**
  * Abstract base class encapsulating functionality common to all Region Parsers.
  *
@@ -51,13 +54,13 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		return getRegionFactoryClass();
 	}
 
+	protected abstract Class<?> getRegionFactoryClass();
+
 	@Override
 	protected String getParentName(final Element element) {
 		String regionTemplate = element.getAttribute("template");
 		return (StringUtils.hasText(regionTemplate) ? regionTemplate : super.getParentName(element));
 	}
-
-	protected abstract Class<?> getRegionFactoryClass();
 
 	protected boolean isRegionTemplate(final Element element) {
 		String localName = element.getLocalName();
@@ -135,25 +138,26 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		ParsingUtils.setPropertyValue(element, regionBuilder, "hub-id");
 
-		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder,
-			"com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue", "async-event-queue", "asyncEventQueues");
-		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder,
-			"com.gemstone.gemfire.cache.wan.GatewaySender", "gateway-sender","gatewaySenders");
+		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder, AsyncEventQueue.class.getName(),
+			"async-event-queue", "asyncEventQueues");
+
+		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder, GatewaySender.class.getName(),
+			"gateway-sender", "gatewaySenders");
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
 		for (Element subElement : subElements) {
 			if (subElement.getLocalName().equals("cache-listener")) {
-				regionBuilder.addPropertyValue("cacheListeners",
-					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, regionBuilder));
+				regionBuilder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(
+					parserContext, subElement, regionBuilder));
 			}
 			else if (subElement.getLocalName().equals("cache-loader")) {
-				regionBuilder.addPropertyValue("cacheLoader",
-						ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, regionBuilder));
+				regionBuilder.addPropertyValue("cacheLoader", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
+					parserContext, subElement, regionBuilder));
 			}
 			else if (subElement.getLocalName().equals("cache-writer")) {
-				regionBuilder.addPropertyValue("cacheWriter",
-						ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, regionBuilder));
+				regionBuilder.addPropertyValue("cacheWriter", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
+					parserContext, subElement, regionBuilder));
 			}
 		}
 
@@ -200,7 +204,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		return (regionAttributes instanceof BeanDefinition ? (BeanDefinition) regionAttributes : null);
 	}
 
-	private void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,
+	protected void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder, String className, String subElementName, String propertyName) {
 		List<Element> subElements = DomUtils.getChildElementsByTagName(element, subElementName,
 			subElementName + "-ref");

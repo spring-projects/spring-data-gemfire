@@ -29,11 +29,15 @@ import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * Simple FactoryBean for retrieving generic GemFire {@link Region}s. If the Region does not exist,
- * an exception is thrown.  For declaring and configuring new regions, see {@link RegionFactoryBean}.
+ * Simple FactoryBean for retrieving generic GemFire {@link Region}s. If lookups are not enabled or the Region
+ * does not exist, an exception is thrown.  For declaring and configuring new Regions, see {@link RegionFactoryBean}.
  *
  * @author Costin Leau
  * @author John Blum
+ * @see org.springframework.beans.factory.BeanNameAware
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see com.gemstone.gemfire.cache.Region
  */
 @SuppressWarnings("unused")
 public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>, InitializingBean, BeanNameAware {
@@ -45,19 +49,19 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	private GemFireCache cache;
 
 	private Region<?, ?> parent;
-	private Region<K, V> region;
+	private volatile Region<K, V> region;
 
 	private String beanName;
 	private String name;
 	private String regionName;
 
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(cache, "The 'cache' property must be set.");
+		Assert.notNull(cache, "the 'cache' reference property must be set");
 
 		String regionName = (StringUtils.hasText(this.regionName) ? this.regionName
 			: (StringUtils.hasText(name) ? name : beanName));
 
-		Assert.hasText(regionName, "The 'regionName', 'name' or 'beanName' property must be set.");
+		Assert.hasText(regionName, "'regionName', 'name' or 'beanName' property must be set");
 
 		synchronized (cache) {
 			//region = (getParent() != null ? getParent().getSubregion(regionName) : cache.getRegion(regionName));
@@ -71,7 +75,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 			}
 
 			if (region != null) {
-				log.info(String.format("Retrieved Region [%1$s] from Cache [%2$s].", regionName, cache.getName()));
+				log.info(String.format("found Region (%1$s) in Cache (%2$s)", regionName, cache.getName()));
 			}
 			else {
 				region = lookupFallback(cache, regionName);
@@ -93,11 +97,12 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	}
 
 	public Region<K, V> getObject() throws Exception {
-		return region;
+		return getRegion();
 	}
 
 	public Class<?> getObjectType() {
-		return (region != null ? region.getClass() : Region.class);
+		Region localRegion = getRegion();
+		return (localRegion != null ? localRegion.getClass() : Region.class);
 	}
 
 	public boolean isSingleton() {
@@ -159,6 +164,16 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	}
 
 	/**
+	 * Gets the reference to the GemFire Region obtained by this Spring FactoryBean during the lookup operation.
+	 *
+	 * @return a reference to the GemFire Region found during lookup.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	protected Region<K, V> getRegion() {
+		return region;
+	}
+
+	/**
 	 * Sets the name of the Cache Region as expected by GemFire.  If no Region is found with the given name, a new one
 	 * will be created.  If no name is given, the value of the 'name' property will be used.
 	 *
@@ -170,20 +185,19 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 		this.regionName = regionName;
 	}
 
-	private boolean isLookupEnabled() {
+	/* (non-Javadoc) */
+	boolean isLookupEnabled() {
 		return Boolean.TRUE.equals(getLookupEnabled());
 	}
 
-	public Boolean getLookupEnabled() {
-		return lookupEnabled;
-	}
-
+	/* (non-Javadoc) */
 	public void setLookupEnabled(Boolean lookupEnabled) {
 		this.lookupEnabled = lookupEnabled;
 	}
 
-	protected Region<K, V> getRegion() {
-		return region;
+	/* (non-Javadoc) */
+	public Boolean getLookupEnabled() {
+		return lookupEnabled;
 	}
 
 }

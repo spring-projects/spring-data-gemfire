@@ -19,14 +19,20 @@ package org.springframework.data.gemfire.config;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.LookupRegionFactoryBean;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
+
 /**
- * Parser for &lt;lookup-region;gt; definitions.
+ * Parser for GFE &lt;lookup-region&gt; bean definitions.
  *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.data.gemfire.LookupRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.AbstractRegionParser
  */
 class LookupRegionParser extends AbstractRegionParser {
 
@@ -38,12 +44,44 @@ class LookupRegionParser extends AbstractRegionParser {
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
+
 		super.doParse(element, builder);
 
 		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
 		builder.addPropertyReference("cache", resolvedCacheRef);
-		ParsingUtils.setPropertyValue(element, builder, "name", "name");
+
+		ParsingUtils.setPropertyValue(element, builder, "cloning-enabled");
+		ParsingUtils.setPropertyValue(element, builder, "eviction-maximum");
+		ParsingUtils.setPropertyValue(element, builder, "name");
+		ParsingUtils.parseExpiration(parserContext, element, builder);
+
+		parseCollectionOfCustomSubElements(element, parserContext, builder, AsyncEventQueue.class.getName(),
+			"async-event-queue", "asyncEventQueues");
+
+		parseCollectionOfCustomSubElements(element, parserContext, builder, GatewaySender.class.getName(),
+			"gateway-sender", "gatewaySenders");
+
+		Element cacheListenerElement = DomUtils.getChildElementByTagName(element, "cache-listener");
+
+		if (cacheListenerElement != null) {
+			builder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext,
+				cacheListenerElement, builder));
+		}
+
+		Element cacheLoaderElement = DomUtils.getChildElementByTagName(element, "cache-loader");
+
+		if (cacheLoaderElement != null) {
+			builder.addPropertyValue("cacheLoader", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
+				parserContext, cacheLoaderElement, builder));
+		}
+
+		Element cacheWriterElement = DomUtils.getChildElementByTagName(element, "cache-writer");
+
+		if (cacheWriterElement != null) {
+			builder.addPropertyValue("cacheWriter", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
+				parserContext, cacheWriterElement, builder));
+		}
 
 		if (!subRegion) {
 			parseSubRegions(element, parserContext, resolvedCacheRef);
