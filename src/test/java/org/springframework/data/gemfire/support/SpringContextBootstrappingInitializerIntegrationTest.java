@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.LazyWiringDeclarableSupport;
 import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.repository.sample.User;
@@ -80,7 +83,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 	protected static final String GEMFIRE_JMX_MANAGER_PORT = "1199";
 	protected static final String GEMFIRE_JMX_MANAGER_START = "true";
 	protected static final String GEMFIRE_MCAST_PORT = "0";
-	protected static final String GEMFIRE_NAME = "SpringContextBootstrappingInitializationIntegrationTest";
+	protected static final String GEMFIRE_NAME = SpringContextBootstrappingInitializerIntegrationTest.class.getSimpleName();
 	protected static final String GEMFIRE_START_LOCATORS = "localhost[11235]";
 
 	@Before
@@ -207,14 +210,43 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 	}
 
 	@Test
-	public void testSpringContextBootstrappingInitializationUsingBasePackages() {
+	public void testSpringContextBootstrappingInitializerUsingAnnotatedClasses() {
+		SpringContextBootstrappingInitializer.register(TestAppConfig.class);
+
+		new SpringContextBootstrappingInitializer().init(new Properties());
+
+		ConfigurableApplicationContext applicationContext = SpringContextBootstrappingInitializer.getApplicationContext();
+
+		UserDataStoreCacheLoader userDataStoreCacheLoader = applicationContext.getBean(UserDataStoreCacheLoader.class);
+		DataSource userDataSource = applicationContext.getBean(DataSource.class);
+
+		assertSame(UserDataStoreCacheLoader.getInstance(), userDataStoreCacheLoader);
+		assertSame(userDataStoreCacheLoader.getDataSource(), userDataSource);
+	}
+
+	@Test
+	public void testSpringContextBootstrappingInitializerUsingBasePackages() {
 		doSpringContextBootstrappingInitializationTest(
 			"cache-with-spring-context-bootstrap-initializer-using-base-packages.xml");
 	}
 
 	@Test
-	public void testSpringContextBootstrappingInitializationUsingContextConfigLocations() {
+	public void testSpringContextBootstrappingInitializerUsingContextConfigLocations() {
 		doSpringContextBootstrappingInitializationTest("cache-with-spring-context-bootstrap-initializer.xml");
+	}
+
+	@Configuration
+	public static class TestAppConfig {
+
+		@Bean
+		public DataSource userDataSource() {
+			return new TestDataSource();
+		}
+
+		@Bean
+		public UserDataStoreCacheLoader userDataStoreCacheLoader() {
+			return new UserDataStoreCacheLoader();
+		}
 	}
 
 	public static final class TestDataSource extends DataSourceAdapter {
@@ -235,29 +267,28 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		@Autowired
 		private DataSource userDataSource;
 
-		public static UserDataStoreCacheLoader getInstance() {
-			return INSTANCE.get();
-		}
-
-		protected static User createUser(final String username) {
+		protected static User createUser(String username) {
 			return createUser(username, true, Calendar.getInstance(), String.format("%1$s@xcompay.com", username));
 		}
 
-		protected static User createUser(final String username, final Boolean active) {
+		protected static User createUser(String username, Boolean active) {
 			return createUser(username, active, Calendar.getInstance(), String.format("%1$s@xcompay.com", username));
 		}
 
-		protected static User createUser(final String username, final Boolean active, final Calendar since) {
+		protected static User createUser(String username, Boolean active, Calendar since) {
 			return createUser(username, active, since, String.format("%1$s@xcompay.com", username));
 		}
 
-		protected static User createUser(final String username, final Boolean active, final Calendar since,
-				final String email) {
+		protected static User createUser(String username, Boolean active, Calendar since, String email) {
 			User user = new User(username);
 			user.setActive(active);
 			user.setEmail(email);
 			user.setSince(since);
 			return user;
+		}
+
+		public static UserDataStoreCacheLoader getInstance() {
+			return INSTANCE.get();
 		}
 
 		public UserDataStoreCacheLoader() {
