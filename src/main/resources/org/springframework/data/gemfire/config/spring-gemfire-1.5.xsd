@@ -2247,7 +2247,7 @@ Container for continuous query listeners. All listeners will be hosted by the sa
 			<xsd:attribute name="id" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The id of the listener (optional)
+identifier of the listener (optional)
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -2255,7 +2255,7 @@ The id of the listener (optional)
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 A reference (by name) to the GemFire Cache bean. Default is "gemfireCache".
-	          ]]></xsd:documentation>
+	          		]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
 							<tool:expected-type type="com.gemstone.gemfire.cache.RegionService" />
@@ -2267,20 +2267,10 @@ A reference (by name) to the GemFire Cache bean. Default is "gemfireCache".
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The name of the GemFire Pool used by the container.
- 						]]></xsd:documentation>
+					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="auto-startup" type="xsd:string" use="optional" default="true"/>
-			<xsd:attribute name="phase" type="xsd:string">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-The lifecycle phase within which this container should start and stop. The lower
-the value the earlier this container will start and the later it will stop. The
-default is Integer.MAX_VALUE meaning the container will start as late as possible
-and stop as soon as possible.
-	          ]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
 			<xsd:attribute name="error-handler" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
@@ -2288,9 +2278,18 @@ A reference to a Spring ErrorHandler strategy handling any errors that may occur
 	          		]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
-							<tool:expected-type type="java.util.concurrent.Executor"/>
+							<tool:expected-type type="org.springframework.util.ErrorHandler"/>
 						</tool:annotation>
 					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="phase" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The lifecycle phase within which this container should start and stop. The lower the value the earlier this container
+will start and the later it will stop. The default is Integer.MAX_VALUE meaning the container will start as late
+as possible and stop as soon as possible.
+	          		]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="task-executor" type="xsd:string">
