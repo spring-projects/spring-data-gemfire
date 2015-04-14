@@ -2061,46 +2061,43 @@ Note that in order to instantiate a pool, a GemFire cache needs to be already st
 			<xsd:attribute name="id" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The name of the pool definition (by default "gemfirePool").]]></xsd:documentation>
+The name of the pool definition (by default "gemfirePool").
+					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="free-connection-timeout" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="idle-timeout" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="load-conditioning-interval" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="keep-alive" type="xsd:string" use="optional" />
-			<xsd:attribute name="max-connections" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="min-connections" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="multi-user-authentication" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="ping-interval" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="pr-single-hop-enabled" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="read-timeout" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="retry-attempts" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="server-group" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="socket-buffer-size" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="statistic-interval" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="subscription-ack-interval" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="subscription-enabled" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="subscription-message-tracking-timeout"
-						   type="xsd:string" use="optional" />
-			<xsd:attribute name="subscription-redundancy" type="xsd:string"
-						   use="optional" />
-			<xsd:attribute name="thread-local-connections" type="xsd:string"
-						   use="optional" />
+			<xsd:attribute name="free-connection-timeout" type="xsd:string" use="optional"/>
+			<xsd:attribute name="idle-timeout" type="xsd:string" use="optional"/>
+			<xsd:attribute name="load-conditioning-interval" type="xsd:string" use="optional"/>
+			<xsd:attribute name="keep-alive" type="xsd:string" use="optional"/>
+			<xsd:attribute name="locators" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Comma-delimited list of Locator endpoints used by this Pool in the form of: host1[port1],host2[port2],...,hostN[portN]
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="max-connections" type="xsd:string" use="optional"/>
+			<xsd:attribute name="min-connections" type="xsd:string" use="optional"/>
+			<xsd:attribute name="multi-user-authentication" type="xsd:string" use="optional"/>
+			<xsd:attribute name="ping-interval" type="xsd:string" use="optional"/>
+			<xsd:attribute name="pr-single-hop-enabled" type="xsd:string" use="optional"/>
+			<xsd:attribute name="read-timeout" type="xsd:string" use="optional"/>
+			<xsd:attribute name="retry-attempts" type="xsd:string" use="optional"/>
+			<xsd:attribute name="server-group" type="xsd:string" use="optional"/>
+			<xsd:attribute name="servers" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Comma-delimited list of Server endpoints used by this Pool in the form of: host1[port1],host2[port2],...,hostN[portN]
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional"/>
+			<xsd:attribute name="statistic-interval" type="xsd:string" use="optional"/>
+			<xsd:attribute name="subscription-ack-interval" type="xsd:string" use="optional"/>
+			<xsd:attribute name="subscription-enabled" type="xsd:string" use="optional"/>
+			<xsd:attribute name="subscription-message-tracking-timeout" type="xsd:string" use="optional"/>
+			<xsd:attribute name="subscription-redundancy" type="xsd:string" use="optional"/>
+			<xsd:attribute name="thread-local-connections" type="xsd:string" use="optional"/>
 		</xsd:complexType>
 	</xsd:element>
 	<!-- -->
