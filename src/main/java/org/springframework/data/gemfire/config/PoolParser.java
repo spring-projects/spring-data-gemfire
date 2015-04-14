@@ -31,6 +31,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.internal.DistributionLocator;
+
 /**
  * Parser for GFE &lt;pool;gt; bean definitions.
  *  
@@ -40,7 +43,18 @@ import org.w3c.dom.Element;
  */
 class PoolParser extends AbstractSimpleBeanDefinitionParser {
 
-	@Override	
+	protected static final int DEFAULT_LOCATOR_PORT = DistributionLocator.DEFAULT_LOCATOR_PORT;
+	protected static final int DEFAULT_SERVER_PORT = CacheServer.DEFAULT_PORT;
+
+	protected static final String DEFAULT_HOST = "localhost";
+	protected static final String HOST_ATTRIBUTE_NAME = "host";
+	protected static final String LOCATOR_ELEMENT_NAME = "locator";
+	protected static final String LOCATORS_ATTRIBUTE_NAME = "locators";
+	protected static final String PORT_ATTRIBUTE_NAME = "port";
+	protected static final String SERVER_ELEMENT_NAME = "server";
+	protected static final String SERVERS_ATTRIBUTE_NAME = "servers";
+
+	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return PoolFactoryBean.class;
 	}
@@ -49,20 +63,23 @@ class PoolParser extends AbstractSimpleBeanDefinitionParser {
 	protected void postProcess(BeanDefinitionBuilder builder, Element element) {
 		List<Element> subElements = DomUtils.getChildElements(element);
 
-		ManagedList<Object> locators = new ManagedList<Object>(subElements.size());
-		ManagedList<Object> servers = new ManagedList<Object>(subElements.size());
+		ManagedList<BeanDefinition> locators = new ManagedList<BeanDefinition>(subElements.size());
+		ManagedList<BeanDefinition> servers = new ManagedList<BeanDefinition>(subElements.size());
 
 		// parse nested locator/server elements
 		for (Element subElement : subElements) {
 			String name = subElement.getLocalName();
 
-			if ("locator".equals(name)) {
+			if (LOCATOR_ELEMENT_NAME.equals(name)) {
 				locators.add(parseLocator(subElement));
 			}
-			if ("server".equals(name)) {
+			if (SERVER_ELEMENT_NAME.equals(name)) {
 				servers.add(parseServer(subElement));
 			}
 		}
+
+		locators.addAll(parseLocators(element));
+		servers.addAll(parseServers(element));
 
 		if (!locators.isEmpty()) {
 			builder.addPropertyValue("locators", locators);
@@ -74,24 +91,89 @@ class PoolParser extends AbstractSimpleBeanDefinitionParser {
 	}
 
 	/* (non-Javadoc) */
-	private BeanDefinition parseConnection(Element element) {
+	BeanDefinition buildConnection(String host, String port, boolean server) {
 		BeanDefinitionBuilder inetSocketAddressBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			InetSocketAddress.class);
 
-		inetSocketAddressBuilder.addConstructorArgValue(element.getAttribute("host"));
-		inetSocketAddressBuilder.addConstructorArgValue(element.getAttribute("port"));
+		inetSocketAddressBuilder.addConstructorArgValue(defaultHost(host));
+		inetSocketAddressBuilder.addConstructorArgValue(defaultPort(port, server));
 
 		return inetSocketAddressBuilder.getBeanDefinition();
 	}
 
 	/* (non-Javadoc) */
-	private Object parseLocator(Element subElement) {
-		return parseConnection(subElement);
+	String defaultHost(String host) {
+		return (StringUtils.hasText(host) ? host : DEFAULT_HOST);
 	}
 
 	/* (non-Javadoc) */
-	private Object parseServer(Element subElement) {
-		return parseConnection(subElement);
+	String defaultPort(String port, boolean server) {
+		return (StringUtils.hasText(port) ? port : (server ? String.valueOf(DEFAULT_SERVER_PORT)
+			: String.valueOf(DEFAULT_LOCATOR_PORT)));
+	}
+
+	/* (non-Javadoc) */
+	ManagedList<BeanDefinition> parseConnections(String hostPortCommaDelimitedList, boolean server) {
+		ManagedList<BeanDefinition> connections = new ManagedList<BeanDefinition>();
+
+		if (StringUtils.hasText(hostPortCommaDelimitedList)) {
+			String[] hostPorts = hostPortCommaDelimitedList.split(",");
+
+			for (String hostPort : hostPorts) {
+				connections.add(parseConnection(hostPort, server));
+			}
+		}
+
+		return connections;
+	}
+
+	/* (non-Javadoc) */
+	BeanDefinition parseConnection(String hostPort, boolean server) {
+		String port = defaultPort(null, server);
+		String host;
+
+		int portIndex = hostPort.indexOf('[');
+
+		if (portIndex > -1) {
+			host = hostPort.substring(0, portIndex).trim();
+			port = parseDigits(hostPort.substring(portIndex)).trim();
+		}
+		else {
+			host = hostPort.trim();
+		}
+
+		return buildConnection(host, port, server);
+	}
+
+	/* (non-Javadoc) */
+	String parseDigits(String value) {
+		StringBuilder digits = new StringBuilder();
+
+		for (char chr : value.toCharArray()) {
+			if (Character.isDigit(chr)) {
+				digits.append(chr);
+			}
+		}
+
+		return digits.toString();
+	}
+
+	/* (non-Javadoc) */
+	BeanDefinition parseLocator(Element element) {
+		return buildConnection(element.getAttribute(HOST_ATTRIBUTE_NAME), element.getAttribute(PORT_ATTRIBUTE_NAME), false);
+	}
+
+	ManagedList<BeanDefinition> parseLocators(Element element) {
+		return parseConnections(element.getAttribute(LOCATORS_ATTRIBUTE_NAME), false);
+	}
+
+	/* (non-Javadoc) */
+	BeanDefinition parseServer(Element element) {
+		return buildConnection(element.getAttribute(HOST_ATTRIBUTE_NAME), element.getAttribute(PORT_ATTRIBUTE_NAME), false);
+	}
+
+	ManagedList<BeanDefinition> parseServers(Element element) {
+		return parseConnections(element.getAttribute(SERVERS_ATTRIBUTE_NAME), true);
 	}
 
 	/* (non-Javadoc) */
