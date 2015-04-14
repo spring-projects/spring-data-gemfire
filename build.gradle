@@ -3,11 +3,12 @@ buildscript {
         maven { url 'https://repo.spring.io/plugins-release' }
     }
     dependencies {
-        classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.2'
-        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
         classpath('org.asciidoctor:asciidoctor-gradle-plugin:1.5.0')
         classpath('org.asciidoctor:asciidoctorj:1.5.0')
+        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
+        classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.2'
         classpath 'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
+		classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.6'
     }
 }
 
@@ -27,9 +28,10 @@ apply plugin: "java"
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply from: "$rootDir/maven.gradle"
+apply plugin: 'bundlor'
+apply plugin: 'propdeps'
 apply plugin: 'docbook-reference'
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
-apply plugin: 'bundlor'
 
 //project.bundlor.bundleSymbolicName = "${bundleSymbolicName}"
 
@@ -76,6 +78,7 @@ dependencies {
 
 	// GemFire
 	compile("com.gemstone.gemfire:gemfire:$gemfireVersion")
+	optional("com.google.code.findbugs:annotations:2.0.2")
 	runtime("antlr:antlr:$antlrVersion")
 
 	compile "org.aspectj:aspectjweaver:$aspectjVersion"
