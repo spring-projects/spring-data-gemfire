@@ -31,6 +31,7 @@ import com.gemstone.gemfire.cache.query.SelectResults;
  * @see java.io.Serializable
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.data.gemfire.repository.GemfireRepository
+ * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.Region
  */
 public class SimpleGemfireRepository<T, ID extends Serializable> implements GemfireRepository<T, ID> {
@@ -243,10 +244,10 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 		return (cacheTransactionManager != null && cacheTransactionManager.exists());
 	}
 
+	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
 	void doRegionClear(final Region region) {
-		for (Object key : region.keySet()) {
-			region.remove(key);
-		}
+		region.removeAll(region.keySet());
 	}
 
 	/*

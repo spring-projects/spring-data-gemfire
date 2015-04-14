@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Test;
@@ -304,9 +305,10 @@ public class SimpleGemfireRepositoryUnitTest {
 
 	@Test
 	public void testDeleteAllWithClear() {
-		Cache mockCache = mockCache("testDeleteAllWithClear", false);
+		Cache mockCache = mockCache("testDeleteAllWithClear.MockCache", false);
 
-		Region<Long, Animal> mockRegion = mockRegion("testDeleteAllWithClear", mockCache, DataPolicy.REPLICATE);
+		Region<Long, Animal> mockRegion = mockRegion("testDeleteAllWithClear.MockRegion",
+			mockCache, DataPolicy.REPLICATE);
 
 		SimpleGemfireRepository<Animal, Long> gemfireRepository = new SimpleGemfireRepository<Animal, Long>(
 			createGemfireTemplate(mockRegion), mockEntityInformation());
@@ -320,14 +322,16 @@ public class SimpleGemfireRepositoryUnitTest {
 	}
 
 	@Test
-	public void testDeleteAllWithKeysWhenClearThrowsUnsupportedOperationException() {
-		Cache mockCache = mockCache("testDeleteAllWithKeysWhenClearThrowsUnsupportedOperationException", false);
+	public void testDeleteAllWithKeysWhenClearThrowsException() {
+		Cache mockCache = mockCache("testDeleteAllWithKeysWhenClearThrowsException.MockCache", false);
 
-		Region<Long, Animal> mockRegion = mockRegion("testDeleteAllWithKeysWhenClearThrowsUnsupportedOperationException",
+		Region<Long, Animal> mockRegion = mockRegion("testDeleteAllWithKeysWhenClearThrowsException.MockRegion",
 			mockCache, DataPolicy.PERSISTENT_REPLICATE);
 
+		Set<Long> keys = new HashSet<Long>(Arrays.asList(1l, 2l, 3l));
+
 		doThrow(new UnsupportedOperationException("Not Implemented!")).when(mockRegion).clear();
-		when(mockRegion.keySet()).thenReturn(new HashSet<Long>(Arrays.asList(1l, 2l, 3l)));
+		when(mockRegion.keySet()).thenReturn(keys);
 
 		SimpleGemfireRepository<Animal, Long> gemfireRepository = new SimpleGemfireRepository<Animal, Long>(
 			createGemfireTemplate(mockRegion), mockEntityInformation());
@@ -338,19 +342,19 @@ public class SimpleGemfireRepositoryUnitTest {
 		verify(mockRegion, times(2)).getAttributes();
 		verify(mockRegion, times(2)).getRegionService();
 		verify(mockRegion, times(1)).clear();
-		verify(mockRegion, times(1)).remove(eq(1l));
-		verify(mockRegion, times(1)).remove(eq(2l));
-		verify(mockRegion, times(1)).remove(eq(3l));
+		verify(mockRegion, times(1)).removeAll(eq(keys));
 	}
 
 	@Test
 	public void testDeleteAllWithKeysWhenPartitionRegion() {
-		Cache mockCache = mockCache("testDeleteAllWithKeysWhenPartitionRegion", false);
+		Cache mockCache = mockCache("testDeleteAllWithKeysWhenPartitionRegion.MockCache", false);
 
-		Region<Long, Animal> mockRegion = mockRegion("testDeleteAllWithKeysWhenPartitionRegion", mockCache,
-			DataPolicy.PERSISTENT_PARTITION);
+		Region<Long, Animal> mockRegion = mockRegion("testDeleteAllWithKeysWhenPartitionRegion.MockRegion",
+			mockCache, DataPolicy.PERSISTENT_PARTITION);
 
-		when(mockRegion.keySet()).thenReturn(new HashSet<Long>(Arrays.asList(1l, 2l, 3l)));
+		Set<Long> keys = new HashSet<Long>(Arrays.asList(1l, 2l, 3l));
+
+		when(mockRegion.keySet()).thenReturn(keys);
 
 		SimpleGemfireRepository<Animal, Long> gemfireRepository = new SimpleGemfireRepository<Animal, Long>(
 			createGemfireTemplate(mockRegion), mockEntityInformation());
@@ -361,19 +365,19 @@ public class SimpleGemfireRepositoryUnitTest {
 		verify(mockRegion, times(2)).getAttributes();
 		verify(mockRegion, times(0)).getRegionService();
 		verify(mockRegion, times(0)).clear();
-		verify(mockRegion, times(1)).remove(eq(1l));
-		verify(mockRegion, times(1)).remove(eq(2l));
-		verify(mockRegion, times(1)).remove(eq(3l));
+		verify(mockRegion, times(1)).removeAll(eq(keys));
 	}
 
 	@Test
 	public void testDeleteAllWithKeysWhenTransactionPresent() {
-		Cache mockCache = mockCache("testDeleteAllWithKeysWhenTransactionPresent", true);
+		Cache mockCache = mockCache("testDeleteAllWithKeysWhenTransactionPresent.MockCache", true);
 
-		Region<Long, Animal> mockRegion = mockRegion("testDeleteAllWithKeysWhenTransactionPresent", mockCache,
-			DataPolicy.REPLICATE);
+		Region<Long, Animal> mockRegion = mockRegion("testDeleteAllWithKeysWhenTransactionPresent.MockRegion",
+			mockCache, DataPolicy.REPLICATE);
 
-		when(mockRegion.keySet()).thenReturn(new HashSet<Long>(Arrays.asList(1l, 2l, 3l)));
+		Set<Long> keys = new HashSet<Long>(Arrays.asList(1l, 2l, 3l));
+
+		when(mockRegion.keySet()).thenReturn(keys);
 
 		SimpleGemfireRepository<Animal, Long> gemfireRepository = new SimpleGemfireRepository<Animal, Long>(
 			createGemfireTemplate(mockRegion), mockEntityInformation());
@@ -384,9 +388,7 @@ public class SimpleGemfireRepositoryUnitTest {
 		verify(mockRegion, times(2)).getAttributes();
 		verify(mockRegion, times(2)).getRegionService();
 		verify(mockRegion, times(0)).clear();
-		verify(mockRegion, times(1)).remove(eq(1l));
-		verify(mockRegion, times(1)).remove(eq(2l));
-		verify(mockRegion, times(1)).remove(eq(3l));
+		verify(mockRegion, times(1)).removeAll(eq(keys));
 	}
 
 }
