@@ -2052,11 +2052,9 @@ Note that in order to instantiate a pool, a GemFire cache needs to be already st
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:choice minOccurs="1" maxOccurs="1">
-				<xsd:element name="locator" type="connectionType"
-							 minOccurs="1" maxOccurs="unbounded" />
-				<xsd:element name="server" type="connectionType"
-							 minOccurs="1" maxOccurs="unbounded" />
+			<xsd:choice>
+				<xsd:element name="locator" type="connectionType" minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element name="server" type="connectionType" minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:choice>
 			<xsd:attribute name="id" type="xsd:string" use="optional">
 				<xsd:annotation>

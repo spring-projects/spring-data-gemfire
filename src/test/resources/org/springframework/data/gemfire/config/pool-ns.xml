@@ -17,7 +17,7 @@
 		<prop key="log-level">error</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="gemfireProperties"/>
+	<gfe:client-cache properties-ref="gemfireProperties"/>
 
 	<context:property-placeholder location="classpath:port.properties"/>
 
@@ -25,8 +25,16 @@
 		<gfe:locator host="localhost" port="${gfe.port}"/>
 	</gfe:pool>
 
-	<gfe:pool id="complex" free-connection-timeout="6000" retry-attempts="30" ping-interval="5000"
-			  subscription-enabled="true" multi-user-authentication="false" pr-single-hop-enabled="true">
+	<gfe:pool id="simple"/>
+
+	<gfe:pool id="locator" locators="skullbox, yorktown[12480]"/>
+
+	<gfe:pool id="complex" free-connection-timeout="2000" idle-timeout="20000" load-conditioning-interval="10000"
+			  keep-alive="false" max-connections="100" min-connections="5" multi-user-authentication="false"
+			  ping-interval="5000" pr-single-hop-enabled="true" read-timeout="500" retry-attempts="5"
+			  server-group="TestGroup" socket-buffer-size="65536" statistic-interval="5000"
+			  subscription-ack-interval="250" subscription-enabled="true" subscription-message-tracking-timeout="30000"
+			  subscription-redundancy="2" thread-local-connections="true">
 		<gfe:server host="localhost" port="${gfe.port.4}"/>
 		<gfe:server host="localhost" port="40405"/>
 	</gfe:pool>
@@ -37,6 +45,7 @@
 
 	<gfe:pool id="combo-servers" servers="skullbox[9110]">
 		<gfe:server host="scorch" port="21480"/>
+		<gfe:server host="scorn" port="51515"/>
 	</gfe:pool>
 
 </beans>

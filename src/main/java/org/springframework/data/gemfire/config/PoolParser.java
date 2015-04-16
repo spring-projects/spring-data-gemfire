@@ -81,6 +81,12 @@ class PoolParser extends AbstractSimpleBeanDefinitionParser {
 		locators.addAll(parseLocators(element));
 		servers.addAll(parseServers(element));
 
+		// NOTE if neither Locators or Servers were specified, then setup a default connection to a Locator
+		// running on localhost listening on the default Locator port (10334) for convenience
+		if (locators.isEmpty() && servers.isEmpty()) {
+			locators.add(buildConnection(DEFAULT_HOST, String.valueOf(DEFAULT_LOCATOR_PORT), false));
+		}
+
 		if (!locators.isEmpty()) {
 			builder.addPropertyValue("locators", locators);
 		}

@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.InetSocketAddress;
@@ -72,17 +73,68 @@ public class PoolNamespaceTest {
 	}
 
 	@Test
+	public void testSimplePool() throws Exception {
+		assertTrue(context.containsBean("simple"));
+
+		PoolFactoryBean poolFactoryBean = context.getBean("&simple", PoolFactoryBean.class);
+		Collection<InetSocketAddress> locators = TestUtils.readField("locators", poolFactoryBean);
+
+		assertNotNull(locators);
+		assertEquals(1, locators.size());
+
+		assertSocketAddress(locators.iterator().next(), PoolParser.DEFAULT_HOST, PoolParser.DEFAULT_LOCATOR_PORT);
+
+		Collection<InetSocketAddress> servers = TestUtils.readField("servers", poolFactoryBean);
+
+		assertNull(servers);
+	}
+
+	@Test
+	public void testLocatorPool() throws Exception {
+		assertTrue(context.containsBean("locator"));
+
+		PoolFactoryBean poolFactoryBean = context.getBean("&locator", PoolFactoryBean.class);
+		Collection<InetSocketAddress> locators = TestUtils.readField("locators", poolFactoryBean);
+
+		assertNotNull(locators);
+		assertEquals(2, locators.size());
+
+		Iterator<InetSocketAddress> it = locators.iterator();
+
+		assertSocketAddress(it.next(), "skullbox", PoolParser.DEFAULT_LOCATOR_PORT);
+		assertSocketAddress(it.next(), "yorktown", 12480);
+
+		Collection<InetSocketAddress> servers = TestUtils.readField("servers", poolFactoryBean);
+
+		assertNull(servers);
+	}
+
+	@Test
 	public void testComplexPool() throws Exception {
 		assertTrue(context.containsBean("complex"));
 
 		PoolFactoryBean poolFactoryBean = context.getBean("&complex", PoolFactoryBean.class);
 
-		assertEquals(30, TestUtils.readField("retryAttempts", poolFactoryBean));
-		assertEquals(6000, TestUtils.readField("freeConnectionTimeout", poolFactoryBean));
-		assertEquals(5000l, TestUtils.readField("pingInterval", poolFactoryBean));
-		assertTrue((Boolean) TestUtils.readField("subscriptionEnabled", poolFactoryBean));
+		assertEquals(2000, TestUtils.readField("freeConnectionTimeout", poolFactoryBean));
+		assertEquals(20000l, TestUtils.readField("idleTimeout", poolFactoryBean));
+		assertEquals(10000, TestUtils.readField("loadConditioningInterval", poolFactoryBean));
+		assertEquals(false, TestUtils.readField("keepAlive", poolFactoryBean));
+		assertEquals(100, TestUtils.readField("maxConnections", poolFactoryBean));
+		assertEquals(5, TestUtils.readField("minConnections", poolFactoryBean));
+		assertEquals(5, TestUtils.readField("minConnections", poolFactoryBean));
 		assertFalse((Boolean) TestUtils.readField("multiUserAuthentication", poolFactoryBean));
+		assertEquals(5000l, TestUtils.readField("pingInterval", poolFactoryBean));
 		assertTrue((Boolean) TestUtils.readField("prSingleHopEnabled", poolFactoryBean));
+		assertEquals(500, TestUtils.readField("readTimeout", poolFactoryBean));
+		assertEquals(5, TestUtils.readField("retryAttempts", poolFactoryBean));
+		assertEquals("TestGroup", TestUtils.readField("serverGroup", poolFactoryBean));
+		assertEquals(65536, TestUtils.readField("socketBufferSize", poolFactoryBean));
+		assertEquals(5000, TestUtils.readField("statisticInterval", poolFactoryBean));
+		assertEquals(250, TestUtils.readField("subscriptionAckInterval", poolFactoryBean));
+		assertTrue((Boolean) TestUtils.readField("subscriptionEnabled", poolFactoryBean));
+		assertEquals(30000, TestUtils.readField("subscriptionMessageTrackingTimeout", poolFactoryBean));
+		assertEquals(2, TestUtils.readField("subscriptionRedundancy", poolFactoryBean));
+		assertTrue((Boolean) TestUtils.readField("threadLocalConnections", poolFactoryBean));
 
 		Collection<InetSocketAddress> servers = TestUtils.readField("servers", poolFactoryBean);
 
@@ -122,11 +174,12 @@ public class PoolNamespaceTest {
 		Collection<InetSocketAddress> servers = TestUtils.readField("servers", poolFactoryBean);
 
 		assertNotNull(servers);
-		assertEquals(2, servers.size());
+		assertEquals(3, servers.size());
 
 		Iterator<InetSocketAddress> serverIterator = locators.iterator();
 
 		assertSocketAddress(serverIterator.next(), "scorch", 21480);
+		assertSocketAddress(serverIterator.next(), "scorn", 51515);
 		assertSocketAddress(serverIterator.next(), "skullbox", 9110);
 	}
 

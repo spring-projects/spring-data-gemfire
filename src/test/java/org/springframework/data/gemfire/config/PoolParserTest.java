@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -227,6 +228,8 @@ public class PoolParserTest {
 		BeanDefinition poolDefinition = builder.getRawBeanDefinition();
 
 		assertNotNull(poolDefinition);
+		assertTrue(poolDefinition.getPropertyValues().contains("locators"));
+		assertTrue(poolDefinition.getPropertyValues().contains("servers"));
 
 		ManagedList<BeanDefinition> locators = (ManagedList<BeanDefinition>) poolDefinition.getPropertyValues()
 			.getPropertyValue("locators").getValue();
@@ -247,6 +250,35 @@ public class PoolParserTest {
 		assertBeanDefinition(servers.get(0), "rightshift", "4554");
 		assertBeanDefinition(servers.get(1), "skullbox", "4848");
 		assertBeanDefinition(servers.get(2), "backspace", String.valueOf(PoolParser.DEFAULT_SERVER_PORT));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testPostProcessWithNoLocatorsOrServersSpecified() {
+		BeanDefinitionBuilder poolBuilder = BeanDefinitionBuilder.genericBeanDefinition();
+		Element mockPoolElement = mock(Element.class, "testPostProcessWithNoLocatorsOrServersSpecified.MockPoolElement");
+		NodeList mockNodeList = mock(NodeList.class, "testPostProcessWithNoLocatorsOrServersSpecified.MockNodeList");
+
+		when(mockNodeList.getLength()).thenReturn(0);
+		when(mockPoolElement.getChildNodes()).thenReturn(mockNodeList);
+		when(mockPoolElement.getAttribute(eq(PoolParser.LOCATORS_ATTRIBUTE_NAME))).thenReturn("");
+		when(mockPoolElement.getAttribute(eq(PoolParser.SERVERS_ATTRIBUTE_NAME))).thenReturn("");
+
+		parser.postProcess(poolBuilder, mockPoolElement);
+
+		BeanDefinition poolDefinition = poolBuilder.getBeanDefinition();
+
+		assertNotNull(poolDefinition);
+		assertTrue(poolDefinition.getPropertyValues().contains("locators"));
+		assertFalse(poolDefinition.getPropertyValues().contains("servers"));
+
+		ManagedList<BeanDefinition> locators = (ManagedList<BeanDefinition>) poolDefinition.getPropertyValues()
+			.getPropertyValue("locators").getValue();
+
+		assertNotNull(locators);
+		assertFalse(locators.isEmpty());
+		assertEquals(1, locators.size());
+		assertBeanDefinition(locators.get(0), "localhost", String.valueOf(PoolParser.DEFAULT_LOCATOR_PORT));
 	}
 
 }
