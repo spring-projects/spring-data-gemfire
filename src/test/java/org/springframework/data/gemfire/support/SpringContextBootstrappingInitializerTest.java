@@ -51,6 +51,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.ContextStoppedEvent;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.util.ObjectUtils;
 
 /**
  * The SpringContextBootstrappingInitializerTest class is a test suite of test cases testing the contract
@@ -70,6 +72,15 @@ import org.springframework.context.event.ContextStoppedEvent;
 @SuppressWarnings("unused")
 public class SpringContextBootstrappingInitializerTest {
 
+	@After
+	public void tearDown() {
+		SpringContextBootstrappingInitializer.applicationContext = null;
+		SpringContextBootstrappingInitializer.contextRefreshedEvent = null;
+		SpringContextBootstrappingInitializer.setBeanClassLoader(null);
+		SpringContextBootstrappingInitializer.unregister(TestAppConfigOne.class);
+		SpringContextBootstrappingInitializer.unregister(TestAppConfigTwo.class);
+	}
+
 	protected static Properties createParameters(final String parameter, final String value) {
 		Properties parameters = new Properties();
 		parameters.setProperty(parameter, value);
@@ -79,14 +90,6 @@ public class SpringContextBootstrappingInitializerTest {
 	protected static Properties createParameters(final Properties parameters, final String parameter, final String value) {
 		parameters.setProperty(parameter, value);
 		return parameters;
-	}
-
-	@After
-	public void tearDown() {
-		SpringContextBootstrappingInitializer.applicationContext = null;
-		SpringContextBootstrappingInitializer.contextRefreshedEvent = null;
-		SpringContextBootstrappingInitializer.unregister(TestAppConfigOne.class);
-		SpringContextBootstrappingInitializer.unregister(TestAppConfigTwo.class);
 	}
 
 	@Test
@@ -111,6 +114,42 @@ public class SpringContextBootstrappingInitializerTest {
 		}
 	}
 
+	@Test
+	public void testSetBeanClassLoader() {
+		assertNull(SpringContextBootstrappingInitializer.applicationContext);
+		SpringContextBootstrappingInitializer.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
+	}
+
+	@Test
+	public void testSetBeanClassLoaderWhenApplicationContextIsInactive() {
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testSetBeanClassLoaderWhenApplicationContextIsInactive.MockApplicationContext");
+
+		when(mockApplicationContext.isActive()).thenReturn(false);
+
+		SpringContextBootstrappingInitializer.applicationContext = mockApplicationContext;
+		SpringContextBootstrappingInitializer.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
+
+		verify(mockApplicationContext, times(1)).isActive();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testSetBeanClassLoaderWhenApplicationContextIsActive() {
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testSetBeanClassLoaderWhenApplicationContextIsActive.MockApplicationContext");
+
+		when(mockApplicationContext.isActive()).thenReturn(true);
+
+		try {
+			SpringContextBootstrappingInitializer.applicationContext = mockApplicationContext;
+			SpringContextBootstrappingInitializer.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
+		}
+		catch (IllegalStateException expected) {
+			assertEquals("The Spring ApplicationContext has already been initialized!", expected.getMessage());
+			throw expected;
+		}
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void testCreateApplicationContextWhenBasePackagesAndConfigLocationsAreUnspecified() {
 		try {
@@ -124,9 +163,56 @@ public class SpringContextBootstrappingInitializerTest {
 	}
 
 	@Test
+	public void testCreateAnnotationApplicationContext() {
+		final ConfigurableApplicationContext mockXmlApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testCreateAnnotationApplicationContext.MockXmlApplicationContext");
+
+		final AnnotationConfigApplicationContext mockAnnotationApplicationContext = mock(AnnotationConfigApplicationContext.class,
+			"testCreateAnnotationApplicationContext.MockAnnotationApplicationContext");
+
+		String[] basePackages = { "org.example.app" };
+
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
+			@Override ConfigurableApplicationContext createApplicationContext(final String[] configLocations) {
+				return (ObjectUtils.isEmpty(configLocations) ? mockAnnotationApplicationContext
+					: mockXmlApplicationContext);
+			}
+		};
+
+		ConfigurableApplicationContext actualApplicationContext = initializer.createApplicationContext(basePackages, null);
+
+		assertSame(mockAnnotationApplicationContext, actualApplicationContext);
+
+		verify(mockAnnotationApplicationContext, times(1)).scan(eq("org.example.app"));
+	}
+
+	@Test
+	public void testCreateXmlApplicationContext() {
+		final ConfigurableApplicationContext mockXmlApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testCreateXmlApplicationContext.MockXmlApplicationContext");
+
+		final ConfigurableApplicationContext mockAnnotationApplicationContext = mock(ConfigurableApplicationContext.class,
+			"testCreateXmlApplicationContext.MockAnnotationApplicationContext");
+
+		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
+			@Override ConfigurableApplicationContext createApplicationContext(final String[] configLocations) {
+				return (ObjectUtils.isEmpty(configLocations) ? mockAnnotationApplicationContext
+					: mockXmlApplicationContext);
+			}
+		};
+
+		ConfigurableApplicationContext actualApplicationContext = initializer.createApplicationContext(null,
+			new String[] { "/path/to/application/context.xml" });
+
+		assertSame(mockXmlApplicationContext, actualApplicationContext);
+	}
+
+	@Test
 	public void testInitApplicationContext() {
-		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
-			"testInitApplicationContext");
+		AbstractApplicationContext mockApplicationContext = mock(AbstractApplicationContext.class,
+			"testInitApplicationContext.MockApplicationContext");
+
+		SpringContextBootstrappingInitializer.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
 
 		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer();
 
@@ -134,10 +220,11 @@ public class SpringContextBootstrappingInitializerTest {
 
 		verify(mockApplicationContext, times(1)).addApplicationListener(same(initializer));
 		verify(mockApplicationContext, times(1)).registerShutdownHook();
+		verify(mockApplicationContext, times(1)).setClassLoader(eq(Thread.currentThread().getContextClassLoader()));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testInitApplicationContextWithNullContext() {
+	public void testInitApplicationContextWithNull() {
 		try {
 			new SpringContextBootstrappingInitializer().initApplicationContext(null);
 		}
@@ -158,7 +245,7 @@ public class SpringContextBootstrappingInitializerTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testRefreshApplicationContextWithNullContext() {
+	public void testRefreshApplicationContextWithNull() {
 		try {
 			new SpringContextBootstrappingInitializer().refreshApplicationContext(null);
 		}
@@ -226,6 +313,30 @@ public class SpringContextBootstrappingInitializerTest {
 		new SpringContextBootstrappingInitializer().scanBasePackages(mockApplicationContext, null);
 
 		verify(mockApplicationContext, never()).scan(any(String[].class));
+	}
+
+	@Test
+	public void testSetClassLoader() {
+		AbstractApplicationContext mockApplicationContext = mock(AbstractApplicationContext.class,
+			"testSetClassLoader.MockApplicationContext");
+
+		SpringContextBootstrappingInitializer.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
+
+		new SpringContextBootstrappingInitializer().setClassLoader(mockApplicationContext);
+
+		verify(mockApplicationContext, times(1)).setClassLoader(eq(Thread.currentThread().getContextClassLoader()));
+	}
+
+	@Test
+	public void testSetClassLoaderWhenClassLoaderIsNull() {
+		AbstractApplicationContext mockApplicationContext = mock(AbstractApplicationContext.class,
+			"testSetClassLoaderWhenClassLoaderIsNull.MockApplicationContext");
+
+		SpringContextBootstrappingInitializer.setBeanClassLoader(null);
+
+		new SpringContextBootstrappingInitializer().setClassLoader(mockApplicationContext);
+
+		verify(mockApplicationContext, never()).setClassLoader(any(ClassLoader.class));
 	}
 
 	private Class<?>[] annotatedClasses(final Class<?>... annotatedClasses) {
