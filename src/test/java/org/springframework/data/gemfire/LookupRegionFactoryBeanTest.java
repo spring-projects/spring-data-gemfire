@@ -206,4 +206,15 @@ public class LookupRegionFactoryBeanTest {
 		}
 	}
 
+	@Test
+	public void testIsLookupEnabledAlways() {
+		LookupRegionFactoryBean factoryBean = new LookupRegionFactoryBean();
+
+		assertTrue(factoryBean.isLookupEnabled());
+
+		factoryBean.setLookupEnabled(false);
+
+		assertTrue(factoryBean.isLookupEnabled());
+	}
+
 }

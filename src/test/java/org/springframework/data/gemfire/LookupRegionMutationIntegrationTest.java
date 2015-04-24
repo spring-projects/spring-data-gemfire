@@ -40,6 +40,9 @@ import com.gemstone.gemfire.cache.CacheWriterException;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAlgorithm;
+import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.LoaderHelper;
@@ -71,9 +74,19 @@ public class LookupRegionMutationIntegrationTest {
 	@Resource(name = "Example")
 	private Region<?, ?> example;
 
-	protected void assertGemFireComponent(Object gemfireComponent, String expectedName) {
-		assertNotNull("The GemFire component must not be null!", gemfireComponent);
-		assertEquals(expectedName, gemfireComponent.toString());
+	protected void assertCacheListeners(CacheListener[] cacheListeners, Collection<String> expectedCacheListenerNames) {
+		if (!expectedCacheListenerNames.isEmpty()) {
+			assertNotNull("CacheListeners must not be null!", cacheListeners);
+			assertEquals(expectedCacheListenerNames.size(), cacheListeners.length);
+			assertTrue(toStrings(cacheListeners).containsAll(expectedCacheListenerNames));
+		}
+	}
+
+	protected void assertEvictionAttributes(EvictionAttributes evictionAttributes, EvictionAction expectedAction, EvictionAlgorithm expectedAlgorithm, int expectedMaximum) {
+		assertNotNull("EvictionAttributes must not be null!", evictionAttributes);
+		assertEquals(expectedAction, evictionAttributes.getAction());
+		assertEquals(expectedAlgorithm, evictionAttributes.getAlgorithm());
+		assertEquals(expectedMaximum, evictionAttributes.getMaximum());
 	}
 
 	protected void assertExpirationAttributes(ExpirationAttributes expirationAttributes,
@@ -83,12 +96,9 @@ public class LookupRegionMutationIntegrationTest {
 		assertEquals(expectedTimeout, expirationAttributes.getTimeout());
 	}
 
-	protected void assertCacheListeners(CacheListener[] cacheListeners, Collection<String> expectedCacheListenerNames) {
-		if (!expectedCacheListenerNames.isEmpty()) {
-			assertNotNull("CacheListeners must not be null!", cacheListeners);
-			assertEquals(expectedCacheListenerNames.size(), cacheListeners.length);
-			assertTrue(toStrings(cacheListeners).containsAll(expectedCacheListenerNames));
-		}
+	protected void assertGemFireComponent(Object gemfireComponent, String expectedName) {
+		assertNotNull("The GemFire component must not be null!", gemfireComponent);
+		assertEquals(expectedName, gemfireComponent.toString());
 	}
 
 	protected Collection<String> toStrings(Object[] objects) {
@@ -113,6 +123,8 @@ public class LookupRegionMutationIntegrationTest {
 		assertCacheListeners(example.getAttributes().getCacheListeners(), Arrays.asList("A", "B"));
 		assertGemFireComponent(example.getAttributes().getCacheLoader(), "C");
 		assertGemFireComponent(example.getAttributes().getCacheWriter(), "D");
+		assertEvictionAttributes(example.getAttributes().getEvictionAttributes(), EvictionAction.OVERFLOW_TO_DISK,
+			EvictionAlgorithm.LRU_ENTRY, 1000);
 		assertExpirationAttributes(example.getAttributes().getRegionTimeToLive(), "Region TTL",
 			120, ExpirationAction.LOCAL_DESTROY);
 		assertExpirationAttributes(example.getAttributes().getRegionIdleTimeout(), "Region TTI",
