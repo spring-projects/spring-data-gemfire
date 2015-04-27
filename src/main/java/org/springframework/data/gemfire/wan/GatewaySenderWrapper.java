@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -176,7 +175,7 @@ public class GatewaySenderWrapper implements GatewaySender {
 
     @Override
 	@SuppressWarnings("deprecation")
-    public Gateway.OrderPolicy getOrderPolicy() {
+    public GatewaySender.OrderPolicy getOrderPolicy() {
         return delegate.getOrderPolicy();
     }
 

@@ -20,6 +20,7 @@ description = 'Spring Data GemFire'
 group = 'org.springframework.data'
 
 repositories {
+  mavenLocal()
   maven { url "https://repo.spring.io/libs-snapshot" }
   maven { url "https://repo.spring.io/plugins-release"}
 }
@@ -71,7 +72,10 @@ dependencies {
 	}
 
 	// GemFire
-	compile("com.gemstone.gemfire:gemfire:$gemfireVersion")
+	compile("com.gemstone.gemfire:gemfire-core:$gemfireVersion")
+	compile("com.gemstone.gemfire:gemfire-jgroups:$gemfireVersion")
+	compile("com.gemstone.gemfire:gemfire-joptsimple:$gemfireVersion")
+	compile("com.gemstone.gemfire:gemfire-json:$gemfireVersion")
 	optional("com.google.code.findbugs:annotations:2.0.2")
 	runtime("antlr:antlr:$antlrVersion")
 

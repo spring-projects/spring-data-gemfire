@@ -16,31 +16,31 @@
 
 package org.springframework.data.gemfire.wan;
 
-import com.gemstone.gemfire.cache.util.Gateway;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The OrderPolicyType class is an enumeration of GemFire Gateway Order Policies.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.util.Gateway.OrderPolicy
+ * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
  * @since 1.7.0
  */
-@SuppressWarnings({ "deprecation", "unused" })
+@SuppressWarnings("unused")
 public enum OrderPolicyType {
-	KEY(Gateway.OrderPolicy.KEY),
-	PARTITION(Gateway.OrderPolicy.PARTITION),
-	THREAD(Gateway.OrderPolicy.THREAD);
+	KEY(GatewaySender.OrderPolicy.KEY),
+	PARTITION(GatewaySender.OrderPolicy.PARTITION),
+	THREAD(GatewaySender.OrderPolicy.THREAD);
 
-	private final Gateway.OrderPolicy orderPolicy;
+	private final GatewaySender.OrderPolicy orderPolicy;
 
 	/**
 	 * Constructs an instance of the OrderPolicyType enum initialized with the matching GemFire Gateway.OrderPolicy
 	 * enumerated value.
 	 *
 	 * @param orderPolicy the matching GemFire Gateway.OrderPolicy enumerated value.
-	 * @see com.gemstone.gemfire.cache.util.Gateway.OrderPolicy
+	 * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
 	 */
-	OrderPolicyType(final Gateway.OrderPolicy orderPolicy) {
+	OrderPolicyType(final GatewaySender.OrderPolicy orderPolicy) {
 		this.orderPolicy = orderPolicy;
 	}
 
@@ -51,10 +51,10 @@ public enum OrderPolicyType {
 	 * @param orderPolicyType the OrderPolicyType enum from which to extract the GemFire-based
 	 * Gateway.OrderPolicy enumerated value.
 	 * @return the GemFire Gateway.OrderPolicy enumerated value for the given OrderPolicyType.
-	 * @see com.gemstone.gemfire.cache.util.Gateway.OrderPolicy
+	 * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
 	 * @see #getOrderPolicy()
 	 */
-	public static Gateway.OrderPolicy getOrderPolicy(final OrderPolicyType orderPolicyType) {
+	public static GatewaySender.OrderPolicy getOrderPolicy(final OrderPolicyType orderPolicyType) {
 		return (orderPolicyType != null ? orderPolicyType.getOrderPolicy() : null);
 	}
 
@@ -64,10 +64,10 @@ public enum OrderPolicyType {
 	 * @param orderPolicy the GemFire Gateway.OrderPolicy enumerated value used to match
 	 * the desired OrderPolicyType.
 	 * @return a OrderPolicyType matching the given GemFire Gateway.OrderPolicy enumerated value.
-	 * @see com.gemstone.gemfire.cache.util.Gateway.OrderPolicy
+	 * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
 	 * @see #getOrderPolicy()
 	 */
-	public static OrderPolicyType valueOf(final Gateway.OrderPolicy orderPolicy) {
+	public static OrderPolicyType valueOf(final GatewaySender.OrderPolicy orderPolicy) {
 		for (OrderPolicyType orderPolicyType : values()) {
 			if (orderPolicyType.getOrderPolicy().equals(orderPolicy)) {
 				return orderPolicyType;
@@ -99,9 +99,9 @@ public enum OrderPolicyType {
 	 * Gets the GemFire Gateway.OrderPolicy corresponding to this OrderPolicyType enum.
 	 *
 	 * @return a GemFire Gateway.OrderPolicy for this enum.
-	 * @see com.gemstone.gemfire.cache.util.Gateway.OrderPolicy
+	 * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
 	 */
-	public Gateway.OrderPolicy getOrderPolicy() {
+	public GatewaySender.OrderPolicy getOrderPolicy() {
 		return orderPolicy;
 	}
 

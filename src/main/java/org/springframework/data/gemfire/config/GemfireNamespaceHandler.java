@@ -35,8 +35,11 @@ import org.w3c.dom.Element;
 @SuppressWarnings("unused")
 class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 
-	protected static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList("async-event-queue", "gateway-sender",
-		"gateway-receiver");
+	protected static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList(
+		"async-event-queue",
+		"gateway-receiver",
+		"gateway-sender"
+	);
 
 	@Override
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
@@ -66,7 +69,6 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("async-event-queue", new AsyncEventQueueParser());
 		registerBeanDefinitionParser("disk-store", new DiskStoreParser());
 		registerBeanDefinitionParser("function-service", new FunctionServiceParser());
-		registerBeanDefinitionParser("gateway-hub", new GatewayHubParser());
 		registerBeanDefinitionParser("gateway-receiver", new GatewayReceiverParser());
 		registerBeanDefinitionParser("gateway-sender", new GatewaySenderParser());
 		registerBeanDefinitionParser("index", new IndexParser());

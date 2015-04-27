@@ -22,7 +22,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -37,7 +36,6 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
  * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.util.Gateway
  * @see com.gemstone.gemfire.cache.wan.GatewaySender
  * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
  * @since 1.2.2
@@ -149,7 +147,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()),
 				String.format("The value for Order Policy '%1$s' is invalid.", orderPolicy));
 
-			gatewaySenderFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
+			gatewaySenderFactory.setOrderPolicy(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
 
 		gatewaySenderFactory.setParallel(isParallelGatewaySender());

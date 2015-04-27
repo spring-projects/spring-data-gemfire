@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gemstone.gemfire.cache.util.Gateway;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The OrderPolicyTypeTest class is a test suite of test cases testing the contract and functionality
@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.util.Gateway;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.wan.OrderPolicyType
- * @see com.gemstone.gemfire.cache.util.Gateway
+ * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
  * @since 1.7.0
  */
 @SuppressWarnings("deprecation")
@@ -39,8 +39,8 @@ public class OrderPolicyTypeTest {
 
 	@Test
 	public void testStaticGetOrderPolicy() {
-		assertEquals(Gateway.OrderPolicy.KEY, OrderPolicyType.getOrderPolicy(OrderPolicyType.KEY));
-		assertEquals(Gateway.OrderPolicy.PARTITION, OrderPolicyType.getOrderPolicy(OrderPolicyType.PARTITION));
+		assertEquals(GatewaySender.OrderPolicy.KEY, OrderPolicyType.getOrderPolicy(OrderPolicyType.KEY));
+		assertEquals(GatewaySender.OrderPolicy.PARTITION, OrderPolicyType.getOrderPolicy(OrderPolicyType.PARTITION));
 	}
 
 	@Test
@@ -50,7 +50,7 @@ public class OrderPolicyTypeTest {
 
 	@Test
 	public void testValueOfGemFireOrderPolicies() {
-		for (Gateway.OrderPolicy orderPolicy : Gateway.OrderPolicy.values()) {
+		for (GatewaySender.OrderPolicy orderPolicy : GatewaySender.OrderPolicy.values()) {
 			OrderPolicyType orderPolicyType = OrderPolicyType.valueOf(orderPolicy);
 
 			assertNotNull(orderPolicyType);
@@ -60,7 +60,7 @@ public class OrderPolicyTypeTest {
 
 	@Test
 	public void testValueOfNullGemFireOrderPolicy() {
-		assertNull(OrderPolicyType.valueOf((Gateway.OrderPolicy) null));
+		assertNull(OrderPolicyType.valueOf((GatewaySender.OrderPolicy) null));
 	}
 
 	@Test

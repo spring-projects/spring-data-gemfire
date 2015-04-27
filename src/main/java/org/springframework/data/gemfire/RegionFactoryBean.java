@@ -71,7 +71,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	private boolean destroy = false;
 	private boolean running;
 
-	private Boolean enableGateway;
 	private Boolean persistent;
 
 	private CacheListener<K, V>[] cacheListeners;
@@ -94,7 +93,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	private Scope scope;
 
 	private String diskStoreName;
-	private String hubId;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -112,23 +110,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		RegionFactory<K, V> regionFactory = createRegionFactory(cache);
 
-		if (hubId != null) {
-			enableGateway = (enableGateway == null || enableGateway);
-			Assert.isTrue(enableGateway, "The 'hubId' requires the 'enableGateway' property to be true.");
-			regionFactory.setGatewayHubId(hubId);
-		}
-
-		if (enableGateway != null) {
-			if (enableGateway) {
-				Assert.notNull(hubId, "The 'enableGateway' property requires the 'hubId' property to be set.");
-			}
-			regionFactory.setEnableGateway(enableGateway);
-		}
-
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			Assert.isTrue(hubId == null, "It is invalid to configure a region with both a hubId and gatewaySenders."
-				+ " Note that the enableGateway and hubId properties are deprecated since Gemfire 7.0");
-
 			for (Object gatewaySender : gatewaySenders) {
 				regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId());
 			}
@@ -666,10 +648,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.diskStoreName = diskStoreName;
 	}
 
-	public void setEnableGateway(boolean enableGateway) {
-		this.enableGateway = enableGateway;
-	}
-
 	/**
 	 *
 	 * @param gatewaySenders defined as Object for backward compatibility with
@@ -677,10 +655,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 */
 	public void setGatewaySenders(Object[] gatewaySenders) {
 		this.gatewaySenders = gatewaySenders;
-	}
-
-	public void setHubId(String hubId) {
-		this.hubId = hubId;
 	}
 
 	public void setPersistent(Boolean persistent) {

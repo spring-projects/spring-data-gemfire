@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.After;
 import org.junit.Test;
 
-import com.gemstone.gemfire.cache.util.Gateway;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The OrderPolicyConverterTest class is a test suite of test cases testing the contract and functionality
@@ -31,6 +31,7 @@ import com.gemstone.gemfire.cache.util.Gateway;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.wan.OrderPolicyConverter
+ * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
  * @since 1.7.0
  */
 @SuppressWarnings("deprecation")
@@ -45,9 +46,9 @@ public class OrderPolicyConverterTest {
 
 	@Test
 	public void testConvert() {
-		assertEquals(Gateway.OrderPolicy.KEY, converter.convert("key"));
-		assertEquals(Gateway.OrderPolicy.PARTITION, converter.convert("Partition"));
-		assertEquals(Gateway.OrderPolicy.THREAD, converter.convert("THREAD"));
+		assertEquals(GatewaySender.OrderPolicy.KEY, converter.convert("key"));
+		assertEquals(GatewaySender.OrderPolicy.PARTITION, converter.convert("Partition"));
+		assertEquals(GatewaySender.OrderPolicy.THREAD, converter.convert("THREAD"));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -64,9 +65,9 @@ public class OrderPolicyConverterTest {
 	@Test
 	public void testSetAsText() {
 		converter.setAsText("PartItIOn");
-		assertEquals(Gateway.OrderPolicy.PARTITION, converter.getValue());
+		assertEquals(GatewaySender.OrderPolicy.PARTITION, converter.getValue());
 		converter.setAsText("thREAD");
-		assertEquals(Gateway.OrderPolicy.THREAD, converter.getValue());
+		assertEquals(GatewaySender.OrderPolicy.THREAD, converter.getValue());
 	}
 
 	@Test(expected = IllegalArgumentException.class)

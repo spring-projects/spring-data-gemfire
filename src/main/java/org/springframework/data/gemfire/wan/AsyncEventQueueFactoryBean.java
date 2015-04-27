@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.util.Gateway;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
@@ -124,7 +124,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()), String.format(
 				"The value of Order Policy '$1%s' is invalid.", orderPolicy));
 
-			asyncEventQueueFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
+			asyncEventQueueFactory.setOrderPolicy(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
 
 		if (persistent != null) {
