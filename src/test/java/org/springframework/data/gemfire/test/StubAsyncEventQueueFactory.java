@@ -22,10 +22,10 @@ import java.util.List;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 
 /**
  * @author David Turanski
@@ -105,28 +105,28 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 	}
 
 	//The following added in 7.0.1
-	public AsyncEventQueueFactory setBatchConflationEnabled(boolean arg0) {
-		this.batchConflationEnabled = arg0;
+	public AsyncEventQueueFactory setBatchConflationEnabled(boolean batchConflationEnabled) {
+		this.batchConflationEnabled = batchConflationEnabled;
 		return this;
 	}
 
-	public AsyncEventQueueFactory setBatchTimeInterval(int arg0) {
-		this.batchTimeInterval = arg0;
+	public AsyncEventQueueFactory setBatchTimeInterval(int batchTimeInterval) {
+		this.batchTimeInterval = batchTimeInterval;
 		return this;
 	}
 
-	public AsyncEventQueueFactory setDiskSynchronous(boolean arg0) {
-		this.diskSynchronous = arg0;
+	public AsyncEventQueueFactory setDiskSynchronous(boolean diskSynchronous) {
+		this.diskSynchronous = diskSynchronous;
 		return this;
 	}
 
-	public AsyncEventQueueFactory setDispatcherThreads(int arg0) {
-		this.dispatcherThreads = arg0;
+	public AsyncEventQueueFactory setDispatcherThreads(int dispatchThreads) {
+		this.dispatcherThreads = dispatchThreads;
 		return this;
 	}
 
-	public AsyncEventQueueFactory setOrderPolicy(OrderPolicy arg0) {
-		this.orderPolicy = arg0;
+	public AsyncEventQueueFactory setOrderPolicy(OrderPolicy orderPolicy) {
+		this.orderPolicy = orderPolicy;
 		return this;
 	}
 
@@ -145,7 +145,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 	@Override
 	public AsyncEventQueueFactory setGatewayEventSubstitutionListener(final GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
 		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
-		return null;
+		return this;
 	}
 
 }

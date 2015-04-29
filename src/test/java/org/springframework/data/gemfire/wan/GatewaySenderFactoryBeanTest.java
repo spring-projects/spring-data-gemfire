@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.springframework.data.gemfire.TestUtils;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 
@@ -39,7 +38,6 @@ import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
  * @author John Blum
  * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.wan.GatewaySender
- * @see com.gemstone.gemfire.cache.util.Gateway
  * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
  * @see org.junit.Test
  * @see org.mockito.Mockito
@@ -76,7 +74,8 @@ public class GatewaySenderFactoryBeanTest {
 		String orderPolicy = TestUtils.readField("orderPolicy", factoryBean);
 
 		if (orderPolicy != null) {
-			verify(mockGatewaySenderFactory).setOrderPolicy(eq(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase())));
+			verify(mockGatewaySenderFactory).setOrderPolicy(eq(GatewaySender.OrderPolicy.valueOf(
+				orderPolicy.toUpperCase())));
 		}
 
 		Integer dispatcherThreads = TestUtils.readField("dispatcherThreads", factoryBean);

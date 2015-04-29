@@ -51,8 +51,8 @@ import com.gemstone.gemfire.cache.query.QueryService;
 @SuppressWarnings("deprecation")
 public class MockRegionFactory<K,V>   {
 
-	private static QueryService queryService = mock(QueryService.class);
-	private static RegionService regionService = mock(RegionService.class);
+	private static QueryService mockQueryService = mock(QueryService.class);
+	private static RegionService mockRegionService = mock(RegionService.class);
 
 	private com.gemstone.gemfire.cache.AttributesFactory<K,V> attributesFactory;
 
@@ -172,14 +172,15 @@ public class MockRegionFactory<K,V>   {
 			}
 		});
 
-		when(regionFactory.setDiskDirsAndSizes(any(File[].class), any(int[].class))).thenAnswer(new Answer<RegionFactory>(){
-			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-				File[] diskDirectories = (File[]) invocation.getArguments()[0];
-				int[] diskSizes = (int[]) invocation.getArguments()[1];
-				attributesFactory.setDiskDirsAndSizes(diskDirectories, diskSizes);
-				return regionFactory;
-			}
-		});
+		when(regionFactory.setDiskDirsAndSizes(any(File[].class), any(int[].class))).thenAnswer(
+			new Answer<RegionFactory>() {
+				@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
+					File[] diskDirectories = (File[]) invocation.getArguments()[0];
+					int[] diskSizes = (int[]) invocation.getArguments()[1];
+					attributesFactory.setDiskDirsAndSizes(diskDirectories, diskSizes);
+					return regionFactory;
+				}
+			});
 
 		when(regionFactory.setDiskStoreName(anyString())).thenAnswer(new Answer<RegionFactory>() {
 			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
@@ -219,14 +220,6 @@ public class MockRegionFactory<K,V>   {
 			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
 				boolean enableAsyncConflation = (Boolean) invocation.getArguments()[0];
 				attributesFactory.setEnableAsyncConflation(enableAsyncConflation);
-				return regionFactory;
-			}
-		});
-
-		when(regionFactory.setEnableGateway(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
-			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-				boolean enableGateway = (Boolean) invocation.getArguments()[0];
-				attributesFactory.setEnableGateway(enableGateway);
 				return regionFactory;
 			}
 		});
@@ -275,14 +268,6 @@ public class MockRegionFactory<K,V>   {
 			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
 				EvictionAttributes evictionAttributes = (EvictionAttributes) invocation.getArguments()[0];
 				attributesFactory.setEvictionAttributes(evictionAttributes);
-				return regionFactory;
-			}
-		});
-
-		when(regionFactory.setGatewayHubId(anyString())).thenAnswer(new Answer<RegionFactory>(){
-			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-				String gatewayHubId = (String) invocation.getArguments()[0];
-				attributesFactory.setGatewayHubId(gatewayHubId);
 				return regionFactory;
 			}
 		});
@@ -500,14 +485,13 @@ public class MockRegionFactory<K,V>   {
 		return region;
 	}
 
-	public static RegionService mockRegionService() {
-		when(regionService.getQueryService()).thenReturn(mockQueryService());
-		return regionService;
-	}
-
 	public static QueryService mockQueryService() {
-		return queryService;
+		return mockQueryService;
 	}
 
+	public static RegionService mockRegionService() {
+		when(mockRegionService.getQueryService()).thenReturn(mockQueryService());
+		return mockRegionService;
+	}
 
 }

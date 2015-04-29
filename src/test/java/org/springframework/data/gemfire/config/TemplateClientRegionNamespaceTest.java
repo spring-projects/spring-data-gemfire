@@ -137,8 +137,6 @@ public class TemplateClientRegionNamespaceTest {
 		assertNull(region.getAttributes().getCustomEntryIdleTimeout());
 		assertNull(region.getAttributes().getCustomEntryTimeToLive());
 		assertNull(region.getAttributes().getDiskStoreName());
-		assertFalse(region.getAttributes().getEnableGateway());
-		assertNullEmpty(region.getAttributes().getGatewayHubId());
 		assertFalse(region.getAttributes().getMulticastEnabled());
 		assertDefaultExpirationAttributes(region.getAttributes().getRegionTimeToLive());
 		assertDefaultExpirationAttributes(region.getAttributes().getRegionIdleTimeout());

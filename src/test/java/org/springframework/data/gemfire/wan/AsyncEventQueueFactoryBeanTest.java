@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.util.Gateway;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The AsyncEventQueueFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -84,7 +84,8 @@ public class AsyncEventQueueFactoryBeanTest {
 		String orderPolicy = TestUtils.readField("orderPolicy", factoryBean);
 
 		if (orderPolicy != null) {
-			verify(mockAsyncEventQueueFactory).setOrderPolicy(eq(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase())));
+			verify(mockAsyncEventQueueFactory).setOrderPolicy(eq(GatewaySender.OrderPolicy.valueOf(
+				orderPolicy.toUpperCase())));
 		}
 
 		Integer dispatcherThreads = TestUtils.readField("dispatcherThreads", factoryBean);

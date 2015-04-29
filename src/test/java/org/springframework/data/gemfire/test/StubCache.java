@@ -46,7 +46,6 @@ import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.cache.util.GatewayHub;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -85,9 +84,7 @@ public class StubCache implements Cache {
 
 	private GatewayConflictResolver gatewayConflictResolver;
 
-	private HashMap<String, Region> allRegions;
-
-	private List<GatewayHub> gatewayHubs;
+	private Map<String, Region> rootRegions;
 
 	private LogWriter logWriter;
 	private LogWriter securityLogWriter;
@@ -105,8 +102,7 @@ public class StubCache implements Cache {
 	private String name;
 
 	public StubCache(){
-		allRegions = new HashMap<String,Region>();
-		gatewayHubs = new ArrayList<GatewayHub>();
+		rootRegions = new HashMap<String, Region>();
 	}
 	
 	/* (non-Javadoc)
@@ -397,17 +393,6 @@ public class StubCache implements Cache {
 
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#addGatewayHub(java.lang.String, int)
-	 */
-	@Override
-	public GatewayHub addGatewayHub(final String id, final int port) {
-		GatewayHub gatewayHub = getGatewayHub(id);
-		gatewayHub = (gatewayHub != null ? gatewayHub : new MockGatewayHubFactory().mockGatewayHub(id, port));
-		gatewayHubs.add(gatewayHub);
-		return gatewayHub;
-	}
-
-	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#close(boolean)
 	 */
 	@Override
@@ -544,37 +529,6 @@ public class StubCache implements Cache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHub()
-	 */
-	@Override
-	@Deprecated
-	public GatewayHub getGatewayHub() {
-		return (gatewayHubs.isEmpty() ? null : gatewayHubs.get(0));
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHub(java.lang.String)
-	 */
-	@Override
-	public GatewayHub getGatewayHub(final String id) {
-		for (GatewayHub gatewayHub : gatewayHubs) {
-			if (gatewayHub.getId().equals(id)) {
-				return gatewayHub;
-			}
-		}
-
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHubs()
-	 */
-	@Override
-	public List<GatewayHub> getGatewayHubs() {
-		return this.gatewayHubs;
-	}
-
-	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#getGatewayReceivers()
 	 */
 	@Override
@@ -698,21 +652,11 @@ public class StubCache implements Cache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#setGatewayHub(java.lang.String, int)
-	 */
-	@Override
-	@Deprecated
-	public GatewayHub setGatewayHub(String arg0, int arg1) {
-		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
-	}
-
-	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#setIsServer(boolean)
 	 */
 	@Override
-	public void setIsServer(boolean arg0) {
-		this.server = arg0;
-		
+	public void setIsServer(boolean server) {
+		this.server = server;
 	}
 
 	/* (non-Javadoc)
@@ -866,7 +810,7 @@ public class StubCache implements Cache {
 
 	@SuppressWarnings("rawtypes")
 	public Map<String,Region> allRegions() {
-		return this.allRegions;
+		return this.rootRegions;
 	}
 
 	public void setProperties(Properties gemfireProperties) {
