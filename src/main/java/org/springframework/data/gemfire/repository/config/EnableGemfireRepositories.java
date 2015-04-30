@@ -27,6 +27,7 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
+import org.springframework.data.repository.config.DefaultRepositoryBaseClass;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
@@ -118,6 +119,13 @@ public @interface EnableGemfireRepositories {
 	 * @return the {@link FactoryBean} class type used for each Repository interface.
 	 */
 	Class<?> repositoryFactoryBeanClass() default GemfireRepositoryFactoryBean.class;
+
+	/**
+	 * Configure the repository base class to be used to create repository proxies for this particular configuration.
+	 *
+	 * @since 1.7
+	 */
+	Class<?> repositoryBaseClass() default DefaultRepositoryBaseClass.class;
 
 	/**
 	 * Configures the name of the {@link GemfireMappingContext} bean definition to be used to create repositories

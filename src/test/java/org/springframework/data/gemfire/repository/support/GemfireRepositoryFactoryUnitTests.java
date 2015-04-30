@@ -15,24 +15,30 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.util.Collections;
 
 import org.hamcrest.Matchers;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.aop.framework.Advised;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
+import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.EntityInformation;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -55,42 +61,78 @@ public class GemfireRepositoryFactoryUnitTests {
 	@SuppressWarnings("rawtypes")
 	private RegionAttributes attributes;
 
+	@Before
+	@SuppressWarnings("unchecked")
+	public void setup() {
+		when(region.getName()).thenReturn("simple");
+		when(region.getFullPath()).thenReturn("/simple");
+		when(region.getAttributes()).thenReturn(attributes);
+	}
+
 	/**
 	 * @link https://jira.spring.io/browse/SGF-112
 	 */
 	@Test(expected = IllegalStateException.class)
-	@SuppressWarnings("unchecked")
 	public void rejectsInterfacesExtendingPagingAndSortingRepository() {
-
-		when(region.getName()).thenReturn("simple");
-		when(region.getAttributes()).thenReturn(attributes);
-
-		List<Region<?, ?>> regions = new ArrayList<Region<?, ?>>();
-		regions.add(region);
-
-		GemfireMappingContext context = new GemfireMappingContext();
-
-		GemfireRepositoryFactory factory = new GemfireRepositoryFactory(regions, context);
+		GemfireRepositoryFactory repositoryFactory = new GemfireRepositoryFactory(
+			Collections.<Region<?, ?>>singletonList(region), new GemfireMappingContext());
 
 		try {
-			factory.getRepository(SampleInterface.class);
-			//factory.getRepository(SamplePagingInterface.class);
-			//factory.getRepository(SampleSortingInterface.class);
-		} catch (IllegalStateException expected) {
-			assertThat(expected.getMessage(), Matchers.startsWith("Pagination is not supported by Gemfire repositories!"));
+			repositoryFactory.getRepository(SamplePagingAndSortingRepository.class);
+			//factory.getRepository(SamplePagingRepository.class);
+			//factory.getRepository(SampleSortingRepository.class);
+		}
+		catch (IllegalStateException expected) {
+			assertThat(expected.getMessage(), Matchers.startsWith(
+				"Pagination is not supported by Gemfire repositories!"));
 			throw expected;
 		}
 	}
 
-	interface SampleInterface extends PagingAndSortingRepository<Person, Long> {
+	@Test
+	public void usesConfiguredRepositoryBaseClass() {
+		GemfireRepositoryFactory repositoryFactory = new GemfireRepositoryFactory(
+			Collections.<Region<?, ?>>singletonList(region), new GemfireMappingContext());
+
+		repositoryFactory.setRepositoryBaseClass(CustomBaseRepository.class);
+
+		GemfireRepository<?, ?> gemfireRepository = repositoryFactory.getRepository(SampleCustomGemfireRepository.class,
+			new SampleCustomRepositoryImpl());
+
+		assertSame(CustomBaseRepository.class, ((Advised) gemfireRepository).getTargetClass());
 	}
 
-	interface SamplePagingInterface extends Repository<Person, Long> {
+	interface SamplePagingAndSortingRepository extends PagingAndSortingRepository<Person, Long> {
+	}
+
+	interface SamplePagingRepository extends Repository<Person, Long> {
 		Page<Person> findAll(Pageable pageable);
 	}
 
-	interface SampleSortingInterface extends Repository<Person, Long> {
+	interface SampleSortingRepository extends Repository<Person, Long> {
 		Iterable<Person> findAll(Sort sort);
+	}
+
+	interface SampleCustomRepository<T> {
+		void doCustomUpdate(T entity);
+	}
+
+	class SampleCustomRepositoryImpl<T> implements SampleCustomRepository<T> {
+
+		@Override
+		public void doCustomUpdate(final T entity) {
+			throw new UnsupportedOperationException("Not Implemented!");
+		}
+	}
+
+	interface SampleCustomGemfireRepository extends GemfireRepository<Person, Long>, SampleCustomRepository<Person> {
+	}
+
+	static class CustomBaseRepository<T, ID extends Serializable> extends SimpleGemfireRepository<T, ID> {
+
+		public CustomBaseRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
+			super(template, entityInformation);
+		}
 	}
 
 }

@@ -30,6 +30,7 @@ import org.springframework.data.gemfire.repository.query.PartTreeGemfireReposito
 import org.springframework.data.gemfire.repository.query.StringBasedGemfireRepositoryQuery;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -88,10 +89,13 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected Object getTargetRepository(RepositoryMetadata metadata) {
-		GemfireEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
-		GemfireTemplate gemfireTemplate = getTemplate(metadata);
-		return new SimpleGemfireRepository(gemfireTemplate, entityInformation);
+	protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
+		GemfireEntityInformation<?, Serializable> entityInformation = getEntityInformation(
+			repositoryInformation.getDomainType());
+
+		GemfireTemplate gemfireTemplate = getTemplate(repositoryInformation);
+
+		return getTargetRepositoryViaReflection(repositoryInformation, gemfireTemplate, entityInformation);
 	}
 
 	private GemfireTemplate getTemplate(RepositoryMetadata metadata) {
@@ -139,7 +143,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see springframework.data.repository.core.support.RepositoryFactorySupport
 	 * 	#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key)
 	 */
