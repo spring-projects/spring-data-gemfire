@@ -25,21 +25,27 @@ public abstract class TestUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T readField(String name, Object target) throws Exception {
+		Class<?> targetType = target.getClass();
 		Field field = null;
-		Class<?> clazz = target.getClass();
+
 		do {
 			try {
-				field = clazz.getDeclaredField(name);
-			} catch (Exception ex) {
+				field = targetType.getDeclaredField(name);
+			}
+			catch (Exception ignore) {
 			}
 
-			clazz = clazz.getSuperclass();
-		} while (field == null && !clazz.equals(Object.class));
+			targetType = targetType.getSuperclass();
+		}
+		while (field == null && !Object.class.equals(targetType));
 
-		if (field == null)
-			throw new IllegalArgumentException("Cannot find field '" + name + "' in the class hierarchy of "
-					+ target.getClass());
+		if (field == null) {
+			throw new IllegalArgumentException(String.format("Cannot find field '%1$s' in the class hierarchy of %2$s!",
+				name, targetType));
+		}
+
 		field.setAccessible(true);
+
 		return (T) field.get(target);
 	}
 

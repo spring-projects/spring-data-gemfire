@@ -59,6 +59,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	private Boolean parallel;
 	private Boolean persistent;
 
+	private GatewaySender.OrderPolicy orderPolicy;
+
 	private GatewayEventSubstitutionFilter eventSubstitutionFilter;
 
 	private Integer alertThreshold;
@@ -70,7 +72,6 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	private Integer socketReadTimeout;
 
 	private String diskStoreReference;
-	private String orderPolicy;
 
 	/**
 	 * Constructs an instance of the GatewaySenderFactoryBean class initialized with a reference to the GemFire cache.
@@ -101,6 +102,10 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			gatewaySenderFactory.setAlertThreshold(alertThreshold);
 		}
 
+		if (batchConflationEnabled != null) {
+			gatewaySenderFactory.setBatchConflationEnabled(batchConflationEnabled);
+		}
+
 		if (batchSize != null) {
 			gatewaySenderFactory.setBatchSize(batchSize);
 		}
@@ -121,10 +126,6 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
 		}
 
-		if (batchConflationEnabled != null) {
-			gatewaySenderFactory.setBatchConflationEnabled(batchConflationEnabled);
-		}
-
 		if (!CollectionUtils.isEmpty(eventFilters)) {
 			for (GatewayEventFilter eventFilter : eventFilters) {
 				gatewaySenderFactory.addGatewayEventFilter(eventFilter);
@@ -143,11 +144,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 		if (orderPolicy != null) {
 			Assert.isTrue(isSerialGatewaySender(), "Order Policy cannot be used with a Parallel Gateway Sender Queue.");
-
-			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()),
-				String.format("The value for Order Policy '%1$s' is invalid.", orderPolicy));
-
-			gatewaySenderFactory.setOrderPolicy(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
+			gatewaySenderFactory.setOrderPolicy(orderPolicy);
 		}
 
 		gatewaySenderFactory.setParallel(isParallelGatewaySender());
@@ -230,7 +227,16 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		this.maximumQueueMemory = maximumQueueMemory;
 	}
 
+	/**
+	 * @see #setOrderPolicy(com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy)
+	 * @deprecated please use setOrderPolicy(:GatewaySender.OrderPolicy) instead.
+	 */
+	@Deprecated
 	public void setOrderPolicy(String orderPolicy) {
+		setOrderPolicy(new OrderPolicyConverter().convert(orderPolicy));
+	}
+
+	public void setOrderPolicy(GatewaySender.OrderPolicy orderPolicy) {
 		this.orderPolicy = orderPolicy;
 	}
 
@@ -274,7 +280,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		this.transportFilters = gatewayTransportFilters;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.context.SmartLifecycle#isAutoStartup()
 	 */
 	@Override
@@ -282,7 +289,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		return !manualStart;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.context.Phased#getPhase()
 	 */
 	@Override
@@ -290,7 +298,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		return Integer.MAX_VALUE;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.context.Lifecycle#isRunning()
 	 */
 	@Override
@@ -298,7 +307,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		return gatewaySender.isRunning();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.context.Lifecycle#start()
 	 */
 	@Override
@@ -310,7 +320,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.context.Lifecycle#stop()
 	 */
 	@Override
@@ -318,7 +329,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		gatewaySender.stop();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.context.SmartLifecycle#stop(java.lang.Runnable)
 	 */
 	@Override
