@@ -38,12 +38,8 @@ public class GemfireUtilsTest {
 	protected int getGemFireVersion() {
 		try {
 			String gemfireVersion = GemFireVersion.getGemFireVersion();
-			StringBuilder buffer = new StringBuilder();
-
-			buffer.append(GemFireVersion.getMajorVersion(gemfireVersion));
-			buffer.append(GemFireVersion.getMinorVersion(gemfireVersion));
-
-			return Integer.decode(buffer.toString());
+			return Integer.decode(String.format("%1$d%2$d", GemFireVersion.getMajorVersion(gemfireVersion),
+				GemFireVersion.getMinorVersion(gemfireVersion)));
 		}
 		catch (NumberFormatException ignore) {
 			return -1;
@@ -51,17 +47,24 @@ public class GemfireUtilsTest {
 	}
 
 	@Test
-	public void testIsGemfireVersion65OrAbove() {
+	public void isGemfireVersion65OrAbove() {
 		int gemfireVersion = getGemFireVersion();
 		assumeTrue(gemfireVersion > -1);
 		assertEquals(getGemFireVersion() >= 65, GemfireUtils.isGemfireVersion65OrAbove());
 	}
 
 	@Test
-	public void testIsGemfireVersion7OrAbove() {
+	public void isGemfireVersion7OrAbove() {
 		int gemfireVersion = getGemFireVersion();
 		assumeTrue(gemfireVersion > -1);
 		assertEquals(getGemFireVersion() >= 70, GemfireUtils.isGemfireVersion7OrAbove());
+	}
+
+	@Test
+	public void isGemfireVersion8OrAbove() {
+		int gemfireVersion = getGemFireVersion();
+		assumeTrue(gemfireVersion > -1);
+		assertEquals(getGemFireVersion() >= 80, GemfireUtils.isGemfireVersion7OrAbove());
 	}
 
 }

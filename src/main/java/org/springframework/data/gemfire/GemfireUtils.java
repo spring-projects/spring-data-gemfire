@@ -19,9 +19,11 @@ package org.springframework.data.gemfire;
 import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.util.ClassUtils;
+import org.w3c.dom.Element;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.GemFireVersion;
 
 /**
  * The GemfireUtils class is a utility class encapsulating common functionality to access features and capabilities
@@ -32,18 +34,62 @@ import com.gemstone.gemfire.cache.Region;
  */
 public abstract class GemfireUtils {
 
+	public final static String GEMFIRE_NAME = GemFireVersion.getProductName();
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
+
+	// TODO use a more reliable means of determining implementing class for GemFire features such as Java's SPI support
+	private static final String ASYNC_EVENT_QUEUE_TYPE_NAME = "com.gemstone.gemfire.cache.AsyncEventQueue";
+	private static final String CQ_TYPE_NAME = "com.gemstone.gemfire.cache.query.internal.cq.CqServiceFactoryImpl";
+	private static final String GATEWAY_TYPE_NAME = "com.gemstone.gemfire.internal.cache.wan.GatewaySenderFactoryImpl";
+
+	public static boolean isClassAvailable(String fullyQualifiedClassName) {
+		return ClassUtils.isPresent(fullyQualifiedClassName, GemfireUtils.class.getClassLoader());
+	}
+
+	public static boolean isGemfireFeatureAvailable(Element element) {
+		boolean featureAvailable = (!isAsyncEventQueue(element) || isAsyncEventQueueAvailable());
+		featureAvailable &= (!isContinuousQuery(element) || isContinuousQueryAvailable());
+		featureAvailable &= (!isGateway(element) || isGatewayAvailable());
+		return featureAvailable;
+	}
+
+	public static boolean isGemfireFeatureUnavailable(Element element) {
+		return !isGemfireFeatureAvailable(element);
+	}
+
+	private static boolean isAsyncEventQueue(Element element) {
+		return "async-event-queue".equals(element.getLocalName());
+	}
+
+	private static boolean isAsyncEventQueueAvailable() {
+		return isClassAvailable(ASYNC_EVENT_QUEUE_TYPE_NAME);
+	}
+
+	private static boolean isContinuousQuery(Element element) {
+		return "cq-listener-container".equals(element.getLocalName());
+	}
+
+	private static boolean isContinuousQueryAvailable() {
+		return isClassAvailable(CQ_TYPE_NAME);
+	}
+
+	private static boolean isGateway(Element element) {
+		String elementLocalName = element.getLocalName();
+		return ("gateway-receiver".equals(elementLocalName) || "gateway-sender".equals(elementLocalName));
+	}
+
+	private static boolean isGatewayAvailable() {
+		return isClassAvailable(GATEWAY_TYPE_NAME);
+	}
 
 	public static boolean isGemfireVersionGreaterThanEqual(double expectedVersion) {
 		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
-		return actualVersion >= expectedVersion;
+		return (actualVersion >= expectedVersion);
 	}
 
 	public static boolean isGemfireVersion65OrAbove() {
-		// expected 'major.minor'
 		try {
-			double version = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
-			return version >= 6.5;
+			return isGemfireVersionGreaterThanEqual(6.5);
 		}
 		catch (NumberFormatException e) {
 			// NOTE based on logic from the PartitionedRegionFactoryBean class...

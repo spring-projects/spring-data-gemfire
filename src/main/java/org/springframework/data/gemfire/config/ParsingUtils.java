@@ -365,17 +365,6 @@ abstract class ParsingUtils {
 		}
 	}
 
-	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
-		if (!GemfireUtils.isGemfireVersion7OrAbove()) {
-			String messagePrefix = (attributeName != null)
-				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
-				: String.format("Element '%1$s'", elementName);
-			parserContext.getReaderContext().error(
-				String.format("%1$s requires GemFire version 7 or later. The current version is %2$s.",
-					messagePrefix, GemfireUtils.GEMFIRE_VERSION), null);
-		}
-	}
-
 	static void parseScope(Element element, BeanDefinitionBuilder builder) {
 		String scopeAttributeValue = element.getAttribute("scope");
 
@@ -429,6 +418,24 @@ abstract class ParsingUtils {
 
 	static String resolveCacheReference(final String cacheRef) {
 		return (StringUtils.hasText(cacheRef) ? cacheRef : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+	}
+
+	static void assertGemFireFeatureAvailable(Element element, ParserContext parserContext) {
+		if (GemfireUtils.isGemfireFeatureUnavailable(element)) {
+			parserContext.getReaderContext().error(String.format("'%1$s' is not supported in %2$s v%3$s",
+				element.getLocalName(), GemfireUtils.GEMFIRE_NAME, GemfireUtils.GEMFIRE_VERSION), element);
+		}
+	}
+
+	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
+		if (!GemfireUtils.isGemfireVersion7OrAbove()) {
+			String messagePrefix = (attributeName != null)
+				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
+				: String.format("Element '%1$s'", elementName);
+			parserContext.getReaderContext().error(
+				String.format("%1$s requires GemFire version 7 or later. The current version is %2$s.",
+					messagePrefix, GemfireUtils.GEMFIRE_VERSION), null);
+		}
 	}
 
 }

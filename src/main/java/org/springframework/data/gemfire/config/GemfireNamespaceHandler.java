@@ -16,9 +16,6 @@
 
 package org.springframework.data.gemfire.config;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -35,20 +32,9 @@ import org.w3c.dom.Element;
 @SuppressWarnings("unused")
 class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 
-	protected static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList(
-		"async-event-queue",
-		"gateway-receiver",
-		"gateway-sender"
-	);
-
 	@Override
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		boolean v7ElementsPresent = GEMFIRE7_ELEMENTS.contains(element.getLocalName());
-
-		if (v7ElementsPresent) {
-			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), null, parserContext);
-		}
-
+		ParsingUtils.assertGemFireFeatureAvailable(element, parserContext);
 		return super.parse(element, parserContext);
 	}
 
