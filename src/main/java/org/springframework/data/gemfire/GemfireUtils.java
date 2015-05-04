@@ -121,7 +121,7 @@ public abstract class GemfireUtils {
 	}
 
 	public static void main(final String... args) {
-		System.out.printf("GemFire Version %1$s%n", GEMFIRE_VERSION);
+		System.out.printf("GemFire Product Name (%1$s) Version (%2$s)%n", GEMFIRE_NAME, GEMFIRE_VERSION);
 		//System.out.printf("Is GemFire Version 6.5 of Above? %1$s%n", isGemfireVersion65OrAbove());
 		//System.out.printf("Is GemFire Version 7.0 of Above? %1$s%n", isGemfireVersion7OrAbove());
 	}

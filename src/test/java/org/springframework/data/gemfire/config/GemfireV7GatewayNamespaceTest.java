@@ -30,12 +30,17 @@ import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.test.GemfireProfileValueSource;
 import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
 import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
+import org.springframework.test.annotation.IfProfileValue;
+import org.springframework.test.annotation.ProfileValueSourceConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
@@ -54,6 +59,9 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @author David Turanski
  * @author John Blum
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY, value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
+@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @SuppressWarnings("unused")
 public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
