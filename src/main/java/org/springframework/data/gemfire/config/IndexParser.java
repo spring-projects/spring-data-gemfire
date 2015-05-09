@@ -16,7 +16,12 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.IndexFactoryBean;
@@ -34,6 +39,20 @@ import org.w3c.dom.Element;
  */
 class IndexParser extends AbstractSimpleBeanDefinitionParser {
 
+	private static final AtomicBoolean registered = new AtomicBoolean(false);
+
+	protected static void registerCreateDefinedIndexesApplicationListener(ParserContext parserContext) {
+		if (registered.compareAndSet(false, true)) {
+			AbstractBeanDefinition createDefinedIndexesApplicationListener = BeanDefinitionBuilder
+				.genericBeanDefinition(CreateDefinedIndexesApplicationListener.class)
+				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
+				.getBeanDefinition();
+
+			BeanDefinitionReaderUtils.registerWithGeneratedName(createDefinedIndexesApplicationListener,
+				parserContext.getRegistry());
+		}
+
+	}
 	protected Class<?> getBeanClass(Element element) {
 		return IndexFactoryBean.class;
 	}
@@ -45,6 +64,7 @@ class IndexParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		registerCreateDefinedIndexesApplicationListener(parserContext);
 		ParsingUtils.setPropertyReference(element, builder, "cache-ref", "cache");
 		super.doParse(element, parserContext, builder);
 	}

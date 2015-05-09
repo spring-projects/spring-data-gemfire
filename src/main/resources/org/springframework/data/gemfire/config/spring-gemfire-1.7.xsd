@@ -2485,10 +2485,10 @@ The name of the index bean definition. If property 'name' is not set, it will be
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="type" type="xsd:string" use="optional">
+			<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The type of index: FUNCTIONAL, HASH, PRIMARY_KEY.
+The name of the bean defining the GemFire cache (by default 'gemfireCache').
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -2496,6 +2496,21 @@ The type of index: FUNCTIONAL, HASH, PRIMARY_KEY.
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The name of the index.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="pool-name" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the pool used by the index. Used usually in client scenarios.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="define" type="xsd:string" use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Boolean condition used to lazily create this index once all indexes with define set to true are defined
+(i.e. declared and defined in the Spring context as Spring beans).
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -2515,17 +2530,10 @@ Indicates whether the index is created even if there is an index with the same n
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
+			<xsd:attribute name="type" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The name of the bean defining the GemFire cache (by default 'gemfireCache').
-					]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="pool-name" type="xsd:string" use="optional">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-The name of the pool used by the index. Used usually in client scenarios.
+The type of index: FUNCTIONAL, HASH, PRIMARY_KEY.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
