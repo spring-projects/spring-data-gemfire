@@ -16,12 +16,14 @@
 
 package org.springframework.data.gemfire.config;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -121,13 +123,14 @@ public class CreateDefinedIndexesIntegrationTest {
 	public void indexesCreated() {
 		QueryService queryService = gemfireCache.getQueryService();
 
-		System.out.printf("GemFire Cache Indexes: %1$s%n", queryService.getIndexes());
-		System.out.printf("/Example Region Indexes: %1$s%n", queryService.getIndexes(people));
-		//assertTrue(definedIndexNames.containsAll(Arrays.asList(id.getName(), birthDate.getName(), fullName.getName())));
-		assertSame(id, queryService.getIndex(people, id.getName()));
-		assertSame(birthDate, queryService.getIndex(people, birthDate.getName()));
-		assertSame(fullName, queryService.getIndex(people, fullName.getName()));
-		assertSame(lastName, queryService.getIndex(people, lastName.getName()));
+		//System.out.printf("GemFire Cache Indexes: %1$s%n", queryService.getIndexes());
+		//System.out.printf("/Example Region Indexes: %1$s%n", queryService.getIndexes(people));
+
+		assertTrue(definedIndexNames.containsAll(Arrays.asList(id.getName(), birthDate.getName(), fullName.getName())));
+		assertEquals(id, queryService.getIndex(people, id.getName()));
+		assertEquals(birthDate, queryService.getIndex(people, birthDate.getName()));
+		assertEquals(fullName, queryService.getIndex(people, fullName.getName()));
+		assertEquals(lastName, queryService.getIndex(people, lastName.getName()));
 	}
 
 	public static class IndexBeanPostProcessor implements BeanPostProcessor {

@@ -18,13 +18,10 @@ package org.springframework.data.gemfire.config;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
@@ -34,8 +31,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * @author John Blum
  * @see org.springframework.context.ApplicationListener
  * @see org.springframework.context.event.ContextRefreshedEvent
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.cache.client.ClientCache
  * @see com.gemstone.gemfire.cache.query.QueryService
  * @since 1.7.0
  */
@@ -57,12 +52,11 @@ public class CreateDefinedIndexesApplicationListener implements ApplicationListe
 	@Override
 	public void onApplicationEvent(final ContextRefreshedEvent event) {
 		try {
-			GemFireCache cache = getCache(event);
+			QueryService localQueryService = getQueryService(event);
 
-			QueryService queryService = (cache instanceof ClientCache ? ((ClientCache) cache).getLocalQueryService()
-				: cache.getQueryService());
-
-			queryService.createDefinedIndexes();
+			if (localQueryService != null) {
+				localQueryService.createDefinedIndexes();
+			}
 		}
 		catch (Exception ignore) {
 			logger.warn(String.format("unable to create defined Indexes (if any): %1$s", ignore.getMessage()));
@@ -75,13 +69,12 @@ public class CreateDefinedIndexesApplicationListener implements ApplicationListe
 	}
 
 	/* (non-Javadoc) */
-	protected GemFireCache getCache(final ContextRefreshedEvent event) {
-		try {
-			return event.getApplicationContext().getBean(GemFireCache.class);
-		}
-		catch (BeansException e) {
-			return CacheFactory.getAnyInstance();
-		}
+	private QueryService getQueryService(final ContextRefreshedEvent event) {
+		ApplicationContext localApplicationContext = event.getApplicationContext();
+
+		return (localApplicationContext.containsBean(GemfireConstants.DEFAULT_GEMFIRE_INDEX_DEFINITION_QUERY_SERVICE) ?
+			localApplicationContext.getBean(GemfireConstants.DEFAULT_GEMFIRE_INDEX_DEFINITION_QUERY_SERVICE,
+				QueryService.class) : null);
 	}
 
 }

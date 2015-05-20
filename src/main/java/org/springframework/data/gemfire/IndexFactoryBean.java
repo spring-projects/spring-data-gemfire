@@ -18,11 +18,17 @@ package org.springframework.data.gemfire;
 
 import java.util.Collection;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Region;
@@ -40,18 +46,22 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
- * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.BeanNameAware
  * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.IndexFactoryBean.IndexWrapper
  * @see com.gemstone.gemfire.cache.RegionService
  * @see com.gemstone.gemfire.cache.query.Index
  * @see com.gemstone.gemfire.cache.query.QueryService
  * @since 1.0.0
  */
-public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, BeanNameAware {
+public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, BeanNameAware, BeanFactoryAware {
 
 	private boolean define = false;
 	private boolean override = true;
+
+	private BeanFactory beanFactory;
 
 	private Index index;
 
@@ -73,27 +83,49 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 		queryService = lookupQueryService();
 
-		Assert.notNull(queryService, "QueryService is required to create an Index!");
-		Assert.hasText(expression, "Index 'expression' is required!");
-		Assert.hasText(from, "Index 'from' clause (a Region's full-path) is required!");
+		Assert.notNull(queryService, "QueryService is required to create an Index");
+		Assert.hasText(expression, "Index 'expression' is required");
+		Assert.hasText(from, "Index 'from' clause is required");
 
 		if (IndexType.isKey(indexType)) {
-			Assert.isNull(imports, "The 'imports' property is not supported for a Key Index.");
+			Assert.isNull(imports, "'imports' are not supported with a KEY Index");
 		}
 
 		indexName = (StringUtils.hasText(name) ? name : beanName);
 
-		Assert.hasText(indexName, "The Index bean id or name is required!");
+		Assert.hasText(indexName, "Index 'name' is required");
 
 		index = createIndex(queryService, indexName);
 	}
 
-	QueryService lookupQueryService() {
+	/* (non-Javadoc) */
+	QueryService doLookupQueryService() {
 		return (queryService != null ? queryService
-			: (cache instanceof ClientCache ? ((ClientCache) cache).getLocalQueryService()
-				: cache.getQueryService()));
+			: (cache instanceof ClientCache ? ((ClientCache) cache).getLocalQueryService() : cache.getQueryService()));
 	}
 
+	/* (non-Javadoc) */
+	QueryService lookupQueryService() {
+		if (getBeanFactory().containsBean(GemfireConstants.DEFAULT_GEMFIRE_INDEX_DEFINITION_QUERY_SERVICE)) {
+			return getBeanFactory().getBean(GemfireConstants.DEFAULT_GEMFIRE_INDEX_DEFINITION_QUERY_SERVICE,
+				QueryService.class);
+		}
+		else {
+			return registerQueryServiceBean(doLookupQueryService());
+		}
+	}
+
+	/* (non-Javadoc) */
+	QueryService registerQueryServiceBean(QueryService queryService) {
+		if (isDefine()) {
+			((ConfigurableBeanFactory) getBeanFactory()).registerSingleton(
+				GemfireConstants.DEFAULT_GEMFIRE_INDEX_DEFINITION_QUERY_SERVICE, queryService);
+		}
+
+		return queryService;
+	}
+
+	/* (non-Javadoc) */
 	Index createIndex(QueryService queryService, String indexName) throws Exception {
 		Index existingIndex = getExistingIndex(queryService, indexName);
 
@@ -108,13 +140,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 		try {
 			if (IndexType.isKey(indexType)) {
-				if (isDefine()) {
-					queryService.defineKeyIndex(indexName, expression, from);
-					return new IndexWrapper(queryService, indexName);
-				}
-				else {
-					return queryService.createKeyIndex(indexName, expression, from);
-				}
+				return createKeyIndex(queryService, indexName, expression, from);
 			}
 			else if (IndexType.isHash(indexType)) {
 				return createHashIndex(queryService, indexName, expression, from, imports);
@@ -140,50 +166,70 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 		}
 	}
 
-	Index createFunctionalIndex(QueryService queryService, String indexName, String expression, String from,
-			String imports) throws Exception {
-		if (StringUtils.hasText(imports)) {
-			if (isDefine()) {
-				queryService.defineIndex(indexName, expression, from , imports);
-			}
-			else {
-				return queryService.createIndex(indexName, expression, from, imports);
-			}
+	/* (non-Javadoc) */
+	Index createKeyIndex(QueryService queryService, String indexName, String expression, String from) throws Exception {
+		if (isDefine()) {
+			queryService.defineKeyIndex(indexName, expression, from);
+			return new IndexWrapper(queryService, indexName);
 		}
 		else {
-			if (isDefine()) {
-				queryService.defineIndex(indexName, expression, from);
-			}
-			else {
-				return queryService.createIndex(indexName, expression, from);
-			}
+			return queryService.createKeyIndex(indexName, expression, from);
 		}
-
-		return new IndexWrapper(queryService, indexName);
 	}
 
+	/* (non-Javadoc) */
 	Index createHashIndex(QueryService queryService, String indexName, String expression, String from,
-			String imports) throws Exception {
-		if (StringUtils.hasText(imports)) {
-			if (isDefine()) {
+		String imports) throws Exception {
+
+		boolean hasImports = StringUtils.hasText(imports);
+
+		if (isDefine()) {
+			if (hasImports) {
 				queryService.defineHashIndex(indexName, expression, from, imports);
 			}
 			else {
-				return queryService.createHashIndex(indexName, expression, from, imports);
+				queryService.defineHashIndex(indexName, expression, from);
 			}
+
+			return new IndexWrapper(queryService, indexName);
 		}
 		else {
-			if (isDefine()) {
-				queryService.defineHashIndex(indexName, expression, from);
+			if (hasImports) {
+				return queryService.createHashIndex(indexName, expression, from, imports);
 			}
 			else {
 				return queryService.createHashIndex(indexName, expression, from);
 			}
 		}
-
-		return new IndexWrapper(queryService, indexName);
 	}
 
+	/* (non-Javadoc) */
+	Index createFunctionalIndex(QueryService queryService, String indexName, String expression, String from,
+			String imports) throws Exception {
+
+		boolean hasImports = StringUtils.hasText(imports);
+
+		if (isDefine()) {
+			if (hasImports) {
+				queryService.defineIndex(indexName, expression, from , imports);
+			}
+			else {
+				queryService.defineIndex(indexName, expression, from);
+			}
+
+			return new IndexWrapper(queryService, indexName);
+		}
+		else {
+			if (hasImports) {
+				return queryService.createIndex(indexName, expression, from, imports);
+			}
+			else {
+				return queryService.createIndex(indexName, expression, from);
+			}
+		}
+	}
+
+	/* (non-Javadoc) */
 	Index getExistingIndex(QueryService queryService, String indexName) {
 		for (Index index : queryService.getIndexes()) {
 			if (index.getName().equalsIgnoreCase(indexName)) {
@@ -225,6 +271,20 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 		this.queryService = service;
 	}
 
+	/* (non-Javadoc) */
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
+	/* (non-Javadoc) */
+	protected BeanFactory getBeanFactory() {
+		Assert.state(beanFactory != null, "'beanFactory' was not properly initialized");
+		return beanFactory;
+	}
+
+	/* (non-Javadoc) */
+	@Override
 	public void setBeanName(String name) {
 		this.beanName = name;
 	}
@@ -397,6 +457,36 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 		@SuppressWarnings("deprecation")
 		public com.gemstone.gemfire.cache.query.IndexType getType() {
 			return getIndex().getType();
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			if (obj == this) {
+				return true;
+			}
+
+			if (!(obj instanceof IndexWrapper || obj instanceof Index)) {
+				return false;
+			}
+
+			if (obj instanceof IndexWrapper) {
+				return (getIndexName().equals(((IndexWrapper) obj).getIndexName()));
+			}
+
+			return getIndex().equals(obj);
+		}
+
+		@Override
+		public int hashCode() {
+			int hashValue = 37;
+			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getIndexName());
+			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(index);
+			return hashValue;
+		}
+
+		@Override
+		public String toString() {
+			return (index != null ? String.valueOf(index) : getIndexName());
 		}
 	}
 
