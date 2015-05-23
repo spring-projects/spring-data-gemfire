@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.data.gemfire.test.GemfireProfileValueSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -96,9 +97,33 @@ public class LookupRegionMutationIntegrationTest {
 		assertEquals(expectedTimeout, expirationAttributes.getTimeout());
 	}
 
+	protected void assertGatewaySenders(Region<?, ?> region, List<String> expectedGatewaySenderIds) {
+		if (GemfireProfileValueSource.isPivotalGemFire()) {
+			assertNotNull(region.getAttributes());
+			assertNotNull(region.getAttributes().getGatewaySenderIds());
+			assertEquals(expectedGatewaySenderIds.size(), region.getAttributes().getGatewaySenderIds().size());
+			assertTrue(expectedGatewaySenderIds.containsAll(region.getAttributes().getGatewaySenderIds()));
+		}
+	}
+
 	protected void assertGemFireComponent(Object gemfireComponent, String expectedName) {
 		assertNotNull("The GemFire component must not be null!", gemfireComponent);
 		assertEquals(expectedName, gemfireComponent.toString());
+	}
+
+	protected void assertRegionAttributes(Region<?, ?> region, String expectedName, DataPolicy expectedDataPolicy) {
+		assertRegionAttributes(region, expectedName, String.format("%1$s%2$s", Region.SEPARATOR, expectedName),
+			expectedDataPolicy);
+	}
+
+	protected void assertRegionAttributes(Region<?, ?> region, String expectedName, String expectedFullPath,
+			DataPolicy expectedDataPolicy) {
+
+		assertNotNull(String.format("'%1$s' Region was not properly initialized!", region));
+		assertEquals(expectedName, region.getName());
+		assertEquals(expectedFullPath, region.getFullPath());
+		assertNotNull(region.getAttributes());
+		assertEquals(expectedDataPolicy, region.getAttributes().getDataPolicy());
 	}
 
 	protected Collection<String> toStrings(Object[] objects) {
@@ -113,11 +138,7 @@ public class LookupRegionMutationIntegrationTest {
 
 	@Test
 	public void testRegionConfiguration() {
-		assertNotNull("'/Example' Region was not properly initialized!", example);
-		assertEquals("Example", example.getName());
-		assertEquals("/Example", example.getFullPath());
-		assertNotNull(example.getAttributes());
-		assertEquals(DataPolicy.REPLICATE, example.getAttributes().getDataPolicy());
+		assertRegionAttributes(example, "Example", DataPolicy.REPLICATE);
 		assertEquals(13, example.getAttributes().getInitialCapacity());
 		assertEquals(0.85f, example.getAttributes().getLoadFactor(), 0.0f);
 		assertCacheListeners(example.getAttributes().getCacheListeners(), Arrays.asList("A", "B"));
@@ -132,12 +153,10 @@ public class LookupRegionMutationIntegrationTest {
 		assertExpirationAttributes(example.getAttributes().getEntryTimeToLive(), "Entry TTL",
 			30, ExpirationAction.DESTROY);
 		assertGemFireComponent(example.getAttributes().getCustomEntryIdleTimeout(), "E");
-		assertNotNull(example.getAttributes().getGatewaySenderIds());
-		assertEquals(1, example.getAttributes().getGatewaySenderIds().size());
-		assertEquals("GWS", example.getAttributes().getGatewaySenderIds().iterator().next());
 		assertNotNull(example.getAttributes().getAsyncEventQueueIds());
 		assertEquals(1, example.getAttributes().getAsyncEventQueueIds().size());
 		assertEquals("AEQ", example.getAttributes().getAsyncEventQueueIds().iterator().next());
+		assertGatewaySenders(example, Arrays.asList("GWS"));
 	}
 
 	protected static interface Nameable extends BeanNameAware {

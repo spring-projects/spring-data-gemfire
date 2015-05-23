@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.test;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,15 +38,29 @@ public class GemfireProfileValueSource implements ProfileValueSource {
 	public static final String PIVOTAL_GEMFIRE_PRODUCT_NAME = "Pivotal GemFire";
 	public static final String PRODUCT_NAME_KEY = "product.name";
 
-	private static final Map<String, String> PROFILE_VALUES = new ConcurrentHashMap<String, String>();
+	public static final Map<String, String> PROFILE_VALUES;
 
 	static {
-		PROFILE_VALUES.put(PRODUCT_NAME_KEY, System.getProperty(PRODUCT_NAME_KEY, GemfireUtils.GEMFIRE_NAME));
+		Map<String, String> profileValues = new ConcurrentHashMap<String, String>(1);
+		profileValues.put(PRODUCT_NAME_KEY, System.getProperty(PRODUCT_NAME_KEY, GemfireUtils.GEMFIRE_NAME));
+		PROFILE_VALUES = Collections.unmodifiableMap(profileValues);
+	}
+
+	public static boolean isApacheGeode() {
+		return APACHE_GEODE_PRODUCT_NAME.equals(getProfileValue(PRODUCT_NAME_KEY));
+	}
+
+	public static boolean isPivotalGemFire() {
+		return PIVOTAL_GEMFIRE_PRODUCT_NAME.equals(getProfileValue(PRODUCT_NAME_KEY));
+	}
+
+	public static String getProfileValue(final String profileKey) {
+		return PROFILE_VALUES.get(profileKey);
 	}
 
 	@Override
 	public String get(final String key) {
-		return PROFILE_VALUES.get(key);
+		return getProfileValue(key);
 	}
 
 }

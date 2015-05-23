@@ -35,6 +35,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanIsAbstractException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.test.GemfireProfileValueSource;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -180,14 +181,13 @@ public class TemplateRegionsNamespaceTests {
 		assertEquals(expectedTimeout, expirationAttributes.getTimeout());
 	}
 
-	protected void assertGatewaySenders(final Region<?, ?> region, final String... gatewaySenderNames) {
-		assertNotNull(region);
-		assertNotNull(region.getAttributes());
-		assertNotNull(region.getAttributes().getGatewaySenderIds());
-		assertEquals(gatewaySenderNames.length, region.getAttributes().getGatewaySenderIds().size());
-
-		for (String gatewaySenderId : region.getAttributes().getGatewaySenderIds()) {
-			assertTrue(Arrays.asList(gatewaySenderNames).contains(gatewaySenderId));
+	protected void assertGatewaySenders(final Region<?, ?> region, final String... gatewaySenderIds) {
+		if (GemfireProfileValueSource.isPivotalGemFire()) {
+			assertNotNull(region);
+			assertNotNull(region.getAttributes());
+			assertNotNull(region.getAttributes().getGatewaySenderIds());
+			assertEquals(gatewaySenderIds.length, region.getAttributes().getGatewaySenderIds().size());
+			assertTrue(Arrays.asList(gatewaySenderIds).containsAll(region.getAttributes().getGatewaySenderIds()));
 		}
 	}
 
@@ -447,11 +447,13 @@ public class TemplateRegionsNamespaceTests {
 		assertEquals(String.class, templateBasedReplicateRegionNoOverrides.getAttributes().getKeyConstraint());
 		assertEquals(0.85f, templateBasedReplicateRegionNoOverrides.getAttributes().getLoadFactor(), 0.0f);
 		assertFalse(templateBasedReplicateRegionNoOverrides.getAttributes().isLockGrantor());
-		assertDefaultMembershipAttributes(templateBasedReplicateRegionNoOverrides.getAttributes().getMembershipAttributes());
+		assertDefaultMembershipAttributes(
+			templateBasedReplicateRegionNoOverrides.getAttributes().getMembershipAttributes());
 		assertNull(templateBasedReplicateRegionNoOverrides.getAttributes().getPartitionAttributes());
 		assertEquals(Scope.DISTRIBUTED_ACK, templateBasedReplicateRegionNoOverrides.getAttributes().getScope());
 		assertTrue(templateBasedReplicateRegionNoOverrides.getAttributes().getStatisticsEnabled());
-		assertSubscriptionAttributes(templateBasedReplicateRegionNoOverrides.getAttributes().getSubscriptionAttributes(),
+		assertSubscriptionAttributes(
+			templateBasedReplicateRegionNoOverrides.getAttributes().getSubscriptionAttributes(),
 			InterestPolicy.CACHE_CONTENT);
 		assertEquals(Object.class, templateBasedReplicateRegionNoOverrides.getAttributes().getValueConstraint());
 	}

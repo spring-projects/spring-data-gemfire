@@ -23,12 +23,6 @@
 	<gfe:cache id="cache-with-xml-and-props" cache-xml-location="classpath:gemfire-cache.xml" properties-ref="gemfireProperties"
 			   pdx-read-serialized="true" pdx-ignore-unread-fields="false" pdx-persistent="true"/>
 
-	<gfe:cache id="cache-with-gateway-conflict-resolver">
-		<gfe:gateway-conflict-resolver>
-			<bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestGatewayConflictResolver"/>
-		</gfe:gateway-conflict-resolver>
-	</gfe:cache>
-
 	<gfe:cache id="cache-with-auto-reconnect-disabled" enable-auto-reconnect="false"/>
 
 	<gfe:cache id="cache-with-auto-reconnect-enabled" enable-auto-reconnect="true"/>
@@ -44,5 +38,13 @@
 	<gfe:pool>
 		<gfe:server host="localhost" port="1234"/>
 	</gfe:pool>
+
+	<beans profile="pivotal-gemfire">
+		<gfe:cache id="cache-with-gateway-conflict-resolver">
+			<gfe:gateway-conflict-resolver>
+				<bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestGatewayConflictResolver"/>
+			</gfe:gateway-conflict-resolver>
+		</gfe:cache>
+	</beans>
 
 </beans>

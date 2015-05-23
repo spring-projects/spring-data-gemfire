@@ -52,9 +52,10 @@ if (project.hasProperty('platformVersion')) {
 
 tasks.withType(Test).all {
     forkEvery = 1
-	systemProperties['product.name'] = 'Apache Geode'
     systemProperties['gemfire.disableShutdownHook'] = 'true'
+	systemProperties['product.name'] = 'Apache Geode'
     systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
+	systemProperties['spring.profiles.active'] = 'apache-geode'
 }
 
 // Common dependencies
