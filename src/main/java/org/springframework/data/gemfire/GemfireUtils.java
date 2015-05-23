@@ -18,6 +18,7 @@ package org.springframework.data.gemfire;
 
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.util.ClassUtils;
 import org.w3c.dom.Element;
 
@@ -38,7 +39,7 @@ public abstract class GemfireUtils {
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
 
 	// TODO use a more reliable means of determining implementing class for GemFire features such as Java's SPI support
-	private static final String ASYNC_EVENT_QUEUE_TYPE_NAME = "com.gemstone.gemfire.cache.AsyncEventQueue";
+	private static final String ASYNC_EVENT_QUEUE_TYPE_NAME = "com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue";
 	private static final String CQ_TYPE_NAME = "com.gemstone.gemfire.cache.query.internal.cq.CqServiceFactoryImpl";
 	private static final String GATEWAY_TYPE_NAME = "com.gemstone.gemfire.internal.cache.wan.GatewaySenderFactoryImpl";
 
@@ -46,11 +47,22 @@ public abstract class GemfireUtils {
 		return ClassUtils.isPresent(fullyQualifiedClassName, GemfireUtils.class.getClassLoader());
 	}
 
+	public static boolean isGemfireFeatureAvailable(GemfireFeature feature) {
+		boolean featureAvailable = (!GemfireFeature.AEQ.equals(feature) || isAsyncEventQueueAvailable());
+		featureAvailable &= (!GemfireFeature.CONTINUOUS_QUERY.equals(feature) || isContinuousQueryAvailable());
+		featureAvailable &= (!GemfireFeature.WAN.equals(feature) || isGatewayAvailable());
+		return featureAvailable;
+	}
+
 	public static boolean isGemfireFeatureAvailable(Element element) {
 		boolean featureAvailable = (!isAsyncEventQueue(element) || isAsyncEventQueueAvailable());
 		featureAvailable &= (!isContinuousQuery(element) || isContinuousQueryAvailable());
 		featureAvailable &= (!isGateway(element) || isGatewayAvailable());
 		return featureAvailable;
+	}
+
+	public static boolean isGemfireFeatureUnavailable(GemfireFeature feature) {
+		return !isGemfireFeatureAvailable(feature);
 	}
 
 	public static boolean isGemfireFeatureUnavailable(Element element) {

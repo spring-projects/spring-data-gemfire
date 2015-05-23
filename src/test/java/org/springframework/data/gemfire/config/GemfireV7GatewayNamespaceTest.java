@@ -28,10 +28,8 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
@@ -60,7 +58,8 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY, value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
+@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
+	value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
 @ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @SuppressWarnings("unused")
 public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
@@ -77,14 +76,6 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	@Override
 	protected void configureContext() {
 		ctx.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
-	}
-
-	@Before
-	@Override
-	public void createCtx() {
-		if (GemfireUtils.isGemfireVersion7OrAbove()) {
-			super.createCtx();
-		}
 	}
 
 	@AfterClass

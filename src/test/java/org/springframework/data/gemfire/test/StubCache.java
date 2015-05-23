@@ -37,6 +37,7 @@ import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.control.ResourceManager;
+import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
@@ -578,8 +579,16 @@ public class StubCache implements Cache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getMembers()
+	 * @see com.gemstone.gemfire.cache.Cache#getLuceneService()
 	 */
+	@Override
+	public LuceneService getLuceneService() {
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
+	}
+
+	/* (non-Javadoc)
+		 * @see com.gemstone.gemfire.cache.Cache#getMembers()
+		 */
 	@Override
 	public Set<DistributedMember> getMembers() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);

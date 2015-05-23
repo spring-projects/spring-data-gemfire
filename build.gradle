@@ -52,6 +52,7 @@ if (project.hasProperty('platformVersion')) {
 
 tasks.withType(Test).all {
     forkEvery = 1
+	systemProperties['product.name'] = 'Apache Geode'
     systemProperties['gemfire.disableShutdownHook'] = 'true'
     systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
 }
@@ -71,7 +72,7 @@ dependencies {
 		exclude group: "commons-logging", module: "commons-logging"
 	}
 
-	// GemFire
+	// Apache Geode (a.k.a. Pivotal GemFire)
 	compile("com.gemstone.gemfire:gemfire-core:$gemfireVersion")
 	compile("com.gemstone.gemfire:gemfire-jgroups:$gemfireVersion")
 	compile("com.gemstone.gemfire:gemfire-joptsimple:$gemfireVersion")
@@ -80,7 +81,6 @@ dependencies {
 	runtime("antlr:antlr:$antlrVersion")
 
 	compile "org.aspectj:aspectjweaver:$aspectjVersion"
-    compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "org.slf4j:slf4j-api:$slf4jVersion"

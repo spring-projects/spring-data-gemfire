@@ -27,6 +27,7 @@ import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -97,7 +98,8 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 		Element gatewayConflictResolver = DomUtils.getChildElementByTagName(element, "gateway-conflict-resolver");
 
 		if (gatewayConflictResolver != null) {
-			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), "gateway-conflict-resolver", parserContext);
+			ParsingUtils.throwExceptionWhenGemFireFeatureUnavailable(GemfireFeature.WAN, element.getLocalName(),
+				"gateway-conflict-resolver", parserContext);
 			builder.addPropertyValue("gatewayConflictResolver", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
 				parserContext, gatewayConflictResolver, builder));
 		}

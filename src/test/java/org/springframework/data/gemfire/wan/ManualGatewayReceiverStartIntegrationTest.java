@@ -49,7 +49,8 @@ import com.gemstone.gemfire.cache.wan.GatewayReceiver;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
-@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY, value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
+@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
+	value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
 @ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @SuppressWarnings("unused")
 public class ManualGatewayReceiverStartIntegrationTest {

@@ -119,17 +119,14 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		// Factory will enable gateway if it is not set and hub-id is set.
 		if (StringUtils.hasText(enableGateway)) {
-			if (GemfireUtils.isGemfireVersion7OrAbove()) {
-				log.warn("'enable-gateway' has been deprecated since Gemfire 7.0");
-			}
+			log.warn("'enable-gateway' has been deprecated since Gemfire 7.0; use the new GatewaySender/Receiver WAN support instead");
 		}
 
 		ParsingUtils.setPropertyValue(element, regionBuilder, "enable-gateway");
 
 		if (StringUtils.hasText(hubId)) {
-			if (GemfireUtils.isGemfireVersion7OrAbove()) {
-				log.warn("'hub-id' has been deprecated since Gemfire 7.0");
-			}
+			log.warn("'hub-id' has been deprecated since Gemfire 7.0; use the new GatewaySender/Receiver WAN support instead");
+
 			if (!CollectionUtils.isEmpty(DomUtils.getChildElementsByTagName(element, "gateway-sender"))) {
 				parserContext.getReaderContext().error("specifying both 'hub-id' and 'gateway-sender' is invalid",
 					element);

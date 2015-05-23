@@ -64,7 +64,7 @@ public class GemfireUtilsTest {
 	public void isGemfireVersion8OrAbove() {
 		int gemfireVersion = getGemFireVersion();
 		assumeTrue(gemfireVersion > -1);
-		assertEquals(getGemFireVersion() >= 80, GemfireUtils.isGemfireVersion7OrAbove());
+		assertEquals(getGemFireVersion() >= 80, GemfireUtils.isGemfireVersion8OrAbove());
 	}
 
 }

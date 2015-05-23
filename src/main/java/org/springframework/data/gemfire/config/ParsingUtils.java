@@ -18,8 +18,6 @@ package org.springframework.data.gemfire.config;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -31,6 +29,7 @@ import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
 import org.springframework.data.gemfire.ExpirationAttributesFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.SubscriptionAttributesFactoryBean;
+import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -48,8 +47,6 @@ import com.gemstone.gemfire.cache.ResumptionAction;
  * @author John Blum
  */
 abstract class ParsingUtils {
-
-	private static final Log log = LogFactory.getLog(ParsingUtils.class);
 
 	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attributeName,
 			String propertyName) {
@@ -329,12 +326,7 @@ abstract class ParsingUtils {
 		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
 
 		if (StringUtils.hasText(concurrencyChecksEnabled)) {
-			if (GemfireUtils.isGemfireVersion7OrAbove()) {
-				ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
-			}
-			else {
-				log.warn("Setting 'concurrency-checks-enabled' is only available in Gemfire 7.0 or above!");
-			}
+			ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
 		}
 	}
 
@@ -397,7 +389,8 @@ abstract class ParsingUtils {
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
 		if (expirationElement != null) {
-			Object customExpiry = parseRefOrSingleNestedBeanDeclaration(parserContext, expirationElement, regionAttributesBuilder);
+			Object customExpiry = parseRefOrSingleNestedBeanDeclaration(parserContext, expirationElement,
+				regionAttributesBuilder);
 			regionAttributesBuilder.addPropertyValue(propertyName, customExpiry);
 			return true;
 		}
@@ -416,10 +409,6 @@ abstract class ParsingUtils {
 		}
 	}
 
-	static String resolveCacheReference(final String cacheRef) {
-		return (StringUtils.hasText(cacheRef) ? cacheRef : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
-	}
-
 	static void assertGemFireFeatureAvailable(Element element, ParserContext parserContext) {
 		if (GemfireUtils.isGemfireFeatureUnavailable(element)) {
 			parserContext.getReaderContext().error(String.format("'%1$s' is not supported in %2$s v%3$s",
@@ -427,8 +416,14 @@ abstract class ParsingUtils {
 		}
 	}
 
-	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
-		if (!GemfireUtils.isGemfireVersion7OrAbove()) {
+	static String resolveCacheReference(final String cacheRef) {
+		return (StringUtils.hasText(cacheRef) ? cacheRef : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+	}
+
+	static void throwExceptionWhenGemFireFeatureUnavailable(GemfireFeature feature,
+			String elementName, String attributeName, ParserContext parserContext) {
+
+		if (GemfireUtils.isGemfireFeatureUnavailable(feature)) {
 			String messagePrefix = (attributeName != null)
 				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
 				: String.format("Element '%1$s'", elementName);

@@ -270,8 +270,6 @@ public class CacheFactoryBeanTest {
 
 	@Test
 	public void testPostProcessPropertiesBeforeInitializationDefaults() {
-		assumeTrue(GemfireUtils.isGemfireVersion8OrAbove());
-
 		Properties gemfireProperties = new Properties();
 
 		assertTrue(gemfireProperties.isEmpty());
@@ -289,8 +287,6 @@ public class CacheFactoryBeanTest {
 
 	@Test
 	public void testPostProcessPropertiesBeforeInitializationDisabled() {
-		assumeTrue(GemfireUtils.isGemfireVersion8OrAbove());
-
 		Properties gemfireProperties = new Properties();
 
 		assertTrue(gemfireProperties.isEmpty());
@@ -310,8 +306,6 @@ public class CacheFactoryBeanTest {
 
 	@Test
 	public void testPostProcessPropertiesBeforeInitializationEnabled() {
-		assumeTrue(GemfireUtils.isGemfireVersion8OrAbove());
-
 		Properties gemfireProperties = new Properties();
 
 		assertTrue(gemfireProperties.isEmpty());

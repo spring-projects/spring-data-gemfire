@@ -41,7 +41,8 @@ import com.gemstone.gemfire.cache.query.CqEvent;
  * @author Costin Leau
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY, value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
+@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
+	value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
 @ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 public class ListenerContainerTests {
 

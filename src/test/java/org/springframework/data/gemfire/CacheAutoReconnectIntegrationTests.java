@@ -59,6 +59,7 @@ public class CacheAutoReconnectIntegrationTests {
 	@Test
 	public void testAutoReconnectDisabled() {
 		Cache cache = getCache("cacheAutoReconnectDisabledIntegrationTests.xml");
+		assertNotNull(cache);
 		assertNotNull(cache.getDistributedSystem());
 		assertNotNull(cache.getDistributedSystem().getProperties());
 		assertTrue(Boolean.valueOf(cache.getDistributedSystem().getProperties().getProperty("disable-auto-reconnect")));
@@ -67,6 +68,7 @@ public class CacheAutoReconnectIntegrationTests {
 	@Test
 	public void testAutoReconnectEnabled() {
 		Cache cache = getCache("cacheAutoReconnectEnabledIntegrationTests.xml");
+		assertNotNull(cache);
 		assertNotNull(cache.getDistributedSystem());
 		assertNotNull(cache.getDistributedSystem().getProperties());
 		assertFalse(Boolean.valueOf(cache.getDistributedSystem().getProperties().getProperty("disable-auto-reconnect")));

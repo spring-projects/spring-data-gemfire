@@ -24,8 +24,11 @@ import javax.annotation.Resource;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.data.gemfire.test.GemfireProfileValueSource;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean;
+import org.springframework.test.annotation.IfProfileValue;
+import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -52,6 +55,9 @@ import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(value = "GatewayReceiverNamespaceTest-context.xml",
 	initializers = GemfireTestApplicationContextInitializer.class)
+@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
+	value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
+@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @ActiveProfiles("autoStart")
 @SuppressWarnings("unused")
 public class GatewayReceiverAutoStartNamespaceTest {

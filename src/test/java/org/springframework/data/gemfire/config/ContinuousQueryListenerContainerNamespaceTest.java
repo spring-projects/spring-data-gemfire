@@ -39,6 +39,9 @@ import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 import org.springframework.data.gemfire.listener.GemfireMDP;
 import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
+import org.springframework.data.gemfire.test.GemfireProfileValueSource;
+import org.springframework.test.annotation.IfProfileValue;
+import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ErrorHandler;
@@ -63,8 +66,11 @@ import com.gemstone.gemfire.cache.query.CqQuery;
  * @see com.gemstone.gemfire.cache.query.CqQuery
  * @since 1.4.0
  */
-@ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
+@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
+	value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
+@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @SuppressWarnings("unused")
 public class ContinuousQueryListenerContainerNamespaceTest {
 

@@ -40,7 +40,7 @@ public class GemfireProfileValueSource implements ProfileValueSource {
 	private static final Map<String, String> PROFILE_VALUES = new ConcurrentHashMap<String, String>();
 
 	static {
-		PROFILE_VALUES.put(PRODUCT_NAME_KEY, GemfireUtils.GEMFIRE_NAME);
+		PROFILE_VALUES.put(PRODUCT_NAME_KEY, System.getProperty(PRODUCT_NAME_KEY, GemfireUtils.GEMFIRE_NAME));
 	}
 
 	@Override

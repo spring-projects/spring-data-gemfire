@@ -17,7 +17,6 @@ package org.springframework.data.gemfire;
 
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.RegionFactory;
 
@@ -29,11 +28,6 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
-		// First, verify the GemFire version is 6.5 or Higher when Persistence is specified...
-		Assert.isTrue(!DataPolicy.PERSISTENT_PARTITION.equals(dataPolicy) || GemfireUtils.isGemfireVersion65OrAbove(),
-			String.format("Persistent PARTITION Regions can only be used from GemFire 6.5 onwards; current version is [%1$s].",
-				CacheFactory.getVersion()));
-
 		if (dataPolicy == null) {
 			dataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_PARTITION : DataPolicy.PARTITION);
 		}
