@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.mapping;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
@@ -42,16 +43,17 @@ import com.gemstone.gemfire.pdx.PdxWriter;
  * 
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
  */
 public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAware {
-
-	private final GemfireMappingContext mappingContext;
 
 	private final ConversionService conversionService;
 
 	private EntityInstantiators instantiators;
-	
-	private Map<Class<?>,PdxSerializer> customSerializers;
+
+	private final GemfireMappingContext mappingContext;
+
+	private Map<Class<?>, PdxSerializer> customSerializers;
 
 	private SpELContext context;
 
@@ -70,6 +72,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		this.mappingContext = mappingContext;
 		this.conversionService = conversionService;
 		this.instantiators = new EntityInstantiators();
+		this.customSerializers = Collections.emptyMap();
 		this.context = new SpELContext(PdxReaderPropertyAccessor.INSTANCE);
 	}
 
@@ -81,15 +84,20 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		this(new GemfireMappingContext(), new DefaultConversionService());
 	}
 
-	/**
-	 * Configures the {@link EntityInstantiator}s to be used to create the
-	 * instances to be read.
-	 * 
-	 * @param gemfireInstantiators must not be {@literal null}.
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(
+	 * 	org.springframework.context.ApplicationContext)
 	 */
-	public void setGemfireInstantiators(Map<Class<?>, EntityInstantiator> gemfireInstantiators) {
-		Assert.notNull(gemfireInstantiators);
-		this.instantiators = new EntityInstantiators(gemfireInstantiators);
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.context = new SpELContext(context, applicationContext);
+	}
+
+	/* (non-Javadoc) */
+	protected ConversionService getConversionService() {
+		return conversionService;
 	}
 
 	/**
@@ -98,19 +106,33 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @param customSerializers a mapping of domain object class types and their corresponding PDX serializer.
 	 */
 	public void setCustomSerializers(Map<Class<?>, PdxSerializer> customSerializers) {
+		Assert.notNull(customSerializers);
 		this.customSerializers = customSerializers;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.springframework.context.ApplicationContextAware#setApplicationContext
-	 * (org.springframework.context.ApplicationContext)
+	/* (non-Javadoc) */
+	protected Map<Class<?>, PdxSerializer> getCustomSerializers() {
+		return Collections.unmodifiableMap(customSerializers);
+	}
+
+	/**
+	 * Configures the {@link EntityInstantiator}s used to create the instances read by this PdxSerializer.
+	 *
+	 * @param gemfireInstantiators must not be {@literal null}.
 	 */
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.context = new SpELContext(context, applicationContext);
+	public void setGemfireInstantiators(Map<Class<?>, EntityInstantiator> gemfireInstantiators) {
+		Assert.notNull(gemfireInstantiators);
+		this.instantiators = new EntityInstantiators(gemfireInstantiators);
+	}
+
+	/* (non-Javadoc) */
+	protected EntityInstantiators getGemfireInstantiators() {
+		return instantiators;
+	}
+
+	/* (non-Javadoc) */
+	protected GemfireMappingContext getMappingContext() {
+		return mappingContext;
 	}
 
 	/*
@@ -121,32 +143,31 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public Object fromData(Class<?> type, final PdxReader reader) {
-		final GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
-		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
-		GemfirePropertyValueProvider propertyValueProvider = new GemfirePropertyValueProvider(reader);
+		final GemfirePersistentEntity<?> entity = getPersistentEntity(type);
 
-		PersistentEntityParameterValueProvider<GemfirePersistentProperty> provider = new PersistentEntityParameterValueProvider<GemfirePersistentProperty>(
-				entity, propertyValueProvider, null);
- 
-		Object instance = instantiator.createInstance(entity, provider);
+		Object instance = getInstantiatorFor(entity).createInstance(entity,
+			new PersistentEntityParameterValueProvider<GemfirePersistentProperty>(entity,
+				new GemfirePropertyValueProvider(reader), null));
 
-		final BeanWrapper<Object> wrapper = BeanWrapper.create(instance, conversionService);
+		final BeanWrapper<Object> wrapper = BeanWrapper.create(instance, getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
 			@Override
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
-
 				if (entity.isConstructorArgument(persistentProperty)) {
 					return;
 				}
-				
+
 				PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType()); 
-				Object value = null;
+				Object value;
+
 				if (customSerializer != null) {
 					value = customSerializer.fromData(persistentProperty.getType(), reader);
-				} else {
+				}
+				else {
 					value = reader.readField(persistentProperty.getName());
 				}
+
 				try {
 					wrapper.setProperty(persistentProperty, value);
 				}
@@ -167,25 +188,30 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public boolean toData(Object value, final PdxWriter writer) {
-		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(value.getClass());
-		final BeanWrapper<Object> wrapper = BeanWrapper.create(value, conversionService);
+		GemfirePersistentEntity<?> entity = getPersistentEntity(value.getClass());
+
+		final BeanWrapper<Object> wrapper = BeanWrapper.create(value, getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
 			@Override
+			@SuppressWarnings("unchecked")
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
 				
 				try {
 					Object propertyValue = wrapper.getProperty(persistentProperty);
+
 					PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
+
 					if (customSerializer != null) {
 						customSerializer.toData(propertyValue, writer);
-					} else {
+					}
+					else {
 						writer.writeField(persistentProperty.getName(), propertyValue, (Class) persistentProperty.getType());
 					} 
 				}
 				catch (Exception e) {
-					throw new MappingException("Could not write value for property " + persistentProperty.toString(), e);
+					throw new MappingException(String.format("Could not write value for property %1$s",
+						persistentProperty), e);
 				}
 			}
 		});
@@ -198,8 +224,43 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 		return true;
 	}
-	
-	private PdxSerializer getCustomSerializer(Class<?> clazz) {
-		return customSerializers == null ? null : customSerializers.get(clazz);
+
+	/**
+	 * Looks up and returns a custom PdxSerializer based on the class type of the object to (de)serialize.
+	 *
+	 * @param type the Class type of the object to (de)serialize.
+	 * @return a "custom" PdxSerializer for the given class type or null if no custom PdxSerializer
+	 * for the given class type was registered.
+	 * @see #getCustomSerializers()
+	 * @see com.gemstone.gemfire.pdx.PdxSerializer
+	 */
+	protected PdxSerializer getCustomSerializer(Class<?> type) {
+		return getCustomSerializers().get(type);
 	}
+
+	/**
+	 * Looks up and returns an EntityInstantiator to construct and initialize an instance of the object defined
+	 * by the given PersistentEntity (meta-data).
+	 *
+	 * @param entity the PersistentEntity object used to lookup the custom EntityInstantiator.
+	 * @return an EntityInstantiator for the given PersistentEntity.
+	 * @see org.springframework.data.convert.EntityInstantiator
+	 * @see org.springframework.data.mapping.PersistentEntity
+	 */
+	protected EntityInstantiator getInstantiatorFor(PersistentEntity entity) {
+		return getGemfireInstantiators().getInstantiatorFor(entity);
+	}
+
+	/**
+	 * Looks up and returns the PersistentEntity meta-data for the given entity class type.
+	 *
+	 * @param entityType the Class type of the actual persistent entity, application domain object class.
+	 * @return the PersistentEntity meta-data for the given entity class type.
+	 * @see #getMappingContext()
+	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
+	 */
+	protected GemfirePersistentEntity<?> getPersistentEntity(Class<?> entityType) {
+		return getMappingContext().getPersistentEntity(entityType);
+	}
+
 }
