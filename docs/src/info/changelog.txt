@@ -3,6 +3,30 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.7.0.M1 (2015-06-02)
+----------------------------------------
+* SGF-405 - Release 1.7 M1 (Gosling).
+* SGF-403 - Simplify the process of adding custom methods to Spring Data GemFire Repositories.
+* SGF-400 - Enable the ability to set the ClassLoader used by the Spring ApplicationContext created in the SpringContextBootstrappingInitializer for loading bean definition classes and resolving resources.
+* SGF-399 - Fix incorrect XSD appinfo annotation, expected 'type' attribute value on the 'error-handler' attribute of the 'cq-listener-container' element.
+* SGF-397 - Upgrade to Spring Framework 4.1.6.RELEASE.
+* SGF-396 - Enable support for variable Locator and Server endpoints on a SDG GFE Pool bean definition in a Spring Context.
+* SGF-395 - Allow Spring JavaConfig @Configuration classes to be registered and used to configure the (AnnotationConfig)ApplicationContext created by the SpringContextBootstrappingInitializer.
+* SGF-394 - Improve SDG Gradle build removing FindBug compilation warnings caused by GemFire.
+* SGF-393 - Region scope not properly set for replicated region, prevents client CQ from registering properly.
+* SGF-391 - Simplify and improve the robustness of the JNDI DataSource Type matching used in the Cache FactoryBeans.
+* SGF-390 - Improve unit test coverage for the PoolFactoryBean class.
+* SGF-389 - Improve unit test coverage of the ClientCacheFactoryBean class.
+* SGF-388 - Improve unit test coverage of the CacheFactoryBean class.
+* SGF-383 - Refactor and make RegionFactoryBean and RegionLookupFactoryBean abstract.
+* SGF-371 - The GatewayReceiverFactoryBean needs to set GatewayReceiverFactory.setManualStart(false) in GemFire 8.1 in order to enable manual starts on a GatewayReceiver.
+* SGF-357 - Optimize SimpleGemfireRepository.deleteAll() by using the new Region.removeAll() operation.
+* SGF-353 - Prepare SDG 1.7 and upgrade to GemFire 8.1.0 GA.
+* SGF-345 - Add PDX Aliases support.
+* SGF-322 - Add support for the newly added, retro 'max-connections' attribute on the <gfe:gateway-hub> element in the SDG XML namespace (XSD).
+* SGF-196 - Support adding CacheListeners, CacheLoaders and CacheWriters, along with other mutable Region attributes to an existing Region.
+
+
 Changes in version 1.6.0.RELEASE (2015-03-23)
 ---------------------------------------------
 * SGF-386 - Release 1.6 GA.
