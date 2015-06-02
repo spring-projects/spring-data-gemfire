@@ -19,7 +19,6 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -49,19 +48,16 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		parseCache(element, builder);
 		parseDiskStore(element, builder);
 
+		ParsingUtils.setPropertyValue(element, builder, "enable-batch-conflation", "batchConflationEnabled");
+		ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
+		ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
+		ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
+		ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
+		ParsingUtils.setPropertyValue(element, builder, "order-policy");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
-
-		if (GemfireUtils.GEMFIRE_VERSION.compareTo("7.0.1") >= 0) {
-			ParsingUtils.setPropertyValue(element, builder, "enable-batch-conflation", "batchConflationEnabled");
-			ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
-			ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
-			ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
-			ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
-			ParsingUtils.setPropertyValue(element, builder, "order-policy");
-		}
 
 		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
 
@@ -86,7 +82,7 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	private void parseAsyncEventListener(final Element element, final ParserContext parserContext,
-			final BeanDefinitionBuilder builder) {
+		final BeanDefinitionBuilder builder) {
 
 		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
 
