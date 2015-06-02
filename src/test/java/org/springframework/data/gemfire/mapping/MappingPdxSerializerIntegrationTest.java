@@ -43,6 +43,7 @@ import com.gemstone.gemfire.cache.RegionFactory;
  * Integration tests for {@link MappingPdxSerializer}.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class MappingPdxSerializerIntegrationTest {
 
@@ -57,6 +58,9 @@ public class MappingPdxSerializerIntegrationTest {
 				new DefaultConversionService());
 
 		CacheFactory factory = new CacheFactory();
+		factory.set("name", MappingPdxSerializer.class.getSimpleName());
+		factory.set("mcast-port", "0");
+		factory.set("log-level", "warning");
 		factory.setPdxSerializer(serializer);
 		factory.setPdxPersistent(true);
 		cache = factory.create();
@@ -64,6 +68,25 @@ public class MappingPdxSerializerIntegrationTest {
 		RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
 		regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
 		region = regionFactory.create("foo");
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		try {
+			cache.close();
+		}
+		catch (Exception ignore) {
+		}
+		finally {
+			for (String name : new File(".").list(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.startsWith("BACKUP");
+				}
+			})) {
+				new File(name).delete();
+			}
+		}
 	}
 
 	@Test
@@ -86,7 +109,8 @@ public class MappingPdxSerializerIntegrationTest {
 		assertThat(reference.getLastname(), is(person.getLastname()));
 		assertThat(reference.address, is(person.address));
 	}
-	
+
+
 	@Test
 	public void serializeAndDeserializeCorrectlyWithDataSerializable() {
 
@@ -108,26 +132,7 @@ public class MappingPdxSerializerIntegrationTest {
 		assertThat(reference.address, is(person.address));
 		assertThat(reference.dsProperty.getValue(),is("foo"));
 	}
-	
 
-	@AfterClass
-	public static void tearDown() {
-		try {
-			cache.close();
-		}
-		catch (Exception e) {
-		}
-		for (String name : new File(".").list(new FilenameFilter() {
-
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.startsWith("BACKUP");
-			}
-		})) {
-			new File(name).delete();
-		}
-	}
-	
 	@SuppressWarnings("serial")
 	public static class PersonWithDataSerializableProperty extends Person {
 
