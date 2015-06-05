@@ -23,6 +23,7 @@ repositories {
   mavenLocal()
   maven { url "https://repo.spring.io/libs-snapshot" }
   maven { url "https://repo.spring.io/plugins-release"}
+  maven { url "https://repository.apache.org/content/repositories/snapshots" }
 }
 
 apply plugin: "java"
@@ -74,10 +75,52 @@ dependencies {
 	}
 
 	// Apache Geode (a.k.a. Pivotal GemFire)
-	compile("com.gemstone.gemfire:gemfire-core:$gemfireVersion")
-	compile("com.gemstone.gemfire:gemfire-jgroups:$gemfireVersion")
-	compile("com.gemstone.gemfire:gemfire-joptsimple:$gemfireVersion")
-	compile("com.gemstone.gemfire:gemfire-json:$gemfireVersion")
+	compile("org.apache.geode:gemfire-core:$gemfireVersion") {
+		exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+		exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+		exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+		exclude group: "org.slf4j", module: "slf4j-api"
+		exclude group: "org.springframework", module: "spring-aop"
+		exclude group: "org.springframework", module: "spring-beans"
+		exclude group: "org.springframework", module: "spring-context"
+		exclude group: "org.springframework", module: "spring-context-support"
+		exclude group: "org.springframework", module: "spring-expression"
+		exclude group: "org.springframework", module: "spring-tx"
+		exclude group: "org.springframework", module: "spring-web"
+		exclude group: "org.springframework", module: "spring-webmvc"
+		exclude group: "org.springframework.data", module: "spring-data-commons"
+		exclude group: "org.springframework.shell", module: "spring-shell"
+	}
+	compile("org.apache.geode:gemfire-jgroups:$gemfireVersion") {
+		exclude group: "org.springframework", module: "spring-aop"
+		exclude group: "org.springframework", module: "spring-beans"
+		exclude group: "org.springframework", module: "spring-context"
+		exclude group: "org.springframework", module: "spring-context-support"
+		exclude group: "org.springframework", module: "spring-expression"
+		exclude group: "org.springframework", module: "spring-tx"
+		exclude group: "org.springframework", module: "spring-web"
+		exclude group: "org.springframework", module: "spring-webmvc"
+	}
+	compile("org.apache.geode:gemfire-joptsimple:$gemfireVersion") {
+		exclude group: "org.springframework", module: "spring-aop"
+		exclude group: "org.springframework", module: "spring-beans"
+		exclude group: "org.springframework", module: "spring-context"
+		exclude group: "org.springframework", module: "spring-context-support"
+		exclude group: "org.springframework", module: "spring-expression"
+		exclude group: "org.springframework", module: "spring-tx"
+		exclude group: "org.springframework", module: "spring-web"
+		exclude group: "org.springframework", module: "spring-webmvc"
+	}
+	compile("org.apache.geode:gemfire-json:$gemfireVersion") {
+		exclude group: "org.springframework", module: "spring-aop"
+		exclude group: "org.springframework", module: "spring-beans"
+		exclude group: "org.springframework", module: "spring-context"
+		exclude group: "org.springframework", module: "spring-context-support"
+		exclude group: "org.springframework", module: "spring-expression"
+		exclude group: "org.springframework", module: "spring-tx"
+		exclude group: "org.springframework", module: "spring-web"
+		exclude group: "org.springframework", module: "spring-webmvc"
+	}
 	optional("com.google.code.findbugs:annotations:2.0.2")
 	runtime("antlr:antlr:$antlrVersion")
 
@@ -97,8 +140,8 @@ dependencies {
     testCompile "org.mockito:mockito-core:$mockitoVersion"
 
     testCompile "javax.annotation:jsr250-api:1.0", optional
-	testRuntime "log4j:log4j:$log4jVersion"
 	testCompile "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
+	testRuntime "log4j:log4j:$log4jVersion"
 	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
 
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
