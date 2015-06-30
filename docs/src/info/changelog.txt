@@ -3,6 +3,19 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.6.1.RELEASE (2015-06-30)
+---------------------------------------------
+* SGF-413 - Release 1.6.1 (Fowler).
+* SGF-407 - Modify the MappingPdxSerializer to allow for extensibility.
+* SGF-406 - Fix JavaDoc build.
+* SGF-400 - Enable the ability to set the ClassLoader used by the Spring ApplicationContext created in the SpringContextBootstrappingInitializer for loading bean definition classes and resolving resources.
+* SGF-399 - Fix incorrect XSD appinfo annotation, expected 'type' attribute value on the 'error-handler' attribute of the 'cq-listener-container' element.
+* SGF-396 - Enable support for variable Locator and Server endpoints on a SDG GFE Pool bean definition in a Spring Context.
+* SGF-395 - Allow Spring JavaConfig @Configuration classes to be registered and used to configure the (AnnotationConfig)ApplicationContext created by the SpringContextBootstrappingInitializer.
+* SGF-394 - Improve SDG Gradle build removing FindBug compilation warnings caused by GemFire.
+* SGF-393 - Region scope not properly set for replicated region, prevents client CQ from registering properly.
+
+
 Changes in version 1.7.0.M1 (2015-06-02)
 ----------------------------------------
 * SGF-405 - Release 1.7 M1 (Gosling).
