@@ -3,6 +3,24 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.5.3.RELEASE (2015-07-01)
+---------------------------------------------
+* SGF-412 - Release 1.5.3 (Evans).
+* SGF-407 - Modify the MappingPdxSerializer to allow for extensibility.
+* SGF-406 - Fix JavaDoc build.
+* SGF-399 - Fix incorrect XSD appinfo annotation, expected 'type' attribute value on the 'error-handler' attribute of the 'cq-listener-container' element.
+* SGF-393 - Region scope not properly set for replicated region, prevents client CQ from registering properly.
+* SGF-385 - Local region does remote put in addition to local put in client cache.
+* SGF-384 - Issue with partitioned-region-template when persistence is enabled.
+* SGF-382 - Add logging to the SpringContextBootstrappingInitializer init method to capture any Spring context/GemFire errors on startup.
+* SGF-381 - Enable RegionFactoryBean to respect the Data Policy specified on a nested or referenced RegionAttributes bean definition.
+* SGF-379 - Specifying multiple or a single Gateway Endpoint with one or more GatewayListeners is not permitted by the SDG XML namespace (XSD) gatewayType element definition.
+* SGF-378 - SDG completely ignores the 'socket-read-timeout' attribute on the Gateway element nested in a GatewayHub.
+* SGF-376 - The GemFire WAN GatewayHub support needs refactoring and test coverage.
+* SGF-375 - The <gfe:gateway-hub> XML namespace element is missing the 'max-time-between-pings' attribute.
+* SGF-374 - Specifying a disk-store on a GatewayHub forces the GatewayHub to be persistent.
+
+
 Changes in version 1.6.1.RELEASE (2015-06-30)
 ---------------------------------------------
 * SGF-413 - Release 1.6.1 (Fowler).
