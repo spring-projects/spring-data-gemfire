@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.4.6.RELEASE (2015-07-01)
+---------------------------------------------
+* SGF-411 - Release 1.4.6 (Dijkstra).
+* SGF-399 - Fix incorrect XSD appinfo annotation, expected 'type' attribute value on the 'error-handler' attribute of the 'cq-listener-container' element.
+
+
 Changes in version 1.5.3.RELEASE (2015-07-01)
 ---------------------------------------------
 * SGF-412 - Release 1.5.3 (Evans).
