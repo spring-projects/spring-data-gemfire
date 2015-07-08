@@ -306,7 +306,7 @@ artifacts {
 
 task wrapper(type: Wrapper) {
   description = "Generates gradlew[.bat] scripts"
-  gradleVersion = "1.9"
+  gradleVersion = "1.12"
 
   doLast() {
     def gradleOpts = "-XX:MaxPermSize=1024m -Xms256m -Xmx1024m"
