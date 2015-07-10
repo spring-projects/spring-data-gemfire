@@ -39,7 +39,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 import com.gemstone.gemfire.GemFireCheckedException;
 import com.gemstone.gemfire.GemFireException;
@@ -207,40 +206,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		}
 	}
 
-	/**
-	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
-	 *
-	 * @author Costin Leau
-	 */
-	private class PdxOptions implements Runnable {
-
-		private final CacheFactory factory;
-
-		private PdxOptions(CacheFactory factory) {
-			this.factory = factory;
-		}
-
-		@Override
-		public void run() {
-			if (pdxSerializer != null) {
-				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
-				factory.setPdxSerializer((PdxSerializer) pdxSerializer);
-			}
-			if (pdxDiskStoreName != null) {
-				factory.setPdxDiskStore(pdxDiskStoreName);
-			}
-			if (pdxIgnoreUnreadFields != null) {
-				factory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
-			}
-			if (pdxPersistent != null) {
-				factory.setPdxPersistent(pdxPersistent);
-			}
-			if (pdxReadSerialized != null) {
-				factory.setPdxReadSerialized(pdxReadSerialized);
-			}
-		}
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -303,7 +268,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	/**
 	 * If Dynamic Regions are enabled, create and initialize a DynamicRegionFactory before creating the Cache.
 	 */
-	private void initializeDynamicRegionFactory() {
+	private void initDynamicRegionFactory() {
 		if (dynamicRegionSupport != null) {
 			dynamicRegionSupport.initializeDynamicRegionFactory();
 		}
@@ -317,7 +282,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * @see com.gemstone.gemfire.cache.Cache
 	 * @see #fetchCache()
 	 * @see #createFactory(java.util.Properties)
-	 * @see #initializeFactory(Object)
+	 * @see #prepareFactory(Object)
 	 * @see #createCache(Object)
 	 */
 	protected Cache resolveCache() {
@@ -327,39 +292,40 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		}
 		catch (CacheClosedException ex) {
 			cacheResolutionMessagePrefix = "Created new";
-			initializeDynamicRegionFactory();
-			return (Cache) createCache(initializeFactory(createFactory(getProperties())));
+			initDynamicRegionFactory();
+			return (Cache) createCache(prepareFactory(createFactory(resolveProperties())));
 		}
 	}
 
 	/**
-	 * Fetches the GemFire Cache by looking up any existing GemFire Cache instance.
+	 * Fetches an existing GemFire Cache instance from the CacheFactory.
 	 *
+	 * @param <T> parameterized Class type extension of GemFireCache.
 	 * @return the existing GemFire Cache instance if available.
+	 * @throws com.gemstone.gemfire.cache.CacheClosedException if an existing GemFire Cache instance does not exist.
 	 * @see com.gemstone.gemfire.cache.GemFireCache
 	 * @see com.gemstone.gemfire.cache.CacheFactory#getAnyInstance()
 	 */
-	protected GemFireCache fetchCache() {
-		return (cache != null ? cache : CacheFactory.getAnyInstance());
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T fetchCache() {
+		return (T) (cache != null ? cache : CacheFactory.getAnyInstance());
 	}
 
 	/**
-	 * Creates a new GemFire cache instance using the provided factory.
+	 * Resolves the GemFire System properties used to configure the GemFire Cache instance.
 	 *
-	 * @param factory the appropriate GemFire factory used to create a cache instance.
-	 * @return an instance of the GemFire cache.
-	 * @see com.gemstone.gemfire.cache.GemFireCache
-	 * @see com.gemstone.gemfire.cache.CacheFactory#create()
+	 * @return a Properties object containing GemFire System properties used to configure the GemFire Cache instance.
+	 * @see #getProperties()
 	 */
-	protected GemFireCache createCache(Object factory) {
-		return (cache != null ? cache : ((CacheFactory) factory).create());
+	protected Properties resolveProperties() {
+		return getProperties();
 	}
 
 	/**
 	 * Creates an instance of GemFire factory initialized with the given GemFire System Properties
-	 * to create an instance of the cache.
+	 * to create an instance of a GemFire cache.
 	 *
-	 * @param gemfireProperties a Properties object containing GemFire System Properties.
+	 * @param gemfireProperties a Properties object containing GemFire System properties.
 	 * @return an instance of a GemFire factory used to create a GemFire cache instance.
 	 * @see java.util.Properties
 	 * @see com.gemstone.gemfire.cache.CacheFactory
@@ -372,19 +338,31 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * Initializes the GemFire factory used to create the GemFire cache instance.  Sets PDX options
 	 * specified by the user.
 	 *
-	 * @param factory the GemFire factory used to create an instance of the cache.
-	 * @return the initialized GemFire factory.
-	 * @see #setPdxOptions(Object)
+	 * @param factory the GemFire factory used to create an instance of the GemFire cache.
+	 * @return the initialized GemFire cache factory.
+	 * @see #isPdxOptionsSpecified()
 	 */
-	protected Object initializeFactory(Object factory) {
+	protected Object prepareFactory(Object factory) {
 		if (isPdxOptionsSpecified()) {
-			Assert.isTrue(ClassUtils.isPresent("com.gemstone.gemfire.pdx.PdxSerializer", beanClassLoader),
-				"Unable set PDX options since GemFire 6.6 or later was not detected.");
-			setPdxOptions(factory);
-		}
+			CacheFactory cacheFactory = (CacheFactory) factory;
 
-		//return (isCacheXmlAvailable() ? ((CacheFactory) factory).set(
-		//	DistributionConfig.CACHE_XML_FILE_NAME, getCacheXmlFile().getAbsolutePath()) : factory);
+			if (pdxSerializer != null) {
+				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
+				cacheFactory.setPdxSerializer((PdxSerializer) pdxSerializer);
+			}
+			if (pdxDiskStoreName != null) {
+				cacheFactory.setPdxDiskStore(pdxDiskStoreName);
+			}
+			if (pdxIgnoreUnreadFields != null) {
+				cacheFactory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
+			}
+			if (pdxPersistent != null) {
+				cacheFactory.setPdxPersistent(pdxPersistent);
+			}
+			if (pdxReadSerialized != null) {
+				cacheFactory.setPdxReadSerialized(pdxReadSerialized);
+			}
+		}
 
 		return factory;
 	}
@@ -400,17 +378,17 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
-	 * Sets the PDX properties for the given Cache factory. Note, this is implementation specific
-	 * as it depends on the type of Cache factory used to create the Cache.
+	 * Creates a new GemFire cache instance using the provided factory.
 	 *
-	 * @param factory the GemFire CacheFactory used to apply the PDX configuration settings.
-	 * @see com.gemstone.gemfire.cache.CacheFactory
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+	 * @param <T> parameterized Class type extension of GemFireCache.
+	 * @param factory the appropriate GemFire factory used to create a cache instance.
+	 * @return an instance of the GemFire cache.
+	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see com.gemstone.gemfire.cache.CacheFactory#create()
 	 */
-	protected void setPdxOptions(Object factory) {
-		if (factory instanceof CacheFactory) {
-			new PdxOptions((CacheFactory) factory).run();
-		}
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T createCache(Object factory) {
+		return (T) (cache != null ? cache : ((CacheFactory) factory).create());
 	}
 
 	/**
@@ -422,12 +400,12 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * @throws IOException if the cache.xml Resource could not be loaded and applied to the Cache instance.
 	 * @see com.gemstone.gemfire.cache.Cache#loadCacheXml(java.io.InputStream)
 	 * @see #getCacheXml()
-	 * @see #setHeapPercentages(com.gemstone.gemfire.cache.Cache)
-	 * @see #registerTransactionListeners(com.gemstone.gemfire.cache.Cache)
-	 * @see #registerTransactionWriter(com.gemstone.gemfire.cache.Cache)
+	 * @see #setHeapPercentages(com.gemstone.gemfire.cache.GemFireCache)
+	 * @see #registerTransactionListeners(com.gemstone.gemfire.cache.GemFireCache)
+	 * @see #registerTransactionWriter(com.gemstone.gemfire.cache.GemFireCache)
 	 * @see #registerJndiDataSources()
 	 */
-	protected Cache postProcess(Cache cache) throws IOException {
+	protected <T extends GemFireCache> T postProcess(T cache) throws IOException {
 		Resource localCacheXml = getCacheXml();
 
 		// load cache.xml Resource and initialize the Cache
@@ -443,19 +421,19 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			cache.setCopyOnRead(this.copyOnRead);
 		}
 		if (gatewayConflictResolver != null) {
-			cache.setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
+			((Cache) cache).setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
 		}
 		if (lockLease != null) {
-			cache.setLockLease(lockLease);
+			((Cache) cache).setLockLease(lockLease);
 		}
 		if (lockTimeout != null) {
-			cache.setLockTimeout(lockTimeout);
+			((Cache) cache).setLockTimeout(lockTimeout);
 		}
 		if (messageSyncInterval != null) {
-			cache.setMessageSyncInterval(messageSyncInterval);
+			((Cache) cache).setMessageSyncInterval(messageSyncInterval);
 		}
 		if (searchTimeout != null) {
-			cache.setSearchTimeout(searchTimeout);
+			((Cache) cache).setSearchTimeout(searchTimeout);
 		}
 
 		setHeapPercentages(cache);
@@ -467,7 +445,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/* (non-Javadoc) */
-	private void setHeapPercentages(Cache cache) {
+	private void setHeapPercentages(GemFireCache cache) {
 		if (criticalHeapPercentage != null) {
 			Assert.isTrue(criticalHeapPercentage > 0.0 && criticalHeapPercentage <= 100.0,
 				String.format("'criticalHeapPercentage' (%1$s) is invalid; must be > 0.0 and <= 100.0",
@@ -484,14 +462,14 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/* (non-Javadoc) */
-	private void registerTransactionListeners(Cache cache) {
+	private void registerTransactionListeners(GemFireCache cache) {
 		for (TransactionListener transactionListener : nullSafeCollection(transactionListeners)) {
 			cache.getCacheTransactionManager().addListener(transactionListener);
 		}
 	}
 
 	/* (non-Javadoc) */
-	private void registerTransactionWriter(Cache cache) {
+	private void registerTransactionWriter(GemFireCache cache) {
 		if (transactionWriter != null) {
 			cache.getCacheTransactionManager().setWriter(transactionWriter);
 		}
@@ -515,7 +493,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	@Override
 	public void destroy() throws Exception {
 		if (close) {
-			Cache localCache = (Cache) fetchCache();
+			Cache localCache = fetchCache();
 
 			if (localCache != null && !localCache.isClosed()) {
 				localCache.close();

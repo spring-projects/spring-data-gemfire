@@ -16,11 +16,13 @@
 
 package org.springframework.data.gemfire.client;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -30,53 +32,22 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
- * FactoryBean dedicated to creating client caches (caches for client JVMs).
- * Acts an utility class (as client caches are a subset with a particular
- * configuration of the generic cache).
+ * FactoryBean dedicated to creating GemFire client caches.
  * 
  * @author Costin Leau
  * @author Lyndon Adams
  * @author John Blum
+ * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see com.gemstone.gemfire.cache.GemFireCache
+ * @see com.gemstone.gemfire.cache.client.ClientCache
+ * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
  */
 @SuppressWarnings("unused")
 public class ClientCacheFactoryBean extends CacheFactoryBean {
-
-	/**
-	 * Inner class to avoid a hard dependency on the GemFire 6.6 API.
-	 * 
-	 * @author Costin Leau
-	 */
-	private class PdxOptions implements Runnable {
-
-		private ClientCacheFactory factory;
-
-		private PdxOptions(ClientCacheFactory factory) {
-			this.factory = factory;
-		}
-
-		public void run() {
-			if (pdxSerializer != null) {
-				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
-				factory.setPdxSerializer((PdxSerializer) pdxSerializer);
-			}
-			if (pdxDiskStoreName != null) {
-				factory.setPdxDiskStore(pdxDiskStoreName);
-			}
-			if (pdxIgnoreUnreadFields != null) {
-				factory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
-			}
-			if (pdxPersistent != null) {
-				factory.setPdxPersistent(pdxPersistent);
-			}
-			if (pdxReadSerialized != null) {
-				factory.setPdxReadSerialized(pdxReadSerialized);
-			}
-			
-		}
-	}
 
 	protected Boolean readyForEvents = false;
 
@@ -88,28 +59,109 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
 	}
 
+	/**
+	 * Fetches an existing GemFire ClientCache instance from the ClientCacheFactory.
+	 *
+	 * @param <T> is Class type extension of GemFireCache.
+	 * @return the existing GemFire ClientCache instance if available.
+	 * @throws com.gemstone.gemfire.cache.CacheClosedException if an existing GemFire Cache instance does not exist.
+	 * @throws java.lang.IllegalStateException if the GemFire cache instance is not a ClientCache.
+	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#getAnyInstance()
+	 */
 	@Override
-	protected GemFireCache createCache(Object factory) {
-		ClientCacheFactory clientCacheFactory = (ClientCacheFactory) factory;
-
-		initializePool(clientCacheFactory);
-
-		GemFireCache cache = clientCacheFactory.create();
-
-		// register for events after Pool and Regions been created and iff non-durable client...
-		readyForEvents();
-
-		return cache;
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T fetchCache() {
+		return (T) ClientCacheFactory.getAnyInstance();
 	}
 
+	/**
+	 * Resolves the GemFire System properties used to configure the GemFire ClientCache instance.
+	 *
+	 * @return a Properties object containing GemFire System properties used to configure
+	 * the GemFire ClientCache instance.
+	 */
+	@Override
+	protected Properties resolveProperties() {
+		Properties gemfireProperties = super.resolveProperties();
+
+		DistributedSystem distributedSystem = getDistributedSystem();
+
+		if (GemfireUtils.isConnected(distributedSystem)) {
+			Properties distributedSystemProperties = (Properties) distributedSystem.getProperties().clone();
+			distributedSystemProperties.putAll(gemfireProperties);
+			gemfireProperties = distributedSystemProperties;
+		}
+
+		return gemfireProperties;
+	}
+
+	/* (non-Javadoc) */
+	<T extends DistributedSystem> T getDistributedSystem() {
+		return GemfireUtils.getDistributedSystem();
+	}
+
+	/**
+	 * Creates an instance of GemFire factory initialized with the given GemFire System Properties
+	 * to create an instance of a GemFire cache.
+	 *
+	 * @param gemfireProperties a Properties object containing GemFire System properties.
+	 * @return an instance of a GemFire factory used to create a GemFire cache instance.
+	 * @see java.util.Properties
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+	 */
 	@Override
 	protected Object createFactory(Properties gemfireProperties) {
 		return new ClientCacheFactory(gemfireProperties);
 	}
 
+	/**
+	 * Initializes the GemFire factory used to create the GemFire client cache instance.  Sets PDX options
+	 * specified by the user.
+	 *
+	 * @param factory the GemFire factory used to create an instance of the GemFire client cache.
+	 * @return the initialized GemFire client cache factory.
+	 * @see #isPdxOptionsSpecified()
+	 */
 	@Override
-	protected GemFireCache fetchCache() {
-		return ClientCacheFactory.getAnyInstance();
+	protected Object prepareFactory(final Object factory) {
+		if (isPdxOptionsSpecified()) {
+			ClientCacheFactory clientCacheFactory = (ClientCacheFactory) factory;
+
+			if (pdxSerializer != null) {
+				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
+				clientCacheFactory.setPdxSerializer((PdxSerializer) pdxSerializer);
+			}
+			if (pdxDiskStoreName != null) {
+				clientCacheFactory.setPdxDiskStore(pdxDiskStoreName);
+			}
+			if (pdxIgnoreUnreadFields != null) {
+				clientCacheFactory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
+			}
+			if (pdxPersistent != null) {
+				clientCacheFactory.setPdxPersistent(pdxPersistent);
+			}
+			if (pdxReadSerialized != null) {
+				clientCacheFactory.setPdxReadSerialized(pdxReadSerialized);
+			}
+		}
+
+		return factory;
+	}
+
+	/**
+	 * Creates a new GemFire cache instance using the provided factory.
+	 *
+	 * @param <T> parameterized Class type extension of GemFireCache.
+	 * @param factory the appropriate GemFire factory used to create a cache instance.
+	 * @return an instance of the GemFire cache.
+	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#create()
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T createCache(Object factory) {
+		return (T) initializePool((ClientCacheFactory) factory).create();
 	}
 
 	/**
@@ -118,8 +170,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @param clientCacheFactory the GemFire ClientCacheFactory used to configure and create a GemFire ClientCache.
 	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
 	 */
-	private void initializePool(ClientCacheFactory clientCacheFactory) {
-		initializeClientCacheFactoryPoolSettings(clientCacheFactory, resolvePool(this.pool));
+	private ClientCacheFactory initializePool(ClientCacheFactory clientCacheFactory) {
+		return initializeClientCacheFactory(clientCacheFactory, resolvePool(this.pool));
 	}
 
 	/**
@@ -166,7 +218,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
 	 * @see com.gemstone.gemfire.cache.client.Pool
 	 */
-	private void initializeClientCacheFactoryPoolSettings(ClientCacheFactory clientCacheFactory, Pool pool) {
+	private ClientCacheFactory initializeClientCacheFactory(ClientCacheFactory clientCacheFactory, Pool pool) {
 		if (pool != null) {
 			clientCacheFactory.setPoolFreeConnectionTimeout(pool.getFreeConnectionTimeout());
 			clientCacheFactory.setPoolIdleTimeout(pool.getIdleTimeout());
@@ -195,39 +247,51 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 				clientCacheFactory.addPoolServer(socketAddress.getHostName(), socketAddress.getPort());
 			}
 		}
+
+		return clientCacheFactory;
 	}
 
+	/**
+	 * Register for events after Pool and Regions have been created and iff non-durable client...
+	 *
+	 * @param <T> parameterized Class type extension of GemFireCache.
+	 * @param cache the GemFire cache instance to process.
+	 * @return the processed cache instance after ready for events.
+	 * @throws java.io.IOException if an error occurs during post processing.
+	 * @see org.springframework.data.gemfire.CacheFactoryBean#postProcess(com.gemstone.gemfire.cache.GemFireCache)
+	 * @see #readyForEvents(com.gemstone.gemfire.cache.GemFireCache)
+	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see com.gemstone.gemfire.cache.client.ClientCache
+	 */
 	@Override
-	protected void setPdxOptions(Object factory) {
-		if (factory instanceof ClientCacheFactory) {
-			new PdxOptions((ClientCacheFactory) factory).run();
-		}
+	protected <T extends GemFireCache> T postProcess(T cache) throws IOException {
+		return readyForEvents(super.postProcess(cache));
 	}
 
 	/**
 	 * Inform the GemFire cluster that this client cache is ready to receive events.
 	 */
-	private void readyForEvents(){
-		ClientCache clientCache = ClientCacheFactory.getAnyInstance();
-
-		if (Boolean.TRUE.equals(readyForEvents) && !clientCache.isClosed()) {
+	private <T extends GemFireCache> T readyForEvents(T clientCache) {
+		if (Boolean.TRUE.equals(getReadyForEvents()) && !clientCache.isClosed()) {
 			try {
-				clientCache.readyForEvents();
+				((ClientCache) clientCache).readyForEvents();
 			}
 			catch (IllegalStateException ignore) {
 				// cannot be called for a non-durable client so exception is thrown
 			}
 		}
-	}
 
-	@Override
-	public final Boolean getEnableAutoReconnect() {
-		return Boolean.FALSE;
+		return clientCache;
 	}
 
 	@Override
 	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
 		throw new UnsupportedOperationException("Auto-reconnect is not supported on ClientCache.");
+	}
+
+	@Override
+	public final Boolean getEnableAutoReconnect() {
+		return Boolean.FALSE;
 	}
 
 	/**

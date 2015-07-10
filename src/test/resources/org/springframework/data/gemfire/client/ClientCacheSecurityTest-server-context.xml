@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="server.properties">
+		<prop key="gemfire.security.ssl.enabled">true</prop>
+		<prop key="gemfire.security.ssl.require-authentication">true</prop>
+		<prop key="gemfire.security.ssl.protocols">any</prop>
+		<prop key="gemfire.security.ssl.ciphers">any</prop>
+		<prop key="gemfire.security.ssl.keystore.location">${javax.net.ssl.keyStore}</prop>
+		<prop key="gemfire.security.ssl.keystore.password">s3cr3t</prop>
+		<prop key="gemfire.security.ssl.keystore.type">jks</prop>
+		<prop key="gemfire.server.host">localhost</prop>
+		<prop key="gemfire.server.port">31517</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="server.properties"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">ClientCacheSecurityTestServer</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+		<prop key="cluster-ssl-enabled">${gemfire.security.ssl.enabled}</prop>
+		<prop key="cluster-ssl-require-authentication">${gemfire.security.ssl.require-authentication}</prop>
+		<prop key="cluster-ssl-protocols">${gemfire.security.ssl.protocols}</prop>
+		<prop key="cluster-ssl-ciphers">${gemfire.security.ssl.ciphers}</prop>
+		<prop key="cluster-ssl-keystore">${gemfire.security.ssl.keystore.location}</prop>
+		<prop key="cluster-ssl-keystore-password">${gemfire.security.ssl.keystore.password}</prop>
+		<prop key="cluster-ssl-keystore-type">${gemfire.security.ssl.keystore.type}</prop>
+		<prop key="cluster-ssl-truststore">${gemfire.security.ssl.keystore.location}</prop>
+		<prop key="cluster-ssl-truststore-password">${gemfire.security.ssl.keystore.password}</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:cache-server auto-startup="true" bind-address="${gemfire.server.host}" port="${gemfire.server.port}"
+					  max-connections="1"/>
+
+	<gfe:replicated-region id="Example" persistent="false">
+		<gfe:cache-loader>
+			<bean class="org.springframework.data.gemfire.client.ClientCacheSecurityTest$TestCacheLoader"/>
+		</gfe:cache-loader>
+	</gfe:replicated-region>
+
+</beans>
