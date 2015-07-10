@@ -494,7 +494,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	@Override
 	public void destroy() throws Exception {
 		if (close) {
-			Cache localCache = (Cache) fetchCache();
+			Cache localCache = fetchCache();
 
 			if (localCache != null && !localCache.isClosed()) {
 				localCache.close();
@@ -510,7 +510,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	@Override
-	public DataAccessException translateExceptionIfPossible(final RuntimeException e) {
+	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
 		if (e instanceof GemFireException) {
 			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) e);
 		}

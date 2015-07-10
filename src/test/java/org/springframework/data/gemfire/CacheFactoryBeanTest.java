@@ -71,7 +71,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 public class CacheFactoryBeanTest {
 
 	@Test
-	public void testAfterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() throws Exception {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class, "SpringBeanFactory");
 		Cache mockCache = mock(Cache.class, "GemFireCache");
 		CacheTransactionManager mockCacheTransactionManager = mock(CacheTransactionManager.class, "GemFireTransactionManager");
@@ -178,98 +178,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testFetchExistingCache() throws Exception {
-		Cache mockCache = mock(Cache.class, "GemFireCache");
-
-		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
-
-		ReflectionUtils.setField(CacheFactoryBean.class.getDeclaredField("cache"), cacheFactoryBean, mockCache);
-
-		Cache actualCache = cacheFactoryBean.resolveCache();
-
-		assertSame(mockCache, actualCache);
-	}
-
-	@Test
-	public void testCreateWhenCacheExists() throws Exception {
-		Cache mockCache = mock(Cache.class, "GemFireCache");
-
-		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
-
-		ReflectionUtils.setField(CacheFactoryBean.class.getDeclaredField("cache"), cacheFactoryBean, mockCache);
-
-		GemFireCache actualCache = cacheFactoryBean.createCache(null);
-
-		assertSame(mockCache, actualCache);
-	}
-
-	@Test
-	public void testCreateFactory() {
-		Properties gemfireProperties = new Properties();
-		Object cacheFactoryReference = new CacheFactoryBean().createFactory(gemfireProperties);
-
-		assertTrue(gemfireProperties.isEmpty());
-		assertTrue(cacheFactoryReference instanceof CacheFactory);
-
-		CacheFactory cacheFactory = (CacheFactory) cacheFactoryReference;
-
-		cacheFactory.set("name", "TestCreateCacheFactory");
-
-		assertTrue(gemfireProperties.containsKey("name"));
-		assertEquals("TestCreateCacheFactory", gemfireProperties.getProperty("name"));
-	}
-
-	@Test
-	public void testPrepareFactory() {
-		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
-
-		cacheFactoryBean.setPdxSerializer(mock(PdxSerializer.class, "MockGemFirePdxSerializer"));
-		cacheFactoryBean.setPdxReadSerialized(true);
-		cacheFactoryBean.setPdxIgnoreUnreadFields(false);
-
-		CacheFactory mockCacheFactory = mock(CacheFactory.class, "MockGemFireCacheFactory");
-
-		cacheFactoryBean.prepareFactory(mockCacheFactory);
-
-		verify(mockCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
-		verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
-		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
-		verify(mockCacheFactory, never()).setPdxPersistent(any(Boolean.class));
-		verify(mockCacheFactory, times(1)).setPdxReadSerialized(eq(true));
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testPostProcessCacheWithInvalidCriticalHeapPercentage() throws Exception {
-		try {
-			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
-
-			cacheFactoryBean.setCriticalHeapPercentage(200.0f);
-			cacheFactoryBean.postProcess(null);
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("'criticalHeapPercentage' (200.0) is invalid; must be > 0.0 and <= 100.0",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testPostProcessCacheWithInvalidEvictionHeapPercentage() throws Exception {
-		try {
-			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
-
-			cacheFactoryBean.setEvictionHeapPercentage(-75.0f);
-			cacheFactoryBean.postProcess(null);
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("'evictionHeapPercentage' (-75.0) is invalid; must be > 0.0 and <= 100.0",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test
-	public void testPostProcessPropertiesBeforeInitializationDefaults() {
+	public void postProcessPropertiesBeforeInitializationDefaults() {
 		assumeTrue(GemfireUtils.isGemfireVersion8OrAbove());
 
 		Properties gemfireProperties = new Properties();
@@ -288,7 +197,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testPostProcessPropertiesBeforeInitializationDisabled() {
+	public void postProcessPropertiesBeforeInitializationDisabled() {
 		assumeTrue(GemfireUtils.isGemfireVersion8OrAbove());
 
 		Properties gemfireProperties = new Properties();
@@ -309,7 +218,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testPostProcessPropertiesBeforeInitializationEnabled() {
+	public void postProcessPropertiesBeforeInitializationEnabled() {
 		assumeTrue(GemfireUtils.isGemfireVersion8OrAbove());
 
 		Properties gemfireProperties = new Properties();
@@ -330,7 +239,185 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testGetObject() throws Exception {
+	public void fetchExistingCache() throws Exception {
+		Cache mockCache = mock(Cache.class, "GemFireCache");
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		ReflectionUtils.setField(CacheFactoryBean.class.getDeclaredField("cache"), cacheFactoryBean, mockCache);
+
+		Cache actualCache = cacheFactoryBean.resolveCache();
+
+		assertSame(mockCache, actualCache);
+	}
+
+	@Test
+	public void resolveProperties() {
+		Properties gemfireProperties = new Properties();
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		cacheFactoryBean.setProperties(gemfireProperties);
+
+		assertSame(gemfireProperties, cacheFactoryBean.resolveProperties());
+	}
+
+	@Test
+	public void createFactory() {
+		Properties gemfireProperties = new Properties();
+		Object cacheFactoryReference = new CacheFactoryBean().createFactory(gemfireProperties);
+
+		assertTrue(gemfireProperties.isEmpty());
+		assertTrue(cacheFactoryReference instanceof CacheFactory);
+
+		CacheFactory cacheFactory = (CacheFactory) cacheFactoryReference;
+
+		cacheFactory.set("name", "TestCreateCacheFactory");
+
+		assertTrue(gemfireProperties.containsKey("name"));
+		assertEquals("TestCreateCacheFactory", gemfireProperties.getProperty("name"));
+	}
+
+	@Test
+	public void prepareFactoryWithUnspecifiedPdxOptions() {
+		CacheFactory mockCacheFactory = mock(CacheFactory.class, "MockGemFireCacheFactory");
+
+		assertSame(mockCacheFactory, new CacheFactoryBean().prepareFactory(mockCacheFactory));
+
+		verify(mockCacheFactory, never()).setPdxSerializer(any(PdxSerializer.class));
+		verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
+		verify(mockCacheFactory, never()).setPdxIgnoreUnreadFields(any(Boolean.class));
+		verify(mockCacheFactory, never()).setPdxPersistent(any(Boolean.class));
+		verify(mockCacheFactory, never()).setPdxReadSerialized(any(Boolean.class));
+	}
+
+	@Test
+	public void prepareFactoryWithPartialPdxOptions() {
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		cacheFactoryBean.setPdxSerializer(mock(PdxSerializer.class, "MockGemFirePdxSerializer"));
+		cacheFactoryBean.setPdxReadSerialized(true);
+		cacheFactoryBean.setPdxIgnoreUnreadFields(false);
+
+		CacheFactory mockCacheFactory = mock(CacheFactory.class, "MockGemFireCacheFactory");
+
+		assertSame(mockCacheFactory, cacheFactoryBean.prepareFactory(mockCacheFactory));
+
+		verify(mockCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
+		verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
+		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
+		verify(mockCacheFactory, never()).setPdxPersistent(any(Boolean.class));
+		verify(mockCacheFactory, times(1)).setPdxReadSerialized(eq(true));
+	}
+
+	@Test
+	public void prepareFactoryWithAllPdxOptions() {
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		cacheFactoryBean.setPdxSerializer(mock(PdxSerializer.class, "MockGemFirePdxSerializer"));
+		cacheFactoryBean.setPdxDiskStoreName("testPdxDiskStoreName");
+		cacheFactoryBean.setPdxIgnoreUnreadFields(false);
+		cacheFactoryBean.setPdxPersistent(true);
+		cacheFactoryBean.setPdxReadSerialized(true);
+
+		CacheFactory mockCacheFactory = mock(CacheFactory.class, "MockGemFireCacheFactory");
+
+		assertSame(mockCacheFactory, cacheFactoryBean.prepareFactory(mockCacheFactory));
+
+		verify(mockCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
+		verify(mockCacheFactory, times(1)).setPdxDiskStore(eq("testPdxDiskStoreName"));
+		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
+		verify(mockCacheFactory, times(1)).setPdxPersistent(eq(true));
+		verify(mockCacheFactory, times(1)).setPdxReadSerialized(eq(true));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void prepareFactoryWithInvalidTypeForPdxSerializer() {
+		CacheFactory mockCacheFactory = mock(CacheFactory.class, "MockGemFireCacheFactory");
+
+		try {
+			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+			cacheFactoryBean.setPdxSerializer(new Object());
+			cacheFactoryBean.setPdxIgnoreUnreadFields(false);
+			cacheFactoryBean.setPdxReadSerialized(true);
+			cacheFactoryBean.prepareFactory(mockCacheFactory);
+		}
+		catch (IllegalArgumentException expected) {
+			assertTrue(expected.getMessage().startsWith("Invalid pdx serializer used"));
+			assertNull(expected.getCause());
+			throw expected;
+		}
+		finally {
+			verify(mockCacheFactory, never()).setPdxSerializer(any(PdxSerializer.class));
+			verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
+			verify(mockCacheFactory, never()).setPdxIgnoreUnreadFields(any(Boolean.class));
+			verify(mockCacheFactory, never()).setPdxPersistent(any(Boolean.class));
+			verify(mockCacheFactory, never()).setPdxReadSerialized(any(Boolean.class));
+		}
+	}
+
+	@Test
+	public void createCacheWithExistingCache() throws Exception {
+		Cache mockCache = mock(Cache.class, "MockGemFireCache");
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		ReflectionUtils.setField(CacheFactoryBean.class.getDeclaredField("cache"), cacheFactoryBean, mockCache);
+
+		GemFireCache actualCache = cacheFactoryBean.createCache(null);
+
+		assertSame(mockCache, actualCache);
+	}
+
+	@Test
+	public void createCacheWithNoExistingCache() {
+		Cache mockCache = mock(Cache.class, "MockGemFireCache");
+		CacheFactory mockCacheFactory = mock(CacheFactory.class, "MockGemFireCacheFactory");
+
+		when(mockCacheFactory.create()).thenReturn(mockCache);
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		Cache actualCache = cacheFactoryBean.createCache(mockCacheFactory);
+
+		assertSame(mockCache, actualCache);
+
+		verify(mockCacheFactory, times(1)).create();
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void postProcessCacheWithInvalidCriticalHeapPercentage() throws Exception {
+		try {
+			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+			cacheFactoryBean.setCriticalHeapPercentage(200.0f);
+			cacheFactoryBean.postProcess(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("'criticalHeapPercentage' (200.0) is invalid; must be > 0.0 and <= 100.0",
+				expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void postProcessCacheWithInvalidEvictionHeapPercentage() throws Exception {
+		try {
+			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+			cacheFactoryBean.setEvictionHeapPercentage(-75.0f);
+			cacheFactoryBean.postProcess(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertEquals("'evictionHeapPercentage' (-75.0) is invalid; must be > 0.0 and <= 100.0",
+				expected.getMessage());
+			throw expected;
+		}
+	}
+
+	@Test
+	public void getObject() throws Exception {
 		final ClassLoader expectedThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 		final Cache mockCache = mock(Cache.class, "GemFireCache");
 
@@ -377,17 +464,17 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testGetObjectType() {
+	public void getObjectType() {
 		assertEquals(Cache.class, new CacheFactoryBean().getObjectType());
 	}
 
 	@Test
-	public void testIsSingleton() {
+	public void isSingleton() {
 		assertTrue(new CacheFactoryBean().isSingleton());
 	}
 
 	@Test
-	public void testDestroy() throws Exception {
+	public void destroy() throws Exception {
 		final Cache mockCache = mock(Cache.class, "GemFireCache");
 
 		GemfireBeanFactoryLocator mockGemfireBeanFactoryLocator = mock(GemfireBeanFactoryLocator.class);
@@ -413,7 +500,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testDestroyWhenCacheIsNull() throws Exception {
+	public void destroyWhenCacheIsNull() throws Exception {
 		final AtomicBoolean fetchCacheCalled = new AtomicBoolean(false);
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
@@ -431,7 +518,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testDestroyWhenClosedIsFalse() throws Exception {
+	public void destroyWhenClosedIsFalse() throws Exception {
 		final AtomicBoolean fetchCacheCalled = new AtomicBoolean(false);
 		final Cache mockCache = mock(Cache.class, "GemFireCache");
 
@@ -453,7 +540,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testSetAndGetCacheFactoryBeanProperties() throws Exception {
+	public void setAndGetCacheFactoryBeanProperties() throws Exception {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class, "SpringBeanFactory");
 		GatewayConflictResolver mockGatewayConflictResolver = mock(GatewayConflictResolver.class, "GemFireGatewayConflictResolver");
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class, "GemFirePdxSerializer");
