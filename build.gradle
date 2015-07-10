@@ -54,8 +54,9 @@ if (project.hasProperty('platformVersion')) {
 tasks.withType(Test).all {
     forkEvery = 1
     systemProperties['gemfire.disableShutdownHook'] = 'true'
-	systemProperties['product.name'] = 'Apache Geode'
+	systemProperties['javax.net.ssl.keyStore'] = System.getProperty('user.dir') + '/src/test/resources/trusted.keystore'
     systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
+	systemProperties['product.name'] = 'Apache Geode'
 	systemProperties['spring.profiles.active'] = 'apache-geode'
 }
 
