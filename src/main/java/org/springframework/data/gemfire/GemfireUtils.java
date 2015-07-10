@@ -18,19 +18,21 @@ package org.springframework.data.gemfire;
 
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.ClassUtils;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * The GemfireUtils class is a utility class encapsulating common functionality to access features and capabilities
+ * GemfireUtils is an abstract utility class encapsulating common functionality to access features and capabilities
  * of GemFire based on version and other configuration meta-data.
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.util.DistributedSystemUtils
  * @since 1.3.3
  */
-public abstract class GemfireUtils {
+public abstract class GemfireUtils extends DistributedSystemUtils {
 
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
 
