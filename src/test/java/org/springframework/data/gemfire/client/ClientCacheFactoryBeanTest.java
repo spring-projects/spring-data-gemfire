@@ -18,6 +18,8 @@ package org.springframework.data.gemfire.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +43,9 @@ import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.lang.ClassUtils;
+import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
  * The ClientCacheFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -51,22 +55,198 @@ import com.gemstone.gemfire.internal.lang.ClassUtils;
  * @see org.mockito.Mockito
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+ * @see org.springframework.data.gemfire.TestUtils
  * @since 1.7.0
  */
 public class ClientCacheFactoryBeanTest {
 
+	protected Properties createProperties(String key, String value) {
+		Properties properties = new Properties();
+		properties.setProperty(key, value);
+		return properties;
+	}
+
 	@Test
-	public void testGetObjectType() {
+	public void getObjectType() {
 		assertEquals(ClientCache.class, new ClientCacheFactoryBean().getObjectType());
 	}
 
 	@Test
-	public void testIsSingleton() {
+	public void isSingleton() {
 		assertTrue(new ClientCacheFactoryBean().isSingleton());
 	}
 
 	@Test
-	public void testCreateCache() {
+	public void resolvePropertiesWhenDistributedSystemIsConnected() {
+		Properties gemfireProperties = createProperties("gf", "test");
+		Properties distributedSystemProperties = createProperties("ds", "mock");
+
+		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockGemFireDistributedSystem");
+
+		when(mockDistributedSystem.isConnected()).thenReturn(true);
+		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@SuppressWarnings("unchecked") @Override <T extends DistributedSystem> T getDistributedSystem() {
+				return (T) mockDistributedSystem;
+			}
+		};
+
+		clientCacheFactoryBean.setProperties(gemfireProperties);
+
+		Properties resolvedProperties = clientCacheFactoryBean.resolveProperties();
+
+		assertNotNull(resolvedProperties);
+		assertNotSame(gemfireProperties, resolvedProperties);
+		assertNotSame(distributedSystemProperties, resolvedProperties);
+		assertEquals(2, resolvedProperties.size());
+		assertEquals("test", resolvedProperties.getProperty("gf"));
+		assertEquals("mock", resolvedProperties.getProperty("ds"));
+
+		verify(mockDistributedSystem, times(1)).isConnected();
+		verify(mockDistributedSystem, times(1)).getProperties();
+	}
+
+	@Test
+	public void resolvePropertiesWhenDistributedSystemIsDisconnected() {
+		Properties gemfireProperties = createProperties("gf", "test");
+		Properties distributedSystemProperties = createProperties("ds", "mock");
+
+		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockGemFireDistributedSystem");
+
+		when(mockDistributedSystem.isConnected()).thenReturn(false);
+		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@SuppressWarnings("unchecked") @Override <T extends DistributedSystem> T getDistributedSystem() {
+				return (T) mockDistributedSystem;
+			}
+		};
+
+		clientCacheFactoryBean.setProperties(gemfireProperties);
+
+		Properties resolvedProperties = clientCacheFactoryBean.resolveProperties();
+
+		assertSame(gemfireProperties, resolvedProperties);
+
+		verify(mockDistributedSystem, times(1)).isConnected();
+		verify(mockDistributedSystem, never()).getProperties();
+	}
+
+	@Test
+	public void resolvePropertiesWhenDistributedSystemIsNull() {
+		Properties gemfireProperties = createProperties("gf", "test");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override <T extends DistributedSystem> T getDistributedSystem() {
+				return null;
+			}
+		};
+
+		clientCacheFactoryBean.setProperties(gemfireProperties);
+
+		Properties resolvedProperties = clientCacheFactoryBean.resolveProperties();
+
+		assertSame(gemfireProperties, resolvedProperties);
+	}
+
+	@Test
+	public void createClientCacheFactory() {
+		Properties gemfireProperties = new Properties();
+		Object clientCacheFactoryReference = new ClientCacheFactoryBean().createFactory(gemfireProperties);
+
+		assertTrue(gemfireProperties.isEmpty());
+		assertTrue(clientCacheFactoryReference instanceof ClientCacheFactory);
+
+		ClientCacheFactory clientCacheFactory = (ClientCacheFactory) clientCacheFactoryReference;
+
+		clientCacheFactory.set("name", "TestCreateClientCacheFactory");
+
+		assertTrue(gemfireProperties.containsKey("name"));
+		assertEquals("TestCreateClientCacheFactory", gemfireProperties.get("name"));
+	}
+
+	@Test
+	public void prepareClientCacheFactoryWithUnspecifiedPdxOptions() {
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
+
+		assertSame(mockClientCacheFactory, new ClientCacheFactoryBean().prepareFactory(mockClientCacheFactory));
+
+		verify(mockClientCacheFactory, never()).setPdxSerializer(any(PdxSerializer.class));
+		verify(mockClientCacheFactory, never()).setPdxDiskStore(any(String.class));
+		verify(mockClientCacheFactory, never()).setPdxIgnoreUnreadFields(any(Boolean.class));
+		verify(mockClientCacheFactory, never()).setPdxPersistent(any(Boolean.class));
+		verify(mockClientCacheFactory, never()).setPdxReadSerialized(any(Boolean.class));
+	}
+
+	@Test
+	public void prepareClientCacheFactoryWithPartialPdxOptions() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPdxSerializer(mock(PdxSerializer.class));
+		clientCacheFactoryBean.setPdxReadSerialized(true);
+		clientCacheFactoryBean.setPdxIgnoreUnreadFields(false);
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
+
+		assertSame(mockClientCacheFactory, clientCacheFactoryBean.prepareFactory(mockClientCacheFactory));
+
+		verify(mockClientCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
+		verify(mockClientCacheFactory, never()).setPdxDiskStore(any(String.class));
+		verify(mockClientCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
+		verify(mockClientCacheFactory, never()).setPdxPersistent(any(Boolean.class));
+		verify(mockClientCacheFactory, times(1)).setPdxReadSerialized(eq(true));
+	}
+
+	@Test
+	public void prepareClientCacheFactoryWithAllPdxOptions() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPdxSerializer(mock(PdxSerializer.class));
+		clientCacheFactoryBean.setPdxDiskStoreName("mockPdxDiskStoreName");
+		clientCacheFactoryBean.setPdxIgnoreUnreadFields(false);
+		clientCacheFactoryBean.setPdxPersistent(true);
+		clientCacheFactoryBean.setPdxReadSerialized(true);
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
+
+		assertSame(mockClientCacheFactory, clientCacheFactoryBean.prepareFactory(mockClientCacheFactory));
+
+		verify(mockClientCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
+		verify(mockClientCacheFactory, times(1)).setPdxDiskStore(eq("mockPdxDiskStoreName"));
+		verify(mockClientCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
+		verify(mockClientCacheFactory, times(1)).setPdxPersistent(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPdxReadSerialized(eq(true));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void prepareClientCacheFactoryWithInvalidTypeForPdxSerializer() {
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
+
+		try {
+			ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+			clientCacheFactoryBean.setPdxSerializer(new Object());
+			clientCacheFactoryBean.setPdxReadSerialized(true);
+			clientCacheFactoryBean.setPdxIgnoreUnreadFields(true);
+			clientCacheFactoryBean.prepareFactory(mockClientCacheFactory);
+		}
+		catch (IllegalArgumentException expected) {
+			assertTrue(expected.getMessage().startsWith("Invalid pdx serializer used"));
+			assertNull(expected.getCause());
+			throw expected;
+		}
+		finally {
+			verify(mockClientCacheFactory, never()).setPdxSerializer(any(PdxSerializer.class));
+			verify(mockClientCacheFactory, never()).setPdxDiskStore(any(String.class));
+			verify(mockClientCacheFactory, never()).setPdxIgnoreUnreadFields(any(Boolean.class));
+			verify(mockClientCacheFactory, never()).setPdxPersistent(any(Boolean.class));
+			verify(mockClientCacheFactory, never()).setPdxReadSerialized(any(Boolean.class));
+		}
+	}
+
+	@Test
+	public void createCache() {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
 		ClientCache mockClientCache = mock(ClientCache.class, "MockGemFireClientCache");
@@ -129,23 +309,7 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testCreateClientCacheFactory() {
-		Properties gemfireProperties = new Properties();
-		Object clientCacheFactoryReference = new ClientCacheFactoryBean().createFactory(gemfireProperties);
-
-		assertTrue(gemfireProperties.isEmpty());
-		assertTrue(clientCacheFactoryReference instanceof ClientCacheFactory);
-
-		ClientCacheFactory clientCacheFactory = (ClientCacheFactory) clientCacheFactoryReference;
-
-		clientCacheFactory.set("name", "TestCreateClientCacheFactory");
-
-		assertTrue(gemfireProperties.containsKey("name"));
-		assertEquals("TestCreateClientCacheFactory", gemfireProperties.get("name"));
-	}
-
-	@Test
-	public void testResolvePoolWithUnresolvablePoolName() throws Exception {
+	public void resolvePoolWithUnresolvablePoolName() throws Exception {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
 		ClientCache mockClientCache = mock(ClientCache.class, "MockGemFireClientCache");
@@ -213,7 +377,7 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test(expected = BeanInitializationException.class)
-	public void testResolveUnresolvablePool() {
+	public void resolveUnresolvablePool() {
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
 
 		try {
@@ -246,12 +410,31 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testAutoReconnectDisabled() {
+	public void postProcessClientCacheAndSignalReadyForEvents() throws Exception {
+		ClientCache mockClientCache = mock(ClientCache.class, "MockGemFireClientCache");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setReadyForEvents(true);
+
+		assertTrue(clientCacheFactoryBean.getReadyForEvents());
+		assertSame(mockClientCache, clientCacheFactoryBean.postProcess(mockClientCache));
+
+		verify(mockClientCache, times(1)).readyForEvents();
+	}
+
+	@Test
+	public void autoReconnectDisabled() {
 		assertFalse(new ClientCacheFactoryBean().getEnableAutoReconnect());
 	}
 
+	@Test(expected = UnsupportedOperationException.class)
+	public void enableAutoReconnect() {
+		new ClientCacheFactoryBean().setEnableAutoReconnect(true);
+	}
+
 	@Test(expected = IllegalArgumentException.class)
-	public void testSetPoolToNull() {
+	public void setPoolToNull() {
 		try {
 			new ClientCacheFactoryBean().setPool(null);
 		}
@@ -262,7 +445,7 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testSetPoolNameToInvalidValue() {
+	public void setPoolNameToInvalidValue() {
 		try {
 			new ClientCacheFactoryBean().setPoolName("  ");
 		}
@@ -273,7 +456,7 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testSetAndGetReadyForEvents() {
+	public void setAndGetReadyForEvents() {
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		assertFalse(clientCacheFactoryBean.getReadyForEvents());
@@ -288,8 +471,13 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void testUsesClusterConfiguration() {
+	public void clusterConfigurationNotUsed() {
 		assertFalse(new ClientCacheFactoryBean().getUseClusterConfiguration());
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void useClusterConfiguration() {
+		new ClientCacheFactoryBean().setUseClusterConfiguration(true);
 	}
 
 }

@@ -508,7 +508,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	@Override
-	public DataAccessException translateExceptionIfPossible(final RuntimeException e) {
+	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
 		if (e instanceof GemFireException) {
 			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) e);
 		}
