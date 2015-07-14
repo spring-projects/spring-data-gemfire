@@ -16,7 +16,6 @@
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
@@ -32,38 +31,41 @@ public class DataPolicyConverterTest {
 	private final DataPolicyConverter converter = new DataPolicyConverter();
 
 	protected int getDataPolicyEnumerationSize() {
+		int count = 0;
+
 		for (byte ordinal = 0; ordinal < Byte.MAX_VALUE; ordinal++) {
 			try {
-				assertNotNull(DataPolicy.fromOrdinal(ordinal));
+				if (DataPolicy.fromOrdinal(ordinal) != null) {
+					count++;
+				}
 			}
-			catch (Exception ignore) {
-				return ordinal;
+			catch (ArrayIndexOutOfBoundsException ignore) {
+				break;
 			}
-			catch (Error ignore) {
-				return ordinal;
+			catch (Throwable ignore) {
 			}
 		}
 
-		throw new IndexOutOfBoundsException("The size of the Data Policy enumeration could not be determined"
-			+ " because the ordinal based on Byte.MAX_VALUE was exhausted!");
+		return count;
 	}
 
 	@Test
-	public void testPolicyToDataPolicy() {
-		// exclude DEFAULT
+	public void policyToDataPolicyConversion() {
 		assertEquals(getDataPolicyEnumerationSize(), DataPolicyConverter.Policy.values().length - 1);
 		assertEquals(DataPolicy.EMPTY, DataPolicyConverter.Policy.EMPTY.toDataPolicy());
 		assertEquals(DataPolicy.NORMAL, DataPolicyConverter.Policy.NORMAL.toDataPolicy());
 		assertEquals(DataPolicy.PRELOADED, DataPolicyConverter.Policy.PRELOADED.toDataPolicy());
 		assertEquals(DataPolicy.PARTITION, DataPolicyConverter.Policy.PARTITION.toDataPolicy());
 		assertEquals(DataPolicy.PERSISTENT_PARTITION, DataPolicyConverter.Policy.PERSISTENT_PARTITION.toDataPolicy());
+		assertEquals(DataPolicy.HDFS_PARTITION, DataPolicyConverter.Policy.HDFS_PARTITION.toDataPolicy());
+		assertEquals(DataPolicy.HDFS_PERSISTENT_PARTITION, DataPolicyConverter.Policy.HDFS_PERSISTENT_PARTITION.toDataPolicy());
 		assertEquals(DataPolicy.REPLICATE, DataPolicyConverter.Policy.REPLICATE.toDataPolicy());
 		assertEquals(DataPolicy.PERSISTENT_REPLICATE, DataPolicyConverter.Policy.PERSISTENT_REPLICATE.toDataPolicy());
 		assertEquals(DataPolicy.DEFAULT, DataPolicyConverter.Policy.DEFAULT.toDataPolicy());
 	}
 
 	@Test
-	public void testConvert() {
+	public void convertDataPolicyStrings() {
 		assertEquals(DataPolicy.EMPTY, converter.convert("empty"));
 		assertEquals(DataPolicy.PARTITION, converter.convert("Partition"));
 		assertEquals(DataPolicy.PERSISTENT_REPLICATE, converter.convert("PERSISTENT_REPLICATE"));

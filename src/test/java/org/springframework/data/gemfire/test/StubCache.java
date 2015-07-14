@@ -37,6 +37,9 @@ import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.control.ResourceManager;
+import com.gemstone.gemfire.cache.hdfs.HDFSStore;
+import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
+import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
@@ -127,7 +130,7 @@ public class StubCache implements Cache {
 	@Override
 	public CacheTransactionManager getCacheTransactionManager() {
 		if (cacheTransactionManager == null) {
-			cacheTransactionManager = new StubCacheTransactionMananger();
+			cacheTransactionManager = new StubCacheTransactionManager();
 		}
 
 		return cacheTransactionManager;
@@ -266,9 +269,11 @@ public class StubCache implements Cache {
 	@Override
 	public <K, V> Map<String, RegionAttributes<K, V>> listRegionAttributes() {
 		Map<String, RegionAttributes<K, V>> attributes = new HashMap<String, RegionAttributes<K, V>>();
+
 		for (Entry<String, Region> entry: allRegions().entrySet()) {
 			attributes.put(entry.getKey(), entry.getValue().getAttributes());
 		}
+
 		return attributes;
 	}
 
@@ -333,14 +338,12 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public QueryService getQueryService() {
-		QueryService qs = null;
 		try {
-			qs =  mockQueryService();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		return qs;
+			return mockQueryService();
+		}
+		catch (Exception ignore) {
+			return null;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -366,11 +369,13 @@ public class StubCache implements Cache {
 	@Override
 	public Set<Region<?, ?>> rootRegions() {
 		Set<Region<?,?>> rootRegions = new HashSet<Region<?,?>>();
+
 		for (String key: allRegions().keySet()) {
-			if (!key.contains("/")) {
+			if (!key.contains(Region.SEPARATOR)) {
 				rootRegions.add(allRegions().get(key));
 			}
 		}
+
 		return rootRegions;
 	}
 
@@ -580,12 +585,10 @@ public class StubCache implements Cache {
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#getLuceneService()
 	 */
-	/*
 	@Override
 	public LuceneService getLuceneService() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
-	*/
 
 	/* (non-Javadoc)
 		 * @see com.gemstone.gemfire.cache.Cache#getMembers()
@@ -844,6 +847,16 @@ public class StubCache implements Cache {
 	@Override
 	public boolean waitUntilReconnected(final long l, final TimeUnit timeUnit) throws InterruptedException {
 		return false;
+	}
+
+	@Override
+	public HDFSStoreFactory createHDFSStoreFactory() {
+		throw new UnsupportedOperationException("Not Implemented!");
+	}
+
+	@Override
+	public HDFSStore findHDFSStore(final String s) {
+		throw new UnsupportedOperationException("Not Implemented!");
 	}
 
 }

@@ -38,20 +38,22 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 public class RegionShortcutWrapperTest {
 
 	@Test
-	public void testOneForOneMapping() {
+	public void oneForOneMapping() {
 		for (RegionShortcut shortcut : RegionShortcut.values()) {
-			assertNotNull(RegionShortcutWrapper.valueOf(shortcut.name()));
-			assertFalse(RegionShortcutWrapper.UNSPECIFIED.equals(RegionShortcutWrapper.valueOf(shortcut)));
+			RegionShortcutWrapper wrapper = RegionShortcutWrapper.valueOf(shortcut.name());
+
+			assertNotNull(wrapper);
+			assertFalse(RegionShortcutWrapper.UNSPECIFIED.equals(wrapper));
 		}
 	}
 
 	@Test
-	public void testRegionShortcutUnspecified() {
+	public void unspecifiedRegionShortcut() {
 		assertEquals(RegionShortcutWrapper.UNSPECIFIED, RegionShortcutWrapper.valueOf((RegionShortcut) null));
 	}
 
 	@Test
-	public void testIsHeapLru() {
+	public void isHeapLru() {
 		assertFalse(RegionShortcutWrapper.LOCAL.isHeapLru());
 		assertTrue(RegionShortcutWrapper.LOCAL_HEAP_LRU.isHeapLru());
 		assertFalse(RegionShortcutWrapper.LOCAL_OVERFLOW.isHeapLru());
@@ -79,13 +81,14 @@ public class RegionShortcutWrapperTest {
 	}
 
 	@Test
-	public void testIsLocal() {
+	public void isLocal() {
 		assertTrue(RegionShortcutWrapper.LOCAL.isLocal());
 		assertTrue(RegionShortcutWrapper.LOCAL_HEAP_LRU.isLocal());
 		assertTrue(RegionShortcutWrapper.LOCAL_OVERFLOW.isLocal());
 		assertTrue(RegionShortcutWrapper.LOCAL_PERSISTENT.isLocal());
 		assertTrue(RegionShortcutWrapper.LOCAL_PERSISTENT_OVERFLOW.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION.isLocal());
+		assertFalse(RegionShortcutWrapper.PARTITION_HDFS.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_HEAP_LRU.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_OVERFLOW.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_PERSISTENT.isLocal());
@@ -93,10 +96,13 @@ public class RegionShortcutWrapperTest {
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY_REDUNDANT.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT.isLocal());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HDFS.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HEAP_LRU.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_OVERFLOW.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT.isLocal());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW.isLocal());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE.isLocal());
+		assertFalse(RegionShortcutWrapper.PARTITION_WRITEONLY_HDFS_STORE.isLocal());
 		assertFalse(RegionShortcutWrapper.REPLICATE.isLocal());
 		assertFalse(RegionShortcutWrapper.REPLICATE_HEAP_LRU.isLocal());
 		assertFalse(RegionShortcutWrapper.REPLICATE_OVERFLOW.isLocal());
@@ -107,13 +113,14 @@ public class RegionShortcutWrapperTest {
 	}
 
 	@Test
-	public void testIsOverflow() {
+	public void isOverflow() {
 		assertFalse(RegionShortcutWrapper.LOCAL.isOverflow());
 		assertFalse(RegionShortcutWrapper.LOCAL_HEAP_LRU.isOverflow());
 		assertTrue(RegionShortcutWrapper.LOCAL_OVERFLOW.isOverflow());
 		assertFalse(RegionShortcutWrapper.LOCAL_PERSISTENT.isOverflow());
 		assertTrue(RegionShortcutWrapper.LOCAL_PERSISTENT_OVERFLOW.isOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION.isOverflow());
+		assertFalse(RegionShortcutWrapper.PARTITION_HDFS.isOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_HEAP_LRU.isOverflow());
 		assertTrue(RegionShortcutWrapper.PARTITION_OVERFLOW.isOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_PERSISTENT.isOverflow());
@@ -121,10 +128,13 @@ public class RegionShortcutWrapperTest {
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY.isOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY_REDUNDANT.isOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT.isOverflow());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HDFS.isOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HEAP_LRU.isOverflow());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_OVERFLOW.isOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT.isOverflow());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW.isOverflow());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE.isOverflow());
+		assertFalse(RegionShortcutWrapper.PARTITION_WRITEONLY_HDFS_STORE.isOverflow());
 		assertFalse(RegionShortcutWrapper.REPLICATE.isOverflow());
 		assertFalse(RegionShortcutWrapper.REPLICATE_HEAP_LRU.isOverflow());
 		assertTrue(RegionShortcutWrapper.REPLICATE_OVERFLOW.isOverflow());
@@ -135,13 +145,14 @@ public class RegionShortcutWrapperTest {
 	}
 
 	@Test
-	public void testIsPartition() {
+	public void isPartition() {
 		assertFalse(RegionShortcutWrapper.LOCAL.isPartition());
 		assertFalse(RegionShortcutWrapper.LOCAL_HEAP_LRU.isPartition());
 		assertFalse(RegionShortcutWrapper.LOCAL_OVERFLOW.isPartition());
 		assertFalse(RegionShortcutWrapper.LOCAL_PERSISTENT.isPartition());
 		assertFalse(RegionShortcutWrapper.LOCAL_PERSISTENT_OVERFLOW.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION.isPartition());
+		assertTrue(RegionShortcutWrapper.PARTITION_HDFS.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_HEAP_LRU.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_OVERFLOW.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_PERSISTENT.isPartition());
@@ -149,10 +160,13 @@ public class RegionShortcutWrapperTest {
 		assertTrue(RegionShortcutWrapper.PARTITION_PROXY.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_PROXY_REDUNDANT.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT.isPartition());
+		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_HDFS.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_HEAP_LRU.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_OVERFLOW.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT.isPartition());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW.isPartition());
+		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE.isPartition());
+		assertTrue(RegionShortcutWrapper.PARTITION_WRITEONLY_HDFS_STORE.isPartition());
 		assertFalse(RegionShortcutWrapper.REPLICATE.isPartition());
 		assertFalse(RegionShortcutWrapper.REPLICATE_HEAP_LRU.isPartition());
 		assertFalse(RegionShortcutWrapper.REPLICATE_OVERFLOW.isPartition());
@@ -163,13 +177,14 @@ public class RegionShortcutWrapperTest {
 	}
 
 	@Test
-	public void testIsPersistent() {
+	public void isPersistent() {
 		assertFalse(RegionShortcutWrapper.LOCAL.isPersistent());
 		assertFalse(RegionShortcutWrapper.LOCAL_HEAP_LRU.isPersistent());
 		assertFalse(RegionShortcutWrapper.LOCAL_OVERFLOW.isPersistent());
 		assertTrue(RegionShortcutWrapper.LOCAL_PERSISTENT.isPersistent());
 		assertTrue(RegionShortcutWrapper.LOCAL_PERSISTENT_OVERFLOW.isPersistent());
 		assertFalse(RegionShortcutWrapper.PARTITION.isPersistent());
+		assertFalse(RegionShortcutWrapper.PARTITION_HDFS.isPersistent());
 		assertFalse(RegionShortcutWrapper.PARTITION_HEAP_LRU.isPersistent());
 		assertFalse(RegionShortcutWrapper.PARTITION_OVERFLOW.isPersistent());
 		assertTrue(RegionShortcutWrapper.PARTITION_PERSISTENT.isPersistent());
@@ -177,10 +192,13 @@ public class RegionShortcutWrapperTest {
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY.isPersistent());
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY_REDUNDANT.isPersistent());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT.isPersistent());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HDFS.isPersistent());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HEAP_LRU.isPersistent());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_OVERFLOW.isPersistent());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT.isPersistent());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW.isPersistent());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE.isPersistent());
+		assertFalse(RegionShortcutWrapper.PARTITION_WRITEONLY_HDFS_STORE.isPersistent());
 		assertFalse(RegionShortcutWrapper.REPLICATE.isPersistent());
 		assertFalse(RegionShortcutWrapper.REPLICATE_HEAP_LRU.isPersistent());
 		assertFalse(RegionShortcutWrapper.REPLICATE_OVERFLOW.isPersistent());
@@ -191,13 +209,14 @@ public class RegionShortcutWrapperTest {
 	}
 
 	@Test
-	public void testIsPersistentOverflow() {
+	public void isPersistentOverflow() {
 		assertFalse(RegionShortcutWrapper.LOCAL.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.LOCAL_HEAP_LRU.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.LOCAL_OVERFLOW.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.LOCAL_PERSISTENT.isPersistentOverflow());
 		assertTrue(RegionShortcutWrapper.LOCAL_PERSISTENT_OVERFLOW.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION.isPersistentOverflow());
+		assertFalse(RegionShortcutWrapper.PARTITION_HDFS.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_HEAP_LRU.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_OVERFLOW.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_PERSISTENT.isPersistentOverflow());
@@ -205,10 +224,13 @@ public class RegionShortcutWrapperTest {
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY_REDUNDANT.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT.isPersistentOverflow());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HDFS.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HEAP_LRU.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_OVERFLOW.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT.isPersistentOverflow());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW.isPersistentOverflow());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE.isPersistentOverflow());
+		assertFalse(RegionShortcutWrapper.PARTITION_WRITEONLY_HDFS_STORE.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.REPLICATE.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.REPLICATE_HEAP_LRU.isPersistentOverflow());
 		assertFalse(RegionShortcutWrapper.REPLICATE_OVERFLOW.isPersistentOverflow());
@@ -218,13 +240,14 @@ public class RegionShortcutWrapperTest {
 		assertFalse(RegionShortcutWrapper.UNSPECIFIED.isPersistentOverflow());
 	}
 	@Test
-	public void testIsProxy() {
+	public void isProxy() {
 		assertFalse(RegionShortcutWrapper.LOCAL.isProxy());
 		assertFalse(RegionShortcutWrapper.LOCAL_HEAP_LRU.isProxy());
 		assertFalse(RegionShortcutWrapper.LOCAL_OVERFLOW.isProxy());
 		assertFalse(RegionShortcutWrapper.LOCAL_PERSISTENT.isProxy());
 		assertFalse(RegionShortcutWrapper.LOCAL_PERSISTENT_OVERFLOW.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION.isProxy());
+		assertFalse(RegionShortcutWrapper.PARTITION_HDFS.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION_HEAP_LRU.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION_OVERFLOW.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION_PERSISTENT.isProxy());
@@ -232,10 +255,13 @@ public class RegionShortcutWrapperTest {
 		assertTrue(RegionShortcutWrapper.PARTITION_PROXY.isProxy());
 		assertTrue(RegionShortcutWrapper.PARTITION_PROXY_REDUNDANT.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT.isProxy());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HDFS.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_HEAP_LRU.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_OVERFLOW.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT.isProxy());
 		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW.isProxy());
+		assertFalse(RegionShortcutWrapper.PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE.isProxy());
+		assertFalse(RegionShortcutWrapper.PARTITION_WRITEONLY_HDFS_STORE.isProxy());
 		assertFalse(RegionShortcutWrapper.REPLICATE.isProxy());
 		assertFalse(RegionShortcutWrapper.REPLICATE_HEAP_LRU.isProxy());
 		assertFalse(RegionShortcutWrapper.REPLICATE_OVERFLOW.isProxy());
@@ -245,13 +271,14 @@ public class RegionShortcutWrapperTest {
 		assertFalse(RegionShortcutWrapper.UNSPECIFIED.isProxy());
 	}
 	@Test
-	public void testIsRedundant() {
+	public void isRedundant() {
 		assertFalse(RegionShortcutWrapper.LOCAL.isRedundant());
 		assertFalse(RegionShortcutWrapper.LOCAL_HEAP_LRU.isRedundant());
 		assertFalse(RegionShortcutWrapper.LOCAL_OVERFLOW.isRedundant());
 		assertFalse(RegionShortcutWrapper.LOCAL_PERSISTENT.isRedundant());
 		assertFalse(RegionShortcutWrapper.LOCAL_PERSISTENT_OVERFLOW.isRedundant());
 		assertFalse(RegionShortcutWrapper.PARTITION.isRedundant());
+		assertFalse(RegionShortcutWrapper.PARTITION_HDFS.isRedundant());
 		assertFalse(RegionShortcutWrapper.PARTITION_HEAP_LRU.isRedundant());
 		assertFalse(RegionShortcutWrapper.PARTITION_OVERFLOW.isRedundant());
 		assertFalse(RegionShortcutWrapper.PARTITION_PERSISTENT.isRedundant());
@@ -259,10 +286,13 @@ public class RegionShortcutWrapperTest {
 		assertFalse(RegionShortcutWrapper.PARTITION_PROXY.isRedundant());
 		assertTrue(RegionShortcutWrapper.PARTITION_PROXY_REDUNDANT.isRedundant());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT.isRedundant());
+		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_HDFS.isRedundant());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_HEAP_LRU.isRedundant());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_OVERFLOW.isRedundant());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT.isRedundant());
 		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW.isRedundant());
+		assertTrue(RegionShortcutWrapper.PARTITION_REDUNDANT_WRITEONLY_HDFS_STORE.isRedundant());
+		assertFalse(RegionShortcutWrapper.PARTITION_WRITEONLY_HDFS_STORE.isRedundant());
 		assertFalse(RegionShortcutWrapper.REPLICATE.isRedundant());
 		assertFalse(RegionShortcutWrapper.REPLICATE_HEAP_LRU.isRedundant());
 		assertFalse(RegionShortcutWrapper.REPLICATE_OVERFLOW.isRedundant());
@@ -273,7 +303,7 @@ public class RegionShortcutWrapperTest {
 	}
 
 	@Test
-	public void testIsReplicate() {
+	public void isReplicate() {
 		assertFalse(RegionShortcutWrapper.LOCAL.isReplicate());
 		assertFalse(RegionShortcutWrapper.LOCAL_HEAP_LRU.isReplicate());
 		assertFalse(RegionShortcutWrapper.LOCAL_OVERFLOW.isReplicate());

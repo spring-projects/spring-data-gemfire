@@ -31,7 +31,8 @@ import com.gemstone.gemfire.cache.DataPolicy;
 public class DataPolicyConverter implements Converter<String, DataPolicy> {
 
 	static enum Policy {
-		DEFAULT, EMPTY, NORMAL, PRELOADED, PARTITION, PERSISTENT_PARTITION, REPLICATE, PERSISTENT_REPLICATE;
+		DEFAULT, EMPTY, NORMAL, PRELOADED, PARTITION, PERSISTENT_PARTITION, HDFS_PARTITION, HDFS_PERSISTENT_PARTITION,
+			REPLICATE, PERSISTENT_REPLICATE;
 
 		private static String toUpperCase(String value) {
 			return (value == null ? null : value.toUpperCase());
@@ -58,6 +59,10 @@ public class DataPolicyConverter implements Converter<String, DataPolicy> {
 					return DataPolicy.PARTITION;
 				case PERSISTENT_PARTITION:
 					return DataPolicy.PERSISTENT_PARTITION;
+				case HDFS_PARTITION:
+					return DataPolicy.HDFS_PARTITION;
+				case HDFS_PERSISTENT_PARTITION:
+					return DataPolicy.HDFS_PERSISTENT_PARTITION;
 				case REPLICATE:
 					return DataPolicy.REPLICATE;
 				case PERSISTENT_REPLICATE:

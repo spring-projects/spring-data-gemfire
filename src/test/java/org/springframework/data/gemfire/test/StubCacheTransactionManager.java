@@ -28,9 +28,10 @@ import com.gemstone.gemfire.cache.TransactionWriter;
  * @author David Turanski
  *
  */
-public class StubCacheTransactionMananger implements CacheTransactionManager {
+public class StubCacheTransactionManager implements CacheTransactionManager {
 
 	private List<TransactionListener> listeners = new ArrayList<TransactionListener>();
+
 	private TransactionWriter writer;
 
 	/* (non-Javadoc)
@@ -38,8 +39,7 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public void begin() {
-		// TODO Auto-generated method stub
-		
+		throw new UnsupportedOperationException("Not Implemented!");
 	}
 
 	/* (non-Javadoc)
@@ -47,7 +47,7 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public void commit() throws CommitConflictException {
-		
+		throw new UnsupportedOperationException("Not Implemented!");
 	}
 
 	/* (non-Javadoc)
@@ -55,8 +55,7 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public void rollback() {
-		// TODO Auto-generated method stub
-		
+		throw new UnsupportedOperationException("Not Implemented!");
 	}
 
 	/* (non-Javadoc)
@@ -64,8 +63,7 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public TransactionId suspend() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Not Implemented!");
 	}
 
 	/* (non-Javadoc)
@@ -73,8 +71,7 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public void resume(TransactionId transactionId) {
-		// TODO Auto-generated method stub
-		
+		throw new UnsupportedOperationException("Not Implemented!");
 	}
 
 	/* (non-Javadoc)
@@ -82,7 +79,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public boolean isSuspended(TransactionId transactionId) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -91,7 +87,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public boolean tryResume(TransactionId transactionId) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -100,7 +95,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public boolean tryResume(TransactionId transactionId, long time, TimeUnit unit) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -109,7 +103,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public boolean exists(TransactionId transactionId) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -118,7 +111,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public boolean exists() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -127,7 +119,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	 */
 	@Override
 	public TransactionId getTransactionId() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -137,7 +128,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	@Override
 	@Deprecated
 	public TransactionListener getListener() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -148,14 +138,14 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	public TransactionListener[] getListeners() {
 		return listeners.toArray(new TransactionListener[listeners.size()]);
 	}
+
 	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.CacheTransactionManager#setListener(com.gemstone.gemfire.cache.TransactionListener)
 	 */
 	@Override
 	@Deprecated
 	public TransactionListener setListener(TransactionListener newListener) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Not Implemented!");
 	}
 
 	/* (non-Javadoc)
@@ -164,7 +154,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	@Override
 	public void addListener(TransactionListener aListener) {
 		this.listeners.add(aListener);
-		
 	}
 
 	/* (non-Javadoc)
@@ -181,7 +170,6 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	@Override
 	public void initListeners(TransactionListener[] newListeners) {
 		this.listeners = Arrays.asList(newListeners);
-		
 	}
 
 	/* (non-Javadoc)
@@ -198,6 +186,16 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 	@Override
 	public TransactionWriter getWriter() {
 		return this.writer;
+	}
+
+	@Override
+	public void setDistributed(final boolean b) {
+		throw new UnsupportedOperationException("Not Implemented!");
+	}
+
+	@Override
+	public boolean isDistributed() {
+		return false;
 	}
 
 }
