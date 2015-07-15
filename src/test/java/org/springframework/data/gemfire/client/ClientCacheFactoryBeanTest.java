@@ -288,24 +288,24 @@ public class ClientCacheFactoryBeanTest {
 		verify(mockBeanFactory, times(1)).isTypeMatch(eq("testCreateCache.Pool"), eq(Pool.class));
 		verify(mockBeanFactory, times(1)).getBean(eq("testCreateCache.Pool"), eq(Pool.class));
 		verify(mockBeanFactory, never()).getBean(eq(Pool.class));
-		verify(mockClientCacheFactory, times(1)).setPoolFreeConnectionTimeout(eq(30000));
-		verify(mockClientCacheFactory, times(1)).setPoolIdleTimeout(eq(60000l));
-		verify(mockClientCacheFactory, times(1)).setPoolLoadConditioningInterval(eq(45000));
-		verify(mockClientCacheFactory, times(1)).setPoolMaxConnections(eq(100));
-		verify(mockClientCacheFactory, times(1)).setPoolMinConnections(eq(10));
-		verify(mockClientCacheFactory, times(1)).setPoolMultiuserAuthentication(eq(true));
-		verify(mockClientCacheFactory, times(1)).setPoolPingInterval(eq(15000l));
-		verify(mockClientCacheFactory, times(1)).setPoolPRSingleHopEnabled(eq(true));
-		verify(mockClientCacheFactory, times(1)).setPoolReadTimeout(eq(20000));
-		verify(mockClientCacheFactory, times(1)).setPoolRetryAttempts(eq(10));
-		verify(mockClientCacheFactory, times(1)).setPoolServerGroup(eq("TestServerGroup"));
-		verify(mockClientCacheFactory, times(1)).setPoolSocketBufferSize(eq(32768));
-		verify(mockClientCacheFactory, times(1)).setPoolStatisticInterval(eq(5000));
-		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionAckInterval(eq(15000));
-		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionEnabled(eq(true));
-		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionMessageTrackingTimeout(eq(30000));
-		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionRedundancy(eq(2));
-		verify(mockClientCacheFactory, times(1)).setPoolThreadLocalConnections(eq(false));
+		verify(mockClientCacheFactory, never()).setPoolFreeConnectionTimeout(eq(30000));
+		verify(mockClientCacheFactory, never()).setPoolIdleTimeout(eq(60000l));
+		verify(mockClientCacheFactory, never()).setPoolLoadConditioningInterval(eq(45000));
+		verify(mockClientCacheFactory, never()).setPoolMaxConnections(eq(100));
+		verify(mockClientCacheFactory, never()).setPoolMinConnections(eq(10));
+		verify(mockClientCacheFactory, never()).setPoolMultiuserAuthentication(eq(true));
+		verify(mockClientCacheFactory, never()).setPoolPingInterval(eq(15000l));
+		verify(mockClientCacheFactory, never()).setPoolPRSingleHopEnabled(eq(true));
+		verify(mockClientCacheFactory, never()).setPoolReadTimeout(eq(20000));
+		verify(mockClientCacheFactory, never()).setPoolRetryAttempts(eq(10));
+		verify(mockClientCacheFactory, never()).setPoolServerGroup(eq("TestServerGroup"));
+		verify(mockClientCacheFactory, never()).setPoolSocketBufferSize(eq(32768));
+		verify(mockClientCacheFactory, never()).setPoolStatisticInterval(eq(5000));
+		verify(mockClientCacheFactory, never()).setPoolSubscriptionAckInterval(eq(15000));
+		verify(mockClientCacheFactory, never()).setPoolSubscriptionEnabled(eq(true));
+		verify(mockClientCacheFactory, never()).setPoolSubscriptionMessageTrackingTimeout(eq(30000));
+		verify(mockClientCacheFactory, never()).setPoolSubscriptionRedundancy(eq(2));
+		verify(mockClientCacheFactory, never()).setPoolThreadLocalConnections(eq(false));
 	}
 
 	@Test
@@ -356,24 +356,24 @@ public class ClientCacheFactoryBeanTest {
 		verify(mockBeanFactory, never()).getBean(eq("TestGemFirePool"), eq(Pool.class));
 		verify(mockBeanFactory, times(1)).getBean(eq(Pool.class));
 		verify(mockPool, times(1)).getName();
-		verify(mockClientCacheFactory, times(1)).setPoolFreeConnectionTimeout(eq(120000));
-		verify(mockClientCacheFactory, times(1)).setPoolIdleTimeout(eq(300000l));
-		verify(mockClientCacheFactory, times(1)).setPoolLoadConditioningInterval(eq(15000));
-		verify(mockClientCacheFactory, times(1)).setPoolMaxConnections(eq(50));
-		verify(mockClientCacheFactory, times(1)).setPoolMinConnections(eq(5));
-		verify(mockClientCacheFactory, times(1)).setPoolMultiuserAuthentication(eq(false));
-		verify(mockClientCacheFactory, times(1)).setPoolPingInterval(eq(12000l));
-		verify(mockClientCacheFactory, times(1)).setPoolPRSingleHopEnabled(eq(true));
-		verify(mockClientCacheFactory, times(1)).setPoolReadTimeout(eq(60000));
-		verify(mockClientCacheFactory, times(1)).setPoolRetryAttempts(eq(5));
-		verify(mockClientCacheFactory, times(1)).setPoolServerGroup(eq("MockServerGroup"));
-		verify(mockClientCacheFactory, times(1)).setPoolSocketBufferSize(eq(16384));
-		verify(mockClientCacheFactory, times(1)).setPoolStatisticInterval(eq(1000));
-		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionAckInterval(eq(500));
-		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionEnabled(eq(true));
-		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionMessageTrackingTimeout(eq(15000));
-		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionRedundancy(eq(4));
-		verify(mockClientCacheFactory, times(1)).setPoolThreadLocalConnections(eq(false));
+		verify(mockClientCacheFactory, never()).setPoolFreeConnectionTimeout(eq(120000));
+		verify(mockClientCacheFactory, never()).setPoolIdleTimeout(eq(300000l));
+		verify(mockClientCacheFactory, never()).setPoolLoadConditioningInterval(eq(15000));
+		verify(mockClientCacheFactory, never()).setPoolMaxConnections(eq(50));
+		verify(mockClientCacheFactory, never()).setPoolMinConnections(eq(5));
+		verify(mockClientCacheFactory, never()).setPoolMultiuserAuthentication(eq(false));
+		verify(mockClientCacheFactory, never()).setPoolPingInterval(eq(12000l));
+		verify(mockClientCacheFactory, never()).setPoolPRSingleHopEnabled(eq(true));
+		verify(mockClientCacheFactory, never()).setPoolReadTimeout(eq(60000));
+		verify(mockClientCacheFactory, never()).setPoolRetryAttempts(eq(5));
+		verify(mockClientCacheFactory, never()).setPoolServerGroup(eq("MockServerGroup"));
+		verify(mockClientCacheFactory, never()).setPoolSocketBufferSize(eq(16384));
+		verify(mockClientCacheFactory, never()).setPoolStatisticInterval(eq(1000));
+		verify(mockClientCacheFactory, never()).setPoolSubscriptionAckInterval(eq(500));
+		verify(mockClientCacheFactory, never()).setPoolSubscriptionEnabled(eq(true));
+		verify(mockClientCacheFactory, never()).setPoolSubscriptionMessageTrackingTimeout(eq(15000));
+		verify(mockClientCacheFactory, never()).setPoolSubscriptionRedundancy(eq(4));
+		verify(mockClientCacheFactory, never()).setPoolThreadLocalConnections(eq(false));
 	}
 
 	@Test(expected = BeanInitializationException.class)
@@ -397,7 +397,7 @@ public class ClientCacheFactoryBeanTest {
 		}
 		catch (BeanInitializationException expected) {
 			assertTrue(expected.getMessage(), expected.getMessage().startsWith(String.format(
-				"no Bean of type '%1$s' having name '%2$s' was found; a ClientCache requires a Pool",
+				"no bean of type '%1$s' having name '%2$s' was found; a ClientCache requires a Pool",
 				Pool.class.getName(), GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)));
 			assertTrue(String.format("Cause was: %1$s!", ClassUtils.getClassName(expected.getCause())),
 				expected.getCause() instanceof IllegalArgumentException);
