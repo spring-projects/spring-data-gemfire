@@ -17,7 +17,6 @@
 package org.springframework.data.gemfire.client;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import org.springframework.beans.factory.BeanInitializationException;
@@ -171,7 +170,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
 	 */
 	private ClientCacheFactory initializePool(ClientCacheFactory clientCacheFactory) {
-		return initializeClientCacheFactory(clientCacheFactory, resolvePool(this.pool));
+		resolvePool(this.pool);
+		return clientCacheFactory;
 	}
 
 	/**
@@ -200,55 +200,14 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 				}
 				catch (Exception e) {
 					throw new BeanInitializationException(String.format(
-						"No bean of type '%1$s' having name '%2$s' was found.%3$s", Pool.class.getName(), poolName,
-						(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME.equals(poolName)
-							? " A client cache requires a pool." : "")), e);
+						"no bean of type '%1$s' having name '%2$s' was found%3$s", Pool.class.getName(), poolName,
+							(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME.equals(poolName)
+								? "; a ClientCache requires a Pool" : "")), e);
 				}
 			}
 		}
 
 		return localPool;
-	}
-
-	/**
-	 * Copy the Pool settings to the ClientCacheFactory so the ClientCache will have a matching configuration.
-	 *
-	 * @param clientCacheFactory the GemFire ClientCacheFactory used to create an instance of the ClientCache.
-	 * @param pool the GemFire Pool from which to copy the pool settings.
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
-	 * @see com.gemstone.gemfire.cache.client.Pool
-	 */
-	private ClientCacheFactory initializeClientCacheFactory(ClientCacheFactory clientCacheFactory, Pool pool) {
-		if (pool != null) {
-			clientCacheFactory.setPoolFreeConnectionTimeout(pool.getFreeConnectionTimeout());
-			clientCacheFactory.setPoolIdleTimeout(pool.getIdleTimeout());
-			clientCacheFactory.setPoolLoadConditioningInterval(pool.getLoadConditioningInterval());
-			clientCacheFactory.setPoolMaxConnections(pool.getMaxConnections());
-			clientCacheFactory.setPoolMinConnections(pool.getMinConnections());
-			clientCacheFactory.setPoolMultiuserAuthentication(pool.getMultiuserAuthentication());
-			clientCacheFactory.setPoolPingInterval(pool.getPingInterval());
-			clientCacheFactory.setPoolPRSingleHopEnabled(pool.getPRSingleHopEnabled());
-			clientCacheFactory.setPoolReadTimeout(pool.getReadTimeout());
-			clientCacheFactory.setPoolRetryAttempts(pool.getRetryAttempts());
-			clientCacheFactory.setPoolServerGroup(pool.getServerGroup());
-			clientCacheFactory.setPoolSocketBufferSize(pool.getSocketBufferSize());
-			clientCacheFactory.setPoolStatisticInterval(pool.getStatisticInterval());
-			clientCacheFactory.setPoolSubscriptionAckInterval(pool.getSubscriptionAckInterval());
-			clientCacheFactory.setPoolSubscriptionEnabled(pool.getSubscriptionEnabled());
-			clientCacheFactory.setPoolSubscriptionMessageTrackingTimeout(pool.getSubscriptionMessageTrackingTimeout());
-			clientCacheFactory.setPoolSubscriptionRedundancy(pool.getSubscriptionRedundancy());
-			clientCacheFactory.setPoolThreadLocalConnections(pool.getThreadLocalConnections());
-
-			for (InetSocketAddress socketAddress : nullSafeCollection(pool.getLocators())) {
-				clientCacheFactory.addPoolLocator(socketAddress.getHostName(), socketAddress.getPort());
-			}
-
-			for (InetSocketAddress socketAddress : nullSafeCollection(pool.getServers())) {
-				clientCacheFactory.addPoolServer(socketAddress.getHostName(), socketAddress.getPort());
-			}
-		}
-
-		return clientCacheFactory;
 	}
 
 	/**
