@@ -17,15 +17,17 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.data.gemfire.function.execution.GemfireFunctionOperations;
 import org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate;
 import org.springframework.data.gemfire.support.ListRegionsOnServerFunction;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.management.internal.cli.functions.ListFunctionFunction;
 
 /**
  * A {@link BeanFactoryPostProcessor} to register a Client Region bean, if necessary, for each Region accessible
@@ -44,47 +46,74 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 		this.cache = cache;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
 	 */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		createClientRegions(beanFactory);
+		if (isFunctionAvailable(ListRegionsOnServerFunction.ID)) {
+			createClientRegions(beanFactory);
+		}
 	}
 
-	private void createClientRegions(ConfigurableListableBeanFactory beanFactory) {
-		GemfireFunctionOperations functionTemplate = new GemfireOnServersFunctionTemplate(cache);
+	// TODO what happens when the GemFire cluster contains a mix of "pure" GemFire Servers (non-Spring configured)
+	// as well as Spring configured/bootstrapped GemFire Servers?
+	boolean isFunctionAvailable(String targetFunctionId) {
+		GemfireOnServersFunctionTemplate functionTemplate = new GemfireOnServersFunctionTemplate(cache);
 
-		Iterable<String> regionNames = functionTemplate.executeAndExtract(new ListRegionsOnServerFunction());
+		Iterable<String> functionIds = CollectionUtils.nullSafeIterable(
+			functionTemplate.<Iterable<String>>executeAndExtract(new ListFunctionFunction()));
 
-		ClientRegionFactory<?, ?> clientRegionFactory = null;
-
-		if (regionNames != null && regionNames.iterator().hasNext()) {
-			clientRegionFactory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+		for (String functionId : functionIds) {
+			if (functionId.equals(targetFunctionId)) {
+				return true;
+			}
 		}
 
-		for (String regionName : regionNames) {
-			boolean createRegion = true;
+		return false;
+	}
 
-			if (beanFactory.containsBean(regionName)) {
-				Object existingBean = beanFactory.getBean(regionName);
-				Assert.isTrue(existingBean instanceof Region, String.format(
-					"Cannot create a ClientRegion bean named '%1$s'. A bean with this name of type '%2$s' already exists.",
-						regionName, existingBean.getClass().getName()));
-				createRegion = false;
-			}
+	/* (non-Javadoc) */
+	void createClientRegions(ConfigurableListableBeanFactory beanFactory) {
+		GemfireOnServersFunctionTemplate functionTemplate = new GemfireOnServersFunctionTemplate(cache);
 
-			if (createRegion) {
-				if (logger.isDebugEnabled()) {
-					logger.debug(String.format("Creating Client Region bean with name '%s'...", regionName));
+		Iterable<String> regionNames = CollectionUtils.nullSafeIterable(
+			functionTemplate.<Iterable<String>>executeAndExtract(new ListRegionsOnServerFunction()));
+
+		if (regionNames.iterator().hasNext()) {
+			ClientRegionFactory<?, ?> clientRegionFactory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+
+			for (String regionName : regionNames) {
+				boolean createRegion = true;
+
+				if (beanFactory.containsBean(regionName)) {
+					Object existingBean = beanFactory.getBean(regionName);
+
+					Assert.isTrue(existingBean instanceof Region, String.format(
+						"Cannot create a client Region bean named '%1$s'. A bean with this name of type '%2$s' already exists.",
+						regionName, ObjectUtils.nullSafeClassName(existingBean)));
+
+					createRegion = false;
 				}
-				beanFactory.registerSingleton(regionName, clientRegionFactory.create(regionName));
-			} else {
-				if (logger.isDebugEnabled()) {
-					logger.debug(String.format("A Region named '%s' is already defined.", regionName));
+
+				if (createRegion) {
+					log("Creating Region bean with name '%s'...", regionName);
+					beanFactory.registerSingleton(regionName, clientRegionFactory.create(regionName));
+				}
+				else {
+					log("A Region with name '%s' is already defined.", regionName);
 				}
 			}
+		}
+	}
+
+	/* (non-Javadoc) */
+	private void log(String message, Object... arguments) {
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format(message, arguments));
 		}
 	}
 
 }
+

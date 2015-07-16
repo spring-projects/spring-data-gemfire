@@ -22,27 +22,40 @@ import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 
 /**
- * @author David Turanski
+ * ListRegionsOnServerFunction is a GemFire Function class that returns a List of names for all Regions
+ * defined in the GemFire cluster.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.execute.Function
  */
 @SuppressWarnings("serial")
 public class ListRegionsOnServerFunction implements Function {
 
-	/* (non-Javadoc)
+	public static final String ID = ListRegionsOnServerFunction.class.getName();
+
+	/*
+	 * (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.execute.Function#execute(com.gemstone.gemfire.cache.execute.FunctionContext)
 	 */
 	@Override
 	public void execute(FunctionContext functionContext) {
-		Cache cache = CacheFactory.getAnyInstance();
 		List<String> regionNames = new ArrayList<String>();
-		for (Region<?, ?> region: cache.rootRegions()) {
+
+		for (Region<?, ?> region : getCache().rootRegions()) {
 			regionNames.add(region.getName());
 		}
-		
+
 		functionContext.getResultSender().lastResult(regionNames);
 	}
 
-	/* (non-Javadoc)
+	/* (non-Javadoc) */
+	Cache getCache() {
+		return CacheFactory.getAnyInstance();
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.execute.Function#getId()
 	 */
 	@Override
@@ -50,7 +63,8 @@ public class ListRegionsOnServerFunction implements Function {
 		return this.getClass().getName();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.execute.Function#hasResult()
 	 */
 	@Override
@@ -58,7 +72,8 @@ public class ListRegionsOnServerFunction implements Function {
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.execute.Function#isHA()
 	 */
 	@Override
@@ -66,7 +81,8 @@ public class ListRegionsOnServerFunction implements Function {
 		return false;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.execute.Function#optimizeForWrite()
 	 */
 	@Override

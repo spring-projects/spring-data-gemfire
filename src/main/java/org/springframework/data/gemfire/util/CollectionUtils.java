@@ -18,6 +18,8 @@ package org.springframework.data.gemfire.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * The CollectionUtils class is a utility class for working with Java Collections Framework and classes.
@@ -32,7 +34,37 @@ import java.util.Collections;
 public abstract class CollectionUtils extends org.springframework.util.CollectionUtils {
 
 	/**
-	 * A null-safe operation returning the original Collection is non-null or an empty Collection
+	 * A null-safe operation returning the original Iterable object if non-null or a default, empty Iterable
+	 * implementation if null.
+	 *
+	 * @param <T> the class type of the iterable elements.
+	 * @param iterable the Iterable object evaluated for a null reference.
+	 * @return the Iterable object if not null or a default, empty Iterable implementation otherwise.
+	 * @see java.lang.Iterable
+	 * @see java.util.Iterator
+	 */
+	public static <T> Iterable<T> nullSafeIterable(Iterable<T> iterable) {
+		return (iterable != null ? iterable : new Iterable<T>() {
+			@Override public Iterator<T> iterator() {
+				return new Iterator<T>() {
+					@Override public boolean hasNext() {
+						return false;
+					}
+
+					@Override public T next() {
+						throw new NoSuchElementException("no elements in this Iterator");
+					}
+
+					@Override  public void remove() {
+						throw new UnsupportedOperationException("operation not supported");
+					}
+				};
+			}
+		});
+	}
+
+	/**
+	 * A null-safe operation returning the original Collection if non-null or an empty Collection
 	 * (implemented with List) if null.
 	 *
 	 * @param <T> the element class type of the Collection.
