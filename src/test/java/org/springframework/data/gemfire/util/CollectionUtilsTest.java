@@ -16,13 +16,21 @@
 
 package org.springframework.data.gemfire.util;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
@@ -32,6 +40,7 @@ import org.junit.Test;
  *
  * @author John Blum
  * @see java.util.Collection
+ * @see java.util.Iterator
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.util.CollectionUtils
@@ -40,13 +49,52 @@ import org.junit.Test;
 public class CollectionUtilsTest {
 
 	@Test
-	public void testNullSafeCollectionWithNonNullCollection() {
+	@SuppressWarnings("unchecked")
+	public void nullSafeIterableWithNonNullIterable() {
+		Iterable<Object> mockIterable = mock(Iterable.class);
+		assertThat(CollectionUtils.nullSafeIterable(mockIterable), is(sameInstance(mockIterable)));
+	}
+
+	@Test
+	public void nullSafeIterableWithNullIterable() {
+		Iterable<Object> iterable = CollectionUtils.nullSafeIterable(null);
+		assertThat(iterable, is(not(nullValue())));
+		assertThat(iterable.iterator(), is(not(nullValue())));
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void nullSafeIterableIterator() {
+		Iterator<Object> iterator = CollectionUtils.nullSafeIterable(null).iterator();
+
+		assertThat(iterator, is(not(nullValue())));
+		assertThat(iterator.hasNext(), is(equalTo(false)));
+
+		try {
+			iterator.next();
+		}
+		catch (NoSuchElementException ignore) {
+			assertThat(ignore.getMessage(), is(equalTo("no elements in this Iterator")));
+			assertThat(ignore.getCause(), is(nullValue()));
+
+			try {
+				iterator.remove();
+			}
+			catch (UnsupportedOperationException expected) {
+				assertThat(expected.getMessage(), is(equalTo("operation not supported")));
+				assertThat(expected.getCause(), is(nullValue()));
+				throw expected;
+			}
+		}
+	}
+
+	@Test
+	public void nullSafeCollectionWithNonNullCollection() {
 		List<?> mockList = mock(List.class);
 		assertSame(mockList, CollectionUtils.nullSafeCollection(mockList));
 	}
 
 	@Test
-	public void testNullSafeCollectionWithNullCollection() {
+	public void nullSafeCollectionWithNullCollection() {
 		Collection collection = CollectionUtils.nullSafeCollection(null);
 
 		assertNotNull(collection);
