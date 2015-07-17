@@ -27,6 +27,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.management.internal.cli.functions.ListFunctionFunction;
 
 /**
@@ -38,10 +39,18 @@ import com.gemstone.gemfire.management.internal.cli.functions.ListFunctionFuncti
  */
 public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor {
 
-	private static Log logger = LogFactory.getLog(GemfireDataSourcePostProcessor.class);
+	protected final Log logger = LogFactory.getLog(getClass());
 
 	private final ClientCache cache;
 
+	/**
+	 * Constructs an instance of the GemfireDataSourcePostProcessor BeanFactoryPostProcessor class initialized
+	 * with the specified GemFire ClientCache instance for creating client PROXY Regions for all data Regions
+	 * configured in the GemFire cluster.
+	 *
+	 * @param cache the GemFire ClientCache instance.
+	 * @see com.gemstone.gemfire.cache.client.ClientCache
+	 */
 	public GemfireDataSourcePostProcessor(final ClientCache cache) {
 		this.cache = cache;
 	}
@@ -53,19 +62,14 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		if (isFunctionAvailable(ListRegionsOnServerFunction.ID)) {
-			createClientRegions(beanFactory);
+			createClientProxyRegions(beanFactory);
 		}
 	}
 
 	// TODO what happens when the GemFire cluster contains a mix of "pure" GemFire Servers (non-Spring configured)
 	// as well as Spring configured/bootstrapped GemFire Servers?
 	boolean isFunctionAvailable(String targetFunctionId) {
-		GemfireOnServersFunctionTemplate functionTemplate = new GemfireOnServersFunctionTemplate(cache);
-
-		Iterable<String> functionIds = CollectionUtils.nullSafeIterable(
-			functionTemplate.<Iterable<String>>executeAndExtract(new ListFunctionFunction()));
-
-		for (String functionId : functionIds) {
+		for (String functionId : this.<String>execute(new ListFunctionFunction())) {
 			if (functionId.equals(targetFunctionId)) {
 				return true;
 			}
@@ -75,11 +79,8 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	}
 
 	/* (non-Javadoc) */
-	void createClientRegions(ConfigurableListableBeanFactory beanFactory) {
-		GemfireOnServersFunctionTemplate functionTemplate = new GemfireOnServersFunctionTemplate(cache);
-
-		Iterable<String> regionNames = CollectionUtils.nullSafeIterable(
-			functionTemplate.<Iterable<String>>executeAndExtract(new ListRegionsOnServerFunction()));
+	void createClientProxyRegions(ConfigurableListableBeanFactory beanFactory) {
+		Iterable<String> regionNames = execute(new ListRegionsOnServerFunction());
 
 		if (regionNames.iterator().hasNext()) {
 			ClientRegionFactory<?, ?> clientRegionFactory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -91,8 +92,8 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 					Object existingBean = beanFactory.getBean(regionName);
 
 					Assert.isTrue(existingBean instanceof Region, String.format(
-						"Cannot create a client Region bean named '%1$s'. A bean with this name of type '%2$s' already exists.",
-						regionName, ObjectUtils.nullSafeClassName(existingBean)));
+						"Cannot create a client PROXY Region bean named '%1$s'. A bean with this name of type '%2$s' already exists.",
+							regionName, ObjectUtils.nullSafeClassName(existingBean)));
 
 					createRegion = false;
 				}
@@ -109,6 +110,14 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	}
 
 	/* (non-Javadoc) */
+	<T> Iterable<T> execute(Function gemfireFunction, Object... arguments) {
+		GemfireOnServersFunctionTemplate functionTemplate = new GemfireOnServersFunctionTemplate(cache);
+
+		return CollectionUtils.nullSafeIterable(
+			functionTemplate.<Iterable<T>>executeAndExtract(gemfireFunction, arguments));
+	}
+
+	/* (non-Javadoc) */
 	private void log(String message, Object... arguments) {
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format(message, arguments));
@@ -116,4 +125,3 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	}
 
 }
-
