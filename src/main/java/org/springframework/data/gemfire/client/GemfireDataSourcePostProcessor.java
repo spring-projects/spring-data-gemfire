@@ -12,6 +12,10 @@
  */
 package org.springframework.data.gemfire.client;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -19,7 +23,6 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate;
 import org.springframework.data.gemfire.support.ListRegionsOnServerFunction;
-import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -28,31 +31,42 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.management.internal.cli.functions.ListFunctionFunction;
+import com.gemstone.gemfire.management.internal.cli.domain.RegionInformation;
+import com.gemstone.gemfire.management.internal.cli.functions.GetRegionsFunction;
 
 /**
- * A {@link BeanFactoryPostProcessor} to register a Client Region bean, if necessary, for each Region accessible
- * to a Gemfire data source. If the Region is already defined, the definition will not be overridden.
+ * A Spring {@link BeanFactoryPostProcessor} used to register a Client Region Proxy bean for each Region
+ * accessible to a GemFire DataSource. If the Region is already defined, the bean definition will not be overridden.
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
+ * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+ * @see org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate
+ * @see org.springframework.data.gemfire.support.ListRegionsOnServerFunction
+ * @see com.gemstone.gemfire.cache.Region
+ * @see com.gemstone.gemfire.cache.client.ClientCache
+ * @see com.gemstone.gemfire.cache.client.ClientRegionFactory
+ * @see com.gemstone.gemfire.cache.execute.Function
+ * @see com.gemstone.gemfire.management.internal.cli.functions.GetRegionsFunction
+ * @since 1.2.0
  */
 public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private final ClientCache cache;
+	private final ClientCache clientCache;
 
 	/**
 	 * Constructs an instance of the GemfireDataSourcePostProcessor BeanFactoryPostProcessor class initialized
 	 * with the specified GemFire ClientCache instance for creating client PROXY Regions for all data Regions
 	 * configured in the GemFire cluster.
 	 *
-	 * @param cache the GemFire ClientCache instance.
+	 * @param clientCache the GemFire ClientCache instance.
 	 * @see com.gemstone.gemfire.cache.client.ClientCache
 	 */
-	public GemfireDataSourcePostProcessor(final ClientCache cache) {
-		this.cache = cache;
+	public GemfireDataSourcePostProcessor(final ClientCache clientCache) {
+		this.clientCache = clientCache;
 	}
 
 	/*
@@ -61,29 +75,54 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	 */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		if (isFunctionAvailable(ListRegionsOnServerFunction.ID)) {
-			createClientProxyRegions(beanFactory);
-		}
-	}
-
-	// TODO what happens when the GemFire cluster contains a mix of "pure" GemFire Servers (non-Spring configured)
-	// as well as Spring configured/bootstrapped GemFire Servers?
-	boolean isFunctionAvailable(String targetFunctionId) {
-		for (String functionId : this.<String>execute(new ListFunctionFunction())) {
-			if (functionId.equals(targetFunctionId)) {
-				return true;
-			}
-		}
-
-		return false;
+		createClientRegionProxies(beanFactory, regionNames());
 	}
 
 	/* (non-Javadoc) */
-	void createClientProxyRegions(ConfigurableListableBeanFactory beanFactory) {
-		Iterable<String> regionNames = execute(new ListRegionsOnServerFunction());
+	Iterable<String> regionNames() {
+		try {
+			return execute(new ListRegionsOnServerFunction());
+		}
+		catch (Exception ignore) {
+			try {
+				Object results = execute(new GetRegionsFunction());
+				List<String> regionNames = Collections.emptyList();
 
+				if (containsRegionInformation(results)) {
+					Object[] resultsArray = (Object[]) results;
+
+					regionNames = new ArrayList<String>(resultsArray.length);
+
+					for (Object result : resultsArray) {
+						regionNames.add(((RegionInformation) result).getName());
+					}
+				}
+
+				return regionNames;
+			}
+			catch (Exception e) {
+				log("Failed to determine the Regions available on the Server: %n%1$s", e);
+				return Collections.emptyList();
+			}
+		}
+	}
+
+	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
+	<T> T execute(Function gemfireFunction, Object... arguments) {
+		return new GemfireOnServersFunctionTemplate(clientCache).executeAndExtract(gemfireFunction, arguments);
+	}
+
+	/* (non-Javadoc) */
+	boolean containsRegionInformation(Object results) {
+		return (results instanceof Object[] && ((Object[]) results).length > 0
+			&& ((Object[]) results)[0] instanceof RegionInformation);
+	}
+
+	/* (non-Javadoc) */
+	void createClientRegionProxies(ConfigurableListableBeanFactory beanFactory, Iterable<String> regionNames) {
 		if (regionNames.iterator().hasNext()) {
-			ClientRegionFactory<?, ?> clientRegionFactory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+			ClientRegionFactory<?, ?> clientRegionFactory = clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
 
 			for (String regionName : regionNames) {
 				boolean createRegion = true;
@@ -110,15 +149,7 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	}
 
 	/* (non-Javadoc) */
-	<T> Iterable<T> execute(Function gemfireFunction, Object... arguments) {
-		GemfireOnServersFunctionTemplate functionTemplate = new GemfireOnServersFunctionTemplate(cache);
-
-		return CollectionUtils.nullSafeIterable(
-			functionTemplate.<Iterable<T>>executeAndExtract(gemfireFunction, arguments));
-	}
-
-	/* (non-Javadoc) */
-	private void log(String message, Object... arguments) {
+	void log(String message, Object... arguments) {
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format(message, arguments));
 		}
