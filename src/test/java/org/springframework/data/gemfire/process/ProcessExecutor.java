@@ -40,21 +40,25 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public abstract class ProcessExecutor {
 
-	protected static final File JAVA_EXE = new File(new File(FileSystemUtils.JAVA_HOME, "bin"), "java");
+	public static final File JAVA_EXE = new File(new File(FileSystemUtils.JAVA_HOME, "bin"), "java");
 
-	protected static final String JAVA_CLASSPATH = System.getProperty("java.class.path");
+	public static final String JAVA_CLASSPATH = System.getProperty("java.class.path");
 
 	protected static final String SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX = "spring.gemfire.";
 
-	public static ProcessWrapper launch(final Class<?> type, final String... args) throws IOException {
+	public static ProcessWrapper launch(Class<?> type, String... args) throws IOException {
 		return launch(FileSystemUtils.WORKING_DIRECTORY, type, args);
 	}
 
-	public static ProcessWrapper launch(final File workingDirectory, final Class<?> type, final String... args)
-			throws IOException
-	{
+	public static ProcessWrapper launch(File workingDirectory, Class<?> type, String... args) throws IOException {
+		return launch(workingDirectory, JAVA_CLASSPATH, type, args);
+	}
+
+	public static ProcessWrapper launch(File workingDirectory, String classpath, Class<?> type, String... args)
+			throws IOException {
+
 		ProcessBuilder processBuilder = new ProcessBuilder()
-			.command(buildCommand(type, args))
+			.command(buildCommand(classpath, type, args))
 			.directory(validateDirectory(workingDirectory))
 			.redirectErrorStream(true);
 
@@ -71,8 +75,8 @@ public abstract class ProcessExecutor {
 		return processWrapper;
 	}
 
-	protected static String[] buildCommand(final Class<?> type, final String... args) {
-		Assert.notNull(type != null, "The main Class to launch must not be null!");
+	protected static String[] buildCommand(String classpath, Class<?> type, String... args) {
+		Assert.notNull(type, "The main Java class to launch must not be null!");
 
 		List<String> command = new ArrayList<String>();
 		List<String> programArgs = Collections.emptyList();
@@ -80,7 +84,7 @@ public abstract class ProcessExecutor {
 		command.add(JAVA_EXE.getAbsolutePath());
 		command.add("-server");
 		command.add("-classpath");
-		command.add(JAVA_CLASSPATH);
+		command.add(StringUtils.hasText(classpath) ? classpath : JAVA_CLASSPATH);
 		command.addAll(getSpringGemFireSystemProperties());
 
 		if (args != null) {

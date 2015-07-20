@@ -24,6 +24,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.gemfire.fork.GemFireBasedServerProcess;
 import org.springframework.data.gemfire.process.ProcessExecutor;
 import org.springframework.data.gemfire.process.ProcessWrapper;
@@ -44,9 +46,12 @@ import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.distributed.ServerLauncher;
 
 /**
  * The GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTest class is a test suite of test cases
@@ -89,19 +94,44 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 
 		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs());
 
+		writeAsCacheXmlFileToDirectory("gemfire-datasource-integration-test-cache.xml", serverWorkingDirectory);
+
+		Assert.isTrue(new File(serverWorkingDirectory, "cache.xml").isFile(), String.format(
+			"Expected a cache.xml file to exist in directory (%1$s)!", serverWorkingDirectory));
+
 		List<String> arguments = new ArrayList<String>(5);
 
+		arguments.add(ServerLauncher.Command.START.getName());
 		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
 		arguments.add(String.format("-Dgemfire.mcast-port=%1$s", "0"));
 		arguments.add(String.format("-Dgemfire.log-level=%1$s", "warning"));
-		arguments.add(String.format("-Dgemfire.cache-xml-file=%1$s", "gemfire-datasource-integration-test-cache.xml"));
+		//arguments.add(String.format("-Dgemfire.cache-xml-file=%1$s", "gemfire-datasource-integration-test-cache.xml"));
 
-		serverProcess = ProcessExecutor.launch(serverWorkingDirectory, GemFireBasedServerProcess.class,
+		serverProcess = ProcessExecutor.launch(serverWorkingDirectory, customClasspath(), ServerLauncher.class,
 			arguments.toArray(new String[arguments.size()]));
 
 		waitForProcessStart(TimeUnit.SECONDS.toMillis(20), serverProcess, GemFireBasedServerProcess.getServerProcessControlFilename());
 
 		System.out.println("GemFire-based Cache Server Process for ClientCache DataSource Test should be running and connected...");
+	}
+
+	private static void writeAsCacheXmlFileToDirectory(String classpathResource, File serverWorkingDirectory) throws IOException {
+		FileCopyUtils.copy(new ClassPathResource(classpathResource).getInputStream(),
+			new FileOutputStream(new File(serverWorkingDirectory, "cache.xml")));
+	}
+
+	private static String customClasspath() {
+		String[] classpathElements = ProcessExecutor.JAVA_CLASSPATH.split(File.pathSeparator);
+
+		List<String> customClasspath = new ArrayList<String>(classpathElements.length);
+
+		for (String classpathElement : classpathElements) {
+			if (!classpathElement.contains("spring-data-gemfire")) {
+				customClasspath.add(classpathElement);
+			}
+		}
+
+		return StringUtils.collectionToDelimitedString(customClasspath, File.pathSeparator);
 	}
 
 	private static void waitForProcessStart(final long milliseconds, final ProcessWrapper process, final String processControlFilename) {
