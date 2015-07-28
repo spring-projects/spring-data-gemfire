@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.6.2.RELEASE (2015-07-28)
+---------------------------------------------
+* SGF-420 - Release 1.6.2 (Fowler).
+* SGF-415 - Remove the ClientCacheFactory Pool configuration in ClientCacheFactoryBean.
+* SGF-414 - Resolve incompatibility between the DistributedSystem created by the PoolFactoryBean and the DistributedSystem resolved by the ClientCacheFactoryBean when SSL is configured.
+* SGF-409 - Modify the GemfireDataSourcePostProcessor (basis for <gfe:datasource>) to not assume a GemFire Server was configured and bootstrapped with Spring and subsequently that the SDG ListRegionsOnServerFunction was registered.
+
+
 Changes in version 1.4.6.RELEASE (2015-07-01)
 ---------------------------------------------
 * SGF-411 - Release 1.4.6 (Dijkstra).
