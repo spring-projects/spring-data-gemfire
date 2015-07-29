@@ -46,7 +46,7 @@ Note, in the previous examples, since no cache name was defined, the default nam
 [[bootstrap:region:auto-lookup]]
 == Auto Region Lookup
 
-New, as of Spring Date GemFire 1.5, is the ability to "auto-lookup" all Regions defined in GemFire's native cache.xml file, and imported into Spring config
+New, as of Spring Data GemFire 1.5, is the ability to "auto-lookup" all Regions defined in GemFire's native cache.xml file, and imported into Spring config
 using the`cache-xml-location` attribute on the `<gfe:cache>` element in the GFE XML namespace.
 
 For instance, given a GemFire `cache.xml` file of...
@@ -71,7 +71,7 @@ A user may import the `cache.xml` file as follows...
 ----
 
 A user can then use the `<gfe:lookup-region>` element (e.g. `<gfe:lookup-region id="Parent"/>`) to reference specific
-GemFire Regions as bean in the Spring context, or the user may choose to import all GemFire Regions defined
+GemFire Regions as beans in the Spring context, or the user may choose to import all GemFire Regions defined
 in `cache.xml` with the new...
 
 [source,xml]
@@ -112,7 +112,7 @@ public class ApplicationDao extends DaoSupport {
 
 The above Java example is applicable when using the Spring context's `component-scan` functionality.
 
-If you are declaring your components using Spring XML, then you would...
+If you are declaring your components using Spring XML, then you would do...
 
 [source,xml]
 ----
@@ -407,13 +407,13 @@ Region Templates will even work for Subregions.  Notice that 'TemplateBasedParti
 which extends 'ExtendedRegionTemplate' which extends 'BaseRegionTemplate'.  Attributes and sub-elements defined in
 subsequent, inherited Region bean definitions override what is in the parent.
 
-=== Under the hood...
+=== Under-the-hood...
 
 Spring Data GemFire applies Region Templates when the Spring application context configuration meta-data is *parsed*,
 and therefore, must be declared in the order of inheritance, in other words, parent templates before children.  This
-ensure the proper configuration is applied, especially when element attributes or sub-elements are "overridden".
+ensures the proper configuration is applied, especially when element attributes or sub-elements are "overridden".
 
-IMPORTANT: It is equally important to remember the Region types must only inherit from other similar typed Region.
+IMPORTANT: It is equally important to remember the Region types must only inherit from other similar typed Regions.
 For instance, it is not possible for a `<gfe:replicated-region>` to inherit from a `<gfe:partitioned-region-template>`.
 
 NOTE: Region Templates are single-inheritance.
@@ -576,9 +576,14 @@ GemFire allows configuration of subscriptions to control http://gemfire.docs.piv
 [[bootstrap:region:eviction]]
 == Data Eviction and Overflowing
 
-Based on various constraints, each region can have an eviction policy in place for evicting data from memory. Currently, in GemFire, eviction applies to the least recently used entry (also known as http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used[LRU]). Evicted entries are either destroyed or paged to disk (also known as *overflow*).
+Based on various constraints, each region can have an eviction policy in place for evicting data from memory.
+Currently, in GemFire, eviction applies to the least recently used entry (also known as
+http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used[LRU]). Evicted entries are either destroyed
+or paged to disk (also known as *overflow*).
 
-Spring Data GemFire supports all eviction policies (entry count, memory and heap usage) for both `partitioned-region` and `replicated-region` as well as `client-region`, through the nested `eviction` element. For example, to configure a partition to overflow to disk if its size is more then 512 MB, one could use the following configuration:
+Spring Data GemFire supports all eviction policies (entry count, memory and heap usage) for both `partitioned-region`
+and `replicated-region` as well as `client-region`, through the nested `eviction` element. For example, to configure
+a partition to overflow to disk if its size is more then 512 MB, one could use the following configuration:
 
 [source,xml]
 ----
@@ -587,39 +592,159 @@ Spring Data GemFire supports all eviction policies (entry count, memory and heap
 </gfe:partitioned-region>
 ----
 
-IMPORTANT: Replicas cannot use a `local destroy` eviction since that would invalidate them. See the GemFire docs for more information.
+IMPORTANT: Replicas cannot use a `local destroy` eviction since that would invalidate them. See the GemFire docs
+for more information.
 
-When configuring regions for overflow, it is recommended to configure the storage through the `disk-store` element for maximum efficiency.
+When configuring regions for overflow, it is recommended to configure the storage through the `disk-store` element
+for maximum efficiency.
 
-For a detailed description of eviction policies, see the GemFire documentation (such as http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/eviction/how_eviction_works.html[this] page).
+For a detailed description of eviction policies, see the GemFire documentation (such as
+http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/eviction/how_eviction_works.html[this] page).
 
 == Data Expiration
 
-GemFire allows you to control how long entries exist in the cache. Eviction is driven by elapsed time, as opposed to eviction which is driven by memory usage. Once an entry expires it may no longer be accessed from the cache. GemFire supports the following expiration types:
+GemFire allows you to control how long entries exist in the cache. Expiration is driven by elapsed time, as opposed to
+Eviction, which is driven by memory usage. Once an entry expires it may no longer be accessed from the cache.
 
-* *Time to live (TTL)* - The amount of time, in seconds, the object may remain in the cache after the last creation or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when the region is created and when an entry has its counter reset.
-* *Idle timeout* - The amount of time, in seconds, the object may remain in the cache after the last access. The idle timeout counter for an object is reset any time its TTL counter is reset. In addition, an entry’s idle timeout counter is reset any time the entry is accessed through a get operation or a netSearch . The idle timeout counter for a region is reset whenever the idle timeout is reset for one of its entries.
+GemFire supports the following Expiration types:
 
-Each of these may be applied to the region itself or entries in the region. Spring Data GemFire provides `<region-ttl>`, `<region-tti>`, `<entry-ttl>` and `<entry-tti>` region child elements to specify timeout values and expiration actions.
+* *Time-to-Live (TTL)* - The amount of time, in seconds, the object may remain in the cache after the last creation
+or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when
+the Region is created and when an entry has its counter reset.
+* *Idle Timeout (TTI)* - The amount of time, in seconds, the object may remain in the cache after the last access.
+The Idle Timeout counter for an object is reset any time its TTL counter is reset. In addition, an entry’s Idle Timeout
+counter is reset any time the entry is accessed through a get operation or a netSearch . The Idle Timeout counter for a
+Region is reset whenever the Idle Timeout is reset for one of its entries.
+
+Each of these may be applied to the Region itself or entries in the Region. Spring Data GemFire provides `<region-ttl>`,
+`<region-tti>`, `<entry-ttl>` and `<entry-tti>` Region child elements to specify timeout values and expiration actions.
+
+== Annotation-based Data Expiration
+
+As of Spring Data GemFire 1.7, a developer now has the ability to define Expiration policies and settings on individual
+Region Entry values, or rather, application domain objects directly.  For instance, a developer might define Expiration
+settings on a Session-based application domain object like so...
+
+[source,java]
+----
+@Expiration(timeout = 1800, action = ExpirationActionType.INVALIDATE)
+public static class SessionBasedApplicationDomainObject {
+}
+----
+
+In addition, a developer may also specify Expiration type specific settings on Region Entries using `@IdleTimeoutExpiration`
+and `@TimeToLiveExpiration` for Idle Timeout (TTI) and Time-to-Live (TTL) Expiration, respectively...
+
+[source,java]
+----
+@TimeToLiveExpiration(timeout = 3600, action = ExpirationActionType.LOCAL_DESTROY)
+@IdleTimeoutExpiration(timeout = 1800, action = ExpirationActionType.LOCAL_INVALIDATE)
+@Expiration(timeout = 1800, action = ExpirationActionType.INVALIDATE)
+public static class AnotherSessionBasedApplicationDomainObject {
+}
+----
+
+Both `@IdleTimeoutExpiration` and `@TimeToLiveExpiration` take precedence over the generic `@Expiration` annotation
+when more than one Expiration annotation type is specified, as shown above. Though, neither `@IdleTimeoutExpiration`
+nor `@TimeToLiveExpiration` overrides the other; rather they may compliment each other when different Region Entry
+Expiration types, such as TTL and TTI, are both configured.
+
+Also, all @Expiration-based annotations apply only to Region Entry values.  Expiration for a "Region" is not covered
+by Spring Data GemFire's Expiration annotation support.  However, GemFire and Spring Data GemFire do allow you to set
+Region Expiration using the SDG XML namespace, like so...
+
+[source,xml]
+----
+<gfe:*-region id="Example" persistent="false">
+  <gfe:region-ttl timeout="600" action="DESTROY"/>
+  <gfe:region-tti timeout="300" action="INVALIDATE"/>
+</gfe:*-region>
+----
+
+Spring Data GemFire's @Expiration annotation support is implemented with GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/CustomExpiry.html[`CustomExpiry`] interface.
+See http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/expiration/configuring_data_expiration.html[GemFire's User Guide] for more details
+
+The Spring Data GemFire `AnnotationBasedExpiration` class (and `CustomExpiry` implementation) is specifically responsible
+for processing the SDG @Expiration annotations and applying the Expiration policy and settings appropriately
+for Region Entry Expiration on request.
+
+To use Spring Data GemFire to configure specifically GemFire Regions to appropriately apply the Expiration policy
+and settings applied to your application domain objects annotated with @Expiration-based annotations, you must...
+
+1. Define a Spring bean in the Spring ApplicationContext of type `AnnotationBasedExpiration` using a constructor
+or one of the factory methods.  When configuring Expiration for a specific Expiration type, such as Idle Timeout
+or Time-to-Live, then you should use one of the convenient factory methods of the `AnnotationBasedExpiration` class,
+like so...
++
+[source,xml]
+----
+<bean id="ttlExpiration" class="org.springframework.data.gemfire.support.AnnotationBasedExpiration"
+      factory-method="forTimeToLive"/>
+
+<gfe:partitioned-region id="Example" persistent="false">
+    <gfe:custom-entry-ttl ref="ttlExpiration"/>
+</gfe:partitioned-region>
+----
++
+[NOTE]
+====
+To configure Idle Timeout (TTI) Expiration instead, then you would of course use the `forIdleTimeout` factory method
+along with the `<gfe:custom-entry-tti ref="ttiExpiration"/>` element to set TTI.
+====
+
+2. (optional) Annotate your application domain objects that will be stored in the Region with Expiration policies
+and custom settings with one of the Spring Data GemFire @Expiration annotations: `@Expiration`, `@IdleTimeoutExpiration`
+and/or `@TimeToLiveExpiration`
+
+3. (optional) In cases where certain application domain objects have not been annotated with Spring Data GemFire's
+@Expiration annotations at all, but the GemFire Region is configured to use SDG's custom `AnnotationBasedExpiration` class
+to determine the Expiration policy and settings for objects stored in the Region, then it is possible to set "default"
+Expiration attributes on the `AnnotationBasedExpiration` bean by doing the following...
+
+[source,xml]
+----
+<bean id="defaultExpirationAttributes" class="com.gemstone.gemfire.cache.ExpirationAttributes">
+    <constructor-arg value="600"/>
+    <constructor-arg value="#{T(com.gemstone.gemfire.cache.ExpirationAction).DESTROY}"/>
+</bean>
+
+<bean id="ttiExpiration" class="org.springframework.data.gemfire.support.AnnotationBasedExpiration"
+      factory-method="forIdleTimeout">
+    <constructor-arg ref="defaultExpirationAttributes"/>
+</bean>
+
+<gfe:partitioned-region id="Example" persistent="false">
+    <gfe:custom-entry-tti ref="ttiExpiration"/>
+</gfe:partitioned-region>
+----
 
 [[bootstrap:region:local]]
 == Local Region
 
-Spring Data GemFire offers a dedicated `local-region` element for creating local regions. Local regions, as the name implies, are standalone meaning they do not share data with any other distributed system member. Other than that, all common region configuration options are supported. A minimal declaration looks as follows (again, the example relies on the Spring Data GemFire namespace naming conventions to wire the cache):
+Spring Data GemFire offers a dedicated `local-region` element for creating local regions. Local regions, as the name
+implies, are standalone meaning they do not share data with any other distributed system member. Other than that,
+all common region configuration options are supported. A minimal declaration looks as follows (again, the example
+relies on the Spring Data GemFire namespace naming conventions to wire the cache):
 
 [source,xml]
 ----
 <gfe:local-region id="myLocalRegion" />
 ----
 
-Here, a local region is created (if one doesn't exist already). The name of the region is the same as the bean id (myLocalRegion) and the bean assumes the existence of a GemFire cache named `gemfireCache`.
+Here, a local region is created (if one doesn't exist already). The name of the region is the same as the bean id
+(myLocalRegion) and the bean assumes the existence of a GemFire cache named `gemfireCache`.
 
 [[bootstrap:region:replicate]]
 == Replicated Region
 
-One of the common region types is a *replicated region* or *replica*. In short, when a region is configured to be a replicated region, every member that hosts that region stores a copy of the region's entries locally. Any update to a replicated region is distributed to all copies of the region. When a replica is created, it goes through an initialization stage in which it discovers other replicas and automatically copies all the entries. While one replica is initializing you can still continue to use the other rep
+One of the common region types is a *replicated region* or *replica*. In short, when a region is configured to be
+a replicated region, every member that hosts that region stores a copy of the region's entries locally. Any update to
+a replicated region is distributed to all copies of the region. When a replica is created, it goes through
+an initialization stage in which it discovers other replicas and automatically copies all the entries. While one replica
+is initializing you can still continue to use the other replica.
 
-Spring Data GemFire offers a `replicated-region` element. A minimal declaration looks as follows. All common configuration options are available for replicated regions.
+Spring Data GemFire offers a `replicated-region` element. A minimal declaration looks as follows.
+All common configuration options are available for replicated regions.
 
 [source,xml]
 ----

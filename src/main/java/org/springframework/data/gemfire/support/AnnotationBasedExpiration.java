@@ -64,10 +64,33 @@ public class AnnotationBasedExpiration<K, V> implements CustomExpiry<K, V> {
 		this.defaultExpirationAttributes = defaultExpirationAttributes;
 	}
 
+	/**
+	 * Constructs an AnnotationBasedExpiration instance with no default ExpirationAttributes to process
+	 * Idle Timeout (TTI) Expiration annotated Region Entries.
+	 *
+	 * @param <K> the class type of the Region Entry Key.
+	 * @param <V> the class type of the Region Entry Value.
+	 * @return an AnnotationBasedExpiration instance to process Idle Timeout Expiration annotated Region Entries.
+	 * @see org.springframework.data.gemfire.support.AnnotationBasedExpiration
+	 * @see org.springframework.data.gemfire.support.IdleTimeoutExpiration
+	 * @see #forIdleTimeout(com.gemstone.gemfire.cache.ExpirationAttributes)
+	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forIdleTimeout() {
 		return forIdleTimeout(null);
 	}
 
+	/**
+	 * Constructs an AnnotationBasedExpiration instance with default ExpirationAttributes to process
+	 * Idle Timeout (TTI) Expiration annotated Region Entries.
+	 *
+	 * @param <K> the class type of the Region Entry Key.
+	 * @param <V> the class type of the Region Entry Value.
+	 * @param defaultExpirationAttributes ExpirationAttributes used by default if no Expiration policy was specified
+	 * on the Region Entry.
+	 * @return an AnnotationBasedExpiration instance to process Idle Timeout Expiration annotated Region Entries.
+	 * @see org.springframework.data.gemfire.support.AnnotationBasedExpiration
+	 * @see org.springframework.data.gemfire.support.IdleTimeoutExpiration
+	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forIdleTimeout(ExpirationAttributes defaultExpirationAttributes) {
 		return new AnnotationBasedExpiration<K, V>(defaultExpirationAttributes) {
 			@Override protected ExpirationMetaData getExpirationMetaData(final Region.Entry<K, V> entry) {
@@ -77,10 +100,33 @@ public class AnnotationBasedExpiration<K, V> implements CustomExpiry<K, V> {
 		};
 	}
 
+	/**
+	 * Constructs an AnnotationBasedExpiration instance with no default ExpirationAttributes to process
+	 * Time-To-Live (TTL) Expiration annotated Region Entries.
+	 *
+	 * @param <K> the class type of the Region Entry Key.
+	 * @param <V> the class type of the Region Entry Value.
+	 * @return an AnnotationBasedExpiration instance to process Time-To-Live Expiration annotated Region Entries.
+	 * @see org.springframework.data.gemfire.support.AnnotationBasedExpiration
+	 * @see org.springframework.data.gemfire.support.TimeToLiveExpiration
+	 * @see #forTimeToLive(com.gemstone.gemfire.cache.ExpirationAttributes)
+	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forTimeToLive() {
 		return forTimeToLive(null);
 	}
 
+	/**
+	 * Constructs an AnnotationBasedExpiration instance with default ExpirationAttributes to process
+	 * Time-To-Live (TTL) Expiration annotated Region Entries.
+	 *
+	 * @param <K> the class type of the Region Entry Key.
+	 * @param <V> the class type of the Region Entry Value.
+	 * @param defaultExpirationAttributes ExpirationAttributes used by default if no Expiration policy was specified
+	 * on the Region Entry.
+	 * @return an AnnotationBasedExpiration instance to process Time-To-Live Expiration annotated Region Entries.
+	 * @see org.springframework.data.gemfire.support.AnnotationBasedExpiration
+	 * @see org.springframework.data.gemfire.support.TimeToLiveExpiration
+	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forTimeToLive(ExpirationAttributes defaultExpirationAttributes) {
 		return new AnnotationBasedExpiration<K, V>(defaultExpirationAttributes) {
 			@Override protected ExpirationMetaData getExpirationMetaData(final Region.Entry<K, V> entry) {
