@@ -11,6 +11,15 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
   ">
 
+	<util:properties id="expirationProperties">
+		<prop key="gemfire.region.entry.expiration.timeout">60</prop>
+		<prop key="gemfire.region.entry.expiration.action.string">LOCAL_INVALIDATE</prop>
+		<prop key="gemfire.region.entry.expiration.action.gemfire.type">#{T(com.gemstone.gemfire.cache.ExpirationAction).INVALIDATE}</prop>
+		<prop key="gemfire.region.entry.expiration.action.spring.type">#{T(org.springframework.data.gemfire.ExpirationActionType).DESTROY}</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="expirationProperties"/>
+
 	<util:properties id="gemfireProperties">
 		<prop key="name">AnnotationBasedExpirationConfigurationIntegrationTest</prop>
 		<prop key="mcast-port">0</prop>
@@ -23,6 +32,8 @@
 		<constructor-arg value="600"/>
 		<constructor-arg value="#{T(com.gemstone.gemfire.cache.ExpirationAction).DESTROY}"/>
 	</bean>
+
+	<bean id="genericExpiration" class="org.springframework.data.gemfire.support.AnnotationBasedExpiration"/>
 
 	<bean id="ttiExpiration" class="org.springframework.data.gemfire.support.AnnotationBasedExpiration"
 		  factory-method="forIdleTimeout"/>

@@ -350,36 +350,36 @@ public class AnnotationBasedExpirationTest {
 			expirationMetaData.expirationAction());
 	}
 
-	@Expiration(timeout = 60, action = ExpirationActionType.INVALIDATE)
-	@IdleTimeoutExpiration(timeout = 120, action = ExpirationActionType.LOCAL_INVALIDATE)
-	@TimeToLiveExpiration(timeout = 300, action = ExpirationActionType.LOCAL_DESTROY)
+	@Expiration(timeout = "60", action = "INVALIDATE")
+	@IdleTimeoutExpiration(timeout = "120", action = "LOCAL_INVALIDATE")
+	@TimeToLiveExpiration(timeout = "300", action = "LOCAL_DESTROY")
 	public static class RegionEntryValueWithTimeToLiveIdleTimeoutGenericExpiration {
 	}
 
-	@IdleTimeoutExpiration(timeout = 120, action = ExpirationActionType.LOCAL_INVALIDATE)
-	@TimeToLiveExpiration(timeout = 300, action = ExpirationActionType.LOCAL_DESTROY)
+	@IdleTimeoutExpiration(timeout = "120", action = "LOCAL_INVALIDATE")
+	@TimeToLiveExpiration(timeout = "300", action = "LOCAL_DESTROY")
 	public static class RegionEntryValueWithTimeToLiveIdleTimeoutExpiration {
 	}
 
-	@Expiration(timeout = 60, action = ExpirationActionType.INVALIDATE)
-	@TimeToLiveExpiration(timeout = 300, action = ExpirationActionType.LOCAL_DESTROY)
+	@Expiration(timeout = "60", action = "INVALIDATE")
+	@TimeToLiveExpiration(timeout = "300", action = "LOCAL_DESTROY")
 	public static class RegionEntryValueWithTimeToLiveGenericExpiration {
 	}
 
-	@TimeToLiveExpiration(timeout = 300, action = ExpirationActionType.LOCAL_DESTROY)
+	@TimeToLiveExpiration(timeout = "300", action = "LOCAL_DESTROY")
 	public static class RegionEntryValueWithTimeToLiveExpiration {
 	}
 
-	@Expiration(timeout = 60, action = ExpirationActionType.INVALIDATE)
-	@IdleTimeoutExpiration(timeout = 120, action = ExpirationActionType.LOCAL_INVALIDATE)
+	@Expiration(timeout = "60", action = "INVALIDATE")
+	@IdleTimeoutExpiration(timeout = "120", action = "LOCAL_INVALIDATE")
 	public static class RegionEntryValueWithIdleTimeoutGenericExpiration {
 	}
 
-	@IdleTimeoutExpiration(timeout = 120, action = ExpirationActionType.LOCAL_INVALIDATE)
+	@IdleTimeoutExpiration(timeout = "120", action = "LOCAL_INVALIDATE")
 	public static class RegionEntryValueWithIdleTimeoutExpiration {
 	}
 
-	@Expiration(timeout = 60, action = ExpirationActionType.INVALIDATE)
+	@Expiration(timeout = "60", action = "INVALIDATE")
 	public static class RegionEntryValueWithGenericExpiration {
 	}
 
