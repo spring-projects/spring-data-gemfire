@@ -17,9 +17,20 @@
 package org.springframework.data.gemfire.support;
 
 import java.lang.annotation.Annotation;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.gemfire.ExpirationActionConverter;
 import org.springframework.data.gemfire.ExpirationActionType;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CustomExpiry;
@@ -34,15 +45,22 @@ import com.gemstone.gemfire.cache.Region;
  * Annotations.
  *
  * @author John Blum
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.data.gemfire.ExpirationActionType
  * @see org.springframework.data.gemfire.support.Expiration
  * @see org.springframework.data.gemfire.support.IdleTimeoutExpiration
  * @see org.springframework.data.gemfire.support.TimeToLiveExpiration
  * @see com.gemstone.gemfire.cache.CustomExpiry
+ * @see com.gemstone.gemfire.cache.ExpirationAction
  * @see com.gemstone.gemfire.cache.ExpirationAttributes
+ * @see com.gemstone.gemfire.cache.Region
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
-public class AnnotationBasedExpiration<K, V> implements CustomExpiry<K, V> {
+public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, CustomExpiry<K, V> {
+
+	private static final AtomicReference<BeanFactory> beanFactory = new AtomicReference<BeanFactory>(null);
 
 	//private ExpirationAttributes defaultExpirationAttributes = ExpirationAttributes.DEFAULT;
 	private ExpirationAttributes defaultExpirationAttributes;
@@ -51,6 +69,7 @@ public class AnnotationBasedExpiration<K, V> implements CustomExpiry<K, V> {
 	 * Constructs a new instance of the AnnotationBasedExpiration class with no default expiration policy.
 	 */
 	public AnnotationBasedExpiration() {
+		this(null);
 	}
 
 	/**
@@ -134,6 +153,17 @@ public class AnnotationBasedExpiration<K, V> implements CustomExpiry<K, V> {
 					: super.getExpirationMetaData(entry));
 			}
 		};
+	}
+
+	@Override
+	public void setBeanFactory(final BeanFactory beanFactory) throws BeansException {
+		AnnotationBasedExpiration.beanFactory.set(beanFactory);
+	}
+
+	protected BeanFactory getBeanFactory() {
+		BeanFactory localBeanFactory = beanFactory.get();
+		Assert.state(localBeanFactory != null, "beanFactory was not properly initialized");
+		return localBeanFactory;
 	}
 
 	/**
@@ -306,13 +336,15 @@ public class AnnotationBasedExpiration<K, V> implements CustomExpiry<K, V> {
 	 */
 	protected static class ExpirationMetaData {
 
+		private static final ExpirationActionConverter EXPIRATION_ACTION_CONVERTER = new ExpirationActionConverter();
+
 		private final int timeout;
 
-		private final ExpirationActionType expirationAction;
+		private final ExpirationActionType action;
 
-		protected ExpirationMetaData(final int timeout, final ExpirationActionType expirationAction) {
+		protected ExpirationMetaData(int timeout, ExpirationActionType action) {
 			this.timeout = timeout;
-			this.expirationAction = expirationAction;
+			this.action = action;
 		}
 
 		protected static ExpirationMetaData from(ExpirationAttributes expirationAttributes) {
@@ -321,23 +353,59 @@ public class AnnotationBasedExpiration<K, V> implements CustomExpiry<K, V> {
 		}
 
 		protected static ExpirationMetaData from(Expiration expiration) {
-			return new ExpirationMetaData(expiration.timeout(), expiration.action());
+			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
 		protected static ExpirationMetaData from(IdleTimeoutExpiration expiration) {
-			return new ExpirationMetaData(expiration.timeout(), expiration.action());
+			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
 		protected static ExpirationMetaData from(TimeToLiveExpiration expiration) {
-			return new ExpirationMetaData(expiration.timeout(), expiration.action());
+			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
 		public ExpirationAttributes toExpirationAttributes() {
 			return new ExpirationAttributes(timeout(), expirationAction());
 		}
 
+		protected static int parseTimeout(String timeout) {
+			try {
+				return Integer.parseInt(timeout);
+			}
+			catch (NumberFormatException ignore) {
+				StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
+
+				evaluationContext.setBeanResolver(new BeanFactoryResolver(beanFactory.get()));
+
+				return new SpelExpressionParser().parseExpression(timeout).getValue(evaluationContext, Integer.TYPE);
+			}
+		}
+
+		protected static ExpirationActionType parseAction(String action) {
+			try {
+				return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER.convert(action));
+			}
+			catch (RuntimeException e) {
+				StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
+				evaluationContext.setBeanResolver(new BeanFactoryResolver(beanFactory.get()));
+				ExpressionParser parser = new SpelExpressionParser();
+				Expression expression = parser.parseExpression(action);
+				Class<?> valueType = expression.getValueType(evaluationContext);
+
+				if (String.class.equals(valueType)) {
+					return ExpirationActionType.valueOfIgnoreCase(expression.getValue(evaluationContext, String.class));
+				}
+				else if (ExpirationAction.class.equals(valueType)) {
+					return ExpirationActionType.valueOf(expression.getValue(evaluationContext, ExpirationAction.class));
+				}
+				else {
+					return expression.getValue(evaluationContext, ExpirationActionType.class);
+				}
+			}
+		}
+
 		public ExpirationActionType action() {
-			return expirationAction;
+			return action;
 		}
 
 		public ExpirationAction expirationAction() {

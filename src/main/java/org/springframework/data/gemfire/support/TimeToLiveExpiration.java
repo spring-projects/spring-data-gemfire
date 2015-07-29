@@ -23,8 +23,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.data.gemfire.ExpirationActionType;
-
 /**
  * TimeToLiveExpiration is an enumerated type encapsulating custom expiration settings for application domain objects
  * to express their time-to-live (TTL) expiration policy.
@@ -41,8 +39,8 @@ import org.springframework.data.gemfire.ExpirationActionType;
 @SuppressWarnings("unused")
 public @interface TimeToLiveExpiration {
 
-	ExpirationActionType action() default ExpirationActionType.INVALIDATE;
+	String action() default "INVALIDATE";
 
-	int timeout() default 0;
+	String timeout() default "0";
 
 }

@@ -23,8 +23,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.data.gemfire.ExpirationActionType;
-
 /**
  * Expiration is an enumerated type encapsulating custom expiration settings for application domain objects
  * to express their general expiration policy.
@@ -39,8 +37,8 @@ import org.springframework.data.gemfire.ExpirationActionType;
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.TYPE })
 public @interface Expiration {
 
-	ExpirationActionType action() default ExpirationActionType.INVALIDATE;
+	String action() default "INVALIDATE";
 
-	int timeout() default 0;
+	String timeout() default "0";
 
 }
