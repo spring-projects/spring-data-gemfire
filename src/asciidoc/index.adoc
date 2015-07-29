@@ -5,11 +5,13 @@ Costin Leau , David Turanski , John Blum , Oliver Gierke
 :revdate: {localdate}
 :toc:
 :toc-placement!:
-:spring-data-commons-docs: ../../../../spring-data-commons/src/main/asciidoc
+:spring-data-commons-docs: {baseDir}/../../../spring-data-commons/src/main/asciidoc
 
 (C) 2011-2015 The original authors.
 
-NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically.
+NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not
+charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed
+in print or electronically.
 
 toc::[]
 
@@ -17,9 +19,6 @@ toc::[]
 include::{baseDir}/preface.adoc[]
 
 :leveloffset: 0
-
-[[introduction]]
-= Introduction
 
 :leveloffset: +1
 include::{baseDir}/introduction/introduction.adoc[]
@@ -60,3 +59,4 @@ include::{spring-data-commons-docs}/repository-populator-namespace-reference.ado
 include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[]
 include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[]
 include::{baseDir}/appendix/appendix-schema.adoc[]
+:leveloffset: -1

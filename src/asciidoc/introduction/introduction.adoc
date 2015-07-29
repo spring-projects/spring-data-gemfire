@@ -1,4 +1,4 @@
-[[intro-introduction]]
+[[introduction]]
 = Introduction
 
 This reference guide for Spring Data GemFire explains how to use the Spring Framework to configure
