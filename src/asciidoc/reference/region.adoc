@@ -627,7 +627,7 @@ settings on a Session-based application domain object like so...
 
 [source,java]
 ----
-@Expiration(timeout = 1800, action = ExpirationActionType.INVALIDATE)
+@Expiration(timeout = "1800", action = "INVALIDATE")
 public static class SessionBasedApplicationDomainObject {
 }
 ----
@@ -637,9 +637,9 @@ and `@TimeToLiveExpiration` for Idle Timeout (TTI) and Time-to-Live (TTL) Expira
 
 [source,java]
 ----
-@TimeToLiveExpiration(timeout = 3600, action = ExpirationActionType.LOCAL_DESTROY)
-@IdleTimeoutExpiration(timeout = 1800, action = ExpirationActionType.LOCAL_INVALIDATE)
-@Expiration(timeout = 1800, action = ExpirationActionType.INVALIDATE)
+@TimeToLiveExpiration(timeout = "3600", action = "LOCAL_DESTROY")
+@IdleTimeoutExpiration(timeout = "1800", action = "LOCAL_INVALIDATE")
+@Expiration(timeout = "1800", action = "INVALIDATE")
 public static class AnotherSessionBasedApplicationDomainObject {
 }
 ----
@@ -647,9 +647,11 @@ public static class AnotherSessionBasedApplicationDomainObject {
 Both `@IdleTimeoutExpiration` and `@TimeToLiveExpiration` take precedence over the generic `@Expiration` annotation
 when more than one Expiration annotation type is specified, as shown above. Though, neither `@IdleTimeoutExpiration`
 nor `@TimeToLiveExpiration` overrides the other; rather they may compliment each other when different Region Entry
-Expiration types, such as TTL and TTI, are both configured.
+Expiration types, such as TTL and TTI, are configured.
 
-Also, all @Expiration-based annotations apply only to Region Entry values.  Expiration for a "Region" is not covered
+[NOTE]
+====
+All @Expiration-based annotations apply only to Region Entry values.  Expiration for a "Region" is not covered
 by Spring Data GemFire's Expiration annotation support.  However, GemFire and Spring Data GemFire do allow you to set
 Region Expiration using the SDG XML namespace, like so...
 
@@ -660,6 +662,7 @@ Region Expiration using the SDG XML namespace, like so...
   <gfe:region-tti timeout="300" action="INVALIDATE"/>
 </gfe:*-region>
 ----
+====
 
 Spring Data GemFire's @Expiration annotation support is implemented with GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/CustomExpiry.html[`CustomExpiry`] interface.
 See http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/expiration/configuring_data_expiration.html[GemFire's User Guide] for more details
@@ -668,13 +671,13 @@ The Spring Data GemFire `AnnotationBasedExpiration` class (and `CustomExpiry` im
 for processing the SDG @Expiration annotations and applying the Expiration policy and settings appropriately
 for Region Entry Expiration on request.
 
-To use Spring Data GemFire to configure specifically GemFire Regions to appropriately apply the Expiration policy
+To use Spring Data GemFire to configure specific GemFire Regions to appropriately apply the Expiration policy
 and settings applied to your application domain objects annotated with @Expiration-based annotations, you must...
 
-1. Define a Spring bean in the Spring ApplicationContext of type `AnnotationBasedExpiration` using a constructor
-or one of the factory methods.  When configuring Expiration for a specific Expiration type, such as Idle Timeout
-or Time-to-Live, then you should use one of the convenient factory methods of the `AnnotationBasedExpiration` class,
-like so...
+1. Define a Spring bean in the Spring ApplicationContext of type `AnnotationBasedExpiration` using the appropriate
+constructor or one of the convenient factory methods.  When configuring Expiration for a specific Expiration type,
+such as Idle Timeout or Time-to-Live, then you should use one of the factory methods of the `AnnotationBasedExpiration`
+class, like so...
 +
 [source,xml]
 ----
@@ -693,10 +696,10 @@ along with the `<gfe:custom-entry-tti ref="ttiExpiration"/>` element to set TTI.
 ====
 
 2. (optional) Annotate your application domain objects that will be stored in the Region with Expiration policies
-and custom settings with one of the Spring Data GemFire @Expiration annotations: `@Expiration`, `@IdleTimeoutExpiration`
+and custom settings using one of Spring Data GemFire's @Expiration annotations: `@Expiration`, `@IdleTimeoutExpiration`
 and/or `@TimeToLiveExpiration`
 
-3. (optional) In cases where certain application domain objects have not been annotated with Spring Data GemFire's
+3. (optional) In cases where particular application domain objects have not been annotated with Spring Data GemFire's
 @Expiration annotations at all, but the GemFire Region is configured to use SDG's custom `AnnotationBasedExpiration` class
 to determine the Expiration policy and settings for objects stored in the Region, then it is possible to set "default"
 Expiration attributes on the `AnnotationBasedExpiration` bean by doing the following...
@@ -717,6 +720,75 @@ Expiration attributes on the `AnnotationBasedExpiration` bean by doing the follo
     <gfe:custom-entry-tti ref="ttiExpiration"/>
 </gfe:partitioned-region>
 ----
+
+You may have noticed that the Spring Data GemFire's @Expiration annotations use String as the attributes type, rather
+than and perhaps more appropriately being strongly typed, i.e. `int` for 'timeout' and SDG'S `ExpirationActionType`
+for 'action'.  Why is that?
+
+Well, enter one of Spring Data GemFire's other features, leveraging Spring's core infrastructure
+for configuration convenience: Property Placeholders and Spring Expression Language (SpEL).
+
+For instance, a developer can specify both the Expiration 'timeout' and 'action' using Property Placeholders
+in the @Expiration annotation attributes...
+
+[source,java]
+----
+@TimeToLiveExpiration(timeout = "${gemfire.region.entry.expiration.ttl.timeout}"
+    action = "${gemfire.region.entry.expiration.ttl.action}")
+public class ExampleApplicationDomainObject {
+}
+----
+
+Then, in your Spring context XML or in JavaConfig, you would declare the following beans...
+
+[source,xml]
+----
+<util:properties id="expirationSettings">
+  <prop key="gemfire.region.entry.expiration.ttl.timeout">600</prop>
+  <prop key="gemfire.region.entry.expiration.ttl.action">INVALIDATE</prop>
+  ...
+</util:properties>
+
+<context:property-placeholder properties-ref="expirationProperties"/>
+----
+
+This is both convenient when multiple application domain objects might share similar Expiration policies and settings,
+or when you wish to externalize the configuration.
+
+However, a developer may want more dynamic Expiration configuration determined by the state of the running system.
+This is where the power of SpEL comes in and is the recommended approach.  Not only can you refer to beans
+in the Spring context and access bean properties, invoke methods, etc, the values for Expiration 'timeout' and 'action'
+can be strongly typed.  For example (building on the example above)...
+
+[source,xml]
+----
+<util:properties id="expirationSettings">
+  <prop key="gemfire.region.entry.expiration.ttl.timeout">600</prop>
+  <prop key="gemfire.region.entry.expiration.ttl.action">#{T(org.springframework.data.gemfire.ExpirationActionType).DESTROY}</prop>
+  <prop key="gemfire.region.entry.expiration.tti.action">#{T(com.gemstone.gemfire.cache.ExpirationAction).INVALIDATE}</prop>
+  ...
+</util:properties>
+
+<context:property-placeholder properties-ref="expirationProperties"/>
+----
+
+Then, on your application domain object...
+
+[source,java]
+----
+@TimeToLiveExpiration(timeout = "@expirationSettings['gemfire.region.entry.expiration.ttl.timeout']"
+    action = "@expirationSetting['gemfire.region.entry.expiration.ttl.action']")
+public class ExampleApplicationDomainObject {
+}
+----
+
+You can imagine that the 'expirationSettings' bean could be a more interesting and useful object rather than a simple
+instance of `java.util.Properties`. In this example, even the Properties ('expirationSettings') using using SpEL
+to based the action value on the actual Expiration action enumerated types leading to more quickly identified failures
+if the types ever change.
+
+All of this has been demonstrated and tested in the Spring Data GemFire test suite, by way of example.  See the
+https://github.com/spring-projects/spring-data-gemfire[source] for further details.
 
 [[bootstrap:region:local]]
 == Local Region

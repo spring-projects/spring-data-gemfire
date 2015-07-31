@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.support;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -29,11 +30,14 @@ import static org.mockito.Mockito.when;
 import javax.annotation.Resource;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
+import org.springframework.expression.EvaluationException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -64,6 +68,9 @@ import com.gemstone.gemfire.cache.Region;
 @ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class AnnotationBasedExpirationConfigurationIntegrationTest {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Autowired
 	@Qualifier("genericExpiration")
@@ -125,7 +132,7 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 	public void exampleRegionIdleTimeoutExpirationPolicy() {
 		CustomExpiry<Object, Object> expiration = example.getAttributes().getCustomEntryIdleTimeout();
 
-		assertExpiration(expiration.getExpiry(mockRegionEntry(new ApplicationDomainObjectWithTimeToLiveGenericExpirationPolicies())),
+		assertExpiration(expiration.getExpiry(mockRegionEntry(new ApplicationDomainObjectWithTimeToLiveAndGenericExpirationPolicies())),
 			60, ExpirationAction.INVALIDATE);
 		assertExpiration(expiration.getExpiry(mockRegionEntry(new ApplicationDomainObjectWithIdleTimeoutExpirationPolicy())),
 			120, ExpirationAction.INVALIDATE);
@@ -143,7 +150,7 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 	public void exampleRegionTimeToLiveExpirationPolicy() {
 		CustomExpiry<Object, Object> expiration = example.getAttributes().getCustomEntryTimeToLive();
 
-		assertExpiration(expiration.getExpiry(mockRegionEntry(new ApplicationDomainObjectWithTimeToLiveGenericExpirationPolicies())),
+		assertExpiration(expiration.getExpiry(mockRegionEntry(new ApplicationDomainObjectWithTimeToLiveAndGenericExpirationPolicies())),
 			300, ExpirationAction.DESTROY);
 		assertExpiration(defaultExpirationAttributes, expiration.getExpiry(mockRegionEntry(new ApplicationDomainObjectWithIdleTimeoutExpirationPolicy())));
 		assertExpiration(expiration.getExpiry(mockRegionEntry(new ApplicationDomainObjectWithGenericExpirationPolicy())),
@@ -159,7 +166,7 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 	@Test
 	public void genericExpirationPolicy() {
 		assertExpiration(genericExpiration.getExpiry(mockRegionEntry(
-			new ApplicationDomainObjectWithTimeToLiveGenericExpirationPolicies())), 60, ExpirationAction.INVALIDATE);
+			new ApplicationDomainObjectWithTimeToLiveAndGenericExpirationPolicies())), 60, ExpirationAction.INVALIDATE);
 		assertThat(genericExpiration.getExpiry(mockRegionEntry(
 			new ApplicationDomainObjectWithIdleTimeoutExpirationPolicy())), is(nullValue()));
 		assertExpiration(genericExpiration.getExpiry(mockRegionEntry(
@@ -174,9 +181,25 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 			new RegionEntryGenericExpirationPolicy())), 60, ExpirationAction.DESTROY);
 	}
 
+	@Test
+	public void invalidExpirationAction() {
+		expectedException.expect(EvaluationException.class);
+		expectedException.expectCause(isA(IllegalArgumentException.class));
+		expectedException.expectMessage(String.format("'%1$s' is not resolvable as a valid ExpirationAction(Type)",
+			"@expirationProperties['gemfire.region.entry.expiration.invalid.action.string']"));
+		genericExpiration.getExpiry(mockRegionEntry(new RegionEntryWithInvalidExpirationAction()));
+	}
+
+	@Test
+	public void invalidExpirationTimeout() {
+		expectedException.expect(IllegalArgumentException.class);
+		expectedException.expectCause(is(nullValue(Throwable.class)));
+		genericExpiration.getExpiry(mockRegionEntry(new RegionEntryWithInvalidExpirationTimeout()));
+	}
+
 	@Expiration(timeout = "60", action = "INVALIDATE")
 	@TimeToLiveExpiration(timeout = "300", action = "DESTROY")
-	protected static class ApplicationDomainObjectWithTimeToLiveGenericExpirationPolicies {
+	protected static class ApplicationDomainObjectWithTimeToLiveAndGenericExpirationPolicies {
 	}
 
 	@IdleTimeoutExpiration(timeout = "120", action = "INVALIDATE")
@@ -203,6 +226,16 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 	@Expiration(timeout = "${gemfire.region.entry.expiration.timeout}",
 		action = "@expirationProperties['gemfire.region.entry.expiration.action.spring.type']")
 	protected static class RegionEntryGenericExpirationPolicy {
+	}
+
+	@Expiration(timeout = "${gemfire.region.entry.expiration.timeout}",
+		action = "@expirationProperties['gemfire.region.entry.expiration.invalid.action.string']")
+	protected static class RegionEntryWithInvalidExpirationAction {
+	}
+
+	@Expiration(timeout = "${gemfire.region.entry.expiration.invalid.timeout}",
+		action = "@expirationProperties['gemfire.region.entry.expiration.action.spring.type']")
+	protected static class RegionEntryWithInvalidExpirationTimeout {
 	}
 
 }
