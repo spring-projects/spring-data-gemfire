@@ -55,6 +55,9 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see com.gemstone.gemfire.cache.CustomExpiry
+ * @see com.gemstone.gemfire.cache.ExpirationAction
+ * @see com.gemstone.gemfire.cache.ExpirationAttributes
  * @since 1.7.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -187,8 +190,8 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 	protected static class ApplicationDomainObjectWithNoExpirationPolicy {
 	}
 
-	@TimeToLiveExpiration(timeout = "@expirationProperties['gemfire.region.entry.expiration.timeout']",
-		action = "@expirationProperties['gemfire.region.entry.expiration.action.string']")
+	@TimeToLiveExpiration(timeout = "${gemfire.region.entry.expiration.timeout}",
+		action = "${gemfire.region.entry.expiration.action.string}")
 	protected static class RegionEntryTimeToLiveExpirationPolicy {
 	}
 
@@ -197,7 +200,7 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 	protected static class RegionEntryIdleTimeoutExpirationPolicy {
 	}
 
-	@Expiration(timeout = "@expirationProperties['gemfire.region.entry.expiration.timeout']",
+	@Expiration(timeout = "${gemfire.region.entry.expiration.timeout}",
 		action = "@expirationProperties['gemfire.region.entry.expiration.action.spring.type']")
 	protected static class RegionEntryGenericExpirationPolicy {
 	}

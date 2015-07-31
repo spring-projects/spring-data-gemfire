@@ -22,14 +22,23 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.context.expression.EnvironmentAccessor;
+import org.springframework.context.expression.MapAccessor;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.gemfire.ExpirationActionConverter;
 import org.springframework.data.gemfire.ExpirationActionType;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.expression.spel.support.StandardTypeConverter;
+import org.springframework.expression.spel.support.StandardTypeLocator;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -45,6 +54,7 @@ import com.gemstone.gemfire.cache.Region;
  * Annotations.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.data.gemfire.ExpirationActionType
@@ -60,7 +70,10 @@ import com.gemstone.gemfire.cache.Region;
 @SuppressWarnings("unused")
 public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, CustomExpiry<K, V> {
 
-	private static final AtomicReference<BeanFactory> beanFactory = new AtomicReference<BeanFactory>(null);
+	protected static final AtomicReference<BeanFactory> BEAN_FACTORY_REFERENCE = new AtomicReference<BeanFactory>(null);
+
+	protected static final AtomicReference<StandardEvaluationContext> EVALUATION_CONTEXT_REFERENCE
+		= new AtomicReference<StandardEvaluationContext>(null);
 
 	//private ExpirationAttributes defaultExpirationAttributes = ExpirationAttributes.DEFAULT;
 	private ExpirationAttributes defaultExpirationAttributes;
@@ -155,13 +168,58 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 		};
 	}
 
-	@Override
-	public void setBeanFactory(final BeanFactory beanFactory) throws BeansException {
-		AnnotationBasedExpiration.beanFactory.set(beanFactory);
+	/* (non-Javadoc) */
+	protected void initEvaluationContext() {
+		BeanFactory beanFactory = getBeanFactory();
+
+		if (EVALUATION_CONTEXT_REFERENCE.compareAndSet(null, newEvaluationContext())) {
+			StandardEvaluationContext evaluationContext = EVALUATION_CONTEXT_REFERENCE.get();
+
+			evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
+			evaluationContext.addPropertyAccessor(new EnvironmentAccessor());
+			evaluationContext.addPropertyAccessor(new MapAccessor());
+
+			if (beanFactory instanceof ConfigurableBeanFactory) {
+				ConfigurableBeanFactory configurableBeanFactory = (ConfigurableBeanFactory) beanFactory;
+				ConversionService conversionService = configurableBeanFactory.getConversionService();
+				if (conversionService != null) {
+					evaluationContext.setTypeConverter(new StandardTypeConverter(conversionService));
+				}
+				evaluationContext.setTypeLocator(new StandardTypeLocator(configurableBeanFactory.getBeanClassLoader()));
+			}
+		}
+
+		EVALUATION_CONTEXT_REFERENCE.get().setBeanResolver(new BeanFactoryResolver(beanFactory));
 	}
 
+	/* (non-Javadoc) */
+	StandardEvaluationContext newEvaluationContext() {
+		return new StandardEvaluationContext();
+	}
+
+	/**
+	 * Sets the BeanFactory managing this AnnotationBasedExpiration bean in the Spring context.
+	 *
+	 * @param beanFactory the Spring BeanFactory to which this bean belongs.
+	 * @throws BeansException if the BeanFactory reference cannot be initialized.
+	 * @see org.springframework.beans.factory.BeanFactory
+	 * @see #initEvaluationContext()
+	 */
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		BEAN_FACTORY_REFERENCE.set(beanFactory);
+		initEvaluationContext();
+	}
+
+	/**
+	 * Gets a reference to the BeanFactory in which this AnnotationBasedExpiration Bean belongs.
+	 *
+	 * @return a reference to the Spring BeanFactory.
+	 * @throws java.lang.IllegalStateException if the BeanFactory reference was not properly initialized.
+	 * @see org.springframework.beans.factory.BeanFactory
+	 */
 	protected BeanFactory getBeanFactory() {
-		BeanFactory localBeanFactory = beanFactory.get();
+		BeanFactory localBeanFactory = BEAN_FACTORY_REFERENCE.get();
 		Assert.state(localBeanFactory != null, "beanFactory was not properly initialized");
 		return localBeanFactory;
 	}
@@ -372,12 +430,21 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			try {
 				return Integer.parseInt(timeout);
 			}
-			catch (NumberFormatException ignore) {
-				StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
+			catch (NumberFormatException cause) {
+				try {
+					// Next, try to parse the 'timeout' as a Spring Expression using SpEL.
+					return new SpelExpressionParser().parseExpression(timeout).getValue(
+						EVALUATION_CONTEXT_REFERENCE.get(), Integer.TYPE);
+				}
+				catch (ParseException e) {
+					// Finally, try to process the 'timeout' as a Spring Property Placeholder.
+					if (BEAN_FACTORY_REFERENCE.get() instanceof ConfigurableBeanFactory) {
+						return Integer.parseInt(((ConfigurableBeanFactory) BEAN_FACTORY_REFERENCE.get())
+							.resolveEmbeddedValue(timeout));
+					}
 
-				evaluationContext.setBeanResolver(new BeanFactoryResolver(beanFactory.get()));
-
-				return new SpelExpressionParser().parseExpression(timeout).getValue(evaluationContext, Integer.TYPE);
+					throw cause;
+				}
 			}
 		}
 
@@ -385,21 +452,44 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			try {
 				return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER.convert(action));
 			}
-			catch (RuntimeException e) {
-				StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
-				evaluationContext.setBeanResolver(new BeanFactoryResolver(beanFactory.get()));
-				ExpressionParser parser = new SpelExpressionParser();
-				Expression expression = parser.parseExpression(action);
-				Class<?> valueType = expression.getValueType(evaluationContext);
+			catch (IllegalArgumentException cause) {
+				// Next, try to parse the 'action' as a Spring Expression using SpEL.
+				EvaluationException evaluationException = new EvaluationException(String.format(
+					"'%1$s' is not resolvable as a valid ExpirationAction(Type)", action), cause);
 
-				if (String.class.equals(valueType)) {
-					return ExpirationActionType.valueOfIgnoreCase(expression.getValue(evaluationContext, String.class));
+				EvaluationContext evaluationContext = EVALUATION_CONTEXT_REFERENCE.get();
+
+				try {
+					Expression expression = new SpelExpressionParser().parseExpression(action);
+					Class<?> valueType = expression.getValueType(evaluationContext);
+
+					if (String.class.equals(valueType)) {
+						return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER.convert(expression.getValue(
+							evaluationContext, String.class)));
+					}
+					else if (ExpirationAction.class.equals(valueType)) {
+						return ExpirationActionType.valueOf(expression.getValue(evaluationContext, ExpirationAction.class));
+					}
+					else if (ExpirationActionType.class.equals(valueType)) {
+						return expression.getValue(evaluationContext, ExpirationActionType.class);
+					}
+
+					throw evaluationException;
 				}
-				else if (ExpirationAction.class.equals(valueType)) {
-					return ExpirationActionType.valueOf(expression.getValue(evaluationContext, ExpirationAction.class));
-				}
-				else {
-					return expression.getValue(evaluationContext, ExpirationActionType.class);
+				catch (ParseException e) {
+					// Finally, try to process the 'action' as a Spring Property Placeholder.
+					if (BEAN_FACTORY_REFERENCE.get() instanceof ConfigurableBeanFactory) {
+						try {
+							String resolvedValue = ((ConfigurableBeanFactory) BEAN_FACTORY_REFERENCE.get())
+								.resolveEmbeddedValue(action);
+
+							return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER.convert(resolvedValue));
+						}
+						catch (IllegalArgumentException ignore) {
+						}
+					}
+
+					throw evaluationException;
 				}
 			}
 		}
