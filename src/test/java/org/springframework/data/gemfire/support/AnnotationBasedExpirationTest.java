@@ -17,13 +17,16 @@
 package org.springframework.data.gemfire.support;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,7 +34,19 @@ import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.support.AnnotationBasedExpiration.ExpirationMetaData;
 
 import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.gemfire.ExpirationActionType;
+import org.springframework.data.gemfire.TestUtils;
+import org.springframework.expression.BeanResolver;
+import org.springframework.expression.PropertyAccessor;
+import org.springframework.expression.TypeConverter;
+import org.springframework.expression.TypeLocator;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
@@ -144,6 +159,51 @@ public class AnnotationBasedExpirationTest {
 		when(mockRegionEntry.getValue()).thenReturn(new RegionEntryValueWithNoExpiration());
 		assertThat(expiration.getExpiry(mockRegionEntry), is(equalTo(defaultExpiration)));
 		verify(mockRegionEntry, atLeast(3)).getValue();
+	}
+
+	@Test
+	public void setAndGetBeanFactory() {
+		final StandardEvaluationContext mockEvaluationContext = mock(StandardEvaluationContext.class,
+			"MockStandardEvaluationContext");
+
+		ConversionService mockConversionService = mock(ConversionService.class, "MockConversionService");
+
+		final ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class, "MockBeanFactory");
+
+		when(mockBeanFactory.getConversionService()).thenReturn(mockConversionService);
+		when(mockBeanFactory.getBeanClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
+
+		doAnswer(new Answer<Void>() {
+			@Override public Void answer(final InvocationOnMock invocation) throws Throwable {
+				BeanResolver beanResolver = invocation.getArgumentAt(0, BeanResolver.class);
+				assertThat(beanResolver, is(instanceOf(BeanFactoryResolver.class)));
+				assertThat(TestUtils.<ConfigurableBeanFactory>readField("beanFactory", beanResolver),
+					is(equalTo(mockBeanFactory)));
+				return null;
+			}
+		}).when(mockEvaluationContext).setBeanResolver(Matchers.any(BeanResolver.class));
+
+		AnnotationBasedExpiration<Object, Object> annotationBasedExpiration = new AnnotationBasedExpiration<Object, Object>() {
+			@Override StandardEvaluationContext newEvaluationContext() {
+				return mockEvaluationContext;
+			}
+		};
+
+		annotationBasedExpiration.setBeanFactory(mockBeanFactory);
+
+		assertSame(mockBeanFactory, annotationBasedExpiration.getBeanFactory());
+
+		verify(mockEvaluationContext, times(3)).addPropertyAccessor(Matchers.any(PropertyAccessor.class));
+		verify(mockEvaluationContext, times(1)).setTypeConverter(Matchers.any(TypeConverter.class));
+		verify(mockEvaluationContext, times(1)).setTypeLocator(Matchers.any(TypeLocator.class));
+		verify(mockEvaluationContext, times(1)).setBeanResolver(Matchers.any(BeanResolver.class));
+		verify(mockBeanFactory, times(1)).getConversionService();
+		verify(mockBeanFactory, times(1)).getBeanClassLoader();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void getUninitializedBeanFactory() {
+		new AnnotationBasedExpiration<Object, Object>().getBeanFactory();
 	}
 
 	@Test
