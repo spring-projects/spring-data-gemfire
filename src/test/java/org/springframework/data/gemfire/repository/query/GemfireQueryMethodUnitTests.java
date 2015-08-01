@@ -15,14 +15,19 @@
  */
 package org.springframework.data.gemfire.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 
 import org.hamcrest.Matchers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -31,8 +36,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.Query;
+import org.springframework.data.gemfire.repository.query.annotation.Hint;
+import org.springframework.data.gemfire.repository.query.annotation.Import;
+import org.springframework.data.gemfire.repository.query.annotation.Limit;
+import org.springframework.data.gemfire.repository.query.annotation.Trace;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Unit tests for {@link GemfireQueryMethod}.
@@ -42,47 +52,189 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 @RunWith(MockitoJUnitRunner.class)
 public class GemfireQueryMethodUnitTests {
 
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
+	private GemfireMappingContext context = new GemfireMappingContext();
+
 	@Mock
-	RepositoryMetadata metadata;
+	private RepositoryMetadata metadata;
+
+	protected void assertQueryHints(GemfireQueryMethod queryMethod, String... expectedHints) {
+		assertThat(queryMethod, is(not(nullValue())));
+		assertThat(queryMethod.hasHint(), is(!ObjectUtils.isEmpty(expectedHints)));
+
+		String[] actualHints = queryMethod.getHints();
+
+		assertThat(actualHints, is(not(nullValue())));
+		assertThat(actualHints.length, is(equalTo(expectedHints.length)));
+
+		for (int index = 0; index < expectedHints.length; index++) {
+			assertThat(actualHints[index], is(equalTo(expectedHints[index])));
+		}
+	}
+
+	protected void assertNoQueryHints(GemfireQueryMethod queryMethod) {
+		assertQueryHints(queryMethod);
+	}
+
+	protected void assertImportStatement(GemfireQueryMethod queryMethod, String expectedImport) {
+		assertThat(queryMethod, is(not(nullValue())));
+		assertThat(queryMethod.hasImport(), is(expectedImport != null));
+
+		if (expectedImport != null) {
+			assertThat(queryMethod.getImport(), is(equalTo(expectedImport)));
+		}
+		else {
+			assertThat(queryMethod.getImport(), is(nullValue()));
+		}
+	}
+
+	protected void assertNoImportStatement(GemfireQueryMethod queryMethod) {
+		assertImportStatement(queryMethod, null);
+	}
+
+	protected void assertLimitedQuery(GemfireQueryMethod queryMethod, Integer expectedLimit) {
+		assertThat(queryMethod, is(not(nullValue())));
+		assertThat(queryMethod.hasLimit(), is(expectedLimit != null));
+
+		if (expectedLimit != null) {
+			assertThat(queryMethod.getLimit(), is(equalTo(expectedLimit)));
+		}
+		else {
+			assertThat(queryMethod.getLimit(), is(nullValue()));
+		}
+	}
+
+	protected void assertUnlimitedQuery(GemfireQueryMethod queryMethod) {
+		assertLimitedQuery(queryMethod, null);
+	}
 
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void detectsAnnotatedQueryCorrectly() throws Exception {
-
-		GemfireMappingContext context = new GemfireMappingContext();
 		when(metadata.getDomainType()).thenReturn((Class) Person.class);
 		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) Person.class);
 
 		GemfireQueryMethod method = new GemfireQueryMethod(Sample.class.getMethod("annotated"), metadata, context);
+
 		assertThat(method.hasAnnotatedQuery(), is(true));
 		assertThat(method.getAnnotatedQuery(), is("foo"));
 
 		method = new GemfireQueryMethod(Sample.class.getMethod("annotatedButEmpty"), metadata, context);
+
 		assertThat(method.hasAnnotatedQuery(), is(false));
 		assertThat(method.getAnnotatedQuery(), is(nullValue()));
 
 		method = new GemfireQueryMethod(Sample.class.getMethod("notAnnotated"), metadata, context);
+
 		assertThat(method.hasAnnotatedQuery(), is(false));
 		assertThat(method.getAnnotatedQuery(), is(nullValue()));
 	}
 
 	/**
-	 * @see SGF-112
+	 * @link http://jira.spring.io/browse/SGF-112
 	 */
 	@Test
 	public void rejectsQueryMethodWithPageableParameter() throws Exception {
+		expectedException.expect(IllegalStateException.class);
+		expectedException.expectCause(is(nullValue(Throwable.class)));
+		expectedException.expectMessage(Matchers.startsWith("Pagination is not supported by GemFire Repositories!"));
 
-		GemfireMappingContext context = new GemfireMappingContext();
-		Method method = Invalid.class.getMethod("someMethod", Pageable.class);
-
-		try {
-			new GemfireQueryMethod(method, metadata, context);
-			fail("Expected exception!");
-		} catch (IllegalStateException e) {
-			assertThat(e.getMessage(), Matchers.startsWith("Pagination is not supported by Gemfire repositories!"));
-		}
+		new GemfireQueryMethod(Invalid.class.getMethod("someMethod", Pageable.class), metadata, context);
 	}
 
+	@Test
+	public void detectsQueryHintsCorrectly() throws Exception {
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
+			metadata, context).hasHint(), is(true));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
+			metadata, context).hasHint(), is(false));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("limitedQuery"),
+			metadata, context).hasHint(), is(true));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("unlimitedQuery"),
+			metadata, context).hasHint(), is(false));
+	}
+
+	@Test
+	public void detectsQueryImportsCorrectly() throws Exception {
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
+			metadata, context).hasImport(), is(false));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
+			metadata, context).hasImport(), is(true));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("limitedQuery"),
+			metadata, context).hasImport(), is(true));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("unlimitedQuery"),
+			metadata, context).hasImport(), is(false));
+	}
+
+	@Test
+	public void detectsQueryLimitsCorrectly() throws Exception {
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
+			metadata, context).hasLimit(), is(false));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
+			metadata, context).hasLimit(), is(false));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("limitedQuery"),
+			metadata, context).hasLimit(), is(true));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("unlimitedQuery"),
+			metadata, context).hasLimit(), is(false));
+	}
+
+	@Test
+	public void detectsQueryTracingCorrectly() throws Exception {
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
+			metadata, context).hasTrace(), is(true));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
+			metadata, context).hasTrace(), is(false));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("limitedQuery"),
+			metadata, context).hasTrace(), is(false));
+		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("unlimitedQuery"),
+			metadata, context).hasTrace(), is(true));
+	}
+
+	@Test
+	public void hintOnQueryWithHint() throws Exception {
+		assertQueryHints(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
+			metadata, context), "IdIdx", "LastNameIdx");
+
+		assertQueryHints(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("limitedQuery"),
+			metadata, context), "BirthDateIdx");
+	}
+
+	@Test
+	public void hintOnQueryWithNoHints() throws Exception {
+		assertNoQueryHints(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
+			metadata, context));
+	}
+
+	@Test
+	public void importOnQueryWithImport() throws Exception {
+		assertImportStatement(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
+			metadata, context), "org.example.app.domain.ExampleType");
+
+		assertImportStatement(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("limitedQuery"),
+			metadata, context), "org.example.app.domain.Person");
+	}
+
+	@Test
+	public void importOnQueryWithNoImports() throws Exception {
+		assertNoImportStatement(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
+			metadata, context));
+	}
+
+	@Test
+	public void limitOnQueryWithLimit() throws Exception {
+		assertLimitedQuery(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("limitedQuery"),
+			metadata, context), 1024);
+	}
+
+	@Test
+	public void limitOnQueryWithNoLimits() throws Exception {
+		assertUnlimitedQuery(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("unlimitedQuery"),
+			metadata, context));
+	}
+
+	@SuppressWarnings("unused")
 	interface Sample {
 
 		@Query("foo")
@@ -92,10 +244,34 @@ public class GemfireQueryMethodUnitTests {
 		void annotatedButEmpty();
 
 		void notAnnotated();
+
 	}
 
+	@SuppressWarnings("unused")
 	interface Invalid {
 
 		Page<?> someMethod(Pageable pageable);
+
 	}
+
+	@SuppressWarnings("unused")
+	interface AnnotatedQueryMethods {
+
+		@Trace
+		@Hint({ "IdIdx", "LastNameId" })
+		void queryWithHint();
+
+		@Import("org.example.app.domain.ExampleType")
+		void queryWithImport();
+
+		@Hint("BirthDateIdx")
+		@Import("org.example.app.domain.Person")
+		@Limit(1024)
+		void limitedQuery();
+
+		@Trace
+		void unlimitedQuery();
+
+	}
+
 }

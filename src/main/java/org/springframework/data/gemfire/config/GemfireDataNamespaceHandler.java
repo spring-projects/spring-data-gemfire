@@ -29,6 +29,7 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
  * @author David Turanski
  * @author Oliver Gierke
  */
+@SuppressWarnings("unused")
 class GemfireDataNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
