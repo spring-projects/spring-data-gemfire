@@ -26,8 +26,8 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
@@ -149,7 +149,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 			new PersistentEntityParameterValueProvider<GemfirePersistentProperty>(entity,
 				new GemfirePropertyValueProvider(reader), null));
 
-		final BeanWrapper<Object> wrapper = BeanWrapper.create(instance, getConversionService());
+		final PersistentPropertyAccessor wrapper = BeanPropertyAccessor.create(instance, getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
 			@Override
@@ -190,7 +190,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	public boolean toData(Object value, final PdxWriter writer) {
 		GemfirePersistentEntity<?> entity = getPersistentEntity(value.getClass());
 
-		final BeanWrapper<Object> wrapper = BeanWrapper.create(value, getConversionService());
+		final PersistentPropertyAccessor wrapper = BeanPropertyAccessor.create(value, getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
 			@Override

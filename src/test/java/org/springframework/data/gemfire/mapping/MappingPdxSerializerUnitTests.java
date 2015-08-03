@@ -15,8 +15,11 @@
  */
 package org.springframework.data.gemfire.mapping;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,12 +47,15 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 @RunWith(MockitoJUnitRunner.class)
 public class MappingPdxSerializerUnitTests {
 
-	GemfireMappingContext context;
 	ConversionService conversionService;
+
+	GemfireMappingContext context;
+
 	MappingPdxSerializer serializer;
 
 	@Mock
 	EntityInstantiator instantiator;
+
 	@Mock
 	PdxReader reader;
 	
@@ -58,11 +64,12 @@ public class MappingPdxSerializerUnitTests {
 
 	@Before
 	public void setUp() {
-
-		context = new GemfireMappingContext();
 		conversionService = new GenericConversionService();
+		context = new GemfireMappingContext();
 		serializer = new MappingPdxSerializer(context, conversionService);
+
 		Map<Class<?>,PdxSerializer> customSerializers = new HashMap<Class<?>, PdxSerializer>();
+
 		customSerializers.put(Address.class, addressSerializer);
 		serializer.setCustomSerializers(customSerializers);
 	}
@@ -71,17 +78,20 @@ public class MappingPdxSerializerUnitTests {
 	@SuppressWarnings("unchecked")
 	public void usesRegisteredInstantiator() {
 		Address address = new Address();
-		address.zipCode = "01234";
 		address.city = "London";
+		address.zipCode = "01234";
 
 		Person person = new Person(1L, "Oliver", "Gierke");
 		person.address = address;
-		
-		ParameterValueProvider<GemfirePersistentProperty> provider = any(ParameterValueProvider.class);
+
 		GemfirePersistentEntity<?> entity = any(GemfirePersistentEntity.class);
+
+		ParameterValueProvider<GemfirePersistentProperty> provider = any(ParameterValueProvider.class);
+
 		when(instantiator.createInstance(entity, provider)).thenReturn(person);
 
 		Map<Class<?>, EntityInstantiator> instantiators = new HashMap<Class<?>, EntityInstantiator>();
+
 		instantiators.put(Person.class, instantiator);
 
 		serializer.setGemfireInstantiators(instantiators);
@@ -91,4 +101,5 @@ public class MappingPdxSerializerUnitTests {
 				any(ParameterValueProvider.class));
 		verify(addressSerializer,times(1)).fromData(eq(Address.class), any(PdxReader.class));
 	}
+
 }
