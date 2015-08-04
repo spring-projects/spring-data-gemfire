@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
@@ -149,7 +150,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 			new PersistentEntityParameterValueProvider<GemfirePersistentProperty>(entity,
 				new GemfirePropertyValueProvider(reader), null));
 
-		final PersistentPropertyAccessor wrapper = BeanPropertyAccessor.create(instance, getConversionService());
+		final PersistentPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(instance),
+				getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
 			@Override
@@ -169,7 +171,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 				}
 
 				try {
-					wrapper.setProperty(persistentProperty, value);
+					accessor.setProperty(persistentProperty, value);
 				}
 				catch (Exception e) {
 					throw new MappingException("Could not read value " + value.toString(), e);
@@ -177,7 +179,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 			}
 		});
 
-		return wrapper.getBean();
+		return accessor.getBean();
 	}
 
 	/*
@@ -188,9 +190,11 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public boolean toData(Object value, final PdxWriter writer) {
-		GemfirePersistentEntity<?> entity = getPersistentEntity(value.getClass());
 
-		final PersistentPropertyAccessor wrapper = BeanPropertyAccessor.create(value, getConversionService());
+		GemfirePersistentEntity<?> entity = getPersistentEntity(value.getClass());
+		
+		final PersistentPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(value),
+				getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
 			@Override
@@ -198,7 +202,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
 				
 				try {
-					Object propertyValue = wrapper.getProperty(persistentProperty);
+					Object propertyValue = accessor.getProperty(persistentProperty);
 
 					PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
 
