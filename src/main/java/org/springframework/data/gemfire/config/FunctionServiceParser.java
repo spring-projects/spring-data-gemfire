@@ -51,11 +51,10 @@ class FunctionServiceParser extends AbstractSimpleBeanDefinitionParser {
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
-		String name = super.resolveId(element, definition, parserContext);
-		if (!StringUtils.hasText(name)) {
-			name = GemfireConstants.DEFAULT_GEMFIRE_FUNCTION_SERVICE_NAME;
+		if (StringUtils.hasText(name)) {
+			return super.resolveId(element, definition, parserContext);
 		}
-		return name;
+		return GemfireConstants.DEFAULT_GEMFIRE_FUNCTION_SERVICE_NAME;;
 	}
 
 }
