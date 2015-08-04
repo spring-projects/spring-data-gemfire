@@ -3,6 +3,23 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.7.0.RC1 (2015-08-04)
+-----------------------------------------
+* SGF-422 - Release 1.7 RC1 (Gosling).
+* SGF-421 - Fix Spring Data GemFire's MappingPdxSerializer due to the package-private access modifier change on org.springframework.data.mapping.model.BeanWrapper.
+* SGF-418 - Merge PR #83 updating the Spring IO Platform Plugin to perform compatibility checks.
+* SGF-417 - Update apache-geode SDG branch based on the latest Apache Geode developments (snapshot 20150713182515).
+* SGF-415 - Remove the ClientCacheFactory Pool configuration in ClientCacheFactoryBean.
+* SGF-414 - Resolve incompatibility between the DistributedSystem created by the PoolFactoryBean and the DistributedSystem resolved by the ClientCacheFactoryBean when SSL is configured.
+* SGF-410 - Enable the definition and creation of a generic, GemFire Cache Region with out-the-box defaults.
+* SGF-409 - Modify the GemfireDataSourcePostProcessor (basis for <gfe:datasource>) to not assume a GemFire Server was configured and bootstrapped with Spring and subsequently that the SDG ListRegionsOnServerFunction was registered.
+* SGF-407 - Modify the MappingPdxSerializer to allow for extensibility.
+* SGF-406 - Fix JavaDoc build.
+* SGF-404 - Enable Expiration settings and policies to be specified per application domain object using an @Expiration annotation and a "custom", SDG-provided CustomExpiry instance.
+* SGF-398 - Provide early support of Apache Geode (Pivotal GemFire OSS).
+* SGF-370 - Add multi-Index definition and creation support.
+
+
 Changes in version 1.6.2.RELEASE (2015-07-28)
 ---------------------------------------------
 * SGF-420 - Release 1.6.2 (Fowler).
