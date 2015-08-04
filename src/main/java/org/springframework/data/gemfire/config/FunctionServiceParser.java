@@ -54,7 +54,7 @@ class FunctionServiceParser extends AbstractSimpleBeanDefinitionParser {
 		if (StringUtils.hasText(name)) {
 			return super.resolveId(element, definition, parserContext);
 		}
-		return GemfireConstants.DEFAULT_GEMFIRE_FUNCTION_SERVICE_NAME;;
+		return GemfireConstants.DEFAULT_GEMFIRE_FUNCTION_SERVICE_NAME;
 	}
 
 }
