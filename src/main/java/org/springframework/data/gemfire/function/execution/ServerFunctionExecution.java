@@ -24,20 +24,17 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  *
  */
 class ServerFunctionExecution extends AbstractFunctionExecution {
-	
 
-	private RegionService regionService;
+	private final RegionService regionService;
 
-  
 	public ServerFunctionExecution(RegionService regionService) {
-		super();
-		Assert.notNull(regionService,"regionService cannot be null");
+		Assert.notNull(regionService, "RegionService must not be null");
 		this.regionService = regionService; 
 	}
-	
- 
+
 	@Override
 	protected Execution getExecution() {
 		return FunctionService.onServer(this.regionService);
 	}
+
 }
