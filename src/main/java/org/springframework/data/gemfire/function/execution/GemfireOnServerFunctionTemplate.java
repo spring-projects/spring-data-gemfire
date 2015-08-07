@@ -18,30 +18,26 @@ import com.gemstone.gemfire.cache.client.Pool;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 public class GemfireOnServerFunctionTemplate  extends AbstractFunctionTemplate {
-	
-	private final RegionService cache;
-	private final Pool pool;
 
-  
-	public GemfireOnServerFunctionTemplate (RegionService cache) {
+	private final Pool pool;
+	private final RegionService cache;
+
+	public GemfireOnServerFunctionTemplate(RegionService cache) {
 		this.cache = cache;
 		this.pool = null;
 	}
 	
-	public GemfireOnServerFunctionTemplate (Pool pool) {
-		this.pool = pool;
+	public GemfireOnServerFunctionTemplate(Pool pool) {
 		this.cache = null;
+		this.pool = pool;
 	}
- 
+
 	@Override
 	protected AbstractFunctionExecution getFunctionExecution() {
-		 if (this.pool == null) {
-			 return new ServerFunctionExecution(this.cache);
-		 }
-		 return new PoolServerFunctionExecution(this.pool);
+		return (pool != null ? new PoolServerFunctionExecution(this.pool) : new ServerFunctionExecution(this.cache));
 	}
 	 
 }

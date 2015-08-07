@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="serverProperties">
+		<prop key="server.bind-address">localhost</prop>
+		<prop key="server.hostname-for-clients">localhost</prop>
+		<prop key="server.max-connections">1</prop>
+		<prop key="server.port">12480</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="serverProperties"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">ExceptionThrowingFunctionExecutionIntegrationTestServer</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties" lazy-init="false"/>
+
+	<gfe:cache-server auto-startup="true" bind-address="${server.bind-address}" port="${server.port}"
+					  host-name-for-clients="${server.hostname-for-clients}" max-connections="${server.max-connections}"/>
+
+	<gfe:function-service>
+		<gfe:function>
+			<bean class="org.springframework.data.gemfire.function.ExceptionThrowingFunctionExecutionIntegrationTest$ExceptionThrowingFunction"/>
+		</gfe:function>
+	</gfe:function-service>
+
+</beans>
