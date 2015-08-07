@@ -35,10 +35,10 @@ import org.springframework.util.StringUtils;
 	 
  
 	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getGemfireOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
+	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getGemfireFunctionOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
-	protected BeanDefinitionBuilder getGemfireOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
+	protected BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
 		
 		BeanDefinitionBuilder functionTemplateBuilder = BeanDefinitionBuilder.genericBeanDefinition(getGemfireOperationsClass());
 		

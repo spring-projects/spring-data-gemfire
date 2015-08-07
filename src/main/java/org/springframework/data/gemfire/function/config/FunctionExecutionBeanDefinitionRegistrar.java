@@ -12,6 +12,7 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,48 +49,42 @@ class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 	/*
 	 * This registers bean definitions from any function execution configuration source
 	 */
-	void registerBeanDefinitions (AbstractFunctionExecutionConfigurationSource configurationSource, BeanDefinitionRegistry registry) {
-		ResourceLoader resourceLoader = new DefaultResourceLoader();
-		Set<String> functionExecutionAnnotationTypes = new HashSet<String>(
-				AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes().size());
-		for (Class<?> annotation : AbstractFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypes()) {
-			functionExecutionAnnotationTypes.add(annotation.getName());
-		}
+	void registerBeanDefinitions(AbstractFunctionExecutionConfigurationSource functionExecutionConfigurationSource,
+			BeanDefinitionRegistry registry) {
 
-		for (ScannedGenericBeanDefinition beanDefinition : configurationSource.getCandidates(resourceLoader)) {
-
+		for (ScannedGenericBeanDefinition beanDefinition : functionExecutionConfigurationSource.getCandidates(new DefaultResourceLoader())) {
 			String functionExecutionAnnotation = getFunctionExecutionAnnotation(beanDefinition,
-					functionExecutionAnnotationTypes);
+				AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypeNames());
 
 			Assert.notNull(functionExecutionAnnotation);
 
-			String beanName = (String) beanDefinition.getMetadata()
-					.getAnnotationAttributes(functionExecutionAnnotation).get("id");
+			String beanName = (String) beanDefinition.getMetadata().getAnnotationAttributes(
+				functionExecutionAnnotation).get("id");
 
-			if (!StringUtils.hasLength(beanName)) {
+			if (!StringUtils.hasText(beanName)) {
 				beanName = BeanDefinitionReaderUtils.generateBeanName(beanDefinition, registry);
 			}
-			
+
 			AbstractFunctionExecutionBeanDefinitionBuilder builder = FunctionExecutionBeanDefinitionBuilderFactory
-					.newInstance(new FunctionExecutionConfiguration(beanDefinition, functionExecutionAnnotation));
+				.newInstance(new FunctionExecutionConfiguration(beanDefinition, functionExecutionAnnotation));
 
 			registry.registerBeanDefinition(beanName, builder.build(registry));
 		}
 	}
 
 	private String getFunctionExecutionAnnotation(ScannedGenericBeanDefinition beanDefinition,
-			Set<String> functionExecutionAnnotationTypes) {
+			Set<String> functionExecutionAnnotationTypeNames) {
 
 		Set<String> annotationTypes = beanDefinition.getMetadata().getAnnotationTypes();
 
 		String functionExecutionAnnotation = null;
 
-		for (String annotation : annotationTypes) {
-			if (functionExecutionAnnotationTypes.contains(annotation)) {
+		for (String annotationType : annotationTypes) {
+			if (functionExecutionAnnotationTypeNames.contains(annotationType)) {
 				Assert.isNull(functionExecutionAnnotation, String.format(
-						"interface %s contains multiple function execution annotations: %s, %s",
-						beanDefinition.getBeanClassName(), functionExecutionAnnotation, annotation));
-				functionExecutionAnnotation = annotation;
+					"interface %1$s contains multiple Function Execution Annotations: %2$s, %3$s",
+						beanDefinition.getBeanClassName(), functionExecutionAnnotation, annotationType));
+				functionExecutionAnnotation = annotationType;
 			}
 		}
 

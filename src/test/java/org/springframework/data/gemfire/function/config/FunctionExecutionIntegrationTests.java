@@ -45,7 +45,7 @@ public class FunctionExecutionIntegrationTests {
 	public void testProxyFactoryBeanCreated() throws Exception {
 		OnRegionFunctionProxyFactoryBean factoryBean = (OnRegionFunctionProxyFactoryBean) context
 				.getBean("&testFunction");
-		Class<?> serviceInterface = TestUtils.readField("serviceInterface", factoryBean);
+		Class<?> serviceInterface = TestUtils.readField("functionExecutionInterface", factoryBean);
 		assertEquals(serviceInterface, TestOnRegionFunction.class);
 
 		Region<?, ?> r1 = context.getBean("r1", Region.class);

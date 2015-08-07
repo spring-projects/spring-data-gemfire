@@ -12,7 +12,6 @@
  */
 package org.springframework.data.gemfire.function.execution;
 
-
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -20,7 +19,7 @@ import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 public class OnRegionFunctionProxyFactoryBean extends GemfireFunctionProxyFactoryBean {
 
@@ -37,33 +36,25 @@ public class OnRegionFunctionProxyFactoryBean extends GemfireFunctionProxyFactor
 
 	@Override
 	protected Iterable<?> invokeFunction(Method method, Object[] args) {
-		
+		GemfireOnRegionOperations gemfireOnRegionOperations = (GemfireOnRegionOperations) getGemfireFunctionOperations();
+
+		OnRegionMethodMetadata onRegionMethodMetadata = methodMetadata.getMethodMetadata(method);
+
+		int filterArgPosition = onRegionMethodMetadata.getFilterArgPosition();
+		String functionId = onRegionMethodMetadata.getFunctionId();
+
 		Set<?> filter = null;
-		
-		Iterable<?> results = null;
-		
-		GemfireOnRegionOperations gemfireOnRegionOperations = (GemfireOnRegionOperations) this.gemfireFunctionOperations;
-		
-		OnRegionMethodMetadata ormmd = methodMetadata.getMethodMetadata(method);
-		
-		int filterArgPosition = ormmd.getFilterArgPosition();
-		
-		String functionId = ormmd.getFunctionId();
-		
+
 		/*
 		 * extract filter from args if necessary
 		 */
-		if (filterArgPosition >=0 ) {
-			filter = (Set<?>)args[filterArgPosition];
+		if (filterArgPosition >= 0) {
+			filter = (Set<?>) args[filterArgPosition];
 			args = ArrayUtils.remove(args, filterArgPosition);
 		}
-		
-		if (filter == null) {
-			results =  gemfireOnRegionOperations.execute(functionId, args);
-		} else {
-			results =  gemfireOnRegionOperations.execute(functionId, filter, args);
-		}
- 
-		return results;
+
+		return (filter == null ?  gemfireOnRegionOperations.execute(functionId, args)
+			: gemfireOnRegionOperations.execute(functionId, filter, args));
 	}
+
 }
