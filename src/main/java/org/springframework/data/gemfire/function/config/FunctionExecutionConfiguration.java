@@ -21,44 +21,46 @@ import org.springframework.util.Assert;
  * Function execution configuration used by bean definition builders
  * 
  * @author David Turanski
- *
+ * @author John Blum
  */
 class FunctionExecutionConfiguration  {
 	
-	private final Map<String,Object> attributes;
 	private Class<?> functionExecutionInterface;
+
+	private final Map<String,Object> attributes;
+
 	private final String annotationType;
 
-
 	FunctionExecutionConfiguration(ScannedGenericBeanDefinition beanDefinition, String annotationType) {
-		this.attributes = beanDefinition.getMetadata().getAnnotationAttributes(annotationType,true);
-		
 		try {
+			this.annotationType = annotationType;
+			this.attributes = beanDefinition.getMetadata().getAnnotationAttributes(annotationType, true);
 			this.functionExecutionInterface = beanDefinition.resolveBeanClass(beanDefinition.getClass().getClassLoader());
+
 			Assert.isTrue(functionExecutionInterface.isInterface(),
-					String.format("The annotation %s only applies to an interface. It is not valid for the type %s",
-							annotationType, functionExecutionInterface.getName()));
+				String.format("The annotation %1$s only applies to an interface. It is not valid for the type %2$s",
+					annotationType, functionExecutionInterface.getName()));
 			
-		} catch (ClassNotFoundException e) {
+		}
+		catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
-		this.annotationType = annotationType;
 	}
- 
-	Class<?> getFunctionExecutionInterface() {
-		return this.functionExecutionInterface;
+
+	String getAnnotationType() {
+		return this.annotationType;
 	}
-	 
+
+	Object getAttribute(String name) {
+		return attributes.get(name);
+	}
+
 	Map<String, Object> getAttributes() {
 		return this.attributes;
 	}
 
- 
-	Object getAttribute(String name) {
-		return attributes.get(name);
+	Class<?> getFunctionExecutionInterface() {
+		return this.functionExecutionInterface;
 	}
-	
-	String getAnnotationType() {
-		return this.annotationType;
-	}
+
 }

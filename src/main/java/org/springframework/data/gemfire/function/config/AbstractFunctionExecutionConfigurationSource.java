@@ -13,7 +13,9 @@
 package org.springframework.data.gemfire.function.config;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,26 +39,37 @@ import org.springframework.data.gemfire.function.annotation.OnServers;
  *
  */
 abstract class AbstractFunctionExecutionConfigurationSource implements FunctionExecutionConfigurationSource {
-	protected Log logger = LogFactory.getLog(this.getClass());
-		 
-	 
+
 	private static Set<Class<? extends Annotation>> functionExecutionAnnotationTypes;
 	
 	static {
-	  functionExecutionAnnotationTypes = new HashSet<Class<? extends Annotation>>();
-	  functionExecutionAnnotationTypes.add(OnRegion.class);
-	  functionExecutionAnnotationTypes.add(OnServer.class);
-	  functionExecutionAnnotationTypes.add(OnServers.class);
-	  functionExecutionAnnotationTypes.add(OnMember.class);
-	  functionExecutionAnnotationTypes.add(OnMembers.class);
+		Set<Class<? extends Annotation>> annotationTypes = new HashSet<Class<? extends Annotation>>(5);
+
+		annotationTypes.add(OnRegion.class);
+		annotationTypes.add(OnServer.class);
+		annotationTypes.add(OnServers.class);
+		annotationTypes.add(OnMember.class);
+		annotationTypes.add(OnMembers.class);
+
+		functionExecutionAnnotationTypes = Collections.unmodifiableSet(annotationTypes);
 	}
-	
+
+	protected Log logger = LogFactory.getLog(getClass());
 
 	static Set<Class<? extends Annotation>> getFunctionExecutionAnnotationTypes() {
 		return functionExecutionAnnotationTypes;
 	}
-	
-	
+
+	static Set<String> getFunctionExecutionAnnotationTypeNames() {
+		Set<String> functionExecutionTypeNames = new HashSet<String>(getFunctionExecutionAnnotationTypes().size());
+
+		for (Class<? extends Annotation> annotationType : getFunctionExecutionAnnotationTypes()) {
+			functionExecutionTypeNames.add(annotationType.getName());
+		}
+
+		return functionExecutionTypeNames;
+	}
+
 	public Collection<ScannedGenericBeanDefinition> getCandidates(ResourceLoader loader) {
 		ClassPathScanningCandidateComponentProvider scanner = new FunctionExecutionComponentProvider(getIncludeFilters(),functionExecutionAnnotationTypes);
 		scanner.setResourceLoader(loader);

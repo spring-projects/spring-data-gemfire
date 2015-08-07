@@ -25,48 +25,47 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.gemstone.gemfire.cache.execute.FunctionService;
-
 /**
- * A proxy Factory Bean for all non-region function execution interfaces
+ * A Proxy FactoryBean for all non-Region Function Execution interfaces.
  *  
  * @author David Turanski
+ * @author John Blum
+ * @see java.lang.reflect.Method
+ * @see org.aopalliance.intercept.MethodInterceptor
+ * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see org.springframework.beans.factory.FactoryBean
  */
 public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, MethodInterceptor, BeanClassLoaderAware {
 
-	protected volatile ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
-
-	protected final Class<?> serviceInterface;
-
-	protected volatile Object serviceProxy;
+	private volatile ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
 	private volatile boolean initialized;
 
-	//protected String functionId;
+	private final Class<?> functionExecutionInterface;
+
+	private volatile Object functionExecutionProxy;
+
+	private final GemfireFunctionOperations gemfireFunctionOperations;
 
 	protected Log logger = LogFactory.getLog(this.getClass());
-
-	protected final GemfireFunctionOperations gemfireFunctionOperations;
 
 	private FunctionExecutionMethodMetadata<MethodMetadata> methodMetadata;
 
 	/**
-	 * @param serviceInterface the proxied interface
+	 * @param functionExecutionInterface the proxied interface
 	 * @param gemfireFunctionOperations an interface used to delegate the function invocation (typically a GemFire function template)
 	 */
-	public GemfireFunctionProxyFactoryBean(Class<?> serviceInterface, GemfireFunctionOperations gemfireFunctionOperations) {
-		Assert.notNull(serviceInterface, "'serviceInterface' must not be null");
-		Assert.isTrue(serviceInterface.isInterface(), "'serviceInterface' must be an interface");
-		this.serviceInterface = serviceInterface;
+	public GemfireFunctionProxyFactoryBean(Class<?> functionExecutionInterface, GemfireFunctionOperations gemfireFunctionOperations) {
+		Assert.notNull(functionExecutionInterface, "'functionExecutionInterface' must not be null");
+		Assert.isTrue(functionExecutionInterface.isInterface(), "'functionExecutionInterface' must be an interface");
+
+		this.functionExecutionInterface = functionExecutionInterface;
 		this.gemfireFunctionOperations = gemfireFunctionOperations;
-		this.methodMetadata = new DefaultFunctionExecutionMethodMetadata(serviceInterface);
+		this.methodMetadata = new DefaultFunctionExecutionMethodMetadata(functionExecutionInterface);
 	}
 
-
-
-	protected Object invokeFunction(Method method, Object[] args) {
-		MethodMetadata mmd = this.methodMetadata.getMethodMetadata(method);
-		return this.gemfireFunctionOperations.executeAndExtract(mmd.getFunctionId(), args);
+	protected GemfireFunctionOperations getGemfireFunctionOperations() {
+		return gemfireFunctionOperations;
 	}
 
 	@Override
@@ -78,7 +77,7 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 
 		if (AopUtils.isToStringMethod(invocation.getMethod())) {
-			return "Gemfire function proxy for service interface [" + this.serviceInterface + "]";
+			return "Gemfire function proxy for service interface [" + this.functionExecutionInterface + "]";
 		}
 
 		if (logger.isDebugEnabled()) {
@@ -88,19 +87,24 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 		return invokeFunction(invocation.getMethod(), invocation.getArguments());
 	}
 
+	protected Object invokeFunction(Method method, Object[] args) {
+		return this.gemfireFunctionOperations.executeAndExtract(
+			methodMetadata.getMethodMetadata(method).getFunctionId(), args);
+	}
 
 	@Override
 	public Object getObject() throws Exception {
-		if (this.serviceProxy == null) {
-			this.onInit();
-			Assert.notNull(this.serviceProxy, "failed to initialize proxy");
+		if (functionExecutionProxy == null) {
+			onInit();
+			Assert.notNull(functionExecutionProxy, "failed to initialize proxy");
 		}
-		return this.serviceProxy;
+
+		return functionExecutionProxy;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return (this.serviceInterface != null ? this.serviceInterface : null);
+		return this.functionExecutionInterface;
 	}
 
 	@Override
@@ -109,11 +113,11 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 	}
 
 	protected void onInit() {
-		if (this.initialized) {
-			return;
+		if (!initialized) {
+			ProxyFactory proxyFactory = new ProxyFactory(functionExecutionInterface, this);
+			functionExecutionProxy = proxyFactory.getProxy(beanClassLoader);
+			initialized = true;
 		}
-		ProxyFactory proxyFactory = new ProxyFactory(serviceInterface, this);
-		this.serviceProxy = proxyFactory.getProxy(this.beanClassLoader);
-		this.initialized = true;
 	}
+
 }

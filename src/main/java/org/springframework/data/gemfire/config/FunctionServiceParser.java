@@ -28,7 +28,9 @@ import org.w3c.dom.Element;
 
 /**
  * Parser for &lt;function-service;gt; definitions.
+ *
  * @author David Turanski
+ * @author John Blum
  */
 class FunctionServiceParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -39,23 +41,23 @@ class FunctionServiceParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		builder.setLazyInit(false);
 		super.doParse(element, builder);
-		Element function = DomUtils.getChildElementByTagName(element, "function");
-		if (function != null) {
-			builder.addPropertyValue("functions",
-					ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, function, builder));
+		builder.setLazyInit(false);
+
+		Element functionElement = DomUtils.getChildElementByTagName(element, "function");
+
+		if (functionElement != null) {
+			builder.addPropertyValue("functions", ParsingUtils.parseRefOrNestedBeanDeclaration(
+				parserContext, functionElement, builder));
 		}
 	}
 
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
-		String name = super.resolveId(element, definition, parserContext);
-		if (!StringUtils.hasText(name)) {
-			name = GemfireConstants.DEFAULT_GEMFIRE_FUNCTION_SERVICE_NAME;
-		}
-		return name;
+
+		String resolvedId = super.resolveId(element, definition, parserContext);
+		return (StringUtils.hasText(resolvedId) ? resolvedId : GemfireConstants.DEFAULT_GEMFIRE_FUNCTION_SERVICE_NAME);
 	}
 
 }
