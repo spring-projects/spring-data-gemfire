@@ -75,9 +75,8 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
-
 		if (AopUtils.isToStringMethod(invocation.getMethod())) {
-			return "Gemfire function proxy for service interface [" + this.functionExecutionInterface + "]";
+			return "GemFire Function Proxy for service interface [" + this.functionExecutionInterface + "]";
 		}
 
 		if (logger.isDebugEnabled()) {

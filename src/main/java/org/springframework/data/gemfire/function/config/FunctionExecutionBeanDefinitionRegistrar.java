@@ -12,8 +12,6 @@
  */
 package org.springframework.data.gemfire.function.config;
 
-import java.lang.annotation.Annotation;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -21,7 +19,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -52,7 +49,9 @@ class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 	void registerBeanDefinitions(AbstractFunctionExecutionConfigurationSource functionExecutionConfigurationSource,
 			BeanDefinitionRegistry registry) {
 
-		for (ScannedGenericBeanDefinition beanDefinition : functionExecutionConfigurationSource.getCandidates(new DefaultResourceLoader())) {
+		for (ScannedGenericBeanDefinition beanDefinition : functionExecutionConfigurationSource.getCandidates(
+				new DefaultResourceLoader())) {
+
 			String functionExecutionAnnotation = getFunctionExecutionAnnotation(beanDefinition,
 				AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypeNames());
 

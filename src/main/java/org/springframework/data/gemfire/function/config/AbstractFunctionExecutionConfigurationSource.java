@@ -71,7 +71,9 @@ abstract class AbstractFunctionExecutionConfigurationSource implements FunctionE
 	}
 
 	public Collection<ScannedGenericBeanDefinition> getCandidates(ResourceLoader loader) {
-		ClassPathScanningCandidateComponentProvider scanner = new FunctionExecutionComponentProvider(getIncludeFilters(),functionExecutionAnnotationTypes);
+		ClassPathScanningCandidateComponentProvider scanner = new FunctionExecutionComponentProvider(
+			getIncludeFilters(), getFunctionExecutionAnnotationTypes());
+
 		scanner.setResourceLoader(loader);
 
 		for (TypeFilter filter : getExcludeFilters()) {
@@ -84,9 +86,11 @@ abstract class AbstractFunctionExecutionConfigurationSource implements FunctionE
 			if (logger.isDebugEnabled()) {
 				logger.debug("scanning package " + basePackage);
 			}
-			Collection<BeanDefinition> components = scanner.findCandidateComponents(basePackage);
-			for (BeanDefinition definition : components) {
-				result.add((ScannedGenericBeanDefinition)definition);
+
+			Collection<BeanDefinition> candidateComponents = scanner.findCandidateComponents(basePackage);
+
+			for (BeanDefinition beanDefinition : candidateComponents) {
+				result.add((ScannedGenericBeanDefinition) beanDefinition);
 			}
 		}
 

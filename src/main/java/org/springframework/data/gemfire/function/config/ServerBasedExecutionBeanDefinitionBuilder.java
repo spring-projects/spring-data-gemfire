@@ -44,7 +44,7 @@ abstract class ServerBasedExecutionBeanDefinitionBuilder extends AbstractFunctio
 		String cache = (String) configuration.getAttribute("cache");
 		String pool = (String) configuration.getAttribute("pool");
 
-		Assert.state(StringUtils.hasText(cache) && !(StringUtils.hasText(pool)), String.format(
+		Assert.state(!(StringUtils.hasText(cache) && StringUtils.hasText(pool)), String.format(
 			"invalid configuration for interface %s; cannot specify both 'pool' and 'cache'",
 				configuration.getFunctionExecutionInterface().getName()));
 

@@ -15,100 +15,79 @@ package org.springframework.data.gemfire.function.execution;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 
 /**
- * 
- * The base class for Gemfire function templates used to invoke Gemfire functions
- * @author David Turanski
+ * The base class for GemFire FunctionTemplates used to invoke GemFire Functions.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.execute.Function
+ * @see com.gemstone.gemfire.cache.execute.ResultCollector
  */
-abstract class AbstractFunctionTemplate  implements GemfireFunctionOperations {
+abstract class AbstractFunctionTemplate implements GemfireFunctionOperations {
 
 	protected Log log = LogFactory.getLog(this.getClass());
-	 
+
 	protected long timeout;
+
 	protected volatile ResultCollector<?, ?> resultCollector;
-	
+
 	@Override
 	public <T> Iterable<T> execute(Function function, Object... args) {
-		 AbstractFunctionExecution functionExecution = getFunctionExecution()
-				 .setArgs(args)
-				 .setFunction(function);
-		 return execute(functionExecution);
+		 return execute(getFunctionExecution().setArgs(args).setFunction(function));
 	}
 
 	@Override
 	public <T> T executeAndExtract(Function function, Object... args) {
-		 AbstractFunctionExecution functionExecution = getFunctionExecution()
-				 .setArgs(args)
-				 .setFunction(function);
-		 		
-		return this.<T> executeAndExtract(functionExecution);		
+		return executeAndExtract(getFunctionExecution().setArgs(args).setFunction(function));
 	}
 
 	@Override
 	public <T> Iterable<T> execute(String functionId, Object... args) {
-		AbstractFunctionExecution functionExecution = getFunctionExecution()
-				 .setArgs(args)
-				 .setFunctionId(functionId);
-		 return execute(functionExecution);		 
+		return execute(getFunctionExecution().setArgs(args).setFunctionId(functionId));
 	}
-	
-	@Override 
-	public void executeWithNoResult(String functionId, Object... args) {
-		AbstractFunctionExecution functionExecution = getFunctionExecution()
-				 .setArgs(args)
-				 .setFunctionId(functionId);
-		 execute(functionExecution,false);		 
-	}
-	 
+
 	@Override
 	public <T> T executeAndExtract(String functionId, Object... args) {
-		 AbstractFunctionExecution functionExecution = getFunctionExecution()
-				 .setArgs(args)
-				 .setFunctionId(functionId);
-		return this.<T>executeAndExtract(functionExecution);		
+		return executeAndExtract(getFunctionExecution().setArgs(args).setFunctionId(functionId));
+	}
+
+	@Override
+	public void executeWithNoResult(String functionId, Object... args) {
+		execute(getFunctionExecution().setArgs(args).setFunctionId(functionId), false);
 	}
 
 	@Override
 	public <T> T execute(GemfireFunctionCallback<T> callback) {
-		Execution execution = getFunctionExecution().getExecution();
-		return callback.doInGemfire(execution);
+		return callback.doInGemfire(getFunctionExecution().getExecution());
 	}
-	 
-	
+
 	protected <T> Iterable<T> execute(AbstractFunctionExecution execution) {
-		 execution.setTimeout(timeout)
-		 .setResultCollector(resultCollector);
-		 return execution.execute();
+		 return execution.setTimeout(timeout).setResultCollector(resultCollector).execute();
 	}
 	
 	protected <T> Iterable<T> execute(AbstractFunctionExecution execution, boolean returnResult) {
-		 execution.setTimeout(timeout)
-		 .setResultCollector(resultCollector);
-		 return execution.execute(returnResult);
+		 return execution.setTimeout(timeout).setResultCollector(resultCollector).execute(returnResult);
 	}
-	
+
 	protected <T> T executeAndExtract(AbstractFunctionExecution execution) {
-		 execution.setTimeout(timeout)
-		 .setResultCollector(resultCollector);
-		 return execution.<T>executeAndExtract();
+		 return execution.setTimeout(timeout).setResultCollector(resultCollector).executeAndExtract();
 	}
-	
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
-	}
-	
+
 	public void setResultCollector(ResultCollector<?,?> resultCollector) {
 		this.resultCollector = resultCollector;
 	}
-	
+
 	public ResultCollector<?,?> getResultCollector() {
 		return this.resultCollector;
 	}
-	
+
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
+
 	protected abstract AbstractFunctionExecution getFunctionExecution();
+
 }

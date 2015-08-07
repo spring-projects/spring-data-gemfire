@@ -31,6 +31,12 @@ class FunctionExecutionConfiguration  {
 
 	private final String annotationType;
 
+	/* constructor for testing purposes only! */
+	FunctionExecutionConfiguration() {
+		this.annotationType = null;
+		this.attributes = null;
+	}
+
 	FunctionExecutionConfiguration(ScannedGenericBeanDefinition beanDefinition, String annotationType) {
 		try {
 			this.annotationType = annotationType;

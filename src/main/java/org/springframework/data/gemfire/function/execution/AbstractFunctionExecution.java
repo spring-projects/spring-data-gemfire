@@ -29,22 +29,27 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 
 /**
- * Base class for * Creating a GemFire {@link Execution} using {@link FunctionService}
- * Protected setters support method chaining
- * @author  David Turanski
+ * Base class for * Creating a GemFire {@link Execution} using {@link FunctionService}.  Protected setters support
+ * method chaining.
+ *
+ * @author David Turanski
+ * @author John Blum
  */
-
 abstract class AbstractFunctionExecution {
 
 	private final static String NO_RESULT_MESSAGE = "Cannot return any result as the Function#hasResult() is false";
 
+	private long timeout;
+
+	private Function function;
+
 	protected final Log logger = LogFactory.getLog(this.getClass());
 
-	private volatile ResultCollector<?, ?> resultCollector;
 	private Object[] args;
-	private Function function;
+
+	private volatile ResultCollector<?, ?> resultCollector;
+
 	private String functionId;
-	private long timeout;
 
 	public AbstractFunctionExecution(Function function, Object... args) {
 		Assert.notNull(function, "function cannot be null");
@@ -62,20 +67,20 @@ abstract class AbstractFunctionExecution {
 	AbstractFunctionExecution() {
 	}
 
-	ResultCollector<?, ?> getCollector() {
-		return resultCollector;
-	}
-
 	Object[] getArgs() {
 		return args;
 	}
 
-	String getFunctionId() {
-		return functionId;
+	ResultCollector<?, ?> getCollector() {
+		return resultCollector;
 	}
 
 	Function getFunction() {
 		return function;
+	}
+
+	String getFunctionId() {
+		return functionId;
 	}
 
 	long getTimeout() {
@@ -88,33 +93,31 @@ abstract class AbstractFunctionExecution {
 
 	@SuppressWarnings("unchecked")
 	<T> Iterable<T> execute(Boolean returnResult) {
-		Execution execution = this.getExecution();
-		if (getKeys() != null) {
-			execution = execution.withFilter(getKeys());
-		}
-		if (getCollector() != null) {
-			execution = execution.withCollector(getCollector());
-		}
-
-		ResultCollector<?, ?> resultCollector = null;
+		Execution execution = getExecution();
 
 		execution = execution.withArgs(getArgs());
+		execution = (getCollector() == null ? execution : execution.withCollector(getCollector()));
+		execution = (getKeys() == null ? execution : execution.withFilter(getKeys()));
+
+		ResultCollector<?, ?> resultCollector;
 
 		if (isRegisteredFunction()) {
-			resultCollector = (ResultCollector<?, ?>) execution.execute(functionId);
-		} else {
-			resultCollector = (ResultCollector<?, ?>) execution.execute(function);
+			resultCollector = execution.execute(functionId);
+		}
+		else {
+			resultCollector = execution.execute(function);
+
 			if (!function.hasResult()) {
-				return (Iterable<T>) null;
+				return null;
 			}
 		}
-		
+
 		if (!returnResult) {
-			return (Iterable<T>) null;
+			return null;
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("using ResultsCollector:" + resultCollector.getClass().getName());
+			logger.debug("using ResultsCollector " + resultCollector.getClass().getName());
 		}
 
 		Iterable<T> results = null;
@@ -123,41 +126,53 @@ abstract class AbstractFunctionExecution {
 			if (this.timeout > 0) {
 				try {
 					results = (Iterable<T>) resultCollector.getResult(this.timeout, TimeUnit.MILLISECONDS);
-				} catch (FunctionException e) {
-					throw new RuntimeException(e);
-				} catch (InterruptedException e) {
+				}
+				catch (FunctionException e) {
 					throw new RuntimeException(e);
 				}
-			} else {
-
+				catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			else {
 				results = (Iterable<T>) resultCollector.getResult();
 			}
 
 			return replaceSingletonNullCollectionWithEmptyList(results);
-			
-		} catch (FunctionException e) {
-			//TODO: Come up with a better way to determine that the function should not return a result;
+		}
+		catch (FunctionException e) {
+			//TODO Come up with a better way to determine that the function should not return a result;
 			if (!e.getMessage().equals(NO_RESULT_MESSAGE)) {
 				throw e;
 			}
 		}
-		
+
 		return results;
 	}
 
+	@SuppressWarnings("unchecked")
 	<T> T executeAndExtract() {
-		Iterable<T> results = this.execute();
+		Iterable<T> results = execute();
+
 		if (results == null || !results.iterator().hasNext()) {
 			return null;
 		}
 
-		return results.iterator().next();
+		Object result = results.iterator().next();
+
+		if (result instanceof Throwable) {
+			throw new FunctionException(String.format("Execution of Function %1$s failed",
+				(function != null ? function.getClass().getName() : String.format("with ID '%1$s'", functionId))),
+					(Throwable) result);
+		}
+
+		return (T) result;
 	}
 
 	protected abstract Execution getExecution();
 
-	protected AbstractFunctionExecution setFunctionId(String functionId) {
-		this.functionId = functionId;
+	protected AbstractFunctionExecution setArgs(Object... args) {
+		this.args = args;
 		return this;
 	}
 
@@ -166,17 +181,8 @@ abstract class AbstractFunctionExecution {
 		return this;
 	}
 
-	protected AbstractFunctionExecution setArgs(Object... args) {
-		this.args = args;
-		return this;
-	}
-
-	protected Set<?> getKeys() {
-		return null;
-	}
-
-	protected AbstractFunctionExecution setTimeout(long timeout) {
-		this.timeout = timeout;
+	protected AbstractFunctionExecution setFunctionId(String functionId) {
+		this.functionId = functionId;
 		return this;
 	}
 
@@ -185,29 +191,33 @@ abstract class AbstractFunctionExecution {
 		return this;
 	}
 
-	/**
-	 * @return
-	 */
+	protected AbstractFunctionExecution setTimeout(long timeout) {
+		this.timeout = timeout;
+		return this;
+	}
+
+	protected Set<?> getKeys() {
+		return null;
+	}
+
 	private boolean isRegisteredFunction() {
 		return function == null;
 	}
 
 	private <T> Iterable<T> replaceSingletonNullCollectionWithEmptyList(Iterable<T> results) {
-		if (results == null) {
-			return results;
-		}
-		Iterator<T> it = results.iterator();
+		if (results != null) {
+			Iterator<T> it = results.iterator();
 
-		if (!it.hasNext()) {
-			return results;
-		}
+			if (!it.hasNext()) {
+				return results;
+			}
 
-		if (it.next() == null && !it.hasNext()) {
-			return new ArrayList<T>();
+			if (it.next() == null && !it.hasNext()) {
+				return new ArrayList<T>();
+			}
 		}
 
 		return results;
-
 	}
 
 }
