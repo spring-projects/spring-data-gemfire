@@ -18,8 +18,13 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
 /**
- * @author David Turanski
+ * Parse for &lt;function-executions&gt; definitions.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.beans.factory.config.BeanDefinition
+ * @see org.springframework.beans.factory.xml.BeanDefinitionParser
+ * @see org.springframework.beans.factory.xml.ParserContext
  */
 public class FunctionExecutionBeanDefinitionParser implements BeanDefinitionParser {
 
@@ -28,10 +33,12 @@ public class FunctionExecutionBeanDefinitionParser implements BeanDefinitionPars
 	 */
 	@Override
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-	
-		AbstractFunctionExecutionConfigurationSource configurationSource = 
-				new XmlFunctionExecutionConfigurationSource(element, parserContext);
+
+		AbstractFunctionExecutionConfigurationSource configurationSource = new XmlFunctionExecutionConfigurationSource(
+			element, parserContext);
+
 		new FunctionExecutionBeanDefinitionRegistrar().registerBeanDefinitions(configurationSource, parserContext.getRegistry());
+
 		return null;
 	}
 

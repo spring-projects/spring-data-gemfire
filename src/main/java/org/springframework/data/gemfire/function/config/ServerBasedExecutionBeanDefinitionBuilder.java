@@ -33,39 +33,36 @@ abstract class ServerBasedExecutionBeanDefinitionBuilder extends AbstractFunctio
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getGemfireOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
+	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
+	 * 	#getGemfireFunctionOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
-	protected BeanDefinitionBuilder getGemfireOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
+	protected BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
+		BeanDefinitionBuilder functionTemplateBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			getGemfireFunctionOperationsClass());
 
-		BeanDefinitionBuilder functionTemplateBuilder = BeanDefinitionBuilder
-				.genericBeanDefinition(getGemfireOperationsClass());
-
-		String pool = (String) configuration.getAttribute("pool");
 		String cache = (String) configuration.getAttribute("cache");
+		String pool = (String) configuration.getAttribute("pool");
 
-		Assert.state(!(StringUtils.hasText(pool) && StringUtils.hasText(cache)), String.format(
-				"invalid configuration for interface %s. Cannot specify both 'pool' and 'cache'", configuration
-						.getFunctionExecutionInterface().getName()));
+		Assert.state(StringUtils.hasText(cache) && !(StringUtils.hasText(pool)), String.format(
+			"invalid configuration for interface %s; cannot specify both 'pool' and 'cache'",
+				configuration.getFunctionExecutionInterface().getName()));
 
-		if (StringUtils.hasText(pool)) {
-			functionTemplateBuilder.addConstructorArgReference(pool);
-		} else {
-			if (!StringUtils.hasText(cache)) {
-				cache = GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME;
-			}
-			functionTemplateBuilder.addConstructorArgReference(cache);
-		}
+		functionTemplateBuilder.addConstructorArgReference(StringUtils.hasText(pool) ? pool
+			: (StringUtils.hasText(cache) ? cache : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+
 		return functionTemplateBuilder;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getFunctionProxyFactoryBeanClass()
+	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
+	 * 	#getFunctionProxyFactoryBeanClass()
 	 */
 	@Override
 	protected Class<?> getFunctionProxyFactoryBeanClass() {
 		return GemfireFunctionProxyFactoryBean.class;
 	}
 
-	protected abstract Class<?> getGemfireOperationsClass();
+	protected abstract Class<?> getGemfireFunctionOperationsClass();
+
 }

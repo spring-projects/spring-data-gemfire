@@ -29,7 +29,7 @@ class OnMembersExecutionBeanDefinitionBuilder extends MemberBasedExecutionBeanDe
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.MemberBasedExecutionBeanDefinitionBuilder#getGemfireOperationsClass()
+	 * @see org.springframework.data.gemfire.function.config.MemberBasedExecutionBeanDefinitionBuilder#getGemfireFunctionOperationsClass()
 	 */
 	@Override
 	protected Class<?> getGemfireOperationsClass() {

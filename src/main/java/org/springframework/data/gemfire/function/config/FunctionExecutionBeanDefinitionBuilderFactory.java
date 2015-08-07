@@ -19,30 +19,43 @@ import org.springframework.data.gemfire.function.annotation.OnServer;
 import org.springframework.data.gemfire.function.annotation.OnServers;
 
 /**
- * 
- * Maps the annotation type to the corresponding function execution bean definition builder
- * @author David Turanski
+ * Maps the Function Execution Annotation type to the corresponding Function Execution bean definition builder.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.data.gemfire.function.annotation.OnMember
+ * @see org.springframework.data.gemfire.function.annotation.OnMembers
+ * @see org.springframework.data.gemfire.function.annotation.OnRegion
+ * @see org.springframework.data.gemfire.function.annotation.OnServer
+ * @see org.springframework.data.gemfire.function.annotation.OnServers
+ * @see org.springframework.data.gemfire.function.config.OnMemberExecutionBeanDefinitionBuilder
+ * @see org.springframework.data.gemfire.function.config.OnMembersExecutionBeanDefinitionBuilder
+ * @see org.springframework.data.gemfire.function.config.OnRegionExecutionBeanDefinitionBuilder
+ * @see org.springframework.data.gemfire.function.config.OnServerExecutionBeanDefinitionBuilder
+ * @see org.springframework.data.gemfire.function.config.OnServersExecutionBeanDefinitionBuilder
  */
-abstract class  FunctionExecutionBeanDefinitionBuilderFactory {
+abstract class FunctionExecutionBeanDefinitionBuilderFactory {
 
 	static AbstractFunctionExecutionBeanDefinitionBuilder newInstance(FunctionExecutionConfiguration configuration) {
-		String functionExectionAnnotation = configuration.getAnnotationType();
-		if (functionExectionAnnotation.equals(OnRegion.class.getName())) {
+		String functionExecutionAnnotation = configuration.getAnnotationType();
+
+		if (OnMember.class.getName().equals(functionExecutionAnnotation)) {
+			return new OnMemberExecutionBeanDefinitionBuilder(configuration);
+		}
+		else if (OnMembers.class.getName().equals(functionExecutionAnnotation)) {
+			return new OnMembersExecutionBeanDefinitionBuilder(configuration);
+		}
+		else if (OnRegion.class.getName().equals(functionExecutionAnnotation)) {
 			return new OnRegionExecutionBeanDefinitionBuilder(configuration);
 		} 
-		if (functionExectionAnnotation.equals(OnServer.class.getName())) {
+		else if (OnServer.class.getName().equals(functionExecutionAnnotation)) {
 			return new OnServerExecutionBeanDefinitionBuilder(configuration);
 		} 
-		if (functionExectionAnnotation.equals(OnServers.class.getName())) {
+		else if (OnServers.class.getName().equals(functionExecutionAnnotation)) {
 			return new OnServersExecutionBeanDefinitionBuilder(configuration);
-		} 
-		if (functionExectionAnnotation.equals(OnMember.class.getName())) {
-			return new OnMemberExecutionBeanDefinitionBuilder(configuration);
-		} 
-		if (functionExectionAnnotation.equals(OnMembers.class.getName())) {
-			return new OnMembersExecutionBeanDefinitionBuilder(configuration);
-		} 
-		return null;	
+		}
+
+		return null;
 	}
+
 }

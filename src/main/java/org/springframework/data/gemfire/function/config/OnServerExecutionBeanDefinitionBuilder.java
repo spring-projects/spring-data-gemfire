@@ -16,22 +16,21 @@ import org.springframework.data.gemfire.function.execution.GemfireOnServerFuncti
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 class OnServerExecutionBeanDefinitionBuilder extends ServerBasedExecutionBeanDefinitionBuilder {
 
-	/**
-	 * @param configuration
-	 */
 	OnServerExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
 		super(configuration);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.ServerBasedExecutionBeanDefinitionBuilder#getGemfireOperationsClass()
+	 * @see org.springframework.data.gemfire.function.config.ServerBasedExecutionBeanDefinitionBuilder
+	 * 	#getGemfireFunctionOperationsClass()
 	 */
 	@Override
-	protected Class<?> getGemfireOperationsClass() {
+	protected Class<?> getGemfireFunctionOperationsClass() {
 		 return GemfireOnServerFunctionTemplate.class;
 	}
+
 }

@@ -27,12 +27,19 @@ import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 
 /**
+ * Spring FactoryBean for registering instance of GemFire Function with the GemFire FunctionService.
+ *
  * @author David Turanski
- * 
+ * @author John Blum
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see com.gemstone.gemfire.cache.execute.Function
+ * @see com.gemstone.gemfire.cache.execute.FunctionService
  */
 public class FunctionServiceFactoryBean implements FactoryBean<FunctionService>, InitializingBean {
-	private static FunctionService functionService;
+
 	private static Log logger = LogFactory.getLog(FunctionServiceFactoryBean.class);
+
 	private List<Function> functions;
 
 	@Override
@@ -40,7 +47,7 @@ public class FunctionServiceFactoryBean implements FactoryBean<FunctionService>,
 		if (!CollectionUtils.isEmpty(functions)) {
 			for (Function function : functions) {
 				if (logger.isInfoEnabled()) {
-					logger.info("registering function with ID: " + function.getId());
+					logger.info(String.format("registering Function with ID (%1$s)", function.getId()));
 				}
 				FunctionService.registerFunction(function);
 			}
@@ -53,7 +60,7 @@ public class FunctionServiceFactoryBean implements FactoryBean<FunctionService>,
 
 	@Override
 	public FunctionService getObject() throws Exception {
-		return functionService;
+		return null;
 	}
 
 	@Override
@@ -65,4 +72,5 @@ public class FunctionServiceFactoryBean implements FactoryBean<FunctionService>,
 	public boolean isSingleton() {
 		return true;
 	}
+
 }

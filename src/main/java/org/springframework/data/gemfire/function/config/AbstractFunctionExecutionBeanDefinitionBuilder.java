@@ -21,16 +21,18 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
 /**
- * Base class for function execution bean definition builders
- * @author David Turanski
+ * Base class for Function Execution bean definition builders.
  *
+ * @author David Turanski
+ * @author John Blum
  */
 abstract class AbstractFunctionExecutionBeanDefinitionBuilder {
-	
-	protected final Log log = LogFactory.getLog(this.getClass());
+
 	protected final FunctionExecutionConfiguration configuration;
-	
+
+	protected final Log log = LogFactory.getLog(getClass());
 
 	/**
 	 * 
@@ -47,32 +49,34 @@ abstract class AbstractFunctionExecutionBeanDefinitionBuilder {
 	 * @return
 	 */
 	 BeanDefinition build(BeanDefinitionRegistry registry) {
-		
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(getFunctionProxyFactoryBeanClass());
-	
-		builder.addConstructorArgValue(configuration.getFunctionExecutionInterface());
-		
-		BeanDefinitionBuilder functionTemplateBuilder = getGemfireOperationsBeanDefinitionBuilder(registry);
-		functionTemplateBuilder.setLazyInit(true);
-		
-		String resultCollectorRef = (String)configuration.getAttribute("resultCollector");
-		if (StringUtils.hasText(resultCollectorRef)){
-			functionTemplateBuilder.addPropertyReference("resultCollector",resultCollectorRef);
-		}
-		
-		AbstractBeanDefinition functionTemplate = functionTemplateBuilder
-				.getBeanDefinition();
-		
-		String functionTemplateName = BeanDefinitionReaderUtils.registerWithGeneratedName(functionTemplate, registry);
-		
-		builder.addConstructorArgReference(functionTemplateName);
+		BeanDefinitionBuilder functionProxyFactoryBeanBuilder = BeanDefinitionBuilder.rootBeanDefinition(
+			getFunctionProxyFactoryBeanClass());
+
+		functionProxyFactoryBeanBuilder.addConstructorArgValue(configuration.getFunctionExecutionInterface());
+		functionProxyFactoryBeanBuilder.addConstructorArgReference(BeanDefinitionReaderUtils.registerWithGeneratedName(
+			buildGemfireFunctionOperations(registry), registry));
 		 
-		return builder.getBeanDefinition(); 
+		return functionProxyFactoryBeanBuilder.getBeanDefinition();
 	}	
-	 
-	/*
-	 * Subclasses implement to specify the types to uses. 
-	 */
+
+	protected AbstractBeanDefinition buildGemfireFunctionOperations(BeanDefinitionRegistry registry) {
+		BeanDefinitionBuilder functionTemplateBuilder = getGemfireFunctionOperationsBeanDefinitionBuilder(registry);
+
+		functionTemplateBuilder.setLazyInit(true);
+
+		String resultCollectorReference = (String) configuration.getAttribute("resultCollector");
+
+		if (StringUtils.hasText(resultCollectorReference)){
+			functionTemplateBuilder.addPropertyReference("resultCollector", resultCollectorReference);
+		}
+
+		return functionTemplateBuilder.getBeanDefinition();
+	}
+
+	/* Subclasses implement to specify the types to uses. */
 	protected abstract Class<?> getFunctionProxyFactoryBeanClass();
-	protected abstract BeanDefinitionBuilder getGemfireOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry);
+
+	protected abstract BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(
+		BeanDefinitionRegistry registry);
+
 }
