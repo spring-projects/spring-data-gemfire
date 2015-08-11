@@ -38,8 +38,11 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
  * @see org.springframework.beans.factory.wiring.BeanConfigurerSupport
  * @see org.springframework.beans.factory.wiring.BeanWiringInfo
  * @see org.springframework.data.gemfire.DeclarableSupport
+ * @see org.springframework.data.gemfire.LazyWiringDeclarableSupport
  * @see com.gemstone.gemfire.cache.Declarable
+ * @deprecated please use LazyWiringDeclarableSupport instead.
  */
+@Deprecated
 public class WiringDeclarableSupport extends DeclarableSupport {
 
 	private static final String BEAN_NAME_PROPERTY = "bean-name";
