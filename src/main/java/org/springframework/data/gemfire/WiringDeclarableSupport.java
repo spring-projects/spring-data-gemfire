@@ -24,43 +24,50 @@ import org.springframework.beans.factory.wiring.BeanWiringInfo;
 import org.springframework.beans.factory.wiring.BeanWiringInfoResolver;
 
 import com.gemstone.gemfire.cache.Declarable;
+import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
- * Dedicated {@link Declarable} support class for wiring the declaring instance through
- * the Spring container.
- * This implementation will first look for a 'bean-name' property which will be used to
- * locate a 'template' bean definition. In case the property is not given, a bean named
- * after the class will be searched and if none is found, autowiring will be performed,
- * based on the settings defined in the Spring container.
+ * Dedicated {@link Declarable} support class for wiring the declaring instance through the Spring container.
+ *
+ * <p>This implementation first looks for a 'bean-name' property which will be used to locate a 'template'
+ * bean definition.  Autowiring will be performed, based on the settings defined in the Spring container.
  * 
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.wiring.BeanConfigurerSupport
+ * @see org.springframework.beans.factory.wiring.BeanWiringInfo
+ * @see org.springframework.data.gemfire.DeclarableSupport
+ * @see com.gemstone.gemfire.cache.Declarable
  */
 public class WiringDeclarableSupport extends DeclarableSupport {
 
-	private static final String BEAN_NAME_PROP = "bean-name";
+	private static final String BEAN_NAME_PROPERTY = "bean-name";
 
 	@Override
-	protected void initInstance(Properties props) {
-		BeanFactory bf = getBeanFactory();
-		BeanConfigurerSupport configurer = new BeanConfigurerSupport();
-		configurer.setBeanFactory(bf);
+	protected void initInstance(Properties parameters) {
+		BeanFactory beanFactory = getBeanFactory();
 
-		final String beanName = props.getProperty(BEAN_NAME_PROP);
-		// key specified, search for a bean
-		if (beanName != null) {
-			if (!bf.containsBean(beanName)) {
-				throw new IllegalArgumentException("Cannot find bean named '" + beanName + "'");
+		BeanConfigurerSupport beanConfigurer = new BeanConfigurerSupport();
+		beanConfigurer.setBeanFactory(beanFactory);
+
+		final String beanName = parameters.getProperty(BEAN_NAME_PROPERTY);
+
+		if (StringUtils.hasText(beanName)) {
+			if (!beanFactory.containsBean(beanName)) {
+				throw new IllegalArgumentException(String.format("Cannot find bean named '%1$s'", beanName));
 			}
-			configurer.setBeanWiringInfoResolver(new BeanWiringInfoResolver() {
 
+			beanConfigurer.setBeanWiringInfoResolver(new BeanWiringInfoResolver() {
 				public BeanWiringInfo resolveWiringInfo(Object beanInstance) {
 					return new BeanWiringInfo(beanName);
 				}
 			});
 		}
 
-		configurer.afterPropertiesSet();
-		configurer.configureBean(this);
-		configurer.destroy();
+		beanConfigurer.afterPropertiesSet();
+		beanConfigurer.configureBean(this);
+		beanConfigurer.destroy();
 	}
+
 }

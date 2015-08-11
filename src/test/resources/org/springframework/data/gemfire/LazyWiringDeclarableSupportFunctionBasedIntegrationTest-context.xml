@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="helloProperties">
+		<prop key="hello.address.to">Spring</prop>
+		<prop key="hello.default.address.to">Universe</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="helloProperties"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">LazyWiringDeclarableSupportFunctionBasedIntegrationTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+		<prop key="groups">HelloGroup</prop>
+	</util:properties>
+
+	<gfe:cache cache-xml-location="lazy-wiring-declarable-support-function-cache.xml"
+			   properties-ref="gemfireProperties" lazy-init="false"/>
+
+	<gfe-data:function-executions base-package="org.springframework.data.gemfire.function.sample">
+		<gfe-data:include-filter type="assignable" expression="org.springframework.data.gemfire.function.sample.HelloFunctionExecution"/>
+	</gfe-data:function-executions>
+
+</beans>

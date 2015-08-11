@@ -25,69 +25,82 @@ import com.gemstone.gemfire.cache.CacheCallback;
 import com.gemstone.gemfire.cache.Declarable;
 
 /**
- * Convenience class for Spring-aware GemFire Declarable components. Provides a
- * reference to the current Spring application context, e.g. for bean lookup or
- * resource loading.
+ * Convenience class for Spring-aware GemFire Declarable components. Provides a reference to the current
+ * Spring ApplicationContext, e.g. for Spring bean lookup or resource loading.
  * 
- * Note that in most cases, one can just declare the same components as Spring
- * beans, through {@link RegionFactoryBean} which gives access to the full
- * container capabilities and does not enforce the {@link Declarable} interface
+ * Note that in most cases, one can just declare the same components as Spring beans, through {@link RegionFactoryBean}
+ * which gives access to the full Spring container capabilities and does not enforce the {@link Declarable} interface
  * to be implemented.
  * 
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.access.BeanFactoryReference
+ * @see com.gemstone.gemfire.cache.CacheCallback
+ * @see com.gemstone.gemfire.cache.Declarable
  */
+@SuppressWarnings("unused")
 public abstract class DeclarableSupport implements CacheCallback, Declarable {
 
-	private String factoryKey = null;
+	private String beanFactoryKey = null;
 
-	private BeanFactoryReference bfReference = null;
+	private BeanFactoryReference beanFactoryReference = null;
 
 	public DeclarableSupport() {
 	}
 
 	/**
-	 * This implementation uses this method as a lifecycle hook to initialize
-	 * the bean factory locator.
-	 * 
-	 * {@inheritDoc}
-	 * 
-	 * @see #setFactoryKey(String)
+	 * Gets a reference to the configured Spring BeanFactory.
+	 *
+	 * @return a Spring BeanFactory reference.
+	 * @see org.springframework.beans.factory.BeanFactory
 	 */
-	@Override
-	public final void init(Properties props) {
-		bfReference = new GemfireBeanFactoryLocator().useBeanFactory(factoryKey);
-		initInstance(props);
-	}
-
-	/**
-	 * Initialize the current instance based on the given properties.
-	 * 
-	 * @param props the Properties used to initialize this Declarable.
-	 * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
-	 * @see java.util.Properties
-	 */
-	protected void initInstance(Properties props) {
-	}
-
 	protected BeanFactory getBeanFactory() {
-		return bfReference.getFactory();
-	}
-
-	@Override
-	public void close() {
-		bfReference.release();
-		bfReference = null;
+		return beanFactoryReference.getFactory();
 	}
 
 	/**
 	 * Sets the key under which the enclosing BeanFactory can be found. Needed only if multiple BeanFactories
 	 * are used with GemFire inside the same class loader / class space.
-	 * 
-	 * @see GemfireBeanFactoryLocator
-	 * @param key a String specifying the key used to lookup the "enclosing" BeanFactory in the presenence of
-	 * multiple BeanFactories.
+	 *
+	 * @param key a String specifying the key used to lookup the "enclosing" BeanFactory in the presence
+	 * of multiple BeanFactories.
+	 * @see org.springframework.data.gemfire.GemfireBeanFactoryLocator
 	 */
 	public void setFactoryKey(String key) {
-		this.factoryKey = key;
+		this.beanFactoryKey = key;
 	}
+
+	/**
+	 * This Declarable implementation uses the init method as a lifecycle hook to initialize the bean factory locator.
+	 *
+	 * {@inheritDoc}
+	 *
+	 * @see org.springframework.data.gemfire.GemfireBeanFactoryLocator
+	 * @see #setFactoryKey(String)
+	 */
+	@Override
+	public final void init(Properties parameters) {
+		beanFactoryReference = new GemfireBeanFactoryLocator().useBeanFactory(beanFactoryKey);
+		initInstance(parameters);
+	}
+
+	/**
+	 * Initialize this Declarable object with the given Properties.
+	 *
+	 * @param props the Properties (parameters) used to initialize this Declarable.
+	 * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
+	 * @see java.util.Properties
+	 * @see #init(Properties)
+	 */
+	protected void initInstance(Properties props) {
+	}
+
+	/* (non-Javadoc) */
+	@Override
+	public void close() {
+		beanFactoryReference.release();
+		beanFactoryReference = null;
+	}
+
 }

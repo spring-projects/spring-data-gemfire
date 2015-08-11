@@ -47,6 +47,7 @@ import org.springframework.util.StringUtils;
  * by {@link com.gemstone.gemfire.cache.CacheFactory}.
  * 
  * @author Costin Leau
+ * @author John Blum
  */
 public class GemfireBeanFactoryLocator implements BeanFactoryLocator, BeanFactoryAware, BeanNameAware, DisposableBean,
 		InitializingBean {
@@ -62,19 +63,19 @@ public class GemfireBeanFactoryLocator implements BeanFactoryLocator, BeanFactor
 
 	private static class SimpleBeanFactoryReference implements BeanFactoryReference {
 
-		private BeanFactory bf;
+		private BeanFactory beanFactory;
 
-		SimpleBeanFactoryReference(BeanFactory bf) {
-			this.bf = bf;
+		SimpleBeanFactoryReference(BeanFactory beanFactory) {
+			this.beanFactory = beanFactory;
 		}
 
 		public BeanFactory getFactory() {
-			Assert.notNull(bf, "beanFactory already released or closed");
-			return bf;
+			Assert.state(beanFactory != null, "The BeanFactory has already been released or closed");
+			return beanFactory;
 		}
 
 		public void release() throws FatalBeanException {
-			bf = null;
+			beanFactory = null;
 		}
 	}
 
@@ -106,7 +107,7 @@ public class GemfireBeanFactoryLocator implements BeanFactoryLocator, BeanFactor
 		// add aliases
 		if (StringUtils.hasText(factoryName)) {
 			String[] aliases = beanFactory.getAliases(factoryName);
-			names = (String[]) ObjectUtils.addObjectToArray(aliases, factoryName);
+			names = ObjectUtils.addObjectToArray(aliases, factoryName);
 
 			for (String name : names) {
 				if (log.isDebugEnabled())
@@ -161,4 +162,5 @@ public class GemfireBeanFactoryLocator implements BeanFactoryLocator, BeanFactor
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
+
 }
