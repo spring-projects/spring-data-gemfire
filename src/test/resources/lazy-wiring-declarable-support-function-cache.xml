@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN"
+	"http://www.gemstone.com/dtd/cache8_0.dtd">
+<cache>
+	<function-service>
+		<function>
+			<class-name>org.springframework.data.gemfire.LazyWiringDeclarableSupportFunctionBasedIntegrationTest$HelloGemFireFunction</class-name>
+			<parameter name="hello.address.to">
+				<string>Everyone</string>
+			</parameter>
+		</function>
+	</function-service>
+</cache>
