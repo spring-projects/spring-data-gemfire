@@ -25,9 +25,11 @@ import org.springframework.beans.factory.wiring.BeanConfigurerSupport;
 import org.springframework.beans.factory.wiring.BeanWiringInfo;
 import org.springframework.beans.factory.wiring.BeanWiringInfoResolver;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Declarable;
@@ -41,7 +43,9 @@ import com.gemstone.gemfire.cache.Declarable;
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.wiring.BeanConfigurerSupport
  * @see org.springframework.beans.factory.wiring.BeanWiringInfo
+ * @see org.springframework.beans.factory.wiring.BeanWiringInfoResolver
  * @see org.springframework.context.ApplicationListener
+ * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.event.ContextRefreshedEvent
  * @see org.springframework.data.gemfire.DeclarableSupport
  * @see org.springframework.data.gemfire.WiringDeclarableSupport
@@ -50,8 +54,8 @@ import com.gemstone.gemfire.cache.Declarable;
  * @since 1.3.4
  */
 @SuppressWarnings("unused")
-public abstract class LazyWiringDeclarableSupport implements ApplicationListener<ContextRefreshedEvent>,
-		Declarable, DisposableBean {
+public abstract class LazyWiringDeclarableSupport implements ApplicationListener<ContextRefreshedEvent>, Declarable,
+		DisposableBean {
 
 	// name of the template bean defined in the Spring context for wiring this Declarable instance.
 	protected static final String BEAN_NAME_PARAMETER = "bean-name";
@@ -287,8 +291,12 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 	 */
 	@Override
 	public final void onApplicationEvent(final ContextRefreshedEvent event) {
-		Assert.notNull(event.getApplicationContext(), "The Spring ApplicationContext must not be null");
-		doInit(event.getApplicationContext(), nullSafeGetParameters());
+		Assert.isTrue(event.getApplicationContext() instanceof ConfigurableApplicationContext, String.format(
+			"The Spring ApplicationContext (%1$s) must be an instance of ConfigurableApplicationContext",
+				ObjectUtils.nullSafeClassName(event.getApplicationContext())));
+
+		doInit(((ConfigurableApplicationContext) event.getApplicationContext()).getBeanFactory(),
+			nullSafeGetParameters());
 	}
 
 	/**

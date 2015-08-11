@@ -16,33 +16,43 @@
 
 package org.springframework.data.gemfire;
 
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Costin Leau
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "locatorContext.xml" })
+@SuppressWarnings("unused")
 public class GemfireBeanFactoryLocatorTest {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Autowired
 	private ApplicationContext applicationContext;
 
 	private GemfireBeanFactoryLocator locator1, locator2;
+
 	private String INSTANCE_1 = "instance1";
 	private String INSTANCE_2 = "instance2";
 
@@ -122,16 +132,18 @@ public class GemfireBeanFactoryLocatorTest {
 	}
 
 	@Test
-	public void testFactoryLocatorContract() throws Exception {
+	public void factoryLocatorContract() throws Exception {
 		BeanFactoryReference factory1 = locator1.useBeanFactory(INSTANCE_1);
-		assertNotNull(factory1.getFactory());
+
+		assertThat(factory1.getFactory(), is(notNullValue()));
 
 		factory1.release();
-		try {
-			factory1.getFactory();
-			fail("should have received exception");
-		} catch (IllegalArgumentException e) {
-			// it's okay
-		}
+
+		expectedException.expect(IllegalStateException.class);
+		expectedException.expectCause(is(nullValue(Throwable.class)));
+		expectedException.expectMessage("The BeanFactory has already been released or closed");
+
+		factory1.getFactory();
 	}
+
 }

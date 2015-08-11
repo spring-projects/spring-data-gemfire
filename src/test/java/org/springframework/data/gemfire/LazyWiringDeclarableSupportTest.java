@@ -24,6 +24,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Properties;
@@ -34,7 +36,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer;
@@ -224,7 +227,13 @@ public class LazyWiringDeclarableSupportTest {
 
 	@Test
 	public void onApplicationEvent() {
-		ApplicationContext mockApplicationContext = mock(ApplicationContext.class, "MockApplicationContext");
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"MockConfigurableApplicationContext");
+
+		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class,
+			"MockConfigurableListableBeanFactory");
+
+		when(mockApplicationContext.getBeanFactory()).thenReturn(mockBeanFactory);
 
 		final AtomicBoolean doPostInitCalled = new AtomicBoolean(false);
 
@@ -242,11 +251,13 @@ public class LazyWiringDeclarableSupportTest {
 		try {
 			declarable.init(parameters);
 			declarable.onApplicationEvent(new ContextRefreshedEvent(mockApplicationContext));
-			declarable.assertBeanFactory(mockApplicationContext);
+			declarable.assertBeanFactory(mockBeanFactory);
 			declarable.assertParameters(parameters);
 
 			assertThat(declarable.isInitialized(), is(true));
 			assertThat(doPostInitCalled.get(), is(true));
+
+			verify(mockApplicationContext, times(1)).getBeanFactory();
 		}
 		finally {
 			SpringContextBootstrappingInitializer.unregister(declarable);
@@ -264,7 +275,7 @@ public class LazyWiringDeclarableSupportTest {
 
 			expectedException.expect(IllegalArgumentException.class);
 			expectedException.expectCause(is(nullValue(Throwable.class)));
-			expectedException.expectMessage("The Spring ApplicationContext must not be null");
+			expectedException.expectMessage("The Spring ApplicationContext (null) must be an instance of ConfigurableApplicationContext");
 
 			declarable.onApplicationEvent(mockContextRefreshedEvent);
 		}
@@ -279,7 +290,13 @@ public class LazyWiringDeclarableSupportTest {
 
 	@Test
 	public void fullLifecycleOnApplicationEventToDestroy() throws Exception {
-		ApplicationContext mockApplicationContext = mock(ApplicationContext.class, "MockApplicationContext");
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
+			"MockConfigurableApplicationContext");
+
+		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class,
+			"MockConfigurableListableBeanFactory");
+
+		when(mockApplicationContext.getBeanFactory()).thenReturn(mockBeanFactory);
 
 		final AtomicBoolean doPostInitCalled = new AtomicBoolean(false);
 
@@ -307,7 +324,7 @@ public class LazyWiringDeclarableSupportTest {
 
 			assertThat(declarable.isInitialized(), is(true));
 			assertThat(doPostInitCalled.get(), is(true));
-			declarable.assertBeanFactory(mockApplicationContext);
+			declarable.assertBeanFactory(mockBeanFactory);
 			declarable.assertParameters(parameters);
 
 			doPostInitCalled.set(false);
@@ -322,6 +339,8 @@ public class LazyWiringDeclarableSupportTest {
 			assertThat(declarable.isInitialized(), is(false));
 			assertThat(declarable.nullSafeGetParameters(), is(not(sameInstance(parameters))));
 			assertThat(doPostInitCalled.get(), is(false));
+
+			verify(mockApplicationContext, times(1)).getBeanFactory();
 		}
 		finally {
 			initializer.onApplicationEvent(new ContextClosedEvent(mockApplicationContext));
@@ -330,9 +349,14 @@ public class LazyWiringDeclarableSupportTest {
 
 	@Test
 	public void initThenOnApplicationEventThenInitWhenInitialized() {
-		ApplicationContext mockApplicationContext = mock(ApplicationContext.class, "MockApplicationContext");
-
 		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
+
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class, "MockApplicationContext");
+
+		ConfigurableListableBeanFactory mockConfigurableListableBeanFactory = mock(ConfigurableListableBeanFactory.class,
+			"MockConfigurableListableBeanFactory");
+
+		when(mockApplicationContext.getBeanFactory()).thenReturn(mockConfigurableListableBeanFactory);
 
 		GemfireBeanFactoryLocator locator = new GemfireBeanFactoryLocator();
 		locator.setBeanName("MockBeanFactory");
@@ -389,6 +413,8 @@ public class LazyWiringDeclarableSupportTest {
 			assertThat(declarable.isInitialized(), is(true));
 			assertThat(declarable.nullSafeGetParameters(), is(sameInstance(parameters)));
 			assertThat(doPostInitCalled.get(), is(true));
+
+			verify(mockApplicationContext, times(1)).getBeanFactory();
 		}
 		finally {
 			locator.destroy();
