@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.beans.factory.wiring.BeanConfigurerSupport;
 import org.springframework.beans.factory.wiring.BeanWiringInfo;
 import org.springframework.beans.factory.wiring.BeanWiringInfoResolver;
@@ -66,6 +67,8 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 
 	// condition determining the initialization state of this Declarable
 	volatile boolean initialized = false;
+
+	private BeanFactoryReference beanFactoryReference = null;
 
 	private String factoryKey = null;
 
@@ -137,7 +140,7 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 	protected void assertUninitialized() {
 		Assert.state(!isInitialized(), String.format(
 			"This Declarable object (%1$s) has already been configured and initialized",
-				getClass().getName()));
+			getClass().getName()));
 	}
 
 	/**
@@ -261,7 +264,11 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	protected BeanFactory locateBeanFactory(String factoryKey) {
-		return new GemfireBeanFactoryLocator().useBeanFactory(factoryKey).getFactory();
+		if (beanFactoryReference == null) {
+			beanFactoryReference = new GemfireBeanFactoryLocator().useBeanFactory(factoryKey);
+		}
+
+		return beanFactoryReference.getFactory();
 	}
 
 	/**
@@ -310,6 +317,7 @@ public abstract class LazyWiringDeclarableSupport implements ApplicationListener
 	@Override
 	public void destroy() throws Exception {
 		SpringContextBootstrappingInitializer.unregister(this);
+		beanFactoryReference.release();
 		parametersReference.set(null);
 		initialized = false;
 	}
