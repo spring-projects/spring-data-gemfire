@@ -242,7 +242,12 @@ The following table(s) list attributes available for various region types:
 [[bootstrap:region:common:cache-listener]]
 === Cache Listeners
 
-Cache Listeners are registered with a region to handle region events such as entries being created, updated, destroyed, etc. A Cache Listener can be any bean that implements the http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheListener.html[`CacheListener`] interface. A region may have multiple listeners, declared using the `cache-listener` element enclosed in a `*-region` element. In the example below, there are two `CacheListener`s declared. The first references a top-level named Spring bean; the second is an anonymous inner bean definition.
+`CacheListeners` are registered with a Region to handle Region events such as entries being created, updated, destroyed,
+etc. A `CacheListener` can be any bean that implements the http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheListener.html[`CacheListener`] interface.
+A Region may have multiple listeners, declared using the `cache-listener` element enclosed in a `*-region` element.
+
+In the example below, there are two `CacheListener's` declared. The first references a top-level named Spring bean;
+the second is an anonymous inner bean definition.
 
 [source,xml]
 ----
@@ -258,9 +263,12 @@ Cache Listeners are registered with a region to handle region events such as ent
 </gfe:replicated-region>
 ----
 
-The following example uses an alternate form of the `cache-listener` element with a `ref` attribute. This allows for more concise configuration for a single cache listener. Note that the namespace only allows a single `cache-listener` element so either the style above or below must be used.
+The following example uses an alternate form of the `cache-listener` element with a `ref` attribute. This allows for
+more concise configuration for a single cache listener. Note that the namespace only allows a single `cache-listener`
+element so either the style above or below must be used.
 
-WARNING: Using `ref` and a nested declaration in a `cache-listener`, or similar element, is illegal. The two options are mutually exclusive and using both on the same element will result in an exception.
+WARNING: Using `ref` and a nested declaration in a `cache-listener`, or similar element, is illegal. The two options
+are mutually exclusive and using both on the same element will result in an exception.
 
 [source,xml]
 ----
@@ -277,13 +285,25 @@ WARNING: Using `ref` and a nested declaration in a `cache-listener`, or similar 
 .Bean Reference Conventions
 [NOTE]
 ====
-The `cache-listener` element is an example of a common pattern used in the namespace anywhere GemFire provides a callback interface to be implemented in order to invoke custom code in response to cache or region events. Using Spring's IoC container, the implementation is a standard Spring bean. In order to simplify the configuration, the schema allows a single occurrence of the `cache-listener` element, but it may contain nested bean references and inner bean definitions in any combination if multiple instances are permitted. The convention is to use the singular form (i.e., `cache-listener` vs `cache-listeners`) reflecting that the most common scenario will in fact be a single instance. We have already seen examples of this pattern in the <<null,advanced cache>> configuration example.
+The `cache-listener` element is an example of a common pattern used in the namespace anywhere GemFire provides
+a callback interface to be implemented in order to invoke custom code in response to Cache or Region events.
+Using Spring's IoC container, the implementation is a standard Spring bean. In order to simplify the configuration,
+the schema allows a single occurrence of the `cache-listener` element, but it may contain nested bean references
+and inner bean definitions in any combination if multiple instances are permitted. The convention is to use
+the singular form (i.e., `cache-listener` vs `cache-listeners`) reflecting that the most common scenario will in fact
+be a single instance. We have already seen examples of this pattern in the <<null,advanced cache>> configuration example.
 ====
 
 [[bootstrap:region:common:loaders-writers]]
 === Cache Loaders and Cache Writers
 
-Similar to `cache-listener`, the namespace provides `cache-loader` and `cache-writer` elements to register these respective components for a region. A `CacheLoader` is invoked on a cache miss to allow an entry to be loaded from an external data source, a database for example. A `CacheWriter` is invoked after an entry is created or updated, intended for synchronizing to an external data source. The difference is GemFire only supports at most a single instance of each for each region. However, either declaration style may be used. See http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheLoader.html[`CacheLoader`] and http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheWriter.html[`CacheWriter`] for more details.
+Similar to `cache-listener`, the namespace provides `cache-loader` and `cache-writer` elements to register
+these respective components for a Region. A `CacheLoader` is invoked on a cache miss to allow an entry to be loaded
+from an external data source, a database for example. A `CacheWriter` is invoked before an entry is created or updated,
+intended for synchronizing to an external data source. The difference is GemFire only supports at most a single instance
+of each for each Region. However, either declaration style may be used.
+
+See http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheLoader.html[`CacheLoader`] and http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheWriter.html[`CacheWriter`] for more details.
 
 [[bootstrap:region:common:subregions]]
 === Subregions
