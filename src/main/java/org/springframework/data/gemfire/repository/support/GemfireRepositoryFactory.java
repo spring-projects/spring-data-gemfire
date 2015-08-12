@@ -64,7 +64,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	public GemfireRepositoryFactory(Iterable<Region<?, ?>> regions, MappingContext<? extends GemfirePersistentEntity<?>,
 			GemfirePersistentProperty> context) {
 		Assert.notNull(regions);
-		this.context = context == null ? new GemfireMappingContext() : context;
+		this.context = (context != null ? context : new GemfireMappingContext());
 		this.regions = new Regions(regions, this.context);
 	}
 
@@ -108,8 +108,8 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		Region<?, ?> region = regions.getRegion(regionName);
 
 		if (region == null) {
-			throw new IllegalStateException(String.format("No region '%s' found for domain class %s!"
-				+ " Make sure you have configured a Gemfire region of that name in your application context!",
+			throw new IllegalStateException(String.format("No Region '%1$s' found for domain class %2$s!"
+				+ " Make sure you have configured a GemFire Region of that name in your application context!",
 					regionName, metadata.getDomainType()));
 		}
 
@@ -118,7 +118,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 		if (regionKeyType != null && entity.getIdProperty() != null) {
 			Assert.isTrue(regionKeyType.isAssignableFrom(entityIdType), String.format(
-				"The region referenced only supports keys of type %s but the entity to be stored has an id of type %s!",
+				"The Region referenced only supports keys of type %1$s but the entity to be stored has an id of type %2$s!",
 					regionKeyType, entityIdType));
 		}
 

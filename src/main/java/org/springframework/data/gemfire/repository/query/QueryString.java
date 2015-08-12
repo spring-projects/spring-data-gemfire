@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Region;
@@ -36,6 +37,19 @@ import com.gemstone.gemfire.cache.Region;
  */
 public class QueryString {
 
+	protected static final Pattern HINT_PATTERN = Pattern.compile("<HINT '\\w+'(, '\\w+')*>");
+	protected static final Pattern IMPORT_PATTERN = Pattern.compile("IMPORT .+;");
+	protected static final Pattern LIMIT_PATTERN = Pattern.compile("LIMIT \\d+");
+	protected static final Pattern TRACE_PATTERN = Pattern.compile("<TRACE>");
+
+	// OQL Query Templates
+	private static final String HINTS_QUERY_TEMPLATE = "<HINT %1$s> %2$s";
+	private static final String IMPORT_QUERY_TEMPLATE = "IMPORT %1$s; %2$s";
+	private static final String LIMIT_QUERY_TEMPLATE = "%1$s LIMIT %2$d";
+	private static final String SELECT_QUERY_TEMPLATE = "SELECT %1$s FROM /%2$s";
+	private static final String TRACE_QUERY_TEMPLATE = "<TRACE> %1$s";
+
+	// Query Regular Expression Patterns
 	private static final String IN_PATTERN = "(?<=IN (SET|LIST) )\\$\\d";
 	private static final String IN_PARAMETER_PATTERN = "(?<=IN (SET|LIST) \\$)\\d";
 	private static final String REGION_PATTERN = "\\/(\\/?\\w)+";
@@ -69,8 +83,7 @@ public class QueryString {
 	 * @param isCountQuery indicates if this is a count query
 	 */
 	public QueryString(Class<?> domainClass, boolean isCountQuery) {
-		this(String.format(isCountQuery ? "SELECT count(*) FROM /%s" : "SELECT * FROM /%s",
-			domainClass.getSimpleName()));
+		this(String.format(SELECT_QUERY_TEMPLATE, (isCountQuery ? "count(*)" : "*"), domainClass.getSimpleName()));
 	}
 
 	/**
@@ -144,6 +157,34 @@ public class QueryString {
 		}
 
 		return this;
+	}
+
+	public QueryString withHints(String... hints) {
+		if (!ObjectUtils.isEmpty(hints)) {
+			StringBuilder builder = new StringBuilder();
+
+			for (String hint : hints) {
+				builder.append(builder.length() > 0 ? ", " : "");
+				builder.append(String.format("'%1$s'", hint));
+			}
+
+			return new QueryString(String.format(HINTS_QUERY_TEMPLATE, builder.toString(), query));
+		}
+
+		return this;
+	}
+
+	public QueryString withImport(String importExpression) {
+		return (StringUtils.hasText(importExpression) ? new QueryString(
+			String.format(IMPORT_QUERY_TEMPLATE, importExpression, query)) : this);
+	}
+
+	public QueryString withLimit(Integer limit) {
+		return (limit != null ? new QueryString(String.format(LIMIT_QUERY_TEMPLATE, query, limit)) : this);
+	}
+
+	public QueryString withTrace() {
+		return new QueryString(String.format(TRACE_QUERY_TEMPLATE, query));
 	}
 
 	/*

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.query;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -48,6 +49,7 @@ import org.springframework.util.ObjectUtils;
  * Unit tests for {@link GemfireQueryMethod}.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 @RunWith(MockitoJUnitRunner.class)
 public class GemfireQueryMethodUnitTests {

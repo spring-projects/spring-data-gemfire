@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.query;
 
 import java.lang.reflect.Method;
@@ -33,9 +34,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Gemfire specific {@link QueryMethod}.
+ * GemFire specific {@link QueryMethod}.
  * 
  * @author Oliver Gierke
+ * @author John Blum
+ * @see org.springframework.data.repository.query.QueryMethod
  */
 @SuppressWarnings("unused")
 public class GemfireQueryMethod extends QueryMethod {
@@ -76,8 +79,8 @@ public class GemfireQueryMethod extends QueryMethod {
 	private void assertNonPagingQueryMethod(final Method method) {
 		for (Class<?> type : method.getParameterTypes()) {
 			if (Pageable.class.isAssignableFrom(type)) {
-				throw new IllegalStateException("Pagination is not supported by GemFire Repositories! Offending method: "
-					+ method.toString());
+				throw new IllegalStateException(String.format("Pagination is not supported by GemFire Repositories!"
+					+ " Offending method: %1$s", method.toString()));
 			}
 		}
 	}
