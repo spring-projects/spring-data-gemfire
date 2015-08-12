@@ -75,8 +75,9 @@ public class Regions implements Iterable<Region<?, ?>> {
 		Assert.notNull(type);
 
 		GemfirePersistentEntity<?> entity = context.getPersistentEntity(type);
+		String regionName = (entity != null ? entity.getRegionName() : type.getSimpleName());
 
-		return (Region<?, T>) (entity == null ? regions.get(type.getSimpleName()) : regions.get(entity.getRegionName()));
+		return (Region<?, T>) regions.get(regionName);
 	}
 
 	/**

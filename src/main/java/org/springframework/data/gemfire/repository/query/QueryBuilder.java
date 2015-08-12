@@ -34,12 +34,12 @@ class QueryBuilder {
 	private final String query;
 
 	public QueryBuilder(String source) {
-		Assert.hasText(source, "The OQL Query string must be specified.");
+		Assert.hasText(source, "The OQL Query must be specified");
 		this.query = source;
 	}
 
 	public QueryBuilder(GemfirePersistentEntity<?> entity, PartTree tree) {
-		this(String.format(tree.isDistinct() ?  "SELECT DISTINCT * FROM /%1$s %2$s" : "SELECT * FROM /%1$s %2$s",
+		this(String.format("SELECT%1$s * FROM /%2$s %3$s", (tree.isDistinct() ? " DISTINCT" : ""),
 			entity.getRegionName(), DEFAULT_ALIAS));
 	}
 

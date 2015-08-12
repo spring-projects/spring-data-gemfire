@@ -109,15 +109,17 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	public Object execute(Object[] parameters) {
 		QueryMethod localQueryMethod = getQueryMethod();
 
-		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(
-			localQueryMethod.getParameters(), parameters);
-
 		QueryString query = (isUserDefinedQuery() ? this.query : this.query.forRegion(
 			localQueryMethod.getEntityInformation().getJavaType(), template.getRegion()));
+
+		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(
+			localQueryMethod.getParameters(), parameters);
 
 		for (Integer index : query.getInParameterIndexes()) {
 			query = query.bindIn(toCollection(parameterAccessor.getBindableValue(index - 1)));
 		}
+
+		query = applyQueryAnnotationExtensions(localQueryMethod, query);
 
 		Collection<?> result = toCollection(template.find(query.toString(), parameters));
 
@@ -143,6 +145,29 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		}
 	}
 
+	QueryString applyQueryAnnotationExtensions(final QueryMethod queryMethod, final QueryString queryString) {
+		QueryString resolvedQueryString = queryString;
+
+		if (queryMethod instanceof GemfireQueryMethod) {
+			GemfireQueryMethod gemfireQueryMethod = (GemfireQueryMethod) queryMethod;
+			String query = queryString.toString().toUpperCase();
+
+			if (gemfireQueryMethod.hasImport() && !QueryString.IMPORT_PATTERN.matcher(query).find()) {
+				resolvedQueryString = resolvedQueryString.withImport(gemfireQueryMethod.getImport());
+			}
+			if (gemfireQueryMethod.hasHint() && !QueryString.HINT_PATTERN.matcher(query).find()) {
+				resolvedQueryString = resolvedQueryString.withHints(gemfireQueryMethod.getHints());
+			}
+			if (gemfireQueryMethod.hasLimit() && !QueryString.LIMIT_PATTERN.matcher(query).find()) {
+				resolvedQueryString = resolvedQueryString.withLimit(gemfireQueryMethod.getLimit());
+			}
+			if (gemfireQueryMethod.hasTrace() && !QueryString.TRACE_PATTERN.matcher(query).find()) {
+				resolvedQueryString = resolvedQueryString.withTrace();
+			}
+		}
+
+		return resolvedQueryString;
+	}
 
 	boolean isSingleResultNonEntityQuery(QueryMethod method, Collection<?> result) {
 		return (!method.isCollectionQuery() && method.getReturnedObjectType() != null
