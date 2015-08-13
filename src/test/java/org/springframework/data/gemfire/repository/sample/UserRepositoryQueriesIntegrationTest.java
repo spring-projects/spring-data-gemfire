@@ -85,7 +85,7 @@ public class UserRepositoryQueriesIntegrationTest {
 	}
 
   protected static int toIntValue(final Integer value) {
-    return (value == null ? 0 : value.intValue());
+    return (value == null ? 0 : value);
   }
 
 	@Before
