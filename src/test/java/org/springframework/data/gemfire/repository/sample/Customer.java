@@ -74,6 +74,10 @@ public class Customer {
 		this.lastName = lastName;
 	}
 
+	public String getName() {
+		return String.format("%1$s %2$s", getFirstName(), getLastName());
+	}
+
 	protected static boolean equalsIgnoreNull(final Object obj1, final Object obj2) {
 		return (obj1 == null ? obj2 == null : obj1.equals(obj2));
 	}
@@ -88,7 +92,7 @@ public class Customer {
 			return false;
 		}
 
-		final Customer that = (Customer) obj;
+		Customer that = (Customer) obj;
 
 		return equalsIgnoreNull(this.getId(), that.getId())
 			&& ObjectUtils.nullSafeEquals(this.getFirstName(), that.getFirstName())

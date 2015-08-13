@@ -23,10 +23,11 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Query;
 
 /**
- * Sample repository interface managing {@link Person}s.
+ * Sample Repository interface managing {@link Person}s.
  * 
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
  */
 public interface PersonRepository extends GemfireRepository<Person, Long> {
 

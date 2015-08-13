@@ -33,6 +33,9 @@ import org.springframework.data.gemfire.repository.Query;
 @SuppressWarnings("unused")
 public interface UserRepository extends GemfireRepository<User, String> {
 
+	@Query("SELECT count(*) FROM /Users u WHERE u.username LIKE $1")
+	Integer countUsersByUsernameLike(String username);
+
 	//@Query("SELECT DISTINCT * FROM /Users u WHERE u.active = true")
 	List<User> findDistinctByActiveTrue();
 
@@ -41,10 +44,9 @@ public interface UserRepository extends GemfireRepository<User, String> {
 
 	List<User> findDistinctByUsernameLike(String username);
 
-	// NOTE unfortunately, the 'NOT LIKE' operator is unsupported in GemFire's Query/OQL syntax
-	//List<User> findDistinctByUsernameNotLike(String username);
-
-  @Query("SELECT count(*) FROM /Users u WHERE u.username LIKE $1")
-  Integer countUsersByUsernameLike(String username);
+/*
+	//NOTE unfortunately, the 'NOT LIKE' operator is unsupported in GemFire's Query/OQL syntax
+	List<User> findDistinctByUsernameNotLike(String username);
+*/
 
 }
