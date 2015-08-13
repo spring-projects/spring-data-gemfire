@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 
 import org.hamcrest.Matchers;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -104,7 +105,7 @@ public class GemfireQueryMethodUnitTests {
 			assertThat(queryMethod.getLimit(), is(equalTo(expectedLimit)));
 		}
 		else {
-			assertThat(queryMethod.getLimit(), is(nullValue()));
+			assertThat(queryMethod.getLimit(), is(equalTo(Integer.MAX_VALUE)));
 		}
 	}
 
@@ -112,12 +113,15 @@ public class GemfireQueryMethodUnitTests {
 		assertLimitedQuery(queryMethod, null);
 	}
 
+	@Before
+	public void setup() {
+		when(metadata.getDomainType()).thenReturn((Class) Person.class);
+		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) Person.class);
+	}
+
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void detectsAnnotatedQueryCorrectly() throws Exception {
-		when(metadata.getDomainType()).thenReturn((Class) Person.class);
-		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) Person.class);
-
 		GemfireQueryMethod method = new GemfireQueryMethod(Sample.class.getMethod("annotated"), metadata, context);
 
 		assertThat(method.hasAnnotatedQuery(), is(true));
@@ -260,7 +264,7 @@ public class GemfireQueryMethodUnitTests {
 	interface AnnotatedQueryMethods {
 
 		@Trace
-		@Hint({ "IdIdx", "LastNameId" })
+		@Hint({ "IdIdx", "LastNameIdx" })
 		void queryWithHint();
 
 		@Import("org.example.app.domain.ExampleType")
