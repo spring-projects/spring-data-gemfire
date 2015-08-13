@@ -84,7 +84,7 @@ public class GemfireRepositoryFactoryUnitTests {
 		}
 		catch (IllegalStateException expected) {
 			assertThat(expected.getMessage(), Matchers.startsWith(
-				"Pagination is not supported by Gemfire repositories!"));
+				"Pagination is not supported by GemFire Repositories!"));
 			throw expected;
 		}
 	}
