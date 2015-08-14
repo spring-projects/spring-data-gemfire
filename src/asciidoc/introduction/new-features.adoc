@@ -96,3 +96,19 @@ as required by GemFire.
 * Adds support for GemFire 8's Region data compression.
 * Adds attributes to set both critical and warning percentages on Disk Store usage.
 * Supports the capability to add the new EventSubstitutionFilters to GatewaySenders.
+
+[[new-in-1-7-0]]
+== New in the 1.7 Release
+
+* Upgrades Spring Data GemFire to GemFire 8.1.0
+* Support for adding Spring defined `CacheListener`, `CacheLoader` and `CacheWriter` beans on "existing" GemFire Regions
+(perhaps Regions defined in `cache.xml` or using GemFire's Cluster Config)
+* Support for Spring JavaConfig in SpringContextBootstrappingInitializer.
+* Support for custom ClassLoaders in SpringContextBootstrappingInitializer used to load defined Spring bean classes.
+* Support for variable Locator and Server endpoint lists in the `<gfe-data:datasource>` element using the new `locators`
+and `servers` attributes, respectively.
+* Allow extensibility of the `MappingPdxSerializer`.
+* Enables the use of `<gfe-data:datasource>` element with non-Spring configured GemFire Servers.
+* Multi-Index definition and support.
+* <<bootstrap:region:expiration:annotation>>
+* <<gemfire-repositories.oql-extension>>
