@@ -3,14 +3,16 @@
 
 == Introduction
 
-Spring Data GemFire provides support to use the Spring Data repository abstraction to easily persist entities into GemFire and execute queries. A general introduction into the repository programming model is been provided http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
+Spring Data GemFire provides support to use the Spring Data Repository abstraction to easily persist entities
+into GemFire and execute queries. A general introduction to the Repository programming model has been provided
+http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
 
 [[gemfire-repositories.spring-configuration]]
-== Spring configuration
+== Spring Configuration
 
-To bootstrap Spring Data repositories you use the `<repositories />` element from the GemFire namespace:
+To bootstrap Spring Data Repositories you use the `<repositories/>` element from the GemFire Data namespace:
 
-.Bootstrap GemFire repositories
+.Bootstrap GemFire Repositories
 ====
 [source,xml]
 ----
@@ -28,14 +30,17 @@ To bootstrap Spring Data repositories you use the `<repositories />` element fro
 ----
 ====
 
-This configuration snippet will look for interfaces below the configured base package and create repository instances for those interfaces backed by a `SimpleGemFireRepository`. Note that you have to have your domain classes correctly mapped to configured regions as the bottstrap process will fail otherwise.
+This configuration snippet will look for interfaces below the configured base package and create Repository instances
+for those interfaces backed by a `SimpleGemFireRepository`. Note that you have to have your domain classes correctly
+mapped to configured Regions or the bootstrap process will fail otherwise.
 
 [[gemfire-repositories.executing-queries]]
-== Executing OQL queries
+== Executing OQL Queries
 
-The GemFire repositories allow the definition of query methods to easily execute OQL queries against the Region the managed entity is mapped to.
+The GemFire Repositories allow the definition of query methods to easily execute OQL Queries against the Region
+the managed entity is mapped to.
 
-.Sample repository
+.Sample Repository
 ====
 [source,java]
 ----
@@ -60,7 +65,10 @@ public interface PersonRepository extends CrudRepository<Person, Long> {
 ----
 ====
 
-The first method listed here will cause the following query to be derived: `SELECT x FROM /myRegion x WHERE x.emailAddress = $1`. The second method works the same way except it's returning all entities found whereas the first one expects a single result value. In case the supported keywords are not sufficient to declare your query or the method name gets to verbose you can annotate the query methods with `@Query` as seen for methods 3 and 4.
+The first method listed here will cause the following query to be derived: `SELECT x FROM /MyRegion x WHERE x.emailAddress = $1`.
+The second method works the same way except it's returning all entities found whereas the first one expects
+a single result value. In case the supported keywords are not sufficient to declare your query or the method name
+gets to verbose you can annotate the query methods with `@Query` as seen for methods 3 and 4.
 
 [cols="1,2,2", options="header"]
 .Supported keywords for query methods
@@ -121,3 +129,141 @@ The first method listed here will cause the following query to be derived: `SELE
 | `findByActiveIsFalse()`
 | `x.active = false`
 |===
+
+[[gemfire-repositories.oql-extension]]
+== OQL Query Extensions with Annotations
+
+Many query languages, such as Pivotal GemFire's OQL (Object Query Language), have extensions that are not directly
+supported by the Spring Data Commons Repository infrastructure.
+
+One of Spring Data Commons' Repository infrastructure goals is to function as the lowest common denominator to maintain
+support and portability across the widest array of data stores available and in use for application development today.
+Technically, this means developers can access multiple different data stores supported by Spring Data Commons within
+their applications by reusing their existing application-specific Repository interfaces, a very convenient and powerful
+abstraction.
+
+To support GemFire's OQL Query language extensions and maintain portability across data stores, Spring Data GemFire
+adds support for OQL Query extensions by way of Java Annotations.  These new Annotations will be ignored by other
+Spring Data Repository implementations (e.g. Spring Data Redis) that don't have similar query language extensions.
+
+For instance, many data stores will most likely not implement GemFire's OQL `IMPORT` keyword.  By implementing `IMPORT`
+as an Annotation (`@Import`) rather than as part of the query method signature (specifically, the method 'name'),
+this will not interfere with the parsing infrastructure when evaluating the query method name to construct
+the appropriate data store language appropriate query.
+
+Currently, the set of OQL Query language extensions that are supported by Spring Data GemFire include:
+
+[cols="1,2,2,2", options="header"]
+.Supported OQL Query extensions for query methods
+|===
+| Keyword
+| Annotation
+| Description
+| Arguments
+
+| http://gemfire.docs.pivotal.io/latest/userguide/developing/query_index/query_index_hints.html#topic_cfb_mxn_jq[HINT]
+| `@Hint`
+| OQL Query Index Hints
+| `String[]` (e.g. @Hint({ "IdIdx", "TxDateIdx" }))
+
+| http://gemfire.docs.pivotal.io/latest/userguide/developing/query_select/the_import_statement.html#concept_2E9F15B2FE9041238B54736103396BF7[IMPORT]
+| `@Import`
+| Qualify application-specific types.
+| `String` (e.g. @Import("org.example.app.domain.Type"))
+
+| http://gemfire.docs.pivotal.io/latest/userguide/developing/query_select/the_select_statement.html#concept_85AE7D6B1E2941ED8BD2A8310A81753E__section_25D7055B33EC47B19B1B70264B39212F[LIMIT]
+| `@Limit`
+| Limit the returned query result set.
+| `Integer` (e.g. @Limit(10); default is Integer.MAX_VALUE)
+
+| http://gemfire.docs.pivotal.io/latest/userguide/developing/query_additional/query_debugging.html#concept_2D557E24AAB24044A3DB36B3124F6748[TRACE]
+| `@Trace`
+| Enable OQL Query specific debugging.
+| NA
+|===
+
+As an example, suppose you have a `Customers` application domain type and corresponding GemFire Region along with a
+`CustomerRepository` and a query method to lookup `Customers` by last name, like so...
+
+.Sample Repository
+====
+[source,java]
+----
+package ...;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.gemfire.mapping.Region;
+...
+
+@Region("Customers")
+public class Customer ... {
+
+  @Id
+  private Long id;
+
+  ...
+}
+----
+
+[source,java]
+----
+package ...;
+
+import org.springframework.data.gemfire.repository.GemfireRepository;
+...
+
+public interface CustomerRepository extends GemfireRepository<Customer, Long> {
+
+  @Trace
+  @Limit(10)
+  @Hint("LastNameIdx")
+  @Import("org.example.app.domain.Customer")
+  List<Customer> findByLastName(String lastName);
+
+  ...
+}
+----
+====
+
+This will result in the following OQL Query:
+
+`<TRACE> <HINT 'LastNameIdx'> IMPORT org.example.app.domain.Customer; SELECT * FROM /Customers c WHERE c.lastName = $1 LIMIT 10`
+
+Spring Data GemFire's Repository extension support is careful not to create conflicting declaratives when
+the Query Annotation extensions are used in combination with the `@Query` annotation.
+
+For instance, suppose you have a raw `@Query` annotated query method defined in your `CustomerRepository` like so...
+
+.CustomerRepository
+====
+[source,java]
+----
+public interface CustomerRepository extends GemfireRepository<Customer, Long> {
+
+  @Trace
+  @Limit(10)
+  @Hint("CustomerIdx")
+  @Import("org.example.app.domain.Customer")
+  @Query("<TRACE> <HINT 'ReputationIdx'> SELECT DISTINCT * FROM /Customers c WHERE c.reputation > $1 ORDER BY c.reputation DESC LIMIT 5")
+  List<Customer> findDistinctCustomersByReputationGreaterThanOrderByReputationDesc(Integer reputation);
+}
+----
+====
+
+This query method results in the following OQL Query:
+
+`IMPORT org.example.app.domain.Customer; <TRACE> <HINT 'ReputationIdx'> SELECT DISTINCT * FROM /Customers c WHERE c.reputation > $1
+ORDER BY c.reputation DESC LIMIT 5`
+
+As you can see, the `@Limit(10)` annotation will +not+ override the `LIMIT` defined explicitly in the raw query.  As well,
+`@Hint("CustomerIdx")` annotation does +not+ override the `HINT` explicitly defined in the raw query.  Finally, the
+`@Trace` annotation is redundant and has no additional effect.
+
+[NOTE]
+====
+The "ReputationIdx" Index is probably not the most sensible index given the number of Customers who will possibly have
+the same value for their reputation, which will effectively reduce the effectiveness of the index.  Please choose
+indexes and other optimizations wisely as an improper or poorly choosen index and have the opposite effect on your
+performance given the overhead in maintaining the index.  The "ReputationIdx" was only used to serve the purpose
+of the example.
+====

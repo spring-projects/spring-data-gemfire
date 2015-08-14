@@ -621,6 +621,7 @@ for maximum efficiency.
 For a detailed description of eviction policies, see the GemFire documentation (such as
 http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/eviction/how_eviction_works.html[this] page).
 
+[[bootstrap:region:expiration]]
 == Data Expiration
 
 GemFire allows you to control how long entries exist in the cache. Expiration is driven by elapsed time, as opposed to
@@ -639,6 +640,7 @@ Region is reset whenever the Idle Timeout is reset for one of its entries.
 Each of these may be applied to the Region itself or entries in the Region. Spring Data GemFire provides `<region-ttl>`,
 `<region-tti>`, `<entry-ttl>` and `<entry-tti>` Region child elements to specify timeout values and expiration actions.
 
+[[bootstrap:region:expiration:annotation]]
 == Annotation-based Data Expiration
 
 As of Spring Data GemFire 1.7, a developer now has the ability to define Expiration policies and settings on individual
