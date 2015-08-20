@@ -48,6 +48,9 @@ import com.gemstone.gemfire.cache.ResumptionAction;
  */
 abstract class ParsingUtils {
 
+	protected static final String CACHE_PROPERTY_NAME = "cache";
+	protected static final String CACHE_REF_ATTRIBUTE_NAME = "cache-ref";
+
 	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attributeName,
 			String propertyName) {
 
@@ -398,7 +401,7 @@ abstract class ParsingUtils {
 		return false;
 	}
 
-	public static void parseCompressor(ParserContext parserContext, Element element,
+	static void parseCompressor(ParserContext parserContext, Element element,
 			BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element compressorElement = DomUtils.getChildElementByTagName(element, "compressor");
@@ -416,8 +419,16 @@ abstract class ParsingUtils {
 		}
 	}
 
-	static String resolveCacheReference(final String cacheRef) {
-		return (StringUtils.hasText(cacheRef) ? cacheRef : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+	static void setCacheReference(Element element, BeanDefinitionBuilder builder) {
+		builder.addPropertyReference(CACHE_PROPERTY_NAME, resolveCacheReference(element));
+	}
+
+	static String resolveCacheReference(Element element) {
+		return resolveCacheReference(element.getAttribute(CACHE_REF_ATTRIBUTE_NAME));
+	}
+
+	static String resolveCacheReference(String cacheReference) {
+		return (StringUtils.hasText(cacheReference) ? cacheReference : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 	}
 
 	static void throwExceptionWhenGemFireFeatureUnavailable(GemfireFeature feature,

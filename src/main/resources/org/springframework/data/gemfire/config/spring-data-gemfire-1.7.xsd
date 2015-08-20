@@ -63,7 +63,6 @@
    Enables component scanning for annotated function execution interfaces.
              ]]></xsd:documentation>
 		</xsd:annotation>
-
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="include-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
@@ -175,4 +174,64 @@ native GemFire PdxInstance type. True, by default but will incur significant ove
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
+	<!-- GemFire Cache & Region Snapshot Service support-->
+	<xsd:element name="snapshot-service">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Access to GemFire's Snapshot Service for taking snapshots of GemFire Cache and Region data.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="import-snapshot" type="snapshotMetadataType" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies meta-data for a snapshot import.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="export-snapshot" type="snapshotMetadataType" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies meta-data for a snapshot export.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+(Optional) Name of the GemFire Cache bean from which to extract data and record a snapshot (by default 'gemfireCache').
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="region-ref" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+(Optional) Name of the GemFire Region bean from which to extract data and record a snapshot.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="snapshotMetadataType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Declares an element type defining snapshot meta-data.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Inner bean definition. The nested declaration serves as an alternative to bean references (using
+both in the same definition) is illegal.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:any>
+		</xsd:sequence>
+		<xsd:attribute name="location" type="xsd:string" use="required"/>
+		<xsd:attribute name="filter-ref" type="xsd:string" use="optional"/>
+		<xsd:attribute name="format" type="xsd:string" use="optional" default="GEMFIRE"/>
+	</xsd:complexType>
 </xsd:schema>
