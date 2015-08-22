@@ -39,6 +39,7 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
 public abstract class FileSystemUtils extends FileUtils {
 
 	public static final File JAVA_HOME = new File(System.getProperty("java.home"));
+	public static final File JAVA_EXE = new File(new File(JAVA_HOME, "bin"), "java");
 	public static final File USER_HOME = new File(System.getProperty("user.home"));
 	public static final File WORKING_DIRECTORY = new File(System.getProperty("user.dir"));
 
@@ -70,7 +71,7 @@ public abstract class FileSystemUtils extends FileUtils {
 
 	public static File[] listFiles(final File directory, final FileFilter fileFilter) {
 		Assert.isTrue(directory != null && directory.isDirectory(), String.format(
-			"The File (%1$s) does not refer to a valid directory!", directory));
+			"File (%1$s) does not refer to a valid directory", directory));
 
 		List<File> results = new ArrayList<File>();
 
@@ -86,11 +87,11 @@ public abstract class FileSystemUtils extends FileUtils {
 		return results.toArray(new File[results.size()]);
 	}
 
-	private static File[] safeListFiles(final File directory) {
+	public static File[] safeListFiles(final File directory) {
 		return safeListFiles(directory, AllFiles.INSTANCE);
 	}
 
-	private static File[] safeListFiles(final File directory, final FileFilter fileFilter) {
+	public static File[] safeListFiles(final File directory, final FileFilter fileFilter) {
 		File[] files = (directory != null ? directory.listFiles(fileFilter) : new File[0]);
 		return (files != null ? files : new File[0]);
 	}
@@ -102,6 +103,26 @@ public abstract class FileSystemUtils extends FileUtils {
 		@Override
 		public boolean accept(final File pathname) {
 			return true;
+		}
+	}
+
+	public static final class FileOnlyFilter implements FileFilter {
+
+		public static final FileOnlyFilter INSTANCE = new FileOnlyFilter();
+
+		@Override
+		public boolean accept(final File pathname) {
+			return (pathname != null && pathname.isFile());
+		}
+	}
+
+	public static final class DirectoryOnlyFilter implements FileFilter {
+
+		public static final DirectoryOnlyFilter INSTANCE = new DirectoryOnlyFilter();
+
+		@Override
+		public boolean accept(final File pathname) {
+			return (pathname != null && pathname.isDirectory());
 		}
 	}
 
