@@ -19,11 +19,13 @@ package org.springframework.data.gemfire;
 import static com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationListener;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -43,13 +45,14 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.context.ApplicationListener
  * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
  * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
 public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotServiceFactoryBean.SnapshotServiceAdapter<K, V>>,
-		InitializingBean, DisposableBean {
+		InitializingBean, DisposableBean, ApplicationListener<SnapshotApplicationEvent<K, V>> {
 
 	protected static final SnapshotMetadata[] EMPTY_ARRAY = new SnapshotMetadata[0];
 
@@ -61,6 +64,22 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 	private SnapshotMetadata<K, V>[] exports;
 	private SnapshotMetadata<K, V>[] imports;
+
+	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
+	static <K, V> SnapshotMetadata<K, V>[] nullSafeArray(SnapshotMetadata<K, V>[] configurations) {
+		return (configurations != null ? configurations : EMPTY_ARRAY);
+	}
+
+	/* (non-Javadoc) */
+	static boolean nullSafeIsDirectory(File file) {
+		return (file != null && file.isDirectory());
+	}
+
+	/* (non-Javadoc) */
+	static boolean nullSafeIsFile(File file) {
+		return (file != null && file.isFile());
+	}
 
 	/**
 	 * Sets a reference to the GemFire Cache for which the snapshot will be taken.
@@ -88,18 +107,44 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		return cache;
 	}
 
+	/**
+	 * Sets the meta-data (location, filter and format) used to create a snapshot from the Cache or Region data.
+	 *
+	 * @param exports an array of snapshot meta-data used for each export.
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 */
 	public void setExports(SnapshotMetadata<K, V>[] exports) {
 		this.exports = exports;
 	}
 
+	/**
+	 * Sets the meta-data (location, filter and format) used to create a snapshot from the Cache or Region data.
+	 *
+	 * @return an array of snapshot meta-data used for each export.
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 */
 	protected SnapshotMetadata<K, V>[] getExports() {
 		return nullSafeArray(exports);
 	}
 
+	/**
+	 * Sets the meta-data (location, filter and format) used to read a data snapshot into an entire Cache
+	 * or individual Region.
+	 *
+	 * @param imports an array of snapshot meta-data used for each import.
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 */
 	public void setImports(SnapshotMetadata<K, V>[] imports) {
 		this.imports = imports;
 	}
 
+	/**
+	 * Gets the meta-data (location, filter and format) used to read a data snapshot into an entire Cache
+	 * or individual Region.
+	 *
+	 * @return an array of snapshot meta-data used for each import.
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 */
 	protected SnapshotMetadata<K, V>[] getImports() {
 		return nullSafeArray(imports);
 	}
@@ -173,6 +218,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
+	// TODO consider making the "import" on bean initialization asynchronous
+	// NOTE GemFire may handle asynchronous import and export under the right conditions (need to research)
 	public void afterPropertiesSet() throws Exception {
 		snapshotServiceAdapter = create();
 		snapshotServiceAdapter.doImport(getImports());
@@ -195,7 +242,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	}
 
 	/**
-	 * Wraps the GemFire CacheSnapshotService into an appropriate Adapter to ...
+	 * Wraps the GemFire CacheSnapshotService into an appropriate Adapter to uniformly access snapshot operations
+	 * on the Cache and Regions alike.
 	 *
 	 * @param cacheSnapshotService the GemFire CacheSnapshotService to wrap.
 	 * @return a SnapshotServiceAdapter wrapping the GemFire CacheSnapshotService.
@@ -208,7 +256,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	}
 
 	/**
-	 * Wraps the GemFire RegionSnapshotService into an appropriate Adapter to ...
+	 * Wraps GemFire's RegionSnapshotService into an appropriate Adapter to uniformly access snapshot operations
+	 * on the Cache and Regions alike.
 	 *
 	 * @param regionSnapshotService the GemFire RegionSnapshotService to wrap.
 	 * @return a SnapshotServiceAdapter wrapping the GemFire RegionSnapshotService.
@@ -217,13 +266,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
 	 */
 	protected SnapshotServiceAdapter<K, V> wrap(RegionSnapshotService<K, V> regionSnapshotService) {
-		return new RegionSnapshotServiceAdapter(regionSnapshotService);
-	}
-
-	/* (non-Javadoc) */
-	@SuppressWarnings("unchecked")
-	protected SnapshotMetadata<K, V>[] nullSafeArray(SnapshotMetadata<K, V>[] configurations) {
-		return (configurations != null ? configurations : EMPTY_ARRAY);
+		return new RegionSnapshotServiceAdapter<K, V>(regionSnapshotService);
 	}
 
 	/**
@@ -237,6 +280,60 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	@Override
 	public void destroy() throws Exception {
 		getObject().doExport(getExports());
+	}
+
+	/**
+	 * Listens for SnapshotApplicationEvents triggering a GemFire Cache-wide or Region data snapshot when
+	 * the details of the event match the criteria of this factory's constructed GemFire SnapshotService.
+	 *
+	 * @param event the SnapshotApplicationEvent triggering a GemFire Cache or Region data export.
+	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent
+	 * @see #isMatch(SnapshotApplicationEvent)
+	 * @see #resolveSnapshotMetadata(SnapshotApplicationEvent)
+	 * @see #getObject()
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doExport(SnapshotMetadata[])
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void onApplicationEvent(SnapshotApplicationEvent<K, V> event) {
+		try {
+			if (isMatch(event)) {
+				getObject().doExport(resolveSnapshotMetadata(event));
+			}
+		}
+		catch (Exception ignore) {
+		}
+	}
+
+	/**
+	 * Determines whether the details of the given SnapshotApplicationEvent match the criteria of this factory
+	 * to trigger a GemFire Cache or Region data export.
+	 *
+	 * @param event the SnapshotApplicationEvent containing details of the application requested data export.
+	 * @return a boolean value indicating whether the application requested snapshot event details match
+	 * the criteria required by this factory to trigger a GemFire Cache or Region data export.
+	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent
+	 */
+	protected boolean isMatch(SnapshotApplicationEvent event) {
+		Region region = getRegion();
+
+		return ((event.isRegionSnapshotEvent() && event.matches(region))
+			|| (event.isCacheSnapshotEvent() && region == null));
+	}
+
+	/**
+	 * Resolves the SnapshotMetadata used to perform the GemFire Cache or Region data snapshot (export).  If the event
+	 * contains specific SnapshotMetadata, then this is preferred over the factory's own "export" SnapshotMetadata.
+	 *
+	 * @param event the SnapshotApplicationEvent from which to resolve the SnapshotMetadata.
+	 * @return the resolved SnapshotMetadata, either from the event or this factory's configured exports.
+	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent#getSnapshotMetadata()
+	 * @see #getExports()
+	 */
+	protected SnapshotMetadata<K, V>[] resolveSnapshotMetadata(SnapshotApplicationEvent<K, V> event) {
+		SnapshotMetadata<K, V>[] eventSnapshotMetadata = event.getSnapshotMetadata();
+
+		return (!ObjectUtils.isEmpty(eventSnapshotMetadata) ? eventSnapshotMetadata : getExports());
 	}
 
 	public interface SnapshotServiceAdapter<K, V> {
@@ -257,7 +354,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 	}
 
-	protected class CacheSnapshotServiceAdapter implements SnapshotServiceAdapter<Object, Object> {
+	protected static class CacheSnapshotServiceAdapter implements SnapshotServiceAdapter<Object, Object> {
 
 		private final CacheSnapshotService snapshotService;
 
@@ -281,26 +378,22 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 		@Override
 		public void doExport(SnapshotMetadata<Object, Object>[] configurations) {
-			if (!ObjectUtils.isEmpty(configurations)) {
-				for (SnapshotMetadata<Object, Object> configuration : configurations) {
-					save(configuration.getLocation(), configuration.getFormat(),
-						createOptions(configuration.getFilter()));
-				}
+			for (SnapshotMetadata<Object, Object> configuration : nullSafeArray(configurations)) {
+				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter()));
 			}
 		}
 
 		@Override
 		public void doImport(SnapshotMetadata<Object, Object>[] configurations) {
-			if (!ObjectUtils.isEmpty(configurations)) {
-				for (SnapshotMetadata<Object, Object> configuration : configurations) {
-					if (configuration.isDirectory()) {
-						load(configuration.getLocation(), configuration.getFormat());
-					}
-					else {
-						load(configuration.getFormat(), createOptions(configuration.getFilter()),
-							configuration.getLocation());
-					}
-				}
+			for (SnapshotMetadata<Object, Object> configuration : nullSafeArray(configurations)) {
+				File[] snapshots = (configuration.isFile() ? new File[] { configuration.getLocation() }
+					: configuration.getLocation().listFiles(new FileFilter() {
+						@Override public boolean accept(File pathname) {
+							return nullSafeIsFile(pathname);
+						}
+					}));
+
+				load(configuration.getFormat(), createOptions(configuration.getFilter()), snapshots);
 			}
 		}
 
@@ -310,20 +403,20 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 				getSnapshotService().load(directory, format);
 			}
 			catch (Throwable t) {
-				throw new RuntimeException(String.format(
-					"Failed to load snapshots from directory (%1$s) in format (%2$s)", directory, format), t);
+				throw new ImportSnapshotException(String.format(
+					"Failed to load snapshots from directory (%1$s) in format (%2$s)",
+						directory, format), t);
 			}
 		}
 
 		@Override
-		public void load(SnapshotFormat format, SnapshotOptions<Object, Object> options,
-				File... snapshots) {
+		public void load(SnapshotFormat format, SnapshotOptions<Object, Object> options, File... snapshots) {
 			try {
 				getSnapshotService().load(snapshots, format, options);
 			}
 			catch (Throwable t) {
-				throw new RuntimeException(String.format(
-					"Failed to load snapshots (%1$s) in format (%2$s) with options (%3$s)",
+				throw new ImportSnapshotException(String.format(
+					"Failed to load snapshots (%1$s) in format (%2$s) using options (%3$s)",
 						Arrays.toString(snapshots), format, options), t);
 			}
 		}
@@ -334,26 +427,26 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 				getSnapshotService().save(directory, format);
 			}
 			catch (Throwable t) {
-				throw new RuntimeException(String.format(
-					"Failed to save snapshots to directory (%1$s) using format (%2$s)", directory, format), t);
+				throw new ExportSnapshotException(String.format(
+					"Failed to save snapshots to directory (%1$s) in format (%2$s)",
+						directory, format), t);
 			}
 		}
 
 		@Override
-		public void save(File directory, SnapshotFormat format,
-				SnapshotOptions<Object, Object> options) {
+		public void save(File directory, SnapshotFormat format, SnapshotOptions<Object, Object> options) {
 			try {
 				getSnapshotService().save(directory, format, options);
 			}
 			catch (Throwable t) {
-				throw new RuntimeException(String.format(
-					"Failed to save snapshots to directory (%1$s) using format (%2$s) with options (%3$s)",
+				throw new ExportSnapshotException(String.format(
+					"Failed to save snapshots to directory (%1$s) in format (%2$s) using options (%3$s)",
 						directory, format, options), t);
 			}
 		}
 	}
 
-	protected class RegionSnapshotServiceAdapter implements SnapshotServiceAdapter<K, V> {
+	protected static class RegionSnapshotServiceAdapter<K, V> implements SnapshotServiceAdapter<K, V> {
 
 		private final RegionSnapshotService<K, V> snapshotService;
 
@@ -376,24 +469,16 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 
 		@Override
-		public void doExport(final SnapshotMetadata<K, V>[] configurations) {
-			if (!ObjectUtils.isEmpty(configurations)) {
-				for (SnapshotMetadata<K, V> configuration : configurations) {
-					Assert.isTrue(configuration.isFile(), String.format("The export location (%1$s) must be a file",
-						configuration.getLocation()));
-					save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter()));
-				}
+		public void doExport(SnapshotMetadata<K, V>[] configurations) {
+			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
+				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter()));
 			}
 		}
 
 		@Override
-		public void doImport(final SnapshotMetadata<K, V>[] configurations) {
-			if (!ObjectUtils.isEmpty(configurations)) {
-				for (SnapshotMetadata<K, V> configuration : configurations) {
-					Assert.isTrue(configuration.isFile(), String.format("The import location (%1$s) must be a file",
-						configuration.getLocation()));
-					load(configuration.getFormat(), createOptions(configuration.getFilter()), configuration.getLocation());
-				}
+		public void doImport(SnapshotMetadata<K, V>[] configurations) {
+			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
+				load(configuration.getFormat(), createOptions(configuration.getFilter()), configuration.getLocation());
 			}
 		}
 
@@ -403,8 +488,9 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 				getSnapshotService().load(snapshot, format);
 			}
 			catch (Throwable t) {
-				throw new RuntimeException(String.format(
-					"Failed to load snapshot from file (%1$s) in format (%2$s)", snapshot, format), t);
+				throw new ImportSnapshotException(String.format(
+					"Failed to load snapshot from file (%1$s) in format (%2$s)",
+						snapshot, format), t);
 			}
 		}
 
@@ -416,8 +502,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 				}
 			}
 			catch (Throwable t) {
-				throw new RuntimeException(String.format(
-					"Failed to load snapshots (%1$s) in format (%2$s) with options (%3$s)",
+				throw new ImportSnapshotException(String.format(
+					"Failed to load snapshots (%1$s) in format (%2$s) using options (%3$s)",
 						Arrays.toString(snapshots), format, options), t);
 			}
 		}
@@ -428,8 +514,9 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 				getSnapshotService().save(snapshot, format);
 			}
 			catch (Throwable t) {
-				throw new RuntimeException(String.format(
-					"Failed to save snapshots to directory (%1$s) using format (%2$s)", snapshot, format), t);
+				throw new ExportSnapshotException(String.format(
+					"Failed to save snapshot to file (%1$s) in format (%2$s)",
+						snapshot, format), t);
 			}
 		}
 
@@ -439,8 +526,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 				getSnapshotService().save(snapshot, format, options);
 			}
 			catch (Throwable t) {
-				throw new RuntimeException(String.format(
-					"Failed to save snapshots to directory (%1$s) using format (%2$s) with options (%3$s)",
+				throw new ExportSnapshotException(String.format(
+					"Failed to save snapshot to file (%1$s) in format (%2$s) using options (%3$s)",
 						snapshot, format, options), t);
 			}
 		}
@@ -464,11 +551,11 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 
 		public boolean isDirectory() {
-			return getLocation().isDirectory();
+			return nullSafeIsDirectory(getLocation());
 		}
 
 		public boolean isFile() {
-			return getLocation().isFile();
+			return nullSafeIsFile(getLocation());
 		}
 
 		public File getLocation() {
