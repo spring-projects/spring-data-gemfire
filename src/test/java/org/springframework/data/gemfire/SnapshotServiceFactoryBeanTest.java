@@ -370,12 +370,12 @@ public class SnapshotServiceFactoryBeanTest {
 
 		SnapshotMetadata eventSnapshotMetadata = newSnapshotMetadata(snapshotDat);
 
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this, "/Example", eventSnapshotMetadata);
+		SnapshotApplicationEvent event = new ExportSnapshotApplicationEvent(this, "/Example", eventSnapshotMetadata);
 
-		assertThat(event.isRegionSnapshotEvent(), is(true));
-		assertThat(event.getSnapshotMetadata()[0], is(sameInstance(eventSnapshotMetadata)));
 		assertThat(factoryBean.getExports()[0], is(not(sameInstance(eventSnapshotMetadata))));
 		assertThat(factoryBean.getRegion(), is(sameInstance(mockRegion)));
+		assertThat(event.isRegionSnapshotEvent(), is(true));
+		assertThat(event.getSnapshotMetadata()[0], is(sameInstance(eventSnapshotMetadata)));
 
 		factoryBean.onApplicationEvent(event);
 
@@ -384,6 +384,40 @@ public class SnapshotServiceFactoryBeanTest {
 		verify(mockSnapshotService, times(1)).createOptions();
 		verify(mockSnapshotService, times(1)).save(eq(eventSnapshotMetadata.getLocation()),
 			eq(eventSnapshotMetadata.getFormat()), eq(mockSnapshotOptions));
+	}
+
+	@Test
+	public void onApplicationEventWhenMatchUsingFactorySnapshotMetadataPerformsImport() throws Exception {
+		final CacheSnapshotService mockSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
+
+		SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapshotOptions");
+
+		when(mockSnapshotService.createOptions()).thenReturn(mockSnapshotOptions);
+		when(mockSnapshotOptions.setFilter(any(SnapshotFilter.class))).thenReturn(mockSnapshotOptions);
+
+		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
+			@Override public SnapshotServiceAdapter getObject() throws Exception {
+				return new CacheSnapshotServiceAdapter(mockSnapshotService);
+			}
+		};
+
+		SnapshotMetadata expectedSnapshotMetadata = newSnapshotMetadata(snapshotDat);
+
+		factoryBean.setImports(toArray(expectedSnapshotMetadata));
+
+		SnapshotApplicationEvent event = new ImportSnapshotApplicationEvent(this);
+
+		assertThat(factoryBean.getImports()[0], is(equalTo(expectedSnapshotMetadata)));
+		assertThat(factoryBean.getRegion(), is(nullValue()));
+		assertThat(event.isCacheSnapshotEvent(), is(true));
+		assertThat(event.getSnapshotMetadata().length, is(equalTo(0)));
+
+		factoryBean.onApplicationEvent(event);
+
+		verify(mockSnapshotOptions, times(1)).setFilter(isNull(SnapshotFilter.class));
+		verify(mockSnapshotService, times(1)).createOptions();
+		verify(mockSnapshotService, times(1)).load(eq(new File[] { expectedSnapshotMetadata.getLocation() }),
+			eq(expectedSnapshotMetadata.getFormat()), eq(mockSnapshotOptions));
 	}
 
 	@Test
@@ -396,10 +430,13 @@ public class SnapshotServiceFactoryBeanTest {
 			}
 		};
 
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this, "/Example");
+		factoryBean.setExports(toArray(newSnapshotMetadata()));
 
-		assertThat(event.isRegionSnapshotEvent(), is(true));
+		SnapshotApplicationEvent event = new ExportSnapshotApplicationEvent(this, "/Example");
+
+		assertThat(factoryBean.getExports().length, is(equalTo(1)));
 		assertThat(factoryBean.getRegion(), is(nullValue()));
+		assertThat(event.isRegionSnapshotEvent(), is(true));
 
 		factoryBean.onApplicationEvent(event);
 
@@ -410,31 +447,77 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
+	public void onApplicationEventWhenNoMatchDoesNotPerformImport() throws Exception {
+		Region mockRegion = mock(Region.class, "MockRegion");
+
+		when(mockRegion.getFullPath()).thenReturn("/Example");
+
+		final RegionSnapshotService mockSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
+
+		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
+			@Override public SnapshotServiceAdapter getObject() throws Exception {
+				return new RegionSnapshotServiceAdapter(mockSnapshotService);
+			}
+		};
+
+		factoryBean.setImports(toArray(newSnapshotMetadata()));
+		factoryBean.setRegion(mockRegion);
+
+		SnapshotApplicationEvent event = new ImportSnapshotApplicationEvent(this, "/Test");
+
+		assertThat(factoryBean.getImports().length, is(equalTo(1)));
+		assertThat(factoryBean.getRegion(), is(equalTo(mockRegion)));
+		assertThat(event.isRegionSnapshotEvent(), is(true));
+
+		factoryBean.onApplicationEvent(event);
+
+		verify(mockRegion, times(1)).getFullPath();
+		verify(mockSnapshotService, never()).createOptions();
+		verify(mockSnapshotService, never()).load(any(File.class), any(SnapshotFormat.class));
+		verify(mockSnapshotService, never()).load(any(File.class), any(SnapshotFormat.class),
+			any(SnapshotOptions.class));
+	}
+
+	@Test
 	public void resolveSnapshotMetadataFromEvent() {
 		SnapshotMetadata eventSnapshotMetadata = newSnapshotMetadata(snapshotDat);
 		SnapshotMetadata exportSnapshotMetadata = newSnapshotMetadata();
+		SnapshotMetadata importSnapshotMetadata = newSnapshotMetadata(FileSystemUtils.USER_HOME);
 
 		factoryBean.setExports(toArray(exportSnapshotMetadata));
+		factoryBean.setImports(toArray(importSnapshotMetadata));
 
 		assertThat(factoryBean.getExports()[0], is(equalTo(exportSnapshotMetadata)));
-		assertThat(factoryBean.resolveSnapshotMetadata(new SnapshotApplicationEvent(
+		assertThat(factoryBean.getImports()[0], is(equalTo(importSnapshotMetadata)));
+		assertThat(factoryBean.resolveSnapshotMetadata(new ExportSnapshotApplicationEvent(
 			this, eventSnapshotMetadata))[0], is(equalTo(eventSnapshotMetadata)));
 	}
 
 	@Test
-	public void resolveSnapshotMetadataFromFactory() {
+	public void resolveExportSnapshotMetadataFromFactory() {
 		SnapshotMetadata exportSnapshotMetadata = newSnapshotMetadata();
 
 		factoryBean.setExports(toArray(exportSnapshotMetadata));
 
 		assertThat(factoryBean.getExports()[0], is(equalTo(exportSnapshotMetadata)));
-		assertThat(factoryBean.resolveSnapshotMetadata(new SnapshotApplicationEvent(this))[0],
+		assertThat(factoryBean.resolveSnapshotMetadata(new ExportSnapshotApplicationEvent(this))[0],
+			is(equalTo(exportSnapshotMetadata)));
+	}
+
+	@Test
+	public void resolveImportSnapshotMetadataFromFactory() {
+		SnapshotMetadata exportSnapshotMetadata = newSnapshotMetadata();
+
+		factoryBean.setImports(toArray(exportSnapshotMetadata));
+
+		assertThat(factoryBean.getImports()[0], is(equalTo(exportSnapshotMetadata)));
+		assertThat(factoryBean.resolveSnapshotMetadata(new ImportSnapshotApplicationEvent(this))[0],
 			is(equalTo(exportSnapshotMetadata)));
 	}
 
 	@Test
 	public void withCacheBasedSnapshotServiceOnCacheSnapshotEventIsMatch() {
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this);
+		SnapshotApplicationEvent event = new ExportSnapshotApplicationEvent(this);
 
 		assertThat(event.isCacheSnapshotEvent(), is(true));
 		assertThat(event.isRegionSnapshotEvent(), is(false));
@@ -443,7 +526,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void withCacheBasedSnapshotServiceOnRegionSnapshotEventIsNotAMatch() {
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this, "/Example");
+		SnapshotApplicationEvent event = new ImportSnapshotApplicationEvent(this, "/Example");
 
 		assertThat(event.isCacheSnapshotEvent(), is(false));
 		assertThat(event.isRegionSnapshotEvent(), is(true));
@@ -452,7 +535,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void withRegionBasedSnapshotServiceOnRegionSnapshotEventIsMatch() {
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this, "/Example");
+		SnapshotApplicationEvent event = new ExportSnapshotApplicationEvent(this, "/Example");
 
 		assertThat(event.isCacheSnapshotEvent(), is(false));
 		assertThat(event.isRegionSnapshotEvent(), is(true));
@@ -471,7 +554,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void withRegionBasedSnapshotServiceOnCacheSnapshotEventIsNotAMatch() {
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this);
+		SnapshotApplicationEvent event = new ImportSnapshotApplicationEvent(this);
 
 		assertThat(event.isCacheSnapshotEvent(), is(true));
 		assertThat(event.isRegionSnapshotEvent(), is(false));
@@ -1075,32 +1158,7 @@ public class SnapshotServiceFactoryBeanTest {
 	protected static class TestSnapshotServiceAdapter extends SnapshotServiceAdapterSupport<Object, Object> {
 
 		@Override
-		public SnapshotOptions<Object, Object> createOptions() {
-			throw new UnsupportedOperationException("not implemented");
-		}
-
-		@Override
 		protected File[] handleLocation(final SnapshotMetadata<Object, Object> configuration) {
-			throw new UnsupportedOperationException("not implemented");
-		}
-
-		@Override
-		public void load(final File directory, final SnapshotFormat format) {
-			throw new UnsupportedOperationException("not implemented");
-		}
-
-		@Override
-		public void load(SnapshotFormat format, SnapshotOptions<Object, Object> options, File... snapshots) {
-			throw new UnsupportedOperationException("not implemented");
-		}
-
-		@Override
-		public void save(final File location, final SnapshotFormat format) {
-			throw new UnsupportedOperationException("not implemented");
-		}
-
-		@Override
-		public void save(File location, SnapshotFormat format, SnapshotOptions<Object, Object> options) {
 			throw new UnsupportedOperationException("not implemented");
 		}
 	}

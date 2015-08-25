@@ -24,8 +24,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
- * The SnapshotApplicationEvent class is a Spring ApplicationEvent signaling a GemFire Cache Region(s) snapshot event
- * triggering a snapshot to occur.
+ * The SnapshotApplicationEvent class is a Spring ApplicationEvent signaling a GemFire Cache or Region snapshot event,
+ * used to trigger a snapshot to occur.
  *
  * @author John Blum
  * @see org.springframework.context.ApplicationEvent
@@ -33,36 +33,36 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
-public class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
+public abstract class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
 
 	private final SnapshotMetadata<K, V>[] snapshotMetadata;
 
 	private final String regionPath;
 
 	/**
-	 * Constructs an instance of SnapshotApplicationEvent initialized with an event source along with optional meta-data
-	 * describing the data snapshots to be taken.
+	 * Constructs an instance of SnapshotApplicationEvent initialized with an event source and optional meta-data
+	 * describing the data snapshots to be imported/exported.
 	 *
-	 * @param eventSource the source of the ApplicationEvent.
-	 * @param snapshotMetadata an array of SnapshotMetadata containing details of each export.
+	 * @param source the source of the ApplicationEvent.
+	 * @param snapshotMetadata an array of SnapshotMetadata containing details for each import/export.
 	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
 	 * @see #SnapshotApplicationEvent(Object, String, SnapshotMetadata[])
 	 */
-	public SnapshotApplicationEvent(Object eventSource, SnapshotMetadata<K, V>... snapshotMetadata) {
-		this(eventSource, null, snapshotMetadata);
+	public SnapshotApplicationEvent(Object source, SnapshotMetadata<K, V>... snapshotMetadata) {
+		this(source, null, snapshotMetadata);
 	}
 
 	/**
-	 * Constructs an instance of SnapshotApplicationEvent initialized with an event source and pathname of the Region
-	 * on which the data snapshot(s) will be taken with details provided by the snapshot meta-data.
+	 * Constructs an instance of SnapshotApplicationEvent initialized with an event source, a pathname of the Region
+	 * which data snapshots are imported/exported along with meta-data describing the details of the snapshot source.
 	 *
-	 * @param eventSource the source of the ApplicationEvent.
-	 * @param regionPath the absolute pathname of the Region.
-	 * @param snapshotMetadata an array of SnapshotMetadata containing details of each export.
+	 * @param source the source of the ApplicationEvent.
+	 * @param regionPath absolute pathname of the Region.
+	 * @param snapshotMetadata an array of SnapshotMetadata containing details for each import/export.
 	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
-	public SnapshotApplicationEvent(Object eventSource, String regionPath, SnapshotMetadata<K, V>... snapshotMetadata) {
-		super(eventSource);
+	public SnapshotApplicationEvent(Object source, String regionPath, SnapshotMetadata<K, V>... snapshotMetadata) {
+		super(source);
 		this.snapshotMetadata = snapshotMetadata;
 		this.regionPath = regionPath;
 	}

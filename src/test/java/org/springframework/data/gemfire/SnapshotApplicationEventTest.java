@@ -64,7 +64,7 @@ public class SnapshotApplicationEventTest {
 
 	@Test
 	public void constructSnapshotApplicationEventWithoutRegionOrSnapshotMetadata() {
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this);
+		SnapshotApplicationEvent event = new TestSnapshotApplicationEvent(this);
 
 		assertThat((SnapshotApplicationEventTest) event.getSource(), is(equalTo(this)));
 		assertThat(event.getRegionPath(), is(nullValue()));
@@ -78,7 +78,7 @@ public class SnapshotApplicationEventTest {
 	public void constructSnapshotApplicationEventWithRegionAndSnapshotMetadata() {
 		SnapshotMetadata eventSnapshotMetadata = newSnapshotMetadata();
 
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this, "/Example", eventSnapshotMetadata);
+		SnapshotApplicationEvent event = new TestSnapshotApplicationEvent(this, "/Example", eventSnapshotMetadata);
 
 		assertThat((SnapshotApplicationEventTest) event.getSource(), is(equalTo(this)));
 		assertThat(event.getRegionPath(), is(equalTo("/Example")));
@@ -89,7 +89,7 @@ public class SnapshotApplicationEventTest {
 
 	@Test
 	public void constructSnapshotApplicationEventWithRegionButNoSnapshotMetadata() {
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this, "/Example");
+		SnapshotApplicationEvent event = new TestSnapshotApplicationEvent(this, "/Example");
 
 		assertThat((SnapshotApplicationEventTest) event.getSource(), is(equalTo(this)));
 		assertThat(event.getRegionPath(), is(equalTo("/Example")));
@@ -104,7 +104,7 @@ public class SnapshotApplicationEventTest {
 		SnapshotMetadata eventSnapshotMetadataOne = newSnapshotMetadata();
 		SnapshotMetadata eventSnapshotMetadataTwo = newSnapshotMetadata();
 
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this, eventSnapshotMetadataOne,
+		SnapshotApplicationEvent event = new TestSnapshotApplicationEvent(this, eventSnapshotMetadataOne,
 			eventSnapshotMetadataTwo);
 
 		assertThat((SnapshotApplicationEventTest) event.getSource(), is(equalTo(this)));
@@ -117,7 +117,7 @@ public class SnapshotApplicationEventTest {
 
 	@Test
 	public void matchesNullRegionIsFalse() {
-		assertThat(new SnapshotApplicationEvent(this).matches((Region) null), is(false));
+		assertThat(new TestSnapshotApplicationEvent(this).matches((Region) null), is(false));
 	}
 
 	@Test
@@ -126,7 +126,7 @@ public class SnapshotApplicationEventTest {
 
 		when(mockRegion.getFullPath()).thenReturn("/Example");
 
-		assertThat(new SnapshotApplicationEvent(this, "/Prototype").matches(mockRegion), is(false));
+		assertThat(new TestSnapshotApplicationEvent(this, "/Prototype").matches(mockRegion), is(false));
 
 		verify(mockRegion, times(1)).getFullPath();
 	}
@@ -137,14 +137,14 @@ public class SnapshotApplicationEventTest {
 
 		when(mockRegion.getFullPath()).thenReturn("/Example");
 
-		assertThat(new SnapshotApplicationEvent(this, "/Example").matches(mockRegion), is(true));
+		assertThat(new TestSnapshotApplicationEvent(this, "/Example").matches(mockRegion), is(true));
 
 		verify(mockRegion, times(1)).getFullPath();
 	}
 
 	@Test
 	public void matchesNonMatchingRegionPathsIsFalse() {
-		SnapshotApplicationEvent event = new SnapshotApplicationEvent(this, "/Example");
+		SnapshotApplicationEvent event = new TestSnapshotApplicationEvent(this, "/Example");
 
 		assertThat(event.getRegionPath(), is(equalTo("/Example")));
 		assertThat(event.matches("/Prototype"), is(false));
@@ -163,11 +163,23 @@ public class SnapshotApplicationEventTest {
 
 	@Test
 	public void matchesMatchingRegionPathsIsTrue() {
-		assertThat(new SnapshotApplicationEvent(this, "/Example").matches("/Example"), is(true));
-		assertThat(new SnapshotApplicationEvent(this, "/").matches("/"), is(true));
-		assertThat(new SnapshotApplicationEvent(this, "   ").matches(" "), is(true));
-		assertThat(new SnapshotApplicationEvent(this, "").matches(""), is(true));
-		assertThat(new SnapshotApplicationEvent(this, (String) null).matches((String) null), is(true));
+		assertThat(new TestSnapshotApplicationEvent(this, "/Example").matches("/Example"), is(true));
+		assertThat(new TestSnapshotApplicationEvent(this, "/").matches("/"), is(true));
+		assertThat(new TestSnapshotApplicationEvent(this, "   ").matches(" "), is(true));
+		assertThat(new TestSnapshotApplicationEvent(this, "").matches(""), is(true));
+		assertThat(new TestSnapshotApplicationEvent(this, (String) null).matches((String) null), is(true));
+	}
+
+	protected static final class TestSnapshotApplicationEvent<K, V> extends SnapshotApplicationEvent<K, V> {
+
+		public TestSnapshotApplicationEvent(Object source, SnapshotMetadata<K, V>... snapshotMetadata) {
+			super(source, snapshotMetadata);
+		}
+
+		public TestSnapshotApplicationEvent(Object source, String regionPath,
+				SnapshotMetadata<K, V>... snapshotMetadata) {
+			super(source, regionPath, snapshotMetadata);
+		}
 	}
 
 }
