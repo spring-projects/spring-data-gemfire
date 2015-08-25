@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -32,6 +33,53 @@ import java.util.NoSuchElementException;
  */
 @SuppressWarnings("unused")
 public abstract class CollectionUtils extends org.springframework.util.CollectionUtils {
+
+	/**
+	 * Adapts the given Enumeration as an Iterable object for use within a for each loop.
+	 *
+	 * @param <T> the class type of the Enumeration elements.
+	 * @param enumeration the Enumeration to adapt as an Iterable object.
+	 * @return an Iterable instance of the Enumeration.
+	 * @see java.lang.Iterable
+	 * @see java.util.Enumeration
+	 */
+	public static <T> Iterable<T> iterable(final Enumeration<T> enumeration) {
+		return new Iterable<T>() {
+			@Override public Iterator<T> iterator() {
+				return org.springframework.util.CollectionUtils.toIterator(enumeration);
+			}
+		};
+	}
+
+	/**
+	 * Adapts the given Iterator as an Iterable object for use within a for each loop.
+	 *
+	 * @param <T> the class type of the Iterator elements.
+	 * @param iterator the Iterator to adapt as an Iterable object.
+	 * @return an Iterable instance of the Iterator.
+	 * @see java.lang.Iterable
+	 * @see java.util.Iterator
+	 */
+	public static <T> Iterable<T> iterable(final Iterator<T> iterator) {
+		return new Iterable<T>() {
+			@Override public Iterator<T> iterator() {
+				return iterator;
+			}
+		};
+	}
+
+	/**
+	 * A null-safe operation returning the original Collection if non-null or an empty Collection
+	 * (implemented with List) if null.
+	 *
+	 * @param <T> the element class type of the Collection.
+	 * @param collection the Collection to evaluate for being null.
+	 * @return the given Collection if not null, otherwise return an empty Collection (List).
+	 * @see java.util.Collections#emptyList()
+	 */
+	public static <T> Collection<T> nullSafeCollection(final Collection<T> collection) {
+		return (collection != null ? collection : Collections.<T>emptyList());
+	}
 
 	/**
 	 * A null-safe operation returning the original Iterable object if non-null or a default, empty Iterable
@@ -61,19 +109,6 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 				};
 			}
 		});
-	}
-
-	/**
-	 * A null-safe operation returning the original Collection if non-null or an empty Collection
-	 * (implemented with List) if null.
-	 *
-	 * @param <T> the element class type of the Collection.
-	 * @param collection the Collection to evaluate for being null.
-	 * @return the given Collection if not null, otherwise return an empty Collection (List).
-	 * @see java.util.Collections#emptyList()
-	 */
-	public static <T> Collection<T> nullSafeCollection(final Collection<T> collection) {
-		return (collection != null ? collection : Collections.<T>emptyList());
 	}
 
 }

@@ -25,6 +25,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
@@ -34,21 +35,26 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.ArchiveFileFilter;
 import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter;
 import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter;
 import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata;
 import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
+import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.commons.logging.Log;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Matchers;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -140,7 +146,8 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void nullSafeIsDirectoryWithNonDirectories() {
-		assertThat(SnapshotServiceFactoryBean.nullSafeIsDirectory(new File("path/to/non-existing/directory")), is(false));
+		assertThat(SnapshotServiceFactoryBean.nullSafeIsDirectory(new File("path/to/non-existing/directory")),
+			is(false));
 		assertThat(SnapshotServiceFactoryBean.nullSafeIsDirectory(FileSystemUtils.JAVA_EXE), is(false));
 	}
 
@@ -247,6 +254,27 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
+	public void afterPropertiesSetCreatesSnapshotServiceAdapterAndDoesImportWithConfiguredImports() throws Exception {
+		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class,
+			"MockSnapshotServiceAdapter");
+
+		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
+			@Override protected SnapshotServiceAdapter create() {
+				return mockSnapshotService;
+			}
+		};
+
+		SnapshotMetadata expectedSnapshotMetadata = newSnapshotMetadata();
+
+		factoryBean.setImports(toArray(expectedSnapshotMetadata));
+		factoryBean.afterPropertiesSet();
+
+		assertThat(factoryBean.getImports()[0], is(equalTo(expectedSnapshotMetadata)));
+
+		verify(mockSnapshotService, times(1)).doImport(eq(toArray(expectedSnapshotMetadata)));
+	}
+
+	@Test
 	public void createCacheSnapshotService() {
 		Cache mockCache = mock(Cache.class, "MockCache");
 		CacheSnapshotService mockCacheSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
@@ -283,49 +311,6 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void createSnapshotMetadataWithNullLocation() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The File location (null) must exist");
-		new SnapshotMetadata(null, mock(SnapshotFilter.class), SnapshotFormat.GEMFIRE);
-	}
-
-	@Test
-	public void createSnapshotMetadataWithNonExistingLocation() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The File location (/path/to/non-existing/location) must exist");
-		new SnapshotMetadata(new File("/path/to/non-existing/location"), mock(SnapshotFilter.class),
-			SnapshotFormat.GEMFIRE);
-	}
-
-	@Test
-	public void createSnapshotMetadataWithDirectoryFilterAndUnspecifiedFormat() {
-		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, "MockSnapshotFilter");
-
-		SnapshotMetadata metadata = new SnapshotMetadata(FileSystemUtils.WORKING_DIRECTORY, mockSnapshotFilter, null);
-
-		assertThat(metadata.getLocation(), is(equalTo(FileSystemUtils.WORKING_DIRECTORY)));
-		assertThat(metadata.isDirectory(), is(true));
-		assertThat(metadata.isFile(), is(false));
-		assertThat(metadata.getFilter(), is(equalTo(mockSnapshotFilter)));
-		assertThat(metadata.isFilterPresent(), is(true));
-		assertThat(metadata.getFormat(), is(equalTo(SnapshotFormat.GEMFIRE)));
-	}
-
-	@Test
-	public void createSnapshotMetadataWithFileNullFilterAndGemFireFormat() throws Exception {
-		SnapshotMetadata metadata = new SnapshotMetadata(snapshotDat, null, SnapshotFormat.GEMFIRE);
-
-		assertThat(metadata.getLocation(), is(equalTo(snapshotDat)));
-		assertThat(metadata.isDirectory(), is(false));
-		assertThat(metadata.isFile(), is(true));
-		assertThat(metadata.getFilter(), is(nullValue()));
-		assertThat(metadata.isFilterPresent(), is(false));
-		assertThat(metadata.getFormat(), is(equalTo(SnapshotFormat.GEMFIRE)));
-	}
-
-	@Test
 	public void wrapNullCacheSnapshotService() {
 		expectedException.expect(IllegalArgumentException.class);
 		expectedException.expectCause(is(nullValue(Throwable.class)));
@@ -339,6 +324,27 @@ public class SnapshotServiceFactoryBeanTest {
 		expectedException.expectCause(is(nullValue(Throwable.class)));
 		expectedException.expectMessage("The backing RegionSnapshotService must not be null");
 		factoryBean.wrap((RegionSnapshotService) null);
+	}
+
+	@Test
+	public void destroyPerformsExportWithConfiguredExports() throws Exception {
+		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class,
+			"MockSnapshotServiceAdapter");
+
+		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
+			@Override public SnapshotServiceAdapter getObject() throws Exception {
+				return mockSnapshotService;
+			}
+		};
+
+		SnapshotMetadata expectedSnapshotMetadata = newSnapshotMetadata();
+
+		factoryBean.setExports(toArray(expectedSnapshotMetadata));
+		factoryBean.destroy();
+
+		assertThat(factoryBean.getExports()[0], is(equalTo(expectedSnapshotMetadata)));
+
+		verify(mockSnapshotService, times(1)).doExport(eq(toArray(expectedSnapshotMetadata)));
 	}
 
 	@Test
@@ -399,7 +405,8 @@ public class SnapshotServiceFactoryBeanTest {
 
 		verify(mockSnapshotService, never()).createOptions();
 		verify(mockSnapshotService, never()).save(any(File.class), any(SnapshotFormat.class));
-		verify(mockSnapshotService, never()).save(any(File.class), any(SnapshotFormat.class), any(SnapshotOptions.class));
+		verify(mockSnapshotService, never()).save(any(File.class), any(SnapshotFormat.class),
+			any(SnapshotOptions.class));
 	}
 
 	@Test
@@ -517,7 +524,8 @@ public class SnapshotServiceFactoryBeanTest {
 		verify(mockCacheSnapshotService, times(2)).createOptions();
 		verify(mockCacheSnapshotService, times(1)).load(eq(FileSystemUtils.safeListFiles(FileSystemUtils.USER_HOME, FileSystemUtils.FileOnlyFilter.INSTANCE)),
 			eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsOne));
-		verify(mockCacheSnapshotService, times(1)).load(eq(FileSystemUtils.safeListFiles(FileSystemUtils.WORKING_DIRECTORY, FileSystemUtils.FileOnlyFilter.INSTANCE)),
+		verify(mockCacheSnapshotService, times(1)).load(eq(FileSystemUtils.safeListFiles(
+			FileSystemUtils.WORKING_DIRECTORY, FileSystemUtils.FileOnlyFilter.INSTANCE)),
 			eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsTwo));
 		verify(mockSnapshotOptionsOne, times(1)).setFilter(eq(mockSnapshotFilterOne));
 		verify(mockSnapshotOptionsTwo, times(1)).setFilter(eq(mockSnapshotFilterTwo));
@@ -665,6 +673,97 @@ public class SnapshotServiceFactoryBeanTest {
 			eq(expectedExports[1].getFormat()), eq(mockSnapshotOptionsTwo));
 		verify(mockSnapshotOptionsOne, times(1)).setFilter(eq(mockSnapshotFilterOne));
 		verify(mockSnapshotOptionsTwo, times(1)).setFilter(eq(mockSnapshotFilterTwo));
+	}
+
+	@Test
+	public void createOptionsWithFilterOnSnapshotServiceAdapterSupport() {
+		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, "MockSnapshotFilter");
+
+		final SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapshotOptions");
+
+		when(mockSnapshotOptions.setFilter(any(SnapshotFilter.class))).thenReturn(mockSnapshotOptions);
+
+		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter() {
+			@Override public SnapshotOptions<Object, Object> createOptions() {
+				return mockSnapshotOptions;
+			}
+		};
+
+		assertThat(snapshotService.createOptions(mockSnapshotFilter), is(equalTo(mockSnapshotOptions)));
+
+		verify(mockSnapshotOptions, times(1)).setFilter(eq(mockSnapshotFilter));
+	}
+
+	@Test
+	public void invokeExceptionSuppressingCloseOnSnapshotServiceAdapterSupportIsSuccessful() throws Exception {
+		Closeable mockCloseable = mock(Closeable.class, "MockCloseable");
+
+		assertThat(new TestSnapshotServiceAdapter().exceptionSuppressingClose(mockCloseable), is(true));
+
+		verify(mockCloseable, times(1)).close();
+	}
+
+	@Test
+	public void invokeExceptionSuppressingCloseOnSnapshotServiceAdapterSupportIsUnsuccessful() throws Exception {
+		Closeable mockCloseable = mock(Closeable.class, "MockCloseable");
+
+		doThrow(new IOException("TEST")).when(mockCloseable).close();
+
+		assertThat(new TestSnapshotServiceAdapter().exceptionSuppressingClose(mockCloseable), is(false));
+
+		verify(mockCloseable, times(1)).close();
+	}
+
+	@Test
+	public void logDebugWhenDebugging() {
+		final Log mockLog = mock(Log.class, "MockLog");
+
+		when(mockLog.isDebugEnabled()).thenReturn(true);
+
+		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter() {
+			@Override Log createLog() {
+				return mockLog;
+			}
+		};
+
+		Exception expectedException = new Exception("test");
+
+		snapshotService.logDebug(expectedException, "Log message with argument (%1$s)", "test");
+
+		verify(mockLog, times(1)).isDebugEnabled();
+		verify(mockLog, times(1)).debug(eq("Log message with argument (test)"), eq(expectedException));
+	}
+
+	@Test
+	public void logDebugWhenNotDebugging() {
+		final Log mockLog = mock(Log.class, "MockLog");
+
+		when(mockLog.isDebugEnabled()).thenReturn(false);
+
+		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter() {
+			@Override Log createLog() {
+				return mockLog;
+			}
+		};
+
+		snapshotService.logDebug(null, "Log message with argument (%1$s)", "test");
+
+		verify(mockLog, times(1)).isDebugEnabled();
+		verify(mockLog, never()).debug(any(String.class), any(Throwable.class));
+	}
+
+	@Test
+	public void toSimpleFilenameUsingVariousPathnames() {
+		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter();
+
+		assertThat(snapshotService.toSimpleFilename("/path/to/file.ext"), is(equalTo("file.ext")));
+		assertThat(snapshotService.toSimpleFilename("/path/to/file   "), is(equalTo("file")));
+		assertThat(snapshotService.toSimpleFilename("/ file.ext"), is(equalTo("file.ext")));
+		assertThat(snapshotService.toSimpleFilename("  file.ext "), is(equalTo("file.ext")));
+		assertThat(snapshotService.toSimpleFilename("/ "), is(equalTo("")));
+		assertThat(snapshotService.toSimpleFilename("  "), is(equalTo("")));
+		assertThat(snapshotService.toSimpleFilename(""), is(equalTo("")));
+		assertThat(snapshotService.toSimpleFilename(null), is(nullValue()));
 	}
 
 	@Test(expected = ImportSnapshotException.class)
@@ -890,6 +989,119 @@ public class SnapshotServiceFactoryBeanTest {
 		finally {
 			verify(mockRegionSnapshotService, times(1)).save(eq(snapshotDat), eq(SnapshotFormat.GEMFIRE),
 				eq(mockSnapshotOptions));
+		}
+	}
+
+	@Test
+	public void createSnapshotMetadataWithNullLocation() {
+		expectedException.expect(IllegalArgumentException.class);
+		expectedException.expectCause(is(nullValue(Throwable.class)));
+		expectedException.expectMessage("Location must not be null");
+		new SnapshotMetadata(null, mock(SnapshotFilter.class), SnapshotFormat.GEMFIRE);
+	}
+
+	@Test
+	public void createSnapshotMetadataWithDirectoryFilterAndUnspecifiedFormat() {
+		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, "MockSnapshotFilter");
+
+		SnapshotMetadata metadata = new SnapshotMetadata(FileSystemUtils.WORKING_DIRECTORY, mockSnapshotFilter, null);
+
+		assertThat(metadata.getLocation(), is(equalTo(FileSystemUtils.WORKING_DIRECTORY)));
+		assertThat(metadata.isDirectory(), is(true));
+		assertThat(metadata.isFile(), is(false));
+		assertThat(metadata.getFilter(), is(equalTo(mockSnapshotFilter)));
+		assertThat(metadata.isFilterPresent(), is(true));
+		assertThat(metadata.getFormat(), is(equalTo(SnapshotFormat.GEMFIRE)));
+	}
+
+	@Test
+	public void createSnapshotMetadataWithFileNullFilterAndGemFireFormat() throws Exception {
+		SnapshotMetadata metadata = new SnapshotMetadata(snapshotDat, null, SnapshotFormat.GEMFIRE);
+
+		assertThat(metadata.getLocation(), is(equalTo(snapshotDat)));
+		assertThat(metadata.isDirectory(), is(false));
+		assertThat(metadata.isFile(), is(true));
+		assertThat(metadata.getFilter(), is(nullValue()));
+		assertThat(metadata.isFilterPresent(), is(false));
+		assertThat(metadata.getFormat(), is(equalTo(SnapshotFormat.GEMFIRE)));
+	}
+
+	@Test
+	public void isJarFileIsTrue() {
+		// JRE
+		File runtimeDotJar = new File(new File(FileSystemUtils.JAVA_HOME, "lib"), "rt.jar");
+
+		// JDK
+		if (!runtimeDotJar.isFile()) {
+			runtimeDotJar = new File(new File(new File(FileSystemUtils.JAVA_HOME, "jre"), "lib"), "rt.jar");
+			assumeThat(runtimeDotJar.isFile(), is(true));
+		}
+
+		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(runtimeDotJar), is(true));
+	}
+
+	@Test
+	public void isJarFileIsFalse() throws Exception {
+		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new File("/path/to/non-existing/file.jar")), is(false));
+		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new ClassPathResource("/cluster_config.zip").getFile()), is(false));
+		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new File("to/file.tar")), is(false));
+		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new File("jar.file")), is(false));
+		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new File("  ")), is(false));
+		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new File("")), is(false));
+		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(null), is(false));
+	}
+
+	@Test
+	public void getFileExtensionOfVariousFiles() throws Exception {
+		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(new ClassPathResource("/cluster_config.zip").getFile()), is(equalTo("zip")));
+		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(new File("/path/to/non-existing/file.jar")), is(equalTo("")));
+		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(new File("to/non-existing/file.tar")), is(equalTo("")));
+		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(FileSystemUtils.WORKING_DIRECTORY), is(equalTo("")));
+		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(new File("  ")), is(equalTo("")));
+		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(new File("")), is(equalTo("")));
+		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(null), is(equalTo("")));
+	}
+
+	@Test
+	public void archiveFileFilterAcceptsJarOrZipFile() throws Exception {
+		assertThat(ArchiveFileFilter.INSTANCE.accept(new ClassPathResource("/cluster_config.zip").getFile()), is(true));
+	}
+
+	@Test
+	public void archiveFileFilterRejectsTarFile() {
+		assertThat(ArchiveFileFilter.INSTANCE.accept(new File("/path/to/file.tar")), is(false));
+	}
+
+	protected static class TestSnapshotServiceAdapter extends SnapshotServiceAdapterSupport<Object, Object> {
+
+		@Override
+		public SnapshotOptions<Object, Object> createOptions() {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		protected File[] handleLocation(final SnapshotMetadata<Object, Object> configuration) {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void load(final File directory, final SnapshotFormat format) {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void load(SnapshotFormat format, SnapshotOptions<Object, Object> options, File... snapshots) {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void save(final File location, final SnapshotFormat format) {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void save(File location, SnapshotFormat format, SnapshotOptions<Object, Object> options) {
+			throw new UnsupportedOperationException("not implemented");
 		}
 	}
 
