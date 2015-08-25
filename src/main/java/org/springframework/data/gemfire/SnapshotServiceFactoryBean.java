@@ -74,10 +74,10 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 	private Region<K, V> region;
 
-	private SnapshotServiceAdapter<K, V> snapshotServiceAdapter;
-
 	private SnapshotMetadata<K, V>[] exports;
 	private SnapshotMetadata<K, V>[] imports;
+
+	private SnapshotServiceAdapter<K, V> snapshotServiceAdapter;
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
@@ -231,8 +231,6 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	// TODO consider making the "import" on bean initialization asynchronous
-	// NOTE GemFire may handle asynchronous import and export under the right conditions (need to research)
 	public void afterPropertiesSet() throws Exception {
 		snapshotServiceAdapter = create();
 		snapshotServiceAdapter.doImport(getImports());
@@ -296,22 +294,29 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	}
 
 	/**
-	 * Listens for SnapshotApplicationEvents triggering a GemFire Cache-wide or Region data snapshot when
-	 * the details of the event match the criteria of this factory's constructed GemFire SnapshotService.
+	 * Listens for SnapshotApplicationEvents triggering a GemFire Cache-wide or Region data snapshot import/export
+	 * when details of the event match the criteria of this factory's constructed GemFire SnapshotService.
 	 *
-	 * @param event the SnapshotApplicationEvent triggering a GemFire Cache or Region data export.
+	 * @param event the SnapshotApplicationEvent triggering a GemFire Cache or Region data import/export.
 	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent
+	 * @see org.springframework.data.gemfire.ExportSnapshotApplicationEvent
+	 * @see org.springframework.data.gemfire.ImportSnapshotApplicationEvent
 	 * @see #isMatch(SnapshotApplicationEvent)
 	 * @see #resolveSnapshotMetadata(SnapshotApplicationEvent)
 	 * @see #getObject()
 	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doExport(SnapshotMetadata[])
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doImport(SnapshotMetadata[])
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public void onApplicationEvent(SnapshotApplicationEvent<K, V> event) {
 		try {
 			if (isMatch(event)) {
-				getObject().doExport(resolveSnapshotMetadata(event));
+				if (event instanceof ExportSnapshotApplicationEvent) {
+					getObject().doExport(resolveSnapshotMetadata(event));
+				}
+				else {
+					getObject().doImport(resolveSnapshotMetadata(event));
+				}
 			}
 		}
 		catch (Exception ignore) {
@@ -335,18 +340,21 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	}
 
 	/**
-	 * Resolves the SnapshotMetadata used to perform the GemFire Cache or Region data snapshot (export).  If the event
-	 * contains specific SnapshotMetadata, then this is preferred over the factory's own "export" SnapshotMetadata.
+	 * Resolves the SnapshotMetadata used to perform the GemFire Cache or Region data snapshot import/export.
+	 * If the event contains specific SnapshotMetadata, then this is preferred over the factory's own
+	 * "import" or "export" SnapshotMetadata.
 	 *
 	 * @param event the SnapshotApplicationEvent from which to resolve the SnapshotMetadata.
-	 * @return the resolved SnapshotMetadata, either from the event or this factory's configured exports.
+	 * @return the resolved SnapshotMetadata, either from the event or this factory's configured imports/exports.
 	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent#getSnapshotMetadata()
 	 * @see #getExports()
+	 * @see #getImports()
 	 */
 	protected SnapshotMetadata<K, V>[] resolveSnapshotMetadata(SnapshotApplicationEvent<K, V> event) {
 		SnapshotMetadata<K, V>[] eventSnapshotMetadata = event.getSnapshotMetadata();
 
-		return (!ObjectUtils.isEmpty(eventSnapshotMetadata) ? eventSnapshotMetadata : getExports());
+		return (!ObjectUtils.isEmpty(eventSnapshotMetadata) ? eventSnapshotMetadata
+			: (event instanceof ExportSnapshotApplicationEvent ? getExports() : getImports()));
 	}
 
 	/**
@@ -374,12 +382,25 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 	}
 
+	/**
+	 * SnapshotServiceAdapterSupport is an abstract base class for all SnapshotServiceAdapter implementations
+	 * encapsulating common reusable functionality.
+	 *
+	 * @param <K> the class type of the Cache Region key.
+	 * @param <V> the class type of the Cache Region value.
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 */
 	protected static abstract class SnapshotServiceAdapterSupport<K, V> implements SnapshotServiceAdapter<K, V> {
 
 		protected final Log log = createLog();
 
 		Log createLog() {
 			return LogFactory.getLog(getClass());
+		}
+
+		@Override
+		public SnapshotOptions<K, V> createOptions() {
+			throw new UnsupportedOperationException("not implemented");
 		}
 
 		protected SnapshotOptions<K, V> createOptions(SnapshotFilter<K, V> filter) {
@@ -422,7 +443,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 					ZipFile zipFile = (ArchiveFileFilter.INSTANCE.isJarFile(file)
 						? new JarFile(file, false, JarFile.OPEN_READ)
-						: new ZipFile(file, ZipFile.OPEN_READ));
+							: new ZipFile(file, ZipFile.OPEN_READ));
 
 					for (ZipEntry entry : CollectionUtils.iterable(zipFile.entries())) {
 						if (!entry.isDirectory()) {
@@ -469,6 +490,26 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 			}
 		}
 
+		@Override
+		public void load(File directory, SnapshotFormat format) {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void load(SnapshotFormat format, SnapshotOptions<K, V> options, File... snapshots) {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void save(File location, SnapshotFormat format) {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void save(File location, SnapshotFormat format, SnapshotOptions<K, V> options) {
+			throw new UnsupportedOperationException("not implemented");
+		}
+
 		protected String toSimpleFilename(String pathname) {
 			int pathSeparatorIndex = String.valueOf(pathname).lastIndexOf(File.separator);
 			pathname = (pathSeparatorIndex > -1 ? pathname.substring(pathSeparatorIndex + 1) : pathname);
@@ -478,6 +519,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 	/**
 	 * The CacheSnapshotServiceAdapter is a SnapshotServiceAdapter adapting GemFire's CacheSnapshotService.
+	 *
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport
 	 */
 	protected static class CacheSnapshotServiceAdapter extends SnapshotServiceAdapterSupport<Object, Object> {
 
@@ -554,6 +597,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 	/**
 	 * The RegionSnapshotServiceAdapter is a SnapshotServiceAdapter adapting GemFire's RegionSnapshotService.
+	 *
+	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport
 	 */
 	protected static class RegionSnapshotServiceAdapter<K, V> extends SnapshotServiceAdapterSupport<K, V> {
 
