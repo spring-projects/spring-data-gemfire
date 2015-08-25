@@ -18,16 +18,30 @@ package org.springframework.data.gemfire;
 
 import static com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -179,7 +193,6 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public SnapshotServiceAdapter<K, V> getObject() throws Exception {
 		return snapshotServiceAdapter;
 	}
@@ -336,6 +349,13 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		return (!ObjectUtils.isEmpty(eventSnapshotMetadata) ? eventSnapshotMetadata : getExports());
 	}
 
+	/**
+	 * The SnapshotServiceAdapter interface is an Adapter adapting both GemFire CacheSnapshotService
+	 * and RegionSnapshotService to treat them uniformly.
+	 *
+	 * @param <K> the class type of the Region key.
+	 * @param <V> the class type of the Region value.
+	 */
 	public interface SnapshotServiceAdapter<K, V> {
 
 		SnapshotOptions<K, V> createOptions();
@@ -354,7 +374,112 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 	}
 
-	protected static class CacheSnapshotServiceAdapter implements SnapshotServiceAdapter<Object, Object> {
+	protected static abstract class SnapshotServiceAdapterSupport<K, V> implements SnapshotServiceAdapter<K, V> {
+
+		protected final Log log = createLog();
+
+		Log createLog() {
+			return LogFactory.getLog(getClass());
+		}
+
+		protected SnapshotOptions<K, V> createOptions(SnapshotFilter<K, V> filter) {
+			return createOptions().setFilter(filter);
+		}
+
+		@Override
+		public void doExport(SnapshotMetadata<K, V>[] configurations) {
+			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
+				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter()));
+			}
+		}
+
+		@Override
+		public void doImport(SnapshotMetadata<K, V>[] configurations) {
+			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
+				load(configuration.getFormat(), createOptions(configuration.getFilter()), handleLocation(configuration));
+			}
+		}
+
+		protected abstract File[] handleLocation(SnapshotMetadata<K, V> configuration);
+
+		protected File[] handleDirectoryLocation(File directory) {
+			return directory.listFiles(new FileFilter() {
+				@Override public boolean accept(File pathname) {
+					return nullSafeIsFile(pathname);
+				}
+			});
+		}
+
+		protected File[] handleFileLocation(File file) {
+			if (ArchiveFileFilter.INSTANCE.accept(file)) {
+				try {
+					File extractedArchiveDirectory = new File(System.getProperty("java.io.tmpdir"),
+						file.getName().replaceAll("\\.", "-"));
+
+					Assert.state(extractedArchiveDirectory.isDirectory() || extractedArchiveDirectory.mkdirs(),
+						String.format("Failed create directory (%1$s) in which to extract archive (%2$s)",
+							extractedArchiveDirectory, file));
+
+					ZipFile zipFile = (ArchiveFileFilter.INSTANCE.isJarFile(file)
+						? new JarFile(file, false, JarFile.OPEN_READ)
+						: new ZipFile(file, ZipFile.OPEN_READ));
+
+					for (ZipEntry entry : CollectionUtils.iterable(zipFile.entries())) {
+						if (!entry.isDirectory()) {
+							DataInputStream entryInputStream = new DataInputStream(zipFile.getInputStream(entry));
+
+							DataOutputStream entryOutputStream = new DataOutputStream(new FileOutputStream(
+								new File(extractedArchiveDirectory, toSimpleFilename(entry.getName()))));
+
+							try {
+								FileCopyUtils.copy(entryInputStream, entryOutputStream);
+							}
+							finally {
+								exceptionSuppressingClose(entryInputStream);
+								exceptionSuppressingClose(entryOutputStream);
+							}
+						}
+					}
+
+					return handleDirectoryLocation(extractedArchiveDirectory);
+				}
+				catch (Throwable t) {
+					throw new ImportSnapshotException(String.format(
+						"Failed to extract archive (%1$s) to import", file), t);
+				}
+			}
+
+			return new File[] { file };
+		}
+
+		protected boolean exceptionSuppressingClose(Closeable closeable) {
+			try {
+				closeable.close();
+				return true;
+			}
+			catch (IOException ignore) {
+				logDebug(ignore, "Failed to close (%1$s)", closeable);
+				return false;
+			}
+		}
+
+		protected void logDebug(Throwable t, String message, Object... arguments) {
+			if (log.isDebugEnabled()) {
+				log.debug(String.format(message, arguments), t);
+			}
+		}
+
+		protected String toSimpleFilename(String pathname) {
+			int pathSeparatorIndex = String.valueOf(pathname).lastIndexOf(File.separator);
+			pathname = (pathSeparatorIndex > -1 ? pathname.substring(pathSeparatorIndex + 1) : pathname);
+			return StringUtils.trimWhitespace(pathname);
+		}
+	}
+
+	/**
+	 * The CacheSnapshotServiceAdapter is a SnapshotServiceAdapter adapting GemFire's CacheSnapshotService.
+	 */
+	protected static class CacheSnapshotServiceAdapter extends SnapshotServiceAdapterSupport<Object, Object> {
 
 		private final CacheSnapshotService snapshotService;
 
@@ -372,29 +497,10 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 			return getSnapshotService().createOptions();
 		}
 
-		protected SnapshotOptions<Object, Object> createOptions(SnapshotFilter<Object, Object> filter) {
-			return createOptions().setFilter(filter);
-		}
-
 		@Override
-		public void doExport(SnapshotMetadata<Object, Object>[] configurations) {
-			for (SnapshotMetadata<Object, Object> configuration : nullSafeArray(configurations)) {
-				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter()));
-			}
-		}
-
-		@Override
-		public void doImport(SnapshotMetadata<Object, Object>[] configurations) {
-			for (SnapshotMetadata<Object, Object> configuration : nullSafeArray(configurations)) {
-				File[] snapshots = (configuration.isFile() ? new File[] { configuration.getLocation() }
-					: configuration.getLocation().listFiles(new FileFilter() {
-						@Override public boolean accept(File pathname) {
-							return nullSafeIsFile(pathname);
-						}
-					}));
-
-				load(configuration.getFormat(), createOptions(configuration.getFilter()), snapshots);
-			}
+		protected File[] handleLocation(SnapshotMetadata<Object, Object> configuration) {
+			return (configuration.isFile() ? handleFileLocation(configuration.getLocation())
+				: handleDirectoryLocation(configuration.getLocation()));
 		}
 
 		@Override
@@ -446,7 +552,10 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 	}
 
-	protected static class RegionSnapshotServiceAdapter<K, V> implements SnapshotServiceAdapter<K, V> {
+	/**
+	 * The RegionSnapshotServiceAdapter is a SnapshotServiceAdapter adapting GemFire's RegionSnapshotService.
+	 */
+	protected static class RegionSnapshotServiceAdapter<K, V> extends SnapshotServiceAdapterSupport<K, V> {
 
 		private final RegionSnapshotService<K, V> snapshotService;
 
@@ -464,22 +573,9 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 			return getSnapshotService().createOptions();
 		}
 
-		protected SnapshotOptions<K, V> createOptions(SnapshotFilter<K, V> filter) {
-			return createOptions().setFilter(filter);
-		}
-
 		@Override
-		public void doExport(SnapshotMetadata<K, V>[] configurations) {
-			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
-				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter()));
-			}
-		}
-
-		@Override
-		public void doImport(SnapshotMetadata<K, V>[] configurations) {
-			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
-				load(configuration.getFormat(), createOptions(configuration.getFilter()), configuration.getLocation());
-			}
+		protected File[] handleLocation(final SnapshotMetadata<K, V> configuration) {
+			return new File[] { configuration.getLocation() };
 		}
 
 		@Override
@@ -533,6 +629,13 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 	}
 
+	/**
+	 * The SnapshotMetadata class encapsulates details of the GemFire Cache or Region data snapshot
+	 * on either import or export.
+	 *
+	 * @param <K> the class type of the Region key.
+	 * @param <V> the class type of the Region value.
+	 */
 	public static class SnapshotMetadata<K, V> {
 
 		private final File location;
@@ -541,9 +644,12 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 		private final SnapshotFormat format;
 
+		public SnapshotMetadata(File location, SnapshotFormat format) {
+			this(location, null, format);
+		}
+
 		public SnapshotMetadata(File location, SnapshotFilter<K, V> filter, SnapshotFormat format) {
-			Assert.isTrue(location != null && location.exists(), String.format(
-				"The File location (%1$s) must exist", location));
+			Assert.notNull(location, "Location must not be null");
 
 			this.location = location;
 			this.filter = filter;
@@ -578,6 +684,43 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		public String toString() {
 			return String.format("{ @type = %1$s, location = %2$s, filter = %2$s, format = %4$s }",
 				getClass().getName(), getLocation().getAbsolutePath(), getFilter(), getFormat());
+		}
+	}
+
+	/**
+	 * The ArchiveFileFilter class is a Java FileFilter implementation accepting any File that is either
+	 * a JAR file or ZIP file.
+	 *
+	 * @see java.io.File
+	 * @see java.io.FileFilter
+	 */
+	protected static final class ArchiveFileFilter implements FileFilter {
+
+		protected static final ArchiveFileFilter INSTANCE = new ArchiveFileFilter();
+
+		protected static final List<String> ACCEPTED_FILE_EXTENSIONS = Arrays.asList("jar", "zip");
+
+		protected static final String FILE_EXTENSION_DOT_SEPARATOR = ".";
+
+		protected boolean isJarFile(File file) {
+			return "jar".equalsIgnoreCase(getFileExtension(file));
+		}
+
+		protected String getFileExtension(File file) {
+			String fileExtension = "";
+
+			if (nullSafeIsFile(file)) {
+				String pathname = file.getAbsolutePath();
+				int fileExtensionIndex = pathname.lastIndexOf(FILE_EXTENSION_DOT_SEPARATOR);
+				fileExtension = (fileExtensionIndex > -1 ? pathname.substring(fileExtensionIndex + 1) : "");
+			}
+
+			return fileExtension.toLowerCase();
+		}
+
+		@Override
+		public boolean accept(final File pathname) {
+			return ACCEPTED_FILE_EXTENSIONS.contains(getFileExtension(pathname));
 		}
 	}
 

@@ -198,6 +198,13 @@ Specifies meta-data for a snapshot export.
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:sequence>
+			<xsd:attribute name="id" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+ID of the GemFire [Cache|Region] SnapshotService bean in the Spring context.
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 			<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[

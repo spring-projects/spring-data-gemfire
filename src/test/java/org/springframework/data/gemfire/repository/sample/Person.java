@@ -20,24 +20,41 @@ import java.io.Serializable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.Region;
 
+import com.gemstone.gemfire.management.internal.cli.util.spring.ObjectUtils;
+
 /**
+ * The Person class models a person.
+ *
  * @author Oliver Gierke
+ * @author John Blum
+ * @see java.io.Serializable
  */
 @Region("simple")
 public class Person implements Serializable {
 
 	private static final long serialVersionUID = 508843183613325255L;
 
+	public Address address;
+
 	@Id
 	public Long id;
+
 	public String firstname;
 	public String lastname;
-	public Address address;
 
 	public Person(Long id, String firstname, String lastname) {
 		this.id = id;
 		this.firstname = firstname;
 		this.lastname = lastname;
+	}
+
+	/**
+	 * Returns the identifier (ID) of this Person.
+	 *
+	 * @return a Long value with the ID of this Person.
+	 */
+	public Long getId() {
+		return id;
 	}
 
 	/**
@@ -54,13 +71,23 @@ public class Person implements Serializable {
 		return lastname;
 	}
 
+	/**
+	 * Returns the Person's full name.
+	 *
+	 * @return the first and last name of the Person.
+	 * @see #getFirstname()
+	 * @see #getLastname()
+	 */
+	public String getName() {
+		return String.format("%1$s %2$s", getFirstname(), getLastname());
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
-
 		if (this == obj) {
 			return true;
 		}
@@ -71,7 +98,7 @@ public class Person implements Serializable {
 
 		Person that = (Person) obj;
 
-		return this.id == null ? false : this.id.equals(that.id);
+		return (this.id != null && this.id.equals(that.id));
 	}
 
 	/* 
@@ -80,6 +107,12 @@ public class Person implements Serializable {
 	 */
 	@Override
 	public int hashCode() {
-		return this.id == null ? 0 : this.id.hashCode();
+		return ObjectUtils.nullSafeHashCode(this.id);
 	}
+
+	@Override
+	public String toString() {
+		return String.format("{ @type = %1$s, id = %2$d, name = %3$s }", getClass().getName(), id, getName());
+	}
+
 }

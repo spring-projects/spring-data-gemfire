@@ -17,8 +17,6 @@
 package org.springframework.data.gemfire.test.support;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -31,24 +29,7 @@ import java.util.List;
  * @since 1.5.0
  */
 @SuppressWarnings("unused")
-// TODO replace with org.springframework.data.gemfire.util.CollectionUtils
 public abstract class CollectionUtils extends org.springframework.data.gemfire.util.CollectionUtils {
-
-	public static <T> Iterable<T> iterable(final Enumeration<T> enumeration) {
-		return new Iterable<T>() {
-			@Override public Iterator<T> iterator() {
-				return org.springframework.util.CollectionUtils.toIterator(enumeration);
-			}
-		};
-	}
-
-	public static <T> Iterable<T> iterable(final Iterator<T> iterator) {
-		return new Iterable<T>() {
-			@Override public Iterator<T> iterator() {
-				return iterator;
-			}
-		};
-	}
 
 	public static <T> List<T> subList(final List<T> source, final int... indices) {
 		List<T> result = new ArrayList<T>(indices.length);

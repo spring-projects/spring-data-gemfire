@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.config;
 
-import java.util.List;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
@@ -79,12 +77,20 @@ class SnapshotServiceParser extends AbstractSingleBeanDefinitionParser {
 		BeanDefinitionBuilder snapshotMetadataBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 			SnapshotServiceFactoryBean.SnapshotMetadata.class);
 
-		ParsingUtils.setPropertyValue(snapshotMetadataElement, snapshotMetadataBuilder, "location");
-		ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, snapshotMetadataElement, snapshotMetadataBuilder,
-			"filter-ref");
-		ParsingUtils.setPropertyValue(snapshotMetadataElement, snapshotMetadataBuilder, "format");
+		snapshotMetadataBuilder.addConstructorArgValue(snapshotMetadataElement.getAttribute("location"));
+
+		if (isSnapshotFilterSpecified(snapshotMetadataElement)) {
+			snapshotMetadataBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(
+				parserContext, snapshotMetadataElement, snapshotMetadataBuilder, "filter-ref", true));
+		}
+
+		snapshotMetadataBuilder.addConstructorArgValue(snapshotMetadataElement.getAttribute("format"));
 
 		return snapshotMetadataBuilder.getBeanDefinition();
+	}
+
+	private boolean isSnapshotFilterSpecified(final Element snapshotMetadataElement) {
+		return (snapshotMetadataElement.hasAttribute("filter-ref") || snapshotMetadataElement.hasChildNodes());
 	}
 
 }
