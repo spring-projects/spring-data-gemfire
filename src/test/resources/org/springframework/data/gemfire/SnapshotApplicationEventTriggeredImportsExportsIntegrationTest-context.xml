@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:c="http://www.springframework.org/schema/c"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
+	   xmlns:task="http://www.springframework.org/schema/task"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">SnapshotApplicationEventTriggeredImportsExportsIntegrationTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:partitioned-region id="Doe" persistent="false"/>
+	<gfe:partitioned-region id="EveryoneElse" persistent="false"/>
+	<gfe:partitioned-region id="Handy" persistent="false"/>
+	<gfe:partitioned-region id="People" persistent="false"/>
+
+	<bean id="nonHandyNonDoeSnapshotFilter" class="org.springframework.data.gemfire.ComposableSnapshotFilter" factory-method="and">
+		<constructor-arg index="0">
+			<list>
+				<bean class="org.springframework.data.gemfire.SnapshotApplicationEventTriggeredImportsExportsIntegrationTest.NotLastNameSnapshotFilter" c:lastName="Doe"/>
+				<bean class="org.springframework.data.gemfire.SnapshotApplicationEventTriggeredImportsExportsIntegrationTest.NotLastNameSnapshotFilter" c:lastName="Handy"/>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<context:annotation-config/>
+
+	<bean class="org.springframework.data.gemfire.SnapshotApplicationEventTriggeredImportsExportsIntegrationTest.SnapshotImportsMonitor"/>
+
+	<task:scheduler id="snapshotImportsMonitorScheduler" pool-size="1"/>
+
+	<task:annotation-driven scheduler="snapshotImportsMonitorScheduler"/>
+
+	<gfe-data:snapshot-service id="peopleSnapshotService" region-ref="People">
+		<gfe-data:export-snapshot location="gemfire/snapshots/people.snapshot"/>
+		<gfe-data:export-snapshot location="gemfire/snapshots/nonHandyNonDoePeople.snapshot" filter-ref="nonHandyNonDoeSnapshotFilter"/>
+	</gfe-data:snapshot-service>
+
+	<gfe-data:snapshot-service id="doeSnapshotService" region-ref="Doe" suppress-init-import="true">
+		<gfe-data:import-snapshot location="gemfire/snapshots/people.snapshot">
+			<bean class="org.springframework.data.gemfire.SnapshotApplicationEventTriggeredImportsExportsIntegrationTest.LastNameSnapshotFilter" c:lastName="Doe"/>
+		</gfe-data:import-snapshot>
+	</gfe-data:snapshot-service>
+
+	<gfe-data:snapshot-service id="everyoneElseSnapshotService" region-ref="EveryoneElse" suppress-init-import="true">
+		<gfe-data:import-snapshot location="gemfire/snapshots/nonHandyNonDoePeople.snapshot"/>
+	</gfe-data:snapshot-service>
+
+	<gfe-data:snapshot-service id="handySnapshotService" region-ref="Handy" suppress-init-import="true">
+		<gfe-data:import-snapshot location="gemfire/snapshots/people.snapshot">
+			<bean class="org.springframework.data.gemfire.SnapshotApplicationEventTriggeredImportsExportsIntegrationTest.LastNameSnapshotFilter" c:lastName="Handy"/>
+		</gfe-data:import-snapshot>
+	</gfe-data:snapshot-service>
+
+</beans>

@@ -49,16 +49,18 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.context.support.ClassPathXmlApplicationContext
  * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean
  * @see org.springframework.data.gemfire.repository.sample.Person
+ * @see com.gemstone.gemfire.cache.Region
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
 public class SnapshotServiceImportExportIntegrationTest {
 
-	protected static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+	private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
 
 	private static ConfigurableApplicationContext applicationContext;
 
 	private static File importPeopleSnapshot;
+	private static File snapshotsDirectory;
 
 	private static Region<Long, Person> people;
 
@@ -87,8 +89,10 @@ public class SnapshotServiceImportExportIntegrationTest {
 	@BeforeClass
 	@SuppressWarnings("unchecked")
 	public static void setupBeforeClass() throws Exception {
-		File exportDirectory = new File("./gemfire/snapshots/export");
-		File importDirectory = new File("./gemfire/snapshots/import");
+		snapshotsDirectory = new File(new File(FileSystemUtils.WORKING_DIRECTORY, "gemfire"), "snapshots");
+
+		File exportDirectory = new File(snapshotsDirectory, "export");
+		File importDirectory = new File(snapshotsDirectory, "import");
 
 		assertThat(exportDirectory.isDirectory() || exportDirectory.mkdirs(), is(true));
 		assertThat(importDirectory.isDirectory() || importDirectory.mkdirs(), is(true));
@@ -113,18 +117,17 @@ public class SnapshotServiceImportExportIntegrationTest {
 	public static void tearDownAfterClass() {
 		applicationContext.close();
 
-		File exportPeopleSnapshot = new File("gemfire/snapshots/export/people.snapshot");
+		File exportPeopleSnapshot = new File(new File(snapshotsDirectory, "export"), "people.snapshot");
 
 		assertThat(exportPeopleSnapshot.isFile(), is(true));
 		assertThat(exportPeopleSnapshot.length(), is(equalTo(importPeopleSnapshot.length())));
 
-		FileSystemUtils.deleteRecursive(new File(FileSystemUtils.WORKING_DIRECTORY, "gemfire"));
+		FileSystemUtils.deleteRecursive(snapshotsDirectory.getParentFile());
 	}
 
 	@Before
 	public void setup() {
 		//setupPeople();
-
 		ThreadUtils.timedWait(TimeUnit.SECONDS.toMillis(5), 500, new ThreadUtils.WaitCondition() {
 			@Override public boolean waiting() {
 				return !(people.size() > 0);
