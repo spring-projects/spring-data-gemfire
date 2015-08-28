@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.Region;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gemstone.gemfire.management.internal.cli.util.spring.ObjectUtils;
 
 /**
@@ -30,6 +31,7 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.ObjectUtils;
  * @see java.io.Serializable
  */
 @Region("simple")
+@JsonIgnoreProperties("name")
 public class Person implements Serializable {
 
 	private static final long serialVersionUID = 508843183613325255L;
@@ -49,6 +51,15 @@ public class Person implements Serializable {
 	}
 
 	/**
+	 * Gets the Person's address.
+	 *
+	 * @return the Address of the Person.
+	 */
+	public Address getAddress() {
+		return address;
+	}
+
+	/**
 	 * Returns the identifier (ID) of this Person.
 	 *
 	 * @return a Long value with the ID of this Person.
@@ -58,14 +69,18 @@ public class Person implements Serializable {
 	}
 
 	/**
-	 * @return the firstname
+	 * Gets this Person's first name.
+	 *
+	 * @return the first name of this Person.
 	 */
 	public String getFirstname() {
 		return firstname;
 	}
 
 	/**
-	 * @return the lastname
+	 * Gets this Person's last name.
+	 *
+	 * @return the last name of this Person.
 	 */
 	public String getLastname() {
 		return lastname;

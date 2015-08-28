@@ -64,7 +64,7 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.context.ApplicationListener
- * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
+ * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
  * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
  * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
  * @since 1.7.0
@@ -75,7 +75,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 	protected static final SnapshotMetadata[] EMPTY_ARRAY = new SnapshotMetadata[0];
 
-	private Boolean suppressInitImport;
+	private Boolean suppressImportOnInit;
 
 	private Cache cache;
 
@@ -195,22 +195,22 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	/**
 	 * Sets a boolean condition to indicate whether importing on initialization should be suppressed.
 	 *
-	 * @param suppressInitImport a Boolean value to indicate whether importing on initialization should be suppressed.
-	 * @see #isSuppressInitImport()
+	 * @param suppressImportOnInit a Boolean value to indicate whether importing on initialization should be suppressed.
+	 * @see #getSuppressImportOnInit()
 	 */
-	public void setSuppressInitImport(Boolean suppressInitImport) {
-		this.suppressInitImport = suppressInitImport;
+	public void setSuppressImportOnInit(Boolean suppressImportOnInit) {
+		this.suppressImportOnInit = suppressImportOnInit;
 	}
 
 	/**
 	 * Determines whether importing on initialization should be suppressed.
 	 *
 	 * @return a boolean value indicating whether import on initialization should be suppressed.
-	 * @see #setSuppressInitImport(Boolean)
+	 * @see #setSuppressImportOnInit(Boolean)
 	 * @see #afterPropertiesSet()
 	 */
-	protected boolean isSuppressInitImport() {
-		return Boolean.TRUE.equals(suppressInitImport);
+	protected boolean getSuppressImportOnInit() {
+		return Boolean.TRUE.equals(suppressImportOnInit);
 	}
 
 	/**
@@ -262,7 +262,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	public void afterPropertiesSet() throws Exception {
 		snapshotServiceAdapter = create();
 
-		if (!isSuppressInitImport()) {
+		if (!getSuppressImportOnInit()) {
 			snapshotServiceAdapter.doImport(getImports());
 		}
 	}

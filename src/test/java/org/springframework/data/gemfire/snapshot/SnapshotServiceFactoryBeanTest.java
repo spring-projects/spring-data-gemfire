@@ -259,20 +259,20 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void setAndGetSuppressInitImportSuccessfully() {
-		assertThat(factoryBean.isSuppressInitImport(), is(false));
+	public void setAndGetSuppressImportOnInitSuccessfully() {
+		assertThat(factoryBean.getSuppressImportOnInit(), is(false));
 
-		factoryBean.setSuppressInitImport(true);
+		factoryBean.setSuppressImportOnInit(true);
 
-		assertThat(factoryBean.isSuppressInitImport(), is(true));
+		assertThat(factoryBean.getSuppressImportOnInit(), is(true));
 
-		factoryBean.setSuppressInitImport(false);
+		factoryBean.setSuppressImportOnInit(false);
 
-		assertThat(factoryBean.isSuppressInitImport(), is(false));
+		assertThat(factoryBean.getSuppressImportOnInit(), is(false));
 
-		factoryBean.setSuppressInitImport(null);
+		factoryBean.setSuppressImportOnInit(null);
 
-		assertThat(factoryBean.isSuppressInitImport(), is(false));
+		assertThat(factoryBean.getSuppressImportOnInit(), is(false));
 	}
 
 	@Test
@@ -311,10 +311,10 @@ public class SnapshotServiceFactoryBeanTest {
 			}
 		};
 
-		factoryBean.setSuppressInitImport(true);
+		factoryBean.setSuppressImportOnInit(true);
 		factoryBean.afterPropertiesSet();
 
-		assertThat(factoryBean.isSuppressInitImport(), is(true));
+		assertThat(factoryBean.getSuppressImportOnInit(), is(true));
 
 		verify(mockSnapshotService, never()).doImport(any(SnapshotMetadata[].class));
 	}
