@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot;
 
 /**
  * The ExportSnapshotException class is a RuntimeException indicating an error occurred while saving a snapshhot

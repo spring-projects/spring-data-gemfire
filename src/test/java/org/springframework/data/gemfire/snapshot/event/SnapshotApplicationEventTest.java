@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot.event;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +47,7 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.runners.MockitoJUnitRunner
- * @see org.springframework.data.gemfire.SnapshotApplicationEvent
+ * @see org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent
  * @since 1.7.0
  */
 @RunWith(MockitoJUnitRunner.class)

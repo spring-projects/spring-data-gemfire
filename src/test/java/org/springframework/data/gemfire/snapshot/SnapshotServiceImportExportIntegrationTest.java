@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -47,7 +47,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.support.ClassPathXmlApplicationContext
- * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean
+ * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean
  * @see org.springframework.data.gemfire.repository.sample.Person
  * @see com.gemstone.gemfire.cache.Region
  * @since 1.7.0
