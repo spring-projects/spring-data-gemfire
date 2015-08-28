@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot.event;
 
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata;
 
 /**
  * The ImportSnapshotApplicationEvent class is a Spring ApplicationEvent signaling a GemFire Cache or Region 'export'
  * snapshot event.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.SnapshotApplicationEvent
+ * @see org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
@@ -35,7 +35,7 @@ public class ImportSnapshotApplicationEvent<K, V> extends SnapshotApplicationEve
 	 *
 	 * @param source the source of the ApplicationEvent.
 	 * @param snapshotMetadata an array of SnapshotMetadata containing details for each import.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata
 	 * @see #ImportSnapshotApplicationEvent(Object, String, SnapshotMetadata[])
 	 */
 	public ImportSnapshotApplicationEvent(Object source, SnapshotMetadata<K, V>... snapshotMetadata) {
@@ -49,7 +49,7 @@ public class ImportSnapshotApplicationEvent<K, V> extends SnapshotApplicationEve
 	 * @param source the source of the ApplicationEvent.
 	 * @param regionPath absolute pathname of the Region.
 	 * @param snapshotMetadata an array of SnapshotMetadata containing details for each import/export.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
 	public ImportSnapshotApplicationEvent(Object source, String regionPath, SnapshotMetadata<K, V>... snapshotMetadata) {
 		super(source, regionPath, snapshotMetadata);

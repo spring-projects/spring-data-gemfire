@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot;
 
 import static com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -38,6 +38,9 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
+import org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent;
+import org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent;
+import org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
@@ -61,7 +64,7 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.context.ApplicationListener
- * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
+ * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
  * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
  * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
  * @since 1.7.0
@@ -129,7 +132,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * Sets the meta-data (location, filter and format) used to create a snapshot from the Cache or Region data.
 	 *
 	 * @param exports an array of snapshot meta-data used for each export.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
 	public void setExports(SnapshotMetadata<K, V>[] exports) {
 		this.exports = exports;
@@ -139,7 +142,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * Sets the meta-data (location, filter and format) used to create a snapshot from the Cache or Region data.
 	 *
 	 * @return an array of snapshot meta-data used for each export.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
 	protected SnapshotMetadata<K, V>[] getExports() {
 		return nullSafeArray(exports);
@@ -150,7 +153,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * or individual Region.
 	 *
 	 * @param imports an array of snapshot meta-data used for each import.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
 	public void setImports(SnapshotMetadata<K, V>[] imports) {
 		this.imports = imports;
@@ -161,7 +164,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * or individual Region.
 	 *
 	 * @return an array of snapshot meta-data used for each import.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
 	protected SnapshotMetadata<K, V>[] getImports() {
 		return nullSafeArray(imports);
@@ -215,7 +218,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 *
 	 * @return the GemFire Snapshot Service created by this FactoryBean.
 	 * @throws Exception if the GemFire Snapshot Service failed to be created.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 */
 	@Override
 	public SnapshotServiceAdapter<K, V> getObject() throws Exception {
@@ -226,9 +229,9 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * Gets the type of Snapshot Service created by this FactoryBean.
 	 *
 	 * @return a Class object representing the type of Snapshot Service created by this FactoryBean.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
 	 */
 	@Override
 	public Class<?> getObjectType() {
@@ -250,7 +253,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * or Region if initialized.  In addition, this initialization method will perform the actual import.
 	 *
 	 * @throws Exception if the construction and initialization of the GemFire Snapshot Service fails.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doImport(SnapshotMetadata[])
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter#doImport(SnapshotMetadata[])
 	 * @see #getImports()
 	 * @see #create()
 	 */
@@ -286,8 +289,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 *
 	 * @param cacheSnapshotService the GemFire CacheSnapshotService to wrap.
 	 * @return a SnapshotServiceAdapter wrapping the GemFire CacheSnapshotService.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter
 	 * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
 	 */
 	protected SnapshotServiceAdapter<Object, Object> wrap(CacheSnapshotService cacheSnapshotService) {
@@ -300,8 +303,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 *
 	 * @param regionSnapshotService the GemFire RegionSnapshotService to wrap.
 	 * @return a SnapshotServiceAdapter wrapping the GemFire RegionSnapshotService.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
 	 * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
 	 */
 	protected SnapshotServiceAdapter<K, V> wrap(RegionSnapshotService<K, V> regionSnapshotService) {
@@ -312,7 +315,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * Performs an export of the GemFire Cache or Region if configured.
 	 *
 	 * @throws Exception if the Cache/Region data export operation fails.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doExport(SnapshotMetadata[])
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter#doExport(SnapshotMetadata[])
 	 * @see #getExports()
 	 * @see #getObject()
 	 */
@@ -326,14 +329,14 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * when details of the event match the criteria of this factory's constructed GemFire SnapshotService.
 	 *
 	 * @param event the SnapshotApplicationEvent triggering a GemFire Cache or Region data import/export.
-	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent
-	 * @see org.springframework.data.gemfire.ExportSnapshotApplicationEvent
-	 * @see org.springframework.data.gemfire.ImportSnapshotApplicationEvent
+	 * @see SnapshotApplicationEvent
+	 * @see ExportSnapshotApplicationEvent
+	 * @see ImportSnapshotApplicationEvent
 	 * @see #isMatch(SnapshotApplicationEvent)
 	 * @see #resolveSnapshotMetadata(SnapshotApplicationEvent)
 	 * @see #getObject()
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doExport(SnapshotMetadata[])
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doImport(SnapshotMetadata[])
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter#doExport(SnapshotMetadata[])
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter#doImport(SnapshotMetadata[])
 	 */
 	@Override
 	public void onApplicationEvent(SnapshotApplicationEvent<K, V> event) {
@@ -358,7 +361,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @param event the SnapshotApplicationEvent containing details of the application requested data export.
 	 * @return a boolean value indicating whether the application requested snapshot event details match
 	 * the criteria required by this factory to trigger a GemFire Cache or Region data export.
-	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent
+	 * @see SnapshotApplicationEvent
 	 */
 	protected boolean isMatch(SnapshotApplicationEvent event) {
 		return (event.isCacheSnapshotEvent() || event.matches(getRegion()));
@@ -371,7 +374,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 *
 	 * @param event the SnapshotApplicationEvent from which to resolve the SnapshotMetadata.
 	 * @return the resolved SnapshotMetadata, either from the event or this factory's configured imports/exports.
-	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent#getSnapshotMetadata()
+	 * @see SnapshotApplicationEvent#getSnapshotMetadata()
 	 * @see #getExports()
 	 * @see #getImports()
 	 */
@@ -413,7 +416,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 *
 	 * @param <K> the class type of the Cache Region key.
 	 * @param <V> the class type of the Cache Region value.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 */
 	protected static abstract class SnapshotServiceAdapterSupport<K, V> implements SnapshotServiceAdapter<K, V> {
 
@@ -546,7 +549,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	/**
 	 * The CacheSnapshotServiceAdapter is a SnapshotServiceAdapter adapting GemFire's CacheSnapshotService.
 	 *
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport
 	 */
 	protected static class CacheSnapshotServiceAdapter extends SnapshotServiceAdapterSupport<Object, Object> {
 
@@ -624,7 +627,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	/**
 	 * The RegionSnapshotServiceAdapter is a SnapshotServiceAdapter adapting GemFire's RegionSnapshotService.
 	 *
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport
 	 */
 	protected static class RegionSnapshotServiceAdapter<K, V> extends SnapshotServiceAdapterSupport<K, V> {
 

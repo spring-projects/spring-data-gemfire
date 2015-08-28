@@ -219,7 +219,13 @@ ID of the GemFire [Cache|Region] SnapshotService bean in the Spring context.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="suppress-init-import" type="xsd:string" default="false"/>
+			<xsd:attribute name="suppress-init-import" type="xsd:string" default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+Determines whether imports are suppressed on initialization of the GemFire Snapshot Service.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:complexType name="snapshotMetadataType">

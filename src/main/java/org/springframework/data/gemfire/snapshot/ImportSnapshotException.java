@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot;
 
 /**
  * The ImportSnapshotException class is a RuntimeException indicating an error occurred while loading GemFire Snapshots

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -35,6 +35,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.gemfire.repository.sample.Person;
+import org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent;
+import org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent;
+import org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -56,9 +59,10 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
  * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see org.springframework.data.gemfire.ExportSnapshotApplicationEvent
- * @see org.springframework.data.gemfire.ImportSnapshotApplicationEvent
- * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean
+ * @see org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent
+ * @see org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent
+ * @see org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent
+ * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean
  * @see org.springframework.data.gemfire.repository.sample.Person
  * @see com.gemstone.gemfire.cache.Region
  * @since 1.7.0
@@ -103,7 +107,6 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 	@AfterClass
 	public static void tearDownAfterClass() {
 		FileSystemUtils.deleteRecursive(snapshotsDirectory.getParentFile());
-		snapshotsDirectory = null;
 	}
 
 	protected void assertPeople(Region<Long, Person> targetRegion, Person... people) {

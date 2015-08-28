@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot;
 
 import static com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -36,12 +36,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.ArchiveFileFilter;
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter;
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter;
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata;
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.ArchiveFileFilter;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport;
 
 import java.io.Closeable;
 import java.io.File;
@@ -56,6 +56,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Matchers;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent;
+import org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent;
+import org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -73,7 +76,7 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
  * @see org.junit.Rule
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean
+ * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean
  * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
  * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
  * @since 1.7.0

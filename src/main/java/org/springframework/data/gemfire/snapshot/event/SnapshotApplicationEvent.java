@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot.event;
 
-import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata;
+import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata;
 
 import org.springframework.context.ApplicationEvent;
+import org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
@@ -45,7 +46,7 @@ public abstract class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
 	 *
 	 * @param source the source of the ApplicationEvent.
 	 * @param snapshotMetadata an array of SnapshotMetadata containing details for each import/export.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 * @see #SnapshotApplicationEvent(Object, String, SnapshotMetadata[])
 	 */
 	public SnapshotApplicationEvent(Object source, SnapshotMetadata<K, V>... snapshotMetadata) {
@@ -59,7 +60,7 @@ public abstract class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
 	 * @param source the source of the ApplicationEvent.
 	 * @param regionPath absolute pathname of the Region.
 	 * @param snapshotMetadata an array of SnapshotMetadata containing details for each import/export.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
 	public SnapshotApplicationEvent(Object source, String regionPath, SnapshotMetadata<K, V>... snapshotMetadata) {
 		super(source);
@@ -81,7 +82,7 @@ public abstract class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
 	 * Gets the meta-data used to perform the GemFire Cache Region data snapshots.
 	 *
 	 * @return an array of SnapshotMetadata containing information necessary to perform the data export.
-	 * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotMetadata
+	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
 	public SnapshotMetadata<K, V>[] getSnapshotMetadata() {
 		return snapshotMetadata;

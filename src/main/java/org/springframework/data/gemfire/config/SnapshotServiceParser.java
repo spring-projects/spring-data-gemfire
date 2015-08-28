@@ -21,7 +21,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.SnapshotServiceFactoryBean;
+import org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
  * @see org.springframework.beans.factory.xml.ParserContext
- * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean
+ * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean
  * @since 1.7.0
  */
 class SnapshotServiceParser extends AbstractSingleBeanDefinitionParser {

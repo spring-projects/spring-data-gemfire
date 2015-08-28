@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot.filter;
 
 import java.util.Map;
 
@@ -65,7 +65,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * @param operator the right operand in the boolean-based expression.
 	 * @param rightOperand the operator used to combine the resulting boolean expressions
 	 * from the evaluation of the operands.
-	 * @see org.springframework.data.gemfire.ComposableSnapshotFilter.Operator
+	 * @see ComposableSnapshotFilter.Operator
 	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
 	 */
 	private ComposableSnapshotFilter(SnapshotFilter<K, V> leftOperand, Operator operator, SnapshotFilter<K, V> rightOperand) {
@@ -89,7 +89,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * @param snapshotFilters the array of SnapshotFilters to compose into a logical boolean expression
 	 * using the Operator.
 	 * @return a SnapshotFilter implementation composed of the SnapshotFilters using the specified Operator.
-	 * @see org.springframework.data.gemfire.ComposableSnapshotFilter.Operator
+	 * @see ComposableSnapshotFilter.Operator
 	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
 	 */
 	protected static <K, V> SnapshotFilter<K, V> compose(Operator operator, SnapshotFilter<K, V>... snapshotFilters) {
@@ -111,7 +111,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * @param snapshotFilters the array of SnapshotFilters to compose into a logical boolean expression
 	 * using the AND Operator.
 	 * @return a SnapshotFilter implementation composed of the SnapshotFilters using the AND Operator.
-	 * @see org.springframework.data.gemfire.ComposableSnapshotFilter.Operator#AND
+	 * @see ComposableSnapshotFilter.Operator#AND
 	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
 	 */
 	public static <K, V> SnapshotFilter<K, V> and(SnapshotFilter<K, V>... snapshotFilters) {
@@ -126,7 +126,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * @param snapshotFilters the array of SnapshotFilters to compose into a logical boolean expression
 	 * using the OR Operator.
 	 * @return a SnapshotFilter implementation composed of the SnapshotFilters using the OR Operator.
-	 * @see org.springframework.data.gemfire.ComposableSnapshotFilter.Operator#OR
+	 * @see ComposableSnapshotFilter.Operator#OR
 	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
 	 */
 	public static <K, V> SnapshotFilter<K, V> or(SnapshotFilter<K, V>... snapshotFilters) {
@@ -138,7 +138,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 *
 	 * @param entry the Map.Entry to evaluate.
 	 * @return a boolean value indicating whether this composed SnapshotFilter accepts the Map Entry.
-	 * @see org.springframework.data.gemfire.ComposableSnapshotFilter.Operator
+	 * @see ComposableSnapshotFilter.Operator
 	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter#accept(Map.Entry)
 	 * @see java.util.Map.Entry
 	 */

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.snapshot.filter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -26,12 +26,13 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.data.gemfire.ComposableSnapshotFilter.Operator;
+import static org.springframework.data.gemfire.snapshot.filter.ComposableSnapshotFilter.Operator;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+import org.springframework.data.gemfire.TestUtils;
 
 import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
 
@@ -41,8 +42,9 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.ComposableSnapshotFilter
- * @see org.springframework.data.gemfire.ComposableSnapshotFilter.Operator
+ * @see org.mockito.Mockito
+ * @see org.springframework.data.gemfire.snapshot.filter.ComposableSnapshotFilter
+ * @see org.springframework.data.gemfire.snapshot.filter.ComposableSnapshotFilter.Operator
  * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
  * @since 1.7.0
  */
