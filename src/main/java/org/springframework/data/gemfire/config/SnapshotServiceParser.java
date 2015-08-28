@@ -48,7 +48,8 @@ class SnapshotServiceParser extends AbstractSingleBeanDefinitionParser {
 		super.doParse(element, parserContext, builder);
 
 		ParsingUtils.setCacheReference(element, builder);
-		ParsingUtils.setPropertyReference(element, builder, "region-ref", "region");
+		ParsingUtils.setRegionReference(element, builder);
+		ParsingUtils.setPropertyValue(element, builder, "suppress-init-import");
 		builder.addPropertyValue("exports", parseExports(element, parserContext));
 		builder.addPropertyValue("imports", parseImports(element, parserContext));
 	}

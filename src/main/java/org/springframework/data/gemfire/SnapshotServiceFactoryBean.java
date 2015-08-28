@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire;
 
 import static com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import static org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -52,23 +53,26 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
 
 /**
  * The SnapshotServiceFactoryBean class is a Spring FactoryBean used to configure and create an instance
- * of the appropriate GemFire Snapshot Service.  A CacheSnapshotService is created if the Region is not specified,
- * otherwise a RegionSnapshotService is used based on the configured Region.
+ * of an appropriate GemFire Snapshot Service to perform data import and exports.  A CacheSnapshotService is created
+ * if the Region is not specified, otherwise a RegionSnapshotService is used based on the configured Region.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.context.ApplicationListener
+ * @see org.springframework.data.gemfire.SnapshotServiceFactoryBean.SnapshotServiceAdapter
  * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
  * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
-public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotServiceFactoryBean.SnapshotServiceAdapter<K, V>>,
+public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotServiceAdapter<K, V>>,
 		InitializingBean, DisposableBean, ApplicationListener<SnapshotApplicationEvent<K, V>> {
 
 	protected static final SnapshotMetadata[] EMPTY_ARRAY = new SnapshotMetadata[0];
+
+	private Boolean suppressInitImport;
 
 	private Cache cache;
 
@@ -186,6 +190,27 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	}
 
 	/**
+	 * Sets a boolean condition to indicate whether importing on initialization should be suppressed.
+	 *
+	 * @param suppressInitImport a Boolean value to indicate whether importing on initialization should be suppressed.
+	 * @see #isSuppressInitImport()
+	 */
+	public void setSuppressInitImport(Boolean suppressInitImport) {
+		this.suppressInitImport = suppressInitImport;
+	}
+
+	/**
+	 * Determines whether importing on initialization should be suppressed.
+	 *
+	 * @return a boolean value indicating whether import on initialization should be suppressed.
+	 * @see #setSuppressInitImport(Boolean)
+	 * @see #afterPropertiesSet()
+	 */
+	protected boolean isSuppressInitImport() {
+		return Boolean.TRUE.equals(suppressInitImport);
+	}
+
+	/**
 	 * Gets the reference to the GemFire Snapshot Service created by this FactoryBean.
 	 *
 	 * @return the GemFire Snapshot Service created by this FactoryBean.
@@ -233,7 +258,10 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	@SuppressWarnings("unchecked")
 	public void afterPropertiesSet() throws Exception {
 		snapshotServiceAdapter = create();
-		snapshotServiceAdapter.doImport(getImports());
+
+		if (!isSuppressInitImport()) {
+			snapshotServiceAdapter.doImport(getImports());
+		}
 	}
 
 	/**
@@ -333,10 +361,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see org.springframework.data.gemfire.SnapshotApplicationEvent
 	 */
 	protected boolean isMatch(SnapshotApplicationEvent event) {
-		Region region = getRegion();
-
-		return ((event.isRegionSnapshotEvent() && event.matches(region))
-			|| (event.isCacheSnapshotEvent() && region == null));
+		return (event.isCacheSnapshotEvent() || event.matches(getRegion()));
 	}
 
 	/**
@@ -368,9 +393,9 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 		SnapshotOptions<K, V> createOptions();
 
-		void doExport(SnapshotMetadata<K, V>[] configurations);
+		void doExport(SnapshotMetadata<K, V>... configurations);
 
-		void doImport(SnapshotMetadata<K, V>[] configurations);
+		void doImport(SnapshotMetadata<K, V>... configurations);
 
 		void load(File directory, SnapshotFormat format);
 
@@ -392,6 +417,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 */
 	protected static abstract class SnapshotServiceAdapterSupport<K, V> implements SnapshotServiceAdapter<K, V> {
 
+		protected static final File TEMPORARY_DIRECTORY = new File(System.getProperty("java.io.tmpdir"));
+
 		protected final Log log = createLog();
 
 		Log createLog() {
@@ -408,14 +435,14 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 
 		@Override
-		public void doExport(SnapshotMetadata<K, V>[] configurations) {
+		public void doExport(SnapshotMetadata<K, V>... configurations) {
 			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
 				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter()));
 			}
 		}
 
 		@Override
-		public void doImport(SnapshotMetadata<K, V>[] configurations) {
+		public void doImport(SnapshotMetadata<K, V>... configurations) {
 			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
 				load(configuration.getFormat(), createOptions(configuration.getFilter()), handleLocation(configuration));
 			}
@@ -434,8 +461,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		protected File[] handleFileLocation(File file) {
 			if (ArchiveFileFilter.INSTANCE.accept(file)) {
 				try {
-					File extractedArchiveDirectory = new File(System.getProperty("java.io.tmpdir"),
-						file.getName().replaceAll("\\.", "-"));
+					File extractedArchiveDirectory = new File(TEMPORARY_DIRECTORY, file.getName().replaceAll("\\.", "-"));
 
 					Assert.state(extractedArchiveDirectory.isDirectory() || extractedArchiveDirectory.mkdirs(),
 						String.format("Failed create directory (%1$s) in which to extract archive (%2$s)",

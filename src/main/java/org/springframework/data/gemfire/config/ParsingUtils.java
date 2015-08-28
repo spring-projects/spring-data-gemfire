@@ -52,7 +52,9 @@ abstract class ParsingUtils {
 	private static final Log log = LogFactory.getLog(ParsingUtils.class);
 
 	protected static final String CACHE_PROPERTY_NAME = "cache";
+	protected static final String REGION_PROPERTY_NAME = "region";
 	protected static final String CACHE_REF_ATTRIBUTE_NAME = "cache-ref";
+	protected static final String REGION_REF_ATTRIBUTE_NAME = "region-ref";
 
 	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attributeName,
 			String propertyName) {
@@ -411,7 +413,8 @@ abstract class ParsingUtils {
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
 		if (expirationElement != null) {
-			Object customExpiry = parseRefOrSingleNestedBeanDeclaration(parserContext, expirationElement, regionAttributesBuilder);
+			Object customExpiry = parseRefOrSingleNestedBeanDeclaration(parserContext, expirationElement,
+				regionAttributesBuilder);
 			regionAttributesBuilder.addPropertyValue(propertyName, customExpiry);
 			return true;
 		}
@@ -440,6 +443,14 @@ abstract class ParsingUtils {
 
 	static String resolveCacheReference(String cacheReference) {
 		return (StringUtils.hasText(cacheReference) ? cacheReference : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+	}
+
+	static void setRegionReference(Element element, BeanDefinitionBuilder builder) {
+		builder.addPropertyReference(REGION_PROPERTY_NAME, resolveRegionReference(element));
+	}
+
+	static String resolveRegionReference(Element element) {
+		return element.getAttribute(REGION_REF_ATTRIBUTE_NAME);
 	}
 
 }

@@ -147,14 +147,14 @@ public class SnapshotApplicationEventTest {
 		SnapshotApplicationEvent event = new TestSnapshotApplicationEvent(this, "/Example");
 
 		assertThat(event.getRegionPath(), is(equalTo("/Example")));
-		assertThat(event.matches("/Prototype"), is(false));
-		assertThat(event.matches("/Sample"), is(false));
-		assertThat(event.matches("/Xmpl"), is(false));
-		assertThat(event.matches("/Ex"), is(false));
-		assertThat(event.matches("/E.g."), is(false));
 		assertThat(event.matches("Example"), is(false));
+		assertThat(event.matches("/Sample"), is(false));
+		assertThat(event.matches("/Prototype"), is(false));
 		assertThat(event.matches("/example"), is(false));
 		assertThat(event.matches("/Exam"), is(false));
+		assertThat(event.matches("/Xmpl"), is(false));
+		assertThat(event.matches("/Ex."), is(false));
+		assertThat(event.matches("/E.g."), is(false));
 		assertThat(event.matches("/"), is(false));
 		assertThat(event.matches("  "), is(false));
 		assertThat(event.matches(""), is(false));
@@ -166,6 +166,7 @@ public class SnapshotApplicationEventTest {
 		assertThat(new TestSnapshotApplicationEvent(this, "/Example").matches("/Example"), is(true));
 		assertThat(new TestSnapshotApplicationEvent(this, "/").matches("/"), is(true));
 		assertThat(new TestSnapshotApplicationEvent(this, "   ").matches(" "), is(true));
+		assertThat(new TestSnapshotApplicationEvent(this, "").matches(" "), is(true));
 		assertThat(new TestSnapshotApplicationEvent(this, "").matches(""), is(true));
 		assertThat(new TestSnapshotApplicationEvent(this, (String) null).matches((String) null), is(true));
 	}
