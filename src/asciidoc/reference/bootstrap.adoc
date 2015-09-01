@@ -119,6 +119,7 @@ but one can customize it accordingly or use a pool (if need be) - see the namesp
 
 :leveloffset: +1
 include::diskstore.adoc[]
+include::snapshot.adoc[]
 include::function.adoc[]
 include::gateway.adoc[]
 :leveloffset: -1

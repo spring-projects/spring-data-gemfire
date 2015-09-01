@@ -183,14 +183,14 @@ Access to GemFire's Snapshot Service for taking snapshots of GemFire Cache and R
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="import-snapshot" type="snapshotMetadataType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="snapshot-import" type="snapshotMetadataType" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Specifies meta-data for a snapshot import.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
-				<xsd:element name="export-snapshot" type="snapshotMetadataType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="snapshot-export" type="snapshotMetadataType" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Specifies meta-data for a snapshot export.
