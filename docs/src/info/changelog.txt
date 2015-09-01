@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.7.0.RELEASE (2015-09-01)
+---------------------------------------------
+* SGF-426 - Release 1.7 GA (Gosling).
+* SGF-425 - Allow early initialization and re-initialization of LazyWiringDeclarableSupport instances.
+* SGF-423 - Handle improper ClassCastException thrown from SDG's Function Execution interface and annotation-based support when a GemFire Function throws an Exception.
+* SGF-419 - Documentation error on page 22 in the Spring Data GemFire Reference PDF.
+* SGF-408 - Provide support in the SDG XML namespace to load a pre-defined data set using GemFire Snapshot Service for development and testing purposes.
+* SGF-392 - Add support for OQL Query statement extensions in Repository Query methods via Annotations.
+
+
 Changes in version 1.7.0.RC1 (2015-08-04)
 -----------------------------------------
 * SGF-422 - Release 1.7 RC1 (Gosling).
