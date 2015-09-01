@@ -36,7 +36,6 @@ public class ImportSnapshotApplicationEvent<K, V> extends SnapshotApplicationEve
 	 * @param source the source of the ApplicationEvent.
 	 * @param snapshotMetadata an array of SnapshotMetadata containing details for each import.
 	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata
-	 * @see #ImportSnapshotApplicationEvent(Object, String, SnapshotMetadata[])
 	 */
 	public ImportSnapshotApplicationEvent(Object source, SnapshotMetadata<K, V>... snapshotMetadata) {
 		super(source, snapshotMetadata);

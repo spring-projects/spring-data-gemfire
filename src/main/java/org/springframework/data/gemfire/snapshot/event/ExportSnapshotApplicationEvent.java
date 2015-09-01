@@ -36,7 +36,6 @@ public class ExportSnapshotApplicationEvent<K, V> extends SnapshotApplicationEve
 	 * @param source the source of the ApplicationEvent.
 	 * @param snapshotMetadata an array of SnapshotMetadata containing details for each export.
 	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata
-	 * @see #ExportSnapshotApplicationEvent(Object, String, SnapshotMetadata[])
 	 */
 	public ExportSnapshotApplicationEvent(Object source, SnapshotMetadata<K, V>... snapshotMetadata) {
 		super(source, snapshotMetadata);
