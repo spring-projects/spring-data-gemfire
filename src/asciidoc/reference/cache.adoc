@@ -1,9 +1,9 @@
 [[bootstrap:cache]]
-= Configuring the GemFire Cache
+= Configuring a GemFire Cache
 
 In order to use GemFire, a developer needs to either create a new `Cache` or connect to an existing one.
-In the current version of GemFire, there can be only one opened Cache per VM (or per `ClassLoader` to be
-technically correct). In most cases the Cache is only created once.
+In the current version of GemFire, there can be only one open Cache per VM (or per `ClassLoader` to be
+technically correct). In most cases the Cache should only be created once.
 
 NOTE: This section describes the creation and configuration of a full Cache member, appropriate for peer-to-peer
 cache topologies and cache servers. A full cache is also commonly used for standalone applications, integration tests
@@ -20,11 +20,11 @@ A cache with default configuration can be created with a very simple declaration
 
 Upon initialization, a Spring application context containing this cache definition will register a `CacheFactoryBean`
 to create a Spring bean named `gemfireCache` referencing a GemFire `Cache` instance. This will either be an
-existing cache, or if one does not exist, a newly created one. Since no additional properties were specified, a
-newly created cache will apply the default cache configuration.
+existing cache, or if one does not already exist, a newly created one. Since no additional properties were specified,
+a newly created cache will apply the default cache configuration.
 
 All Spring Data GemFire components that depend on the cache respect this naming convention so that there is no need
-to explicitly declare the cache dependency. If you prefer, you can make the dependence explicit via the `cache-ref`
+to explicitly declare the cache dependency. If you prefer, you can make the dependency explicit via the `cache-ref`
 attribute provided by various namespace elements. Also, you can easily override the cache's bean name:
 
 [source,xml]
@@ -33,7 +33,7 @@ attribute provided by various namespace elements. Also, you can easily override 
 ----
 
 Starting with Spring Data GemFire 1.2.0, the GemFire `Cache` may be fully configured using Spring. However, GemFire's
-native XML configuration file, `cache.xml`, is also supported. For scenarios in which the GemFire cache needs to be
+native XML configuration file, `cache.xml`, is also supported. For scenarios in which the GemFire Cache needs to be
 configured natively, simply provide a reference to the GemFire configuration file using the `cache-xml-location`
 attribute:
 
@@ -50,7 +50,7 @@ or the prefix specified (if any) in the resource location.
 
 In addition to referencing an external configuration file one can specify GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/gemfire_properties.html[properties]
 using any of Spring's common properties support features. For example, one can use the `properties` element
-defined in the `util` namespace to define properties directly or load properties from a properties files. The latter is
+defined in the `util` namespace to define properties directly or load properties from a properties file. The latter is
 recommended for externalizing environment specific settings outside the application configuration:
 
 [source,xml]

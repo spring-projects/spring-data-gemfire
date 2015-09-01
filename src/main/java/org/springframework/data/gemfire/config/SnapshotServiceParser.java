@@ -55,11 +55,11 @@ class SnapshotServiceParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	private ManagedList<BeanDefinition> parseExports(Element element, ParserContext parserContext) {
-		return parseSnapshots(element, parserContext, "export-snapshot");
+		return parseSnapshots(element, parserContext, "snapshot-export");
 	}
 
 	private ManagedList<BeanDefinition> parseImports(Element element, ParserContext parserContext) {
-		return parseSnapshots(element, parserContext, "import-snapshot");
+		return parseSnapshots(element, parserContext, "snapshot-import");
 	}
 
 	private ManagedList<BeanDefinition> parseSnapshots(Element element, ParserContext parserContext,
