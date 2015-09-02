@@ -114,3 +114,8 @@ endpoint lists configured with Spring's property placeholders.
 * <<bootstrap:region:expiration:annotation>>
 * <<gemfire-repositories.oql-extension>>
 * <<bootstrap:snapshot>>
+
+[[new-in-1-8-0]]
+== New in the 1.8 Release
+
+* Upgrades Spring Data GemFire to GemFire 8.2.0.
