@@ -33,7 +33,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.fork.ServerProcess;
-import org.springframework.data.gemfire.function.annotation.GemfireFunction;
 import org.springframework.data.gemfire.function.sample.ExceptionThrowingFunctionExecution;
 import org.springframework.data.gemfire.process.ProcessExecutor;
 import org.springframework.data.gemfire.process.ProcessWrapper;
@@ -89,8 +88,7 @@ public class ExceptionThrowingFunctionExecutionIntegrationTest {
 		List<String> arguments = new ArrayList<String>();
 
 		arguments.add("-Dgemfire.name=" + serverName);
-		arguments.add(ExceptionThrowingFunctionExecutionIntegrationTest.class.getName().replaceAll("\\.",
-			File.separator)
+		arguments.add(ExceptionThrowingFunctionExecutionIntegrationTest.class.getName().replace(".", "/")
 			.concat("-server-context.xml"));
 
 		serverProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
