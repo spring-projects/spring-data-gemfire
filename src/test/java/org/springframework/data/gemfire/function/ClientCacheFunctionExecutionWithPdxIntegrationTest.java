@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,7 +66,7 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
  * @see com.gemstone.gemfire.pdx.PdxInstance
  * @see com.gemstone.gemfire.pdx.PdxSerializer
  * @see com.gemstone.gemfire.pdx.internal.PdxInstanceEnum
- * @since 1.0.0
+ * @since 1.5.2
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -88,7 +87,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest {
 	}
 
 	protected static String toPathname(final Class type) {
-		return File.separator.concat(type.getName().replaceAll("\\.", File.separator));
+		return type.getName().replace(".", "/");
 	}
 
 	protected PdxInstance toPdxInstance(final Map<String, Object> pdxData) {

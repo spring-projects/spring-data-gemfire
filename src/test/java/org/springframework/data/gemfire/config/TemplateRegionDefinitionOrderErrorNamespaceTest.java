@@ -18,8 +18,6 @@ package org.springframework.data.gemfire.config;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-
 import org.junit.Test;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -40,7 +38,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class TemplateRegionDefinitionOrderErrorNamespaceTest {
 
 	protected String getConfigLocation() {
-		return getClass().getName().replaceAll("\\.", File.separator).concat("-context.xml");
+		return getClass().getName().replace(".", "/").concat("-context.xml");
 	}
 
 	@Test(expected = BeanDefinitionParsingException.class)
