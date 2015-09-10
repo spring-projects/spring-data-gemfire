@@ -20,7 +20,6 @@ description = 'Spring Data GemFire'
 group = 'org.springframework.data'
 
 repositories {
-  mavenLocal() // delete this line when GemFire 8.2 is released and published
   maven { url "https://repo.spring.io/libs-snapshot" }
   maven { url "https://repo.spring.io/plugins-release"}
 }
