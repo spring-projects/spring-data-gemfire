@@ -39,7 +39,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent;
-import org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent;
 import org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
