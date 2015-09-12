@@ -124,6 +124,16 @@ public class SnapshotServiceFactoryBeanTest {
 		return metadata;
 	}
 
+	protected String toPathname(String... pathElements) {
+		StringBuilder pathname = new StringBuilder();
+
+		for (String pathElement : pathElements) {
+			pathname.append(File.separator).append(pathElement);
+		}
+
+		return pathname.toString();
+	}
+
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
 		snapshotDat = mockFile("snapshot.dat");
@@ -915,11 +925,11 @@ public class SnapshotServiceFactoryBeanTest {
 	public void toSimpleFilenameUsingVariousPathnames() {
 		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter();
 
-		assertThat(snapshotService.toSimpleFilename("/path/to/file.ext"), is(equalTo("file.ext")));
-		assertThat(snapshotService.toSimpleFilename("/path/to/file   "), is(equalTo("file")));
-		assertThat(snapshotService.toSimpleFilename("/ file.ext"), is(equalTo("file.ext")));
+		assertThat(snapshotService.toSimpleFilename(toPathname("path", "to", "file.ext")), is(equalTo("file.ext")));
+		assertThat(snapshotService.toSimpleFilename(toPathname("path", "to", "file   ")), is(equalTo("file")));
+		assertThat(snapshotService.toSimpleFilename(toPathname("  file.ext ")), is(equalTo("file.ext")));
 		assertThat(snapshotService.toSimpleFilename("  file.ext "), is(equalTo("file.ext")));
-		assertThat(snapshotService.toSimpleFilename("/ "), is(equalTo("")));
+		assertThat(snapshotService.toSimpleFilename(File.separator.concat(" ")), is(equalTo("")));
 		assertThat(snapshotService.toSimpleFilename("  "), is(equalTo("")));
 		assertThat(snapshotService.toSimpleFilename(""), is(equalTo("")));
 		assertThat(snapshotService.toSimpleFilename(null), is(nullValue()));
