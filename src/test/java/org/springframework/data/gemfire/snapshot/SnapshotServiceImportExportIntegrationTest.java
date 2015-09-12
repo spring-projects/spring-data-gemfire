@@ -105,8 +105,7 @@ public class SnapshotServiceImportExportIntegrationTest {
 		assertThat(importPeopleSnapshot.length() > 0, is(true));
 
 		applicationContext = new ClassPathXmlApplicationContext(
-			SnapshotServiceImportExportIntegrationTest.class.getName().replaceAll("\\.", File.separator)
-				.concat("-context.xml"));
+			SnapshotServiceImportExportIntegrationTest.class.getName().replace(".", "/").concat("-context.xml"));
 
 		applicationContext.registerShutdownHook();
 
