@@ -28,7 +28,9 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.support.ConnectionEndpoint;
+import org.springframework.data.gemfire.support.ConnectionEndpointList;
+import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -36,7 +38,6 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 
 /**
  * FactoryBean for easy declaration and configuration of a GemFire Pool. If a new Pool is created,
@@ -47,13 +48,26 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
  *
  * @author Costin Leau
  * @author John Blum
+ * @see java.net.InetSocketAddress
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.BeanNameAware
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.support.ConnectionEndpoint
+ * @see org.springframework.data.gemfire.support.ConnectionEndpointList
  * @see com.gemstone.gemfire.cache.client.Pool
  * @see com.gemstone.gemfire.cache.client.PoolFactory
  * @see com.gemstone.gemfire.cache.client.PoolManager
+ * @see com.gemstone.gemfire.distributed.DistributedSystem
  */
 @SuppressWarnings("unused")
-public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean, BeanNameAware,
-		BeanFactoryAware {
+public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean,
+		BeanNameAware, BeanFactoryAware {
+
+	protected static final int DEFAULT_LOCATOR_PORT = DistributedSystemUtils.DEFAULT_LOCATOR_PORT;
+	protected static final int DEFAULT_SERVER_PORT = DistributedSystemUtils.DEFAULT_CACHE_SERVER_PORT;
 
 	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
 
@@ -62,8 +76,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	private BeanFactory beanFactory;
 
-	private Collection<InetSocketAddress> locators;
-	private Collection<InetSocketAddress> servers;
+	private ConnectionEndpointList locators = new ConnectionEndpointList();
+	private ConnectionEndpointList servers = new ConnectionEndpointList();
 
 	private Pool pool;
 
@@ -128,7 +142,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 				log.debug(String.format("No Pool with name '%1$s' was found. Creating a new Pool...", name));
 			}
 
-			if (CollectionUtils.isEmpty(locators) && CollectionUtils.isEmpty(servers)) {
+			if (locators.isEmpty() && servers.isEmpty()) {
 				throw new IllegalArgumentException("at least one GemFire Locator or Server is required");
 			}
 
@@ -155,12 +169,12 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
 			poolFactory.setThreadLocalConnections(threadLocalConnections);
 
-			for (InetSocketAddress connection : CollectionUtils.nullSafeCollection(locators)) {
-				poolFactory.addLocator(connection.getHostName(), connection.getPort());
+			for (ConnectionEndpoint locator : locators) {
+				poolFactory.addLocator(locator.getHost(), locator.getPort());
 			}
 
-			for (InetSocketAddress connection : CollectionUtils.nullSafeCollection(servers)) {
-				poolFactory.addServer(connection.getHostName(), connection.getPort());
+			for (ConnectionEndpoint server : servers) {
+				poolFactory.addServer(server.getHost(), server.getPort());
 			}
 
 			// eagerly initialize the GemFire DistributedSystem (if needed)
@@ -177,7 +191,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	/* (non-Javadoc) */
 	void resolveDistributedSystem() {
-		if (InternalDistributedSystem.getAnyInstance() == null) {
+		if (DistributedSystemUtils.getDistributedSystem() == null) {
 			doDistributedSystemConnect(resolveGemfireProperties());
 		}
 	}
@@ -257,8 +271,17 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		this.keepAlive = keepAlive;
 	}
 
-	public void setLocators(Collection<InetSocketAddress> locators) {
-		this.locators = locators;
+	@Deprecated
+	public void setLocators(Iterable<InetSocketAddress> locators) {
+		setLocatorEndpoints(ConnectionEndpointList.from(locators));
+	}
+
+	public void setLocatorEndpoints(Iterable<ConnectionEndpoint> endpoints) {
+		this.locators.add(endpoints);
+	}
+
+	public void setLocatorEndpointList(ConnectionEndpointList endpointList) {
+		setLocatorEndpoints(endpointList);
 	}
 
 	public void setLoadConditioningInterval(int loadConditioningInterval) {
@@ -297,8 +320,17 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		this.serverGroup = serverGroup;
 	}
 
+	@Deprecated
 	public void setServers(Collection<InetSocketAddress> servers) {
-		this.servers = servers;
+		setServerEndpoints(ConnectionEndpointList.from(servers));
+	}
+
+	public void setServerEndpoints(Iterable<ConnectionEndpoint> endpoints) {
+		this.servers.add(endpoints);
+	}
+
+	public void setServerEndpointList(ConnectionEndpointList endpointList) {
+		setServerEndpoints(endpointList);
 	}
 
 	public void setSocketBufferSize(int socketBufferSize) {
