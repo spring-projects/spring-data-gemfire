@@ -79,6 +79,19 @@ public abstract class ArrayUtils {
 	}
 
 	/**
+	 * Null-safe, empty array operation returning the given Object array if not null or an empty Object array
+	 * if the array argument is null.
+	 *
+	 * @param <T> the element Class type of the array.
+	 * @param array the Object array on which a null check is performed.
+	 * @return the given Object array if not null, otherwise return an empty Object array.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T[] nullSafeArray(T[] array) {
+		return (array != null ? array : (T[]) new Object[0]);
+	}
+
+	/**
 	 * Remove an element from the given array at position (index).  The element is removed at the specified position
 	 * and all remaining elements are shifted to the left.
 	 *

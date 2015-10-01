@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Resource;
 
 import org.junit.AfterClass;
@@ -46,27 +47,29 @@ import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * The ClientCacheSecurityTest class...
+ * The ClientCacheVariableLocatorsTest class is a test suite of test cases testing the use of variable "locators"
+ * attribute on &lt;gfe:pool/&lt; in Spring (Data GemFire) configuration meta-data when connecting a client/server.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @since 1.7.0
+ * @since 1.6.3
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 @SuppressWarnings("all")
-public class ClientCacheSecurityTest {
+public class ClientCacheVariableLocatorsTest {
 
 	private static ProcessWrapper serverProcess;
 
 	@Resource(name = "Example")
-	private Region<String, String> example;
+	private Region<String, Integer> example;
 
 	@BeforeClass
 	public static void setup() throws IOException {
-		String serverName = "GemFireSecurityCacheServer";
+		String serverName = ClientCacheVariableServersTest.class.getSimpleName().concat("Server");
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
 
@@ -75,18 +78,19 @@ public class ClientCacheSecurityTest {
 		List<String> arguments = new ArrayList<String>();
 
 		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
-		arguments.add(String.format("-Djavax.net.ssl.keyStore=%1$s", System.getProperty("javax.net.ssl.keyStore")));
-		arguments.add("/org/springframework/data/gemfire/client/ClientCacheSecurityTest-server-context.xml");
+		arguments.add("/".concat(ClientCacheVariableLocatorsTest.class.getName().replace(".", "/")
+			.concat("-server-context.xml")));
 
 		serverProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
 			arguments.toArray(new String[arguments.size()]));
 
-		waitForServerStart(TimeUnit.SECONDS.toMillis(20));
+		waitForServerToStart(TimeUnit.SECONDS.toMillis(20));
 
-		System.out.println("GemFire Cache Server Process for ClientCache Security should be running...");
+		System.out.printf("Spring-based, GemFire Cache Server process for %1$s should be running...%n",
+			ClientCacheVariableLocatorsTest.class.getSimpleName());
 	}
 
-	private static void waitForServerStart(final long milliseconds) {
+	private static void waitForServerToStart(final long milliseconds) {
 		ThreadUtils.timedWait(milliseconds, TimeUnit.MILLISECONDS.toMillis(500), new ThreadUtils.WaitCondition() {
 			private File serverPidControlFile = new File(serverProcess.getWorkingDirectory(),
 				ServerProcess.getServerProcessControlFilename());
@@ -107,18 +111,24 @@ public class ClientCacheSecurityTest {
 	}
 
 	@Test
-	public void exampleRegionGet() {
-		assertThat(String.valueOf(example.get("TestKey")), is(equalTo("TestValue")));
+	public void clientServerConnectionSuccessful() {
+		assertThat(example.get("one"), is(equalTo(1)));
+		assertThat(example.get("two"), is(equalTo(2)));
+		assertThat(example.get("three"), is(equalTo(3)));
 	}
 
-	@SuppressWarnings("unused")
-	public static class TestCacheLoader implements CacheLoader<String, String> {
+	public static class CacheMissCounterCacheLoader implements CacheLoader<String, Integer> {
 
-		@Override public String load(final LoaderHelper<String, String> helper) throws CacheLoaderException {
-			return "TestValue";
+		private static final AtomicInteger cacheMissCounter = new AtomicInteger(0);
+
+		@Override
+		public Integer load(final LoaderHelper<String, Integer> helper) throws CacheLoaderException {
+			return cacheMissCounter.incrementAndGet();
 		}
 
-		@Override public void close() {
+		@Override
+		public void close() {
+			cacheMissCounter.set(0);
 		}
 	}
 

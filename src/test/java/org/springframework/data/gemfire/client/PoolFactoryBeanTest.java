@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -144,7 +145,7 @@ public class PoolFactoryBeanTest {
 			PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 			poolFactoryBean.setName("GemFirePool");
-			poolFactoryBean.setLocators(null);
+			poolFactoryBean.setLocators((Collection) null);
 			poolFactoryBean.setServers(Collections.<InetSocketAddress>emptyList());
 			poolFactoryBean.afterPropertiesSet();
 		}
