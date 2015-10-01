@@ -107,7 +107,7 @@ as required by GemFire.
 * Spring JavaConfig support added to `SpringContextBootstrappingInitializer`.
 * Support for custom `ClassLoaders` in `SpringContextBootstrappingInitializer` to load Spring-defined bean classes.
 * Support for `LazyWiringDeclarableSupport` re-initialization and complete replacement for `WiringDeclarableSupport`.
-* Adds `locators` and `servers` attributes to the `<gfe-data:datasource>` element allowing variable Locator/Server
+* Adds `locators` and `servers` attributes to the `<gfe:pool>` element allowing variable Locator/Server
 endpoint lists configured with Spring's property placeholders.
 * Enables the use of `<gfe-data:datasource>` element with non-Spring configured GemFire Servers.
 * Multi-Index definition and creation support.

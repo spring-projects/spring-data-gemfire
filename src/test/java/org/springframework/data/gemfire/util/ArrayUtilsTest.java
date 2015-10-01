@@ -16,9 +16,14 @@
 
 package org.springframework.data.gemfire.util;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -38,7 +43,7 @@ import org.junit.Test;
 public class ArrayUtilsTest {
 
 	@Test
-	public void testInsertBeginning() {
+	public void insertAtBeginning() {
 		Object[] originalArray = { "testing", "tested" };
 		Object[] newArray = ArrayUtils.insert(originalArray, 0, "test");
 
@@ -50,7 +55,7 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
-	public void testInsertMiddle() {
+	public void insertInMiddle() {
 		Object[] originalArray = { "test", "tested" };
 		Object[] newArray = ArrayUtils.insert(originalArray, 1, "testing");
 
@@ -62,7 +67,7 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
-	public void testInsertEnd() {
+	public void insertAtEnd() {
 		Object[] originalArray = { "test", "testing" };
 		Object[] newArray = ArrayUtils.insert(originalArray, 2, "tested");
 
@@ -74,7 +79,7 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
-	public void testIsEmpty() {
+	public void isEmpty() {
 		assertFalse(ArrayUtils.isEmpty("test", "testing", "tested"));
 		assertFalse(ArrayUtils.isEmpty("test"));
 		assertFalse(ArrayUtils.isEmpty(""));
@@ -84,7 +89,7 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
-	public void testLength() {
+	public void length() {
 		assertEquals(3, ArrayUtils.length("test", "testing", "tested"));
 		assertEquals(1, ArrayUtils.length("test"));
 		assertEquals(1, ArrayUtils.length(""));
@@ -94,7 +99,34 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
-	public void testRemoveBeginning() {
+	public void nullSafeArrayWithNonNullArray() {
+		String[] stringArray = { "test", "testing", "tested" };
+
+		assertThat(ArrayUtils.nullSafeArray(stringArray), is(sameInstance(stringArray)));
+
+		Double[] emptyDoubleArray = {};
+
+		assertThat(ArrayUtils.nullSafeArray(emptyDoubleArray), is(sameInstance(emptyDoubleArray)));
+
+		Integer[] numberArray = { 1, 2, 3 };
+
+		assertThat(ArrayUtils.nullSafeArray(numberArray), is(sameInstance(numberArray)));
+
+		Character[] characterArray = { 'A', 'B', 'C' };
+
+		assertThat(ArrayUtils.nullSafeArray(characterArray), is(sameInstance(characterArray)));
+	}
+
+	@Test
+	public void nullSafeArrayWithNullArray() {
+		Object array = ArrayUtils.nullSafeArray(null);
+
+		assertThat(array, is(instanceOf(Object[].class)));
+		assertThat(((Object[]) array).length, is(equalTo(0)));
+	}
+
+	@Test
+	public void removeFromBeginning() {
 		Object[] originalArray = { "test", "testing", "tested" };
 		Object[] newArray = ArrayUtils.remove(originalArray, 0);
 
@@ -105,7 +137,7 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
-	public void testRemoveMiddle() {
+	public void removeFromMiddle() {
 		Object[] originalArray = { "test", "testing", "tested" };
 		Object[] newArray = ArrayUtils.remove(originalArray, 1);
 
@@ -116,7 +148,7 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
-	public void testRemoveEnd() {
+	public void removeFromEnd() {
 		Object[] originalArray = { "test", "testing", "tested" };
 		Object[] newArray = ArrayUtils.remove(originalArray, 2);
 
