@@ -26,8 +26,8 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -37,6 +37,7 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 import com.gemstone.gemfire.cache.query.IndexStatistics;
 import com.gemstone.gemfire.cache.query.QueryService;
 
@@ -85,7 +86,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 		Assert.notNull(queryService, "QueryService is required to create an Index");
 		Assert.hasText(expression, "Index 'expression' is required");
-		Assert.hasText(from, "Index 'from' clause is required");
+		Assert.hasText(from, "Index 'from clause' is required");
 
 		if (IndexType.isKey(indexType)) {
 			Assert.isNull(imports, "'imports' are not supported with a KEY Index");
@@ -150,7 +151,18 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 			}
 		}
 		catch (IndexExistsException e) {
-			return getExistingIndex(queryService, indexName);
+			throw new GemfireIndexException(String.format(
+				"An Index with a different name having the same definition as this Index (%1$s) already exists",
+					indexName), e);
+		}
+		catch (IndexNameConflictException e) {
+			// NOTE technically, the only way for an IndexNameConflictException to be thrown is if
+			// queryService.remove(existingIndex) above silently fails, since otherwise, when override is 'false',
+			// the existingIndex is already being returned.  Given this state of affairs, an Index with the provided
+			// name is unresolvable based on what the user intended to happen, so just rethrow an Exception.
+			throw new GemfireIndexException(String.format(
+				"Failed to remove the existing Index%1$sbefore re-creating Index with name (%2$s)",
+					(override ? " on override " : " "), indexName), e);
 		}
 		catch (Exception e) {
 			if (existingIndex != null) {
@@ -231,7 +243,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 	/* (non-Javadoc) */
 	Index getExistingIndex(QueryService queryService, String indexName) {
-		for (Index index : queryService.getIndexes()) {
+		for (Index index : CollectionUtils.nullSafeCollection(queryService.getIndexes())) {
 			if (index.getName().equalsIgnoreCase(indexName)) {
 				return index;
 			}
@@ -404,7 +416,6 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 		}
 
 		protected QueryService getQueryService() {
-			Assert.state(queryService != null, "The QueryService was not properly initialized!");
 			return queryService;
 		}
 

@@ -106,11 +106,11 @@ Spring Data GemFire allows indices to be declared through the `index` element:
 <gfe:index id="myIndex" expression="someField" from="/someRegion"/>
 ----
 
-Before creating an index, Spring Data GemFire will verify whether one with the same name already exists. If it does,
-it will compare the properties and if they don't match, will remove the old one to create a new one.
-If the properties match, Spring Data GemFire will simply return the index (in case it does not exist it will simply
-create one). To prevent the update of the index, even if the properties do not match, set the property `override`
-to false.
+Before creating an Index, Spring Data GemFire will verify whether an Index with the same name already exists.
+If an Index with the same name does exist, by default, SDG will "override" the existing Index by removing the old Index
+first followed by creating a new Index with the same name based on the new definition, regardless if the old definition
+was the same or not.  To prevent the named Index definition change, especially when the old and new Index definitions
+may not match, set the `override` property to false, which effectively returns the existing Index definition by name.
 
 Note that index declarations are not bound to a Region but rather are top-level elements (just like `gfe:cache`).
 This allows one to declare any number of indices on any Region whether they are just created or already exist
