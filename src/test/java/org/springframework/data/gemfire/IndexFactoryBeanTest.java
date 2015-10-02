@@ -16,17 +16,25 @@
 
 package org.springframework.data.gemfire;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -35,7 +43,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -43,6 +53,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
+import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
@@ -59,6 +70,25 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * @since 1.5.2
  */
 public class IndexFactoryBeanTest {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
+	private Cache mockCache = mock(Cache.class, "IndexFactoryBeanTest.MockCache");
+
+	private QueryService mockQueryService = mock(QueryService.class, "IndexFactoryBeanTest.MockQueryService");
+
+	protected IndexFactoryBean newIndexFactoryBean() {
+		IndexFactoryBean indexFactoryBean = new IndexFactoryBean() {
+			@Override QueryService lookupQueryService() {
+				return mockQueryService;
+			}
+		};
+
+		indexFactoryBean.setCache(mockCache);
+
+		return indexFactoryBean;
+	}
 
 	@Test
 	public void testAfterPropertiesSet() throws Exception {
@@ -139,26 +169,16 @@ public class IndexFactoryBeanTest {
 		}
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testAfterPropertiesSetWithUnspecifiedFromClause() throws Exception {
-		try {
-			QueryService mockQueryService = mock(QueryService.class,
-				"testAfterPropertiesSetWithUnspecifiedFromClause.MockQueryService");
+	@Test
+	public void afterPropertiesSetWithUnspecifiedFromClause() throws Exception {
+		expectedException.expect(IllegalArgumentException.class);
+		expectedException.expectCause(is(nullValue(Throwable.class)));
+		expectedException.expectMessage("Index 'from clause' is required");
 
-			Cache mockCache = mock(Cache.class, "testAfterPropertiesSetWithUnspecifiedFromClause.MockCache");
+		IndexFactoryBean indexFactoryBean = newIndexFactoryBean();
 
-			when(mockCache.getQueryService()).thenReturn(mockQueryService);
-
-			IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
-
-			indexFactoryBean.setCache(mockCache);
-			indexFactoryBean.setExpression("id");
-			indexFactoryBean.afterPropertiesSet();
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("The Index 'from' clause (a Region's full-path) is required!", expected.getMessage());
-			throw expected;
-		}
+		indexFactoryBean.setExpression("id");
+		indexFactoryBean.afterPropertiesSet();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -337,15 +357,47 @@ public class IndexFactoryBeanTest {
 	}
 
 	@Test
-	public void testCreateIndexReturnsExistingIndex() throws Exception {
-		Index mockExistingIndex = mock(Index.class, "testCreateIndexReturnsExistingIndex.MockIndex.Existing");
-		Index mockIndexTwo = mock(Index.class, "testCreateIndexReturnsExistingIndex.MockIndex.Two");
+	public void createIndexOverridesExistingIndex() throws Exception {
+		Index mockExistingIndex = mock(Index.class, "createIndexOverridesExistingIndex.MockExistingIndex");
+		Index mockOverridingIndex = mock(Index.class, "createIndexOverridesExistingIndex.MockOverridingIndex");
+
+		QueryService mockQueryService = mock(QueryService.class, "createIndexOverridesExistingIndex.MockQueryService");
+
+		when(mockExistingIndex.getName()).thenReturn("ExistingIndex");
+		when(mockOverridingIndex.getName()).thenReturn("OverridingIndex");
+		when(mockQueryService.getIndexes()).thenReturn(Collections.singletonList(mockExistingIndex));
+		when(mockQueryService.createHashIndex(eq("ExistingIndex"), eq("someField"), eq("/Example"),
+			eq("example.DomainType"))).thenReturn(mockOverridingIndex);
+
+		IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
+
+		indexFactoryBean.setExpression("someField");
+		indexFactoryBean.setFrom("/Example");
+		indexFactoryBean.setImports("example.DomainType");
+		indexFactoryBean.setName("OverridingIndex");
+		indexFactoryBean.setType("HASH");
+
+		Index actualIndex = indexFactoryBean.createIndex(mockQueryService, "ExistingIndex");
+
+		assertSame(mockOverridingIndex, actualIndex);
+
+		verifyZeroInteractions(mockOverridingIndex);
+		verify(mockExistingIndex, times(1)).getName();
+		verify(mockQueryService, times(1)).removeIndex(same(mockExistingIndex));
+		verify(mockQueryService, times(1)).createHashIndex(eq("ExistingIndex"), eq("someField"), eq("/Example"),
+			eq("example.DomainType"));
+	}
+
+	@Test
+	public void createIndexReturnsExistingIndex() throws Exception {
+		Index mockExistingIndex = mock(Index.class, "createIndexReturnsExistingIndex.MockExistingIndex");
+		Index mockNewIndex = mock(Index.class, "createIndexReturnsExistingIndex.MockNewIndex");
 
 		QueryService mockQueryService = mock(QueryService.class, "testCreateIndexReturnsExistingIndex.MockQueryService");
 
 		when(mockExistingIndex.getName()).thenReturn("ExistingIndex");
-		when(mockIndexTwo.getName()).thenReturn("IndexTwo");
-		when(mockQueryService.getIndexes()).thenReturn(Arrays.asList(mockExistingIndex, mockIndexTwo));
+		when(mockNewIndex.getName()).thenReturn("NewIndex");
+		when(mockQueryService.getIndexes()).thenReturn(Arrays.asList(mockExistingIndex, mockNewIndex));
 
 		IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
 
@@ -355,82 +407,93 @@ public class IndexFactoryBeanTest {
 		Index actualIndex = indexFactoryBean.createIndex(mockQueryService, "ExistingIndex");
 
 		assertSame(mockExistingIndex, actualIndex);
+
+		verify(mockExistingIndex, times(1)).getName();
+		verify(mockNewIndex, never()).getName();
+		verify(mockQueryService, times(1)).getIndexes();
 	}
 
 	@Test
-	public void testCreateIndexReturnsExistingIndexForIndexExistsException() throws Exception {
+	public void createIndexThrowsIndexNameConflictExceptionOnOverride() throws Exception {
 		Index mockExistingIndex = mock(Index.class,
-			"testCreateIndexReturnsExistingIndexForIndexExistsException.MockIndex.Existing");
+			"createIndexThrowsIndexNameConflictExceptionOnOverride.MockExistingIndex");
 
 		QueryService mockQueryService = mock(QueryService.class,
-			"testCreateIndexReturnsExistingIndexForIndexExistsException.MockQueryService");
+			"createIndexThrowsIndexNameConflictExceptionOnOverride.MockQueryService");
 
 		when(mockExistingIndex.getName()).thenReturn("ExistingIndex");
 		when(mockQueryService.getIndexes()).thenReturn(Collections.singletonList(mockExistingIndex));
-		when(mockQueryService.createKeyIndex(eq("ExistingIndex"), eq("id"), eq("/Example")))
-			.thenThrow(new IndexExistsException("test"));
-
-		IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
-
-		indexFactoryBean.setExpression("id");
-		indexFactoryBean.setFrom("/Example");
-		indexFactoryBean.setName("ExistingIndex");
-		indexFactoryBean.setOverride(true);
-		indexFactoryBean.setType("PRIMARY_KEY");
-
-		Index actualIndex = indexFactoryBean.createIndex(mockQueryService, "ExistingIndex");
-
-		assertSame(mockExistingIndex, actualIndex);
-
-		verify(mockExistingIndex, times(2)).getName();
-		verify(mockQueryService, times(2)).getIndexes();
-		verify(mockQueryService, times(1)).removeIndex(same(mockExistingIndex));
-	}
-
-	@Test
-	public void testCreateIndexOverridesExistingIndex() throws Exception {
-		Index mockExistingIndex = mock(Index.class, "testCreateIndexOverridesExistingIndex.MockIndex.Existing");
-		Index mockOverridingIndex = mock(Index.class, "testCreateIndexOverridesExistingIndex.MockIndex.Overriding");
-
-		QueryService mockQueryService = mock(QueryService.class,
-			"testCreateIndexOverridesExistingIndex.MockQueryService");
-
-		when(mockExistingIndex.getName()).thenReturn("ExistingIndex");
-		when(mockOverridingIndex.getName()).thenReturn("OverridingIndex");
-		when(mockQueryService.getIndexes()).thenReturn(Collections.singletonList(mockExistingIndex));
-		when(mockQueryService.createHashIndex(eq("ExistingIndex"), eq("someField"), eq("/Example"),
-			eq("org.example.DomainType"))).thenReturn(mockOverridingIndex);
+		when(mockQueryService.createIndex(any(String.class), any(String.class), any(String.class)))
+			.thenThrow(new IndexNameConflictException("TEST"));
 
 		IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
 
 		indexFactoryBean.setExpression("someField");
 		indexFactoryBean.setFrom("/Example");
-		indexFactoryBean.setImports("org.example.DomainType");
-		indexFactoryBean.setName("OverridingIndex");
-		indexFactoryBean.setType("HASH");
+		indexFactoryBean.setName("ExistingIndex");
+		indexFactoryBean.setType("Functional");
 
-		Index actualIndex = indexFactoryBean.createIndex(mockQueryService, "ExistingIndex");
+		try {
+			expectedException.expect(GemfireIndexException.class);
+			expectedException.expectCause(isA(IndexNameConflictException.class));
+			expectedException.expectMessage(
+				"Failed to remove the existing Index on override before re-creating Index with name (ExistingIndex)");
 
-		assertSame(mockOverridingIndex, actualIndex);
-
-		verify(mockQueryService, times(1)).getIndexes();
-		verify(mockQueryService, times(1)).removeIndex(same(mockExistingIndex));
+			indexFactoryBean.createIndex(mockQueryService, "ExistingIndex");
+		}
+		finally {
+			verify(mockExistingIndex, times(1)).getName();
+			verify(mockQueryService, times(1)).getIndexes();
+			verify(mockQueryService, times(1)).createIndex(eq("ExistingIndex"), eq("someField"), eq("/Example"));
+		}
 	}
 
 	@Test
-	public void testCreateIndexAddsExistingIndexOnException() throws Exception {
-		final Index mockExistingIndex = mock(Index.class, "testCreateIndexAddsExistingIndexOnException.MockIndex.Existing");
-		final Index mockIndexTwo = mock(Index.class, "testCreateIndexAddsExistingIndexOnException.MockIndex.Two");
+	public void createIndexThrowsIndexExistsException() throws Exception {
+		QueryService mockQueryService = mock(QueryService.class,
+			"createIndexThrowsIndexExistsException.MockQueryService");
+
+		when(mockQueryService.getIndexes()).thenReturn(null);
+		when(mockQueryService.createKeyIndex(eq("NewIndex"), eq("someField"), eq("/Example")))
+			.thenThrow(new IndexExistsException("TEST"));
+
+		IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
+
+		indexFactoryBean.setExpression("someField");
+		indexFactoryBean.setFrom("/Example");
+		indexFactoryBean.setName("NewIndex");
+		indexFactoryBean.setOverride(true);
+		indexFactoryBean.setType("PRIMARY_KEY");
+
+		try {
+			expectedException.expect(GemfireIndexException.class);
+			expectedException.expectCause(isA(IndexExistsException.class));
+			expectedException.expectMessage(
+				"An Index with a different name having the same definition as this Index (NewIndex) already exists");
+
+			indexFactoryBean.createIndex(mockQueryService, "NewIndex");
+		}
+		finally {
+			verify(mockQueryService, times(1)).getIndexes();
+			verify(mockQueryService, never()).removeIndex(any(Index.class));
+			verify(mockQueryService, times(1)).createKeyIndex(eq("NewIndex"), eq("someField"), eq("/Example"));
+		}
+	}
+
+	@Test
+	public void createIndexAddsExistingIndexOnAnyException() throws Exception {
+		final Index mockExistingIndex = mock(Index.class, "createIndexAddsExistingIndexOnAnyException.MockExistingIndex");
+		final Index mockIndexTwo = mock(Index.class, "createIndexAddsExistingIndexOnException.MockIndexTwo");
 
 		final List<Index> indexes = new ArrayList<Index>(1);
 
 		indexes.add(mockIndexTwo);
 
 		QueryService mockQueryService = mock(QueryService.class,
-			"testCreateIndexAddsExistingIndexOnException.MockQueryService");
+			"createIndexAddsExistingIndexOnAnyException.MockQueryService");
 
 		when(mockExistingIndex.getName()).thenReturn("ExistingIndex");
-		when(mockIndexTwo.getName()).thenReturn("IndexTwo");
+		when(mockIndexTwo.getName()).thenReturn("NewIndex");
 
 		when(mockQueryService.getIndexes()).then(new Answer<Collection<Index>>() {
 			private boolean called = false;
@@ -448,7 +511,7 @@ public class IndexFactoryBeanTest {
 		});
 
 		when(mockQueryService.createIndex(eq("ExistingIndex"), eq("someField"), eq("/Example")))
-			.thenThrow(new RuntimeException("test"));
+			.thenThrow(new RuntimeException("TEST"));
 
 		IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
 
@@ -463,9 +526,10 @@ public class IndexFactoryBeanTest {
 
 		Index actualIndex = indexFactoryBean.createIndex(mockQueryService, "ExistingIndex");
 
-		assertSame(mockExistingIndex, actualIndex);
-		assertEquals(2, indexes.size());
-		assertTrue(indexes.contains(mockExistingIndex));
+		assertThat(actualIndex, is(sameInstance(mockExistingIndex)));
+		assertThat(indexes.size(), is(equalTo(2)));
+		assertThat(indexes.contains(mockExistingIndex), is(true));
+		assertThat(indexes.contains(mockIndexTwo), is(true));
 
 		verify(mockQueryService, times(3)).getIndexes();
 		verify(mockQueryService, times(1)).removeIndex(same(mockExistingIndex));
