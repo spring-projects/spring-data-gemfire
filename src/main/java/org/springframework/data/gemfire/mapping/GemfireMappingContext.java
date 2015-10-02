@@ -25,6 +25,7 @@ import org.springframework.data.util.TypeInformation;
 /**
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class GemfireMappingContext extends AbstractMappingContext<GemfirePersistentEntity<?>, GemfirePersistentProperty> {
 
@@ -33,7 +34,7 @@ public class GemfireMappingContext extends AbstractMappingContext<GemfirePersist
 	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
 	 */
 	@Override
-	protected <T> GemfirePersistentEntity<?> createPersistentEntity(TypeInformation<T> typeInformation) {
+	protected <T> GemfirePersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 		return new GemfirePersistentEntity<T>(typeInformation);
 	}
 
