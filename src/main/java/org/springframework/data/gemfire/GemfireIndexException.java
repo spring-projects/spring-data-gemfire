@@ -25,30 +25,57 @@ import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 
 /**
- * Gemfire-specific subclass thrown on index creation.
+ * Gemfire-specific subclass thrown on Index management.
  *  
  * @author Costin Leau
+ * @author John Blum
+ * @see com.gemstone.gemfire.cache.query.IndexCreationException
+ * @see com.gemstone.gemfire.cache.query.IndexExistsException
+ * @see com.gemstone.gemfire.cache.query.IndexInvalidException
+ * @see com.gemstone.gemfire.cache.query.IndexMaintenanceException
+ * @see com.gemstone.gemfire.cache.query.IndexNameConflictException
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({ "serial", "unused" })
 public class GemfireIndexException extends DataIntegrityViolationException {
 
-	public GemfireIndexException(IndexCreationException ex) {
-		super(ex.getMessage(), ex);
+	public GemfireIndexException(IndexCreationException cause) {
+		this(cause.getMessage(), cause);
 	}
 
-	public GemfireIndexException(IndexExistsException ex) {
-		super(ex.getMessage(), ex);
+	public GemfireIndexException(String message, IndexCreationException cause) {
+		super(message, cause);
 	}
 
-	public GemfireIndexException(IndexNameConflictException ex) {
-		super(ex.getMessage(), ex);
+	public GemfireIndexException(IndexExistsException cause) {
+		this(cause.getMessage(), cause);
 	}
 
-	public GemfireIndexException(IndexMaintenanceException ex) {
-		super(ex.getMessage(), ex);
+	public GemfireIndexException(String message, IndexExistsException cause) {
+		super(message, cause);
 	}
 
-	public GemfireIndexException(IndexInvalidException ex) {
-		super(ex.getMessage(), ex);
+	public GemfireIndexException(IndexInvalidException cause) {
+		this(cause.getMessage(), cause);
 	}
+
+	public GemfireIndexException(String message, IndexInvalidException cause) {
+		super(message, cause);
+	}
+
+	public GemfireIndexException(IndexMaintenanceException cause) {
+		this(cause.getMessage(), cause);
+	}
+
+	public GemfireIndexException(String message, IndexMaintenanceException cause) {
+		super(message, cause);
+	}
+
+	public GemfireIndexException(IndexNameConflictException cause) {
+		this(cause.getMessage(), cause);
+	}
+
+	public GemfireIndexException(String message, IndexNameConflictException cause) {
+		super(message, cause);
+	}
+
 }
