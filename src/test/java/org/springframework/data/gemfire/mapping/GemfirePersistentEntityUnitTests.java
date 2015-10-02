@@ -15,18 +15,29 @@
  */
 package org.springframework.data.gemfire.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import org.junit.Test;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link GemfirePersistentEntity}.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class GemfirePersistentEntityUnitTests {
+
+	protected MappingContext<GemfirePersistentEntity<?>, GemfirePersistentProperty> getMappingContext() {
+		return new GemfireMappingContext();
+	}
 
 	@Test
 	public void defaultsRegionNameToClassName() {
@@ -50,17 +61,60 @@ public class GemfirePersistentEntityUnitTests {
 		assertThat(entity.getRegionName(), is("Foo"));
 	}
 
-	static class UnannotatedRegion {
+	@Test
+	@SuppressWarnings("unchecked")
+	public void bigDecimalPersistentPropertyIsNotEntity() {
+		GemfirePersistentEntity<ExampleDomainObject> entity = (GemfirePersistentEntity<ExampleDomainObject>)
+			getMappingContext().getPersistentEntity(ExampleDomainObject.class);
 
+		assertThat(entity.getRegionName(), is(equalTo("Example")));
+
+		GemfirePersistentProperty currency = entity.getPersistentProperty("currency");
+
+		assertThat(currency, is(notNullValue()));
+		assertThat(currency.isEntity(), is(false));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void bigIntegerPersistentPropertyIsNotEntity() {
+		GemfirePersistentEntity<ExampleDomainObject> entity = (GemfirePersistentEntity<ExampleDomainObject>)
+			getMappingContext().getPersistentEntity(ExampleDomainObject.class);
+
+		assertThat(entity.getRegionName(), is(equalTo("Example")));
+
+		GemfirePersistentProperty bigNumber = entity.getPersistentProperty("bigNumber");
+
+		assertThat(bigNumber, is(notNullValue()));
+		assertThat(bigNumber.isEntity(), is(false));
+	}
+
+	static class UnannotatedRegion {
 	}
 
 	@Region("Foo")
 	static class AnnotatedRegion {
-
 	}
 
 	@Region
 	static class UnnamedRegion {
-
 	}
+
+	@Region("Example")
+	@SuppressWarnings("unused")
+	static class ExampleDomainObject {
+
+		private BigDecimal currency;
+
+		private BigInteger bigNumber;
+
+		public BigDecimal getCurrency() {
+			return currency;
+		}
+
+		public BigInteger getBigNumber() {
+			return bigNumber;
+		}
+	}
+
 }
