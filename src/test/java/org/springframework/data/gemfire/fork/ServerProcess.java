@@ -55,14 +55,21 @@ public class ServerProcess {
 			throw e;
 		}
 		finally {
-			if (applicationContext != null) {
-				applicationContext.close();
-			}
+			close(applicationContext);
 		}
 	}
 
 	public static String getServerProcessControlFilename() {
 		return ServerProcess.class.getSimpleName().toLowerCase().concat(".pid");
+	}
+
+	protected static boolean close(final ConfigurableApplicationContext applicationContext) {
+		if (applicationContext != null) {
+			applicationContext.close();
+			return !(applicationContext.isRunning() || applicationContext.isActive());
+		}
+
+		return true;
 	}
 
 }

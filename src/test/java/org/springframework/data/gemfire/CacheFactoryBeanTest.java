@@ -16,11 +16,13 @@
 
 package org.springframework.data.gemfire;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Matchers.any;
@@ -417,6 +419,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void getObject() throws Exception {
 		final ClassLoader expectedThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 		final Cache mockCache = mock(Cache.class, "GemFireCache");
@@ -443,24 +446,25 @@ public class CacheFactoryBeanTest {
 		cacheFactoryBean.setBeanClassLoader(ClassLoader.getSystemClassLoader());
 		cacheFactoryBean.setBeanName("MockGemFireCache");
 		cacheFactoryBean.setCopyOnRead(true);
+		cacheFactoryBean.setLockLease(15000);
 		cacheFactoryBean.setLockTimeout(5000);
 		cacheFactoryBean.setSearchTimeout(15000);
 		cacheFactoryBean.setUseBeanFactoryLocator(false);
 
-		Cache actualCache = cacheFactoryBean.getObject();
+		GemFireCache actualCache = cacheFactoryBean.getObject();
 
 		assertSame(mockCache, actualCache);
 		assertSame(expectedThreadContextClassLoader, Thread.currentThread().getContextClassLoader());
 
-		verify(mockCache, times(1)).setCopyOnRead(eq(true));
-		verify(mockCache, times(1)).setLockTimeout(eq(5000));
-		verify(mockCache, times(1)).setSearchTimeout(eq(15000));
-		verify(mockCache, never()).getCacheTransactionManager();
-		verify(mockCache, never()).getResourceManager();
 		verify(mockCache, never()).loadCacheXml(any(InputStream.class));
+		verify(mockCache, times(1)).setCopyOnRead(eq(true));
 		verify(mockCache, never()).setGatewayConflictResolver(any(GatewayConflictResolver.class));
-		verify(mockCache, never()).setLockLease(anyInt());
+		verify(mockCache, times(1)).setLockLease(eq(15000));
+		verify(mockCache, times(1)).setLockTimeout(eq(5000));
 		verify(mockCache, never()).setMessageSyncInterval(anyInt());
+		verify(mockCache, times(1)).setSearchTimeout(eq(15000));
+		verify(mockCache, never()).getResourceManager();
+		verify(mockCache, never()).getCacheTransactionManager();
 	}
 
 	@Test
@@ -474,7 +478,9 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void destroy() throws Exception {
+		final AtomicBoolean fetchCacheCalled = new AtomicBoolean(false);
 		final Cache mockCache = mock(Cache.class, "GemFireCache");
 
 		GemfireBeanFactoryLocator mockGemfireBeanFactoryLocator = mock(GemfireBeanFactoryLocator.class);
@@ -483,6 +489,7 @@ public class CacheFactoryBeanTest {
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
 			@Override protected GemFireCache fetchCache() {
+				fetchCacheCalled.set(true);
 				return mockCache;
 			}
 		};
@@ -494,12 +501,15 @@ public class CacheFactoryBeanTest {
 		cacheFactoryBean.setUseBeanFactoryLocator(true);
 		cacheFactoryBean.destroy();
 
+		assertThat(fetchCacheCalled.get(), is(true));
+
 		verify(mockCache, times(1)).isClosed();
 		verify(mockCache, times(1)).close();
 		verify(mockGemfireBeanFactoryLocator, times(1)).destroy();
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void destroyWhenCacheIsNull() throws Exception {
 		final AtomicBoolean fetchCacheCalled = new AtomicBoolean(false);
 
@@ -518,7 +528,8 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void destroyWhenClosedIsFalse() throws Exception {
+	@SuppressWarnings("unchecked")
+	public void destroyWhenCacheClosedIsTrue() throws Exception {
 		final AtomicBoolean fetchCacheCalled = new AtomicBoolean(false);
 		final Cache mockCache = mock(Cache.class, "GemFireCache");
 
@@ -537,6 +548,15 @@ public class CacheFactoryBeanTest {
 		verify(mockCache, never()).close();
 
 		assertFalse(fetchCacheCalled.get());
+	}
+
+	@Test
+	public void closeCache() {
+		GemFireCache mockCache = mock(GemFireCache.class, "testCloseCache.MockCache");
+
+		new CacheFactoryBean().close(mockCache);
+
+		verify(mockCache, times(1)).close();
 	}
 
 	@Test

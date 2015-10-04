@@ -23,6 +23,7 @@ import org.springframework.util.ClassUtils;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 
 /**
  * GemfireUtils is an abstract utility class encapsulating common functionality to access features and capabilities
@@ -32,9 +33,30 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
  * @since 1.3.3
  */
+@SuppressWarnings("unused")
 public abstract class GemfireUtils extends DistributedSystemUtils {
 
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
+
+	public static boolean closeCache() {
+		try {
+			CacheFactory.getAnyInstance().close();
+			return true;
+		}
+		catch (Exception ignore) {
+			return false;
+		}
+	}
+
+	public static boolean closeClientCache() {
+		try {
+			ClientCacheFactory.getAnyInstance().close();
+			return true;
+		}
+		catch (Exception ignore) {
+			return false;
+		}
+	}
 
 	public static boolean isGemfireVersionGreaterThanEqual(double expectedVersion) {
 		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));

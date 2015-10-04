@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:c="http://www.springframework.org/schema/c"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="serverProperties">
+		<prop key="gemfire.cache.server.host">localhost</prop>
+		<prop key="gemfire.cache.server.port">24842</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="serverProperties"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">DurableClientCacheIntegrationTestServer</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:cache-server bind-address="${gemfire.cache.server.host}" port="${gemfire.cache.server.port}" auto-startup="true"/>
+
+	<gfe:replicated-region id="Example" persistent="false" initial-capacity="11" load-factor="0.75"
+						   key-constraint="java.lang.String" value-constraint="java.lang.Integer"/>
+
+	<!-- The GemfireTemplate bean definition is required to trigger the creation of the actual '/Example' Region bean
+	by the SDG RegionFactoryBean in order for the RegionDataLoadingBeanPostProcessor callback to initialize
+	the '/Example' Region with data. -->
+	<bean class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="Example"/>
+
+	<util:map id="exampleRegionData" key-type="java.lang.String" value-type="java.lang.Integer">
+		<entry key="one" value="1"/>
+		<entry key="two" value="2"/>
+		<entry key="three" value="3"/>
+	</util:map>
+
+	<bean class="org.springframework.data.gemfire.client.DurableClientCacheIntegrationTest$RegionDataLoadingBeanPostProcessor"
+		  c:regionName="Example" p:regionData-ref="exampleRegionData"/>
+
+</beans>

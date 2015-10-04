@@ -16,12 +16,14 @@
 
 package org.springframework.data.gemfire.client;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -31,13 +33,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.Properties;
 
 import org.junit.Test;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.util.ReflectionUtils;
 
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -81,7 +86,7 @@ public class ClientCacheFactoryBeanTest {
 		Properties gemfireProperties = createProperties("gf", "test");
 		Properties distributedSystemProperties = createProperties("ds", "mock");
 
-		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockGemFireDistributedSystem");
+		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockDistributedSystem");
 
 		when(mockDistributedSystem.isConnected()).thenReturn(true);
 		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
@@ -112,7 +117,7 @@ public class ClientCacheFactoryBeanTest {
 		Properties gemfireProperties = createProperties("gf", "test");
 		Properties distributedSystemProperties = createProperties("ds", "mock");
 
-		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockGemFireDistributedSystem");
+		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockDistributedSystem");
 
 		when(mockDistributedSystem.isConnected()).thenReturn(false);
 		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
@@ -410,17 +415,108 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void postProcessClientCacheAndSignalReadyForEvents() throws Exception {
-		ClientCache mockClientCache = mock(ClientCache.class, "MockGemFireClientCache");
+	public void onApplicationEventSignalsReadyForEvents() throws Exception {
+		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+
+		when(mockClientCache.isClosed()).thenReturn(false);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		clientCacheFactoryBean.setReadyForEvents(true);
 
-		assertTrue(clientCacheFactoryBean.getReadyForEvents());
-		assertSame(mockClientCache, clientCacheFactoryBean.postProcess(mockClientCache));
+		ReflectionUtils.setField(ReflectionUtils.findField(ClientCacheFactoryBean.class,
+			new org.springframework.util.ReflectionUtils.FieldFilter() {
+				@Override public boolean matches(final Field field) {
+					return field.getName().equals("cache");
+				}
+			}), clientCacheFactoryBean, mockClientCache);
 
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(true));
+
+		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
+
+		verify(mockClientCache, times(1)).isClosed();
 		verify(mockClientCache, times(1)).readyForEvents();
+	}
+
+	@Test
+	public void onApplicationEventDoesNotSignalReadyForEventsWhenClientCacheIsClosed() {
+		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+
+		when(mockClientCache.isClosed()).thenReturn(true);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setReadyForEvents(true);
+
+		ReflectionUtils.setField(ReflectionUtils.findField(ClientCacheFactoryBean.class,
+			new org.springframework.util.ReflectionUtils.FieldFilter() {
+				@Override public boolean matches(final Field field) {
+					return field.getName().equals("cache");
+				}
+			}), clientCacheFactoryBean, mockClientCache);
+
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(true));
+
+		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
+
+		verify(mockClientCache, times(1)).isClosed();
+		verify(mockClientCache, never()).readyForEvents();
+	}
+
+	@Test
+	public void onApplicationEventDoesNotSignalReadyForEventsWhenClientCacheFactoryBeanReadyForEventsIsFalse() {
+		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+
+		when(mockClientCache.isClosed()).thenReturn(false);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setReadyForEvents(false);
+
+		ReflectionUtils.setField(ReflectionUtils.findField(ClientCacheFactoryBean.class,
+			new org.springframework.util.ReflectionUtils.FieldFilter() {
+				@Override public boolean matches(final Field field) {
+					return field.getName().equals("cache");
+				}
+			}), clientCacheFactoryBean, mockClientCache);
+
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(false));
+
+		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
+
+		verify(mockClientCache, never()).isClosed();
+		verify(mockClientCache, never()).readyForEvents();
+	}
+
+	@Test
+	public void closeClientCacheWithKeepAlive() {
+		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setKeepAlive(true);
+
+		assertThat(clientCacheFactoryBean.isKeepAlive(), is(true));
+
+		clientCacheFactoryBean.close(mockClientCache);
+
+		verify(mockClientCache, times(1)).close(eq(true));
+	}
+
+	@Test
+	public void closeClientCacheWithoutKeepAlive() {
+		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setKeepAlive(false);
+
+		assertThat(clientCacheFactoryBean.isKeepAlive(), is(false));
+
+		clientCacheFactoryBean.close(mockClientCache);
+
+		verify(mockClientCache, times(1)).close(eq(false));
 	}
 
 	@Test

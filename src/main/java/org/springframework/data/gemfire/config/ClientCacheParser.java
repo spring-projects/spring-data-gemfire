@@ -38,6 +38,7 @@ class ClientCacheParser extends CacheParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, parserContext, builder);
+		ParsingUtils.setPropertyValue(element, builder, "keep-alive", "keepAlive");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name", "poolName");
 		ParsingUtils.setPropertyValue(element, builder, "ready-for-events");
 	}
