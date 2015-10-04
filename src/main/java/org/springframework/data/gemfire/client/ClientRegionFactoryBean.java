@@ -49,6 +49,14 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see com.gemstone.gemfire.cache.GemFireCache
+ * @see com.gemstone.gemfire.cache.client.ClientCache
+ * @see com.gemstone.gemfire.cache.client.ClientRegionFactory
+ * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
  */
 @SuppressWarnings("unused")
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements BeanFactoryAware,
@@ -89,7 +97,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	@Override
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("all")
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		Assert.isTrue(cache instanceof ClientCache, String.format("Unable to create Regions from %1$s!", cache));
 
@@ -298,24 +306,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	public void destroy() throws Exception {
 		Region<K, V> region = getObject();
 
-		try {
-			if (region != null && !ObjectUtils.isEmpty(interests)) {
-				for (Interest<K> interest : interests) {
-					if (interest instanceof RegexInterest) {
-						region.unregisterInterestRegex((String) interest.getKey());
-					}
-					else {
-						region.unregisterInterest(interest.getKey());
-					}
-				}
-			}
-		}
-		// NOTE AdminRegion, LocalDataSet, Proxy Region and RegionCreation all throw UnsupportedOperationException;
-		// however, should not really happen since Interests are validated at start/registration
-		catch (UnsupportedOperationException ex) {
-			log.warn("Cannot unregister cache interests", ex);
-		}
-
 		if (region != null) {
 			if (close) {
 				if (!region.getRegionService().isClosed()) {
@@ -326,8 +316,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 					}
 				}
 			}
-			// TODO I think Region.close and Region.destroyRegion are mutually exclusive; thus, 1 operation (e.g. close)
-			// does not cancel the other (i.e. destroy). This should just be if, not else if.
+			// TODO perhaps 'destroy' should take precedence over 'close' since 'destroy' is a functional superset
+			// of 'close'
 			else if (destroy) {
 				region.destroyRegion();
 			}

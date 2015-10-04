@@ -15,13 +15,18 @@
  */
 package org.springframework.data.gemfire.client;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -43,6 +48,7 @@ import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -187,7 +193,8 @@ public class ClientRegionFactoryBeanTest {
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
 		Region<Object, Object> mockRegion = mock(Region.class);
 
-		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY))).thenReturn(mockClientRegionFactory);
+		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY))).thenReturn(
+			mockClientRegionFactory);
 		when(mockClientRegionFactory.create(eq("TestRegion"))).thenReturn(mockRegion);
 
 		factoryBean.setAttributes(null);
@@ -521,6 +528,148 @@ public class ClientRegionFactoryBeanTest {
 		assertNull(TestUtils.readField("shortcut", factoryBean));
 		assertTrue(factoryBean.isPersistent());
 		assertEquals(ClientRegionShortcut.LOCAL_PERSISTENT, factoryBean.resolveClientRegionShortcut());
+	}
+
+	protected <K> Interest<K> newInterest(K key) {
+		return new Interest<K>(key);
+	}
+
+	protected <K> Interest<K>[] toArray(Interest<K>... interests) {
+		return interests;
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void destroyCallsRegionClose() throws Exception {
+		final Region mockRegion = mock(Region.class, "MockRegion");
+
+		RegionService mockRegionService = mock(RegionService.class, "MockRegionService");
+
+		when(mockRegion.getRegionService()).thenReturn(mockRegionService);
+		when(mockRegionService.isClosed()).thenReturn(false);
+
+		ClientRegionFactoryBean clientRegionFactoryBean = new ClientRegionFactoryBean() {
+			@Override public Region getObject() throws Exception {
+				return mockRegion;
+			}
+		};
+
+		clientRegionFactoryBean.setClose(true);
+		clientRegionFactoryBean.setInterests(toArray(newInterest("test")));
+
+		assertThat(clientRegionFactoryBean.isClose(), is(true));
+		assertThat(clientRegionFactoryBean.isDestroy(), is(false));
+		assertThat(clientRegionFactoryBean.getInterests(), is(notNullValue()));
+		assertThat(clientRegionFactoryBean.getInterests().length, is(equalTo(1)));
+
+		clientRegionFactoryBean.destroy();
+
+		verify(mockRegion, times(1)).getRegionService();
+		verify(mockRegionService, times(1)).isClosed();
+		verify(mockRegion, times(1)).close();
+		verify(mockRegion, never()).destroyRegion();
+		verify(mockRegion, never()).unregisterInterest(any());
+		verify(mockRegion, never()).unregisterInterestRegex(anyString());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void destroyCallsRegionDestroy() throws Exception {
+		final Region mockRegion = mock(Region.class, "MockRegion");
+
+		RegionService mockRegionService = mock(RegionService.class, "MockRegionService");
+
+		when(mockRegion.getRegionService()).thenReturn(mockRegionService);
+		when(mockRegionService.isClosed()).thenReturn(false);
+
+		ClientRegionFactoryBean clientRegionFactoryBean = new ClientRegionFactoryBean() {
+			@Override public Region getObject() throws Exception {
+				return mockRegion;
+			}
+		};
+
+		clientRegionFactoryBean.setClose(false);
+		clientRegionFactoryBean.setDestroy(true);
+		clientRegionFactoryBean.setInterests(toArray(newInterest("test")));
+
+		assertThat(clientRegionFactoryBean.isClose(), is(false));
+		assertThat(clientRegionFactoryBean.isDestroy(), is(true));
+		assertThat(clientRegionFactoryBean.getInterests(), is(notNullValue()));
+		assertThat(clientRegionFactoryBean.getInterests().length, is(equalTo(1)));
+
+		clientRegionFactoryBean.destroy();
+
+		verify(mockRegion, never()).getRegionService();
+		verify(mockRegionService, never()).isClosed();
+		verify(mockRegion, never()).close();
+		verify(mockRegion, times(1)).destroyRegion();
+		verify(mockRegion, never()).unregisterInterest(any());
+		verify(mockRegion, never()).unregisterInterestRegex(anyString());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void destroyDoesNothingWhenClientRegionFactoryBeanCloseIsTrueButRegionServiceIsClosed() throws Exception {
+		final Region mockRegion = mock(Region.class, "MockRegion");
+
+		RegionService mockRegionService = mock(RegionService.class, "MockRegionService");
+
+		when(mockRegion.getRegionService()).thenReturn(mockRegionService);
+		when(mockRegionService.isClosed()).thenReturn(true);
+
+		ClientRegionFactoryBean clientRegionFactoryBean = new ClientRegionFactoryBean() {
+			@Override public Region getObject() throws Exception {
+				return mockRegion;
+			}
+		};
+
+		clientRegionFactoryBean.setClose(true);
+		clientRegionFactoryBean.setInterests(toArray(newInterest("test")));
+
+		assertThat(clientRegionFactoryBean.isClose(), is(true));
+		assertThat(clientRegionFactoryBean.isDestroy(), is(false));
+		assertThat(clientRegionFactoryBean.getInterests(), is(notNullValue()));
+		assertThat(clientRegionFactoryBean.getInterests().length, is(equalTo(1)));
+
+		clientRegionFactoryBean.destroy();
+
+		verify(mockRegion, times(1)).getRegionService();
+		verify(mockRegionService, times(1)).isClosed();
+		verify(mockRegion, never()).close();
+		verify(mockRegion, never()).destroyRegion();
+		verify(mockRegion, never()).unregisterInterest(any());
+		verify(mockRegion, never()).unregisterInterestRegex(anyString());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void destroyDoesNothingWhenClientRegionFactoryBeanCloseAndDestroyAreFalse() throws Exception {
+		final Region mockRegion = mock(Region.class, "MockRegion");
+
+		ClientRegionFactoryBean clientRegionFactoryBean = new ClientRegionFactoryBean() {
+			@Override public Region getObject() throws Exception {
+				return mockRegion;
+			}
+		};
+
+		clientRegionFactoryBean.destroy();
+
+		verify(mockRegion, never()).getRegionService();
+		verify(mockRegion, never()).close();
+		verify(mockRegion, never()).destroyRegion();
+		verify(mockRegion, never()).unregisterInterest(any());
+		verify(mockRegion, never()).unregisterInterestRegex(anyString());
+	}
+
+	@Test
+	public void destroyDoesNothingWhenRegionIsNull() throws Exception {
+		ClientRegionFactoryBean clientRegionFactoryBean = new ClientRegionFactoryBean() {
+			@Override public Region getObject() throws Exception {
+				return null;
+			}
+		};
+
+		clientRegionFactoryBean.destroy();
 	}
 
 }

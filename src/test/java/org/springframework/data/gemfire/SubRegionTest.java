@@ -21,7 +21,7 @@ import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 
-import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 
 /**
@@ -49,7 +49,7 @@ public class SubRegionTest extends RecreatingContextTest {
 		cacheFactoryBean.setBeanName("gemfireCache");
 		cacheFactoryBean.setUseBeanFactoryLocator(false);
 
-		Cache cache = cacheFactoryBean.getObject();
+		GemFireCache cache = cacheFactoryBean.getObject();
 
 		assertNotNull(cache);
 

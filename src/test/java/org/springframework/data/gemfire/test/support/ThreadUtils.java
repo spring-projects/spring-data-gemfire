@@ -38,22 +38,22 @@ public abstract class ThreadUtils {
 		}
 	}
 
-	public static void timedWait(final long milliseconds) {
-		timedWait(milliseconds, milliseconds);
+	public static void timedWait(final long duration) {
+		timedWait(duration, duration);
 	}
 
-	public static void timedWait(final long milliseconds, final long interval) {
-		timedWait(milliseconds, interval, new WaitCondition() {
+	public static void timedWait(final long duration, final long interval) {
+		timedWait(duration, interval, new WaitCondition() {
 			@Override public boolean waiting() {
 				return true;
 			}
 		});
 	}
 
-	public static void timedWait(final long milliseconds, long interval, final WaitCondition waitCondition) {
-		final long timeout = (System.currentTimeMillis() + milliseconds);
+	public static void timedWait(final long duration, long interval, final WaitCondition waitCondition) {
+		final long timeout = (System.currentTimeMillis() + duration);
 
-		interval = Math.min(interval, milliseconds);
+		interval = Math.min(interval, duration);
 
 		while (waitCondition.waiting() && (System.currentTimeMillis() < timeout)) {
 			try {
