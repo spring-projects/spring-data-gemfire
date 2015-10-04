@@ -231,12 +231,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	/* (non-Javadoc) */
 	private Cache init() throws Exception {
-		if (useBeanFactoryLocator && beanFactoryLocator == null) {
-			beanFactoryLocator = new GemfireBeanFactoryLocator();
-			beanFactoryLocator.setBeanFactory(beanFactory);
-			beanFactoryLocator.setBeanName(beanName);
-			beanFactoryLocator.afterPropertiesSet();
-		}
+		initBeanFactoryLocator();
 
 		final ClassLoader originalThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -262,6 +257,16 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		}
 		finally {
 			Thread.currentThread().setContextClassLoader(originalThreadContextClassLoader);
+		}
+	}
+
+	/* (non-Javadoc) */
+	private void initBeanFactoryLocator() {
+		if (useBeanFactoryLocator && beanFactoryLocator == null) {
+			beanFactoryLocator = new GemfireBeanFactoryLocator();
+			beanFactoryLocator.setBeanFactory(beanFactory);
+			beanFactoryLocator.setBeanName(beanName);
+			beanFactoryLocator.afterPropertiesSet();
 		}
 	}
 
@@ -496,7 +501,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			Cache localCache = fetchCache();
 
 			if (localCache != null && !localCache.isClosed()) {
-				localCache.close();
+				close(localCache);
 			}
 
 			this.cache = null;
@@ -506,6 +511,10 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 				beanFactoryLocator = null;
 			}
 		}
+	}
+
+	protected void close(GemFireCache cache) {
+		cache.close();
 	}
 
 	@Override

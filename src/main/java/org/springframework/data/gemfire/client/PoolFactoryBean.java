@@ -244,17 +244,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		this.beanName = name;
 	}
 
-	/**
-	 * @param name the name to set
-	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/**
-	 * @param pool
-	 *            the pool to set
-	 */
 	public void setPool(Pool pool) {
 		this.pool = pool;
 	}

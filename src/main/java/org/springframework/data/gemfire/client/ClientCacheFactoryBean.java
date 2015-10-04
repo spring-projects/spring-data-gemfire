@@ -16,10 +16,11 @@
 
 package org.springframework.data.gemfire.client;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
@@ -40,19 +41,26 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @author Costin Leau
  * @author Lyndon Adams
  * @author John Blum
+ * @see org.springframework.context.ApplicationListener
+ * @see org.springframework.context.event.ContextRefreshedEvent
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see com.gemstone.gemfire.cache.GemFireCache
  * @see com.gemstone.gemfire.cache.client.ClientCache
  * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+ * @see com.gemstone.gemfire.cache.client.Pool
+ * @see com.gemstone.gemfire.cache.client.PoolManager
+ * @see com.gemstone.gemfire.distributed.DistributedSystem
  */
 @SuppressWarnings("unused")
-public class ClientCacheFactoryBean extends CacheFactoryBean {
+public class ClientCacheFactoryBean extends CacheFactoryBean implements ApplicationListener<ContextRefreshedEvent> {
+
+	protected Boolean keepAlive = false;
 
 	protected Boolean readyForEvents = false;
 
 	private Pool pool;
 
-	private String poolName;
+	protected String poolName;
 
 	@Override
 	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
@@ -213,18 +221,14 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	/**
 	 * Register for events after Pool and Regions have been created and iff non-durable client...
 	 *
-	 * @param <T> parameterized Class type extension of GemFireCache.
-	 * @param cache the GemFire cache instance to process.
-	 * @return the processed cache instance after ready for events.
-	 * @throws java.io.IOException if an error occurs during post processing.
-	 * @see org.springframework.data.gemfire.CacheFactoryBean#postProcess(com.gemstone.gemfire.cache.GemFireCache)
-	 * @see #readyForEvents(com.gemstone.gemfire.cache.GemFireCache)
-	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @param event the ApplicationContextEvent fired when the ApplicationContext is refreshed.
+	 * @see org.springframework.context.Lifecycle#start()
 	 * @see com.gemstone.gemfire.cache.client.ClientCache
+	 * @see #readyForEvents(com.gemstone.gemfire.cache.GemFireCache)
 	 */
 	@Override
-	protected <T extends GemFireCache> T postProcess(T cache) throws IOException {
-		return readyForEvents(super.postProcess(cache));
+	public void onApplicationEvent(final ContextRefreshedEvent event) {
+		readyForEvents(this.cache);
 	}
 
 	/**
@@ -244,6 +248,11 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	@Override
+	protected void close(final GemFireCache cache) {
+		((ClientCache) cache).close(isKeepAlive());
+	}
+
+	@Override
 	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
 		throw new UnsupportedOperationException("Auto-reconnect is not supported on ClientCache.");
 	}
@@ -251,6 +260,26 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	@Override
 	public final Boolean getEnableAutoReconnect() {
 		return Boolean.FALSE;
+	}
+
+	/**
+	 * Sets whether the server(s) should keep the durable client's queue alive for the duration of the timeout
+	 * when the client voluntarily disconnects.
+	 *
+	 * @param keepAlive a boolean value indicating to the server to keep the durable client's queues alive.
+	 */
+	public void setKeepAlive(Boolean keepAlive) {
+		this.keepAlive = keepAlive;
+	}
+
+	/**
+	 * Determines whether the server(s) should keep the durable client's queue alive for the duration of the timeout
+	 * when the client voluntarily disconnects.
+	 *
+	 * @return a boolean value indicating whether the server should keep the durable client's queues alive.
+	 */
+	public boolean isKeepAlive() {
+		return Boolean.TRUE.equals(this.keepAlive);
 	}
 
 	/**
@@ -271,6 +300,15 @@ public class ClientCacheFactoryBean extends CacheFactoryBean {
 	public void setPoolName(String poolName) {
 		Assert.hasText(poolName, "The Pool 'name' is required!");
 		this.poolName = poolName;
+	}
+
+	/**
+	 * Gets the pool name used by this client.
+	 *
+	 * @return the name of the GemFire Pool used by the GemFire Client Cache.
+	 */
+	public String getPoolName() {
+		return poolName;
 	}
 
 	/**

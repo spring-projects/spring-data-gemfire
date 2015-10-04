@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">ClientCacheNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:pool id="serverPool">
+		<gfe:server host="localhost" port="1234"/>
+	</gfe:pool>
+
+	<bean id="reflectionPdxSerializer" class="com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer"/>
+
+	<gfe:client-cache cache-xml-location="/path/to/bogus/cache.xml" properties-ref="gemfireProperties" lazy-init="true"
+					  copy-on-read="true" critical-heap-percentage="0.85" eviction-heap-percentage="0.65"
+					  pdx-serializer-ref="reflectionPdxSerializer" pdx-ignore-unread-fields="true" pdx-persistent="false"
+					  pdx-read-serialized="true" keep-alive="true" pool-name="serverPool" ready-for-events="false"/>
+
+</beans>
