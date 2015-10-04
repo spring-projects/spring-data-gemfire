@@ -25,6 +25,7 @@ import org.w3c.dom.Element;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.internal.GemFireVersion;
 
 /**
@@ -35,6 +36,7 @@ import com.gemstone.gemfire.internal.GemFireVersion;
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
  * @since 1.3.3
  */
+@SuppressWarnings("unused")
 public abstract class GemfireUtils extends DistributedSystemUtils {
 
 	public final static String GEMFIRE_NAME = GemFireVersion.getProductName();
@@ -94,6 +96,26 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 
 	private static boolean isGatewayAvailable() {
 		return isClassAvailable(GATEWAY_TYPE_NAME);
+	}
+
+	public static boolean closeCache() {
+		try {
+			CacheFactory.getAnyInstance().close();
+			return true;
+		}
+		catch (Exception ignore) {
+			return false;
+		}
+	}
+
+	public static boolean closeClientCache() {
+		try {
+			ClientCacheFactory.getAnyInstance().close();
+			return true;
+		}
+		catch (Exception ignore) {
+			return false;
+		}
 	}
 
 	public static boolean isGemfireVersionGreaterThanEqual(double expectedVersion) {

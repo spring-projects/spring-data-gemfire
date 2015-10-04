@@ -78,7 +78,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
  */
 @SuppressWarnings("unused")
-public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
+public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<GemFireCache>,
 		InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
 	protected boolean close = true;
@@ -96,7 +96,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	protected Boolean pdxReadSerialized;
 	protected Boolean useClusterConfiguration;
 
-	protected Cache cache;
+	protected GemFireCache cache;
 
 	protected ClassLoader beanClassLoader;
 
@@ -224,7 +224,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/* (non-Javadoc) */
-	private Cache init() throws Exception {
+	private GemFireCache init() throws Exception {
 		initBeanFactoryLocator();
 
 		final ClassLoader currentThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -495,7 +495,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			Cache localCache = fetchCache();
 
 			if (localCache != null && !localCache.isClosed()) {
-				localCache.close();
+				close(localCache);
 			}
 
 			this.cache = null;
@@ -505,6 +505,10 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 				beanFactoryLocator = null;
 			}
 		}
+	}
+
+	protected void close(GemFireCache cache) {
+		cache.close();
 	}
 
 	@Override
@@ -842,7 +846,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	@Override
-	public Cache getObject() throws Exception {
+	public GemFireCache getObject() throws Exception {
 		return init();
 	}
 
