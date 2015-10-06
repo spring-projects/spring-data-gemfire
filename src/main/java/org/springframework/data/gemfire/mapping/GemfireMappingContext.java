@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.mapping;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 
+import org.springframework.data.gemfire.mapping.model.GemfireSimpleTypeHolder;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
@@ -28,6 +29,18 @@ import org.springframework.data.util.TypeInformation;
  * @author John Blum
  */
 public class GemfireMappingContext extends AbstractMappingContext<GemfirePersistentEntity<?>, GemfirePersistentProperty> {
+
+	/**
+	 * Constructs a GemfireMappingContext with a GemfireSimpleTypeHolder.
+	 *
+	 * @see org.springframework.data.gemfire.mapping.model.GemfireSimpleTypeHolder
+	 */
+	public GemfireMappingContext() {
+		// Technically, the following call is not Thread-safe (the "this" reference escapes), but then MappingContext
+		// makes no Thread-safety guarantees, even though, most likely, and especially in GemFire's case,
+		// the MappingContext will be used in a highly concurrent context (modeled after SD MongoDB for consistency)!
+		setSimpleTypeHolder(new GemfireSimpleTypeHolder());
+	}
 
 	/*
 	 * (non-Javadoc)
