@@ -89,7 +89,7 @@ public class IndexConflictsIntegrationTest {
 		}
 		catch (BeanCreationException expected) {
 			assertThat(expected.getMessage(), containsString("Error creating bean with name 'customerIdentityIndex'"
-				+ " defined in org.springframework.data.gemfire.IndexConflictsIntegrationTest$IndexDefinitionConflictGemFireConfiguration:"
+				+ " defined in class org.springframework.data.gemfire.IndexConflictsIntegrationTest$IndexDefinitionConflictGemFireConfiguration:"
 				+ " Invocation of init method failed"));
 			assertThat(expected.getCause(), is(instanceOf(GemfireIndexException.class)));
 			assertThat(expected.getCause().getMessage(),

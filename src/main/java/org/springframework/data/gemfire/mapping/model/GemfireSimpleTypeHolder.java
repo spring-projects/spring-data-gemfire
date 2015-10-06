@@ -34,11 +34,22 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 @SuppressWarnings("unused")
 public class GemfireSimpleTypeHolder extends SimpleTypeHolder {
 
+	private static final boolean REGISTER_DEFAULTS = true;
+
 	protected static final Set<Class<?>> CUSTOM_SIMPLE_TYPES = new HashSet<Class<?>>(2);
 
 	static {
 		CUSTOM_SIMPLE_TYPES.add(BigDecimal.class);
 		CUSTOM_SIMPLE_TYPES.add(BigInteger.class);
+	}
+
+	/**
+	 * Constructs an instance of GemfireSimpleTypeHolder initialized with additional, custom simple types
+	 * handled by GemFire along with register the default simple types.
+	 * @see org.springframework.data.mapping.model.SimpleTypeHolder(Set, boolean)
+	 */
+	public GemfireSimpleTypeHolder() {
+		super(CUSTOM_SIMPLE_TYPES, REGISTER_DEFAULTS);
 	}
 
 	/**

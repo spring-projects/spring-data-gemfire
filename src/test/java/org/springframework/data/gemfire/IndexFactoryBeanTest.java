@@ -143,7 +143,7 @@ public class IndexFactoryBeanTest {
 			indexFactoryBean.afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("A QueryService is required for Index creation!", expected.getMessage());
+			assertEquals("QueryService is required to create an Index", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -164,7 +164,7 @@ public class IndexFactoryBeanTest {
 			indexFactoryBean.afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("The Index 'expression' is required!", expected.getMessage());
+			assertEquals("Index 'expression' is required", expected.getMessage());
 			throw expected;
 		}
 	}
