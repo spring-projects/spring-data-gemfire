@@ -32,6 +32,12 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  */
 public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty<GemfirePersistentProperty> {
 
+	/* (non-Javadoc) */
+	private static SimpleTypeHolder resolveSimpleTypeHolder(SimpleTypeHolder source) {
+		return (source instanceof GemfireSimpleTypeHolder ? source
+			: (source != null ? new GemfireSimpleTypeHolder(source) : new GemfireSimpleTypeHolder()));
+	}
+
 	/**
 	 * Constructs an instance of the GemfirePersistentProperty with entity information.
 	 *
@@ -42,7 +48,7 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 	 */
 	public GemfirePersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			PersistentEntity<?, GemfirePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
-		super(field, propertyDescriptor, owner, new GemfireSimpleTypeHolder(simpleTypeHolder));
+		super(field, propertyDescriptor, owner, resolveSimpleTypeHolder(simpleTypeHolder));
 	}
 
 	/*
