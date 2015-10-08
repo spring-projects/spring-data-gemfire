@@ -380,15 +380,6 @@ public class StubCache implements Cache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#addBridgeServer()
-	 */
-	@Override
-	@Deprecated
-	public com.gemstone.gemfire.cache.util.BridgeServer addBridgeServer() {
-		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
-	}
-
-	/* (non-Javadoc)
 	 * @see com.gemstone.gemfire.cache.Cache#addCacheServer()
 	 */
 	@Override
@@ -505,15 +496,6 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public Set<AsyncEventQueue> getAsyncEventQueues() {
-		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getBridgeServers()
-	 */
-	@Override
-	@Deprecated
-	public List<CacheServer> getBridgeServers() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 

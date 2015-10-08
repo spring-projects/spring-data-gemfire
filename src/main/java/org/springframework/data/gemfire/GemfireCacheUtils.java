@@ -294,10 +294,6 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof VersionException) {
 			return new DataAccessResourceFailureException(ex.getMessage(), ex);
 		}
-		// util.version exception (seems quite similar to the exception above)
-		if (ex instanceof com.gemstone.gemfire.cache.util.VersionException) {
-			return new DataAccessResourceFailureException(ex.getMessage(), ex);
-		}
 		// admin exception
 		if (ex instanceof com.gemstone.gemfire.admin.AdminException) {
 			return new GemfireSystemException(ex);
