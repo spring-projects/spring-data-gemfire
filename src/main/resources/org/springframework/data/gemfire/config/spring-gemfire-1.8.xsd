@@ -352,6 +352,7 @@ Defines a GemFire Client Cache instance used for creating or retrieving 'regions
 					<xsd:attribute name="keep-alive" type="xsd:string" use="optional" default="false">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
+Boolean value indicating whether the server should keep the durable client's queues alive for the timeout period.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>

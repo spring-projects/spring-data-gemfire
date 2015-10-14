@@ -10,7 +10,9 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.test;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContextInitializer;
@@ -19,30 +21,34 @@ import org.springframework.util.StringUtils;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 public class GemfireTestApplicationContextInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-	private static Log logger = LogFactory.getLog(GemfireTestApplicationContextInitializer.class);
+	private static final Log LOG = LogFactory.getLog(GemfireTestApplicationContextInitializer.class);
 
 	public static final String GEMFIRE_TEST_RUNNER_DISABLED = "org.springframework.data.gemfire.test.GemfireTestRunner.nomock";
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationContextInitializer#initialize(org.springframework.context.ConfigurableApplicationContext)
 	 */
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
-		if (StringUtils.hasText(System.getProperty(GEMFIRE_TEST_RUNNER_DISABLED))) {
-			String value = System.getProperty(GEMFIRE_TEST_RUNNER_DISABLED);
+		String gemfireTestRunnerDisabled = System.getProperty(GEMFIRE_TEST_RUNNER_DISABLED, Boolean.FALSE.toString());
 
-			if (!("NO".equalsIgnoreCase(value) || "FALSE".equalsIgnoreCase(value))) {
-				logger.warn(String.format("Mocks disabled. Using real GemFire components: %1$s = %2$s",
-					GEMFIRE_TEST_RUNNER_DISABLED, value));
-				return;
-			}
+		if (isGemFireTestRunnerDisable(gemfireTestRunnerDisabled)) {
+			LOG.warn(String.format("WARNING - Mocks disabled; Using real GemFire components (%1$s = %2$s)",
+				GEMFIRE_TEST_RUNNER_DISABLED, gemfireTestRunnerDisabled));
 		}
+		else {
+			applicationContext.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
+		}
+	}
 
-		applicationContext.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
+	private boolean isGemFireTestRunnerDisable(final String systemPropertyValue) {
+		return (Boolean.valueOf(StringUtils.trimAllWhitespace(systemPropertyValue))
+			|| "yes".equalsIgnoreCase(systemPropertyValue));
 	}
 
 }

@@ -27,13 +27,13 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -42,8 +42,8 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
-import org.springframework.data.util.ReflectionUtils;
 
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -60,7 +60,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.mockito.Mockito
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
- * @see org.springframework.data.gemfire.TestUtils
+ * @see com.gemstone.gemfire.cache.client.ClientCache
  * @since 1.7.0
  */
 public class ClientCacheFactoryBeanTest {
@@ -415,78 +415,83 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void onApplicationEventSignalsReadyForEvents() throws Exception {
-		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+	@SuppressWarnings("unchecked")
+	public void onApplicationEventCallsClientCacheReadyForEvents() {
+		final ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
 
-		when(mockClientCache.isClosed()).thenReturn(false);
-
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				return (T) mockClientCache;
+			}
+		};
 
 		clientCacheFactoryBean.setReadyForEvents(true);
 
-		ReflectionUtils.setField(ReflectionUtils.findField(ClientCacheFactoryBean.class,
-			new org.springframework.util.ReflectionUtils.FieldFilter() {
-				@Override public boolean matches(final Field field) {
-					return field.getName().equals("cache");
-				}
-			}), clientCacheFactoryBean, mockClientCache);
-
-		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(true));
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 
-		verify(mockClientCache, times(1)).isClosed();
 		verify(mockClientCache, times(1)).readyForEvents();
 	}
 
 	@Test
-	public void onApplicationEventDoesNotSignalReadyForEventsWhenClientCacheIsClosed() {
-		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+	@SuppressWarnings("unchecked")
+	public void onApplicationEventDoesNotCallClientCacheReadyForEventsWhenClientCacheFactoryBeanReadyForEventsIsFalse() {
+		final ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
 
-		when(mockClientCache.isClosed()).thenReturn(true);
+		doThrow(new RuntimeException("test")).when(mockClientCache).readyForEvents();
 
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				return (T) mockClientCache;
+			}
+		};
 
-		clientCacheFactoryBean.setReadyForEvents(true);
+		clientCacheFactoryBean.setReadyForEvents(false);
 
-		ReflectionUtils.setField(ReflectionUtils.findField(ClientCacheFactoryBean.class,
-			new org.springframework.util.ReflectionUtils.FieldFilter() {
-				@Override public boolean matches(final Field field) {
-					return field.getName().equals("cache");
-				}
-			}), clientCacheFactoryBean, mockClientCache);
-
-		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(true));
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(false));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 
-		verify(mockClientCache, times(1)).isClosed();
 		verify(mockClientCache, never()).readyForEvents();
 	}
 
 	@Test
-	public void onApplicationEventDoesNotSignalReadyForEventsWhenClientCacheFactoryBeanReadyForEventsIsFalse() {
-		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+	@SuppressWarnings("unchecked")
+	public void onApplicationEventHandlesIllegalStateException() {
+		final ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
 
-		when(mockClientCache.isClosed()).thenReturn(false);
+		doThrow(new IllegalStateException("non-durable client")).when(mockClientCache).readyForEvents();
 
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				return (T) mockClientCache;
+			}
+		};
 
-		clientCacheFactoryBean.setReadyForEvents(false);
+		clientCacheFactoryBean.setReadyForEvents(true);
 
-		ReflectionUtils.setField(ReflectionUtils.findField(ClientCacheFactoryBean.class,
-			new org.springframework.util.ReflectionUtils.FieldFilter() {
-				@Override public boolean matches(final Field field) {
-					return field.getName().equals("cache");
-				}
-			}), clientCacheFactoryBean, mockClientCache);
-
-		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(false));
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 
-		verify(mockClientCache, never()).isClosed();
-		verify(mockClientCache, never()).readyForEvents();
+		verify(mockClientCache, times(1)).readyForEvents();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void onApplicationEventHandlesCacheClosedException() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				throw new CacheClosedException("test");
+			}
+		};
+
+		clientCacheFactoryBean.setReadyForEvents(true);
+
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
+
+		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 	}
 
 	@Test
@@ -541,7 +546,7 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void setPoolNameToInvalidValue() {
+	public void setPoolNameWithAnIllegalArgument() {
 		try {
 			new ClientCacheFactoryBean().setPoolName("  ");
 		}
