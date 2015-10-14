@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.5.4.RELEASE (2015-10-14)
+---------------------------------------------
+* SGF-436 - Release 1.5.4 (Evans).
+
+
 Changes in version 1.7.0.RELEASE (2015-09-01)
 ---------------------------------------------
 * SGF-426 - Release 1.7 GA (Gosling).
