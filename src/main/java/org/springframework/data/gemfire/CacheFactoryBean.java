@@ -77,6 +77,12 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.CacheFactory
+ * @see com.gemstone.gemfire.cache.DynamicRegionFactory
+ * @see com.gemstone.gemfire.cache.GemFireCache
+ * @see com.gemstone.gemfire.distributed.DistributedMember
+ * @see com.gemstone.gemfire.distributed.DistributedSystem
  */
 @SuppressWarnings("unused")
 public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
@@ -400,6 +406,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * Post processes the GemFire Cache instance by loading any cache.xml, applying settings specified in SDG XML
 	 * configuration meta-data, and registering the appropriate Transaction Listeners, Writer and JNDI settings.
 	 *
+	 * @param <T> parameterized Class type extension of GemFireCache.
 	 * @param cache the GemFire Cache instance to process.
 	 * @return the GemFire Cache instance after processing.
 	 * @throws IOException if the cache.xml Resource could not be loaded and applied to the Cache instance.
@@ -789,35 +796,44 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
-	 * @return the beanClassLoader
+	 * Gets a reference to the JRE ClassLoader used to load and create bean classes in the Spring container.
+	 *
+	 * @return the JRE ClassLoader used to load and created beans in the Spring container.
+	 * @see java.lang.ClassLoader
 	 */
 	public ClassLoader getBeanClassLoader() {
 		return beanClassLoader;
 	}
 
 	/**
-	 * @return the beanFactory
+	 * Gets a reference to the Spring BeanFactory that created this GemFire Cache FactoryBean.
+	 *
+	 * @return a reference to the Spring BeanFactory.
+	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	public BeanFactory getBeanFactory() {
 		return beanFactory;
 	}
 
-	/**
-	 * @return the beanFactoryLocator
-	 */
+	/* (non-Javadoc) */
 	public GemfireBeanFactoryLocator getBeanFactoryLocator() {
 		return beanFactoryLocator;
 	}
 
 	/**
-	 * @return the beanName
+	 * Gets the Spring bean name for the GemFire Cache.
+	 *
+	 * @return a String value indicating the Spring container bean name for the GemFire Cache object/component.
 	 */
 	public String getBeanName() {
 		return beanName;
 	}
 
 	/**
-	 * @return the cacheXml
+	 * Gets a reference to the GemFire native cache.xml file as a Spring Resource.
+	 *
+	 * @return the a reference to the GemFire native cache.xml as a Spring Resource.
+	 * @see org.springframework.core.io.Resource
 	 */
 	public Resource getCacheXml() {
 		return cacheXml;
@@ -845,7 +861,10 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
-	 * @return the properties
+	 * Gets a reference to the GemFire System Properties.
+	 *
+	 * @return a reference to the GemFire System Properties.
+	 * @see java.util.Properties
 	 */
 	public Properties getProperties() {
 		return (properties != null ? properties : (properties = new Properties()));
@@ -857,7 +876,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	@Override
-	public Class<? extends Cache> getObjectType() {
+	public Class<? extends GemFireCache> getObjectType() {
 		return (cache != null ? cache.getClass() : Cache.class);
 	}
 

@@ -221,11 +221,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 
 		@Override
 		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-			if (RUN_COUNT.get() == 2 && bean instanceof ClientCache) {
-				// NOTE pending event count is possibly 3 because it includes the 2 puts from the client cache producer
-				// as well as the "marker"
-				assertThat(((ClientCache) bean).getDefaultPool().getPendingEventCount(), is(equalTo(
-					RUN_COUNT.get() == 1 ? -2 : 3)));
+			if (bean instanceof ClientCache) {
 				pause(TimeUnit.SECONDS.toMillis(3));
 			}
 
