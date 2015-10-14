@@ -27,6 +27,7 @@ import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -219,32 +220,25 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Register for events after Pool and Regions have been created and iff non-durable client...
+	 * Inform the GemFire cluster that this client cache is ready to receive events iff the client is non-durable.
 	 *
 	 * @param event the ApplicationContextEvent fired when the ApplicationContext is refreshed.
-	 * @see org.springframework.context.Lifecycle#start()
-	 * @see com.gemstone.gemfire.cache.client.ClientCache
-	 * @see #readyForEvents(com.gemstone.gemfire.cache.GemFireCache)
+	 * @see com.gemstone.gemfire.cache.client.ClientCache#readyForEvents()
+	 * @see #getReadyForEvents()
+	 * @see #getObject()
 	 */
 	@Override
 	public void onApplicationEvent(final ContextRefreshedEvent event) {
-		readyForEvents(this.cache);
-	}
-
-	/**
-	 * Inform the GemFire cluster that this client cache is ready to receive events.
-	 */
-	private <T extends GemFireCache> T readyForEvents(T clientCache) {
-		if (Boolean.TRUE.equals(getReadyForEvents()) && !clientCache.isClosed()) {
+		if (isReadyForEvents()) {
 			try {
-				((ClientCache) clientCache).readyForEvents();
+				((ClientCache) fetchCache()).readyForEvents();
 			}
 			catch (IllegalStateException ignore) {
-				// cannot be called for a non-durable client so exception is thrown
+				// thrown if clientCache.readyForEvents() is called on a non-durable client
+			}
+			catch (CacheClosedException ignore) {
 			}
 		}
-
-		return clientCache;
 	}
 
 	@Override
@@ -334,6 +328,11 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 */
 	public Boolean getReadyForEvents(){
 		return readyForEvents;
+	}
+
+	/* (non-Javadoc) */
+	public boolean isReadyForEvents() {
+		return Boolean.TRUE.equals(getReadyForEvents());
 	}
 
 	@Override
