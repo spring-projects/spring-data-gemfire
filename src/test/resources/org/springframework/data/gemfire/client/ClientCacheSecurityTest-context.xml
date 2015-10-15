@@ -11,7 +11,7 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="client.properties">
+	<util:properties id="clientProperties">
 		<prop key="client.server.host">localhost</prop>
 		<prop key="client.server.port">31517</prop>
 		<prop key="gemfire.security.ssl.enabled">true</prop>
@@ -23,7 +23,7 @@
 		<prop key="gemfire.security.ssl.keystore.type">jks</prop>
 	</util:properties>
 
-	<context:property-placeholder properties-ref="client.properties" system-properties-mode="FALLBACK"/>
+	<context:property-placeholder properties-ref="clientProperties" system-properties-mode="FALLBACK"/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="cluster-ssl-enabled">${gemfire.security.ssl.enabled}</prop>

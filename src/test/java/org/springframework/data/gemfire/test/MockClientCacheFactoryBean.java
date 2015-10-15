@@ -40,6 +40,8 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 			this.cacheXml = clientCacheFactoryBean.getCacheXml();
 			this.copyOnRead = clientCacheFactoryBean.getCopyOnRead();
 			this.criticalHeapPercentage = clientCacheFactoryBean.getCriticalHeapPercentage();
+			this.durableClientId = clientCacheFactoryBean.getDurableClientId();
+			this.durableClientTimeout = clientCacheFactoryBean.getDurableClientTimeout();
 			this.dynamicRegionSupport = clientCacheFactoryBean.getDynamicRegionSupport();
 			this.evictionHeapPercentage = clientCacheFactoryBean.getEvictionHeapPercentage();
 			this.gatewayConflictResolver = clientCacheFactoryBean.getGatewayConflictResolver();

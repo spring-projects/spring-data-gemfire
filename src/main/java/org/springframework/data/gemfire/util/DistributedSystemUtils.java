@@ -16,10 +16,16 @@
 
 package org.springframework.data.gemfire.util;
 
+import java.util.Properties;
+
+import org.springframework.util.Assert;
+
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.DistributionLocator;
+import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * DistributedSystemUtils is an abstract utility class for working with the GemFire DistributedSystem.
@@ -28,10 +34,28 @@ import com.gemstone.gemfire.internal.DistributionLocator;
  * @see com.gemstone.gemfire.distributed.DistributedSystem
  * @since 1.7.0
  */
+@SuppressWarnings("unused")
 public abstract class DistributedSystemUtils {
 
 	public static final int DEFAULT_CACHE_SERVER_PORT = CacheServer.DEFAULT_PORT;
 	public static final int DEFAULT_LOCATOR_PORT = DistributionLocator.DEFAULT_LOCATOR_PORT;
+
+	public static final String DURABLE_CLIENT_ID_PROPERTY_NAME = DistributionConfig.DURABLE_CLIENT_ID_NAME;
+	public static final String DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME = DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME;
+
+	public static Properties configureDurableClient(Properties gemfireProperties, String durableClientId, Integer durableClientTimeout) {
+		if (StringUtils.hasText(durableClientId)) {
+			Assert.notNull(gemfireProperties, "gemfireProperties must not be null");
+
+			gemfireProperties.setProperty(DURABLE_CLIENT_ID_PROPERTY_NAME, durableClientId);
+
+			if (durableClientTimeout != null) {
+				gemfireProperties.setProperty(DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME, durableClientTimeout.toString());
+			}
+		}
+
+		return gemfireProperties;
+	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends DistributedSystem> T getDistributedSystem() {
@@ -40,6 +64,10 @@ public abstract class DistributedSystemUtils {
 
 	public static boolean isConnected(DistributedSystem distributedSystem) {
 		return (distributedSystem != null && distributedSystem.isConnected());
+	}
+
+	public static boolean isNotConnected(DistributedSystem distributedSystem) {
+		return !isConnected(distributedSystem);
 	}
 
 }

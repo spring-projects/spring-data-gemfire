@@ -46,7 +46,8 @@ import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 
 /**
- * The ClientCacheSecurityTest class...
+ * The ClientCacheSecurityTest class is a test suite with test cases testing SSL configuration between a GemFire client
+ * and server using the cluster-ssl-*  GemFire System properties.
  *
  * @author John Blum
  * @see org.junit.Test
