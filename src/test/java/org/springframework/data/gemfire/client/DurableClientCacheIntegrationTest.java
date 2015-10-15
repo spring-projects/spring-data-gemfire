@@ -47,6 +47,7 @@ import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.AbstractGemFireClientServerIntegrationTest;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
+import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -95,6 +96,8 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 	private static final String CLIENT_CACHE_INTERESTS_RESULT_POLICY_SYSTEM_PROPERTY =
 		"gemfire.cache.client.interests.result-policy";
 
+	private static final String DURABLE_CLIENT_TIMEOUT_SYSTEM_PROPERTY = "gemfire.cache.client.durable-client-timeout";
+
 	private static final String SERVER_HOST = "localhost";
 
 	@Autowired
@@ -119,6 +122,14 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 
 	@Before
 	public void setup() {
+		assertThat(clientCache.getDistributedSystem().getProperties().getProperty(
+			DistributedSystemUtils.DURABLE_CLIENT_ID_PROPERTY_NAME),
+				is(equalTo(DurableClientCacheIntegrationTest.class.getSimpleName())));
+
+		assertThat(clientCache.getDistributedSystem().getProperties().getProperty(
+			DistributedSystemUtils.DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME),
+				is(equalTo(RUN_COUNT.get() == 1 ? "300" : "600")));
+
 		assertRegion(example, "Example", DataPolicy.NORMAL);
 	}
 
@@ -127,8 +138,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		if (RUN_COUNT.get() == 1) {
 			closeApplicationContext();
 			runClientCacheProducer();
-			System.setProperty(CLIENT_CACHE_INTERESTS_RESULT_POLICY_SYSTEM_PROPERTY,
-				InterestResultPolicyType.NONE.name());
+			setSystemProperties();
 			RUN_COUNT.incrementAndGet();
 		}
 
@@ -160,6 +170,11 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		finally {
 			GemfireUtils.closeClientCache();
 		}
+	}
+
+	protected void setSystemProperties() {
+		System.setProperty(CLIENT_CACHE_INTERESTS_RESULT_POLICY_SYSTEM_PROPERTY, InterestResultPolicyType.NONE.name());
+		System.setProperty(DURABLE_CLIENT_TIMEOUT_SYSTEM_PROPERTY, "600");
 	}
 
 	protected void waitForRegionEntryEvents() {

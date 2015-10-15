@@ -16,11 +16,13 @@
 
 package org.springframework.data.gemfire.client;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
@@ -42,6 +44,7 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.util.DistributedSystemUtils;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.GemFireCache;
@@ -60,13 +63,21 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.mockito.Mockito
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+ * @see com.gemstone.gemfire.cache.GemFireCache
  * @see com.gemstone.gemfire.cache.client.ClientCache
+ * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+ * @see com.gemstone.gemfire.cache.client.Pool
+ * @see com.gemstone.gemfire.distributed.DistributedSystem
  * @since 1.7.0
  */
 public class ClientCacheFactoryBeanTest {
 
 	protected Properties createProperties(String key, String value) {
-		Properties properties = new Properties();
+		return addProperty(null, key, value);
+	}
+
+	protected Properties addProperty(Properties properties, String key, String value) {
+		properties = (properties != null ? properties : new Properties());
 		properties.setProperty(key, value);
 		return properties;
 	}
@@ -101,12 +112,52 @@ public class ClientCacheFactoryBeanTest {
 
 		Properties resolvedProperties = clientCacheFactoryBean.resolveProperties();
 
-		assertNotNull(resolvedProperties);
-		assertNotSame(gemfireProperties, resolvedProperties);
-		assertNotSame(distributedSystemProperties, resolvedProperties);
-		assertEquals(2, resolvedProperties.size());
-		assertEquals("test", resolvedProperties.getProperty("gf"));
-		assertEquals("mock", resolvedProperties.getProperty("ds"));
+		assertThat(resolvedProperties, is(notNullValue()));
+		assertThat(resolvedProperties, is(not(sameInstance(gemfireProperties))));
+		assertThat(resolvedProperties, is(not(sameInstance(distributedSystemProperties))));
+		assertThat(resolvedProperties.size(), is(equalTo(2)));
+		assertThat(resolvedProperties.containsKey(DistributedSystemUtils.DURABLE_CLIENT_ID_PROPERTY_NAME), is(false));
+		assertThat(resolvedProperties.containsKey(DistributedSystemUtils.DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME), is(false));
+		assertThat(resolvedProperties.getProperty("gf"), is(equalTo("test")));
+		assertThat(resolvedProperties.getProperty("ds"), is(equalTo("mock")));
+
+		verify(mockDistributedSystem, times(1)).isConnected();
+		verify(mockDistributedSystem, times(1)).getProperties();
+	}
+
+	@Test
+	public void resolvePropertiesWhenDistributedSystemIsConnectedAndClientIsDurable() {
+		Properties gemfireProperties = DistributedSystemUtils.configureDurableClient(createProperties("gf", "test"),
+			"123", 600);
+
+		Properties distributedSystemProperties = DistributedSystemUtils.configureDurableClient(
+			createProperties("ds", "mock"), "987", 300);
+
+		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockDistributedSystem");
+
+		when(mockDistributedSystem.isConnected()).thenReturn(true);
+		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@SuppressWarnings("unchecked") @Override <T extends DistributedSystem> T getDistributedSystem() {
+				return (T) mockDistributedSystem;
+			}
+		};
+
+		clientCacheFactoryBean.setProperties(gemfireProperties);
+
+		Properties resolvedProperties = clientCacheFactoryBean.resolveProperties();
+
+		assertThat(resolvedProperties, is(notNullValue()));
+		assertThat(resolvedProperties, is(not(sameInstance(gemfireProperties))));
+		assertThat(resolvedProperties, is(not(sameInstance(distributedSystemProperties))));
+		assertThat(resolvedProperties.size(), is(equalTo(4)));
+		assertThat(resolvedProperties.getProperty("gf"), is(equalTo("test")));
+		assertThat(resolvedProperties.getProperty("ds"), is(equalTo("mock")));
+		assertThat(resolvedProperties.getProperty(DistributedSystemUtils.DURABLE_CLIENT_ID_PROPERTY_NAME),
+			is(equalTo("123")));
+		assertThat(resolvedProperties.getProperty(DistributedSystemUtils.DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME),
+			is(equalTo("600")));
 
 		verify(mockDistributedSystem, times(1)).isConnected();
 		verify(mockDistributedSystem, times(1)).getProperties();
@@ -252,10 +303,13 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void createCache() {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
-		ClientCache mockClientCache = mock(ClientCache.class, "MockGemFireClientCache");
-		Pool mockPool = mock(Pool.class, "MockGemFirePool");
+		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockClientCacheFactory");
+
+		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+
+		Pool mockPool = mock(Pool.class, "MockPool");
 
 		when(mockClientCacheFactory.create()).thenReturn(mockClientCache);
 		when(mockBeanFactory.isTypeMatch(eq("testCreateCache.Pool"), eq(Pool.class))).thenReturn(true);

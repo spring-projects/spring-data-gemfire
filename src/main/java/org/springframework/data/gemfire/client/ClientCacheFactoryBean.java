@@ -24,6 +24,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -56,11 +57,13 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 public class ClientCacheFactoryBean extends CacheFactoryBean implements ApplicationListener<ContextRefreshedEvent> {
 
 	protected Boolean keepAlive = false;
-
 	protected Boolean readyForEvents = false;
+
+	protected Integer durableClientTimeout;
 
 	private Pool pool;
 
+	protected String durableClientId;
 	protected String poolName;
 
 	@Override
@@ -100,6 +103,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 			distributedSystemProperties.putAll(gemfireProperties);
 			gemfireProperties = distributedSystemProperties;
 		}
+
+		DistributedSystemUtils.configureDurableClient(gemfireProperties, durableClientId, durableClientTimeout);
 
 		return gemfireProperties;
 	}
@@ -179,7 +184,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
 	 */
 	private ClientCacheFactory initializePool(ClientCacheFactory clientCacheFactory) {
-		resolvePool(this.pool);
+		resolvePool(pool);
 		return clientCacheFactory;
 	}
 
@@ -247,18 +252,59 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	@Override
+	public Class<? extends GemFireCache> getObjectType() {
+		return (cache != null ? cache.getClass() : ClientCache.class);
+	}
+
+	@Override
 	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
 		throw new UnsupportedOperationException("Auto-reconnect is not supported on ClientCache.");
+	}
+
+	/**
+	 * Set the GemFire System property 'durable-client-id' to indicate to the server that this client is durable.
+	 *
+	 * @param durableClientId a String value indicating the durable client id.
+	 */
+	public void setDurableClientId(final String durableClientId) {
+		this.durableClientId = durableClientId;
+	}
+
+	/**
+	 * Gets the value of the GemFire System property 'durable-client-id' indicating to the server whether
+	 * this client is durable.
+	 *
+	 * @return a String value indicating the durable client id.
+	 */
+	public String getDurableClientId() {
+		return durableClientId;
+	}
+
+	/**
+	 * Set the GemFire System property 'durable-client-timeout' indicating to the server how long to track events
+	 * for the durable client when disconnected.
+	 *
+	 * @param durableClientTimeout an Integer value indicating the timeout in seconds for the server to keep
+	 * the durable client's queue around.
+	 */
+	public void setDurableClientTimeout(final Integer durableClientTimeout) {
+		this.durableClientTimeout = durableClientTimeout;
+	}
+
+	/**
+	 * Get the value of the GemFire System property 'durable-client-timeout' indicating to the server how long
+	 * to track events for the durable client when disconnected.
+	 *
+	 * @return an Integer value indicating the timeout in seconds for the server to keep
+	 * the durable client's queue around.
+	 */
+	public Integer getDurableClientTimeout() {
+		return durableClientTimeout;
 	}
 
 	@Override
 	public final Boolean getEnableAutoReconnect() {
 		return Boolean.FALSE;
-	}
-
-	@Override
-	public Class<? extends GemFireCache> getObjectType() {
-		return (cache != null ? cache.getClass() : ClientCache.class);
 	}
 
 	/**
@@ -272,13 +318,23 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
+	 * Gets the user specified value for whether the server(s) should keep the durable client's queue alive
+	 * for the duration of the timeout when the client voluntarily disconnects.
+	 *
+	 * @return a boolean value indicating whether the server should keep the durable client's queues alive.
+	 */
+	public Boolean getKeepAlive() {
+		return keepAlive;
+	}
+
+	/**
 	 * Determines whether the server(s) should keep the durable client's queue alive for the duration of the timeout
 	 * when the client voluntarily disconnects.
 	 *
 	 * @return a boolean value indicating whether the server should keep the durable client's queues alive.
 	 */
 	public boolean isKeepAlive() {
-		return Boolean.TRUE.equals(this.keepAlive);
+		return Boolean.TRUE.equals(getKeepAlive());
 	}
 
 	/**
@@ -311,10 +367,11 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Set the readyForEvents flag.
+	 * Sets the readyForEvents property to indicate whether the cache client should notify the server
+	 * that it is ready to receive updates.
 	 *
-	 * @param readyForEvents sets a boolean flag to notify the server that this durable client is ready
-	 * to receive updates.
+	 * @param readyForEvents sets a boolean flag to notify the server that this durable client
+	 * is ready to receive updates.
 	 * @see #getReadyForEvents()
 	 */
 	public void setReadyForEvents(Boolean readyForEvents){
@@ -322,7 +379,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Gets the value for the readyForEvents property.
+	 * Gets the user-specified value for the readyForEvents property.
 	 *
 	 * @return a boolean value indicating the state of the 'readyForEvents' property.
 	 */

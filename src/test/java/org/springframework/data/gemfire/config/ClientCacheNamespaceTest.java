@@ -67,6 +67,8 @@ public class ClientCacheNamespaceTest {
 		assertThat(clientCacheFactoryBean.isLazyInitialize(), is(true));
 		assertThat(clientCacheFactoryBean.getCopyOnRead(), is(true));
 		assertThat(clientCacheFactoryBean.getCriticalHeapPercentage(), is(equalTo(0.85f)));
+		assertThat(clientCacheFactoryBean.getDurableClientId(), is(equalTo("TestDurableClientId")));
+		assertThat(clientCacheFactoryBean.getDurableClientTimeout(), is(equalTo(600)));
 		assertThat(clientCacheFactoryBean.getEvictionHeapPercentage(), is(equalTo(0.65f)));
 		assertThat((PdxSerializer) clientCacheFactoryBean.getPdxSerializer(), is(equalTo(reflectionPdxSerializer)));
 		assertThat(clientCacheFactoryBean.getPdxIgnoreUnreadFields(), is(true));

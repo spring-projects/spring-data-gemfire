@@ -108,18 +108,6 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	private String serverGroup = PoolFactory.DEFAULT_SERVER_GROUP;
 
-	public Pool getObject() throws Exception {
-		return pool;
-	}
-
-	public Class<?> getObjectType() {
-		return (pool != null ? pool.getClass() : Pool.class);
-	}
-
-	public boolean isSingleton() {
-		return true;
-	}
-
 	public void afterPropertiesSet() throws Exception {
 		if (!StringUtils.hasText(name)) {
 			Assert.hasText(beanName, "Pool 'name' is required");
@@ -184,14 +172,20 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		}
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Creates an instance of the GemFire PoolFactory interface to construct, configure and initialize a GemFire Pool.
+	 *
+	 * @return a PoolFactory implementation to create Pool.
+	 * @see com.gemstone.gemfire.cache.client.PoolFactory
+	 * @see com.gemstone.gemfire.cache.client.PoolManager#createFactory()
+	 */
 	protected PoolFactory createPoolFactory() {
 		return PoolManager.createFactory();
 	}
 
 	/* (non-Javadoc) */
 	void resolveDistributedSystem() {
-		if (DistributedSystemUtils.getDistributedSystem() == null) {
+		if (DistributedSystemUtils.isNotConnected(DistributedSystemUtils.getDistributedSystem())) {
 			doDistributedSystemConnect(resolveGemfireProperties());
 		}
 	}
@@ -200,7 +194,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	Properties resolveGemfireProperties() {
 		try {
 			ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
-			return clientCacheFactoryBean.getProperties();
+			return clientCacheFactoryBean.resolveProperties();
 		}
 		catch (Exception ignore) {
 			return null;
@@ -208,8 +202,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * A workaround to create a Pool if no ClientCache has been created yet. Initialize a client-like
-	 * Distributed System before initializing the Pool.
+	 * A workaround to create a Pool if no ClientCache has been created yet. Initialize a cache client-like
+	 * DistributedSystem before initializing the Pool.
 	 *
 	 * @param properties GemFire System Properties.
 	 * @see java.util.Properties
@@ -233,6 +227,18 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 				log.debug(String.format("Destroyed Pool '%1$s'.", name));
 			}
 		}
+	}
+
+	public Pool getObject() throws Exception {
+		return pool;
+	}
+
+	public Class<?> getObjectType() {
+		return (pool != null ? pool.getClass() : Pool.class);
+	}
+
+	public boolean isSingleton() {
+		return true;
 	}
 
 	public void setBeanFactory(BeanFactory beanFactory) {

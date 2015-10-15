@@ -12,6 +12,7 @@
 ">
 
 	<util:properties id="clientProperties">
+		<prop key="gemfire.cache.client.durable-client-id">DurableClientCacheIntegrationTest</prop>
 		<prop key="gemfire.cache.client.server.host">localhost</prop>
 		<prop key="gemfire.cache.client.server.port">24842</prop>
 	</util:properties>
@@ -21,7 +22,7 @@
 	<bean class="org.springframework.data.gemfire.client.DurableClientCacheIntegrationTest$ClientCacheBeanPostProcessor"/>
 
 	<util:properties id="gemfireProperties">
-		<prop key="durable-client-id">DurableClientCacheIntegrationTestClientId</prop>
+		<prop key="durable-client-id">TestDurableClientId</prop>
 		<prop key="durable-client-timeout">300</prop>
 		<prop key="log-level">warning</prop>
 		<prop key="mcast-port">0</prop>
@@ -32,8 +33,10 @@
 		<gfe:server host="${gemfire.cache.client.server.host}" port="${gemfire.cache.client.server.port}"/>
 	</gfe:pool>
 
-	<gfe:client-cache properties-ref="gemfireProperties" keep-alive="true" pool-name="gemfireServerPool" ready-for-events="true"
-					  use-bean-factory-locator="false"/>
+	<gfe:client-cache properties-ref="gemfireProperties" pool-name="gemfireServerPool" use-bean-factory-locator="false"
+					  durable-client-id="${gemfire.cache.client.durable-client-id}"
+					  durable-client-timeout="${gemfire.cache.client.durable-client-timeout:}"
+					  keep-alive="true" ready-for-events="true"/>
 
 	<gfe:client-region id="Example" pool-name="gemfireServerPool" shortcut="CACHING_PROXY">
 		<gfe:cache-listener>

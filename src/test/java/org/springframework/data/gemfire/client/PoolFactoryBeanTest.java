@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.client;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -30,11 +32,12 @@ import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.gemfire.TestUtils;
@@ -57,26 +60,24 @@ import com.gemstone.gemfire.cache.client.PoolFactory;
  */
 public class PoolFactoryBeanTest {
 
-	@Test
-	public void testGetObjectType() {
-		assertEquals(Pool.class, new PoolFactoryBean().getObjectType());
-	}
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Test
-	public void testIsSingleton() {
-		assertTrue(new PoolFactoryBean().isSingleton());
-	}
+	@SuppressWarnings("deprecation")
+	public void afterPropertiesSet() throws Exception {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
 
-	@Test
-	public void testAfterPropertiesSet() throws Exception {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
-		final PoolFactory mockPoolFactory = mock(PoolFactory.class, "MockGemFirePoolFactory");
-		Pool mockPool = mock(Pool.class, "GemFirePool");
+		final PoolFactory mockPoolFactory = mock(PoolFactory.class, "MockPoolFactory");
+
+		Pool mockPool = mock(Pool.class, "MockPool");
 
 		final Properties gemfireProperties = new Properties();
+
 		gemfireProperties.setProperty("name", "testAfterPropertiesSet");
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
 		clientCacheFactoryBean.setProperties(gemfireProperties);
 
 		when(mockBeanFactory.getBean(eq(ClientCacheFactoryBean.class))).thenReturn(clientCacheFactoryBean);
@@ -139,39 +140,40 @@ public class PoolFactoryBeanTest {
 		verify(mockPoolFactory, times(1)).create(eq("GemFirePool"));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testAfterPropertiesSetWithNoLocatorsServersSpecified() throws Exception {
-		try {
-			PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
+	@Test
+	public void afterPropertiesSetWithUnspecifiedName() throws Exception {
+		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
-			poolFactoryBean.setName("GemFirePool");
-			poolFactoryBean.setLocators((Collection) null);
-			poolFactoryBean.setServers(Collections.<InetSocketAddress>emptyList());
-			poolFactoryBean.afterPropertiesSet();
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("at least one GemFire Locator or Server is required", expected.getMessage());
-			throw expected;
-		}
-	}
+		poolFactoryBean.setBeanName(null);
+		poolFactoryBean.setName(null);
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testAfterPropertiesSetWithUnspecifiedName() throws Exception {
-		try {
-			PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
-			poolFactoryBean.setBeanName(null);
-			poolFactoryBean.setName(null);
-			poolFactoryBean.afterPropertiesSet();
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("Pool 'name' is required", expected.getMessage());
-			throw expected;
-		}
+		expectedException.expect(IllegalArgumentException.class);
+		expectedException.expectCause(is(nullValue(Throwable.class)));
+		expectedException.expectMessage("Pool 'name' is required");
+
+		poolFactoryBean.afterPropertiesSet();
 	}
 
 	@Test
-	public void testResolveGemfireProperties() {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
+	@SuppressWarnings("deprecation")
+	public void afterPropertiesSetWithNoLocatorsOrServersSpecified() throws Exception {
+		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
+
+		poolFactoryBean.setBeanName("GemFirePool");
+		poolFactoryBean.setLocators(null);
+		poolFactoryBean.setServers(Collections.<InetSocketAddress>emptyList());
+
+		expectedException.expect(IllegalArgumentException.class);
+		expectedException.expectCause(is(nullValue(Throwable.class)));
+		expectedException.expectMessage("at least one GemFire Locator or Server is required");
+
+		poolFactoryBean.afterPropertiesSet();
+	}
+
+	@Test
+	public void resolveGemfireProperties() {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		when(mockBeanFactory.getBean(eq(ClientCacheFactoryBean.class))).thenReturn(clientCacheFactoryBean);
@@ -191,8 +193,8 @@ public class PoolFactoryBeanTest {
 	}
 
 	@Test
-	public void testResolveUnresolvableGemfireProperties() {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
+	public void resolveUnresolvableGemfireProperties() {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
 
 		when(mockBeanFactory.getBean(eq(ClientCacheFactoryBean.class))).thenThrow(
 			new NoSuchBeanDefinitionException("TEST"));
@@ -205,8 +207,8 @@ public class PoolFactoryBeanTest {
 	}
 
 	@Test
-	public void testDestroy() throws Exception {
-		Pool mockPool = mock(Pool.class, "MockGemFirePool");
+	public void destroy() throws Exception {
+		Pool mockPool = mock(Pool.class, "MockPool");
 
 		when(mockPool.isDestroyed()).thenReturn(false);
 
@@ -222,7 +224,7 @@ public class PoolFactoryBeanTest {
 	}
 
 	@Test
-	public void testDestroyNonSpringBasedPool() throws Exception {
+	public void destroyWithNonSpringBasedPool() throws Exception {
 		Pool mockPool = mock(Pool.class, "MockGemFirePool");
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
@@ -237,11 +239,21 @@ public class PoolFactoryBeanTest {
 	}
 
 	@Test
-	public void testDestroyWithUninitializedPool() throws Exception {
+	public void destroyWithUninitializedPool() throws Exception {
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setPool(null);
 		poolFactoryBean.destroy();
+	}
+
+	@Test
+	public void getObjectType() {
+		assertEquals(Pool.class, new PoolFactoryBean().getObjectType());
+	}
+
+	@Test
+	public void isSingleton() {
+		assertTrue(new PoolFactoryBean().isSingleton());
 	}
 
 }

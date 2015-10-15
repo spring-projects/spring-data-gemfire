@@ -349,6 +349,27 @@ Defines a GemFire Client Cache instance used for creating or retrieving 'regions
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="cacheBaseType">
+					<xsd:attribute name="durable-client-id" type="xsd:string" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Used only for clients in a client/server installation. If set, this indicates that the client is durable
+and identifies the client. The ID is used by servers to reestablish any messaging that was interrupted
+by client downtime. The default value is unset. In addition, this attribute value overrides any setting
+specified in gemfire.properties passed using 'properties-ref'.
+
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="durable-client-timeout" type="xsd:string" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Used only for clients in a client/server installation. Number of seconds this client can remain disconnected
+from its server and have the server continue to accumulate durable events for it. The default value is 300 seconds.
+In addition, this attribute value overrides any setting specified in gemfire.properties passed using 'properties-ref'.
+Also, durable-client-timeout is only used if durable-client-id is set.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
 					<xsd:attribute name="keep-alive" type="xsd:string" use="optional" default="false">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
