@@ -23,7 +23,10 @@ import org.springframework.util.ClassUtils;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * GemfireUtils is an abstract utility class encapsulating common functionality to access features and capabilities
@@ -37,6 +40,16 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 public abstract class GemfireUtils extends DistributedSystemUtils {
 
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
+
+	public static boolean isDurable(ClientCache clientCache) {
+		DistributedSystem distributedSystem = clientCache.getDistributedSystem();
+
+		// NOTE technically the following code snippet would be more useful/valuable but is not "testable"!
+		//((InternalDistributedSystem) distributedSystem).getConfig().getDurableClientId();
+
+		return (isConnected(distributedSystem) && StringUtils.hasText(distributedSystem.getProperties()
+			.getProperty(DURABLE_CLIENT_ID_PROPERTY_NAME, null)));
+	}
 
 	public static boolean closeCache() {
 		try {

@@ -16,6 +16,7 @@ import java.util.Properties;
 
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 
 /**
@@ -68,6 +69,12 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 	protected Object createFactory(Properties gemfireProperties) {
 		setProperties(gemfireProperties);
 		return new ClientCacheFactory(gemfireProperties);
+	}
+
+	@Override
+	protected GemFireCache fetchCache() {
+		((StubCache) cache).setProperties(getProperties());
+		return cache;
 	}
 
 }

@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -63,11 +64,8 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.mockito.Mockito
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
- * @see com.gemstone.gemfire.cache.GemFireCache
  * @see com.gemstone.gemfire.cache.client.ClientCache
  * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
- * @see com.gemstone.gemfire.cache.client.Pool
- * @see com.gemstone.gemfire.distributed.DistributedSystem
  * @since 1.7.0
  */
 public class ClientCacheFactoryBeanTest {
@@ -474,14 +472,14 @@ public class ClientCacheFactoryBeanTest {
 		final ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override public boolean isReadyForEvents() {
+				return true;
+			}
+
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				return (T) mockClientCache;
 			}
 		};
-
-		clientCacheFactoryBean.setReadyForEvents(true);
-
-		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 
@@ -496,14 +494,14 @@ public class ClientCacheFactoryBeanTest {
 		doThrow(new RuntimeException("test")).when(mockClientCache).readyForEvents();
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override public boolean isReadyForEvents() {
+				return false;
+			}
+
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				return (T) mockClientCache;
 			}
 		};
-
-		clientCacheFactoryBean.setReadyForEvents(false);
-
-		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(false));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 
@@ -518,14 +516,14 @@ public class ClientCacheFactoryBeanTest {
 		doThrow(new IllegalStateException("non-durable client")).when(mockClientCache).readyForEvents();
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override public boolean isReadyForEvents() {
+				return true;
+			}
+
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				return (T) mockClientCache;
 			}
 		};
-
-		clientCacheFactoryBean.setReadyForEvents(true);
-
-		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 
@@ -533,17 +531,16 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void onApplicationEventHandlesCacheClosedException() {
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override public boolean isReadyForEvents() {
+				return true;
+			}
+
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				throw new CacheClosedException("test");
 			}
 		};
-
-		clientCacheFactoryBean.setReadyForEvents(true);
-
-		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 	}
@@ -614,15 +611,108 @@ public class ClientCacheFactoryBeanTest {
 	public void setAndGetReadyForEvents() {
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
-		assertFalse(clientCacheFactoryBean.getReadyForEvents());
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(nullValue()));
 
 		clientCacheFactoryBean.setReadyForEvents(true);
 
-		assertTrue(clientCacheFactoryBean.getReadyForEvents());
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(true));
 
 		clientCacheFactoryBean.setReadyForEvents(null);
 
-		assertNull(clientCacheFactoryBean.getReadyForEvents());
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(nullValue()));
+
+		clientCacheFactoryBean.setReadyForEvents(false);
+
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(false));
+	}
+
+	protected ClientCache mockClientCache(String durableClientId) {
+		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockDistributedSystem");
+
+		Properties gemfireProperties = new Properties();
+
+		gemfireProperties.setProperty(DistributedSystemUtils.DURABLE_CLIENT_ID_PROPERTY_NAME, durableClientId);
+		gemfireProperties.setProperty(DistributedSystemUtils.DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME, "300");
+
+		when(mockClientCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+		when(mockDistributedSystem.isConnected()).thenReturn(true);
+		when(mockDistributedSystem.getProperties()).thenReturn(gemfireProperties);
+
+		return mockClientCache;
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void isReadyForEventsIsTrueWhenClientCacheFactoryBeanReadyForEventsIsTrue() {
+		final ClientCache mockClientCache = mockClientCache("");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				return (T) mockClientCache;
+			}
+		};
+
+		clientCacheFactoryBean.setReadyForEvents(true);
+
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(true));
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
+
+		verify(mockClientCache, never()).getDistributedSystem();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void isReadyForEventsIsFalseWhenClientCacheFactoryBeanReadyForEventsIsFalse() {
+		final ClientCache mockClientCache = mockClientCache("TestDurableClientId");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				return (T) mockClientCache;
+			}
+		};
+
+		clientCacheFactoryBean.setReadyForEvents(false);
+
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(false));
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(false));
+
+		verify(mockClientCache, never()).getDistributedSystem();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void isReadyForEventsIsTrueWhenDurableClientIdSet() {
+		final ClientCache mockClientCache = mockClientCache("TestDurableClientId");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				return (T) mockClientCache;
+			}
+		};
+
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
+
+		verify(mockClientCache, times(1)).getDistributedSystem();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void isReadyForEventsIsFalseWhenDurableClientIdIsNotSet() {
+		final ClientCache mockClientCache = mockClientCache("  ");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				return (T) mockClientCache;
+			}
+		};
+
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(false));
+
+		verify(mockClientCache, times(1)).getDistributedSystem();
 	}
 
 	@Test

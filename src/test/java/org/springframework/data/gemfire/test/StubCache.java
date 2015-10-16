@@ -5,7 +5,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.naming.Context;
 
 import org.mockito.invocation.InvocationOnMock;
@@ -32,10 +35,15 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionExistsException;
 import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientRegionFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
@@ -59,7 +67,9 @@ import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 @SuppressWarnings({ "deprecation", "unused" })
-public class StubCache implements Cache {
+public class StubCache implements Cache, ClientCache {
+
+	private static final AtomicReference<QueryService> queryServiceReference = new AtomicReference<QueryService>(null);
 
 	protected static final String NOT_IMPLEMENTED = "Not Implemented";
 
@@ -337,14 +347,14 @@ public class StubCache implements Cache {
 	 */
 	@Override
 	public QueryService getQueryService() {
-		QueryService qs = null;
 		try {
-			qs =  mockQueryService();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			queryServiceReference.compareAndSet(null, mockQueryService());
+			return queryServiceReference.get();
+		}
+		catch (Exception e) {
 			e.printStackTrace();
-		} 
-		return qs;
+			return null;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -890,6 +900,46 @@ public class StubCache implements Cache {
 	@Override
 	public boolean waitUntilReconnected(final long l, final TimeUnit timeUnit) throws InterruptedException {
 		return false;
+	}
+
+	@Override
+	public RegionService createAuthenticatedView(final Properties userSecurityProperties) {
+		return this;
+	}
+
+	@Override
+	public RegionService createAuthenticatedView(final Properties userSecurityProperties, final String poolName) {
+		return this;
+	}
+
+	@Override
+	public <K, V> ClientRegionFactory<K, V> createClientRegionFactory(ClientRegionShortcut shortcut) {
+		return new MockClientRegionFactory<K, V>(this).createClientRegionFactory(shortcut);
+	}
+
+	@Override
+	public <K, V> ClientRegionFactory<K, V> createClientRegionFactory(String regionAttributesId) {
+		return new MockClientRegionFactory<K, V>(this).createClientRegionFactory();
+	}
+
+	@Override
+	public Set<InetSocketAddress> getCurrentServers() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public Pool getDefaultPool() {
+		return null;
+	}
+
+	@Override
+	public QueryService getLocalQueryService() {
+		return getQueryService();
+	}
+
+	@Override
+	public QueryService getQueryService(final String poolName) {
+		return getQueryService();
 	}
 
 }

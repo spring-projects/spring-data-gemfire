@@ -57,7 +57,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 public class ClientCacheFactoryBean extends CacheFactoryBean implements ApplicationListener<ContextRefreshedEvent> {
 
 	protected Boolean keepAlive = false;
-	protected Boolean readyForEvents = false;
+	protected Boolean readyForEvents;
 
 	protected Integer durableClientTimeout;
 
@@ -104,7 +104,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 			gemfireProperties = distributedSystemProperties;
 		}
 
-		DistributedSystemUtils.configureDurableClient(gemfireProperties, durableClientId, durableClientTimeout);
+		GemfireUtils.configureDurableClient(gemfireProperties, durableClientId, durableClientTimeout);
 
 		return gemfireProperties;
 	}
@@ -389,7 +389,14 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 
 	/* (non-Javadoc) */
 	public boolean isReadyForEvents() {
-		return Boolean.TRUE.equals(getReadyForEvents());
+		Boolean readyForEvents = getReadyForEvents();
+
+		if (readyForEvents != null) {
+			return Boolean.TRUE.equals(readyForEvents);
+		}
+		else {
+			return GemfireUtils.isDurable((ClientCache) fetchCache());
+		}
 	}
 
 	@Override
