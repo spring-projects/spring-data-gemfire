@@ -63,7 +63,7 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
  * @since 1.5.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration
 @SuppressWarnings("unused")
 public class TemplateClientRegionNamespaceTest {
 

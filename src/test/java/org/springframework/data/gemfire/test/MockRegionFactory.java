@@ -27,6 +27,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.util.ReflectionUtils;
 
+import com.gemstone.gemfire.cache.AttributesMutator;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
@@ -39,26 +40,21 @@ import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
  * @author David Turanski
  * @author John Blum
  */
 @SuppressWarnings("deprecation")
-public class MockRegionFactory<K,V>   {
+public class MockRegionFactory<K, V> {
 
-	private static QueryService mockQueryService = mock(QueryService.class);
-	private static RegionService mockRegionService = mock(RegionService.class);
+	protected static AttributesMutator mockAttributesMutator = mock(AttributesMutator.class);
 
-	private com.gemstone.gemfire.cache.AttributesFactory<K,V> attributesFactory;
+	protected com.gemstone.gemfire.cache.AttributesFactory<K,V> attributesFactory;
 
-  	private RegionAttributes regionAttributes;
-
-	private final StubCache cache;
+	protected final StubCache cache;
 
 	public MockRegionFactory(StubCache cache) {
 		this.cache = cache;
@@ -69,13 +65,12 @@ public class MockRegionFactory<K,V>   {
 	}
 
 	@SuppressWarnings({ "deprecation", "rawtypes", "unchecked" })
-	public RegionFactory<K, V> createMockRegionFactory(RegionAttributes<K,V> attributes) {
+	public RegionFactory<K, V> createMockRegionFactory(RegionAttributes<K, V> attributes) {
 		attributesFactory = (attributes != null ? new com.gemstone.gemfire.cache.AttributesFactory<K,V>(attributes)
 			: new com.gemstone.gemfire.cache.AttributesFactory<K,V>());
 
-		// Workaround for GemFire bug
-		// TODO ?!?!?!
-		if (attributes !=null) {
+		// Workaround for GemFire bug???
+		if (attributes != null) {
 			attributesFactory.setLockGrantor(attributes.isLockGrantor());
 		}
 
@@ -434,9 +429,8 @@ public class MockRegionFactory<K,V>   {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Region mockRegion(String name) {
-		regionAttributes = attributesFactory.create();
+		RegionAttributes<K, V> regionAttributes = attributesFactory.create();
 
-		RegionService mockRegionService = mockRegionService();
 		Region region = mock(Region.class);
 
 		when(region.getAttributes()).thenReturn(regionAttributes);
@@ -447,7 +441,7 @@ public class MockRegionFactory<K,V>   {
 
 		when(region.getFullPath()).thenReturn(regionFullPath);
 		when(region.getName()).thenReturn(regionName);
-    	when(region.getRegionService()).thenReturn(mockRegionService);
+    	when(region.getRegionService()).thenReturn(cache);
 
     	when(region.getSubregion(anyString())).thenAnswer(new Answer<Region>() {
 			@Override
@@ -471,7 +465,8 @@ public class MockRegionFactory<K,V>   {
 
 				Region parent = (Region) invocation.getMock();
 				String parentName = parent.getName();
-				String regionName = parentName.startsWith("/") ? parentName+"/"+name : "/"+parentName+"/"+ name;
+				String regionName = parentName
+					.startsWith("/") ? parentName + "/" + name : "/" + parentName + "/" + name;
 
 				Region subRegion = new MockRegionFactory(cache).createMockRegionFactory(attributes).create(regionName);
 				when(subRegion.getFullPath()).thenReturn(regionName);
@@ -483,15 +478,6 @@ public class MockRegionFactory<K,V>   {
 		});
 
 		return region;
-	}
-
-	public static QueryService mockQueryService() {
-		return mockQueryService;
-	}
-
-	public static RegionService mockRegionService() {
-		when(mockRegionService.getQueryService()).thenReturn(mockQueryService());
-		return mockRegionService;
 	}
 
 }

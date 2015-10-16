@@ -59,8 +59,7 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
  * @since 1.3.3
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "clientcache-with-region-using-cache-loader-writer.xml",
-	initializers = GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "clientcache-with-region-using-cache-loader-writer.xml")
 @SuppressWarnings("unused")
 public class ClientRegionWithCacheLoaderWriterTest {
 
@@ -71,12 +70,6 @@ public class ClientRegionWithCacheLoaderWriterTest {
 
 	@Resource(name = "localAppDataRegion")
 	private Region<Integer, Integer> localAppData;
-
-	@BeforeClass
-	public static void startCacheServer() throws Exception {
-		ForkUtil.startCacheServer(SpringCacheServerProcess.class.getName() + " "
-			+ "/org/springframework/data/gemfire/client/servercache-with-region-for-client.xml");
-	}
 
 	@Test
 	public void testCacheLoaderWriter() {

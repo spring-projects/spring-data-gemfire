@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.springframework.util.Assert;
 
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -57,17 +58,17 @@ public abstract class DistributedSystemUtils {
 		return gemfireProperties;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T extends DistributedSystem> T getDistributedSystem() {
-		return (T) InternalDistributedSystem.getAnyInstance();
-	}
-
 	public static boolean isConnected(DistributedSystem distributedSystem) {
 		return (distributedSystem != null && distributedSystem.isConnected());
 	}
 
 	public static boolean isNotConnected(DistributedSystem distributedSystem) {
 		return !isConnected(distributedSystem);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends DistributedSystem> T getDistributedSystem() {
+		return (T) InternalDistributedSystem.getAnyInstance();
 	}
 
 }

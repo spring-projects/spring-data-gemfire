@@ -175,7 +175,6 @@ public class ClientRegionNamespaceTest {
 
 		assertEquals(DataPolicy.PERSISTENT_REPLICATE, persistentRegionAttributes.getDataPolicy());
 		assertEquals("diskStore", persistentRegionAttributes.getDiskStoreName());
-		assertEquals(10, persistentRegionAttributes.getDiskDirSizes()[0]);
 		assertEquals("gemfire-pool", persistentRegionAttributes.getPoolName());
 	}
 
@@ -230,12 +229,13 @@ public class ClientRegionNamespaceTest {
 		assertEquals(DataPolicy.EMPTY, compressed.getAttributes().getDataPolicy());
 		assertEquals("gemfire-pool", compressed.getAttributes().getPoolName());
 		assertTrue(String.format("Expected 'TestCompressor'; but was '%1$s'!",
-				ObjectUtils.nullSafeClassName(compressed.getAttributes().getCompressor())),
-			compressed.getAttributes().getCompressor() instanceof TestCompressor);
+			ObjectUtils.nullSafeClassName(compressed.getAttributes().getCompressor())),
+				compressed.getAttributes().getCompressor() instanceof TestCompressor);
 		assertEquals("STD", compressed.getAttributes().getCompressor().toString());
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testClientRegionWithAttributes() {
 		assertTrue(context.containsBean("client-with-attributes"));
 
