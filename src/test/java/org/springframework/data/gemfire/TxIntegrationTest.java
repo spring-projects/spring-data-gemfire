@@ -20,7 +20,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
-
 import javax.annotation.Resource;
 
 import org.junit.Test;

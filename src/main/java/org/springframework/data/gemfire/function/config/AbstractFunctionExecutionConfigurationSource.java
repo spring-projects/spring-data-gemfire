@@ -13,7 +13,6 @@
 package org.springframework.data.gemfire.function.config;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;

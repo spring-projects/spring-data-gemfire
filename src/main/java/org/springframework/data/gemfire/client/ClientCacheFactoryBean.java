@@ -24,7 +24,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
-import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 

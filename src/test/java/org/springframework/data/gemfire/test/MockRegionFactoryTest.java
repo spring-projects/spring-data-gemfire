@@ -16,7 +16,9 @@ package org.springframework.data.gemfire.test;
  * @author David Turanski
  *
  */
+
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import com.gemstone.gemfire.cache.Region;
