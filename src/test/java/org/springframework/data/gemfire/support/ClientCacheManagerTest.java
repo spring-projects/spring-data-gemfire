@@ -12,7 +12,7 @@
  */
 package org.springframework.data.gemfire.support;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

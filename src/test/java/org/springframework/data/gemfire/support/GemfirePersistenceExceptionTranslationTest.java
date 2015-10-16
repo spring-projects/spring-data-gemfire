@@ -15,7 +15,7 @@
  */
 package org.springframework.data.gemfire.support;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 
@@ -26,7 +26,6 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.GemfireQueryException;
 import org.springframework.stereotype.Repository;
-
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 

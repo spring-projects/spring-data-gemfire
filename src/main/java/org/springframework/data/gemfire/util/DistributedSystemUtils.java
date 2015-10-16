@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
