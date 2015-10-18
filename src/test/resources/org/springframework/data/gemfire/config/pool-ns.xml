@@ -11,15 +11,15 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<context:property-placeholder location="classpath:port.properties"/>
+
 	<util:properties id="gemfireProperties">
 		<prop key="name">PoolNamespaceConfig</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">error</prop>
+		<prop key="log-level">warning</prop>
 	</util:properties>
 
 	<gfe:client-cache properties-ref="gemfireProperties"/>
-
-	<context:property-placeholder location="classpath:port.properties"/>
 
 	<gfe:pool>
 		<gfe:locator host="localhost" port="${gfe.port}"/>
@@ -29,7 +29,7 @@
 
 	<gfe:pool id="locator" locators="skullbox, yorktown[12480]"/>
 
-	<gfe:pool id="complex" free-connection-timeout="2000" idle-timeout="20000" load-conditioning-interval="10000"
+	<gfe:pool id="server" free-connection-timeout="2000" idle-timeout="20000" load-conditioning-interval="10000"
 			  keep-alive="true" max-connections="100" min-connections="5" multi-user-authentication="true"
 			  ping-interval="5000" pr-single-hop-enabled="false" read-timeout="500" retry-attempts="5"
 			  server-group="TestGroup" socket-buffer-size="65536" statistic-interval="5000"

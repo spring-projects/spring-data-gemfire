@@ -682,8 +682,20 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
+	public void isReadyForEventsIsFalseWhenClientCacheNotInitialized() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override protected <T extends GemFireCache> T fetchCache() {
+				throw new CacheClosedException("test");
+			}
+		};
+
+		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(false));
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
-	public void isReadyForEventsIsTrueWhenDurableClientIdSet() {
+	public void isReadyForEventsIsTrueWhenDurableClientIdIsSet() {
 		final ClientCache mockClientCache = mockClientCache("TestDurableClientId");
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {

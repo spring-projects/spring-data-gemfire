@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.springframework.util.Assert;
 
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -31,6 +32,7 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
  * DistributedSystemUtils is an abstract utility class for working with the GemFire DistributedSystem.
  *
  * @author John Blum
+ * @see com.gemstone.gemfire.cache.GemFireCache
  * @see com.gemstone.gemfire.distributed.DistributedSystem
  * @since 1.7.0
  */
@@ -43,6 +45,7 @@ public abstract class DistributedSystemUtils {
 	public static final String DURABLE_CLIENT_ID_PROPERTY_NAME = DistributionConfig.DURABLE_CLIENT_ID_NAME;
 	public static final String DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME = DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME;
 
+	/* (non-Javadoc) */
 	public static Properties configureDurableClient(Properties gemfireProperties, String durableClientId, Integer durableClientTimeout) {
 		if (StringUtils.hasText(durableClientId)) {
 			Assert.notNull(gemfireProperties, "gemfireProperties must not be null");
@@ -57,17 +60,26 @@ public abstract class DistributedSystemUtils {
 		return gemfireProperties;
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isConnected(DistributedSystem distributedSystem) {
 		return (distributedSystem != null && distributedSystem.isConnected());
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isNotConnected(DistributedSystem distributedSystem) {
 		return !isConnected(distributedSystem);
 	}
 
+	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	public static <T extends DistributedSystem> T getDistributedSystem() {
 		return (T) InternalDistributedSystem.getAnyInstance();
+	}
+
+	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
+	public static <T extends DistributedSystem> T getDistributedSystem(GemFireCache gemfireCache) {
+		return (gemfireCache != null ? (T) gemfireCache.getDistributedSystem() : null);
 	}
 
 }

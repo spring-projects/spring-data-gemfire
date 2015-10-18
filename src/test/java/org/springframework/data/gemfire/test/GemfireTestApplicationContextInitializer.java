@@ -48,7 +48,8 @@ public class GemfireTestApplicationContextInitializer implements ApplicationCont
 
 	private boolean isGemFireTestRunnerDisable(final String systemPropertyValue) {
 		return (Boolean.valueOf(StringUtils.trimAllWhitespace(systemPropertyValue))
-			|| "yes".equalsIgnoreCase(systemPropertyValue));
+			|| "yes".equalsIgnoreCase(systemPropertyValue)
+			|| "y".equalsIgnoreCase(systemPropertyValue));
 	}
 
 }
