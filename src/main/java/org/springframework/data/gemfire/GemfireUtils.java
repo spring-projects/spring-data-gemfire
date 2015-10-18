@@ -21,6 +21,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.ClassUtils;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -34,6 +36,12 @@ import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.CacheFactory
+ * @see com.gemstone.gemfire.cache.Region
+ * @see com.gemstone.gemfire.cache.client.ClientCache
+ * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+ * @see com.gemstone.gemfire.distributed.DistributedSystem
  * @since 1.3.3
  */
 @SuppressWarnings("unused")
@@ -42,7 +50,7 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
 
 	public static boolean isDurable(ClientCache clientCache) {
-		DistributedSystem distributedSystem = clientCache.getDistributedSystem();
+		DistributedSystem distributedSystem = getDistributedSystem(clientCache);
 
 		// NOTE technically the following code snippet would be more useful/valuable but is not "testable"!
 		//((InternalDistributedSystem) distributedSystem).getConfig().getDurableClientId();
@@ -71,7 +79,25 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		}
 	}
 
-	public static boolean isGemfireVersionGreaterThanEqual(double expectedVersion) {
+	public static Cache getCache() {
+		try {
+			return CacheFactory.getAnyInstance();
+		}
+		catch (CacheClosedException ignore) {
+			return null;
+		}
+	}
+
+	public static ClientCache getClientCache() {
+		try {
+			return ClientCacheFactory.getAnyInstance();
+		}
+		catch (CacheClosedException ignore) {
+			return null;
+		}
+	}
+
+	public static boolean isGemfireVersionGreaterThanEqualTo(double expectedVersion) {
 		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
 		return actualVersion >= expectedVersion;
 	}
@@ -90,7 +116,7 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 
 	public static boolean isGemfireVersion7OrAbove() {
 		try {
-			return isGemfireVersionGreaterThanEqual(7.0);
+			return isGemfireVersionGreaterThanEqualTo(7.0);
 		}
 		catch (NumberFormatException e) {
 			// NOTE the com.gemstone.gemfire.distributed.ServerLauncher class only exists in GemFire v 7.0.x or above...
@@ -101,7 +127,7 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 
 	public static boolean isGemfireVersion8OrAbove() {
 		try {
-			return isGemfireVersionGreaterThanEqual(8.0);
+			return isGemfireVersionGreaterThanEqualTo(8.0);
 		}
 		catch (NumberFormatException e) {
 			// NOTE the com.gemstone.gemfire.management.internal.web.domain.LinkIndex class only exists

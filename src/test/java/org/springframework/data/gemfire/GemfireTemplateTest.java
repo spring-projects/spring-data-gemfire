@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.gemfire.test.AbstractMockerySupport;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -66,13 +67,14 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.data.gemfire.GemfireTemplate
+ * @see org.springframework.data.gemfire.test.AbstractMockerySupport
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="basic-template.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "basic-template.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
-public class GemfireTemplateTest  {
+public class GemfireTemplateTest extends AbstractMockerySupport {
 
 	private static final String MULTI_QUERY = "SELECT * FROM /simple";
 	private static final String SINGLE_QUERY = "(SELECT * FROM /simple).size";
@@ -86,17 +88,19 @@ public class GemfireTemplateTest  {
 	@Before
 	@SuppressWarnings("rawtypes")
 	public void setUp() throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-		QueryService queryService = simple.getRegionService().getQueryService();
-		Query singleQuery = mock(Query.class);
+		if (isMocking()) {
+			QueryService queryService = simple.getRegionService().getQueryService();
+			Query singleQuery = mock(Query.class);
 
-		when(singleQuery.execute(any(Object[].class))).thenReturn(0);
-		when(queryService.newQuery(SINGLE_QUERY)).thenReturn(singleQuery);
+			when(singleQuery.execute(any(Object[].class))).thenReturn(0);
+			when(queryService.newQuery(SINGLE_QUERY)).thenReturn(singleQuery);
 
-		Query multipleQuery = mock(Query.class);
-		SelectResults selectResults = mock(SelectResults.class);
+			Query multipleQuery = mock(Query.class);
+			SelectResults selectResults = mock(SelectResults.class);
 
-		when(multipleQuery.execute(any(Object[].class))).thenReturn(selectResults);
-		when(queryService.newQuery(MULTI_QUERY)).thenReturn(multipleQuery);
+			when(multipleQuery.execute(any(Object[].class))).thenReturn(selectResults);
+			when(queryService.newQuery(MULTI_QUERY)).thenReturn(multipleQuery);
+		}
 	}
 
 	@After

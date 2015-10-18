@@ -19,6 +19,8 @@ package org.springframework.data.gemfire.test;
 import org.springframework.data.gemfire.test.support.IdentifierSequence;
 import org.springframework.data.gemfire.test.support.StackTraceUtils;
 
+import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
+
 /**
  * The AbstractMockery class is an abstract base class supporting the creation and use of mock objects in unit tests.
  *
@@ -29,6 +31,19 @@ import org.springframework.data.gemfire.test.support.StackTraceUtils;
 public abstract class AbstractMockerySupport {
 
 	protected static final String NOT_IMPLEMENTED = "Not Implemented";
+
+	protected boolean isMocking() {
+		String gemfireTestRunnerNoMock = StringUtils.trimWhitespace(System.getProperty(
+			GemfireTestApplicationContextInitializer.GEMFIRE_TEST_RUNNER_DISABLED, "false"));
+
+		return !(Boolean.parseBoolean(gemfireTestRunnerNoMock)
+			|| "yes".equalsIgnoreCase(gemfireTestRunnerNoMock)
+			|| "y".equalsIgnoreCase(gemfireTestRunnerNoMock));
+	}
+
+	protected boolean isNotMocking() {
+		return !isMocking();
+	}
 
 	protected Object getMockId() {
 		StackTraceElement element = StackTraceUtils.getTestCaller();

@@ -46,7 +46,7 @@ import com.gemstone.gemfire.cache.client.PoolManager;
  * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="pool-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "pool-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class PoolNamespaceTest {
 
@@ -117,10 +117,10 @@ public class PoolNamespaceTest {
 	}
 
 	@Test
-	public void testComplexPool() throws Exception {
-		assertTrue(context.containsBean("complex"));
+	public void testServerPool() throws Exception {
+		assertTrue(context.containsBean("server"));
 
-		PoolFactoryBean poolFactoryBean = context.getBean("&complex", PoolFactoryBean.class);
+		PoolFactoryBean poolFactoryBean = context.getBean("&server", PoolFactoryBean.class);
 
 		assertEquals(2000, TestUtils.readField("freeConnectionTimeout", poolFactoryBean));
 		assertEquals(20000l, TestUtils.readField("idleTimeout", poolFactoryBean));

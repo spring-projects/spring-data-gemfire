@@ -12,30 +12,31 @@
 	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
 	<!-- as there can be only one GemFire cache per VM -->
 
+	<util:properties id="gemfireProperties">
+		<prop key="disable-tcp">false</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
 	<gfe:cache/>
 
 	<gfe:cache id="cache-with-name"/>
 
-	<util:properties id="gemfireProperties">
-		<prop key="disable-tcp">false</prop>
-	</util:properties>
-
 	<gfe:cache id="cache-with-xml-and-props" cache-xml-location="classpath:gemfire-cache.xml" properties-ref="gemfireProperties"
 			   pdx-read-serialized="true" pdx-ignore-unread-fields="false" pdx-persistent="true"/>
 
-	<gfe:cache id="cache-with-gateway-conflict-resolver">
+	<gfe:cache id="cache-with-gateway-conflict-resolver" properties-ref="gemfireProperties">
 		<gfe:gateway-conflict-resolver>
 			<bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestGatewayConflictResolver"/>
 		</gfe:gateway-conflict-resolver>
 	</gfe:cache>
 
-	<gfe:cache id="cache-with-auto-reconnect-disabled" enable-auto-reconnect="false"/>
+	<gfe:cache id="cache-with-auto-reconnect-disabled" properties-ref="gemfireProperties" enable-auto-reconnect="false"/>
 
-	<gfe:cache id="cache-with-auto-reconnect-enabled" enable-auto-reconnect="true"/>
+	<gfe:cache id="cache-with-auto-reconnect-enabled" properties-ref="gemfireProperties" enable-auto-reconnect="true"/>
 
-	<gfe:cache id="heap-tuned-cache" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
+	<gfe:cache id="heap-tuned-cache" properties-ref="gemfireProperties" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
 
-	<gfe:cache id="no-bean-factory-locator" use-bean-factory-locator="false"/>
+	<gfe:cache id="no-bean-factory-locator-cache" properties-ref="gemfireProperties" use-bean-factory-locator="false"/>
 
 	<gfe:client-cache id="client-cache-with-name"/>
 

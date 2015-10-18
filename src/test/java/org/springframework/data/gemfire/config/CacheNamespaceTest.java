@@ -173,9 +173,9 @@ public class CacheNamespaceTest{
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNoBeanFactoryLocator() throws Exception {
-		assertTrue(context.containsBean("no-bean-factory-locator"));
+		assertTrue(context.containsBean("no-bean-factory-locator-cache"));
 
-		CacheFactoryBean cacheFactoryBean = context.getBean("&no-bean-factory-locator", CacheFactoryBean.class);
+		CacheFactoryBean cacheFactoryBean = context.getBean("&no-bean-factory-locator-cache", CacheFactoryBean.class);
 
 		assertThat(ReflectionTestUtils.getField(cacheFactoryBean, "beanFactoryLocator"), is(nullValue()));
 
@@ -183,7 +183,7 @@ public class CacheNamespaceTest{
 
 		try {
 			assertNotNull(beanFactoryLocator.useBeanFactory("cache-with-name"));
-			beanFactoryLocator.useBeanFactory("no-bean-factory-locator");
+			beanFactoryLocator.useBeanFactory("no-bean-factory-locator-cache");
 		}
 		finally {
 			beanFactoryLocator.destroy();
@@ -191,7 +191,7 @@ public class CacheNamespaceTest{
 	}
 
 	@Test
-	public void testNamedClientCache() throws Exception {
+	public void namedClientCacheWithNoProperties() throws Exception {
 		assertTrue(context.containsBean("client-cache-with-name"));
 
 		ClientCacheFactoryBean clientCacheFactoryBean = context.getBean("&client-cache-with-name", ClientCacheFactoryBean.class);
@@ -205,7 +205,7 @@ public class CacheNamespaceTest{
 	}
 
 	@Test
-	public void testClientCacheWithXml() throws Exception {
+	public void clientCacheWithXmlNoProperties() throws Exception {
 		assertTrue(context.containsBean("client-cache-with-xml"));
 
 		ClientCacheFactoryBean clientCacheFactoryBean = context.getBean("&client-cache-with-xml", ClientCacheFactoryBean.class);

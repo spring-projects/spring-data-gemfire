@@ -394,7 +394,12 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 			return Boolean.TRUE.equals(readyForEvents);
 		}
 		else {
-			return GemfireUtils.isDurable((ClientCache) fetchCache());
+			try {
+				return GemfireUtils.isDurable((ClientCache) fetchCache());
+			}
+			catch (Throwable ignore) {
+				return false;
+			}
 		}
 	}
 
