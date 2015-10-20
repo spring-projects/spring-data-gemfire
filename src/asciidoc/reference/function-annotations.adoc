@@ -371,8 +371,8 @@ where the SDG annotated POJO Function is registered and used, e.g. ...
 ----
 
 Alternatively, a developer my use GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/pdx/ReflectionBasedAutoSerializer.html[ReflectionBasedAutoSerializer].
-Of course, it is recommend to use a "custom" `PdxSerializer` where possible given the performance implications of using
-Java's Reflection functionality.
+Of course, it is recommend to use a "custom" `PdxSerializer` where possible to maintain finer grained control over your
+serialization strategy.
 
 Finally, Spring Data GemFire is careful not to convert your Function arguments if you really want to treat your
 Function arguments generically, or as one of GemFire's PDX types...
