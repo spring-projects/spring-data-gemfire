@@ -57,8 +57,6 @@ public class DataPolicyConverterTest {
 		assertEquals(DataPolicy.PRELOADED, DataPolicyConverter.Policy.PRELOADED.toDataPolicy());
 		assertEquals(DataPolicy.PARTITION, DataPolicyConverter.Policy.PARTITION.toDataPolicy());
 		assertEquals(DataPolicy.PERSISTENT_PARTITION, DataPolicyConverter.Policy.PERSISTENT_PARTITION.toDataPolicy());
-		assertEquals(DataPolicy.HDFS_PARTITION, DataPolicyConverter.Policy.HDFS_PARTITION.toDataPolicy());
-		assertEquals(DataPolicy.HDFS_PERSISTENT_PARTITION, DataPolicyConverter.Policy.HDFS_PERSISTENT_PARTITION.toDataPolicy());
 		assertEquals(DataPolicy.REPLICATE, DataPolicyConverter.Policy.REPLICATE.toDataPolicy());
 		assertEquals(DataPolicy.PERSISTENT_REPLICATE, DataPolicyConverter.Policy.PERSISTENT_REPLICATE.toDataPolicy());
 		assertEquals(DataPolicy.DEFAULT, DataPolicyConverter.Policy.DEFAULT.toDataPolicy());

@@ -45,8 +45,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore;
-import com.gemstone.gemfire.cache.hdfs.HDFSStoreFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
@@ -841,16 +839,6 @@ public class StubCache implements Cache, ClientCache {
 	@Override
 	public boolean waitUntilReconnected(final long l, final TimeUnit timeUnit) throws InterruptedException {
 		return false;
-	}
-
-	@Override
-	public HDFSStoreFactory createHDFSStoreFactory() {
-		throw new UnsupportedOperationException("Not Implemented!");
-	}
-
-	@Override
-	public HDFSStore findHDFSStore(final String s) {
-		throw new UnsupportedOperationException("Not Implemented!");
 	}
 
 	public RegionService createAuthenticatedView(final Properties userSecurityProperties) {
