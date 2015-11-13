@@ -45,7 +45,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
@@ -571,14 +570,6 @@ public class StubCache implements Cache, ClientCache {
 	@Override
 	@Deprecated
 	public LogWriterI18n getLoggerI18n() {
-		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getLuceneService()
-	 */
-	@Override
-	public LuceneService getLuceneService() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
