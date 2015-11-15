@@ -3,6 +3,20 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.7.1.RELEASE (2015-11-15)
+---------------------------------------------
+* SGF-446 - Release 1.7.1 (Gosling).
+* SGF-443 - Fix Spring Data GemFire apache-geode build due to recent changes to Apache Geode that removed the HDFS support.
+* SGF-442 - Remove incorrect statements about GemFire Java Reflection-based (PDX) Serialization in the SDG Reference Guide.
+* SGF-437 - Upgrade to Spring Framework 4.1.8.RELEASE.
+* SGF-434 - Add a durable GemFire client cache test to assert proper behavior by SDG.
+* SGF-433 - Fix improper resolution of Spring property placeholders in 'locators' and 'servers' attributes on the '<gfe:pool>' element(s) in Spring XML config.
+* SGF-432 - IndexFactoryBean traps IndexExistsException instead of IndexNameConflictException.
+* SGF-430 - Cleanup test failures on Windows due to incorrect Spring test context configuration resource resolution.
+* SGF-429 - GemfirePersistentProperty considers a BigDecimal property an entity.
+* SGF-427 - Update Spring Data GemFire Reference Guide 'New in the 1.7 Release' section.
+
+
 Changes in version 1.5.4.RELEASE (2015-10-14)
 ---------------------------------------------
 * SGF-436 - Release 1.5.4 (Evans).
