@@ -19,9 +19,9 @@ import java.io.Serializable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.gemstone.gemfire.management.internal.cli.util.spring.ObjectUtils;
 
 /**
  * The Person class models a person.

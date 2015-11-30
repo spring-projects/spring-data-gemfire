@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -31,7 +32,6 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * GemfireUtils is an abstract utility class encapsulating common functionality to access features and capabilities

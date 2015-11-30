@@ -30,10 +30,10 @@ import org.springframework.data.gemfire.function.sample.HelloFunctionExecution;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * The LazyWiringDeclarableSupportFunctionBasedIntegrationTest class is a test suite of test cases testing the contract

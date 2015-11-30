@@ -18,8 +18,7 @@ package org.springframework.data.gemfire.test;
 
 import org.springframework.data.gemfire.test.support.IdentifierSequence;
 import org.springframework.data.gemfire.test.support.StackTraceUtils;
-
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * The AbstractMockery class is an abstract base class supporting the creation and use of mock objects in unit tests.
