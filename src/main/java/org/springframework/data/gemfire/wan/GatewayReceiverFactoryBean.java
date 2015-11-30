@@ -21,12 +21,12 @@ import java.util.List;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * Spring FactoryBean for creating a GemFire {@link GatewayReceiver}.

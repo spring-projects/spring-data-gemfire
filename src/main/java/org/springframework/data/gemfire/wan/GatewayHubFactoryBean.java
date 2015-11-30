@@ -21,13 +21,13 @@ import java.util.List;
 
 import org.springframework.data.gemfire.wan.GatewayProxy.GatewayQueue;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.util.GatewayEventListener;
 import com.gemstone.gemfire.cache.util.GatewayHub;
 import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * FactoryBean for creating a GemFire {@link GatewayHub} (deprecated in Gemfire 7).

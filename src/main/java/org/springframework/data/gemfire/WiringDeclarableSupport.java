@@ -22,9 +22,9 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.wiring.BeanConfigurerSupport;
 import org.springframework.beans.factory.wiring.BeanWiringInfo;
 import org.springframework.beans.factory.wiring.BeanWiringInfoResolver;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * Dedicated {@link Declarable} support class for wiring the declaring instance through the Spring container.
