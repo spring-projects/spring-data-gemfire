@@ -24,11 +24,11 @@ import java.util.Random;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * @author David Turanski

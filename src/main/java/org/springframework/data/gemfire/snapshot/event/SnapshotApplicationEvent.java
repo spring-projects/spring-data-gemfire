@@ -19,9 +19,9 @@ package org.springframework.data.gemfire.snapshot.event;
 import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata;
 
 import org.springframework.context.ApplicationEvent;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * The SnapshotApplicationEvent class is a Spring ApplicationEvent signaling a GemFire Cache or Region snapshot event,

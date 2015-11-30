@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -51,7 +52,6 @@ import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * The LookupRegionMutationIntegrationTest class is a test suite of test cases testing the contract and integrated
@@ -140,7 +140,7 @@ public class LookupRegionMutationIntegrationTest {
 		assertEquals("AEQ", example.getAttributes().getAsyncEventQueueIds().iterator().next());
 	}
 
-	protected static interface Nameable extends BeanNameAware {
+	protected interface Nameable extends BeanNameAware {
 		String getName();
 		void setName(String name);
 	}
