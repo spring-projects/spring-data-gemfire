@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CustomExpiry;
@@ -38,7 +39,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * The MockClientRegionFactory class...

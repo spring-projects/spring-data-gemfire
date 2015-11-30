@@ -46,6 +46,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.GemFireCache;
@@ -53,7 +54,6 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.lang.ClassUtils;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
@@ -456,7 +456,7 @@ public class ClientCacheFactoryBeanTest {
 			assertTrue(expected.getMessage(), expected.getMessage().startsWith(String.format(
 				"no bean of type '%1$s' having name '%2$s' was found; a ClientCache requires a Pool",
 				Pool.class.getName(), GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)));
-			assertTrue(String.format("Cause was: %1$s!", ClassUtils.getClassName(expected.getCause())),
+			assertTrue(String.format("Cause was: %1$s!", ObjectUtils.nullSafeClassName(expected.getCause())),
 				expected.getCause() instanceof IllegalArgumentException);
 			assertEquals("TEST", expected.getCause().getMessage());
 			throw expected;

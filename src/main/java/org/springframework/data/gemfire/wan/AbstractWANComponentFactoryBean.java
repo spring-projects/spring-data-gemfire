@@ -25,9 +25,9 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
 
 /**
  * Base class for GemFire WAN Gateway component factory beans.

@@ -24,8 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.management.internal.cli.util.spring.StringUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * The FileUtils class is a utility class for processing files, working with java.io.File objects.
