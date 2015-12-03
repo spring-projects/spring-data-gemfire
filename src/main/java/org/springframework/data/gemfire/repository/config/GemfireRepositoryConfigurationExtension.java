@@ -17,11 +17,11 @@ package org.springframework.data.gemfire.repository.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
+import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  * {@link RepositoryConfigurationExtension} implementation to add Gemfire
@@ -29,10 +29,13 @@ import org.w3c.dom.Element;
  * configuration.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class GemfireRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-	private static final String MAPPING_CONTEXT_REF = "mapping-context-ref";
+	private static final String ANNOTATION_MAPPING_CONTEXT_REF = "mappingContextRef";
+	private static final String MAPPING_CONTEXT_PROPERTY_NAME = "gemfireMappingContext";
+	private static final String XML_MAPPING_CONTEXT_REF = "mapping-context-ref";
 
 	/*
 	 * (non-Javadoc)
@@ -57,24 +60,33 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 		return "gemfire";
 	}
 
+	/**
+	 *
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport
+	 * 	#postProcess(BeanDefinitionBuilder, AnnotationRepositoryConfigurationSource)
+	 */
+	@Override
+	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
+		String mappingContextRef = config.getAttribute(ANNOTATION_MAPPING_CONTEXT_REF);
+
+		if (StringUtils.hasText(mappingContextRef)) {
+			builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, mappingContextRef);
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.data.repository.config.
-	 * RepositoryConfigurationExtensionSupport
-	 * #postProcess(org.springframework.beans
-	 * .factory.support.BeanDefinitionBuilder,
-	 * org.springframework.data.repository
-	 * .config.XmlRepositoryConfigurationSource)
+	 *
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport
+	 * 	#postProcess(BeanDefinitionBuilder, XmlRepositoryConfigurationSource)
 	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {
-
-		Element element = config.getElement();
-		String mappingContextRef = element.getAttribute(MAPPING_CONTEXT_REF);
+		String mappingContextRef = config.getElement().getAttribute(XML_MAPPING_CONTEXT_REF);
 
 		if (StringUtils.hasText(mappingContextRef)) {
-			builder.addPropertyReference("gemfireMappingContext", mappingContextRef);
+			builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, mappingContextRef);
 		}
 	}
+
 }
