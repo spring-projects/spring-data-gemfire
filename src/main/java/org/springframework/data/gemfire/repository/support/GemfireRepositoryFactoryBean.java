@@ -37,13 +37,17 @@ import com.gemstone.gemfire.cache.Region;
  * {@link FactoryBean} adapter for {@link GemfireRepositoryFactory}.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
-public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
-		RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
+@SuppressWarnings("unused")
+public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
+		extends RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
 
-	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context;
+	private ApplicationContext applicationContext;
 
 	private Iterable<Region<?, ?>> regions;
+
+	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context;
 
 	/*
 	 * (non-Javadoc)
@@ -57,6 +61,7 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		Collection<Region> regions = applicationContext.getBeansOfType(Region.class).values();
 		this.regions = (Iterable) Collections.unmodifiableCollection(regions);
+		this.applicationContext = applicationContext;
 	}
 
 	/**
@@ -64,8 +69,8 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 * 
 	 * @param context the context to set
 	 */
-	public void setGemfireMappingContext(
-			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
+	public void setGemfireMappingContext(MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
+		setMappingContext(context);
 		this.context = context;
 	}
 
@@ -87,12 +92,12 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 */
 	@Override
 	public void afterPropertiesSet() {
-
 		if (this.context == null) {
-			this.context = new GemfireMappingContext();
-			setMappingContext(context);
+			// TODO register the GemfireMappingContext instance as a (Singleton) bean in the Spring context
+			setGemfireMappingContext(new GemfireMappingContext());
 		}
 
 		super.afterPropertiesSet();
 	}
+
 }
