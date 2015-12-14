@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.data.gemfire.repository.query.annotation.Import;
 import org.springframework.data.gemfire.repository.query.annotation.Limit;
 import org.springframework.data.gemfire.repository.query.annotation.Trace;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.util.Assert;
@@ -40,7 +41,6 @@ import org.springframework.util.StringUtils;
  * @author John Blum
  * @see org.springframework.data.repository.query.QueryMethod
  */
-@SuppressWarnings("unused")
 public class GemfireQueryMethod extends QueryMethod {
 
 	protected static final String[] EMPTY_STRING_ARRAY = new String[0];
@@ -53,12 +53,13 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * 
 	 * @param method must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.
+	 * @param factory must not be {@literal null}.
 	 * @param context must not be {@literal null}.
 	 */
-	public GemfireQueryMethod(Method method, RepositoryMetadata metadata,
+	public GemfireQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
 			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
 
-		super(method, metadata);
+		super(method, metadata, factory);
 
 		Assert.notNull(context);
 		assertNonPagingQueryMethod(method);
