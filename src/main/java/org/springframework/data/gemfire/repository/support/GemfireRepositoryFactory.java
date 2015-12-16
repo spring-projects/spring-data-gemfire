@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import org.springframework.data.gemfire.GemfireTemplate;
-import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
 import org.springframework.data.gemfire.mapping.Regions;
@@ -48,11 +47,11 @@ import com.gemstone.gemfire.cache.Region;
  * 
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
  */
 public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 	private final MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context;
-
 	private final Regions regions;
 
 	/**
@@ -60,20 +59,21 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 * 
 	 * @param regions must not be {@literal null}.
 	 * @param context the {@link MappingContext} used by the constructed Repository for mapping entities
-	 * to the underlying data store.
+	 * to the underlying data store, must not be {@literal null}.
 	 */
 	public GemfireRepositoryFactory(Iterable<Region<?, ?>> regions, MappingContext<? extends GemfirePersistentEntity<?>,
 			GemfirePersistentProperty> context) {
-		Assert.notNull(regions);
-		this.context = (context != null ? context : new GemfireMappingContext());
+		
+		Assert.notNull(regions, "Regions must not be null!");
+		Assert.notNull(context, "MappingContext must not be null!");
+		
+		this.context = context;
 		this.regions = new Regions(regions, this.context);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
-	 * 	#getEntityInformation(java.lang.Class)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -84,12 +84,9 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
-	 * 	#getTargetRepository(org.springframework.data.repository.core.RepositoryMetadata)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryInformation)
 	 */
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
 		GemfireEntityInformation<?, Serializable> entityInformation = getEntityInformation(
 			repositoryInformation.getDomainType());

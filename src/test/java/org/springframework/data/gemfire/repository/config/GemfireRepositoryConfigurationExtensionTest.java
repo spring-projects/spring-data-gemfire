@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,14 @@
 
 package org.springframework.data.gemfire.repository.config;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
@@ -49,6 +44,7 @@ import org.w3c.dom.Element;
 public class GemfireRepositoryConfigurationExtensionTest {
 
 	private GemfireRepositoryConfigurationExtension repositoryConfigurationExtension;
+	private RuntimeBeanReference defaultMappingContextReference = new RuntimeBeanReference(GemfireRepositoryConfigurationExtension.DEFAULT_MAPPING_CONTEXT_BEAN_NAME);
 
 	@Before
 	public void setup() {
@@ -97,10 +93,10 @@ public class GemfireRepositoryConfigurationExtensionTest {
 
 		repositoryConfigurationExtension.postProcess(beanDefinitionBuilder, mockRepositoryConfigurationSource);
 
-		Object mappingContextRef = beanDefinitionBuilder.getRawBeanDefinition().getPropertyValues()
+		PropertyValue mappingContextRef = beanDefinitionBuilder.getRawBeanDefinition().getPropertyValues()
 			.getPropertyValue("gemfireMappingContext");
 
-		assertThat(mappingContextRef, is(nullValue()));
+		assertThat(mappingContextRef.getValue(), is((Object) defaultMappingContextReference));
 
 		verify(mockRepositoryConfigurationSource, times(1)).getAttribute(eq("mappingContextRef"));
 	}
@@ -119,10 +115,10 @@ public class GemfireRepositoryConfigurationExtensionTest {
 
 		repositoryConfigurationExtension.postProcess(beanDefinitionBuilder, mockRepositoryConfigurationSource);
 
-		Object mappingContextRef = beanDefinitionBuilder.getRawBeanDefinition().getPropertyValues()
+		PropertyValue mappingContextRef = beanDefinitionBuilder.getRawBeanDefinition().getPropertyValues()
 			.getPropertyValue("gemfireMappingContext");
 
-		assertThat(mappingContextRef, is(nullValue()));
+		assertThat(mappingContextRef.getValue(), is((Object) defaultMappingContextReference));
 
 		verify(mockRepositoryConfigurationSource, times(1)).getElement();
 		verify(mockElement, times(1)).getAttribute(eq("mapping-context-ref"));
