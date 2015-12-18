@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.7.2.RELEASE (2015-12-18)
+---------------------------------------------
+* SGF-456 - Release 1.7.2 (Gosling).
+* SGF-455 - Fix creation of GemfireMappingContext for repositories.
+* SGF-450 - GemfireRepositoryFactoryBean needs to explicitly register the "default" GemfireMappingContext when not explicitly defined as a bean in the application's Spring context.
+* SGF-449 - GemfireRepositoryFactoryBean.setGemfireMappingContext needs to call RepositoryFactoryBeanSupport.setMappingContext.
+* SGF-448 - GemfireRepositoryConfigurationExtension needs to override the RepositoryConfigurationExtensionSupport postProcess(:BeanDefinitionBuilder, :AnnotationRepositoryConfigurationSource) method.
+* SGF-447 - Fix Spring Data GemFire due to recent changes to Apache Geode that removed various internal utility classes in favor of external Spring classes.
+
+
 Changes in version 1.7.1.RELEASE (2015-11-15)
 ---------------------------------------------
 * SGF-446 - Release 1.7.1 (Gosling).
