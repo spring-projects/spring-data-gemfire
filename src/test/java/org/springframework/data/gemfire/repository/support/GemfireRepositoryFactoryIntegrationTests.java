@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Collections;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.Regions;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.gemfire.repository.sample.PersonRepository;
@@ -39,13 +39,13 @@ import org.springframework.test.context.ContextConfiguration;
 @ContextConfiguration("../config/repo-context.xml")
 public class GemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRepositoryFactoryIntegrationTests {
 
-	@Autowired
-	ApplicationContext context;
+	@Autowired ApplicationContext context;
+	@Autowired GemfireMappingContext mappingContext;
 
 	@Override
 	protected PersonRepository getRepository(Regions regions) {
 
-		GemfireRepositoryFactory factory = new GemfireRepositoryFactory(regions, null);
+		GemfireRepositoryFactory factory = new GemfireRepositoryFactory(regions, mappingContext);
 		return factory.getRepository(PersonRepository.class);
 	}
 
@@ -53,7 +53,7 @@ public class GemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRep
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionIfReferencedRegionIsNotConfigured() {
 
-		GemfireRepositoryFactory factory = new GemfireRepositoryFactory((Iterable) Collections.emptySet(), null);
+		GemfireRepositoryFactory factory = new GemfireRepositoryFactory((Iterable) Collections.emptySet(), mappingContext);
 		factory.getRepository(PersonRepository.class);
 	}
 
