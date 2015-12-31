@@ -16,8 +16,9 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.Scope;
 import org.springframework.util.StringUtils;
+
+import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The ScopeType enum is an enumeration of GemFire Scopes.

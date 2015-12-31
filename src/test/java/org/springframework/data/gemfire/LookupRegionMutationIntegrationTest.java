@@ -159,7 +159,7 @@ public class LookupRegionMutationIntegrationTest {
 		assertGatewaySenders(example, Arrays.asList("GWS"));
 	}
 
-	protected static interface Nameable extends BeanNameAware {
+	protected interface Nameable extends BeanNameAware {
 		String getName();
 		void setName(String name);
 	}
