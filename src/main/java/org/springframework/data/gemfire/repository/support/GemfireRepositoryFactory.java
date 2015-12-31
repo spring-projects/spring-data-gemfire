@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.data.gemfire.repository.query.GemfireQueryMethod;
 import org.springframework.data.gemfire.repository.query.PartTreeGemfireRepositoryQuery;
 import org.springframework.data.gemfire.repository.query.StringBasedGemfireRepositoryQuery;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -149,10 +150,14 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
+		
 		return new QueryLookupStrategy() {
+			
 			@Override
-			public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, NamedQueries namedQueries) {
-				GemfireQueryMethod queryMethod = new GemfireQueryMethod(method, metadata, context);
+			public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
+					NamedQueries namedQueries) {
+				
+				GemfireQueryMethod queryMethod = new GemfireQueryMethod(method, metadata, factory, context);
 				GemfireTemplate template = getTemplate(metadata);
 
 				if (queryMethod.hasAnnotatedQuery()) {
