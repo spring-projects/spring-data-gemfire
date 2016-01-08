@@ -183,15 +183,30 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		return PoolManager.createFactory();
 	}
 
-	/* (non-Javadoc) */
-	void resolveDistributedSystem() {
+	/**
+	 * Attempts to find an existing, running GemFire {@link DistributedSystem} or proceeds to create
+	 * a new {@link DistributedSystem} if one does not exist.
+	 *
+	 * @see DistributedSystemUtils#getDistributedSystem()
+	 * @see #resolveGemfireProperties()
+	 * @see #doDistributedSystemConnect(Properties)
+	 */
+	protected void resolveDistributedSystem() {
 		if (DistributedSystemUtils.isNotConnected(DistributedSystemUtils.getDistributedSystem())) {
 			doDistributedSystemConnect(resolveGemfireProperties());
 		}
 	}
 
-	/* (non-Javadoc) */
-	Properties resolveGemfireProperties() {
+	/**
+	 * Attempts to resolve existing GemFire System properties from the {@link ClientCacheFactoryBean}
+	 * if set by the user.
+	 *
+	 * @return a {@link Properties} object containing GemFire System properties
+	 * or null if no properties were configured.
+	 * @see ClientCacheFactoryBean#resolveProperties()
+	 * @see java.util.Properties
+	 */
+	protected Properties resolveGemfireProperties() {
 		try {
 			ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
 			return clientCacheFactoryBean.resolveProperties();
