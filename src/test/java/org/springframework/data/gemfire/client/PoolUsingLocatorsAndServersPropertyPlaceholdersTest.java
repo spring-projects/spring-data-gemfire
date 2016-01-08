@@ -155,7 +155,7 @@ public class PoolUsingLocatorsAndServersPropertyPlaceholdersTest {
 		}
 
 		@Override
-		void resolveDistributedSystem() {
+		protected void resolveDistributedSystem() {
 		}
 	}
 
