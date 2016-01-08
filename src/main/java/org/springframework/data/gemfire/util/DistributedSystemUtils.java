@@ -42,4 +42,9 @@ public abstract class DistributedSystemUtils {
 		return (distributedSystem != null && distributedSystem.isConnected());
 	}
 
+	/* (non-Javadoc) */
+	public static boolean isNotConnected(DistributedSystem distributedSystem) {
+		return !isConnected(distributedSystem);
+	}
+
 }
