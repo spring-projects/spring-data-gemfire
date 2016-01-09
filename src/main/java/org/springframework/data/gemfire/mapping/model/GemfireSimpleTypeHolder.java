@@ -46,7 +46,8 @@ public class GemfireSimpleTypeHolder extends SimpleTypeHolder {
 	/**
 	 * Constructs an instance of GemfireSimpleTypeHolder initialized with additional, custom simple types
 	 * handled by GemFire along with register the default simple types.
-	 * @see org.springframework.data.mapping.model.SimpleTypeHolder(Set, boolean)
+	 *
+	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#SimpleTypeHolder(Set, boolean)
 	 */
 	public GemfireSimpleTypeHolder() {
 		super(CUSTOM_SIMPLE_TYPES, REGISTER_DEFAULTS);
