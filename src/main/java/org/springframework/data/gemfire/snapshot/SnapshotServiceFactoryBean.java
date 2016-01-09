@@ -252,7 +252,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * or Region if initialized.  In addition, this initialization method will perform the actual import.
 	 *
 	 * @throws Exception if the construction and initialization of the GemFire Snapshot Service fails.
-	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doImport(SnapshotMetadata[])
+	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see #getSuppressImportOnInit()
 	 * @see #getImports()
 	 * @see #create()
@@ -315,7 +315,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * Performs an export of the GemFire Cache or Region if configured.
 	 *
 	 * @throws Exception if the Cache/Region data export operation fails.
-	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doExport(SnapshotMetadata[])
+	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see #getExports()
 	 * @see #getObject()
 	 */
@@ -329,14 +329,13 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * when details of the event match the criteria of this factory's constructed GemFire SnapshotService.
 	 *
 	 * @param event the SnapshotApplicationEvent triggering a GemFire Cache or Region data import/export.
+	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent
 	 * @see org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent
 	 * @see org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent
 	 * @see #isMatch(SnapshotApplicationEvent)
 	 * @see #resolveSnapshotMetadata(SnapshotApplicationEvent)
 	 * @see #getObject()
-	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doExport(SnapshotMetadata[])
-	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter#doImport(SnapshotMetadata[])
 	 */
 	@Override
 	public void onApplicationEvent(SnapshotApplicationEvent<K, V> event) {
