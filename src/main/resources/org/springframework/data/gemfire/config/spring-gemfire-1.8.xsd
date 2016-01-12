@@ -2177,7 +2177,18 @@ Defines a template for creating multiple GemFire Client Regions that all share a
 		</xsd:annotation>
 	</xsd:element>
 	<!-- -->
-	<xsd:element name="client-region" type="clientRegionType"/>
+	<xsd:element name="client-region" type="clientRegionType">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.gemfire.ClientRegionFactoryBean"><![CDATA[
+Defines a GemFire Client Region
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
 	<!-- -->
 	<xsd:complexType name="connectionType">
 		<xsd:attribute name="host" type="xsd:string">
