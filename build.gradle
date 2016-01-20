@@ -95,16 +95,6 @@ dependencies {
 		exclude group: "org.springframework.data", module: "spring-data-commons"
 		exclude group: "org.springframework.shell", module: "spring-shell"
 	}
-	compile("org.apache.geode:gemfire-jgroups:$gemfireVersion") {
-		exclude group: "org.springframework", module: "spring-aop"
-		exclude group: "org.springframework", module: "spring-beans"
-		exclude group: "org.springframework", module: "spring-context"
-		exclude group: "org.springframework", module: "spring-context-support"
-		exclude group: "org.springframework", module: "spring-expression"
-		exclude group: "org.springframework", module: "spring-tx"
-		exclude group: "org.springframework", module: "spring-web"
-		exclude group: "org.springframework", module: "spring-webmvc"
-	}
 	compile("org.apache.geode:gemfire-joptsimple:$gemfireVersion") {
 		exclude group: "org.springframework", module: "spring-aop"
 		exclude group: "org.springframework", module: "spring-beans"
