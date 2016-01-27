@@ -22,6 +22,7 @@ import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
@@ -42,6 +43,7 @@ import com.gemstone.gemfire.internal.datasource.ConfigProperty;
  * @author Costin Leau
  * @author Oliver Gierke
  * @author David Turanski
+ * @author John Blum
  */
 class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -54,7 +56,7 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, builder);
 
-		registerCustomGemFireBeanFactoryPostProcessors(parserContext);
+		registerGemFireBeanFactoryPostProcessors(getRegistry(parserContext));
 
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
 		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
@@ -113,9 +115,15 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 		parseJndiBindings(element, builder);
 	}
 
-	private void registerCustomGemFireBeanFactoryPostProcessors(final ParserContext parserContext) {
+	/* (non-Javadoc) */
+	protected BeanDefinitionRegistry getRegistry(ParserContext parserContext) {
+		return parserContext.getRegistry();
+	}
+
+	/* (non-Javadoc) */
+	void registerGemFireBeanFactoryPostProcessors(BeanDefinitionRegistry registry) {
 		BeanDefinitionReaderUtils.registerWithGeneratedName(BeanDefinitionBuilder.genericBeanDefinition(
-			CustomEditorRegistrationBeanFactoryPostProcessor.class).getBeanDefinition(), parserContext.getRegistry());
+			CustomEditorRegistrationBeanFactoryPostProcessor.class).getBeanDefinition(), registry);
 	}
 
 	private void parsePdxDiskStore(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
@@ -124,14 +132,14 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 		final String pdxDiskStoreName = element.getAttribute("pdx-disk-store");
 
 		if (!StringUtils.isEmpty(pdxDiskStoreName)) {
-			registerPdxDiskStoreAwareBeanFactoryPostProcessor(parserContext, pdxDiskStoreName);
+			registerPdxDiskStoreAwareBeanFactoryPostProcessor(getRegistry(parserContext), pdxDiskStoreName);
 		}
 	}
 
-	private void registerPdxDiskStoreAwareBeanFactoryPostProcessor(ParserContext parserContext, String pdxDiskStoreName) {
+	/* (non-Javadoc) */
+	void registerPdxDiskStoreAwareBeanFactoryPostProcessor(BeanDefinitionRegistry registry, String pdxDiskStoreName) {
 		BeanDefinitionReaderUtils.registerWithGeneratedName(
-			createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(pdxDiskStoreName),
-				parserContext.getRegistry());
+			createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(pdxDiskStoreName), registry);
 	}
 
 	private AbstractBeanDefinition createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(String pdxDiskStoreName) {
@@ -181,8 +189,7 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 	}
 
 	/**
-	 * @param dynamicRegionSupport BDB for &lt;dynamic-region-factory&gt;
-	 * element
+	 * @param dynamicRegionSupport BDB for &lt;dynamic-region-factory&gt; element.
 	 */
 	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
 	}

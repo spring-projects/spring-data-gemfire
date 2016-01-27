@@ -16,11 +16,14 @@
 
 package org.springframework.data.gemfire.client;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -41,6 +44,7 @@ import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.test.support.CollectionUtils;
 import org.springframework.data.util.ReflectionUtils;
 
 import com.gemstone.gemfire.cache.client.Pool;
@@ -51,7 +55,9 @@ import com.gemstone.gemfire.cache.client.PoolFactory;
  * of the PoolFactoryBean class.
  *
  * @author John Blum
+ * @see org.junit.Rule
  * @see org.junit.Test
+ * @see org.junit.rules.ExpectedException
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.client.PoolFactoryBean
  * @see com.gemstone.gemfire.cache.client.Pool
@@ -89,7 +95,7 @@ public class PoolFactoryBeanTest {
 			}
 
 			@Override void doDistributedSystemConnect(Properties properties) {
-				assertSame(gemfireProperties, properties);
+				assertThat(properties, is(equalTo(gemfireProperties)));
 			}
 		};
 
@@ -180,7 +186,8 @@ public class PoolFactoryBeanTest {
 
 		Properties expectedGemfireProperties = new Properties();
 
-		expectedGemfireProperties.setProperty("name", "testResolveGemfireProperties");
+		expectedGemfireProperties.setProperty("name", "resolveGemfirePropertiesTest");
+
 		clientCacheFactoryBean.setProperties(expectedGemfireProperties);
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
@@ -189,7 +196,40 @@ public class PoolFactoryBeanTest {
 
 		Properties resolvedGemfireProperties = poolFactoryBean.resolveGemfireProperties();
 
-		assertSame(expectedGemfireProperties, resolvedGemfireProperties);
+		assertThat(resolvedGemfireProperties, is(equalTo(expectedGemfireProperties)));
+	}
+
+	@Test
+	public void resolveMergedGemfireProperties() {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		when(mockBeanFactory.getBean(eq(ClientCacheFactoryBean.class))).thenReturn(clientCacheFactoryBean);
+
+		Properties poolGemfireProperties = new Properties();
+		Properties expectedGemfireProperties = new Properties();
+
+		poolGemfireProperties.setProperty("name", "resolveMergedGemfirePropertiesTest");
+		poolGemfireProperties.setProperty("log-level", "warning");
+
+		CollectionUtils.mergePropertiesIntoMap(poolGemfireProperties, expectedGemfireProperties);
+
+		expectedGemfireProperties.setProperty("log-level", "config");
+		expectedGemfireProperties.setProperty("durableClientId", "123");
+		expectedGemfireProperties.setProperty("durableClientTimeout", "60");
+
+		clientCacheFactoryBean.setProperties(expectedGemfireProperties);
+
+		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
+
+		poolFactoryBean.setBeanFactory(mockBeanFactory);
+		poolFactoryBean.setProperties(poolGemfireProperties);
+
+		Properties resolvedGemfireProperties = poolFactoryBean.resolveGemfireProperties();
+
+		assertThat(resolvedGemfireProperties.getProperty("log-level"), is(equalTo("config")));
+		assertThat(resolvedGemfireProperties, is(equalTo(expectedGemfireProperties)));
 	}
 
 	@Test
@@ -203,7 +243,10 @@ public class PoolFactoryBeanTest {
 
 		poolFactoryBean.setBeanFactory(mockBeanFactory);
 
-		assertNull(poolFactoryBean.resolveGemfireProperties());
+		Properties gemfireProperties = poolFactoryBean.resolveGemfireProperties();
+
+		assertThat(gemfireProperties, is(notNullValue()));
+		assertThat(gemfireProperties.isEmpty(), is(true));
 	}
 
 	@Test

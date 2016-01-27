@@ -17,6 +17,8 @@
 package org.springframework.data.gemfire.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.w3c.dom.Element;
@@ -27,6 +29,7 @@ import org.w3c.dom.Element;
  * @author Costin Leau
  * @author David Turanski
  * @author Lyndon Adams
+ * @author John Blum
  */
 class ClientCacheParser extends CacheParser {
 
@@ -43,10 +46,18 @@ class ClientCacheParser extends CacheParser {
 		ParsingUtils.setPropertyValue(element, builder, "keep-alive");
 		ParsingUtils.setPropertyValue(element, builder, "pool-name");
 		ParsingUtils.setPropertyValue(element, builder, "ready-for-events");
+		registerClientCachePoolGemfirePropertiesSyncingBeanFactoryPostProcessor(getRegistry(parserContext));
+	}
+
+	/* (non-Javadoc) */
+	void registerClientCachePoolGemfirePropertiesSyncingBeanFactoryPostProcessor(BeanDefinitionRegistry registry) {
+		BeanDefinitionReaderUtils.registerWithGeneratedName(BeanDefinitionBuilder.genericBeanDefinition(
+			ClientCachePoolGemfirePropertiesSyncingBeanFactoryPostProcessor.class).getBeanDefinition(), registry);
 	}
 
 	@Override
 	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
 		ParsingUtils.setPropertyValue(element, dynamicRegionSupport, "pool-name");
 	}
+
 }
