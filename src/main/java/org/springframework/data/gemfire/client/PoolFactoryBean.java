@@ -30,6 +30,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -80,6 +81,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private ConnectionEndpointList servers = new ConnectionEndpointList();
 
 	private Pool pool;
+
+	private Properties gemfireProperties;
 
 	private String beanName;
 	private String name;
@@ -207,13 +210,16 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	 * @see java.util.Properties
 	 */
 	protected Properties resolveGemfireProperties() {
+		gemfireProperties = (gemfireProperties != null ? gemfireProperties : new Properties());
+
 		try {
 			ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
-			return clientCacheFactoryBean.resolveProperties();
+			CollectionUtils.mergePropertiesIntoMap(clientCacheFactoryBean.resolveProperties(), gemfireProperties);
 		}
 		catch (Exception ignore) {
-			return null;
 		}
+
+		return gemfireProperties;
 	}
 
 	/**
@@ -315,6 +321,10 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	public void setPingInterval(long pingInterval) {
 		this.pingInterval = pingInterval;
+	}
+
+	public void setProperties(Properties gemfireProperties) {
+		this.gemfireProperties = gemfireProperties;
 	}
 
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
