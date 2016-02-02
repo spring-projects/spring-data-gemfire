@@ -16,8 +16,11 @@
 
 package org.springframework.data.gemfire.support;
 
+import java.util.concurrent.Callable;
+
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.SimpleValueWrapper;
+import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
@@ -79,6 +82,33 @@ public class GemfireCache implements Cache {
 		}
 
 		return (T) value;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T get(final Object key, final Callable<T> valueLoader) {
+		T value = (T) get(key, Object.class);
+
+		if (value == null) {
+			synchronized (region) {
+				value = (T) get(key, Object.class);
+
+				if (value == null) {
+					try {
+						value = valueLoader.call();
+						put(key, value);
+					}
+					catch (Exception e) {
+						throw new RuntimeException(String.format(
+							"Failed to load value for key [%1$s] using valueLoader [%2$s]", key,
+								ObjectUtils.nullSafeClassName(valueLoader)));
+						//TODO throw ValueRetrievalException when SDG is based on Spring Framework 4.3
+						//throw new ValueRetrievalException(key, valueLoader, e);
+					}
+				}
+			}
+		}
+
+		return value;
 	}
 
 	@SuppressWarnings("unchecked")

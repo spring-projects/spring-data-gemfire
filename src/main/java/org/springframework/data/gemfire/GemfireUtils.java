@@ -21,8 +21,11 @@ import java.util.concurrent.ConcurrentMap;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.ClassUtils;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 
 /**
@@ -55,6 +58,24 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		}
 		catch (Exception ignore) {
 			return false;
+		}
+	}
+
+	public static Cache getCache() {
+		try {
+			return CacheFactory.getAnyInstance();
+		}
+		catch (CacheClosedException ignore) {
+			return null;
+		}
+	}
+
+	public static ClientCache getClientCache() {
+		try {
+			return ClientCacheFactory.getAnyInstance();
+		}
+		catch (CacheClosedException ignore) {
+			return null;
 		}
 	}
 
