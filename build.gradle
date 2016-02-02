@@ -159,7 +159,6 @@ javadoc {
 
   configure(options) {
       stylesheetFile = file("$buildDir/shared-resources/javadoc/spring-javadoc.css")
-      overview = "${srcDir}/overview.html"
       docFilesSubDirs = true
       outputLevel = org.gradle.external.javadoc.JavadocOutputLevel.QUIET
       breakIterator = true
@@ -215,22 +214,24 @@ referencePdf {
 }
 
 asciidoctor {
+    sourceDir = file("${projectDir}/src/main/asciidoc")
     dependsOn = [ 'extractSharedResources' ]
     backends = [ 'html5', 'docbook' ]
     options = [
         doctype: 'book',
         eruby: 'erubis',
         attributes: [
-            linkcss: true,
+            basedocdir: "${projectDir}/src/main/asciidoc",
             copycss : "$buildDir/shared-resources/asciidoc/spring.css",
             icons : 'font',
-            'source-highlighter': 'prettify',
-            sectanchors : true,
-            toclevels: '3',
-            sectids: false,
+            linkcss: true,
             numbered: true,
-            version: project.version,
+            sectanchors : true,
+            sectids: false,
+            'source-highlighter': 'prettify',
             stylesheet: "spring.css",
+            toclevels: '3',
+            version: project.version,
         ]
     ]
 }

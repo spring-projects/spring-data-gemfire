@@ -134,6 +134,14 @@
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
+				<configuration>
+					<attributes>
+						<basedocdir>${project.basedir}/src/main/asciidoc</basedocdir>
+						<doctype>book</doctype>
+						<version>${project.version}</version>
+						<!-- TODO include other attributes from build.gradle! -->
+					</attributes>
+				</configuration>
 			</plugin>
 
 		</plugins>
