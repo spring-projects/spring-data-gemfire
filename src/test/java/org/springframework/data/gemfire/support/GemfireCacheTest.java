@@ -16,30 +16,44 @@
 
 package org.springframework.data.gemfire.support;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.cache.Cache;
+import org.springframework.data.gemfire.GemfireUtils;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedSystem;
+
+import edu.umd.cs.mtc.MultithreadedTestCase;
+import edu.umd.cs.mtc.TestFramework;
 
 /**
+ * Tests the interaction between the Spring Framework Cache Abstraction and GemFire as a provider
+ * using Spring Data GemFire's extension.
+ *
  * @author Costin Leau
  * @author John Blum
  * @author Oliver Gierke
+ * @see org.junit.Rule
+ * @see org.junit.Test
+ * @see edu.umd.cs.mtc.MultithreadedTestCase
+ * @see edu.umd.cs.mtc.TestFramework
+ * @see org.springframework.cache.Cache
+ * @see com.gemstone.gemfire.cache.Region
  */
-// TODO avoid using actual GemFire Cache and Region instances, thereby creating a distributed system, for this test!
-// TODO Use Mocks!
 public class GemfireCacheTest extends AbstractNativeCacheTest<Region<Object, Object>> {
 
-	@Rule public ExpectedException exception = ExpectedException.none();
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Override
 	protected Cache createCache(Region<Object, Object> nativeCache) {
@@ -47,67 +61,206 @@ public class GemfireCacheTest extends AbstractNativeCacheTest<Region<Object, Obj
 	}
 
 	@Override
-	@SuppressWarnings({ "deprecation", "unchecked" })
 	protected Region<Object, Object> createNativeCache() throws Exception {
-		com.gemstone.gemfire.cache.Cache instance = null;
+		Properties gemfireProperties = new Properties();
 
-		try {
-			instance = CacheFactory.getAnyInstance();
-		}
-		catch (Exception ignore) {
-		}
+		gemfireProperties.setProperty("name", GemfireCacheTest.class.getName());
+		gemfireProperties.setProperty("mcast-port", "0");
+		gemfireProperties.setProperty("log-level", "warning");
 
-		if (instance == null) {
-			DistributedSystem ds = DistributedSystem.connect(new Properties());
-			instance = CacheFactory.create(ds);
-		}
+		com.gemstone.gemfire.cache.Cache cache = GemfireUtils.getCache();
 
-		Region region = instance.getRegion(CACHE_NAME);
+		cache = (cache != null ? cache : new CacheFactory(gemfireProperties).create());
 
-		if (region == null) {
-			region = instance.createRegion(CACHE_NAME, new com.gemstone.gemfire.cache.AttributesFactory().create());
-		}
+		Region<Object, Object> region = cache.getRegion(CACHE_NAME);
+
+		region = (region != null ? region : cache.createRegionFactory().create(CACHE_NAME));
 
 		return region;
 	}
 
 	/**
-	 * @see SGF-317
+	 * @see <a href="https://jira.spring.io/browse/SGF-317">Improve GemfireCache implementation to be able to build on Spring 4.1</a>
 	 */
 	@Test
 	public void findsTypedValue() throws Exception {
+		Cache cache = createCache();
 
-		GemfireCache cache = new GemfireCache(createNativeCache());
 		cache.put("key", "value");
 
 		assertThat(cache.get("key", String.class), is("value"));
 	}
 
 	/**
-	 * @see SGF-317
+	 * @see <a href="https://jira.spring.io/browse/SGF-317">Improve GemfireCache implementation to be able to build on Spring 4.1</a>
 	 */
 	@Test
 	public void skipTypeChecksIfTargetTypeIsNull() throws Exception {
+		Cache cache = createCache();
 
-		GemfireCache cache = new GemfireCache(createNativeCache());
 		cache.put("key", "value");
 
-		assertThat(cache.get("key", null), is((Object) "value"));
+		assertThat(cache.get("key", (Class<String>) null), is("value"));
 	}
 
 	/**
-	 * @see SGF-317
+	 * @see <a href="https://jira.spring.io/browse/SGF-317">Improve GemfireCache implementation to be able to build on Spring 4.1</a>
 	 */
 	@Test
-	public void throwsIllegalStateExceptionIfTypedAccessDoesntFindMatchingType() throws Exception {
+	public void throwsIllegalStateExceptionIfTypedAccessDoesNotFindMatchingType() throws Exception {
+		Cache cache = createCache();
 
-		GemfireCache cache = new GemfireCache(createNativeCache());
 		cache.put("key", "value");
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage(Integer.class.getName());
-		exception.expectMessage("value");
+		expectedException.expect(IllegalStateException.class);
+		expectedException.expectMessage(Integer.class.getName());
+		expectedException.expectMessage("value");
 
 		cache.get("key", Integer.class);
 	}
+
+	@Test
+	public void cacheGetWithValueLoaderFindsValue() throws Exception {
+		GemfireCache cache = createCache();
+
+		cache.put("key", "value");
+
+		assertThat(String.valueOf(cache.get("key", TestCacheLoader.NULL_VALUE)), is(equalTo("value")));
+		assertThat(TestCacheLoader.NULL_VALUE.wasCalled(), is(false));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void cacheGetWithValueLoaderUsesValueLoader() throws Exception {
+		GemfireCache cache = createCache();
+
+		TestCacheLoader<String> cacheLoader = new TestCacheLoader<String>("test");
+
+		assertThat(cache.get("key", cacheLoader), is(equalTo("test")));
+		assertThat(cacheLoader.wasCalled(), is(true));
+		assertThat(((Region<Object, String>) cache.getNativeCache()).get("key"), is(equalTo("test")));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void cacheGetWithValueLoaderUsesValueLoaderReturningNull() throws Exception {
+		GemfireCache cache = createCache();
+
+		assertThat(cache.get("key", TestCacheLoader.NULL_VALUE), is(nullValue()));
+		assertThat(TestCacheLoader.NULL_VALUE.wasCalled(), is(true));
+		assertThat(cache.getNativeCache().containsKey("key"), is(false));
+	}
+
+	@Test
+	@SuppressWarnings("all")
+	public void cacheGetWithValueLoaderUsesValueLoaderThrowingException() throws Exception {
+		GemfireCache cache = createCache();
+
+		TestCacheLoader<Exception> exceptionThrowingCacheLoader = new TestCacheLoader<Exception>(
+			new IllegalStateException("test"));
+
+		expectedException.expect(RuntimeException.class);
+		expectedException.expectCause(is(nullValue(IllegalStateException.class)));
+		expectedException.expectMessage(String.format("Failed to load value for key [key] using valueLoader [%1$s]",
+			exceptionThrowingCacheLoader.getClass().getName()));
+
+		cache.get("key", exceptionThrowingCacheLoader);
+	}
+
+	@Test
+	public void cacheGetWithValueLoaderIsThreadSafe() throws Throwable {
+		TestFramework.runOnce(new CacheGetWithValueLoaderIsThreadSafe());
+	}
+
+	@SuppressWarnings("unused")
+	protected class CacheGetWithValueLoaderIsThreadSafe extends MultithreadedTestCase {
+
+		private GemfireCache cache;
+
+		private TestCacheLoader<String> cacheLoader;
+
+		@Override
+		public void initialize(){
+			super.initialize();
+
+			cache = createCacheHandlesCheckedException();
+
+			cacheLoader = new TestCacheLoader<String>("test") {
+				@Override public String call() throws Exception {
+					waitForTick(2);
+					return super.call();
+				}
+			};
+		}
+
+		<T extends Cache> T createCacheHandlesCheckedException() {
+			try {
+				return createCache();
+			}
+			catch (Exception e) {
+				throw new RuntimeException("failed to create Cache", e);
+			}
+		}
+
+		public void thread1() {
+			assertTick(0);
+
+			Thread.currentThread().setName("Cache Loader Thread");
+
+			String value = cache.get("key", cacheLoader);
+
+			assertTick(2);
+			assertThat(value, is(equalTo("test")));
+			assertThat(cacheLoader.wasCalled(), is(true));
+		}
+
+		public void thread2() {
+			waitForTick(1);
+
+			Thread.currentThread().setName("Cache Reader Thread");
+
+			TestCacheLoader<String> illegalCacheLoader = new TestCacheLoader<String>("illegal");
+
+			String value = cache.get("key", illegalCacheLoader);
+
+			assertTick(2);
+			assertThat(value, is(equalTo("test")));
+			assertThat(illegalCacheLoader.wasCalled(), is(false));
+		}
+	}
+
+	protected static class TestCacheLoader<T> implements Callable<T> {
+
+		protected static final TestCacheLoader<Object> NULL_VALUE = new TestCacheLoader<Object>();
+
+		private volatile boolean called;
+
+		private final T value;
+
+		public TestCacheLoader() {
+			this(null);
+		}
+
+		public TestCacheLoader(T value) {
+			this.value = value;
+		}
+
+		protected boolean wasCalled() {
+			boolean called = this.called;
+			this.called = false;
+			return called;
+		}
+
+		@Override
+		public T call() throws Exception {
+			called = true;
+
+			if (value instanceof Exception) {
+				throw (Exception) value;
+			}
+
+			return value;
+		}
+	}
+
 }
