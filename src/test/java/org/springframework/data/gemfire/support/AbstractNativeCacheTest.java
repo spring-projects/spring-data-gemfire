@@ -16,22 +16,26 @@
 
 package org.springframework.data.gemfire.support;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cache.Cache;
 
 /**
- * Test for native cache implementations.
+ * Abstract base test class for native cache implementations.
  * 
  * @author Costin Leau
+ * @author John Blum
+ * @see org.springframework.cache.Cache
  */
 public abstract class AbstractNativeCacheTest<T> {
 
-	protected static final String CACHE_NAME = "testCache";
+	protected static final String CACHE_NAME = "Example";
 
 	private T nativeCache;
 	private Cache cache;
@@ -43,54 +47,65 @@ public abstract class AbstractNativeCacheTest<T> {
 		cache.clear();
 	}
 
-	protected abstract T createNativeCache() throws Exception;
+	@SuppressWarnings("unchecked")
+	protected <C extends Cache> C createCache() throws Exception {
+		return (C) createCache(createNativeCache());
+	}
 
 	protected abstract Cache createCache(T nativeCache);
 
+	protected abstract T createNativeCache() throws Exception;
+
 	@Test
-	public void testCacheName() throws Exception {
-		assertEquals(CACHE_NAME, cache.getName());
+	public void cacheNameIsEqualToExpected() throws Exception {
+		assertThat(cache.getName(), is(equalTo(CACHE_NAME)));
 	}
 
 	@Test
-	public void testNativeCache() throws Exception {
-		assertSame(nativeCache, cache.getNativeCache());
+	@SuppressWarnings("unchecked")
+	public void nativeCacheIsSameAsExpected() throws Exception {
+		assertThat((T) cache.getNativeCache(), is(sameInstance(nativeCache)));
 	}
 
 	@Test
-	public void testCachePut() throws Exception {
-		Object key = "enescu";
-		Object value = "george";
-
-		assertNull(cache.get(key));
-		cache.put(key, value);
-		assertEquals(value, cache.get(key).get());
-	}
-
-	@Test
-	public void testCacheClear() throws Exception {
-		assertNull(cache.get("enescu"));
+	public void cachePutIsSuccessful() throws Exception {
+		assertThat(cache.get("enescu"), is(nullValue()));
 		cache.put("enescu", "george");
-		assertNull(cache.get("vlaicu"));
-		cache.put("vlaicu", "aurel");
-		cache.clear();
-		assertNull(cache.get("vlaicu"));
-		assertNull(cache.get("enescu"));
+		assertThat(String.valueOf(cache.get("enescu").get()), is(equalTo("george")));
 	}
 
 	@Test
-	public void testCacheGetForClassType() {
+	public void cacheGetForClassTypeIsSuccessful() {
 		cache.put("one", Boolean.TRUE);
 		cache.put("two", 'X');
 		cache.put("three", 101);
 		cache.put("four", Math.PI);
 		cache.put("five", "TEST");
 
-		assertEquals(Boolean.TRUE, cache.get("one", Boolean.class));
-		assertEquals(new Character('X'), cache.get("two", Character.class));
-		assertEquals(new Integer(101), cache.get("three", Integer.class));
-		assertEquals(new Double(Math.PI), cache.get("four", Double.class));
-		assertEquals("TEST", cache.get("five", String.class));
+		assertThat(cache.get("one", Boolean.class), is(equalTo(Boolean.TRUE)));
+		assertThat(cache.get("two", Character.class), is(equalTo('X')));
+		assertThat(cache.get("three", Integer.class), is(equalTo(101)));
+		assertThat(cache.get("four", Double.class), is(equalTo(Math.PI)));
+		assertThat(cache.get("five", String.class), is(equalTo("TEST")));
+	}
+
+	@Test
+	public void cacheClearIsSuccessful() throws Exception {
+		assertThat(cache.get("enescu"), is(nullValue()));
+
+		cache.put("enescu", "george");
+
+		assertThat(cache.get("vlaicu"), is(nullValue()));
+
+		cache.put("vlaicu", "aurel");
+
+		assertThat(cache.get("enescu", String.class), is(equalTo("george")));
+		assertThat(cache.get("vlaicu", String.class), is(equalTo("aurel")));
+
+		cache.clear();
+
+		assertThat(cache.get("vlaicu"), is(nullValue()));
+		assertThat(cache.get("enescu"), is(nullValue()));
 	}
 
 }
