@@ -90,9 +90,9 @@ prefix declaration above:
 ====
 
 :leveloffset: +1
-include::cache.adoc[]
-include::data-access.adoc[]
-include::region.adoc[]
+include::{basedocdir}/reference/cache.adoc[]
+include::{basedocdir}/reference/data-access.adoc[]
+include::{basedocdir}/reference/region.adoc[]
 :leveloffset: -1
 
 [[bootstrap:indicies]]
@@ -118,8 +118,8 @@ This allows one to declare any number of indices on any Region whether they are 
 but one can customize it accordingly or use a pool (if need be) - see the namespace schema for the full set of options.
 
 :leveloffset: +1
-include::diskstore.adoc[]
-include::snapshot.adoc[]
-include::function.adoc[]
-include::gateway.adoc[]
+include::{basedocdir}/reference/diskstore.adoc[]
+include::{basedocdir}/reference/snapshot.adoc[]
+include::{basedocdir}/reference/function.adoc[]
+include::{basedocdir}/reference/gateway.adoc[]
 :leveloffset: -1
