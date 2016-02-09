@@ -17,17 +17,17 @@
 
 	<properties>
 		<dist.key>SGF</dist.key>
+		<antlr.version>2.7.7</antlr.version>
+		<gemfire.version>8.2.0</gemfire.version>
+		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<springdata.commons>1.12.0.BUILD-SNAPSHOT</springdata.commons>
-		<gemfire>8.2.0</gemfire>
-		<antlr>2.7.7</antlr>
 	</properties>
 
 	<dependencies>
 
 		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-commons</artifactId>
-			<version>${springdata.commons}</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
 		</dependency>
 
 		<dependency>
@@ -36,14 +36,22 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-support</artifactId>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<version>${springdata.commons}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.gemstone.gemfire</groupId>
 			<artifactId>gemfire</artifactId>
-			<version>${gemfire}</version>
+			<version>${gemfire.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>antlr</groupId>
+			<artifactId>antlr</artifactId>
+			<version>${antlr.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
@@ -51,13 +59,6 @@
 			<artifactId>annotations</artifactId>
 			<version>2.0.2</version>
 			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>antlr</groupId>
-			<artifactId>antlr</artifactId>
-			<version>${antlr}</version>
-			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
@@ -74,13 +75,13 @@
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
+			<artifactId>jackson-annotations</artifactId>
 			<version>${jackson}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
+			<artifactId>jackson-databind</artifactId>
 			<version>${jackson}</version>
 		</dependency>
 
@@ -99,6 +100,13 @@
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derbyLocale_zh_TW</artifactId>
 			<version>10.9.1.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.umd.cs.mtc</groupId>
+			<artifactId>multithreadedtc</artifactId>
+			<version>${multithreadedtc.version}</version>
 			<scope>test</scope>
 		</dependency>
 
