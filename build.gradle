@@ -54,15 +54,6 @@ if (project.hasProperty('platformVersion')) {
 
 [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
-tasks.withType(Test).all {
-    forkEvery = 1
-    systemProperties['gemfire.disableShutdownHook'] = 'true'
-	systemProperties['javax.net.ssl.keyStore'] = System.getProperty('user.dir') + '/src/test/resources/trusted.keystore'
-    systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
-	systemProperties['product.name'] = 'Apache Geode'
-	systemProperties['spring.profiles.active'] = 'apache-geode'
-}
-
 // Common dependencies
 dependencies {
     // Spring Framework
@@ -88,32 +79,13 @@ dependencies {
 		exclude group: "org.springframework", module: "spring-beans"
 		exclude group: "org.springframework", module: "spring-context"
 		exclude group: "org.springframework", module: "spring-context-support"
+		exclude group: "org.springframework", module: "spring-core"
 		exclude group: "org.springframework", module: "spring-expression"
 		exclude group: "org.springframework", module: "spring-tx"
 		exclude group: "org.springframework", module: "spring-web"
 		exclude group: "org.springframework", module: "spring-webmvc"
 		exclude group: "org.springframework.data", module: "spring-data-commons"
 		exclude group: "org.springframework.shell", module: "spring-shell"
-	}
-	compile("org.apache.geode:gemfire-joptsimple:$gemfireVersion") {
-		exclude group: "org.springframework", module: "spring-aop"
-		exclude group: "org.springframework", module: "spring-beans"
-		exclude group: "org.springframework", module: "spring-context"
-		exclude group: "org.springframework", module: "spring-context-support"
-		exclude group: "org.springframework", module: "spring-expression"
-		exclude group: "org.springframework", module: "spring-tx"
-		exclude group: "org.springframework", module: "spring-web"
-		exclude group: "org.springframework", module: "spring-webmvc"
-	}
-	compile("org.apache.geode:gemfire-json:$gemfireVersion") {
-		exclude group: "org.springframework", module: "spring-aop"
-		exclude group: "org.springframework", module: "spring-beans"
-		exclude group: "org.springframework", module: "spring-context"
-		exclude group: "org.springframework", module: "spring-context-support"
-		exclude group: "org.springframework", module: "spring-expression"
-		exclude group: "org.springframework", module: "spring-tx"
-		exclude group: "org.springframework", module: "spring-web"
-		exclude group: "org.springframework", module: "spring-webmvc"
 	}
 	optional("com.google.code.findbugs:annotations:2.0.2")
 	runtime("antlr:antlr:$antlrVersion")
@@ -150,6 +122,15 @@ if (JavaVersion.current().isJava8Compatible()) {
       }
     }
   }
+
+tasks.withType(Test).all {
+    forkEvery = 1
+    systemProperties['gemfire.disableShutdownHook'] = 'true'
+    systemProperties['javax.net.ssl.keyStore'] = System.getProperty('user.dir') + '/src/test/resources/trusted.keystore'
+    systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
+    systemProperties['product.name'] = 'Apache Geode'
+    systemProperties['spring.profiles.active'] = 'apache-geode'
+}
 
 javadoc {
   dependsOn = [ 'extractSharedResources' ]
