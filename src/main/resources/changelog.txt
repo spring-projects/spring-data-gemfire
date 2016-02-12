@@ -3,6 +3,66 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.8.0.M1 (2016-02-12)
+----------------------------------------
+* SGF-468 - Improve coordination between the PoolFactoryBean and ClientCacheFactoryBean when configuring and resolving the GemFire DistributedSystem.
+* SGF-467 - Add Code of Conduct.
+* SGF-466 - Restore function to the Gradle-based build.
+* SGF-465 - Move project build to Maven.
+* SGF-464 - Release 1.8 M1 (Hopper).
+* SGF-462 - Add appinfo hint to client region element in XSD.
+* SGF-461 - Upgrade to Spring Framework 4.1.9.RELEASE.
+* SGF-460 - Remove unnecessary SLF4J compile-time dependency.
+* SGF-459 - Add support for the get(key:Object, valueLoader:Callable) method in Spring Framework 4.3's Cache interface.
+* SGF-458 - Enable resolution of GemFire's DistributedSystem and System properties to be overridden in PoolFactoryBean.
+* SGF-457 - Clean up Javadoc warnings.
+* SGF-455 - Fix creation of GemfireMappingContext for repositories.
+* SGF-454 - Adapt to API changes in Spring Data Commons.
+* SGF-450 - GemfireRepositoryFactoryBean needs to explicitly register the "default" GemfireMappingContext when not explicitly defined as a bean in the application's Spring context.
+* SGF-449 - GemfireRepositoryFactoryBean.setGemfireMappingContext needs to call RepositoryFactoryBeanSupport.setMappingContext.
+* SGF-448 - GemfireRepositoryConfigurationExtension needs to override the RepositoryConfigurationExtensionSupport postProcess(:BeanDefinitionBuilder, :AnnotationRepositoryConfigurationSource) method.
+* SGF-447 - Fix apache-geode build due to recent changes in Apache Geode that removed various internal utility classes in favor of external Spring classes.
+* SGF-442 - Remove incorrect statements about GemFire Java Reflection-based (PDX) Serialization in the SDG Reference Guide.
+* SGF-441 - Fix possible CacheClosedException in ClientCacheFactoryBean onApplicationEvent(:ContextRefreshedEvent) when the ClientCache initialization is lazy.
+* SGF-440 - Optimize imports across the SDG codebase.
+* SGF-439 - Add 'durable-client-id' and 'durable-client-timeout' attributes to the <gfe:client-cache> namespace element for convenience.
+* SGF-438 - Make <gfe:client-cache>, 'ready-for-events' true the default for durable clients.
+* SGF-437 - Upgrade to Spring Framework 4.1.8.RELEASE.
+* SGF-434 - Add a durable GemFire client cache test to assert proper behavior by SDG.
+* SGF-433 - Fix improper resolution of Spring property placeholders in 'locators' and 'servers' attributes on the '<gfe:pool>' element(s) in Spring XML config.
+* SGF-432 - IndexFactoryBean traps IndexExistsException instead of IndexNameConflictException.
+* SGF-431 - Remove mavenLocal() from the artifact repository declarations.
+* SGF-430 - Cleanup test failures on Windows due to incorrect Spring test context configuration resource resolution.
+* SGF-429 - GemfirePersistentProperty considers a BigDecimal property an entity.
+* SGF-427 - Update Spring Data GemFire Reference Guide 'New in the 1.7 Release' section.
+* SGF-387 - Prepare SDG 1.8 and upgrade to GemFire 8.2.0 GA.
+* SGF-373 - Implement a Spring Session Adapter for GemFire to back an HttpSession similar to Redis.
+
+
+Changes in version 1.7.2.RELEASE (2015-12-18)
+---------------------------------------------
+* SGF-456 - Release 1.7.2 (Gosling).
+* SGF-455 - Fix creation of GemfireMappingContext for repositories.
+* SGF-450 - GemfireRepositoryFactoryBean needs to explicitly register the "default" GemfireMappingContext when not explicitly defined as a bean in the application's Spring context.
+* SGF-449 - GemfireRepositoryFactoryBean.setGemfireMappingContext needs to call RepositoryFactoryBeanSupport.setMappingContext.
+* SGF-448 - GemfireRepositoryConfigurationExtension needs to override the RepositoryConfigurationExtensionSupport postProcess(:BeanDefinitionBuilder, :AnnotationRepositoryConfigurationSource) method.
+* SGF-447 - Fix Spring Data GemFire due to recent changes to Apache Geode that removed various internal utility classes in favor of external Spring classes.
+
+
+Changes in version 1.7.1.RELEASE (2015-11-15)
+---------------------------------------------
+* SGF-446 - Release 1.7.1 (Gosling).
+* SGF-443 - Fix Spring Data GemFire apache-geode build due to recent changes to Apache Geode that removed the HDFS support.
+* SGF-442 - Remove incorrect statements about GemFire Java Reflection-based (PDX) Serialization in the SDG Reference Guide.
+* SGF-437 - Upgrade to Spring Framework 4.1.8.RELEASE.
+* SGF-434 - Add a durable GemFire client cache test to assert proper behavior by SDG.
+* SGF-433 - Fix improper resolution of Spring property placeholders in 'locators' and 'servers' attributes on the '<gfe:pool>' element(s) in Spring XML config.
+* SGF-432 - IndexFactoryBean traps IndexExistsException instead of IndexNameConflictException.
+* SGF-430 - Cleanup test failures on Windows due to incorrect Spring test context configuration resource resolution.
+* SGF-429 - GemfirePersistentProperty considers a BigDecimal property an entity.
+* SGF-427 - Update Spring Data GemFire Reference Guide 'New in the 1.7 Release' section.
+
+
 Changes in version 1.5.4.RELEASE (2015-10-14)
 ---------------------------------------------
 * SGF-436 - Release 1.5.4 (Evans).
