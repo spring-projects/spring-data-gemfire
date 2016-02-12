@@ -149,8 +149,12 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
 		
 		return new QueryLookupStrategy() {
-			
+
 			@Override
+			public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, NamedQueries namedQueries) {
+				return resolveQuery(method, metadata, null, namedQueries);
+			}
+
 			public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
 					NamedQueries namedQueries) {
 				

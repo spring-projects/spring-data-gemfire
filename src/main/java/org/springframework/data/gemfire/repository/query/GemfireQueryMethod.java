@@ -59,7 +59,7 @@ public class GemfireQueryMethod extends QueryMethod {
 	public GemfireQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
 			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
 
-		super(method, metadata, factory);
+		super(method, metadata);
 
 		Assert.notNull(context);
 		assertNonPagingQueryMethod(method);
