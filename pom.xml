@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.8.0.BUILD-SNAPSHOT</version>
+		<version>1.8.0.M1</version>
 	</parent>
 
 	<properties>
@@ -20,7 +20,7 @@
 		<antlr.version>2.7.7</antlr.version>
 		<gemfire.version>8.2.0</gemfire.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
-		<springdata.commons>1.12.0.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.12.0.M1</springdata.commons>
 	</properties>
 
 	<dependencies>
@@ -172,8 +172,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-milestone</id>
+			<url>https://repo.spring.io/libs-milestone</url>
 		</repository>
 	</repositories>
 
