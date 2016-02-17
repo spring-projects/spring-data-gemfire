@@ -29,6 +29,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -41,12 +42,10 @@ import java.util.Properties;
 
 import org.junit.Test;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
-import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.GemFireCache;
@@ -433,37 +432,27 @@ public class ClientCacheFactoryBeanTest {
 		verify(mockClientCacheFactory, never()).setPoolThreadLocalConnections(eq(false));
 	}
 
-	@Test(expected = BeanInitializationException.class)
+	@Test
 	public void resolveUnresolvablePool() {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
 
-		try {
-			BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
+		when(mockBeanFactory.getBean(eq(Pool.class))).thenThrow(new NoSuchBeanDefinitionException("TEST"));
 
-			when(mockBeanFactory.isTypeMatch(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME), eq(Pool.class)))
-				.thenReturn(true);
-			when(mockBeanFactory.getBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME), eq(Pool.class)))
-				.thenThrow(new IllegalArgumentException("TEST"));
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
-			ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
 
-			clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
-			clientCacheFactoryBean.setPoolName(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
-			clientCacheFactoryBean.setReadyForEvents(false);
-			clientCacheFactoryBean.createCache(mockClientCacheFactory);
-		}
-		catch (BeanInitializationException expected) {
-			assertTrue(expected.getMessage(), expected.getMessage().startsWith(String.format(
-				"no bean of type '%1$s' having name '%2$s' was found; a ClientCache requires a Pool",
-				Pool.class.getName(), GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)));
-			assertTrue(String.format("Cause was: %1$s!", ObjectUtils.nullSafeClassName(expected.getCause())),
-				expected.getCause() instanceof IllegalArgumentException);
-			assertEquals("TEST", expected.getCause().getMessage());
-			throw expected;
-		}
-		finally {
-			verify(mockClientCacheFactory, never()).create();
-		}
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+
+		clientCacheFactoryBean.createCache(mockClientCacheFactory);
+
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+
+		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
+		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
+		verify(mockBeanFactory, times(1)).getBean(eq(Pool.class));
+		verify(mockClientCacheFactory, times(1)).create();
 	}
 
 	@Test
