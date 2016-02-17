@@ -52,6 +52,17 @@ if (project.hasProperty('platformVersion')) {
     }
 }
 
+sourceSets {
+    main {
+        output.resourcesDir = 'build/classes/main'
+        output.classesDir   = 'build/classes/main'
+    }
+    test {
+        output.resourcesDir = 'build/classes/test'
+        output.classesDir   = 'build/classes/test'
+    }
+}
+
 [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
 // Common dependencies
@@ -74,6 +85,7 @@ dependencies {
 		exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
 		exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
 		exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+        exclude group: "org.apache.hbase", module: "hbase"
 		exclude group: "org.slf4j", module: "slf4j-api"
 		exclude group: "org.springframework", module: "spring-aop"
 		exclude group: "org.springframework", module: "spring-beans"
@@ -90,6 +102,7 @@ dependencies {
 	optional("com.google.code.findbugs:annotations:2.0.2")
 	runtime("antlr:antlr:$antlrVersion")
 
+    optional "javax.enterprise:cdi-api:$cdiVersion"
 	compile "org.aspectj:aspectjweaver:$aspectjVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
@@ -103,11 +116,15 @@ dependencies {
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "edu.umd.cs.mtc:multithreadedtc:$multiThreadedtcVersion"
+    testCompile "org.apache.openwebbeans.test:cditest-owb:$openwebbeansVersion"
 
     testCompile "javax.annotation:jsr250-api:1.0", optional
+    testRuntime "javax.el:el-api:$cdiVersion"
+    testRuntime "javax.servlet:servlet-api:$servletApiVersion"
 	testRuntime "log4j:log4j:$log4jVersion"
 	testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
 	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    testRuntime "org.springframework.shell:spring-shell:1.0.0.RELEASE"
 
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
 }
