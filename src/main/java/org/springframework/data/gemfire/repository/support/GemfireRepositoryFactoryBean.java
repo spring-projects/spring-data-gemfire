@@ -55,6 +55,7 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 		extends RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
 
 	private Iterable<Region<?, ?>> regions;
+
 	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context;
 	
 	/**
@@ -67,7 +68,6 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		
 		Collection<Region> regions = applicationContext.getBeansOfType(Region.class).values();
 		this.regions = (Iterable) Collections.unmodifiableCollection(regions);
 	}
@@ -80,7 +80,6 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 * @see org.springframework.data.mapping.context.MappingContext
 	 */
 	public void setGemfireMappingContext(MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext) {
-		
 		setMappingContext(mappingContext);
 		this.context = mappingContext;
 	}
@@ -118,10 +117,8 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 */
 	@Override
 	public void afterPropertiesSet() {
-
-	
 		Assert.state(context != null, "GemfireMappingContext must not be null!");
-		
 		super.afterPropertiesSet();
 	}
+
 }

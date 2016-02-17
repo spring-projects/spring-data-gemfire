@@ -35,14 +35,12 @@ import org.w3c.dom.Element;
 @SuppressWarnings("unused")
 class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 
-	protected static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList("async-event-queue", "gateway-sender",
+	static final List<String> GEMFIRE7_ELEMENTS = Arrays.asList("async-event-queue", "gateway-sender",
 		"gateway-receiver");
 
 	@Override
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		boolean v7ElementsPresent = GEMFIRE7_ELEMENTS.contains(element.getLocalName());
-
-		if (v7ElementsPresent) {
+		if (GEMFIRE7_ELEMENTS.contains(element.getLocalName())) {
 			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), null, parserContext);
 		}
 

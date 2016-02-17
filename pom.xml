@@ -20,6 +20,7 @@
 		<antlr.version>2.7.7</antlr.version>
 		<gemfire.version>8.2.0</gemfire.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
+		<servlet-api.version>2.5</servlet-api.version>
 		<springdata.commons>1.12.0.BUILD-SNAPSHOT</springdata.commons>
 	</properties>
 
@@ -39,6 +40,14 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons</artifactId>
 			<version>${springdata.commons}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<version>${cdi}</version>
+			<scope>provided</scope>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
@@ -89,6 +98,26 @@
 		</dependency>
 
 		<!-- Test -->
+
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>el-api</artifactId>
+			<version>${cdi}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>${servlet-api.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.openwebbeans.test</groupId>
+			<artifactId>cditest-owb</artifactId>
+			<version>${webbeans}</version>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.derby</groupId>
