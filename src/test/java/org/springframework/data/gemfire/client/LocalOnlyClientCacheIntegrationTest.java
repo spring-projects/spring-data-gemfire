@@ -39,9 +39,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 
 /**
@@ -111,7 +111,7 @@ public class LocalOnlyClientCacheIntegrationTest {
 		}
 
 		@Bean(name = "Example")
-		ClientRegionFactoryBean<Long, String> exampleRegion(ClientCache gemfireCache,
+		ClientRegionFactoryBean<Long, String> exampleRegion(GemFireCache gemfireCache,
 				RegionAttributes<Long, String> exampleAttributes) {
 
 			ClientRegionFactoryBean<Long, String> exampleRegion = new ClientRegionFactoryBean<Long, String>();

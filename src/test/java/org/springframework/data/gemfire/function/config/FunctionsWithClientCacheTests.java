@@ -20,7 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
@@ -28,8 +28,7 @@ public class FunctionsWithClientCacheTests {
 
 	@Test
 	public void doNothing() {
-		//Just make sure this comes up for SGF-186
+		// Just make sure this comes up for SGF-186.
 	}
 
 }
-
