@@ -118,10 +118,8 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 */
 	@Override
 	public void afterPropertiesSet() {
-
-	
 		Assert.state(context != null, "GemfireMappingContext must not be null!");
-		
 		super.afterPropertiesSet();
 	}
+
 }
