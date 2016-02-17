@@ -18,7 +18,7 @@ package org.springframework.data.gemfire.client;
 
 import java.util.Properties;
 
-import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.CacheFactoryBean;
@@ -198,20 +198,19 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 			localPool = PoolManager.find(poolName);
 
 			if (localPool == null) {
-				try {
-					if (StringUtils.hasText(poolName) && getBeanFactory().isTypeMatch(poolName, Pool.class)) {
-						localPool = getBeanFactory().getBean(poolName, Pool.class);
-					}
-					else {
+				if (StringUtils.hasText(poolName) && getBeanFactory().isTypeMatch(poolName, Pool.class)) {
+					localPool = getBeanFactory().getBean(poolName, Pool.class);
+				}
+				else {
+					try {
 						localPool = getBeanFactory().getBean(Pool.class);
 						this.poolName = localPool.getName();
 					}
-				}
-				catch (Exception e) {
-					throw new BeanInitializationException(String.format(
-						"no bean of type '%1$s' having name '%2$s' was found%3$s", Pool.class.getName(), poolName,
-							(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME.equals(poolName)
-								? "; a ClientCache requires a Pool" : "")), e);
+					catch (BeansException ignore) {
+						log.info(String.format("no bean of type '%1$s' having name '%2$s' was found",
+							Pool.class.getName(), (StringUtils.hasText(poolName) ? poolName
+								: GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)));
+					}
 				}
 			}
 		}
