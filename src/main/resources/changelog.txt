@@ -3,6 +3,17 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.7.4.RELEASE (2016-02-23)
+---------------------------------------------
+* SGF-473 - Allow a Spring-configured ClientCache to be constructed without a Pool.
+* SGF-470 - Release 1.7.4 (Gosling SR4).
+* SGF-462 - Add appinfo hint to client region element in XSD.
+* SGF-460 - Remove unnecessary SLF4J compile-time dependency.
+* SGF-459 - Add support for the get(key:Object, valueLoader:Callable) method in Spring Framework 4.3's Cache interface.
+* SGF-458 - Enable resolution of GemFire's DistributedSystem and System properties to be overridden in PoolFactoryBean.
+* SGF-457 - Clean up Javadoc warnings.
+
+
 Changes in version 1.8.0.M1 (2016-02-12)
 ----------------------------------------
 * SGF-468 - Improve coordination between the PoolFactoryBean and ClientCacheFactoryBean when configuring and resolving the GemFire DistributedSystem.
