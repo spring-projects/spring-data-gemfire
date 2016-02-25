@@ -37,7 +37,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
 
 /**
  * Integration tests for {@link MappingPdxSerializer}.
@@ -53,24 +52,24 @@ public class MappingPdxSerializerIntegrationTest {
 
 	@BeforeClass
 	public static void setUp() {
-
 		MappingPdxSerializer serializer = new MappingPdxSerializer(new GemfireMappingContext(),
 				new DefaultConversionService());
 
-		CacheFactory factory = new CacheFactory();
-		factory.set("name", MappingPdxSerializer.class.getSimpleName());
-		factory.set("mcast-port", "0");
-		factory.set("log-level", "warning");
-		factory.setPdxSerializer(serializer);
-		factory.setPdxPersistent(true);
-		cache = factory.create();
+		cache = new CacheFactory()
+			.set("name", MappingPdxSerializerIntegrationTest.class.getSimpleName())
+			.set("mcast-port", "0")
+			.set("log-level", "warning")
+			.setPdxSerializer(serializer)
+			.setPdxPersistent(true)
+			.create();
 
-		RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-		regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-		region = regionFactory.create("foo");
+		region = cache.createRegionFactory()
+			.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE)
+			.create("foo");
 	}
 
 	@AfterClass
+	@SuppressWarnings("all")
 	public static void tearDown() {
 		try {
 			cache.close();
@@ -79,7 +78,6 @@ public class MappingPdxSerializerIntegrationTest {
 		}
 		finally {
 			for (String name : new File(".").list(new FilenameFilter() {
-				@Override
 				public boolean accept(File dir, String name) {
 					return name.startsWith("BACKUP");
 				}
@@ -185,4 +183,5 @@ public class MappingPdxSerializerIntegrationTest {
 		}
 		
 	}
+
 }
