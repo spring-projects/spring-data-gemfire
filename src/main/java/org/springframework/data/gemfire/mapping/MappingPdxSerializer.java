@@ -26,8 +26,9 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
@@ -149,35 +150,32 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 			new PersistentEntityParameterValueProvider<GemfirePersistentProperty>(entity,
 				new GemfirePropertyValueProvider(reader), null));
 
-		final BeanWrapper<Object> wrapper = BeanWrapper.create(instance, getConversionService());
+		final PersistentPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(instance),
+			getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
-			@Override
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
-				if (entity.isConstructorArgument(persistentProperty)) {
-					return;
-				}
+				if (!entity.isConstructorArgument(persistentProperty)) {
+					PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
 
-				PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType()); 
-				Object value;
+					Object value = null;
 
-				if (customSerializer != null) {
-					value = customSerializer.fromData(persistentProperty.getType(), reader);
-				}
-				else {
-					value = reader.readField(persistentProperty.getName());
-				}
+					try {
+						value = (customSerializer != null
+							? customSerializer.fromData(persistentProperty.getType(), reader)
+							: reader.readField(persistentProperty.getName()));
 
-				try {
-					wrapper.setProperty(persistentProperty, value);
-				}
-				catch (Exception e) {
-					throw new MappingException("Could not read value " + value.toString(), e);
+						accessor.setProperty(persistentProperty, value);
+					}
+					catch (Exception e) {
+						throw new MappingException(String.format("Could not read and set value [%1$s] for property [%2$s]",
+							value, persistentProperty.getName()), e);
+					}
 				}
 			}
 		});
 
-		return wrapper.getBean();
+		return accessor.getBean();
 	}
 
 	/*
@@ -190,7 +188,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	public boolean toData(Object value, final PdxWriter writer) {
 		GemfirePersistentEntity<?> entity = getPersistentEntity(value.getClass());
 
-		final BeanWrapper<Object> wrapper = BeanWrapper.create(value, getConversionService());
+		final PersistentPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(value),
+				getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
 			@Override
@@ -198,7 +197,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
 				
 				try {
-					Object propertyValue = wrapper.getProperty(persistentProperty);
+					Object propertyValue = accessor.getProperty(persistentProperty);
 
 					PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
 
@@ -210,8 +209,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 					} 
 				}
 				catch (Exception e) {
-					throw new MappingException(String.format("Could not write value for property %1$s",
-						persistentProperty), e);
+					throw new MappingException(String.format("Could not write value for property [%1$s]",
+						persistentProperty.getName()), e);
 				}
 			}
 		});

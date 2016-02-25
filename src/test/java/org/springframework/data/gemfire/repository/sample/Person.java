@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.repository.sample;
 import java.io.Serializable;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.gemfire.mapping.Region;
 
 /**
@@ -33,6 +34,19 @@ public class Person implements Serializable {
 	public String firstname;
 	public String lastname;
 	public Address address;
+
+	@PersistenceConstructor
+	public Person() {
+	}
+
+	public Person(Long id) {
+		this.id = id;
+	}
+
+	public Person(String firstName, String lastName) {
+		this.firstname = firstName;
+		this.lastname = lastName;
+	}
 
 	public Person(Long id, String firstname, String lastname) {
 		this.id = id;
