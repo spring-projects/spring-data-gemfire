@@ -151,30 +151,26 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 				new GemfirePropertyValueProvider(reader), null));
 
 		final PersistentPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(instance),
-				getConversionService());
+			getConversionService());
 
 		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
-			@Override
 			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
-				if (entity.isConstructorArgument(persistentProperty)) {
-					return;
-				}
+				if (!entity.isConstructorArgument(persistentProperty)) {
+					PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
 
-				PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType()); 
-				Object value;
+					Object value = null;
 
-				if (customSerializer != null) {
-					value = customSerializer.fromData(persistentProperty.getType(), reader);
-				}
-				else {
-					value = reader.readField(persistentProperty.getName());
-				}
+					try {
+						value = (customSerializer != null
+							? customSerializer.fromData(persistentProperty.getType(), reader)
+							: reader.readField(persistentProperty.getName()));
 
-				try {
-					accessor.setProperty(persistentProperty, value);
-				}
-				catch (Exception e) {
-					throw new MappingException("Could not read value " + value.toString(), e);
+						accessor.setProperty(persistentProperty, value);
+					}
+					catch (Exception e) {
+						throw new MappingException(String.format("Could not read and set value [%1$s] for property [%2$s]",
+							value, persistentProperty.getName()), e);
+					}
 				}
 			}
 		});
@@ -190,9 +186,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public boolean toData(Object value, final PdxWriter writer) {
-
 		GemfirePersistentEntity<?> entity = getPersistentEntity(value.getClass());
-		
+
 		final PersistentPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(value),
 				getConversionService());
 
@@ -214,8 +209,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 					} 
 				}
 				catch (Exception e) {
-					throw new MappingException(String.format("Could not write value for property %1$s",
-						persistentProperty), e);
+					throw new MappingException(String.format("Could not write value for property [%1$s]",
+						persistentProperty.getName()), e);
 				}
 			}
 		});
