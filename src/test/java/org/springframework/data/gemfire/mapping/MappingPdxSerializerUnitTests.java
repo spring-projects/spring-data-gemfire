@@ -168,7 +168,8 @@ public class MappingPdxSerializerUnitTests {
 		try {
 			expectedException.expect(MappingException.class);
 			expectedException.expectCause(isA(IllegalArgumentException.class));
-			expectedException.expectMessage("Could not read and set value [null] for property [id]");
+			expectedException.expectMessage(String.format(
+				"while setting value [null] of property [id] for entity of type [%1$s] from PDX", Person.class));
 
 			serializer.fromData(Person.class, mockReader);
 		}
@@ -214,7 +215,9 @@ public class MappingPdxSerializerUnitTests {
 		try {
 			expectedException.expect(MappingException.class);
 			expectedException.expectCause(isA(IllegalArgumentException.class));
-			expectedException.expectMessage("Could not write value for property [address]");
+			expectedException.expectMessage(String.format(
+				"while serializing value [Portland, 12345] of property [address] for entity of type [%1$s] to PDX",
+					Person.class));
 
 			new MappingPdxSerializer(context, conversionService).toData(jonDoe, mockWriter);
 		}
