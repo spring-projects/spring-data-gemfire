@@ -24,8 +24,15 @@ import org.springframework.data.gemfire.mapping.Region;
  */
 @Region("address")
 public class Address {
+
 	@Id
 	public String zipCode;
 
 	public String city;
+
+	@Override
+	public String toString() {
+		return String.format("%1$s, %2$s", city, zipCode);
+	}
+
 }
