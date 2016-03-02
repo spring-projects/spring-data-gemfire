@@ -8,22 +8,22 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.8.0.BUILD-SNAPSHOT</version>
+		<version>1.7.3.RELEASE</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-gemfire</artifactId>
-	<version>1.8.0.BUILD-SNAPSHOT</version>
+	<version>1.7.0.APACHE-GEODE-EA-SNAPSHOT</version>
 
 	<name>Spring Data Gemfire</name>
 
 	<properties>
 		<dist.key>SGF</dist.key>
 		<antlr.version>2.7.7</antlr.version>
-		<gemfire.version>1.0.0-incubating-SNAPSHOT</gemfire.version>
+		<gemfire.version>1.0.0-incubating.M2-SNAPSHOT</gemfire.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
-		<springdata.commons>1.12.0.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.11.2.RELEASE</springdata.commons>
 	</properties>
 
 	<repositories>
@@ -72,7 +72,7 @@
 
 		<dependency>
 			<groupId>org.apache.geode</groupId>
-			<artifactId>gemfire-core</artifactId>
+			<artifactId>geode-core</artifactId>
 			<version>${gemfire.version}</version>
 			<exclusions>
 				<exclusion>
@@ -92,6 +92,10 @@
 					<artifactId>jackson-core</artifactId>
 				</exclusion>
 				<exclusion>
+					<groupId>org.apache.hbase</groupId>
+					<artifactId>hbase</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>org.codehaus.jackson</groupId>
 					<artifactId>jackson-core</artifactId>
 				</exclusion>
@@ -101,11 +105,11 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-mapper-asl</artifactId>
+					<artifactId>jackson-jaxrs</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-jaxrs</artifactId>
+					<artifactId>jackson-mapper-asl</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.codehaus.jackson</groupId>
