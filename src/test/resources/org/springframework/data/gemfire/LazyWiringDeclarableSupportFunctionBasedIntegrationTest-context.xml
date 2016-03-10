@@ -28,7 +28,7 @@
 	</util:properties>
 
 	<gfe:cache cache-xml-location="lazy-wiring-declarable-support-function-cache.xml"
-			   properties-ref="gemfireProperties" lazy-init="false"/>
+			   properties-ref="gemfireProperties" lazy-init="false" use-bean-factory-locator="true"/>
 
 	<gfe-data:function-executions base-package="org.springframework.data.gemfire.function.sample">
 		<gfe-data:include-filter type="assignable" expression="org.springframework.data.gemfire.function.sample.HelloFunctionExecution"/>

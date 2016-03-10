@@ -89,7 +89,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	protected boolean close = true;
 	protected boolean lazyInitialize = true;
-	protected boolean useBeanFactoryLocator = true;
+	protected boolean useBeanFactoryLocator = false;
 
 	protected final Log log = LogFactory.getLog(getClass());
 

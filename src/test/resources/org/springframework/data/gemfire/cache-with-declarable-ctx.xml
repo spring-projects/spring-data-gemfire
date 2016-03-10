@@ -16,7 +16,8 @@
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:cache cache-xml-location="classpath:cache-with-declarable.xml" properties-ref="gemfireProperties"/>
+	<gfe:cache cache-xml-location="cache-with-declarable.xml" properties-ref="gemfireProperties"
+			   use-bean-factory-locator="true"/>
 
 	<bean id="bean" class="java.lang.Object"/>
 

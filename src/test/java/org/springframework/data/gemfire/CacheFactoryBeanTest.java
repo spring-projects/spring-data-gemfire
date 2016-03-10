@@ -137,6 +137,7 @@ public class CacheFactoryBeanTest {
 		cacheFactoryBean.setSearchTimeout(45000);
 		cacheFactoryBean.setTransactionListeners(Collections.singletonList(mockTransactionLister));
 		cacheFactoryBean.setTransactionWriter(mockTransactionWriter);
+		cacheFactoryBean.setUseBeanFactoryLocator(true);
 
 		assertTrue(gemfireProperties.isEmpty());
 

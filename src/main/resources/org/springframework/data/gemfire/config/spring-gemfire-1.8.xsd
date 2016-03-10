@@ -141,7 +141,7 @@ For cases in which there are no declared dependencies on the cache, set this att
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="use-bean-factory-locator" type="xsd:string" use="optional" default="true">
+		<xsd:attribute name="use-bean-factory-locator" type="xsd:string" use="optional" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Indicates whether a bean factory locator is enabled (default) for this cache definition or not. The locator stores
