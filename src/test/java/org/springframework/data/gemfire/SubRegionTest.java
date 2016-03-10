@@ -48,6 +48,7 @@ public class SubRegionTest extends RecreatingContextTest {
 
 		cacheFactoryBean.setBeanName("gemfireCache");
 		cacheFactoryBean.setUseBeanFactoryLocator(false);
+		cacheFactoryBean.afterPropertiesSet();
 
 		GemFireCache cache = cacheFactoryBean.getObject();
 

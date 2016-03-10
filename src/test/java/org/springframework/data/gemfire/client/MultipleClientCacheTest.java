@@ -16,12 +16,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.fork.SpringCacheServerProcess;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -31,12 +28,6 @@ import com.gemstone.gemfire.cache.Region;
  * @author John Blum
  */
 public class MultipleClientCacheTest {
-
-	@BeforeClass
-	public static void startUp() throws Exception {
-		ForkUtil.startCacheServer(String.format("%1$s %2$s", SpringCacheServerProcess.class.getName(),
-			"/org/springframework/data/gemfire/client/datasource-server.xml"));
-	}
 
 	@Test
 	public void testMultipleCaches() {

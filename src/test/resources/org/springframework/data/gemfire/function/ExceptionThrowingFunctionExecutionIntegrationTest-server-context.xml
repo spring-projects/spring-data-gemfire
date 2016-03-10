@@ -25,7 +25,7 @@
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="gemfireProperties" lazy-init="false"/>
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<gfe:cache-server auto-startup="true" bind-address="${server.bind-address}" port="${server.port}"
 					  host-name-for-clients="${server.hostname-for-clients}" max-connections="${server.max-connections}"/>

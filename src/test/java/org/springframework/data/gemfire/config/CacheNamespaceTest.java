@@ -37,7 +37,6 @@ import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.test.GemfireProfileValueSource;
-import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 import org.springframework.test.context.ContextConfiguration;
@@ -55,7 +54,7 @@ import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
-@ContextConfiguration(locations = "cache-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "cache-ns.xml")
 @SuppressWarnings("unused")
 public class CacheNamespaceTest{
 

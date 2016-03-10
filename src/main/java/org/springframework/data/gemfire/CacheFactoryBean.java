@@ -88,7 +88,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
 	protected boolean close = true;
-	protected boolean lazyInitialize = true;
 	protected boolean useBeanFactoryLocator = false;
 
 	protected final Log log = LogFactory.getLog(getClass());
@@ -215,10 +214,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		postProcessPropertiesBeforeInitialization(getProperties());
-
-		if (!isLazyInitialize()) {
-			init();
-		}
+		init();
 	}
 
 	/* (non-Javadoc) */
@@ -578,13 +574,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
-	 * @param lazyInitialize set to false to force cache initialization if no other bean references it
-	 */
-	public void setLazyInitialize(boolean lazyInitialize) {
-		this.lazyInitialize = lazyInitialize;
-	}
-
-	/**
 	 * Indicates whether a bean factory locator is enabled (default) for this
 	 * cache definition or not. The locator stores the enclosing bean factory
 	 * reference to allow auto-wiring of Spring beans into GemFire managed
@@ -866,7 +855,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	@Override
 	public Cache getObject() throws Exception {
-		return init();
+		return cache;
 	}
 
 	@Override
@@ -1015,15 +1004,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 */
 	public Boolean getUseClusterConfiguration() {
 		return this.useClusterConfiguration;
-	}
-
-	/**
-	 * Determines whether this Cache instance will be lazily initialized.
-	 *
-	 * @return a boolean value indicating whether this Cache instance will be lazily initialized.
-	 */
-	public boolean isLazyInitialize() {
-		return lazyInitialize;
 	}
 
 }

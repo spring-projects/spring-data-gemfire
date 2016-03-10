@@ -16,8 +16,8 @@
 		<prop key="locators">localhost[20668]</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="gemfireProperties" use-bean-factory-locator="false"
-			   use-cluster-configuration="true" cache-xml-location="/clusterconfig-cache.xml" lazy-init="false"/>
+	<gfe:cache cache-xml-location="/clusterconfig-cache.xml" properties-ref="gemfireProperties"
+			   use-bean-factory-locator="false" use-cluster-configuration="true"/>
 
 	<gfe:lookup-region id="ClusterConfigRegion"/>
 

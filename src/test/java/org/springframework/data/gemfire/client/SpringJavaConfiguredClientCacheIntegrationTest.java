@@ -33,9 +33,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * The LazyInitializedClientCacheIntegrationTest class is a test suite of test cases testing the proper behavior a
- * lazy initialized ClientCache by the SDG ClientCacheFactoryBean when the ClientCache instance is "looked up"
- * in fetchCache() to ascertain whether the client is durable and readyForEvents needs to be signaled or not.
+ * The SpringJavaConfiguredClientCacheIntegrationTest class is a test suite of test cases testing
+ * the proper configuration of a GemFire ClientCache instance using Spring Java-based configuration meta-data.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -46,12 +45,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @see com.gemstone.gemfire.cache.client.ClientCache
  * @link https://jira.spring.io/browse/SGF-441
- * @since 1.0.0
+ * @since 1.8.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = LazyInitializedClientCacheIntegrationTest.GemFireConfiguration.class)
+@ContextConfiguration(classes = SpringJavaConfiguredClientCacheIntegrationTest.GemFireConfiguration.class)
 @SuppressWarnings("unused")
-public class LazyInitializedClientCacheIntegrationTest {
+public class SpringJavaConfiguredClientCacheIntegrationTest {
 
 	@Resource(name = "&clientCache")
 	private ClientCacheFactoryBean clientCacheFactoryBean;
@@ -63,7 +62,6 @@ public class LazyInitializedClientCacheIntegrationTest {
 	public void clientCacheFactoryBeanConfiguration() {
 		assertThat(clientCacheFactoryBean, is(notNullValue()));
 		assertThat(clientCacheFactoryBean.getBeanName(), is(equalTo("clientCache")));
-		assertThat(clientCacheFactoryBean.isLazyInitialize(), is(equalTo(true)));
 		assertThat(clientCacheFactoryBean.getProperties(), is(equalTo(gemfireProperties)));
 	}
 
@@ -73,7 +71,7 @@ public class LazyInitializedClientCacheIntegrationTest {
 		@Bean
 		public Properties gemfireProperties() {
 			Properties gemfireProperties = new Properties();
-			gemfireProperties.setProperty("name", LazyInitializedClientCacheIntegrationTest.class.getSimpleName());
+			gemfireProperties.setProperty("name", SpringJavaConfiguredClientCacheIntegrationTest.class.getSimpleName());
 			gemfireProperties.setProperty("mcast-port", "0");
 			gemfireProperties.setProperty("log-level", "warning");
 			return gemfireProperties;
@@ -84,7 +82,6 @@ public class LazyInitializedClientCacheIntegrationTest {
 			ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 			clientCacheFactoryBean.setUseBeanFactoryLocator(false);
 			clientCacheFactoryBean.setProperties(gemfireProperties());
-			clientCacheFactoryBean.setLazyInitialize(true);
 			return clientCacheFactoryBean;
 		}
 	}

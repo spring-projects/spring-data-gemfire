@@ -21,10 +21,11 @@
 		<prop key="log-level">config</prop>
 	</util:properties>
 
-	<gfe:pool locators="${gemfire.cache.client.locator.host-and-port}"/>
+	<gfe:client-cache properties-ref="gemfireProperties" pool-name="locatorPool"/>
 
-	<gfe:client-cache properties-ref="gemfireProperties"/>
+	<gfe:pool id="locatorPool" locators="${gemfire.cache.client.locator.host-and-port}"/>
 
-	<gfe:client-region id="Example" shortcut="PROXY" key-constraint="java.lang.String" value-constraint="java.lang.Integer"/>
+	<gfe:client-region id="Example" pool-name="locatorPool" shortcut="PROXY"
+					   key-constraint="java.lang.String" value-constraint="java.lang.Integer"/>
 
 </beans>

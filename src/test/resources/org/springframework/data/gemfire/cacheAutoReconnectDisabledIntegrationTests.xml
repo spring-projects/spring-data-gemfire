@@ -16,6 +16,6 @@
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties" use-bean-factory-locator="false"
-			   enable-auto-reconnect="false" lazy-init="false"/>
+			   enable-auto-reconnect="false"/>
 
 </beans>
