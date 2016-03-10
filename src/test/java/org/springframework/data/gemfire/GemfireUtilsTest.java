@@ -16,11 +16,24 @@
 
 package org.springframework.data.gemfire;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+import java.util.Properties;
 
 import org.junit.Test;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
 
 /**
@@ -34,10 +47,102 @@ import com.gemstone.gemfire.internal.GemFireVersion;
  */
 public class GemfireUtilsTest {
 
+	@Test
+	public void isClientWithClientIsTrue() {
+		ClientCache mockClient = mock(ClientCache.class);
+
+		assertThat(GemfireUtils.isClient(mockClient), is(true));
+
+		verifyZeroInteractions(mockClient);
+	}
+
+	@Test
+	public void isClientWithNonClientIsFalse() {
+		Cache mockCache = mock(Cache.class);
+
+		assertThat(GemfireUtils.isClient(mockCache), is(false));
+
+		verifyZeroInteractions(mockCache);
+	}
+
+	@Test
+	public void isDurableWithDurableClientIsTrue() {
+		ClientCache mockClientCache = mock(ClientCache.class);
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+
+		Properties gemfireProperties = new Properties();
+
+		gemfireProperties.setProperty(GemfireUtils.DURABLE_CLIENT_ID_PROPERTY_NAME, "123");
+
+		when(mockClientCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+		when(mockDistributedSystem.isConnected()).thenReturn(true);
+		when(mockDistributedSystem.getProperties()).thenReturn(gemfireProperties);
+
+		assertThat(GemfireUtils.isDurable(mockClientCache), is(true));
+
+		verify(mockClientCache, times(1)).getDistributedSystem();
+		verify(mockDistributedSystem, times(1)).isConnected();
+		verify(mockDistributedSystem, times(1)).getProperties();
+	}
+
+	@Test
+	public void isDurableWhenNotDurableClientIsFalse() {
+		ClientCache mockClientCache = mock(ClientCache.class);
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+
+		Properties gemfireProperties = new Properties();
+
+		gemfireProperties.setProperty(GemfireUtils.DURABLE_CLIENT_ID_PROPERTY_NAME, "  ");
+
+		when(mockClientCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+		when(mockDistributedSystem.isConnected()).thenReturn(true);
+		when(mockDistributedSystem.getProperties()).thenReturn(gemfireProperties);
+
+		assertThat(GemfireUtils.isDurable(mockClientCache), is(false));
+
+		verify(mockClientCache, times(1)).getDistributedSystem();
+		verify(mockDistributedSystem, times(1)).isConnected();
+		verify(mockDistributedSystem, times(1)).getProperties();
+	}
+
+	@Test
+	public void isDurableWhenDistributedSystemIsNotConnectedIsFalse() {
+		ClientCache mockClientCache = mock(ClientCache.class);
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+
+		when(mockClientCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+		when(mockDistributedSystem.isConnected()).thenReturn(false);
+
+		assertThat(GemfireUtils.isDurable(mockClientCache), is(false));
+
+		verify(mockClientCache, times(1)).getDistributedSystem();
+		verify(mockDistributedSystem, times(1)).isConnected();
+		verify(mockDistributedSystem, never()).getProperties();
+	}
+
+	@Test
+	public void isPeerWithPeerIsTrue() {
+		Cache mockCache = mock(Cache.class);
+
+		assertThat(GemfireUtils.isPeer(mockCache), is(true));
+
+		verifyZeroInteractions(mockCache);
+	}
+
+	@Test
+	public void isPeerWithNonPeerIsFalse() {
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		assertThat(GemfireUtils.isPeer(mockClientCache), is(false));
+
+		verifyZeroInteractions(mockClientCache);
+	}
+
 	// NOTE implementation is based on a GemFire internal class... com.gemstone.gemfire.internal.GemFireVersion.
 	protected int getGemFireVersion() {
 		try {
 			String gemfireVersion = GemFireVersion.getGemFireVersion();
+
 			return Integer.decode(String.format("%1$d%2$d", GemFireVersion.getMajorVersion(gemfireVersion),
 				GemFireVersion.getMinorVersion(gemfireVersion)));
 		}

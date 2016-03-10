@@ -150,6 +150,18 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 		return port;
 	}
 
+	/**
+	 * Converts this {@link ConnectionEndpoint} into an {@link InetSocketAddress} representation.
+	 *
+	 * @return an {@link InetSocketAddress} representation of this {@link ConnectionEndpoint}.
+	 * @see java.net.InetSocketAddress
+	 * @see #getHost()
+	 * @see #getPort()
+	 */
+	public InetSocketAddress toInetSocketAddress() {
+		return new InetSocketAddress(getHost(), getPort());
+	}
+
 	/* (non-Javadoc) */
 	@Override
 	@SuppressWarnings("all")

@@ -13,65 +13,59 @@
 
 package org.springframework.data.gemfire.test;
 
-import java.util.Properties;
-
 import org.springframework.data.gemfire.CacheFactoryBean;
 
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 public class MockCacheFactoryBean extends CacheFactoryBean {
 
 	public MockCacheFactoryBean() {
-		this.cache = new StubCache();
-		this.useBeanFactoryLocator = false;
+		this(null);
 	}
 
 	public MockCacheFactoryBean(CacheFactoryBean cacheFactoryBean) {
-		this();
+		setUseBeanFactoryLocator(false);
+
 		if (cacheFactoryBean != null) {
 			this.beanFactoryLocator = cacheFactoryBean.getBeanFactoryLocator();
-			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();
-			this.beanFactory = cacheFactoryBean.getBeanFactory();
-			this.beanName = cacheFactoryBean.getBeanName();
-			this.cacheXml = cacheFactoryBean.getCacheXml();
-			this.properties = cacheFactoryBean.getProperties();
-			this.copyOnRead = cacheFactoryBean.getCopyOnRead();
-			this.criticalHeapPercentage = cacheFactoryBean.getCriticalHeapPercentage();
-			this.evictionHeapPercentage = cacheFactoryBean.getEvictionHeapPercentage();
-			this.dynamicRegionSupport = cacheFactoryBean.getDynamicRegionSupport();
-			this.enableAutoReconnect = cacheFactoryBean.getEnableAutoReconnect();
-			this.gatewayConflictResolver = cacheFactoryBean.getGatewayConflictResolver();
-			this.jndiDataSources = cacheFactoryBean.getJndiDataSources();
-			this.lockLease = cacheFactoryBean.getLockLease();
-			this.lockTimeout = cacheFactoryBean.getLockTimeout();
-			this.messageSyncInterval = cacheFactoryBean.getMessageSyncInterval();
-			this.pdxDiskStoreName = cacheFactoryBean.getPdxDiskStoreName();
-			this.pdxIgnoreUnreadFields = cacheFactoryBean.getPdxIgnoreUnreadFields();
-			this.pdxPersistent = cacheFactoryBean.getPdxPersistent();
-			this.pdxReadSerialized = cacheFactoryBean.getPdxReadSerialized();
-			this.pdxSerializer = cacheFactoryBean.getPdxSerializer();
-			this.searchTimeout = cacheFactoryBean.getSearchTimeout();
-			this.transactionListeners = cacheFactoryBean.getTransactionListeners();
-			this.transactionWriter = cacheFactoryBean.getTransactionWriter();
+			setBeanClassLoader(cacheFactoryBean.getBeanClassLoader());
+			setBeanFactory(cacheFactoryBean.getBeanFactory());
+			setBeanName(cacheFactoryBean.getBeanName());
+			setCacheXml(cacheFactoryBean.getCacheXml());
+			setPhase(cacheFactoryBean.getPhase());
+			setProperties(cacheFactoryBean.getProperties());
+			setClose(cacheFactoryBean.getClose());
+			setCopyOnRead(cacheFactoryBean.getCopyOnRead());
+			setCriticalHeapPercentage(cacheFactoryBean.getCriticalHeapPercentage());
+			setDynamicRegionSupport(cacheFactoryBean.getDynamicRegionSupport());
+			setEnableAutoReconnect(cacheFactoryBean.getEnableAutoReconnect());
+			setEvictionHeapPercentage(cacheFactoryBean.getEvictionHeapPercentage());
+			setGatewayConflictResolver(cacheFactoryBean.getGatewayConflictResolver());
+			setJndiDataSources(cacheFactoryBean.getJndiDataSources());
+			setLockLease(cacheFactoryBean.getLockLease());
+			setLockTimeout(cacheFactoryBean.getLockTimeout());
+			setMessageSyncInterval(cacheFactoryBean.getMessageSyncInterval());
+			setPdxDiskStoreName(cacheFactoryBean.getPdxDiskStoreName());
+			setPdxIgnoreUnreadFields(cacheFactoryBean.getPdxIgnoreUnreadFields());
+			setPdxPersistent(cacheFactoryBean.getPdxPersistent());
+			setPdxReadSerialized(cacheFactoryBean.getPdxReadSerialized());
+			setPdxSerializer(cacheFactoryBean.getPdxSerializer());
+			setSearchTimeout(cacheFactoryBean.getSearchTimeout());
+			setTransactionListeners(cacheFactoryBean.getTransactionListeners());
+			setTransactionWriter(cacheFactoryBean.getTransactionWriter());
 		}
 	}
 
 	@Override
-	protected Object createFactory(Properties gemfireProperties) {
-		setProperties(gemfireProperties);
-		return new CacheFactory(gemfireProperties);
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T fetchCache() {
+		StubCache stubCache = new StubCache();
+		stubCache.setProperties(getProperties());
+		return (T) stubCache;
 	}
 
-	@Override
-	@SuppressWarnings("unchecked")
-	protected GemFireCache fetchCache() {
-		((StubCache) cache).setProperties(getProperties());
-		return cache;
-	}
- 
 }

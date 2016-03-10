@@ -45,7 +45,6 @@ import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.Interest;
-import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
@@ -78,7 +77,7 @@ import com.gemstone.gemfire.compression.Compressor;
  * @see org.springframework.data.gemfire.config.ClientRegionParser
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="client-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="client-ns.xml")
 @SuppressWarnings("unused")
 public class ClientRegionNamespaceTest {
 

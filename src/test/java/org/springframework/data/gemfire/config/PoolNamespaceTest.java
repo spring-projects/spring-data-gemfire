@@ -39,8 +39,6 @@ import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitia
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.client.PoolManager;
-
 /**
  * @author Costin Leau
  * @author John Blum
@@ -61,10 +59,8 @@ public class PoolNamespaceTest {
 
 	@Test
 	public void testBasicClient() throws Exception {
-		assertThat(context.containsBean("DEFAULT"), is(true));
 		assertThat(context.containsBean("gemfirePool"), is(true));
 		assertThat(context.containsBean("gemfire-pool"), is(true));
-		assertThat(PoolManager.find("DEFAULT"), is(equalTo(context.getBean("gemfirePool"))));
 
 		PoolFactoryBean poolFactoryBean = context.getBean("&gemfirePool", PoolFactoryBean.class);
 
@@ -82,17 +78,17 @@ public class PoolNamespaceTest {
 
 		PoolFactoryBean poolFactoryBean = context.getBean("&simple", PoolFactoryBean.class);
 
-		ConnectionEndpointList locators = TestUtils.readField("locators", poolFactoryBean);
-
-		assertThat(locators, is(notNullValue()));
-		assertThat(locators.size(), is(equalTo(1)));
-
-		assertConnectionEndpoint(locators.iterator().next(), PoolParser.DEFAULT_HOST, PoolParser.DEFAULT_LOCATOR_PORT);
-
 		ConnectionEndpointList servers = TestUtils.readField("servers", poolFactoryBean);
 
 		assertThat(servers, is(notNullValue()));
-		assertThat(servers.isEmpty(), is(true));
+		assertThat(servers.size(), is(equalTo(1)));
+
+		assertConnectionEndpoint(servers.iterator().next(), PoolParser.DEFAULT_HOST, PoolParser.DEFAULT_SERVER_PORT);
+
+		ConnectionEndpointList locators = TestUtils.readField("locators", poolFactoryBean);
+
+		assertThat(locators, is(notNullValue()));
+		assertThat(locators.isEmpty(), is(true));
 	}
 
 	@Test

@@ -4,8 +4,8 @@
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
 	   default-lazy-init="true">
 
-	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
-	<!-- as there can be only one cache per VM -->
+	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
+
 	<bean id="default-cache" class="org.springframework.data.gemfire.CacheFactoryBean">
 		<property name="properties">
 			<props>

@@ -34,10 +34,13 @@ import com.gemstone.gemfire.internal.DistributionLocator;
  * @author John Blum
  * @see com.gemstone.gemfire.cache.GemFireCache
  * @see com.gemstone.gemfire.distributed.DistributedSystem
+ * @see com.gemstone.gemfire.distributed.internal.DistributionConfig
+ * @see com.gemstone.gemfire.distributed.internal.InternalDistributedSystem
+ * @see com.gemstone.gemfire.internal.DistributionLocator
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
-public abstract class DistributedSystemUtils {
+public abstract class DistributedSystemUtils extends SpringUtils {
 
 	public static final int DEFAULT_CACHE_SERVER_PORT = CacheServer.DEFAULT_PORT;
 	public static final int DEFAULT_LOCATOR_PORT = DistributionLocator.DEFAULT_LOCATOR_PORT;
@@ -46,7 +49,9 @@ public abstract class DistributedSystemUtils {
 	public static final String DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME = DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME;
 
 	/* (non-Javadoc) */
-	public static Properties configureDurableClient(Properties gemfireProperties, String durableClientId, Integer durableClientTimeout) {
+	public static Properties configureDurableClient(Properties gemfireProperties,
+			String durableClientId, Integer durableClientTimeout) {
+
 		if (StringUtils.hasText(durableClientId)) {
 			Assert.notNull(gemfireProperties, "gemfireProperties must not be null");
 

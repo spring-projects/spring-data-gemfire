@@ -12,69 +12,57 @@
  */
 package org.springframework.data.gemfire.test;
 
-import java.util.Properties;
-
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 
 import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 
 /**
  * @author David Turanski
- * @author Lyndon Adams
- *
+ * @author John Blum
  */
 public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
-	 
-	public MockClientCacheFactoryBean() {
-		this.cache = new StubCache();
-	}
 
 	public MockClientCacheFactoryBean(ClientCacheFactoryBean clientCacheFactoryBean) {
-		this();
+		setUseBeanFactoryLocator(false);
 
 		if (clientCacheFactoryBean != null) {
 			this.beanFactoryLocator = clientCacheFactoryBean.getBeanFactoryLocator();
-			this.beanClassLoader = clientCacheFactoryBean.getBeanClassLoader();
-			this.beanFactory = clientCacheFactoryBean.getBeanFactory();
-			this.beanName = clientCacheFactoryBean.getBeanName();
-			this.cacheXml = clientCacheFactoryBean.getCacheXml();
-			this.copyOnRead = clientCacheFactoryBean.getCopyOnRead();
-			this.criticalHeapPercentage = clientCacheFactoryBean.getCriticalHeapPercentage();
-			this.durableClientId = clientCacheFactoryBean.getDurableClientId();
-			this.durableClientTimeout = clientCacheFactoryBean.getDurableClientTimeout();
-			this.dynamicRegionSupport = clientCacheFactoryBean.getDynamicRegionSupport();
-			this.evictionHeapPercentage = clientCacheFactoryBean.getEvictionHeapPercentage();
-			this.gatewayConflictResolver = clientCacheFactoryBean.getGatewayConflictResolver();
-			this.jndiDataSources = clientCacheFactoryBean.getJndiDataSources();
-			this.keepAlive = clientCacheFactoryBean.isKeepAlive();
-			this.lockLease = clientCacheFactoryBean.getLockLease();
-			this.lockTimeout = clientCacheFactoryBean.getLockTimeout();
-			this.messageSyncInterval = clientCacheFactoryBean.getMessageSyncInterval();
-			this.pdxDiskStoreName = clientCacheFactoryBean.getPdxDiskStoreName();
-			this.pdxIgnoreUnreadFields = clientCacheFactoryBean.getPdxIgnoreUnreadFields();
-			this.pdxPersistent = clientCacheFactoryBean.getPdxPersistent();
-			this.pdxReadSerialized = clientCacheFactoryBean.getPdxReadSerialized();
-			this.pdxSerializer = clientCacheFactoryBean.getPdxSerializer();
-			this.poolName = clientCacheFactoryBean.getPoolName();
-			this.properties = clientCacheFactoryBean.getProperties();
-			this.readyForEvents = clientCacheFactoryBean.getReadyForEvents();
-			this.searchTimeout = clientCacheFactoryBean.getSearchTimeout();
-			this.transactionListeners = clientCacheFactoryBean.getTransactionListeners();
-			this.transactionWriter = clientCacheFactoryBean.getTransactionWriter();
+			setBeanClassLoader(clientCacheFactoryBean.getBeanClassLoader());
+			setBeanFactory(clientCacheFactoryBean.getBeanFactory());
+			setBeanName(clientCacheFactoryBean.getBeanName());
+			setCacheXml(clientCacheFactoryBean.getCacheXml());
+			setCopyOnRead(clientCacheFactoryBean.getCopyOnRead());
+			setCriticalHeapPercentage(clientCacheFactoryBean.getCriticalHeapPercentage());
+			setDurableClientId(clientCacheFactoryBean.getDurableClientId());
+			setDurableClientTimeout(clientCacheFactoryBean.getDurableClientTimeout());
+			setDynamicRegionSupport(clientCacheFactoryBean.getDynamicRegionSupport());
+			setEvictionHeapPercentage(clientCacheFactoryBean.getEvictionHeapPercentage());
+			setGatewayConflictResolver(clientCacheFactoryBean.getGatewayConflictResolver());
+			setJndiDataSources(clientCacheFactoryBean.getJndiDataSources());
+			setKeepAlive(clientCacheFactoryBean.isKeepAlive());
+			setLockLease(clientCacheFactoryBean.getLockLease());
+			setLockTimeout(clientCacheFactoryBean.getLockTimeout());
+			setMessageSyncInterval(clientCacheFactoryBean.getMessageSyncInterval());
+			setPdxDiskStoreName(clientCacheFactoryBean.getPdxDiskStoreName());
+			setPdxIgnoreUnreadFields(clientCacheFactoryBean.getPdxIgnoreUnreadFields());
+			setPdxPersistent(clientCacheFactoryBean.getPdxPersistent());
+			setPdxReadSerialized(clientCacheFactoryBean.getPdxReadSerialized());
+			setPdxSerializer(clientCacheFactoryBean.getPdxSerializer());
+			setPoolName(clientCacheFactoryBean.getPoolName());
+			setProperties(clientCacheFactoryBean.getProperties());
+			setReadyForEvents(clientCacheFactoryBean.getReadyForEvents());
+			setSearchTimeout(clientCacheFactoryBean.getSearchTimeout());
+			setTransactionListeners(clientCacheFactoryBean.getTransactionListeners());
+			setTransactionWriter(clientCacheFactoryBean.getTransactionWriter());
 		}
 	}
 
-	@Override
-	protected Object createFactory(Properties gemfireProperties) {
-		setProperties(gemfireProperties);
-		return new ClientCacheFactory(gemfireProperties);
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T fetchCache() {
+		StubCache stubCache = new StubCache();
+		stubCache.setProperties(getProperties());
+		return (T) stubCache;
 	}
 
-	@Override
-	protected GemFireCache fetchCache() {
-		((StubCache) cache).setProperties(getProperties());
-		return cache;
-	}
 
 }

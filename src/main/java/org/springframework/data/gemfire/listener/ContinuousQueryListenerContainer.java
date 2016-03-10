@@ -24,6 +24,9 @@ import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -31,6 +34,8 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.gemfire.GemfireQueryException;
+import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ErrorHandler;
@@ -67,7 +72,8 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * @see com.gemstone.gemfire.cache.query.QueryService
  */
 @SuppressWarnings("unused")
-public class ContinuousQueryListenerContainer implements BeanNameAware, InitializingBean, DisposableBean, SmartLifecycle {
+public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanNameAware,
+		InitializingBean, DisposableBean, SmartLifecycle {
 
 	// Default Thread name prefix is "ContinuousQueryListenerContainer-".
 	public static final String DEFAULT_THREAD_NAME_PREFIX = String.format("%1$s-", ClassUtils.getShortName(
@@ -80,6 +86,8 @@ public class ContinuousQueryListenerContainer implements BeanNameAware, Initiali
 	private volatile boolean running = false;
 
 	private int phase = Integer.MAX_VALUE;
+
+	private BeanFactory beanFactory;
 
 	private ErrorHandler errorHandler;
 
@@ -97,7 +105,7 @@ public class ContinuousQueryListenerContainer implements BeanNameAware, Initiali
 	private String poolName;
 
 	public void afterPropertiesSet() {
-		initQueryService();
+		initQueryService(eagerlyInitializePool(resolvePoolName()));
 		initExecutor();
 		initContinuousQueries(continuousQueryDefinitions);
 		initialized = true;
@@ -107,12 +115,36 @@ public class ContinuousQueryListenerContainer implements BeanNameAware, Initiali
 		}
 	}
 
-	private void initQueryService() {
-		if (StringUtils.hasText(poolName)) {
-			Pool pool = PoolManager.find(poolName);
-			Assert.notNull(pool, String.format("No GemFire Pool with name '%1$s' was found.", poolName));
-			queryService = pool.getQueryService();
+	/* (non-Javadoc) */
+	private String resolvePoolName() {
+		String poolName = this.poolName;
+
+		if (!StringUtils.hasText(poolName)) {
+			String defaultPoolName = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
+			poolName = (beanFactory != null && beanFactory.containsBean(defaultPoolName) ? defaultPoolName
+				: GemfireUtils.DEFAULT_POOL_NAME);
 		}
+
+		return poolName;
+	}
+
+	/* (non-Javadoc) */
+	private String eagerlyInitializePool(String poolName) {
+		try {
+			if (beanFactory != null && beanFactory.isTypeMatch(poolName, Pool.class)) {
+				beanFactory.getBean(poolName, Pool.class);
+			}
+		}
+		catch (BeansException ignore) {
+			Assert.notNull(PoolManager.find(poolName), String.format("No GemFire Pool with name [%1$s] was found.",
+				poolName));
+		}
+
+		return poolName;
+	}
+
+	private void initQueryService(String poolName) {
+		queryService = PoolManager.find(poolName).getQueryService();
 	}
 
 	private void initExecutor() {
@@ -279,6 +311,17 @@ public class ContinuousQueryListenerContainer implements BeanNameAware, Initiali
 	 */
 	public void setAutoStartup(final boolean autoStartup) {
 		this.autoStartup = autoStartup;
+	}
+
+	/**
+	 * Sets the {@link BeanFactory} containing this bean.
+	 *
+	 * @param beanFactory the Spring {@link BeanFactory} containing this bean.
+	 * @throws BeansException if an initialization error occurs.
+	 */
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
 	}
 
 	/**

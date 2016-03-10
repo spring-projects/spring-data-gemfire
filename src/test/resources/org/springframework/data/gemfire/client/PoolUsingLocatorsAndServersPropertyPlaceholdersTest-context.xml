@@ -11,17 +11,18 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<bean class="org.springframework.data.gemfire.client.PoolUsingLocatorsAndServersPropertyPlaceholdersTest.TestBeanFactoryPostProcessor"/>
-
-	<util:properties id="client.properties">
-		<prop key="gemfire.cache.client.locators.hosts-and-ports">backspace,jambox[11235],skullbox[12480]</prop>
+	<util:properties id="clientProperties">
 		<prop key="gemfire.cache.client.locator.1.host">pluto</prop>
 		<prop key="gemfire.cache.client.locator.1.port">20668</prop>
+		<prop key="gemfire.cache.client.locators.hosts-and-ports">backspace,jambox[11235],skullbox[12480]</prop>
 		<prop key="gemfire.cache.client.server.1.host">saturn</prop>
 		<prop key="gemfire.cache.client.server.1.port">41414</prop>
+		<prop key="gemfire.cache.client.servers.hosts-and-ports">boombox[1234],jambox,toolbox[81$81%]*</prop>
 	</util:properties>
 
-	<context:property-placeholder properties-ref="client.properties"/>
+	<context:property-placeholder properties-ref="clientProperties"/>
+
+	<bean class="org.springframework.data.gemfire.client.PoolUsingLocatorsAndServersPropertyPlaceholdersTest.TestBeanFactoryPostProcessor"/>
 
 	<gfe:pool id="locatorPool" locators="${gemfire.cache.client.locators.hosts-and-ports}">
 		<gfe:locator host="${gemfire.cache.client.locator.1.host}" port="${gemfire.cache.client.locator.1.port}"/>
@@ -32,5 +33,7 @@
 		<gfe:server host="${gemfire.cache.client.server.1.host}" port="${gemfire.cache.client.server.1.port}"/>
 		<gfe:server host="neptune" port="42424"/>
 	</gfe:pool>
+
+	<gfe:pool id="anotherServerPool" servers="${gemfire.cache.client.servers.hosts-and-ports}"/>
 
 </beans>

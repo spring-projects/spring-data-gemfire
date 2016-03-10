@@ -41,7 +41,7 @@ public class GemfireTestBeanPostProcessor implements BeanPostProcessor {
 				? new MockClientCacheFactoryBean((ClientCacheFactoryBean) bean)
 				: new MockCacheFactoryBean((CacheFactoryBean) bean));
 
-			logger.info(String.format("Replacing the '%1$s' bean definition having type '%2$s' with mock (%3$s)...",
+			logger.info(String.format("Replacing the [%1$s] bean definition having type [%2$s] with mock [%3$s]...",
 				beanName, beanTypeName, bean.getClass().getName()));
 		}
 		else if (bean instanceof CacheServerFactoryBean) {

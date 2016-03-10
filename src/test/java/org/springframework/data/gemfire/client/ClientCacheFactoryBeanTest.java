@@ -16,19 +16,18 @@
 
 package org.springframework.data.gemfire.client;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -36,16 +35,27 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
+import org.springframework.data.gemfire.util.SpringUtils;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.GemFireCache;
@@ -69,6 +79,9 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  */
 public class ClientCacheFactoryBeanTest {
 
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 	protected Properties createProperties(String key, String value) {
 		return addProperty(null, key, value);
 	}
@@ -79,14 +92,19 @@ public class ClientCacheFactoryBeanTest {
 		return properties;
 	}
 
+	protected ConnectionEndpoint newConnectionEndpoint(String host, int port) {
+		return new ConnectionEndpoint(host, port);
+	}
+
 	@Test
+	@SuppressWarnings("unchecked")
 	public void getObjectType() {
-		assertEquals(ClientCache.class, new ClientCacheFactoryBean().getObjectType());
+		assertThat((Class<ClientCache>) new ClientCacheFactoryBean().getObjectType(), is(equalTo(ClientCache.class)));
 	}
 
 	@Test
 	public void isSingleton() {
-		assertTrue(new ClientCacheFactoryBean().isSingleton());
+		assertThat(new ClientCacheFactoryBean().isSingleton(), is(true));
 	}
 
 	@Test
@@ -94,7 +112,7 @@ public class ClientCacheFactoryBeanTest {
 		Properties gemfireProperties = createProperties("gf", "test");
 		Properties distributedSystemProperties = createProperties("ds", "mock");
 
-		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockDistributedSystem");
+		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		when(mockDistributedSystem.isConnected()).thenReturn(true);
 		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
@@ -124,13 +142,13 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePropertiesWhenDistributedSystemIsConnectedAndClientIsDurable() {
-		Properties gemfireProperties = DistributedSystemUtils.configureDurableClient(createProperties("gf", "test"),
-			"123", 600);
+		Properties gemfireProperties = DistributedSystemUtils.configureDurableClient(
+			createProperties("gf", "test"), "123", 600);
 
 		Properties distributedSystemProperties = DistributedSystemUtils.configureDurableClient(
 			createProperties("ds", "mock"), "987", 300);
 
-		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockDistributedSystem");
+		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		when(mockDistributedSystem.isConnected()).thenReturn(true);
 		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
@@ -165,7 +183,7 @@ public class ClientCacheFactoryBeanTest {
 		Properties gemfireProperties = createProperties("gf", "test");
 		Properties distributedSystemProperties = createProperties("ds", "mock");
 
-		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockDistributedSystem");
+		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		when(mockDistributedSystem.isConnected()).thenReturn(false);
 		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
@@ -180,7 +198,7 @@ public class ClientCacheFactoryBeanTest {
 
 		Properties resolvedProperties = clientCacheFactoryBean.resolveProperties();
 
-		assertSame(gemfireProperties, resolvedProperties);
+		assertThat(resolvedProperties, is(sameInstance(gemfireProperties)));
 
 		verify(mockDistributedSystem, times(1)).isConnected();
 		verify(mockDistributedSystem, never()).getProperties();
@@ -190,104 +208,163 @@ public class ClientCacheFactoryBeanTest {
 	public void resolvePropertiesWhenDistributedSystemIsNull() {
 		Properties gemfireProperties = createProperties("gf", "test");
 
+		assertThat(gemfireProperties.size(), is(equalTo(1)));
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override <T extends DistributedSystem> T getDistributedSystem() {
 				return null;
 			}
 		};
 
+		clientCacheFactoryBean.setDurableClientId("123");
 		clientCacheFactoryBean.setProperties(gemfireProperties);
 
 		Properties resolvedProperties = clientCacheFactoryBean.resolveProperties();
 
-		assertSame(gemfireProperties, resolvedProperties);
+		assertThat(resolvedProperties, is(sameInstance(gemfireProperties)));
+		assertThat(resolvedProperties.size(), is(equalTo(2)));
+		assertThat(resolvedProperties.getProperty("gf"), is(equalTo("test")));
+		assertThat(resolvedProperties.getProperty(DistributedSystemUtils.DURABLE_CLIENT_ID_PROPERTY_NAME),
+			is(equalTo("123")));
 	}
 
 	@Test
 	public void createClientCacheFactory() {
 		Properties gemfireProperties = new Properties();
+
 		Object clientCacheFactoryReference = new ClientCacheFactoryBean().createFactory(gemfireProperties);
 
-		assertTrue(gemfireProperties.isEmpty());
-		assertTrue(clientCacheFactoryReference instanceof ClientCacheFactory);
+		assertThat(clientCacheFactoryReference, is(instanceOf(ClientCacheFactory.class)));
+		assertThat(gemfireProperties.isEmpty(), is(true));
 
 		ClientCacheFactory clientCacheFactory = (ClientCacheFactory) clientCacheFactoryReference;
 
-		clientCacheFactory.set("name", "TestCreateClientCacheFactory");
+		clientCacheFactory.set("testCase", "TestCreateClientCacheFactory");
 
-		assertTrue(gemfireProperties.containsKey("name"));
-		assertEquals("TestCreateClientCacheFactory", gemfireProperties.get("name"));
+		assertThat(gemfireProperties.containsKey("testCase"), is(true));
+		assertThat(gemfireProperties.getProperty("testCase"), is(equalTo("TestCreateClientCacheFactory")));
 	}
 
 	@Test
-	public void prepareClientCacheFactoryWithUnspecifiedPdxOptions() {
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
+	public void prepareClientCacheFactoryCallsInitializePdxAndInitializePool() {
+		final AtomicBoolean initializePdxCalled = new AtomicBoolean(false);
+		final AtomicBoolean initializePoolCalled = new AtomicBoolean(false);
 
-		assertSame(mockClientCacheFactory, new ClientCacheFactoryBean().prepareFactory(mockClientCacheFactory));
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		verify(mockClientCacheFactory, never()).setPdxSerializer(any(PdxSerializer.class));
-		verify(mockClientCacheFactory, never()).setPdxDiskStore(any(String.class));
-		verify(mockClientCacheFactory, never()).setPdxIgnoreUnreadFields(any(Boolean.class));
-		verify(mockClientCacheFactory, never()).setPdxPersistent(any(Boolean.class));
-		verify(mockClientCacheFactory, never()).setPdxReadSerialized(any(Boolean.class));
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override ClientCacheFactory initializePdx(final ClientCacheFactory clientCacheFactory) {
+				initializePdxCalled.set(true);
+				return clientCacheFactory;
+			}
+
+			@Override ClientCacheFactory initializePool(final ClientCacheFactory clientCacheFactory) {
+				initializePoolCalled.set(true);
+				return clientCacheFactory;
+			}
+		};
+
+		assertThat((ClientCacheFactory) clientCacheFactoryBean.prepareFactory(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+		assertThat(initializePdxCalled.get(), is(true));
+		assertThat(initializePoolCalled.get(), is(true));
 	}
 
 	@Test
-	public void prepareClientCacheFactoryWithPartialPdxOptions() {
+	public void initializePdxWithAllPdxOptions() {
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
-		clientCacheFactoryBean.setPdxSerializer(mock(PdxSerializer.class));
-		clientCacheFactoryBean.setPdxReadSerialized(true);
-		clientCacheFactoryBean.setPdxIgnoreUnreadFields(false);
+		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
 
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
-
-		assertSame(mockClientCacheFactory, clientCacheFactoryBean.prepareFactory(mockClientCacheFactory));
-
-		verify(mockClientCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
-		verify(mockClientCacheFactory, never()).setPdxDiskStore(any(String.class));
-		verify(mockClientCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
-		verify(mockClientCacheFactory, never()).setPdxPersistent(any(Boolean.class));
-		verify(mockClientCacheFactory, times(1)).setPdxReadSerialized(eq(true));
-	}
-
-	@Test
-	public void prepareClientCacheFactoryWithAllPdxOptions() {
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
-
-		clientCacheFactoryBean.setPdxSerializer(mock(PdxSerializer.class));
-		clientCacheFactoryBean.setPdxDiskStoreName("mockPdxDiskStoreName");
+		clientCacheFactoryBean.setPdxDiskStoreName("MockPdxDiskStoreName");
 		clientCacheFactoryBean.setPdxIgnoreUnreadFields(false);
 		clientCacheFactoryBean.setPdxPersistent(true);
-		clientCacheFactoryBean.setPdxReadSerialized(true);
+		clientCacheFactoryBean.setPdxReadSerialized(false);
+		clientCacheFactoryBean.setPdxSerializer(mockPdxSerializer);
 
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
+		assertThat(clientCacheFactoryBean.getPdxDiskStoreName(), is(equalTo("MockPdxDiskStoreName")));
+		assertThat(clientCacheFactoryBean.getPdxIgnoreUnreadFields(), is(false));
+		assertThat(clientCacheFactoryBean.getPdxPersistent(), is(true));
+		assertThat(clientCacheFactoryBean.getPdxReadSerialized(), is(false));
+		assertThat((PdxSerializer) clientCacheFactoryBean.getPdxSerializer(), is(sameInstance(mockPdxSerializer)));
 
-		assertSame(mockClientCacheFactory, clientCacheFactoryBean.prepareFactory(mockClientCacheFactory));
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		verify(mockClientCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
-		verify(mockClientCacheFactory, times(1)).setPdxDiskStore(eq("mockPdxDiskStoreName"));
+		assertThat(clientCacheFactoryBean.initializePdx(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockClientCacheFactory, times(1)).setPdxSerializer(eq(mockPdxSerializer));
+		verify(mockClientCacheFactory, times(1)).setPdxDiskStore(eq("MockPdxDiskStoreName"));
 		verify(mockClientCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
 		verify(mockClientCacheFactory, times(1)).setPdxPersistent(eq(true));
-		verify(mockClientCacheFactory, times(1)).setPdxReadSerialized(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPdxReadSerialized(eq(false));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void prepareClientCacheFactoryWithInvalidTypeForPdxSerializer() {
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
+	@Test
+	public void initializePdxWithPartialPdxOptions() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPdxReadSerialized(true);
+		clientCacheFactoryBean.setPdxIgnoreUnreadFields(true);
+
+		assertThat(clientCacheFactoryBean.getPdxDiskStoreName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPdxIgnoreUnreadFields(), is(true));
+		assertThat(clientCacheFactoryBean.getPdxPersistent(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPdxReadSerialized(), is(true));
+		assertThat(clientCacheFactoryBean.getPdxSerializer(), is(nullValue()));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePdx(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockClientCacheFactory, never()).setPdxDiskStore(anyString());
+		verify(mockClientCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(true));
+		verify(mockClientCacheFactory, never()).setPdxPersistent(anyBoolean());
+		verify(mockClientCacheFactory, times(1)).setPdxReadSerialized(eq(true));
+		verify(mockClientCacheFactory, never()).setPdxSerializer(any(PdxSerializer.class));
+	}
+
+	@Test
+	public void initializePdxWithNoPdxOptions() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		assertThat(clientCacheFactoryBean.getPdxDiskStoreName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPdxIgnoreUnreadFields(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPdxPersistent(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPdxReadSerialized(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPdxSerializer(), is(nullValue()));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePdx(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verifyZeroInteractions(mockClientCacheFactory);
+	}
+
+	@Test
+	public void initializePdxUsingIllegalTypeForPdxSerializer() {
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
 		try {
 			ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
-			clientCacheFactoryBean.setPdxSerializer(new Object());
-			clientCacheFactoryBean.setPdxReadSerialized(true);
-			clientCacheFactoryBean.setPdxIgnoreUnreadFields(true);
-			clientCacheFactoryBean.prepareFactory(mockClientCacheFactory);
-		}
-		catch (IllegalArgumentException expected) {
-			assertTrue(expected.getMessage().startsWith("Invalid pdx serializer used"));
-			assertNull(expected.getCause());
-			throw expected;
+			Object pdxSerializer = new Object();
+
+			clientCacheFactoryBean.setPdxSerializer(pdxSerializer);
+			clientCacheFactoryBean.setPdxReadSerialized(false);
+			clientCacheFactoryBean.setPdxPersistent(true);
+			clientCacheFactoryBean.setPdxIgnoreUnreadFields(false);
+			clientCacheFactoryBean.setPdxDiskStoreName("test");
+
+			exception.expect(IllegalArgumentException.class);
+			exception.expectCause(is(nullValue(Throwable.class)));
+			exception.expectMessage(containsString(String.format(
+				"[%1$s] of type [java.lang.Object] is not a PdxSerializer", pdxSerializer)));
+
+			assertThat(clientCacheFactoryBean.initializePdx(mockClientCacheFactory),
+				is(sameInstance(mockClientCacheFactory)));
 		}
 		finally {
 			verify(mockClientCacheFactory, never()).setPdxSerializer(any(PdxSerializer.class));
@@ -299,176 +376,619 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void createCache() {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
+	public void initializePoolWithPool() {
+		Pool mockPool = mock(Pool.class);
 
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockClientCacheFactory");
-
-		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
-
-		Pool mockPool = mock(Pool.class, "MockPool");
-
-		when(mockClientCacheFactory.create()).thenReturn(mockClientCache);
-		when(mockBeanFactory.isTypeMatch(eq("testCreateCache.Pool"), eq(Pool.class))).thenReturn(true);
-		when(mockBeanFactory.getBean(eq("testCreateCache.Pool"), eq(Pool.class))).thenReturn(mockPool);
-		when(mockPool.getFreeConnectionTimeout()).thenReturn(30000);
-		when(mockPool.getIdleTimeout()).thenReturn(60000l);
-		when(mockPool.getLoadConditioningInterval()).thenReturn(45000);
+		when(mockPool.getFreeConnectionTimeout()).thenReturn(10000);
+		when(mockPool.getIdleTimeout()).thenReturn(120000l);
+		when(mockPool.getLoadConditioningInterval()).thenReturn(30000);
+		when(mockPool.getLocators()).thenReturn(Collections.<InetSocketAddress>emptyList());
 		when(mockPool.getMaxConnections()).thenReturn(100);
 		when(mockPool.getMinConnections()).thenReturn(10);
 		when(mockPool.getMultiuserAuthentication()).thenReturn(true);
+		when(mockPool.getPRSingleHopEnabled()).thenReturn(true);
 		when(mockPool.getPingInterval()).thenReturn(15000l);
-		when(mockPool.getPRSingleHopEnabled()).thenReturn(true);
 		when(mockPool.getReadTimeout()).thenReturn(20000);
-		when(mockPool.getRetryAttempts()).thenReturn(10);
-		when(mockPool.getServerGroup()).thenReturn("TestServerGroup");
-		when(mockPool.getSocketBufferSize()).thenReturn(32768);
+		when(mockPool.getRetryAttempts()).thenReturn(1);
+		when(mockPool.getServerGroup()).thenReturn("TestGroup");
+		when(mockPool.getSocketBufferSize()).thenReturn(8192);
 		when(mockPool.getStatisticInterval()).thenReturn(5000);
-		when(mockPool.getSubscriptionAckInterval()).thenReturn(15000);
-		when(mockPool.getSubscriptionEnabled()).thenReturn(true);
-		when(mockPool.getSubscriptionMessageTrackingTimeout()).thenReturn(30000);
-		when(mockPool.getSubscriptionRedundancy()).thenReturn(2);
-		when(mockPool.getThreadLocalConnections()).thenReturn(false);
-
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
-
-		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
-		clientCacheFactoryBean.setPoolName("testCreateCache.Pool");
-		clientCacheFactoryBean.setReadyForEvents(false);
-
-		GemFireCache actualCache = clientCacheFactoryBean.createCache(mockClientCacheFactory);
-
-		assertSame(mockClientCache, actualCache);
-
-		verify(mockClientCacheFactory, times(1)).create();
-		verify(mockBeanFactory, times(1)).isTypeMatch(eq("testCreateCache.Pool"), eq(Pool.class));
-		verify(mockBeanFactory, times(1)).getBean(eq("testCreateCache.Pool"), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(eq(Pool.class));
-		verify(mockClientCacheFactory, never()).setPoolFreeConnectionTimeout(eq(30000));
-		verify(mockClientCacheFactory, never()).setPoolIdleTimeout(eq(60000l));
-		verify(mockClientCacheFactory, never()).setPoolLoadConditioningInterval(eq(45000));
-		verify(mockClientCacheFactory, never()).setPoolMaxConnections(eq(100));
-		verify(mockClientCacheFactory, never()).setPoolMinConnections(eq(10));
-		verify(mockClientCacheFactory, never()).setPoolMultiuserAuthentication(eq(true));
-		verify(mockClientCacheFactory, never()).setPoolPingInterval(eq(15000l));
-		verify(mockClientCacheFactory, never()).setPoolPRSingleHopEnabled(eq(true));
-		verify(mockClientCacheFactory, never()).setPoolReadTimeout(eq(20000));
-		verify(mockClientCacheFactory, never()).setPoolRetryAttempts(eq(10));
-		verify(mockClientCacheFactory, never()).setPoolServerGroup(eq("TestServerGroup"));
-		verify(mockClientCacheFactory, never()).setPoolSocketBufferSize(eq(32768));
-		verify(mockClientCacheFactory, never()).setPoolStatisticInterval(eq(5000));
-		verify(mockClientCacheFactory, never()).setPoolSubscriptionAckInterval(eq(15000));
-		verify(mockClientCacheFactory, never()).setPoolSubscriptionEnabled(eq(true));
-		verify(mockClientCacheFactory, never()).setPoolSubscriptionMessageTrackingTimeout(eq(30000));
-		verify(mockClientCacheFactory, never()).setPoolSubscriptionRedundancy(eq(2));
-		verify(mockClientCacheFactory, never()).setPoolThreadLocalConnections(eq(false));
-	}
-
-	@Test
-	public void resolvePoolWithUnresolvablePoolName() throws Exception {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
-		ClientCache mockClientCache = mock(ClientCache.class, "MockGemFireClientCache");
-		Pool mockPool = mock(Pool.class, "MockGemFirePool");
-
-		when(mockBeanFactory.isTypeMatch(any(String.class), eq(Pool.class))).thenReturn(false);
-		when(mockBeanFactory.getBean(eq(Pool.class))).thenReturn(mockPool);
-		when(mockClientCacheFactory.create()).thenReturn(mockClientCache);
-		when(mockPool.getFreeConnectionTimeout()).thenReturn(120000);
-		when(mockPool.getIdleTimeout()).thenReturn(300000l);
-		when(mockPool.getLoadConditioningInterval()).thenReturn(15000);
-		when(mockPool.getMaxConnections()).thenReturn(50);
-		when(mockPool.getMinConnections()).thenReturn(5);
-		when(mockPool.getMultiuserAuthentication()).thenReturn(false);
-		when(mockPool.getName()).thenReturn("MockGemFirePool");
-		when(mockPool.getPingInterval()).thenReturn(12000l);
-		when(mockPool.getPRSingleHopEnabled()).thenReturn(true);
-		when(mockPool.getReadTimeout()).thenReturn(60000);
-		when(mockPool.getRetryAttempts()).thenReturn(5);
-		when(mockPool.getServerGroup()).thenReturn("MockServerGroup");
-		when(mockPool.getSocketBufferSize()).thenReturn(16384);
-		when(mockPool.getStatisticInterval()).thenReturn(1000);
 		when(mockPool.getSubscriptionAckInterval()).thenReturn(500);
 		when(mockPool.getSubscriptionEnabled()).thenReturn(true);
-		when(mockPool.getSubscriptionMessageTrackingTimeout()).thenReturn(15000);
-		when(mockPool.getSubscriptionRedundancy()).thenReturn(4);
+		when(mockPool.getSubscriptionMessageTrackingTimeout()).thenReturn(500);
+		when(mockPool.getSubscriptionRedundancy()).thenReturn(2);
 		when(mockPool.getThreadLocalConnections()).thenReturn(false);
+		when(mockPool.getServers()).thenReturn(Arrays.asList(
+			new InetSocketAddress("localhost", 11235), new InetSocketAddress("localhost", 12480)));
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
-		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
-		clientCacheFactoryBean.setPoolName("TestGemFirePool");
-		clientCacheFactoryBean.setReadyForEvents(false);
+		clientCacheFactoryBean.setPool(mockPool);
 
-		assertEquals("TestGemFirePool", TestUtils.readField("poolName", clientCacheFactoryBean));
+		assertThat(clientCacheFactoryBean.getFreeConnectionTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getIdleTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getLoadConditioningInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getMaxConnections(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getMinConnections(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getMultiUserAuthentication(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPingInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPrSingleHopEnabled(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getReadTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getRetryAttempts(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getServerGroup(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionMessageTrackingTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionRedundancy(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getThreadLocalConnections(), is(nullValue()));
 
-		GemFireCache actualClientCache = clientCacheFactoryBean.createCache(mockClientCacheFactory);
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertSame(mockClientCache, actualClientCache);
-		assertEquals("MockGemFirePool", TestUtils.readField("poolName", clientCacheFactoryBean));
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
 
-		verify(mockClientCacheFactory, times(1)).create();
-		verify(mockBeanFactory, times(1)).isTypeMatch(eq("TestGemFirePool"), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(eq("TestGemFirePool"), eq(Pool.class));
-		verify(mockBeanFactory, times(1)).getBean(eq(Pool.class));
-		verify(mockPool, times(1)).getName();
-		verify(mockClientCacheFactory, never()).setPoolFreeConnectionTimeout(eq(120000));
-		verify(mockClientCacheFactory, never()).setPoolIdleTimeout(eq(300000l));
-		verify(mockClientCacheFactory, never()).setPoolLoadConditioningInterval(eq(15000));
-		verify(mockClientCacheFactory, never()).setPoolMaxConnections(eq(50));
-		verify(mockClientCacheFactory, never()).setPoolMinConnections(eq(5));
-		verify(mockClientCacheFactory, never()).setPoolMultiuserAuthentication(eq(false));
-		verify(mockClientCacheFactory, never()).setPoolPingInterval(eq(12000l));
-		verify(mockClientCacheFactory, never()).setPoolPRSingleHopEnabled(eq(true));
-		verify(mockClientCacheFactory, never()).setPoolReadTimeout(eq(60000));
-		verify(mockClientCacheFactory, never()).setPoolRetryAttempts(eq(5));
-		verify(mockClientCacheFactory, never()).setPoolServerGroup(eq("MockServerGroup"));
-		verify(mockClientCacheFactory, never()).setPoolSocketBufferSize(eq(16384));
-		verify(mockClientCacheFactory, never()).setPoolStatisticInterval(eq(1000));
-		verify(mockClientCacheFactory, never()).setPoolSubscriptionAckInterval(eq(500));
-		verify(mockClientCacheFactory, never()).setPoolSubscriptionEnabled(eq(true));
-		verify(mockClientCacheFactory, never()).setPoolSubscriptionMessageTrackingTimeout(eq(15000));
-		verify(mockClientCacheFactory, never()).setPoolSubscriptionRedundancy(eq(4));
-		verify(mockClientCacheFactory, never()).setPoolThreadLocalConnections(eq(false));
+		verify(mockPool, times(1)).getFreeConnectionTimeout();
+		verify(mockPool, times(1)).getIdleTimeout();
+		verify(mockPool, times(1)).getLoadConditioningInterval();
+		verify(mockPool, never()).getLocators();
+		verify(mockPool, times(1)).getMaxConnections();
+		verify(mockPool, times(1)).getMinConnections();
+		verify(mockPool, times(1)).getMultiuserAuthentication();
+		verify(mockPool, times(1)).getPRSingleHopEnabled();
+		verify(mockPool, times(1)).getPingInterval();
+		verify(mockPool, times(1)).getReadTimeout();
+		verify(mockPool, times(1)).getRetryAttempts();
+		verify(mockPool, times(1)).getServerGroup();
+		verify(mockPool, times(1)).getServers();
+		verify(mockPool, times(1)).getSocketBufferSize();
+		verify(mockPool, times(1)).getStatisticInterval();
+		verify(mockPool, times(1)).getSubscriptionAckInterval();
+		verify(mockPool, times(1)).getSubscriptionEnabled();
+		verify(mockPool, times(1)).getSubscriptionMessageTrackingTimeout();
+		verify(mockPool, times(1)).getSubscriptionRedundancy();
+		verify(mockPool, times(1)).getThreadLocalConnections();
+		verify(mockClientCacheFactory, times(1)).setPoolFreeConnectionTimeout(eq(10000));
+		verify(mockClientCacheFactory, times(1)).setPoolIdleTimeout(eq(120000l));
+		verify(mockClientCacheFactory, times(1)).setPoolLoadConditioningInterval(eq(30000));
+		verify(mockClientCacheFactory, times(1)).setPoolMaxConnections(eq(100));
+		verify(mockClientCacheFactory, times(1)).setPoolMinConnections(eq(10));
+		verify(mockClientCacheFactory, times(1)).setPoolMultiuserAuthentication(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolPRSingleHopEnabled(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolPingInterval(eq(15000l));
+		verify(mockClientCacheFactory, times(1)).setPoolReadTimeout(eq(20000));
+		verify(mockClientCacheFactory, times(1)).setPoolRetryAttempts(eq(1));
+		verify(mockClientCacheFactory, times(1)).setPoolServerGroup(eq("TestGroup"));
+		verify(mockClientCacheFactory, times(1)).setPoolSocketBufferSize(eq(8192));
+		verify(mockClientCacheFactory, times(1)).setPoolStatisticInterval(eq(5000));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionAckInterval(eq(500));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionEnabled(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionMessageTrackingTimeout(eq(500));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionRedundancy(eq(2));
+		verify(mockClientCacheFactory, times(1)).setPoolThreadLocalConnections(eq(false));
+		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("localhost"), eq(11235));
+		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("localhost"), eq(12480));
+		verify(mockClientCacheFactory, never()).addPoolLocator(anyString(), anyInt());
 	}
 
 	@Test
-	public void resolveUnresolvablePool() {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class, "MockGemFireClientCacheFactory");
+	public void initializePoolWithFactory() {
+		Pool mockPool = mock(Pool.class);
 
-		when(mockBeanFactory.getBean(eq(Pool.class))).thenThrow(new NoSuchBeanDefinitionException("TEST"));
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setFreeConnectionTimeout(5000);
+		clientCacheFactoryBean.setIdleTimeout(300000l);
+		clientCacheFactoryBean.setLoadConditioningInterval(120000);
+		clientCacheFactoryBean.setMaxConnections(99);
+		clientCacheFactoryBean.setMinConnections(9);
+		clientCacheFactoryBean.setMultiUserAuthentication(true);
+		clientCacheFactoryBean.setPingInterval(15000l);
+		clientCacheFactoryBean.setPool(mockPool);
+		clientCacheFactoryBean.setPrSingleHopEnabled(true);
+		clientCacheFactoryBean.setReadTimeout(20000);
+		clientCacheFactoryBean.setRetryAttempts(2);
+		clientCacheFactoryBean.setServerGroup("TestGroup");
+		clientCacheFactoryBean.setSocketBufferSize(16384);
+		clientCacheFactoryBean.setStatisticsInterval(1000);
+		clientCacheFactoryBean.setSubscriptionAckInterval(100);
+		clientCacheFactoryBean.setSubscriptionEnabled(true);
+		clientCacheFactoryBean.setSubscriptionMessageTrackingTimeout(500);
+		clientCacheFactoryBean.setSubscriptionRedundancy(2);
+		clientCacheFactoryBean.setThreadLocalConnections(false);
+		clientCacheFactoryBean.addLocators(newConnectionEndpoint("localhost", 11235),
+			newConnectionEndpoint("skullbox", 10334));
+
+		assertThat(clientCacheFactoryBean.getFreeConnectionTimeout(), is(equalTo(5000)));
+		assertThat(clientCacheFactoryBean.getIdleTimeout(), is(equalTo(300000l)));
+		assertThat(clientCacheFactoryBean.getLoadConditioningInterval(), is(equalTo(120000)));
+		assertThat(clientCacheFactoryBean.getLocators().size(), is(equalTo(2)));
+		assertThat(clientCacheFactoryBean.getMaxConnections(), is(equalTo(99)));
+		assertThat(clientCacheFactoryBean.getMinConnections(), is(equalTo(9)));
+		assertThat(clientCacheFactoryBean.getMultiUserAuthentication(), is(equalTo(true)));
+		assertThat(clientCacheFactoryBean.getPingInterval(), is(equalTo(15000l)));
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPrSingleHopEnabled(), is(equalTo(true)));
+		assertThat(clientCacheFactoryBean.getReadTimeout(), is(equalTo(20000)));
+		assertThat(clientCacheFactoryBean.getRetryAttempts(), is(equalTo(2)));
+		assertThat(clientCacheFactoryBean.getServerGroup(), is(equalTo("TestGroup")));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(equalTo(16384)));
+		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(equalTo(1000)));
+		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(equalTo(100)));
+		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(equalTo(true)));
+		assertThat(clientCacheFactoryBean.getSubscriptionMessageTrackingTimeout(), is(equalTo(500)));
+		assertThat(clientCacheFactoryBean.getSubscriptionRedundancy(), is(equalTo(2)));
+		assertThat(clientCacheFactoryBean.getThreadLocalConnections(), is(equalTo(false)));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verifyZeroInteractions(mockPool);
+		verify(mockClientCacheFactory, times(1)).setPoolFreeConnectionTimeout(eq(5000));
+		verify(mockClientCacheFactory, times(1)).setPoolIdleTimeout(eq(300000l));
+		verify(mockClientCacheFactory, times(1)).setPoolLoadConditioningInterval(eq(120000));
+		verify(mockClientCacheFactory, times(1)).setPoolMaxConnections(eq(99));
+		verify(mockClientCacheFactory, times(1)).setPoolMinConnections(eq(9));
+		verify(mockClientCacheFactory, times(1)).setPoolMultiuserAuthentication(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolPingInterval(eq(15000l));
+		verify(mockClientCacheFactory, times(1)).setPoolPRSingleHopEnabled(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolReadTimeout(eq(20000));
+		verify(mockClientCacheFactory, times(1)).setPoolRetryAttempts(eq(2));
+		verify(mockClientCacheFactory, times(1)).setPoolServerGroup(eq("TestGroup"));
+		verify(mockClientCacheFactory, times(1)).setPoolSocketBufferSize(eq(16384));
+		verify(mockClientCacheFactory, times(1)).setPoolStatisticInterval(eq(1000));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionAckInterval(eq(100));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionEnabled(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionMessageTrackingTimeout(eq(500));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionRedundancy(eq(2));
+		verify(mockClientCacheFactory, times(1)).setPoolThreadLocalConnections(eq(false));
+		verify(mockClientCacheFactory, times(1)).addPoolLocator(eq("localhost"), eq(11235));
+		verify(mockClientCacheFactory, times(1)).addPoolLocator(eq("skullbox"), eq(10334));
+		verify(mockClientCacheFactory, never()).addPoolServer(anyString(), anyInt());
+	}
+
+	@Test
+	public void initializePoolWithFactoryAndPoolButFactoryOverridesPool() {
+		Pool mockPool = mock(Pool.class);
+
+		when(mockPool.getFreeConnectionTimeout()).thenReturn(5000);
+		when(mockPool.getIdleTimeout()).thenReturn(120000l);
+		when(mockPool.getLoadConditioningInterval()).thenReturn(300000);
+		when(mockPool.getLocators()).thenReturn(Collections.<InetSocketAddress>emptyList());
+		when(mockPool.getMaxConnections()).thenReturn(200);
+		when(mockPool.getMinConnections()).thenReturn(10);
+		when(mockPool.getMultiuserAuthentication()).thenReturn(false);
+		when(mockPool.getPingInterval()).thenReturn(15000l);
+		when(mockPool.getPRSingleHopEnabled()).thenReturn(false);
+		when(mockPool.getReadTimeout()).thenReturn(30000);
+		when(mockPool.getRetryAttempts()).thenReturn(1);
+		when(mockPool.getServerGroup()).thenReturn("TestServerGroup");
+		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 12480)));
+		when(mockPool.getSocketBufferSize()).thenReturn(8192);
+		when(mockPool.getStatisticInterval()).thenReturn(5000);
+		when(mockPool.getSubscriptionAckInterval()).thenReturn(1000);
+		when(mockPool.getSubscriptionEnabled()).thenReturn(false);
+		when(mockPool.getSubscriptionMessageTrackingTimeout()).thenReturn(20000);
+		when(mockPool.getSubscriptionRedundancy()).thenReturn(1);
+		when(mockPool.getThreadLocalConnections()).thenReturn(true);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setIdleTimeout(180000l);
+		clientCacheFactoryBean.setMaxConnections(500);
+		clientCacheFactoryBean.setMinConnections(50);
+		clientCacheFactoryBean.setMultiUserAuthentication(true);
+		clientCacheFactoryBean.setPool(mockPool);
+		clientCacheFactoryBean.setPrSingleHopEnabled(true);
+		clientCacheFactoryBean.setServerGroup("TestGroup");
+		clientCacheFactoryBean.setSocketBufferSize(16384);
+		clientCacheFactoryBean.setStatisticsInterval(500);
+		clientCacheFactoryBean.setSubscriptionAckInterval(100);
+		clientCacheFactoryBean.setSubscriptionEnabled(true);
+		clientCacheFactoryBean.setSubscriptionRedundancy(2);
+		clientCacheFactoryBean.setThreadLocalConnections(false);
+		clientCacheFactoryBean.addLocators(newConnectionEndpoint("localhost", 11235));
+
+		assertThat(clientCacheFactoryBean.getFreeConnectionTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getIdleTimeout(), is(equalTo(180000l)));
+		assertThat(clientCacheFactoryBean.getLoadConditioningInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getLocators().size(), is(equalTo(1)));
+		assertThat(clientCacheFactoryBean.getMaxConnections(), is(equalTo(500)));
+		assertThat(clientCacheFactoryBean.getMinConnections(), is(equalTo(50)));
+		assertThat(clientCacheFactoryBean.getMultiUserAuthentication(), is(true));
+		assertThat(clientCacheFactoryBean.getPingInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPrSingleHopEnabled(), is(true));
+		assertThat(clientCacheFactoryBean.getReadTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getRetryAttempts(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getServerGroup(), is(equalTo("TestGroup")));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(equalTo(16384)));
+		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(equalTo(500)));
+		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(equalTo(100)));
+		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(true));
+		assertThat(clientCacheFactoryBean.getSubscriptionMessageTrackingTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionRedundancy(), is(equalTo(2)));
+		assertThat(clientCacheFactoryBean.getThreadLocalConnections(), is(false));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockPool, times(1)).getFreeConnectionTimeout();
+		verify(mockPool, never()).getIdleTimeout();
+		verify(mockPool, times(1)).getLoadConditioningInterval();
+		verify(mockPool, never()).getLocators();
+		verify(mockPool, never()).getMaxConnections();
+		verify(mockPool, never()).getMinConnections();
+		verify(mockPool, never()).getMultiuserAuthentication();
+		verify(mockPool, times(1)).getPingInterval();
+		verify(mockPool, never()).getPRSingleHopEnabled();
+		verify(mockPool, times(1)).getReadTimeout();
+		verify(mockPool, times(1)).getRetryAttempts();
+		verify(mockPool, never()).getServerGroup();
+		verify(mockPool, never()).getServers();
+		verify(mockPool, never()).getSocketBufferSize();
+		verify(mockPool, never()).getStatisticInterval();
+		verify(mockPool, never()).getSubscriptionAckInterval();
+		verify(mockPool, never()).getSubscriptionEnabled();
+		verify(mockPool, times(1)).getSubscriptionMessageTrackingTimeout();
+		verify(mockPool, never()).getSubscriptionRedundancy();
+		verify(mockPool, never()).getThreadLocalConnections();
+		verify(mockClientCacheFactory, times(1)).setPoolFreeConnectionTimeout(eq(5000));
+		verify(mockClientCacheFactory, times(1)).setPoolIdleTimeout(eq(180000l));
+		verify(mockClientCacheFactory, times(1)).setPoolLoadConditioningInterval(eq(300000));
+		verify(mockClientCacheFactory, times(1)).setPoolMaxConnections(eq(500));
+		verify(mockClientCacheFactory, times(1)).setPoolMinConnections(eq(50));
+		verify(mockClientCacheFactory, times(1)).setPoolMultiuserAuthentication(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolPingInterval(eq(15000l));
+		verify(mockClientCacheFactory, times(1)).setPoolPRSingleHopEnabled(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolReadTimeout(eq(30000));
+		verify(mockClientCacheFactory, times(1)).setPoolRetryAttempts(eq(1));
+		verify(mockClientCacheFactory, times(1)).setPoolServerGroup(eq("TestGroup"));
+		verify(mockClientCacheFactory, times(1)).setPoolSocketBufferSize(eq(16384));
+		verify(mockClientCacheFactory, times(1)).setPoolStatisticInterval(eq(500));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionAckInterval(eq(100));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionEnabled(eq(true));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionMessageTrackingTimeout(eq(20000));
+		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionRedundancy(eq(2));
+		verify(mockClientCacheFactory, times(1)).addPoolLocator(eq("localhost"), eq(11235));
+		verify(mockClientCacheFactory, never()).addPoolServer(anyString(), anyInt());
+	}
+
+	@Test
+	public void initializePoolWithFactoryServer() {
+		Pool mockPool = mock(Pool.class);
+
+		when(mockPool.getLocators()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 21668)));
+		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 41414)));
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPool(mockPool);
+		clientCacheFactoryBean.addServers(newConnectionEndpoint("skullbox", 12480));
+
+		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.getServers().size(), is(equalTo(1)));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockPool, never()).getLocators();
+		verify(mockPool, never()).getServers();
+		verify(mockClientCacheFactory, never()).addPoolLocator(anyString(), anyInt());
+		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("skullbox"), eq(12480));
+	}
+
+	@Test
+	public void initializePoolWithFactoryLocator() {
+		Pool mockPool = mock(Pool.class);
+
+		when(mockPool.getLocators()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 21668)));
+		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 41414)));
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPool(mockPool);
+		clientCacheFactoryBean.addLocators(newConnectionEndpoint("boombox", 11235));
+
+		assertThat(clientCacheFactoryBean.getLocators().size(), is(equalTo(1)));
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockPool, never()).getLocators();
+		verify(mockPool, never()).getServers();
+		verify(mockClientCacheFactory, times(1)).addPoolLocator(eq("boombox"), eq(11235));
+		verify(mockClientCacheFactory, never()).addPoolServer(anyString(), anyInt());
+	}
+
+	@Test
+	public void initializePoolWithPoolServer() {
+		Pool mockPool = mock(Pool.class);
+
+		when(mockPool.getLocators()).thenReturn(Collections.<InetSocketAddress>emptyList());
+		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("boombox", 41414)));
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPool(mockPool);
+
+		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockPool, never()).getLocators();
+		verify(mockPool, times(1)).getServers();
+		verify(mockClientCacheFactory, never()).addPoolLocator(anyString(), anyInt());
+		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("boombox"), eq(41414));
+	}
+
+	@Test
+	public void initializePoolWithPoolLocator() {
+		Pool mockPool = mock(Pool.class);
+
+		when(mockPool.getLocators()).thenReturn(Collections.singletonList(new InetSocketAddress("skullbox", 21668)));
+		when(mockPool.getServers()).thenReturn(Collections.<InetSocketAddress>emptyList());
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPool(mockPool);
+
+		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockPool, times(1)).getLocators();
+		verify(mockPool, times(1)).getServers();
+		verify(mockClientCacheFactory, times(1)).addPoolLocator(eq("skullbox"), eq(21668));
+		verify(mockClientCacheFactory, never()).addPoolServer(anyString(), anyInt());
+	}
+
+	@Test
+	public void initializePoolWithDefaultServer() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override Pool resolvePool() {
+				return null;
+			}
+		};
+
+		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockClientCacheFactory, never()).addPoolLocator(anyString(), anyInt());
+		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("localhost"),
+			eq(GemfireUtils.DEFAULT_CACHE_SERVER_PORT));
+	}
+
+	@Test
+	public void createCache() {
+		ClientCache mockClientCache = mock(ClientCache.class);
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		when(mockClientCacheFactory.create()).thenReturn(mockClientCache);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		assertThat((ClientCache) clientCacheFactoryBean.createCache(mockClientCacheFactory),
+			is(sameInstance(mockClientCache)));
+
+		verify(mockClientCacheFactory, times(1)).create();
+		verifyZeroInteractions(mockClientCache);
+	}
+
+	@Test
+	public void resolvePoolByReturningProvidedPool() {
+		Pool mockPool = mock(Pool.class);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPool(mockPool);
+
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
+
+		verifyZeroInteractions(mockPool);
+	}
+
+	@Test
+	public void resolvesPoolByName() {
+		final Pool mockPool = mock(Pool.class);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override Pool findPool(String name) {
+				assertThat(name, is(equalTo("TestPool")));
+				return mockPool;
+			}
+		};
+
+		clientCacheFactoryBean.setPoolName("TestPool");
+
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
+
+		verifyZeroInteractions(mockPool);
+	}
+
+	@Test
+	public void resolvesPoolByDefaultName() {
+		final Pool mockPool = mock(Pool.class);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
+			@Override Pool findPool(String name) {
+				assertThat(name, is(equalTo(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)));
+				return mockPool;
+			}
+		};
+
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
+
+		verifyZeroInteractions(mockPool);
+	}
+
+	@Test
+	public void resolvesNamedPoolFromBeanFactory() {
+		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
+		Pool mockPool = mock(Pool.class);
+		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
+
+		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&TestPool", mockPoolFactoryBean);
+
+		when(mockBeanFactory.getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false))).thenReturn(beans);
+		when(mockPoolFactoryBean.getPool()).thenReturn(mockPool);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
+		clientCacheFactoryBean.setPoolName("TestPool");
+
+		assertThat((ListableBeanFactory) clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
+
+		verify(mockBeanFactory, times(1)).getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false));
+		verify(mockPoolFactoryBean, times(1)).getPool();
+		verifyZeroInteractions(mockPool);
+	}
+
+	@Test
+	public void resolvesUnnamedPoolFromBeanFactory() {
+		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
+		Pool mockPool = mock(Pool.class);
+		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
+
+		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&gemfirePool", mockPoolFactoryBean);
+
+		when(mockBeanFactory.getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false))).thenReturn(beans);
+		when(mockPoolFactoryBean.getPool()).thenReturn(mockPool);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
 
+		assertThat((ListableBeanFactory) clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
 
-		clientCacheFactoryBean.createCache(mockClientCacheFactory);
+		verify(mockBeanFactory, times(1)).getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false));
+		verify(mockPoolFactoryBean, times(1)).getPool();
+		verifyZeroInteractions(mockPool);
+	}
 
+	@Test
+	public void resolvePoolReturnsNullWhenNoBeansOfTypePoolFactoryBeanExists() {
+		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
+
+		Map<String, PoolFactoryBean> beans = Collections.emptyMap();
+
+		when(mockBeanFactory.getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false))).thenReturn(beans);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
+
+		assertThat((ListableBeanFactory) clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(nullValue()));
 
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
-		verify(mockBeanFactory, times(1)).getBean(eq(Pool.class));
-		verify(mockClientCacheFactory, times(1)).create();
+		verify(mockBeanFactory, times(1)).getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false));
+	}
+
+	@Test
+	public void resolvePoolReturnsNullWhenNoBeansOfTypePoolFactoryBeanExistsWithPoolName() {
+		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
+		Pool mockPool = mock(Pool.class);
+		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
+
+		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&swimPool", mockPoolFactoryBean);
+
+		when(mockBeanFactory.getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false))).thenReturn(beans);
+		when(mockPoolFactoryBean.getPool()).thenReturn(mockPool);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
+		clientCacheFactoryBean.setPoolName("TestPool");
+
+		assertThat((ListableBeanFactory) clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(nullValue()));
+
+		verify(mockBeanFactory, times(1)).getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false));
+		verify(mockPoolFactoryBean, never()).getPool();
+		verifyZeroInteractions(mockPool);
+	}
+
+	@Test
+	public void resolvePoolReturnsNullWhenBeanFactoryIsNotAListableBeanFactory() {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
+
+		assertThat(clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(nullValue()));
+
+		verifyZeroInteractions(mockBeanFactory);
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void onApplicationEventCallsClientCacheReadyForEvents() {
-		final ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+		final ClientCache mockClientCache = mock(ClientCache.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
-			@Override public boolean isReadyForEvents() {
-				return true;
-			}
-
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				return (T) mockClientCache;
 			}
 		};
+
+		clientCacheFactoryBean.setReadyForEvents(true);
+
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 
@@ -478,19 +998,19 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void onApplicationEventDoesNotCallClientCacheReadyForEventsWhenClientCacheFactoryBeanReadyForEventsIsFalse() {
-		final ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+		final ClientCache mockClientCache = mock(ClientCache.class);
 
 		doThrow(new RuntimeException("test")).when(mockClientCache).readyForEvents();
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
-			@Override public boolean isReadyForEvents() {
-				return false;
-			}
-
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				return (T) mockClientCache;
 			}
 		};
+
+		clientCacheFactoryBean.setReadyForEvents(false);
+
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(false));
 
 		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
 
@@ -500,21 +1020,21 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void onApplicationEventHandlesIllegalStateException() {
-		final ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+		final ClientCache mockClientCache = mock(ClientCache.class);
 
-		doThrow(new IllegalStateException("non-durable client")).when(mockClientCache).readyForEvents();
+		doThrow(new IllegalStateException("test")).when(mockClientCache).readyForEvents();
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
-			@Override public boolean isReadyForEvents() {
-				return true;
-			}
-
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				return (T) mockClientCache;
 			}
 		};
 
-		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
+		clientCacheFactoryBean.setReadyForEvents(true);
+
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
+
+		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class));
 
 		verify(mockClientCache, times(1)).readyForEvents();
 	}
@@ -522,21 +1042,21 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	public void onApplicationEventHandlesCacheClosedException() {
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
-			@Override public boolean isReadyForEvents() {
-				return true;
-			}
-
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				throw new CacheClosedException("test");
 			}
 		};
 
-		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent"));
+		clientCacheFactoryBean.setReadyForEvents(true);
+
+		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
+
+		clientCacheFactoryBean.onApplicationEvent(mock(ContextRefreshedEvent.class));
 	}
 
 	@Test
 	public void closeClientCacheWithKeepAlive() {
-		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+		ClientCache mockClientCache = mock(ClientCache.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
@@ -551,7 +1071,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void closeClientCacheWithoutKeepAlive() {
-		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+		ClientCache mockClientCache = mock(ClientCache.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
@@ -566,7 +1086,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void autoReconnectDisabled() {
-		assertFalse(new ClientCacheFactoryBean().getEnableAutoReconnect());
+		assertThat(new ClientCacheFactoryBean().getEnableAutoReconnect(), is(false));
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -574,26 +1094,125 @@ public class ClientCacheFactoryBeanTest {
 		new ClientCacheFactoryBean().setEnableAutoReconnect(true);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void setPoolToNull() {
-		try {
-			new ClientCacheFactoryBean().setPool(null);
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("GemFire Pool must not be null", expected.getMessage());
-			throw expected;
-		}
+	@Test
+	public void clusterConfigurationNotUsed() {
+		assertThat(new ClientCacheFactoryBean().getUseClusterConfiguration(), is(false));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void setPoolNameWithAnIllegalArgument() {
-		try {
-			new ClientCacheFactoryBean().setPoolName("  ");
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("Pool 'name' is required", expected.getMessage());
-			throw expected;
-		}
+	@Test(expected = UnsupportedOperationException.class)
+	public void useClusterConfiguration() {
+		new ClientCacheFactoryBean().setUseClusterConfiguration(true);
+	}
+
+	@Test
+	public void setAndGetKeepAlive() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		assertThat(clientCacheFactoryBean.getKeepAlive(), is(false));
+		assertThat(clientCacheFactoryBean.isKeepAlive(), is(false));
+
+		clientCacheFactoryBean.setKeepAlive(true);
+
+		assertThat(clientCacheFactoryBean.getKeepAlive(), is(true));
+		assertThat(clientCacheFactoryBean.isKeepAlive(), is(true));
+
+		clientCacheFactoryBean.setKeepAlive(null);
+
+		assertThat(clientCacheFactoryBean.getKeepAlive(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.isKeepAlive(), is(false));
+	}
+
+	@Test
+	public void setAndGetPool() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+		Pool mockPool = mock(Pool.class);
+
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+
+		clientCacheFactoryBean.setPool(mockPool);
+
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+
+		clientCacheFactoryBean.setPool(null);
+
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+	}
+
+	@Test
+	public void setAndGetPoolName() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+
+		clientCacheFactoryBean.setPoolName("TestPool");
+
+		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
+
+		clientCacheFactoryBean.setPoolName(null);
+
+		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
+	}
+
+	@Test
+	public void setAndGetPoolSettings() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		assertThat(clientCacheFactoryBean.getFreeConnectionTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getIdleTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getLoadConditioningInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getMaxConnections(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getMinConnections(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getMultiUserAuthentication(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPingInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPrSingleHopEnabled(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getReadTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getRetryAttempts(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getServerGroup(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionMessageTrackingTimeout(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSubscriptionRedundancy(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getThreadLocalConnections(), is(nullValue()));
+
+		clientCacheFactoryBean.setFreeConnectionTimeout(5000);
+		clientCacheFactoryBean.setIdleTimeout(120000l);
+		clientCacheFactoryBean.setLoadConditioningInterval(300000);
+		clientCacheFactoryBean.setMaxConnections(500);
+		clientCacheFactoryBean.setMinConnections(50);
+		clientCacheFactoryBean.setMultiUserAuthentication(true);
+		clientCacheFactoryBean.setPingInterval(15000l);
+		clientCacheFactoryBean.setPrSingleHopEnabled(true);
+		clientCacheFactoryBean.setReadTimeout(30000);
+		clientCacheFactoryBean.setRetryAttempts(1);
+		clientCacheFactoryBean.setServerGroup("test");
+		clientCacheFactoryBean.setSocketBufferSize(16384);
+		clientCacheFactoryBean.setStatisticsInterval(500);
+		clientCacheFactoryBean.setSubscriptionAckInterval(200);
+		clientCacheFactoryBean.setSubscriptionEnabled(true);
+		clientCacheFactoryBean.setSubscriptionMessageTrackingTimeout(20000);
+		clientCacheFactoryBean.setSubscriptionRedundancy(2);
+		clientCacheFactoryBean.setThreadLocalConnections(false);
+
+		assertThat(clientCacheFactoryBean.getFreeConnectionTimeout(), is(equalTo(5000)));
+		assertThat(clientCacheFactoryBean.getIdleTimeout(), is(equalTo(120000l)));
+		assertThat(clientCacheFactoryBean.getLoadConditioningInterval(), is(equalTo(300000)));
+		assertThat(clientCacheFactoryBean.getMaxConnections(), is(equalTo(500)));
+		assertThat(clientCacheFactoryBean.getMinConnections(), is(equalTo(50)));
+		assertThat(clientCacheFactoryBean.getMultiUserAuthentication(), is(equalTo(true)));
+		assertThat(clientCacheFactoryBean.getPingInterval(), is(equalTo(15000l)));
+		assertThat(clientCacheFactoryBean.getPrSingleHopEnabled(), is(equalTo(true)));
+		assertThat(clientCacheFactoryBean.getReadTimeout(), is(equalTo(30000)));
+		assertThat(clientCacheFactoryBean.getRetryAttempts(), is(equalTo(1)));
+		assertThat(clientCacheFactoryBean.getServerGroup(), is(equalTo("test")));
+		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(16384));
+		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(equalTo(500)));
+		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(equalTo(200)));
+		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(equalTo(true)));
+		assertThat(clientCacheFactoryBean.getSubscriptionMessageTrackingTimeout(), is(equalTo(20000)));
+		assertThat(clientCacheFactoryBean.getSubscriptionRedundancy(), is(equalTo(2)));
+		assertThat(clientCacheFactoryBean.getThreadLocalConnections(), is(equalTo(false)));
 	}
 
 	@Test
@@ -616,9 +1235,9 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	protected ClientCache mockClientCache(String durableClientId) {
-		ClientCache mockClientCache = mock(ClientCache.class, "MockClientCache");
+		ClientCache mockClientCache = mock(ClientCache.class);
 
-		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "MockDistributedSystem");
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		Properties gemfireProperties = new Properties();
 
@@ -648,7 +1267,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(true));
 		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(true));
 
-		verify(mockClientCache, never()).getDistributedSystem();
+		verifyZeroInteractions(mockClientCache);
 	}
 
 	@Test
@@ -667,7 +1286,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(false));
 		assertThat(clientCacheFactoryBean.isReadyForEvents(), is(false));
 
-		verify(mockClientCache, never()).getDistributedSystem();
+		verifyZeroInteractions(mockClientCache);
 	}
 
 	@Test
@@ -717,13 +1336,73 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void clusterConfigurationNotUsed() {
-		assertFalse(new ClientCacheFactoryBean().getUseClusterConfiguration());
+	public void addSetAndGetLocators() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		assertThat(clientCacheFactoryBean.getLocators(), is(notNullValue()));
+		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
+
+		ConnectionEndpoint localhost = newConnectionEndpoint("localhost", 21668);
+
+		clientCacheFactoryBean.addLocators(localhost);
+
+		assertThat(clientCacheFactoryBean.getLocators().size(), is(equalTo(1)));
+		assertThat(clientCacheFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
+
+		ConnectionEndpoint skullbox = newConnectionEndpoint("skullbox", 10334);
+		ConnectionEndpoint boombox = newConnectionEndpoint("boombox", 10334);
+
+		clientCacheFactoryBean.addLocators(skullbox, boombox);
+
+		assertThat(clientCacheFactoryBean.getLocators().size(), is(equalTo(3)));
+		assertThat(clientCacheFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
+		assertThat(clientCacheFactoryBean.getLocators().findOne("skullbox"), is(equalTo(skullbox)));
+		assertThat(clientCacheFactoryBean.getLocators().findOne("boombox"), is(equalTo(boombox)));
+
+		clientCacheFactoryBean.setLocators(SpringUtils.toArray(localhost));
+
+		assertThat(clientCacheFactoryBean.getLocators().size(), is(equalTo(1)));
+		assertThat(clientCacheFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
+
+		clientCacheFactoryBean.setLocators(Collections.<ConnectionEndpoint>emptyList());
+
+		assertThat(clientCacheFactoryBean.getLocators(), is(notNullValue()));
+		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void useClusterConfiguration() {
-		new ClientCacheFactoryBean().setUseClusterConfiguration(true);
+	@Test
+	public void addSetAndGetServers() {
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		assertThat(clientCacheFactoryBean.getServers(), is(notNullValue()));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+
+		ConnectionEndpoint localhost = newConnectionEndpoint("localhost", 21668);
+
+		clientCacheFactoryBean.addServers(localhost);
+
+		assertThat(clientCacheFactoryBean.getServers().size(), is(equalTo(1)));
+		assertThat(clientCacheFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
+
+		ConnectionEndpoint skullbox = newConnectionEndpoint("skullbox", 10334);
+		ConnectionEndpoint boombox = newConnectionEndpoint("boombox", 10334);
+
+		clientCacheFactoryBean.addServers(skullbox, boombox);
+
+		assertThat(clientCacheFactoryBean.getServers().size(), is(equalTo(3)));
+		assertThat(clientCacheFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
+		assertThat(clientCacheFactoryBean.getServers().findOne("skullbox"), is(equalTo(skullbox)));
+		assertThat(clientCacheFactoryBean.getServers().findOne("boombox"), is(equalTo(boombox)));
+
+		clientCacheFactoryBean.setServers(SpringUtils.toArray(localhost));
+
+		assertThat(clientCacheFactoryBean.getServers().size(), is(equalTo(1)));
+		assertThat(clientCacheFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
+
+		clientCacheFactoryBean.setServers(Collections.<ConnectionEndpoint>emptyList());
+
+		assertThat(clientCacheFactoryBean.getServers(), is(notNullValue()));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
 	}
 
 }

@@ -51,6 +51,7 @@ import org.springframework.data.gemfire.client.PoolFactoryBean;
  * @since 1.0.0
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("deprecation")
 public class ClientCachePoolGemfirePropertiesSyncingBeanFactoryPostProcessorTest {
 
 	protected static final String PROPERTIES_PROPERTY_NAME_SHORTCUT =

@@ -19,18 +19,12 @@ package org.springframework.data.gemfire;
 import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.data.gemfire.config.support.GemfireFeature;
-import org.springframework.data.gemfire.util.DistributedSystemUtils;
+import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
 
 /**
@@ -39,16 +33,12 @@ import com.gemstone.gemfire.internal.GemFireVersion;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
- * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.CacheFactory
  * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
- * @see com.gemstone.gemfire.distributed.DistributedSystem
  * @since 1.3.3
  */
 @SuppressWarnings("unused")
-public abstract class GemfireUtils extends DistributedSystemUtils {
+public abstract class GemfireUtils extends CacheUtils {
 
 	public final static String GEMFIRE_NAME = GemFireVersion.getProductName();
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
@@ -58,10 +48,12 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 	private static final String CQ_TYPE_NAME = "com.gemstone.gemfire.cache.query.internal.cq.CqServiceFactoryImpl";
 	private static final String GATEWAY_TYPE_NAME = "com.gemstone.gemfire.internal.cache.wan.GatewaySenderFactoryImpl";
 
+	/* (non-Javadoc) */
 	public static boolean isClassAvailable(String fullyQualifiedClassName) {
 		return ClassUtils.isPresent(fullyQualifiedClassName, GemfireUtils.class.getClassLoader());
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireFeatureAvailable(GemfireFeature feature) {
 		boolean featureAvailable = (!GemfireFeature.AEQ.equals(feature) || isAsyncEventQueueAvailable());
 		featureAvailable &= (!GemfireFeature.CONTINUOUS_QUERY.equals(feature) || isContinuousQueryAvailable());
@@ -69,6 +61,7 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		return featureAvailable;
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireFeatureAvailable(Element element) {
 		boolean featureAvailable = (!isAsyncEventQueue(element) || isAsyncEventQueueAvailable());
 		featureAvailable &= (!isContinuousQuery(element) || isContinuousQueryAvailable());
@@ -76,92 +69,54 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		return featureAvailable;
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireFeatureUnavailable(GemfireFeature feature) {
 		return !isGemfireFeatureAvailable(feature);
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireFeatureUnavailable(Element element) {
 		return !isGemfireFeatureAvailable(element);
 	}
 
+	/* (non-Javadoc) */
 	private static boolean isAsyncEventQueue(Element element) {
 		return "async-event-queue".equals(element.getLocalName());
 	}
 
+	/* (non-Javadoc) */
 	private static boolean isAsyncEventQueueAvailable() {
 		return isClassAvailable(ASYNC_EVENT_QUEUE_TYPE_NAME);
 	}
 
+	/* (non-Javadoc) */
 	private static boolean isContinuousQuery(Element element) {
 		return "cq-listener-container".equals(element.getLocalName());
 	}
 
+	/* (non-Javadoc) */
 	private static boolean isContinuousQueryAvailable() {
 		return isClassAvailable(CQ_TYPE_NAME);
 	}
 
+	/* (non-Javadoc) */
 	private static boolean isGateway(Element element) {
 		String elementLocalName = element.getLocalName();
 		return ("gateway-receiver".equals(elementLocalName) || "gateway-sender".equals(elementLocalName));
 	}
 
+	/* (non-Javadoc) */
 	private static boolean isGatewayAvailable() {
 		return isClassAvailable(GATEWAY_TYPE_NAME);
 	}
 
-	public static boolean isDurable(ClientCache clientCache) {
-		DistributedSystem distributedSystem = getDistributedSystem(clientCache);
-
-		// NOTE technically the following code snippet would be more useful/valuable but is not "testable"!
-		//((InternalDistributedSystem) distributedSystem).getConfig().getDurableClientId();
-
-		return (isConnected(distributedSystem) && StringUtils.hasText(distributedSystem.getProperties()
-			.getProperty(DURABLE_CLIENT_ID_PROPERTY_NAME, null)));
-	}
-
-	public static boolean closeCache() {
-		try {
-			CacheFactory.getAnyInstance().close();
-			return true;
-		}
-		catch (Exception ignore) {
-			return false;
-		}
-	}
-
-	public static boolean closeClientCache() {
-		try {
-			ClientCacheFactory.getAnyInstance().close();
-			return true;
-		}
-		catch (Exception ignore) {
-			return false;
-		}
-	}
-
-	public static Cache getCache() {
-		try {
-			return CacheFactory.getAnyInstance();
-		}
-		catch (CacheClosedException ignore) {
-			return null;
-		}
-	}
-
-	public static ClientCache getClientCache() {
-		try {
-			return ClientCacheFactory.getAnyInstance();
-		}
-		catch (CacheClosedException ignore) {
-			return null;
-		}
-	}
-
+	/* (non-Javadoc) */
 	public static boolean isGemfireVersionGreaterThanEqualTo(double expectedVersion) {
 		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
 		return (actualVersion >= expectedVersion);
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireVersion65OrAbove() {
 		try {
 			return isGemfireVersionGreaterThanEqualTo(6.5);
@@ -172,6 +127,7 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		}
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireVersion7OrAbove() {
 		try {
 			return isGemfireVersionGreaterThanEqualTo(7.0);
@@ -183,6 +139,7 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		}
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireVersion8OrAbove() {
 		try {
 			return isGemfireVersionGreaterThanEqualTo(8.0);

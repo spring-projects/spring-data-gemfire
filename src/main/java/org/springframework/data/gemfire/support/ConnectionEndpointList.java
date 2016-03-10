@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.support;
 
 import java.net.InetSocketAddress;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.List;
 
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.util.SpringUtils;
 
 /**
  * The ConnectionEndpointList class is an Iterable collection of ConnectionEndpoint objects.
@@ -36,15 +38,28 @@ import org.springframework.data.gemfire.util.CollectionUtils;
  * @since 1.6.3
  */
 @SuppressWarnings("unused")
-public class ConnectionEndpointList implements Iterable<ConnectionEndpoint> {
+public class ConnectionEndpointList extends AbstractList<ConnectionEndpoint> {
 
 	private final List<ConnectionEndpoint> connectionEndpoints;
 
 	/**
-	 * Converts the array of InetSocketAddresses into an instance of ConnectionEndpointList.
+	 * Factory method for creating a {@link ConnectionEndpointList} from an array of {@link ConnectionEndpoint}s.
 	 *
-	 * @param socketAddresses the array of InetSocketAddresses used to initialize an instance of ConnectionEndpointList.
-	 * @return a ConnectionEndpointList representing the array of InetSocketAddresses.
+	 * @param connectionEndpoints the array of {@link ConnectionEndpoint}s used to initialize
+	 * the {@link ConnectionEndpointList}.
+	 * @return a {@link ConnectionEndpointList} initialized with the array of {@link ConnectionEndpoint}s.
+	 * @see org.springframework.data.gemfire.support.ConnectionEndpoint
+	 */
+	public static ConnectionEndpointList from(ConnectionEndpoint... connectionEndpoints) {
+		return new ConnectionEndpointList(connectionEndpoints);
+	}
+
+	/**
+	 * Converts an array of {@link InetSocketAddress} into an instance of {@link ConnectionEndpointList}.
+	 *
+	 * @param socketAddresses the array of {@link InetSocketAddress} used to initialize
+	 * an instance of {@link ConnectionEndpointList}.
+	 * @return a {@link ConnectionEndpointList} initialized with the array of {@link InetSocketAddress}.
 	 * @see java.net.InetSocketAddress
 	 * @see #from(Iterable)
 	 */
@@ -53,11 +68,13 @@ public class ConnectionEndpointList implements Iterable<ConnectionEndpoint> {
 	}
 
 	/**
-	 * Converts the Iterable collection of InetSocketAddresses into an instance of ConnectionEndpointList.
+	 * Converts an {@link Iterable} collection of {@link InetSocketAddress} into an instance
+	 * of {@link ConnectionEndpointList}.
 	 *
-	 * @param socketAddresses in Iterable collection of InetSocketAddresses used to initialize an instance
-	 * of ConnectionEndpointList.
-	 * @return a ConnectionEndpointList representing the array of InetSocketAddresses.
+	 * @param socketAddresses in {@link Iterable} collection of {@link InetSocketAddress} used to initialize
+	 * an instance of {@link ConnectionEndpointList}.
+	 * @return a {@link ConnectionEndpointList} initialized with the array of {@link InetSocketAddress}.
+	 * @see java.lang.Iterable
 	 * @see java.net.InetSocketAddress
 	 */
 	public static ConnectionEndpointList from(Iterable<InetSocketAddress> socketAddresses) {
@@ -119,6 +136,12 @@ public class ConnectionEndpointList implements Iterable<ConnectionEndpoint> {
 		add(connectionEndpoints);
 	}
 
+	/* (non-Javadoc) */
+	@Override
+	public boolean add(ConnectionEndpoint connectionEndpoint) {
+		return (add(SpringUtils.toArray(connectionEndpoint)) == this);
+	}
+
 	/**
 	 * Adds the array of ConnectionEndpoints to this list.
 	 *
@@ -146,6 +169,14 @@ public class ConnectionEndpointList implements Iterable<ConnectionEndpoint> {
 		}
 
 		return this;
+	}
+
+	/**
+	 * Clears the current list of {@link ConnectionEndpoint}s.
+	 */
+	@Override
+	public void clear() {
+		this.connectionEndpoints.clear();
 	}
 
 	/**
@@ -187,16 +218,74 @@ public class ConnectionEndpointList implements Iterable<ConnectionEndpoint> {
 	}
 
 	/**
+	 * Finds the first {@link ConnectionEndpoint} in the collection with the given host.
+	 *
+	 * @param host a String indicating the hostname of the {@link ConnectionEndpoint} to find.
+	 * @return the first {@link ConnectionEndpoint} in this collection with the given host,
+	 * or null if no {@link ConnectionEndpoint} exists with the given hostname.
+	 * @see #findBy(String)
+	 */
+	public ConnectionEndpoint findOne(String host) {
+		ConnectionEndpointList connectionEndpoints = findBy(host);
+		return (connectionEndpoints.isEmpty() ? null : connectionEndpoints.connectionEndpoints.get(0));
+	}
+
+	/**
+	 * Finds the first {@link ConnectionEndpoint} in the collection with the given port.
+	 *
+	 * @param port an integer indicating the port number of the {@link ConnectionEndpoint} to find.
+	 * @return the first {@link ConnectionEndpoint} in this collection with the given port,
+	 * or null if no {@link ConnectionEndpoint} exists with the given port number.
+	 * @see #findBy(int)
+	 */
+	public ConnectionEndpoint findOne(int port) {
+		ConnectionEndpointList connectionEndpoints = findBy(port);
+		return (connectionEndpoints.isEmpty() ? null : connectionEndpoints.connectionEndpoints.get(0));
+	}
+
+	/**
+	 * Gets the {@link ConnectionEndpoint} at the given index in this list.
+	 *
+	 * @param index an integer value indicating the index of the {@link ConnectionEndpoint} of interest.
+	 * @return the {@link ConnectionEndpoint} at index in this list.
+	 * @throws IndexOutOfBoundsException if the index is not within the bounds of this list.
+	 * @see org.springframework.data.gemfire.support.ConnectionEndpoint
+	 * @see java.util.AbstractList#get(int)
+	 */
+	@Override
+	public ConnectionEndpoint get(int index) {
+		return connectionEndpoints.get(index);
+	}
+
+	/**
+	 * Sets the element at the given index in this list to the given {@link ConnectionEndpoint}.
+	 *
+	 * @param index the index in the list at which to set the {@link ConnectionEndpoint}.
+	 * @param element the {@link ConnectionEndpoint} to set in this list at the given index.
+	 * @return the old {@link ConnectionEndpoint} at index in this list or null if no {@link ConnectionEndpoint}
+	 * at index existed.
+	 * @throws IndexOutOfBoundsException if the index is not within the bounds of this list.
+	 * @see org.springframework.data.gemfire.support.ConnectionEndpoint
+	 * @see java.util.AbstractList#set(int, Object)
+	 */
+	@Override
+	public ConnectionEndpoint set(int index, ConnectionEndpoint element) {
+		return connectionEndpoints.set(index, element);
+	}
+
+	/**
 	 * Determines whether this collection contains any ConnectionEndpoints.
 	 *
 	 * @return a boolean value indicating whether this collection contains any ConnectionEndpoints.
 	 */
+	@Override
 	public boolean isEmpty() {
 		return connectionEndpoints.isEmpty();
 	}
 
 	/* (non-Javadoc) */
 	@Override
+	@SuppressWarnings("all")
 	public Iterator<ConnectionEndpoint> iterator() {
 		return Collections.unmodifiableList(connectionEndpoints).iterator();
 	}
@@ -206,8 +295,38 @@ public class ConnectionEndpointList implements Iterable<ConnectionEndpoint> {
 	 *
 	 * @return an integer value indicating the number of ConnectionEndpoints contained in this collection.
 	 */
+	@Override
 	public int size() {
 		return connectionEndpoints.size();
+	}
+
+	/**
+	 * Converts this collection of {@link ConnectionEndpoint}s into an array of {@link ConnectionEndpoint}s.
+	 *
+	 * @return an array of {@link ConnectionEndpoint}s representing this collection.
+	 */
+	@Override
+	@SuppressWarnings("all")
+	public ConnectionEndpoint[] toArray() {
+		return connectionEndpoints.toArray(new ConnectionEndpoint[connectionEndpoints.size()]);
+	}
+
+	/**
+	 * Converts this collection of {@link ConnectionEndpoint}s into a {@link List} of {@link InetSocketAddress}es.
+	 *
+	 * @return a {@link List} of {@link InetSocketAddress}es representing this collection of {@link ConnectionEndpoint}s.
+	 * @see org.springframework.data.gemfire.support.ConnectionEndpoint#toInetSocketAddress()
+	 * @see java.net.InetSocketAddress
+	 * @see java.util.List
+	 */
+	public List<InetSocketAddress> toInetSocketAddresses() {
+		List<InetSocketAddress> inetSocketAddresses = new ArrayList<InetSocketAddress>(size());
+
+		for (ConnectionEndpoint connectionEndpoint : this) {
+			inetSocketAddresses.add(connectionEndpoint.toInetSocketAddress());
+		}
+
+		return inetSocketAddresses;
 	}
 
 	/* (non-Javadoc) */

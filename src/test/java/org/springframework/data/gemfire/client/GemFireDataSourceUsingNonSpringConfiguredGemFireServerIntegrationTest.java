@@ -88,6 +88,8 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 
 	@BeforeClass
 	public static void setupBeforeClass() throws IOException {
+		System.setProperty("gemfire.log-level", "warning");
+
 		String serverName = "GemFireDataSourceGemFireBasedServer";
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());

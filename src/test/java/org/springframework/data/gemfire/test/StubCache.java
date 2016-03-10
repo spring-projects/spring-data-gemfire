@@ -159,8 +159,8 @@ public class StubCache implements Cache, ClientCache {
 	public DistributedSystem getDistributedSystem() {
 		if (distributedSystem == null) {
 			distributedSystem = mockDistributedSystem();
-		
 		}
+
 		return distributedSystem;
 	}
 
@@ -202,7 +202,7 @@ public class StubCache implements Cache, ClientCache {
 	 */
 	@Override
 	public String getName() {
-		return this.properties == null? null: (String)this.properties.get("name");
+		return (this.properties != null ? this.properties.getProperty("name") : null);
 	}
 
 	/* (non-Javadoc)

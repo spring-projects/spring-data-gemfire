@@ -30,18 +30,20 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class RepositoryClientRegionTests {
+
 	@Autowired
 	PersonRepository repository;
 
 	@BeforeClass
 	public static void startUp() throws Exception {
-		ForkUtil.startCacheServer(SpringCacheServerProcess.class.getName() + " "
-				+ "/org/springframework/data/gemfire/repository/config/RepositoryClientRegionTests-server-context.xml");
+		System.setProperty("gemfire.log-level", "warning");
+		ForkUtil.startCacheServer(String.format("%1$s %2$s", SpringCacheServerProcess.class.getName(),
+			"/org/springframework/data/gemfire/repository/config/RepositoryClientRegionTests-server-context.xml"));
 	}
 
 	@Test

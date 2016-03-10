@@ -12,15 +12,14 @@
 ">
 
 	<util:properties id="clientCacheConfigurationSettings">
-		<prop key="name">cq-client</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
+
+	<gfe:client-cache use-bean-factory-locator="false" properties-ref="clientCacheConfigurationSettings" pool-name="clientPool"/>
 
 	<gfe:pool id="clientPool" subscription-enabled="true">
 		<gfe:server host="localhost" port="40404"/>
 	</gfe:pool>
-
-	<gfe:client-cache use-bean-factory-locator="false" properties-ref="clientCacheConfigurationSettings" pool-name="clientPool"/>
 
 	<bean id="testErrorHandler" class="org.springframework.data.gemfire.listener.StubErrorHandler"/>
 	<bean id="testQueryListener" class="org.springframework.data.gemfire.listener.GemfireMDP"/>

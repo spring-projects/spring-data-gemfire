@@ -81,7 +81,6 @@ public class ForkUtil {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				System.out.println("Stopping fork...");
 				runCondition.set(false);
 				processStandardInStream = null;
 
@@ -91,8 +90,6 @@ public class ForkUtil {
 				}
 				catch (InterruptedException ignore) {
 				}
-
-				System.out.println("Fork stopped");
 			}
 		});
 

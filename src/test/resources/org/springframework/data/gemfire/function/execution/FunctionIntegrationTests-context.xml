@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 ">
+
+	<util:properties id="gemfireProperties">
+		<prop key="log-level">warning</prop>
+	</util:properties>
 
 	<gfe:pool id="serverBasedPool">
 		<gfe:server host="localhost" port="15243"/>
 	</gfe:pool>
 
-	<gfe:client-cache pool-name="serverBasedPool"/>
+	<gfe:client-cache properties-ref="gemfireProperties" pool-name="serverBasedPool"/>
 
 	<gfe:client-region id="test-region" pool-name="serverBasedPool" shortcut="PROXY"/>
 

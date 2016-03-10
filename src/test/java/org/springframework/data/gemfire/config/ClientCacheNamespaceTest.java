@@ -68,11 +68,11 @@ public class ClientCacheNamespaceTest {
 		assertThat(clientCacheFactoryBean.getDurableClientId(), is(equalTo("TestDurableClientId")));
 		assertThat(clientCacheFactoryBean.getDurableClientTimeout(), is(equalTo(600)));
 		assertThat(clientCacheFactoryBean.getEvictionHeapPercentage(), is(equalTo(0.65f)));
-		assertThat((PdxSerializer) clientCacheFactoryBean.getPdxSerializer(), is(equalTo(reflectionPdxSerializer)));
+		assertThat(clientCacheFactoryBean.isKeepAlive(), is(true));
 		assertThat(clientCacheFactoryBean.getPdxIgnoreUnreadFields(), is(true));
 		assertThat(clientCacheFactoryBean.getPdxPersistent(), is(false));
 		assertThat(clientCacheFactoryBean.getPdxReadSerialized(), is(true));
-		assertThat(clientCacheFactoryBean.isKeepAlive(), is(true));
+		assertThat((PdxSerializer) clientCacheFactoryBean.getPdxSerializer(), is(equalTo(reflectionPdxSerializer)));
 		assertThat(TestUtils.<String>readField("poolName", clientCacheFactoryBean), is(equalTo("serverPool")));
 		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(false));
 	}

@@ -42,32 +42,34 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestClientCacheConfig.class })
 public class FunctionExecutionClientCacheTests {
+
 	@Autowired
 	ApplicationContext context;
 
 	@Test
-	public void testContextCreated() throws Exception {
-
+	public void contextCreated() throws Exception {
 		ClientCache cache = context.getBean("gemfireCache", ClientCache.class);
 		Pool pool = context.getBean("gemfirePool", Pool.class);
+
 		assertEquals("gemfirePool", pool.getName());
+		assertTrue(cache.getDefaultPool().getLocators().isEmpty());
 		assertEquals(1, cache.getDefaultPool().getServers().size());
 		assertEquals(pool.getServers().get(0), cache.getDefaultPool().getServers().get(0));
 
-		context.getBean("r1", Region.class);
+		Region region = context.getBean("r1", Region.class);
+
+		assertEquals("gemfirePool", region.getAttributes().getPoolName());
 
 		GemfireOnServerFunctionTemplate template = context.getBean(GemfireOnServerFunctionTemplate.class);
+
 		assertTrue(template.getResultCollector() instanceof MyResultCollector);
 	}
 
 }
 
-@ImportResource("/org/springframework/data/gemfire/function/config/FunctionExecutionCacheClientTests-context.xml")
-@EnableGemfireFunctionExecutions(basePackages = "org.springframework.data.gemfire.function.config.three", excludeFilters = {
-/*@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnRegion.class),
-@ComponentScan.Filter(type=FilterType.ANNOTATION, value=OnServer.class)*/
-})
 @Configuration
+@ImportResource("/org/springframework/data/gemfire/function/config/FunctionExecutionCacheClientTests-context.xml")
+@EnableGemfireFunctionExecutions(basePackages = "org.springframework.data.gemfire.function.config.three")
 class TestClientCacheConfig {
 	@Bean
 	MyResultCollector myResultCollector() {
@@ -83,8 +85,6 @@ class MyResultCollector implements ResultCollector {
 	 */
 	@Override
 	public void addResult(DistributedMember arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
 	}
 
 	/* (non-Javadoc)
@@ -92,8 +92,6 @@ class MyResultCollector implements ResultCollector {
 	 */
 	@Override
 	public void clearResults() {
-		// TODO Auto-generated method stub
-
 	}
 
 	/* (non-Javadoc)
@@ -101,8 +99,6 @@ class MyResultCollector implements ResultCollector {
 	 */
 	@Override
 	public void endResults() {
-		// TODO Auto-generated method stub
-
 	}
 
 	/* (non-Javadoc)
@@ -110,7 +106,6 @@ class MyResultCollector implements ResultCollector {
 	 */
 	@Override
 	public Object getResult() throws FunctionException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -119,7 +114,6 @@ class MyResultCollector implements ResultCollector {
 	 */
 	@Override
 	public Object getResult(long arg0, TimeUnit arg1) throws FunctionException, InterruptedException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

@@ -25,7 +25,7 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
-import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
+import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.config.support.GemfireFeature;
@@ -39,14 +39,14 @@ import org.w3c.dom.NamedNodeMap;
 import com.gemstone.gemfire.internal.datasource.ConfigProperty;
 
 /**
- * Parser for &lt;cache;gt; definitions.
+ * Parser for &lt;cache&gt; bean definitions.
  * 
  * @author Costin Leau
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
  */
-class CacheParser extends AbstractSimpleBeanDefinitionParser {
+class CacheParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
@@ -70,11 +70,11 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "lock-lease");
 		ParsingUtils.setPropertyValue(element, builder, "lock-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "message-sync-interval");
-		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer-ref", "pdxSerializer");
-		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized");
-		ParsingUtils.setPropertyValue(element, builder, "pdx-ignore-unread-fields");
-		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
 		parsePdxDiskStore(element, parserContext, builder);
+		ParsingUtils.setPropertyValue(element, builder, "pdx-ignore-unread-fields");
+		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized");
+		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
+		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer-ref", "pdxSerializer");
 		ParsingUtils.setPropertyValue(element, builder, "search-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "use-cluster-configuration");
 
@@ -82,10 +82,12 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 		if (!CollectionUtils.isEmpty(txListeners)) {
 			ManagedList<Object> transactionListeners = new ManagedList<Object>();
+
 			for (Element txListener : txListeners) {
 				transactionListeners.add(ParsingUtils.parseRefOrNestedBeanDeclaration(
 					parserContext, txListener, builder));
 			}
+
 			builder.addPropertyValue("transactionListeners", transactionListeners);
 		}
 
@@ -103,13 +105,6 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 				"gateway-conflict-resolver", parserContext);
 			builder.addPropertyValue("gatewayConflictResolver", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
 				parserContext, gatewayConflictResolver, builder));
-		}
-
-		Element function = DomUtils.getChildElementByTagName(element, "function");
-
-		if (function != null) {
-			builder.addPropertyValue("functions", ParsingUtils.parseRefOrNestedBeanDeclaration(
-				parserContext, function, builder));
 		}
 
 		parseDynamicRegionFactory(element, builder);

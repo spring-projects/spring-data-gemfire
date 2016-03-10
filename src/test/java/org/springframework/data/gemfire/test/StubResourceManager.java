@@ -33,7 +33,9 @@ import com.gemstone.gemfire.cache.control.ResourceManager;
 public class StubResourceManager implements ResourceManager {
 
 	private float criticalHeapPercentage;
+	private float criticalOffHeapPercentage;
 	private float evictionHeapPercentage;
+	private float evictionOffHeapPercentage;
 
 	@Override
 	public void setCriticalHeapPercentage(final float heapPercentage) {
@@ -46,6 +48,16 @@ public class StubResourceManager implements ResourceManager {
 	}
 
 	@Override
+	public void setCriticalOffHeapPercentage(final float offHeapPercentage) {
+		this.criticalHeapPercentage = offHeapPercentage;
+	}
+
+	@Override
+	public float getCriticalOffHeapPercentage() {
+		return criticalOffHeapPercentage;
+	}
+
+	@Override
 	public void setEvictionHeapPercentage(final float heapPercentage) {
 		this.evictionHeapPercentage = heapPercentage;
 	}
@@ -53,6 +65,16 @@ public class StubResourceManager implements ResourceManager {
 	@Override
 	public float getEvictionHeapPercentage() {
 		return this.evictionHeapPercentage;
+	}
+
+	@Override
+	public void setEvictionOffHeapPercentage(final float offHeapPercentage) {
+		this.evictionOffHeapPercentage = offHeapPercentage;
+	}
+
+	@Override
+	public float getEvictionOffHeapPercentage() {
+		return evictionOffHeapPercentage;
 	}
 
 	@Override
