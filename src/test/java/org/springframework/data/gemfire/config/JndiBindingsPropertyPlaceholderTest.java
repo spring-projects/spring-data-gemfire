@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -48,8 +47,7 @@ import com.gemstone.gemfire.internal.datasource.ConfigProperty;
  * @since 1.4.0
  * @since 7.0.1 (GemFire)
  */
-@ContextConfiguration(locations = "jndi-binding-with-property-placeholders-ns.xml",
-	initializers = GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "jndi-binding-with-property-placeholders-ns.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class JndiBindingsPropertyPlaceholderTest {
 
@@ -88,7 +86,7 @@ public class JndiBindingsPropertyPlaceholderTest {
 		assertNotNull(attributes);
 		assertFalse(attributes.isEmpty());
 		assertEquals("testDataSource", attributes.get("jndi-name"));
-		assertEquals("XAPoolDataSource", attributes.get("type"));
+		assertEquals("XAPooledDataSource", attributes.get("type"));
 		assertEquals("60", attributes.get("blocking-timeout-seconds"));
 		assertEquals("org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource", attributes.get("conn-pooled-datasource-class"));
 		assertEquals("jdbc:derby:testDataStore;create=true", attributes.get("connection-url"));

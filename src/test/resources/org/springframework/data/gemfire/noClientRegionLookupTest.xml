@@ -10,17 +10,11 @@
 ">
 
 	<util:properties id="gemfireProperties">
-		<prop key="name">springGemFireNoClientRegionLookupTest</prop>
-		<prop key="mcast-port">0</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:pool min-connections="1" max-connections="1">
-		<gfe:server host="localhost" port="54321"/>
-	</gfe:pool>
-
 	<gfe:client-cache cache-xml-location="/clientcache-with-regions.xml" properties-ref="gemfireProperties"/>
 
-	<gfe:client-region id="NativeClientRegion" persistent="false" shortcut="PROXY"/>
+	<gfe:client-region id="NativeClientRegion" shortcut="LOCAL"/>
 
 </beans>

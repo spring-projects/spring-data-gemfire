@@ -117,6 +117,7 @@ public class StubCache implements Cache, ClientCache {
 	public StubCache(){
 		allRegions = new HashMap<String,Region>();
 		gatewayHubs = new ArrayList<GatewayHub>();
+		resourceManager = new StubResourceManager();
 	}
 	
 	/* (non-Javadoc)

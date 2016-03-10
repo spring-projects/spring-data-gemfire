@@ -19,7 +19,7 @@
 
 	<util:properties id="jndi-binding-settings">
 		<prop key="jndi.binding.name">testDataSource</prop>
-		<prop key="jndi.binding.type">XAPoolDataSource</prop>
+		<prop key="jndi.binding.type">XAPooledDataSource</prop>
 		<prop key="jndi.binding.blocking.timeout.seconds">60</prop>
 		<prop key="jndi.binding.conn.pooled.datasource.class">org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource</prop>
 		<prop key="jndi.binding.connection.url">jdbc:derby:testDataStore;create=true</prop>
@@ -42,7 +42,7 @@
 
 	<context:property-placeholder properties-ref="jndi-binding-settings"/>
 
-	<gfe:cache properties-ref="gemfireProperties" lazy-init="true">
+	<gfe:cache properties-ref="gemfireProperties">
 		<gfe:jndi-binding jndi-name="${jndi.binding.name}"
 						  type="${jndi.binding.type}"
 						  blocking-timeout-seconds="${jndi.binding.blocking.timeout.seconds}"

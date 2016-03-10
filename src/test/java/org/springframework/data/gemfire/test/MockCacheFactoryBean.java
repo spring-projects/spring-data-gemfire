@@ -10,6 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.test;
 
 import java.util.Properties;
@@ -34,7 +35,6 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 		this();
 		if (cacheFactoryBean != null) {
 			this.beanFactoryLocator = cacheFactoryBean.getBeanFactoryLocator();
-			this.lazyInitialize = cacheFactoryBean.isLazyInitialize();
 			this.beanClassLoader = cacheFactoryBean.getBeanClassLoader();
 			this.beanFactory = cacheFactoryBean.getBeanFactory();
 			this.beanName = cacheFactoryBean.getBeanName();
@@ -68,6 +68,7 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected GemFireCache fetchCache() {
 		((StubCache) cache).setProperties(getProperties());
 		return cache;

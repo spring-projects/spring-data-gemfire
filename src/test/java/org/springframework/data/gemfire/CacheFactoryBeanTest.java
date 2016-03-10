@@ -16,7 +16,9 @@
 
 package org.springframework.data.gemfire;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,13 +28,13 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -124,7 +126,6 @@ public class CacheFactoryBeanTest {
 		cacheFactoryBean.setEvictionHeapPercentage(0.75f);
 		cacheFactoryBean.setGatewayConflictResolver(mockGatewayConflictResolver);
 		cacheFactoryBean.setJndiDataSources(null);
-		cacheFactoryBean.setLazyInitialize(false);
 		cacheFactoryBean.setLockLease(15000);
 		cacheFactoryBean.setLockTimeout(5000);
 		cacheFactoryBean.setMessageSyncInterval(20000);
@@ -420,52 +421,22 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void getObject() throws Exception {
-		final ClassLoader expectedThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
-		final Cache mockCache = mock(Cache.class, "GemFireCache");
-
-		DistributedMember mockDistributedMember = mock(DistributedMember.class, "GemFireDistributedMember");
-		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, "GemFireDistributedSystem");
-
-		when(mockCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
-		when(mockDistributedSystem.getDistributedMember()).thenReturn(mockDistributedMember);
-		when(mockDistributedSystem.getName()).thenReturn("MockDistributedSystem");
-		when(mockDistributedMember.getId()).thenReturn("MockDistributedMember");
-		when(mockDistributedMember.getGroups()).thenReturn(Collections.<String>emptyList());
-		when(mockDistributedMember.getRoles()).thenReturn(Collections.<Role>emptySet());
-		when(mockDistributedMember.getHost()).thenReturn("skullbox");
-		when(mockDistributedMember.getProcessId()).thenReturn(67890);
+		final Cache mockCache = mock(Cache.class);
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
-			@Override protected GemFireCache fetchCache() {
-				assertSame(ClassLoader.getSystemClassLoader(), getBeanClassLoader());
-				return mockCache;
+			@Override public void afterPropertiesSet() throws Exception {
+				this.cache = mockCache;
 			}
 		};
 
-		cacheFactoryBean.setBeanClassLoader(ClassLoader.getSystemClassLoader());
-		cacheFactoryBean.setBeanName("MockGemFireCache");
-		cacheFactoryBean.setCopyOnRead(true);
-		cacheFactoryBean.setLockLease(15000);
-		cacheFactoryBean.setLockTimeout(5000);
-		cacheFactoryBean.setSearchTimeout(15000);
-		cacheFactoryBean.setUseBeanFactoryLocator(false);
+		assertThat(cacheFactoryBean.getObject(), is(nullValue()));
 
-		GemFireCache actualCache = cacheFactoryBean.getObject();
+		cacheFactoryBean.afterPropertiesSet();
 
-		assertSame(mockCache, actualCache);
-		assertSame(expectedThreadContextClassLoader, Thread.currentThread().getContextClassLoader());
+		assertThat(cacheFactoryBean.getObject(), is(equalTo(mockCache)));
 
-		verify(mockCache, never()).loadCacheXml(any(InputStream.class));
-		verify(mockCache, times(1)).setCopyOnRead(eq(true));
-		verify(mockCache, never()).setGatewayConflictResolver(any(GatewayConflictResolver.class));
-		verify(mockCache, times(1)).setLockLease(eq(15000));
-		verify(mockCache, times(1)).setLockTimeout(eq(5000));
-		verify(mockCache, never()).setMessageSyncInterval(anyInt());
-		verify(mockCache, times(1)).setSearchTimeout(eq(15000));
-		verify(mockCache, never()).getResourceManager();
-		verify(mockCache, never()).getCacheTransactionManager();
+		verifyZeroInteractions(mockCache);
 	}
 
 	@Test
@@ -578,7 +549,6 @@ public class CacheFactoryBeanTest {
 		cacheFactoryBean.setBeanName("TestCache");
 		cacheFactoryBean.setCacheXml(mockCacheXml);
 		cacheFactoryBean.setProperties(gemfireProperties);
-		cacheFactoryBean.setLazyInitialize(false);
 		cacheFactoryBean.setUseBeanFactoryLocator(false);
 		cacheFactoryBean.setClose(false);
 		cacheFactoryBean.setCopyOnRead(true);
@@ -607,7 +577,6 @@ public class CacheFactoryBeanTest {
 		assertEquals("TestCache", cacheFactoryBean.getBeanName());
 		assertSame(mockCacheXml, cacheFactoryBean.getCacheXml());
 		assertSame(gemfireProperties, cacheFactoryBean.getProperties());
-		assertFalse(cacheFactoryBean.isLazyInitialize());
 		assertTrue(Boolean.FALSE.equals(TestUtils.readField("useBeanFactoryLocator", cacheFactoryBean)));
 		assertTrue(Boolean.FALSE.equals(TestUtils.readField("close", cacheFactoryBean)));
 		assertTrue(cacheFactoryBean.getCopyOnRead());

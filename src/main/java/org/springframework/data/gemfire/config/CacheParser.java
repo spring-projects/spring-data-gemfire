@@ -60,7 +60,6 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 
 		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
 		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
-		ParsingUtils.setPropertyValue(element, builder, "lazy-init","lazyInitialize");
 		ParsingUtils.setPropertyValue(element, builder, "use-bean-factory-locator");
 		ParsingUtils.setPropertyValue(element, builder, "close");
 		ParsingUtils.setPropertyValue(element, builder, "copy-on-read");

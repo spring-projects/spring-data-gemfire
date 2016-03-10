@@ -9,6 +9,8 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
+
 	<util:properties id="gemfireProperties">
 		<prop key="name">ClientCacheNamespaceTest</prop>
 		<prop key="mcast-port">0</prop>
@@ -21,7 +23,7 @@
 
 	<bean id="reflectionPdxSerializer" class="com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer"/>
 
-	<gfe:client-cache cache-xml-location="/path/to/bogus/cache.xml" properties-ref="gemfireProperties" lazy-init="true"
+	<gfe:client-cache cache-xml-location="empty-client-cache.xml" properties-ref="gemfireProperties"
 					  durable-client-id="TestDurableClientId" durable-client-timeout="600"
 					  copy-on-read="true" critical-heap-percentage="0.85" eviction-heap-percentage="0.65"
 					  pdx-serializer-ref="reflectionPdxSerializer" pdx-ignore-unread-fields="true" pdx-persistent="false"

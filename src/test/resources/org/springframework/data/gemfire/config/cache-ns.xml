@@ -9,8 +9,7 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<!-- all beans are lazy to allow the same config to be used between multiple tests -->
-	<!-- as there can be only one GemFire cache per VM -->
+	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="disable-tcp">false</prop>

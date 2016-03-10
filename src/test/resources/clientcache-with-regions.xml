@@ -2,10 +2,10 @@
 <!DOCTYPE client-cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
 	"http://www.gemstone.com/dtd/cache7_0.dtd">
 <client-cache>
-	<region name="NativeClientRegion" refid="PROXY">
+	<region name="NativeClientRegion" refid="LOCAL">
 		<region-attributes cloning-enabled="false"/>
 	</region>
-	<region name="NativeClientParentRegion" refid="PROXY">
-		<region name="NativeClientChildRegion" refid="PROXY"/>
+	<region name="NativeClientParentRegion" refid="LOCAL">
+		<region name="NativeClientChildRegion" refid="LOCAL"/>
 	</region>
 </client-cache>

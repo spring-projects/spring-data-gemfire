@@ -22,12 +22,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.gemfire.fork.SpringCacheServerProcess;
 
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -47,13 +45,6 @@ import com.gemstone.gemfire.cache.Scope;
  * @link https://jira.spring.io/browse/SGF-204
  */
 public class RegionLookupIntegrationTests {
-
-	@BeforeClass
-	@SuppressWarnings("deprecation")
-	public static void testSuiteSetup() {
-		ForkUtil.startCacheServer(SpringCacheServerProcess.class.getName() + " "
-			+ "/org/springframework/data/gemfire/RegionLookupIntegrationTests-server-context.xml");
-	}
 
 	protected void assertNoRegionLookup(final String configLocation) {
 		ConfigurableApplicationContext applicationContext = null;
@@ -251,7 +242,7 @@ public class RegionLookupIntegrationTests {
 			assertEquals("/NativeClientRegion", nativeClientRegion.getFullPath());
 			assertNotNull(nativeClientRegion.getAttributes());
 			assertFalse(nativeClientRegion.getAttributes().getCloningEnabled());
-			assertEquals(DataPolicy.EMPTY, nativeClientRegion.getAttributes().getDataPolicy());
+			assertEquals(DataPolicy.NORMAL, nativeClientRegion.getAttributes().getDataPolicy());
 
 			Region nativeClientChildRegion = applicationContext.getBean("/NativeClientParentRegion/NativeClientChildRegion",
 				Region.class);
@@ -260,7 +251,7 @@ public class RegionLookupIntegrationTests {
 			assertEquals("NativeClientChildRegion", nativeClientChildRegion.getName());
 			assertEquals("/NativeClientParentRegion/NativeClientChildRegion", nativeClientChildRegion.getFullPath());
 			assertNotNull(nativeClientChildRegion.getAttributes());
-			assertEquals(DataPolicy.EMPTY, nativeClientChildRegion.getAttributes().getDataPolicy());
+			assertEquals(DataPolicy.NORMAL, nativeClientChildRegion.getAttributes().getDataPolicy());
 		}
 		finally {
 			closeApplicationContext(applicationContext);

@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
-import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -47,7 +46,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @since 1.6.3
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration
 @SuppressWarnings("unused")
 public class ClientCacheNamespaceTest {
 
@@ -62,9 +61,8 @@ public class ClientCacheNamespaceTest {
 
 	@Test
 	public void clientCacheFactoryBeanConfiguration() throws Exception {
-		assertThat(clientCacheFactoryBean.getCacheXml().toString(), containsString("path/to/bogus/cache.xml"));
+		assertThat(clientCacheFactoryBean.getCacheXml().toString(), containsString("empty-client-cache.xml"));
 		assertThat(clientCacheFactoryBean.getProperties(), is(equalTo(gemfireProperties)));
-		assertThat(clientCacheFactoryBean.isLazyInitialize(), is(true));
 		assertThat(clientCacheFactoryBean.getCopyOnRead(), is(true));
 		assertThat(clientCacheFactoryBean.getCriticalHeapPercentage(), is(equalTo(0.85f)));
 		assertThat(clientCacheFactoryBean.getDurableClientId(), is(equalTo("TestDurableClientId")));
