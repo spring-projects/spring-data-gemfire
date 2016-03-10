@@ -13,7 +13,8 @@
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	 <gfe:client-cache properties-ref="gemfireProperties" close="false"/>
-	 <gfe:client-region id="r1" shortcut="LOCAL" ignore-if-exists="true"/>
+	<gfe:client-cache properties-ref="gemfireProperties" close="false"/>
+
+	<gfe:client-region id="Example" shortcut="LOCAL" ignore-if-exists="true"/>
 
 </beans>

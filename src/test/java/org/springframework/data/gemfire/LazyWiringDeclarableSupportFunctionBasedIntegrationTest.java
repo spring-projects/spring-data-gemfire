@@ -32,6 +32,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 
@@ -51,6 +52,9 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class LazyWiringDeclarableSupportFunctionBasedIntegrationTest {
+
+	@Autowired
+	private Cache gemfireCache;
 
 	@Autowired
 	private HelloFunctionExecution helloFunctionExecution;

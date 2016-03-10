@@ -17,41 +17,41 @@
 package org.springframework.data.gemfire.client;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.Properties;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
-import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
- * FactoryBean for easy declaration and configuration of a GemFire Pool. If a new Pool is created,
- * its lifecycle is bound to that of the declaring container.
+ * FactoryBean for easy declaration and configuration of a GemFire {@link Pool}. If a new {@link Pool} is created,
+ * its lifecycle is bound to that of this declaring factory.
  * 
- * Note, if the Pool already exists, the existing Pool will be returned as is without any modifications
- * and its lifecycle will be unaffected by this factory.
+ * Note, if a {@link Pool} having the configured name already exists, then the existing {@link Pool} will be returned
+ * as is without any modifications and its lifecycle will be unaffected by this factory.
  *
  * @author Costin Leau
  * @author John Blum
  * @see java.net.InetSocketAddress
- * @see org.springframework.beans.factory.BeanFactory
- * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.BeanNameAware
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
@@ -61,7 +61,6 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  * @see com.gemstone.gemfire.cache.client.Pool
  * @see com.gemstone.gemfire.cache.client.PoolFactory
  * @see com.gemstone.gemfire.cache.client.PoolManager
- * @see com.gemstone.gemfire.distributed.DistributedSystem
  */
 @SuppressWarnings("unused")
 public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean,
@@ -73,16 +72,14 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
 
 	// indicates whether the Pool has been created internally (by this FactoryBean) or not
-	private volatile boolean springBasedPool = true;
+	volatile boolean springBasedPool = true;
 
 	private BeanFactory beanFactory;
 
 	private ConnectionEndpointList locators = new ConnectionEndpointList();
 	private ConnectionEndpointList servers = new ConnectionEndpointList();
 
-	private Pool pool;
-
-	private Properties gemfireProperties;
+	private volatile Pool pool;
 
 	private String beanName;
 	private String name;
@@ -111,18 +108,28 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	private String serverGroup = PoolFactory.DEFAULT_SERVER_GROUP;
 
+	/**
+	 * Constructs and initializes a GemFire {@link Pool}.
+	 *
+	 * @throws Exception if the {@link Pool} creation and initialization fails.
+	 * @see com.gemstone.gemfire.cache.client.Pool
+	 * @see com.gemstone.gemfire.cache.client.PoolFactory
+	 * @see com.gemstone.gemfire.cache.client.PoolManager
+	 * @see #createPoolFactory()
+	 */
+	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (!StringUtils.hasText(name)) {
 			Assert.hasText(beanName, "Pool 'name' is required");
 			name = beanName;
 		}
 
-		// first check the configured pools
+		// check for an existing, configured Pool with name first
 		Pool existingPool = PoolManager.find(name);
 
 		if (existingPool != null) {
 			if (log.isDebugEnabled()) {
-				log.debug(String.format("A Pool with name '%1$s' already exists; using existing Pool.", name));
+				log.debug(String.format("A Pool with name [%1$s] already exists; using existing Pool.", name));
 			}
 
 			springBasedPool = false;
@@ -130,14 +137,38 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		}
 		else {
 			if (log.isDebugEnabled()) {
-				log.debug(String.format("No Pool with name '%1$s' was found. Creating a new Pool...", name));
-			}
-
-			if (locators.isEmpty() && servers.isEmpty()) {
-				throw new IllegalArgumentException("at least one GemFire Locator or Server is required");
+				log.debug(String.format("No Pool with name [%1$s] was found. Creating new Pool.", name));
 			}
 
 			springBasedPool = true;
+		}
+	}
+
+	/**
+	 * Destroys the GemFire {@link Pool} if created by this {@link PoolFactoryBean} and releases all system resources
+	 * used by the {@link Pool}.
+	 *
+	 * @throws Exception if the {@link Pool} destruction caused an error.
+	 * @see DisposableBean#destroy()
+	 */
+	@Override
+	public void destroy() throws Exception {
+		if (springBasedPool && pool != null && !pool.isDestroyed()) {
+			pool.releaseThreadLocalConnection();
+			pool.destroy(keepAlive);
+			pool = null;
+
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Destroyed Pool [%1$s]", name));
+			}
+		}
+	}
+
+	/* (non-Javadoc) */
+	@Override
+	public Pool getObject() throws Exception {
+		if (pool == null) {
+			eagerlyInitializeClientCacheIfNotPresent();
 
 			PoolFactory poolFactory = createPoolFactory();
 
@@ -168,218 +199,400 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 				poolFactory.addServer(server.getHost(), server.getPort());
 			}
 
-			// eagerly initialize the GemFire DistributedSystem (if needed)
-			resolveDistributedSystem();
-
 			pool = poolFactory.create(name);
+		}
+
+		return pool;
+	}
+
+	/**
+	 * Attempts to eagerly initialize the GemFire {@link ClientCache} if not already present so that the single
+	 * {@link com.gemstone.gemfire.distributed.DistributedSystem} will exists, which is required to create
+	 * a {@link Pool} instance.
+	 *
+	 * @see org.springframework.beans.factory.BeanFactory#getBean(Class)
+	 * @see com.gemstone.gemfire.cache.client.ClientCache
+	 */
+	void eagerlyInitializeClientCacheIfNotPresent() {
+		if (!isDistributedSystemPresent()) {
+			getBeanFactory().getBean(ClientCache.class);
 		}
 	}
 
 	/**
-	 * Creates an instance of the GemFire PoolFactory interface to construct, configure and initialize a GemFire Pool.
+	 * Determines whether the GemFire DistributedSystem exists yet or not.
 	 *
-	 * @return a PoolFactory implementation to create Pool.
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory
+	 * @return a boolean value indicating whether the single, GemFire DistributedSystem has been created already.
+	 * @see org.springframework.data.gemfire.GemfireUtils#getDistributedSystem()
+	 * @see org.springframework.data.gemfire.GemfireUtils#isConnected(DistributedSystem)
+	 * @see com.gemstone.gemfire.distributed.DistributedSystem
+	 */
+	boolean isDistributedSystemPresent() {
+		return GemfireUtils.isConnected(GemfireUtils.getDistributedSystem());
+	}
+
+	/**
+	 * Creates an instance of the GemFire {@link PoolFactory} interface to construct, configure and initialize
+	 * a GemFire {@link Pool}.
+	 *
+	 * @return a {@link PoolFactory} implementation to create a {@link Pool}.
 	 * @see com.gemstone.gemfire.cache.client.PoolManager#createFactory()
+	 * @see com.gemstone.gemfire.cache.client.PoolFactory
 	 */
 	protected PoolFactory createPoolFactory() {
 		return PoolManager.createFactory();
 	}
 
-	/**
-	 * Attempts to find an existing, running GemFire {@link DistributedSystem} or proceeds to create
-	 * a new {@link DistributedSystem} if one does not exist.
-	 *
-	 * @see DistributedSystemUtils#getDistributedSystem()
-	 * @see #resolveGemfireProperties()
-	 * @see #doDistributedSystemConnect(Properties)
-	 */
-	protected void resolveDistributedSystem() {
-		if (DistributedSystemUtils.isNotConnected(DistributedSystemUtils.getDistributedSystem())) {
-			doDistributedSystemConnect(resolveGemfireProperties());
-		}
-	}
-
-	/**
-	 * Attempts to resolve existing GemFire System properties from the {@link ClientCacheFactoryBean}
-	 * if set by the user.
-	 *
-	 * @return a {@link Properties} object containing GemFire System properties
-	 * or null if no properties were configured.
-	 * @see ClientCacheFactoryBean#resolveProperties()
-	 * @see java.util.Properties
-	 */
-	protected Properties resolveGemfireProperties() {
-		gemfireProperties = (gemfireProperties != null ? gemfireProperties : new Properties());
-
-		try {
-			ClientCacheFactoryBean clientCacheFactoryBean = beanFactory.getBean(ClientCacheFactoryBean.class);
-			CollectionUtils.mergePropertiesIntoMap(clientCacheFactoryBean.resolveProperties(), gemfireProperties);
-		}
-		catch (Exception ignore) {
-		}
-
-		return gemfireProperties;
-	}
-
-	/**
-	 * A workaround to create a Pool if no ClientCache has been created yet. Initialize a cache client-like
-	 * DistributedSystem before initializing the Pool.
-	 *
-	 * @param properties GemFire System Properties.
-	 * @see java.util.Properties
-	 * @see com.gemstone.gemfire.distributed.DistributedSystem#connect(java.util.Properties)
-	 */
-	@SuppressWarnings("deprecation")
-	void doDistributedSystemConnect(Properties properties) {
-		Properties gemfireProperties = (properties != null ? (Properties) properties.clone() : new Properties());
-		gemfireProperties.setProperty("locators", "");
-		gemfireProperties.setProperty("mcast-port", "0");
-		DistributedSystem.connect(gemfireProperties);
-	}
-
-	public void destroy() throws Exception {
-		if (springBasedPool && pool != null && !pool.isDestroyed()) {
-			pool.releaseThreadLocalConnection();
-			pool.destroy(keepAlive);
-			pool = null;
-
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Destroyed Pool '%1$s'.", name));
-			}
-		}
-	}
-
-	public Pool getObject() throws Exception {
-		return pool;
-	}
-
+	/* (non-Javadoc) */
+	@Override
 	public Class<?> getObjectType() {
 		return (pool != null ? pool.getClass() : Pool.class);
 	}
 
+	/* (non-Javadoc) */
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
-	public void setBeanFactory(BeanFactory beanFactory) {
+	/* (non-Javadoc) */
+	public void addLocators(ConnectionEndpoint... locators) {
+		this.locators.add(locators);
+	}
+
+	/* (non-Javadoc) */
+	public void addLocators(Iterable<ConnectionEndpoint> locators) {
+		this.locators.add(locators);
+	}
+
+	/* (non-Javadoc) */
+	public void addServers(ConnectionEndpoint... servers) {
+		this.servers.add(servers);
+	}
+
+	/* (non-Javadoc) */
+	public void addServers(Iterable<ConnectionEndpoint> servers) {
+		this.servers.add(servers);
+	}
+
+	/* (non-Javadoc) */
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
+	/* (non-Javadoc) */
+	protected BeanFactory getBeanFactory() {
+		return beanFactory;
+	}
+
+	/* (non-Javadoc) */
 	public void setBeanName(String name) {
 		this.beanName = name;
 	}
 
+	/* (non-Javadoc) */
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	/* (non-Javadoc) */
+	String getName() {
+		return name;
+	}
+
+	/* (non-Javadoc) */
 	public void setPool(Pool pool) {
 		this.pool = pool;
 	}
 
+	/* (non-Javadoc) */
+	public Pool getPool() {
+		return (pool != null ? pool : new PoolAdapter() {
+			@Override
+			public boolean isDestroyed() {
+				Pool pool = PoolFactoryBean.this.pool;
+				return (pool != null && pool.isDestroyed());
+			}
+
+			@Override
+			public int getFreeConnectionTimeout() {
+				return PoolFactoryBean.this.freeConnectionTimeout;
+			}
+
+			@Override
+			public long getIdleTimeout() {
+				return PoolFactoryBean.this.idleTimeout;
+			}
+
+			@Override
+			public int getLoadConditioningInterval() {
+				return PoolFactoryBean.this.loadConditioningInterval;
+			}
+
+			@Override
+			public List<InetSocketAddress> getLocators() {
+				return PoolFactoryBean.this.locators.toInetSocketAddresses();
+			}
+
+			@Override
+			public int getMaxConnections() {
+				return PoolFactoryBean.this.maxConnections;
+			}
+
+			@Override
+			public int getMinConnections() {
+				return PoolFactoryBean.this.minConnections;
+			}
+
+			@Override
+			public boolean getMultiuserAuthentication() {
+				return PoolFactoryBean.this.multiUserAuthentication;
+			}
+
+			@Override
+			public String getName() {
+				String name = PoolFactoryBean.this.name;
+				name = (StringUtils.hasText(name) ? name : PoolFactoryBean.this.beanName);
+				return name;
+			}
+
+			@Override
+			public int getPendingEventCount() {
+				Pool pool = PoolFactoryBean.this.pool;
+				if (pool != null) {
+					return pool.getPendingEventCount();
+				}
+				throw new IllegalStateException("The Pool is not initialized");
+			}
+
+			@Override
+			public long getPingInterval() {
+				return PoolFactoryBean.this.pingInterval;
+			}
+
+			@Override
+			public boolean getPRSingleHopEnabled() {
+				return PoolFactoryBean.this.prSingleHopEnabled;
+			}
+
+			@Override
+			public QueryService getQueryService() {
+				Pool pool = PoolFactoryBean.this.pool;
+				if (pool != null) {
+					return pool.getQueryService();
+				}
+				throw new IllegalStateException("The Pool is not initialized");
+			}
+
+			@Override
+			public int getReadTimeout() {
+				return PoolFactoryBean.this.readTimeout;
+			}
+
+			@Override
+			public int getRetryAttempts() {
+				return PoolFactoryBean.this.retryAttempts;
+			}
+
+			@Override
+			public String getServerGroup() {
+				return PoolFactoryBean.this.serverGroup;
+			}
+
+			@Override
+			public List<InetSocketAddress> getServers() {
+				return PoolFactoryBean.this.servers.toInetSocketAddresses();
+			}
+
+			@Override
+			public int getSocketBufferSize() {
+				return PoolFactoryBean.this.socketBufferSize;
+			}
+
+			@Override
+			public int getStatisticInterval() {
+				return PoolFactoryBean.this.statisticInterval;
+			}
+
+			@Override
+			public int getSubscriptionAckInterval() {
+				return PoolFactoryBean.this.subscriptionAckInterval;
+			}
+
+			@Override
+			public boolean getSubscriptionEnabled() {
+				return PoolFactoryBean.this.subscriptionEnabled;
+			}
+
+			@Override
+			public int getSubscriptionMessageTrackingTimeout() {
+				return PoolFactoryBean.this.subscriptionMessageTrackingTimeout;
+			}
+
+			@Override
+			public int getSubscriptionRedundancy() {
+				return PoolFactoryBean.this.subscriptionRedundancy;
+			}
+
+			@Override
+			public boolean getThreadLocalConnections() {
+				return PoolFactoryBean.this.threadLocalConnections;
+			}
+
+			@Override
+			public void destroy() {
+				destroy(false);
+			}
+
+			@Override
+			public void destroy(final boolean keepAlive) {
+				try {
+					PoolFactoryBean.this.destroy();
+				}
+				catch (Exception ignore) {
+					Pool pool = PoolFactoryBean.this.pool;
+					if (pool != null) {
+						pool.destroy(keepAlive);
+					}
+				}
+			}
+
+			@Override
+			public void releaseThreadLocalConnection() {
+				Pool pool = PoolFactoryBean.this.pool;
+				if (pool != null) {
+					pool.releaseThreadLocalConnection();
+				}
+				else {
+					throw new IllegalStateException("The Pool is not initialized");
+				}
+			}
+		});
+	}
+
+	/* (non-Javadoc) */
 	public void setFreeConnectionTimeout(int freeConnectionTimeout) {
 		this.freeConnectionTimeout = freeConnectionTimeout;
 	}
 
+	/* (non-Javadoc) */
 	public void setIdleTimeout(long idleTimeout) {
 		this.idleTimeout = idleTimeout;
 	}
 
+	/* (non-Javadoc) */
 	public void setKeepAlive(boolean keepAlive) {
 		this.keepAlive = keepAlive;
 	}
 
-	@Deprecated
-	public void setLocators(Iterable<InetSocketAddress> locators) {
-		setLocatorEndpoints(ConnectionEndpointList.from(locators));
-	}
-
-	public void setLocatorEndpoints(Iterable<ConnectionEndpoint> endpoints) {
-		this.locators.add(endpoints);
-	}
-
-	public void setLocatorEndpointList(ConnectionEndpointList endpointList) {
-		setLocatorEndpoints(endpointList);
-	}
-
+	/* (non-Javadoc) */
 	public void setLoadConditioningInterval(int loadConditioningInterval) {
 		this.loadConditioningInterval = loadConditioningInterval;
 	}
 
+	/* (non-Javadoc) */
+	public void setLocators(ConnectionEndpoint[] connectionEndpoints) {
+		setLocators(ConnectionEndpointList.from(connectionEndpoints));
+	}
+
+	/* (non-Javadoc) */
+	public void setLocators(Iterable<ConnectionEndpoint> connectionEndpoints) {
+		getLocators().clear();
+		getLocators().add(connectionEndpoints);
+	}
+
+	/* (non-Javadoc) */
+	ConnectionEndpointList getLocators() {
+		return locators;
+	}
+
+	/* (non-Javadoc) */
 	public void setMaxConnections(int maxConnections) {
 		this.maxConnections = maxConnections;
 	}
 
+	/* (non-Javadoc) */
 	public void setMinConnections(int minConnections) {
 		this.minConnections = minConnections;
 	}
 
+	/* (non-Javadoc) */
 	public void setMultiUserAuthentication(boolean multiUserAuthentication) {
 		this.multiUserAuthentication = multiUserAuthentication;
 	}
 
+	/* (non-Javadoc) */
 	public void setPingInterval(long pingInterval) {
 		this.pingInterval = pingInterval;
 	}
 
-	public void setProperties(Properties gemfireProperties) {
-		this.gemfireProperties = gemfireProperties;
-	}
-
+	/* (non-Javadoc) */
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
 	}
 
+	/* (non-Javadoc) */
 	public void setReadTimeout(int readTimeout) {
 		this.readTimeout = readTimeout;
 	}
 
+	/* (non-Javadoc) */
 	public void setRetryAttempts(int retryAttempts) {
 		this.retryAttempts = retryAttempts;
 	}
 
+	/* (non-Javadoc) */
 	public void setServerGroup(String serverGroup) {
 		this.serverGroup = serverGroup;
 	}
 
-	@Deprecated
-	public void setServers(Collection<InetSocketAddress> servers) {
-		setServerEndpoints(ConnectionEndpointList.from(servers));
+	/* (non-Javadoc) */
+	public void setServers(ConnectionEndpoint[] connectionEndpoints) {
+		setServers(ConnectionEndpointList.from(connectionEndpoints));
 	}
 
-	public void setServerEndpoints(Iterable<ConnectionEndpoint> endpoints) {
-		this.servers.add(endpoints);
+	/* (non-Javadoc) */
+	public void setServers(Iterable<ConnectionEndpoint> connectionEndpoints) {
+		getServers().clear();
+		getServers().add(connectionEndpoints);
 	}
 
-	public void setServerEndpointList(ConnectionEndpointList endpointList) {
-		setServerEndpoints(endpointList);
+	/* (non-Javadoc) */
+	ConnectionEndpointList getServers() {
+		return servers;
 	}
 
+	/* (non-Javadoc) */
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
+	/* (non-Javadoc) */
 	public void setStatisticInterval(int statisticInterval) {
 		this.statisticInterval = statisticInterval;
 	}
 
+	/* (non-Javadoc) */
 	public void setSubscriptionAckInterval(int subscriptionAckInterval) {
 		this.subscriptionAckInterval = subscriptionAckInterval;
 	}
 
+	/* (non-Javadoc) */
 	public void setSubscriptionEnabled(boolean subscriptionEnabled) {
 		this.subscriptionEnabled = subscriptionEnabled;
 	}
 
+	/* (non-Javadoc) */
 	public void setSubscriptionMessageTrackingTimeout(int subscriptionMessageTrackingTimeout) {
 		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
 	}
 
+	/* (non-Javadoc) */
 	public void setSubscriptionRedundancy(int subscriptionRedundancy) {
 		this.subscriptionRedundancy = subscriptionRedundancy;
 	}
 
+	/* (non-Javadoc) */
 	public void setThreadLocalConnections(boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
 	}

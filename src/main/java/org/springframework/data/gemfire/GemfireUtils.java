@@ -18,17 +18,11 @@ package org.springframework.data.gemfire;
 
 import java.util.concurrent.ConcurrentMap;
 
-import org.springframework.data.gemfire.util.DistributedSystemUtils;
+import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
  * GemfireUtils is an abstract utility class encapsulating common functionality to access features and capabilities
@@ -36,72 +30,22 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
- * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.CacheFactory
  * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
- * @see com.gemstone.gemfire.distributed.DistributedSystem
  * @since 1.3.3
  */
 @SuppressWarnings("unused")
-public abstract class GemfireUtils extends DistributedSystemUtils {
+public abstract class GemfireUtils extends CacheUtils {
 
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
 
-	public static boolean isDurable(ClientCache clientCache) {
-		DistributedSystem distributedSystem = getDistributedSystem(clientCache);
-
-		// NOTE technically the following code snippet would be more useful/valuable but is not "testable"!
-		//((InternalDistributedSystem) distributedSystem).getConfig().getDurableClientId();
-
-		return (isConnected(distributedSystem) && StringUtils.hasText(distributedSystem.getProperties()
-			.getProperty(DURABLE_CLIENT_ID_PROPERTY_NAME, null)));
-	}
-
-	public static boolean closeCache() {
-		try {
-			CacheFactory.getAnyInstance().close();
-			return true;
-		}
-		catch (Exception ignore) {
-			return false;
-		}
-	}
-
-	public static boolean closeClientCache() {
-		try {
-			ClientCacheFactory.getAnyInstance().close();
-			return true;
-		}
-		catch (Exception ignore) {
-			return false;
-		}
-	}
-
-	public static Cache getCache() {
-		try {
-			return CacheFactory.getAnyInstance();
-		}
-		catch (CacheClosedException ignore) {
-			return null;
-		}
-	}
-
-	public static ClientCache getClientCache() {
-		try {
-			return ClientCacheFactory.getAnyInstance();
-		}
-		catch (CacheClosedException ignore) {
-			return null;
-		}
-	}
-
+	/* (non-Javadoc) */
 	public static boolean isGemfireVersionGreaterThanEqualTo(double expectedVersion) {
 		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
 		return actualVersion >= expectedVersion;
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireVersion65OrAbove() {
 		// expected 'major.minor'
 		try {
@@ -114,6 +58,7 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		}
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireVersion7OrAbove() {
 		try {
 			return isGemfireVersionGreaterThanEqualTo(7.0);
@@ -125,6 +70,7 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		}
 	}
 
+	/* (non-Javadoc) */
 	public static boolean isGemfireVersion8OrAbove() {
 		try {
 			return isGemfireVersionGreaterThanEqualTo(8.0);

@@ -15,24 +15,22 @@
  */
 package org.springframework.data.gemfire.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import javax.annotation.Resource;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
 
 /**
  * @author David Turanski
@@ -40,26 +38,27 @@ import com.gemstone.gemfire.cache.client.ClientCache;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "client-cache.xml", initializers = GemfireTestApplicationContextInitializer.class)
-@SuppressWarnings("unused")
 public class ClientCacheTest {
 
-	@Autowired
-	private ClientCache cache;
-
-	@Resource(name = "challengeQuestionsRegion")
+	@Resource(name = "ChallengeQuestions")
+	@SuppressWarnings("all")
 	private Region<?, ?> region;
 
 	@Test
-	public void testPoolName() {
-		assertEquals(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, region.getAttributes().getPoolName());
+	public void clientCacheIsNotClosed() {
+		ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(
+			"/org/springframework/data/gemfire/client/client-cache-no-close.xml");
+
+		Cache cache = context.getBean(Cache.class);
+
+		context.close();
+
+		assertThat(cache.isClosed(), is(false));
 	}
 
 	@Test
-	public void testNoClose() {
-		ConfigurableApplicationContext ctx = new ClassPathXmlApplicationContext("/org/springframework/data/gemfire/client/client-cache-no-close.xml");
-		Cache cache = ctx.getBean(Cache.class);
-		ctx.close();
-		assertFalse(cache.isClosed());
+	public void poolNameEqualsDefault() {
+		assertThat(region.getAttributes().getPoolName(), is(nullValue()));
 	}
 
 }

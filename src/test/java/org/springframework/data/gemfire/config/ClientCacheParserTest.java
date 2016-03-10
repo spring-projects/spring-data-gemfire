@@ -22,25 +22,17 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNotNull;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -76,7 +68,7 @@ public class ClientCacheParserTest {
 	}
 
 	@Test
-	public void doParseSetsPropertiesAndRegistersClientCachePoolGemfirePropertiesSyncingBeanFactoryPostProcessor() {
+	public void doParseSetsProperties() {
 		NodeList mockNodeList = mock(NodeList.class);
 
 		when(mockNodeList.getLength()).thenReturn(0);
@@ -87,23 +79,7 @@ public class ClientCacheParserTest {
 		when(mockElement.getAttribute(eq("ready-for-events"))).thenReturn(null);
 		when(mockElement.getChildNodes()).thenReturn(mockNodeList);
 
-		final AtomicReference<BeanDefinition> beanDefinitionReference = new AtomicReference<BeanDefinition>(null);
-
 		final BeanDefinitionRegistry mockRegistry = mock(BeanDefinitionRegistry.class);
-
-		doAnswer(new Answer<Void>() {
-			public Void answer(InvocationOnMock invocation) throws Throwable {
-				BeanDefinition beanFactoryPostProcessorBeanDefinition =
-					invocation.getArgumentAt(1, BeanDefinition.class);
-
-				if (ClientCachePoolGemfirePropertiesSyncingBeanFactoryPostProcessor.class.getName().equals(
-						beanFactoryPostProcessorBeanDefinition.getBeanClassName())) {
-					beanDefinitionReference.compareAndSet(null, beanFactoryPostProcessorBeanDefinition);
-				}
-
-				return null;
-			}
-		}).when(mockRegistry).registerBeanDefinition(isNotNull(String.class), any(BeanDefinition.class));
 
 		when(mockRegistry.containsBeanDefinition(anyString())).thenReturn(false);
 
@@ -129,15 +105,12 @@ public class ClientCacheParserTest {
 		assertThat((String) propertyValues.getPropertyValue("keepAlive").getValue(), is(equalTo("false")));
 		assertThat((String) propertyValues.getPropertyValue("poolName").getValue(), is(equalTo("testPool")));
 		assertThat(propertyValues.getPropertyValue("readyForEvents"), is(nullValue()));
-		assertThat(beanDefinitionReference.get(), is(notNullValue()));
 
 		verify(mockElement, times(1)).getAttribute(eq("durable-client-id"));
 		verify(mockElement, times(1)).getAttribute(eq("durable-client-timeout"));
 		verify(mockElement, times(1)).getAttribute(eq("keep-alive"));
 		verify(mockElement, times(1)).getAttribute(eq("pool-name"));
 		verify(mockElement, times(1)).getAttribute(eq("ready-for-events"));
-		verify(mockRegistry, times(1)).registerBeanDefinition(isNotNull(String.class),
-			same(beanDefinitionReference.get()));
 	}
 
 	@Test

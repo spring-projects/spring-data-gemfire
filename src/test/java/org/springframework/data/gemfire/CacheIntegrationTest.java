@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -39,7 +38,7 @@ import com.gemstone.gemfire.cache.Cache;
  * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "basic-cache.xml", initializers = GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "basic-cache.xml")
 public class CacheIntegrationTest {
 
 	@Autowired ApplicationContext ctx;

@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.client.PoolFactoryBean
  * @since 1.8.0
  */
-@SuppressWarnings("unused")
+@Deprecated
 class ClientCachePoolGemfirePropertiesSyncingBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
 	protected static final String PROPERTIES_PROPERTY_NAME = "properties";

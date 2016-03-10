@@ -51,7 +51,7 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 /**
  * The GemFireDataSourceIntegrationTest class is a test suite of test cases testing the contract and functionality
  * of the &lt;gfe-data:datasource&gt; element in the context of a GemFire cluster running both native,
- * non-Spring configured GemFire Servers in a addition to Spring configured and bootstrapped GemFire Server.
+ * non-Spring configured GemFire Server(s) in addition to Spring configured and bootstrapped GemFire Server(s).
  *
  * @author John Blum
  * @see org.junit.Test
@@ -77,17 +77,19 @@ public class GemFireDataSourceIntegrationTest {
 	@Autowired
 	private ClientCache gemfireClientCache;
 
-	@Resource(name = "LocalRegion")
-	private Region localRegion;
+	@Resource(name = "ClientOnlyRegion")
+	private Region clientOnlyRegion;
 
-	@Resource(name = "ServerRegion")
-	private Region serverRegion;
+	@Resource(name = "ClientServerRegion")
+	private Region clientServerRegion;
 
-	@Resource(name = "ExclusiveServerRegion")
-	private Region exclusiveServerRegion;
+	@Resource(name = "ServerOnlyRegion")
+	private Region serverOnlyRegion;
 
 	@BeforeClass
 	public static void setupBeforeClass() throws IOException {
+		System.setProperty("gemfire.log-level", "warning");
+
 		String serverName = "GemFireDataSourceSpringBasedServer";
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
@@ -97,7 +99,7 @@ public class GemFireDataSourceIntegrationTest {
 		List<String> arguments = new ArrayList<String>();
 
 		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
-		arguments.add("/org/springframework/data/gemfire/client/GemFireDataSourceIntegrationTest-server-context.xml");
+		arguments.add(GemFireDataSourceIntegrationTest.class.getName().replace(".", "/").concat("-server-context.xml"));
 
 		serverProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
 			arguments.toArray(new String[arguments.size()]));
@@ -139,9 +141,9 @@ public class GemFireDataSourceIntegrationTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void clientProxyRegionBeansExist() {
-		assertRegion(localRegion, "LocalRegion");
-		assertRegion(serverRegion, "ServerRegion");
-		assertRegion(exclusiveServerRegion, "ExclusiveServerRegion");
+		assertRegion(clientOnlyRegion, "ClientOnlyRegion");
+		assertRegion(clientServerRegion, "ClientServerRegion");
+		assertRegion(serverOnlyRegion, "ServerOnlyRegion");
 	}
 
 }

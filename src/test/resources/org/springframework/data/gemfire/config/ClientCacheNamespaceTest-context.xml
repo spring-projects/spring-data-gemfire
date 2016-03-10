@@ -12,14 +12,8 @@
 	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
 
 	<util:properties id="gemfireProperties">
-		<prop key="name">ClientCacheNamespaceTest</prop>
-		<prop key="mcast-port">0</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
-
-	<gfe:pool id="serverPool">
-		<gfe:server host="localhost" port="1234"/>
-	</gfe:pool>
 
 	<bean id="reflectionPdxSerializer" class="com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer"/>
 

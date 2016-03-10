@@ -24,7 +24,9 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.DataPolicyConverter;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -41,7 +43,6 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 /**
  * Client extension for GemFire Regions.
@@ -53,14 +54,20 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see com.gemstone.gemfire.cache.CacheListener
+ * @see com.gemstone.gemfire.cache.CacheLoader
+ * @see com.gemstone.gemfire.cache.CacheWriter
+ * @see com.gemstone.gemfire.cache.DataPolicy
  * @see com.gemstone.gemfire.cache.GemFireCache
+ * @see com.gemstone.gemfire.cache.Region
+ * @see com.gemstone.gemfire.cache.RegionAttributes
  * @see com.gemstone.gemfire.cache.client.ClientCache
  * @see com.gemstone.gemfire.cache.client.ClientRegionFactory
  * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
  */
 @SuppressWarnings("unused")
-public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements BeanFactoryAware,
-		DisposableBean {
+public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
+		implements BeanFactoryAware, DisposableBean {
 
 	private static final Log log = LogFactory.getLog(ClientRegionFactoryBean.class);
 
@@ -99,17 +106,11 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	@Override
 	@SuppressWarnings("all")
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
-		Assert.isTrue(cache instanceof ClientCache, String.format("Unable to create Regions from %1$s!", cache));
+		Assert.isTrue(GemfireUtils.isClient(cache), "A ClientCache is required to create a client Region");
 
-		if (cache instanceof GemFireCacheImpl) {
-			Assert.isTrue(((GemFireCacheImpl) cache).isClient(), "A ClientCache instance is required!");
-		}
+		ClientRegionFactory<K, V> clientRegionFactory = ((ClientCache) cache).createClientRegionFactory(
+			resolveClientRegionShortcut());
 
-		ClientCache clientCache = (ClientCache) cache;
-
-		ClientRegionFactory<K, V> clientRegionFactory = clientCache.createClientRegionFactory(resolveClientRegionShortcut());
-
-		// map Region attributes onto the ClientRegionFactory...
 		if (attributes != null) {
 			clientRegionFactory.setCloningEnabled(attributes.getCloningEnabled());
 			clientRegionFactory.setCompressor(attributes.getCompressor());
@@ -132,18 +133,13 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			clientRegionFactory.setValueConstraint(attributes.getValueConstraint());
 		}
 
-		addCacheListeners(clientRegionFactory);
+		String poolName = resolvePoolName();
 
 		if (StringUtils.hasText(poolName)) {
-			// try to eagerly initialize the pool name, if defined as a bean
-			if (beanFactory.isTypeMatch(poolName, Pool.class)) {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("Found bean definition for pool '%1$s'; Eagerly initializing...", poolName));
-				}
-				beanFactory.getBean(poolName, Pool.class);
-			}
-			clientRegionFactory.setPoolName(poolName);
+			clientRegionFactory.setPoolName(eagerlyInitializePool(poolName));
 		}
+
+		addCacheListeners(clientRegionFactory);
 
 		if (diskStoreName != null) {
 			clientRegionFactory.setDiskStoreName(diskStoreName);
@@ -169,7 +165,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		return clientRegion;
 	}
 
-	protected ClientRegionShortcut resolveClientRegionShortcut() {
+	/* (non-Javadoc) */
+	ClientRegionShortcut resolveClientRegionShortcut() {
 		ClientRegionShortcut resolvedShortcut = this.shortcut;
 
 		if (resolvedShortcut == null) {
@@ -203,6 +200,36 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		assertClientRegionShortcutAndPersistentAttributeAreCompatible(resolvedShortcut);
 
 		return resolvedShortcut;
+	}
+
+	/* (non-Javadoc) */
+	String resolvePoolName() {
+		String poolName = this.poolName;
+
+		if (!StringUtils.hasText(poolName)) {
+			String defaultPoolName = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
+			poolName = (beanFactory.containsBean(defaultPoolName) ? defaultPoolName : poolName);
+		}
+
+		return poolName;
+	}
+
+	/* (non-Javadoc) */
+	String eagerlyInitializePool(String poolName) {
+		try {
+			if (beanFactory.isTypeMatch(poolName, Pool.class)) {
+				if (log.isDebugEnabled()) {
+					log.debug(String.format("Found bean definition for Pool [%1$s]; Eagerly initializing...", poolName));
+				}
+
+				beanFactory.getBean(poolName, Pool.class);
+			}
+		}
+		catch (BeansException ignore) {
+			log.warn(ignore.getMessage());
+		}
+
+		return poolName;
 	}
 
 	/**

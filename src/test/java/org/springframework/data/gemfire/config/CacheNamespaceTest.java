@@ -127,7 +127,7 @@ public class CacheNamespaceTest{
 	}
 
 	@Test
-	public void testCacheWithAutoReconnectDisabled() {
+	public void testCacheWithAutoReconnectDisabled() throws Exception {
 		assertTrue(context.containsBean("cache-with-auto-reconnect-disabled"));
 
 		Cache gemfireCache = context.getBean("cache-with-auto-reconnect-disabled", Cache.class);
@@ -141,16 +141,13 @@ public class CacheNamespaceTest{
 	}
 
 	@Test
-	public void testCacheWithAutoReconnectEnabled() {
+	public void testCacheWithAutoReconnectEnabled() throws Exception {
 		assertTrue(context.containsBean("cache-with-auto-reconnect-enabled"));
 
 		Cache gemfireCache = context.getBean("cache-with-auto-reconnect-enabled", Cache.class);
 
-		boolean expected = Boolean.getBoolean("org.springframework.data.gemfire.test.GemfireTestRunner.nomock");
-		boolean actual = Boolean.parseBoolean(gemfireCache.getDistributedSystem().getProperties()
-			.getProperty("disable-auto-reconnect"));
-
-		assertEquals(String.format("Expected 'disable-auto-reconnect' to be %1$s!", expected), expected, actual);
+		assertFalse(Boolean.parseBoolean(gemfireCache.getDistributedSystem().getProperties()
+			.getProperty("disable-auto-reconnect")));
 
 		CacheFactoryBean cacheFactoryBean = context.getBean("&cache-with-auto-reconnect-enabled", CacheFactoryBean.class);
 

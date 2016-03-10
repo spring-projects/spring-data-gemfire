@@ -14,18 +14,18 @@
 ">
 
 	<util:properties id="client.properties">
-		<prop key="client.server.host">localhost</prop>
-		<prop key="client.server.port">42082</prop>
+		<prop key="gemfire.client.server.host">localhost</prop>
+		<prop key="gemfire.client.server.port">42084</prop>
 	</util:properties>
 
 	<context:property-placeholder properties-ref="client.properties"/>
 
 	<gfe-data:datasource min-connections="1" max-connections="1">
-		<gfe-data:server host="${client.server.host}" port="${client.server.port}"/>
+		<gfe-data:server host="${gemfire.client.server.host}" port="${gemfire.client.server.port}"/>
 	</gfe-data:datasource>
 
-	<gfe:client-region id="LocalRegion" shortcut="LOCAL"/>
+	<gfe:client-region id="ClientOnlyRegion" shortcut="LOCAL"/>
 
-	<gfe:client-region id="ServerRegion" shortcut="CACHING_PROXY"/>
+	<gfe:client-region id="ClientServerRegion" shortcut="CACHING_PROXY"/>
 
 </beans>

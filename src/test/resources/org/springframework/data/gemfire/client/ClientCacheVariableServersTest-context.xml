@@ -11,13 +11,13 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="client.properties">
+	<util:properties id="clientProperties">
 		<prop key="gemfire.cache.client.server.hosts-and-ports">localhost[23579],localhost[23654]</prop>
 		<prop key="gemfire.cache.client.server.host.3">localhost</prop>
 		<prop key="gemfire.cache.client.server.port.3">24448</prop>
 	</util:properties>
 
-	<context:property-placeholder properties-ref="client.properties"/>
+	<context:property-placeholder properties-ref="clientProperties"/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="log-level">warning</prop>

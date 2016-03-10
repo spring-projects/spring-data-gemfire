@@ -16,6 +16,10 @@
 
 package org.springframework.data.gemfire.config;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -36,6 +40,7 @@ import org.springframework.data.gemfire.ScopeConverter;
 import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConverter;
+import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.wan.OrderPolicyConverter;
 import org.springframework.data.gemfire.wan.StartupPolicyConverter;
 import org.springframework.data.gemfire.wan.StartupPolicyType;
@@ -59,12 +64,13 @@ import com.gemstone.gemfire.cache.util.Gateway;
 public class CustomEditorRegistrationBeanFactoryPostProcessorTest {
 
 	@Test
-	public void testCustomEditorRegistration() {
-		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class,
-			"testCustomEditorRegistration.MockBeanFactory");
+	public void customEditorRegistration() {
+		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
 
 		new CustomEditorRegistrationBeanFactoryPostProcessor().postProcessBeanFactory(mockBeanFactory);
 
+		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(ConnectionEndpoint[].class), eq(
+			CustomEditorRegistrationBeanFactoryPostProcessor.ConnectionEndpointArrayToIterableConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(EvictionAction.class),
 			eq(EvictionActionConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(EvictionPolicyType.class),
@@ -73,18 +79,46 @@ public class CustomEditorRegistrationBeanFactoryPostProcessorTest {
 			eq(ExpirationActionConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(IndexMaintenancePolicyType.class),
 			eq(IndexMaintenancePolicyConverter.class));
-		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(IndexType.class), eq(IndexTypeConverter.class));
+		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(IndexType.class),
+			eq(IndexTypeConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(InterestPolicy.class),
 			eq(InterestPolicyConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(InterestResultPolicy.class),
 			eq(InterestResultPolicyConverter.class));
-		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(Scope.class), eq(ScopeConverter.class));
+		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(Scope.class),
+			eq(ScopeConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(Gateway.OrderPolicy.class),
 			eq(OrderPolicyConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(StartupPolicyType.class),
 			eq(StartupPolicyConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(SubscriptionEvictionPolicy.class),
 			eq(SubscriptionEvictionPolicyConverter.class));
+	}
+
+	protected ConnectionEndpoint newConnectionEndpoint(String host, int port) {
+		return new ConnectionEndpoint(host, port);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void connectionEndpointArrayToIterableConversion() {
+		ConnectionEndpoint[] array = {
+			newConnectionEndpoint("localhost", 10334),
+			newConnectionEndpoint("localhost", 40404)
+		};
+
+		Iterable<ConnectionEndpoint> iterable = new CustomEditorRegistrationBeanFactoryPostProcessor
+			.ConnectionEndpointArrayToIterableConverter().convert(array);
+
+		assertThat(iterable, is(notNullValue()));
+
+		int index = 0;
+
+		for (ConnectionEndpoint connectionEndpoint : iterable) {
+			assertThat(connectionEndpoint, is(equalTo(array[index++])));
+		}
+
+		assertThat(index, is(equalTo(2)));
 	}
 
 }

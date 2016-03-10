@@ -11,12 +11,12 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="server.properties">
-		<prop key="gemfire.server.host">localhost</prop>
-		<prop key="gemfire.server.port">42082</prop>
+	<util:properties id="serverProperties">
+		<prop key="gemfire.cache.server.host">localhost</prop>
+		<prop key="gemfire.cache.server.port">42084</prop>
 	</util:properties>
 
-	<context:property-placeholder properties-ref="server.properties"/>
+	<context:property-placeholder properties-ref="serverProperties"/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">GemFireDataSourceIntegrationTestServer</prop>
@@ -26,11 +26,11 @@
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:cache-server auto-startup="true" bind-address="${gemfire.server.host}" port="${gemfire.server.port}"
-					  max-connections="1"/>
+	<gfe:cache-server bind-address="${gemfire.cache.server.host}" port="${gemfire.cache.server.port}"
+					  auto-startup="true" max-connections="1"/>
 
-	<gfe:replicated-region id="ServerRegion" persistent="false"/>
+	<gfe:replicated-region id="ClientServerRegion" persistent="false"/>
 
-	<gfe:partitioned-region id="ExclusiveServerRegion" persistent="false"/>
+	<gfe:partitioned-region id="ServerOnlyRegion" persistent="false"/>
 
 </beans>

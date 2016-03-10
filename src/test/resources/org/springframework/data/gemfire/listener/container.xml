@@ -11,13 +11,11 @@
 	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="props">
-		<prop key="name">cq-client</prop>
-		<prop key="mcast-port">0</prop>
+	<util:properties id="gemfireProperties">
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:client-cache use-bean-factory-locator="false"/>
+	<gfe:client-cache properties-ref="gemfireProperties" use-bean-factory-locator="false"/>
 
 	<gfe:pool id="client" subscription-enabled="true">
 		<gfe:server host="localhost" port="40404"/>

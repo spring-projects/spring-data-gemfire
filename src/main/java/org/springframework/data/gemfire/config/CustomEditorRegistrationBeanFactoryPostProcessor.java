@@ -16,9 +16,12 @@
 
 package org.springframework.data.gemfire.config;
 
+import java.beans.PropertyEditorSupport;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.gemfire.EvictionActionConverter;
 import org.springframework.data.gemfire.EvictionPolicyConverter;
 import org.springframework.data.gemfire.EvictionPolicyType;
@@ -32,6 +35,8 @@ import org.springframework.data.gemfire.ScopeConverter;
 import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConverter;
+import org.springframework.data.gemfire.support.ConnectionEndpoint;
+import org.springframework.data.gemfire.support.ConnectionEndpointList;
 import org.springframework.data.gemfire.wan.OrderPolicyConverter;
 import org.springframework.data.gemfire.wan.StartupPolicyConverter;
 import org.springframework.data.gemfire.wan.StartupPolicyType;
@@ -56,7 +61,8 @@ import com.gemstone.gemfire.cache.util.Gateway;
 public class CustomEditorRegistrationBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
 	@Override
-	public void postProcessBeanFactory(final ConfigurableListableBeanFactory beanFactory) throws BeansException {
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+		beanFactory.registerCustomEditor(ConnectionEndpoint[].class, ConnectionEndpointArrayToIterableConverter.class);
 		beanFactory.registerCustomEditor(EvictionAction.class, EvictionActionConverter.class);
 		beanFactory.registerCustomEditor(EvictionPolicyType.class, EvictionPolicyConverter.class);
 		beanFactory.registerCustomEditor(ExpirationAction.class, ExpirationActionConverter.class);
@@ -68,6 +74,15 @@ public class CustomEditorRegistrationBeanFactoryPostProcessor implements BeanFac
 		beanFactory.registerCustomEditor(Scope.class, ScopeConverter.class);
 		beanFactory.registerCustomEditor(StartupPolicyType.class, StartupPolicyConverter.class);
 		beanFactory.registerCustomEditor(SubscriptionEvictionPolicy.class, SubscriptionEvictionPolicyConverter.class);
+	}
+
+	static final class ConnectionEndpointArrayToIterableConverter extends PropertyEditorSupport
+			implements Converter<ConnectionEndpoint[], Iterable>  {
+
+		@Override
+		public Iterable convert(ConnectionEndpoint[] source) {
+			return ConnectionEndpointList.from(source);
+		}
 	}
 
 }

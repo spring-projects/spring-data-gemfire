@@ -14,8 +14,6 @@
 	<context:property-placeholder location="classpath:port.properties"/>
 
 	<util:properties id="gemfireProperties">
-		<prop key="name">PoolNamespaceConfig</prop>
-		<prop key="mcast-port">0</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
 

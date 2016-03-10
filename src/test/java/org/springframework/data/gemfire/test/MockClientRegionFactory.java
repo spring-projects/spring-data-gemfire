@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.CacheListener;
@@ -239,7 +238,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
 					String poolName = invocation.getArgumentAt(0, String.class);
-					poolName = (StringUtils.hasText(poolName) ? poolName : GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+					poolName = (StringUtils.hasText(poolName) ? poolName : null);
 					attributesFactory.setPoolName(poolName);
 					return mockClientRegionFactory;
 				}

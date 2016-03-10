@@ -17,10 +17,6 @@
 
 	<gfe:client-cache properties-ref="gemfireProperties"/>
 
-	<gfe:pool>
-		<gfe:server host="localhost" port="54321"/>
-	</gfe:pool>
-
 	<bean id="localCacheLoader" class="org.springframework.data.gemfire.client.ClientRegionWithCacheLoaderWriterTest$LocalAppDataCacheLoader"/>
 	<bean id="localCacheWriter" class="org.springframework.data.gemfire.client.ClientRegionWithCacheLoaderWriterTest$LocalAppDataCacheWriter"/>
 

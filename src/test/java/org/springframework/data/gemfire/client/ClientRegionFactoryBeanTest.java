@@ -32,6 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -42,6 +43,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.config.GemfireConstants;
 
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAttributes;
@@ -189,71 +191,84 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testLookupFallbackWithSpecifiedShortcut() throws Exception {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 		ClientCache mockClientCache = mock(ClientCache.class);
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
 		Region<Object, Object> mockRegion = mock(Region.class);
 
-		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY))).thenReturn(
-			mockClientRegionFactory);
+		when(mockBeanFactory.containsBean(anyString())).thenReturn(true);
+		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY)))
+			.thenReturn(mockClientRegionFactory);
 		when(mockClientRegionFactory.create(eq("TestRegion"))).thenReturn(mockRegion);
 
 		factoryBean.setAttributes(null);
-		factoryBean.setBeanFactory(null);
+		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setShortcut(ClientRegionShortcut.CACHING_PROXY);
 
 		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
+		verify(mockBeanFactory, times(1)).containsBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
+		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testLookupFallbackWithSubRegionCreation() throws Exception {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 		ClientCache mockClientCache = mock(ClientCache.class);
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-		Region<Object, Object> mockParentRegion = mock(Region.class, "Parent");
+		Region<Object, Object> mockRegion = mock(Region.class, "RootRegion");
 		Region<Object, Object> mockSubRegion = mock(Region.class, "SubRegion");
 
+		when(mockBeanFactory.containsBean(anyString())).thenReturn(true);
 		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.PROXY))).thenReturn(mockClientRegionFactory);
-		when(mockClientRegionFactory.createSubregion(eq(mockParentRegion), eq("TestSubRegion"))).thenReturn(mockSubRegion);
+		when(mockClientRegionFactory.createSubregion(eq(mockRegion), eq("TestSubRegion"))).thenReturn(mockSubRegion);
 
 		factoryBean.setAttributes(null);
-		factoryBean.setBeanFactory(null);
-		factoryBean.setParent(mockParentRegion);
+		factoryBean.setBeanFactory(mockBeanFactory);
+		factoryBean.setParent(mockRegion);
 		factoryBean.setShortcut(ClientRegionShortcut.PROXY);
 
 		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestSubRegion");
 
 		assertSame(mockSubRegion, actualRegion);
 
+		verify(mockBeanFactory, times(1)).containsBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.PROXY));
-		verify(mockClientRegionFactory, times(1)).createSubregion(eq(mockParentRegion), eq("TestSubRegion"));
+		verify(mockClientRegionFactory, times(1)).createSubregion(eq(mockRegion), eq("TestSubRegion"));
+		verifyZeroInteractions(mockRegion);
+		verifyZeroInteractions(mockSubRegion);
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testLookupFallbackWithUnspecifiedPool() throws Exception {
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 		ClientCache mockClientCache = mock(ClientCache.class);
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
 		Region<Object, Object> mockRegion = mock(Region.class);
 
+		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
 		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_HEAP_LRU))).thenReturn(mockClientRegionFactory);
 		when(mockClientRegionFactory.create(eq("TestRegion"))).thenReturn(mockRegion);
 
 		factoryBean.setAttributes(null);
-		factoryBean.setBeanFactory(null);
+		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setShortcut(ClientRegionShortcut.LOCAL_HEAP_LRU);
 
 		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
+		verify(mockBeanFactory, times(1)).containsBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_HEAP_LRU));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
 		verify(mockClientRegionFactory, never()).setPoolName(any(String.class));
+		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test

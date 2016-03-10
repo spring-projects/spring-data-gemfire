@@ -16,16 +16,25 @@
 
 package org.springframework.data.gemfire.client;
 
+import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter;
+import org.springframework.data.gemfire.client.support.DelegatingPoolAdapter;
 import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.support.ConnectionEndpoint;
+import org.springframework.data.gemfire.support.ConnectionEndpointList;
+import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.GemFireCache;
@@ -45,28 +54,54 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.springframework.context.ApplicationListener
  * @see org.springframework.context.event.ContextRefreshedEvent
  * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see org.springframework.data.gemfire.support.ConnectionEndpoint
+ * @see org.springframework.data.gemfire.support.ConnectionEndpointList
  * @see com.gemstone.gemfire.cache.GemFireCache
  * @see com.gemstone.gemfire.cache.client.ClientCache
  * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
  * @see com.gemstone.gemfire.cache.client.Pool
  * @see com.gemstone.gemfire.cache.client.PoolManager
  * @see com.gemstone.gemfire.distributed.DistributedSystem
+ * @see com.gemstone.gemfire.pdx.PdxSerializer
  */
 @SuppressWarnings("unused")
 public class ClientCacheFactoryBean extends CacheFactoryBean implements ApplicationListener<ContextRefreshedEvent> {
 
-	protected Boolean keepAlive = false;
-	protected Boolean readyForEvents;
+	private Boolean keepAlive = false;
+	private Boolean multiUserAuthentication;
+	private Boolean prSingleHopEnabled;
+	private Boolean readyForEvents;
+	private Boolean subscriptionEnabled;
+	private Boolean threadLocalConnections;
 
-	protected Integer durableClientTimeout;
+	private ConnectionEndpointList locators = new ConnectionEndpointList();
+	private ConnectionEndpointList servers = new ConnectionEndpointList();
+
+	private Integer durableClientTimeout;
+	private Integer freeConnectionTimeout;
+	private Integer loadConditioningInterval;
+	private Integer maxConnections;
+	private Integer minConnections;
+	private Integer readTimeout;
+	private Integer retryAttempts;
+	private Integer socketBufferSize;
+	private Integer statisticsInterval;
+	private Integer subscriptionAckInterval;
+	private Integer subscriptionMessageTrackingTimeout;
+	private Integer subscriptionRedundancy;
+
+	private Long idleTimeout;
+	private Long pingInterval;
 
 	private Pool pool;
 
-	protected String durableClientId;
-	protected String poolName;
+	private String durableClientId;
+	private String poolName;
+	private String serverGroup;
+	private String serverName;
 
 	@Override
-	protected void postProcessPropertiesBeforeInitialization(Properties gemfireProperties) {
+	protected void postProcessBeforeCacheInitialization(Properties gemfireProperties) {
 	}
 
 	/**
@@ -82,7 +117,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	@Override
 	@SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T fetchCache() {
-		return (T) ClientCacheFactory.getAnyInstance();
+		ClientCache cache = getCache();
+		return (T) (cache != null ? cache : ClientCacheFactory.getAnyInstance());
 	}
 
 	/**
@@ -137,89 +173,166 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 */
 	@Override
 	protected Object prepareFactory(final Object factory) {
-		if (isPdxOptionsSpecified()) {
-			ClientCacheFactory clientCacheFactory = (ClientCacheFactory) factory;
+		return initializePool(initializePdx((ClientCacheFactory) factory));
+	}
 
-			if (pdxSerializer != null) {
-				Assert.isAssignable(PdxSerializer.class, pdxSerializer.getClass(), "Invalid pdx serializer used");
-				clientCacheFactory.setPdxSerializer((PdxSerializer) pdxSerializer);
+	/**
+	 * Initialize the PDX settings on the {@link ClientCacheFactory}.
+	 *
+	 * @param clientCacheFactory the GemFire {@link ClientCacheFactory} used to configure and create
+	 * a GemFire {@link ClientCache}.
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+	 */
+	ClientCacheFactory initializePdx(ClientCacheFactory clientCacheFactory) {
+		if (isPdxOptionsSpecified()) {
+			if (getPdxSerializer() != null) {
+				Assert.isInstanceOf(PdxSerializer.class, getPdxSerializer(),
+					String.format("[%1$s] of type [%2$s] is not a PdxSerializer;", getPdxSerializer(),
+						ObjectUtils.nullSafeClassName(getPdxSerializer())));
+
+				clientCacheFactory.setPdxSerializer((PdxSerializer) getPdxSerializer());
 			}
-			if (pdxDiskStoreName != null) {
-				clientCacheFactory.setPdxDiskStore(pdxDiskStoreName);
+			if (getPdxDiskStoreName() != null) {
+				clientCacheFactory.setPdxDiskStore(getPdxDiskStoreName());
 			}
-			if (pdxIgnoreUnreadFields != null) {
-				clientCacheFactory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
+			if (getPdxIgnoreUnreadFields() != null) {
+				clientCacheFactory.setPdxIgnoreUnreadFields(getPdxIgnoreUnreadFields());
 			}
-			if (pdxPersistent != null) {
-				clientCacheFactory.setPdxPersistent(pdxPersistent);
+			if (getPdxPersistent() != null) {
+				clientCacheFactory.setPdxPersistent(getPdxPersistent());
 			}
-			if (pdxReadSerialized != null) {
-				clientCacheFactory.setPdxReadSerialized(pdxReadSerialized);
+			if (getPdxReadSerialized() != null) {
+				clientCacheFactory.setPdxReadSerialized(getPdxReadSerialized());
 			}
 		}
 
-		return factory;
-	}
-
-	/**
-	 * Creates a new GemFire cache instance using the provided factory.
-	 *
-	 * @param <T> parameterized Class type extension of GemFireCache.
-	 * @param factory the appropriate GemFire factory used to create a cache instance.
-	 * @return an instance of the GemFire cache.
-	 * @see com.gemstone.gemfire.cache.GemFireCache
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#create()
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	protected <T extends GemFireCache> T createCache(Object factory) {
-		return (T) initializePool((ClientCacheFactory) factory).create();
-	}
-
-	/**
-	 * Initialize the Pool settings on the ClientCacheFactory.
-	 *
-	 * @param clientCacheFactory the GemFire ClientCacheFactory used to configure and create a GemFire ClientCache.
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
-	 */
-	private ClientCacheFactory initializePool(ClientCacheFactory clientCacheFactory) {
-		resolvePool(pool);
 		return clientCacheFactory;
 	}
 
 	/**
-	 * Resolves the appropriate GemFire Pool from configuration used to configure the ClientCache.
+	 * Initialize the {@link Pool} settings on the {@link ClientCacheFactory} with a given {@link Pool} instance
+	 * or named {@link Pool}.
 	 *
-	 * @param pool the preferred GemFire Pool to use in the configuration of the ClientCache.
-	 * @return the resolved GemFire Pool.
+	 * @param clientCacheFactory the GemFire {@link ClientCacheFactory} used to configure and create
+	 * a GemFire {@link ClientCache}.
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
 	 * @see com.gemstone.gemfire.cache.client.Pool
-	 * @see com.gemstone.gemfire.cache.client.PoolManager#find(String)
 	 */
-	private Pool resolvePool(final Pool pool) {
-		Pool localPool = pool;
+	ClientCacheFactory initializePool(ClientCacheFactory clientCacheFactory) {
+		DefaultableDelegatingPoolAdapter pool = DefaultableDelegatingPoolAdapter.from(
+			DelegatingPoolAdapter.from(resolvePool())).preferDefault();
+
+		clientCacheFactory.setPoolFreeConnectionTimeout(pool.getFreeConnectionTimeout(getFreeConnectionTimeout()));
+		clientCacheFactory.setPoolIdleTimeout(pool.getIdleTimeout(getIdleTimeout()));
+		clientCacheFactory.setPoolLoadConditioningInterval(pool.getLoadConditioningInterval(getLoadConditioningInterval()));
+		clientCacheFactory.setPoolMaxConnections(pool.getMaxConnections(getMaxConnections()));
+		clientCacheFactory.setPoolMinConnections(pool.getMinConnections(getMinConnections()));
+		clientCacheFactory.setPoolMultiuserAuthentication(pool.getMultiuserAuthentication(getMultiUserAuthentication()));
+		clientCacheFactory.setPoolPRSingleHopEnabled(pool.getPRSingleHopEnabled(getPrSingleHopEnabled()));
+		clientCacheFactory.setPoolPingInterval(pool.getPingInterval(getPingInterval()));
+		clientCacheFactory.setPoolReadTimeout(pool.getReadTimeout(getReadTimeout()));
+		clientCacheFactory.setPoolRetryAttempts(pool.getRetryAttempts(getRetryAttempts()));
+		clientCacheFactory.setPoolServerGroup(pool.getServerGroup(getServerGroup()));
+		clientCacheFactory.setPoolSocketBufferSize(pool.getSocketBufferSize(getSocketBufferSize()));
+		clientCacheFactory.setPoolStatisticInterval(pool.getStatisticInterval(getStatisticsInterval()));
+		clientCacheFactory.setPoolSubscriptionAckInterval(pool.getSubscriptionAckInterval(getSubscriptionAckInterval()));
+		clientCacheFactory.setPoolSubscriptionEnabled(pool.getSubscriptionEnabled(getSubscriptionEnabled()));
+		clientCacheFactory.setPoolSubscriptionMessageTrackingTimeout(pool.getSubscriptionMessageTrackingTimeout(getSubscriptionMessageTrackingTimeout()));
+		clientCacheFactory.setPoolSubscriptionRedundancy(pool.getSubscriptionRedundancy(getSubscriptionRedundancy()));
+		clientCacheFactory.setPoolThreadLocalConnections(pool.getThreadLocalConnections(getThreadLocalConnections()));
+
+		boolean noServers = getServers().isEmpty();
+		boolean hasServers = !noServers;
+		boolean noLocators = getLocators().isEmpty();
+		boolean hasLocators = !noLocators;
+
+		if (hasServers || noLocators) {
+			Iterable<InetSocketAddress> servers = pool.getServers(getServers().toInetSocketAddresses());
+
+			for (InetSocketAddress server : servers) {
+				clientCacheFactory.addPoolServer(server.getHostName(), server.getPort());
+				noServers = false;
+			}
+		}
+
+		if (hasLocators || noServers) {
+			Iterable<InetSocketAddress> locators = pool.getLocators(getLocators().toInetSocketAddresses());
+
+			for (InetSocketAddress locator : locators) {
+				clientCacheFactory.addPoolLocator(locator.getHostName(), locator.getPort());
+			}
+		}
+
+		return clientCacheFactory;
+	}
+
+	/**
+	 * Resolves the appropriate GemFire {@link Pool} from Spring configuration that will be used to configure
+	 * the GemFire {@link ClientCache}.
+	 *
+	 * @return the resolved GemFire {@link Pool}.
+	 * @see com.gemstone.gemfire.cache.client.PoolManager#find(String)
+	 * @see com.gemstone.gemfire.cache.client.Pool
+	 */
+	Pool resolvePool() {
+		Pool localPool = getPool();
 
 		if (localPool == null) {
-			localPool = PoolManager.find(poolName);
+			String poolName = SpringUtils.defaultIfNull(getPoolName(), GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+
+			localPool = findPool(poolName);
 
 			if (localPool == null) {
-				if (StringUtils.hasText(poolName) && getBeanFactory().isTypeMatch(poolName, Pool.class)) {
-					localPool = getBeanFactory().getBean(poolName, Pool.class);
-				}
-				else {
+				BeanFactory beanFactory = getBeanFactory();
+
+				if (beanFactory instanceof ListableBeanFactory) {
 					try {
-						localPool = getBeanFactory().getBean(Pool.class);
-						this.poolName = localPool.getName();
+						Map<String, PoolFactoryBean> poolFactoryBeanMap =
+							((ListableBeanFactory) beanFactory).getBeansOfType(PoolFactoryBean.class, false, false);
+
+						String dereferencedPoolName = SpringUtils.dereferenceBean(poolName);
+
+						if (poolFactoryBeanMap.containsKey(dereferencedPoolName)) {
+							return poolFactoryBeanMap.get(dereferencedPoolName).getPool();
+						}
 					}
-					catch (BeansException ignore) {
-						log.info(String.format("no bean of type '%1$s' having name '%2$s' was found",
-							Pool.class.getName(), (StringUtils.hasText(poolName) ? poolName
-								: GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)));
+					catch (BeansException e) {
+						log.info(String.format("unable to resolve bean of type [%1$s] with name [%2$s]",
+							PoolFactoryBean.class.getName(), poolName));
 					}
 				}
 			}
 		}
 
 		return localPool;
+	}
+
+	/**
+	 * Attempts to find a GemFire {@link Pool} with the given name.
+	 *
+	 * @param name a String indicating the name of the GemFire {@link Pool} to find.
+	 * @return a {@link Pool} instance with the given name registered in GemFire or <code>null</code> if no {@link Pool}
+	 * with name exists.
+	 * @see com.gemstone.gemfire.cache.client.PoolManager#find(String)
+	 * @see com.gemstone.gemfire.cache.client.Pool
+	 */
+	Pool findPool(String name) {
+		return PoolManager.find(name);
+	}
+
+	/**
+	 * Creates a new GemFire cache instance using the provided factory.
+	 *
+	 * @param <T> parameterized Class type extension of {@link GemFireCache}.
+	 * @param factory the appropriate GemFire factory used to create a cache instance.
+	 * @return an instance of the GemFire cache.
+	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#create()
+	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T createCache(Object factory) {
+		return (T) ((ClientCacheFactory) factory).create();
 	}
 
 	/**
@@ -240,23 +353,42 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 				// thrown if clientCache.readyForEvents() is called on a non-durable client
 			}
 			catch (CacheClosedException ignore) {
+				// cache is closed or was shutdown so ready-for-events is moot
 			}
 		}
 	}
 
+	/* (non-Javadoc) */
 	@Override
-	protected void close(final GemFireCache cache) {
+	protected void close(GemFireCache cache) {
 		((ClientCache) cache).close(isKeepAlive());
 	}
 
+	/* (non-Javadoc) */
 	@Override
 	public Class<? extends GemFireCache> getObjectType() {
+		ClientCache cache = getCache();
 		return (cache != null ? cache.getClass() : ClientCache.class);
 	}
 
-	@Override
-	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
-		throw new UnsupportedOperationException("Auto-reconnect is not supported on ClientCache.");
+	/* (non-Javadoc) */
+	public void addLocators(ConnectionEndpoint... locators) {
+		this.locators.add(locators);
+	}
+
+	/* (non-Javadoc) */
+	public void addLocators(Iterable<ConnectionEndpoint> locators) {
+		this.locators.add(locators);
+	}
+
+	/* (non-Javadoc) */
+	public void addServers(ConnectionEndpoint... servers) {
+		this.servers.add(servers);
+	}
+
+	/* (non-Javadoc) */
+	public void addServers(Iterable<ConnectionEndpoint> servers) {
+		this.servers.add(servers);
 	}
 
 	/**
@@ -264,7 +396,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 *
 	 * @param durableClientId a String value indicating the durable client id.
 	 */
-	public void setDurableClientId(final String durableClientId) {
+	public void setDurableClientId(String durableClientId) {
 		this.durableClientId = durableClientId;
 	}
 
@@ -285,7 +417,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @param durableClientTimeout an Integer value indicating the timeout in seconds for the server to keep
 	 * the durable client's queue around.
 	 */
-	public void setDurableClientTimeout(final Integer durableClientTimeout) {
+	public void setDurableClientTimeout(Integer durableClientTimeout) {
 		this.durableClientTimeout = durableClientTimeout;
 	}
 
@@ -300,9 +432,36 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		return durableClientTimeout;
 	}
 
+	/* (non-Javadoc) */
+	@Override
+	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
+		throw new UnsupportedOperationException("Auto-reconnect does not apply to clients.");
+	}
+
+	/* (non-Javadoc) */
 	@Override
 	public final Boolean getEnableAutoReconnect() {
 		return Boolean.FALSE;
+	}
+
+	/* (non-Javadoc) */
+	public void setFreeConnectionTimeout(Integer freeConnectionTimeout) {
+		this.freeConnectionTimeout = freeConnectionTimeout;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getFreeConnectionTimeout() {
+		return freeConnectionTimeout;
+	}
+
+	/* (non-Javadoc) */
+	public void setIdleTimeout(Long idleTimeout) {
+		this.idleTimeout = idleTimeout;
+	}
+
+	/* (non-Javadoc) */
+	public Long getIdleTimeout() {
+		return idleTimeout;
 	}
 
 	/**
@@ -335,33 +494,130 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		return Boolean.TRUE.equals(getKeepAlive());
 	}
 
+	/* (non-Javadoc) */
+	public void setLoadConditioningInterval(Integer loadConditioningInterval) {
+		this.loadConditioningInterval = loadConditioningInterval;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getLoadConditioningInterval() {
+		return loadConditioningInterval;
+	}
+
+	/* (non-Javadoc) */
+	public void setLocators(ConnectionEndpoint[] locators) {
+		setLocators(ConnectionEndpointList.from(locators));
+	}
+
+	/* (non-Javadoc) */
+	public void setLocators(Iterable<ConnectionEndpoint> locators) {
+		getLocators().clear();
+		addLocators(locators);
+	}
+
+	/* (non-Javadoc) */
+	protected ConnectionEndpointList getLocators() {
+		return locators;
+	}
+
+	/* (non-Javadoc) */
+	public void setMaxConnections(Integer maxConnections) {
+		this.maxConnections = maxConnections;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getMaxConnections() {
+		return maxConnections;
+	}
+
+	/* (non-Javadoc) */
+	public void setMinConnections(Integer minConnections) {
+		this.minConnections = minConnections;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getMinConnections() {
+		return minConnections;
+	}
+
+	/* (non-Javadoc) */
+	public void setMultiUserAuthentication(Boolean multiUserAuthentication) {
+		this.multiUserAuthentication = multiUserAuthentication;
+	}
+
+	/* (non-Javadoc) */
+	public Boolean getMultiUserAuthentication() {
+		return multiUserAuthentication;
+	}
+
 	/**
-	 * Sets the pool used by this client.
+	 * Sets the {@link Pool} used by this cache client to obtain connections to the GemFire cluster.
 	 *
-	 * @param pool the GemFire pool used by the Client Cache to obtain connections to the GemFire cluster.
+	 * @param pool the GemFire {@link Pool} used by this {@link ClientCache} to obtain connections
+	 * to the GemFire cluster.
+	 * @throws IllegalArgumentException if the {@link Pool} is null.
 	 */
 	public void setPool(Pool pool) {
-		Assert.notNull(pool, "GemFire Pool must not be null");
 		this.pool = pool;
 	}
 
 	/**
-	 * Sets the pool name used by this client.
+	 * Gets the {@link Pool} used by this cache client to obtain connections to the GemFire cluster.
 	 *
-	 * @param poolName set the name of the GemFire Pool used by the GemFire Client Cache.
+	 * @return the GemFire {@link Pool} used by this {@link ClientCache} to obtain connections
+	 * to the GemFire cluster.
+	 */
+	public Pool getPool() {
+		return pool;
+	}
+
+	/**
+	 * Sets the name of the {@link Pool} used by this cache client to obtain connections to the GemFire cluster.
+	 *
+	 * @param poolName set the name of the GemFire {@link Pool} used by this GemFire {@link ClientCache}.
+	 * @throws IllegalArgumentException if the {@link Pool} name is unspecified.
 	 */
 	public void setPoolName(String poolName) {
-		Assert.hasText(poolName, "Pool 'name' is required");
 		this.poolName = poolName;
 	}
 
 	/**
-	 * Gets the pool name used by this client.
+	 * Gets the name of the GemFire {@link Pool} used by this GemFire cache client.
 	 *
-	 * @return the name of the GemFire Pool used by the GemFire Client Cache.
+	 * @return the name of the GemFire {@link Pool} used by this GemFire cache client.
 	 */
 	public String getPoolName() {
 		return poolName;
+	}
+
+	/* (non-Javadoc) */
+	public void setPingInterval(Long pingInterval) {
+		this.pingInterval = pingInterval;
+	}
+
+	/* (non-Javadoc) */
+	public Long getPingInterval() {
+		return pingInterval;
+	}
+
+	/* (non-Javadoc) */
+	public void setPrSingleHopEnabled(Boolean prSingleHopEnabled) {
+		this.prSingleHopEnabled = prSingleHopEnabled;
+	}
+
+	/* (non-Javadoc) */
+	public Boolean getPrSingleHopEnabled() {
+		return prSingleHopEnabled;
+	}
+
+	/* (non-Javadoc) */
+	public void setReadTimeout(Integer readTimeout) {
+		this.readTimeout = readTimeout;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getReadTimeout() {
+		return readTimeout;
 	}
 
 	/**
@@ -385,7 +641,14 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		return readyForEvents;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Determines whether this GemFire cache client is ready for events.  If 'readyForEvents' was explicitly set,
+	 * then it takes precedence over all other considerations (e.g. durability).
+	 *
+	 * @return a boolean value indicating whether this GemFire cache client is ready for events.
+	 * @see org.springframework.data.gemfire.GemfireUtils#isDurable(ClientCache)
+	 * @see #getReadyForEvents()
+	 */
 	public boolean isReadyForEvents() {
 		Boolean readyForEvents = getReadyForEvents();
 
@@ -402,11 +665,119 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		}
 	}
 
-	@Override
-	public final void setUseClusterConfiguration(Boolean useClusterConfiguration) {
-		throw new UnsupportedOperationException("Shared, cluster configuration is not applicable to clients.");
+	/* (non-Javadoc) */
+	public void setRetryAttempts(Integer retryAttempts) {
+		this.retryAttempts = retryAttempts;
 	}
 
+	/* (non-Javadoc) */
+	public Integer getRetryAttempts() {
+		return retryAttempts;
+	}
+
+	/* (non-Javadoc) */
+	public void setServerGroup(String serverGroup) {
+		this.serverGroup = serverGroup;
+	}
+
+	/* (non-Javadoc) */
+	public String getServerGroup() {
+		return serverGroup;
+	}
+
+	/* (non-Javadoc) */
+	public void setServers(ConnectionEndpoint[] servers) {
+		setServers(ConnectionEndpointList.from(servers));
+	}
+
+	/* (non-Javadoc) */
+	public void setServers(Iterable<ConnectionEndpoint> servers) {
+		getServers().clear();
+		addServers(servers);
+	}
+
+	/* (non-Javadoc) */
+	protected ConnectionEndpointList getServers() {
+		return servers;
+	}
+
+	/* (non-Javadoc) */
+	public void setSocketBufferSize(Integer socketBufferSize) {
+		this.socketBufferSize = socketBufferSize;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getSocketBufferSize() {
+		return socketBufferSize;
+	}
+
+	/* (non-Javadoc) */
+	public void setStatisticsInterval(Integer statisticsInterval) {
+		this.statisticsInterval = statisticsInterval;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getStatisticsInterval() {
+		return statisticsInterval;
+	}
+
+	/* (non-Javadoc) */
+	public void setSubscriptionAckInterval(Integer subscriptionAckInterval) {
+		this.subscriptionAckInterval = subscriptionAckInterval;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getSubscriptionAckInterval() {
+		return subscriptionAckInterval;
+	}
+
+	/* (non-Javadoc) */
+	public void setSubscriptionEnabled(Boolean subscriptionEnabled) {
+		this.subscriptionEnabled = subscriptionEnabled;
+	}
+
+	/* (non-Javadoc) */
+	public Boolean getSubscriptionEnabled() {
+		return subscriptionEnabled;
+	}
+
+	/* (non-Javadoc) */
+	public void setSubscriptionMessageTrackingTimeout(Integer subscriptionMessageTrackingTimeout) {
+		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getSubscriptionMessageTrackingTimeout() {
+		return subscriptionMessageTrackingTimeout;
+	}
+
+	/* (non-Javadoc) */
+	public void setSubscriptionRedundancy(Integer subscriptionRedundancy) {
+		this.subscriptionRedundancy = subscriptionRedundancy;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getSubscriptionRedundancy() {
+		return subscriptionRedundancy;
+	}
+
+	/* (non-Javadoc) */
+	public void setThreadLocalConnections(Boolean threadLocalConnections) {
+		this.threadLocalConnections = threadLocalConnections;
+	}
+
+	/* (non-Javadoc) */
+	public Boolean getThreadLocalConnections() {
+		return threadLocalConnections;
+	}
+
+	/* (non-Javadoc) */
+	@Override
+	public final void setUseClusterConfiguration(Boolean useClusterConfiguration) {
+		throw new UnsupportedOperationException("Shared, cluster-based configuration is not applicable for clients.");
+	}
+
+	/* (non-Javadoc) */
 	@Override
 	public final Boolean getUseClusterConfiguration() {
 		return Boolean.FALSE;
