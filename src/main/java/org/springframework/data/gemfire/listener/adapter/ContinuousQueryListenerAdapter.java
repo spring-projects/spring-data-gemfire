@@ -74,7 +74,7 @@ import com.gemstone.gemfire.cache.query.CqQuery;
 public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
 	// Out-of-the-box value for the default listener handler method "handleEvent".
-	public static final String ORIGINAL_DEFAULT_LISTENER_METHOD = "handleEvent";
+	public static final String DEFAULT_LISTENER_METHOD_NAME = "handleEvent";
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
@@ -82,7 +82,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
 	private Object delegate;
 
-	private String defaultListenerMethod = ORIGINAL_DEFAULT_LISTENER_METHOD;
+	private String defaultListenerMethod = DEFAULT_LISTENER_METHOD_NAME;
 
 	/**
 	 * Create a new {@link ContinuousQueryListenerAdapter} with default settings.
@@ -110,7 +110,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	 * @param delegate delegate object
 	 */
 	public void setDelegate(Object delegate) {
-		Assert.notNull(delegate, "The delegate must not be null.");
+		Assert.notNull(delegate, "'delegate' must not be null");
 		this.delegate = delegate;
 		this.invoker = null;
 	}
@@ -126,7 +126,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
 	/**
 	 * Specify the name of the default listener method to delegate to in the case where no specific listener method
-	 * has been determined.  Out-of-the-box value is {@link #ORIGINAL_DEFAULT_LISTENER_METHOD "handleEvent}.
+	 * has been determined.  Out-of-the-box value is {@link #DEFAULT_LISTENER_METHOD_NAME "handleEvent}.
 	 *
 	 * @param defaultListenerMethod the name of the default listener method to invoke.
 	 * @see #getListenerMethodName
@@ -157,30 +157,28 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	public void onEvent(CqEvent event) {
 		try {
 			// Check whether the delegate is a ContinuousQueryListener implementation itself.
-			// In that case, the adapter will simply act as a pass-through.
-			if (delegate != this) {
-				if (delegate instanceof ContinuousQueryListener) {
-					((ContinuousQueryListener) delegate).onEvent(event);
-					return;
+			// If so, this adapter will simply act as a pass-through.
+			if (delegate != this && delegate instanceof ContinuousQueryListener) {
+				((ContinuousQueryListener) delegate).onEvent(event);
+			}
+			// Else... find the listener handler method reflectively.
+			else {
+				String methodName = getListenerMethodName(event);
+
+				if (methodName == null) {
+					throw new InvalidDataAccessApiUsageException("No default listener method specified."
+						+ " Either specify a non-null value for the 'defaultListenerMethod' property"
+						+ " or override the 'getListenerMethodName' method.");
 				}
+
+				invoker = (invoker != null ? invoker : new MethodInvoker(delegate, methodName));
+
+				invokeListenerMethod(event, methodName);
 			}
 
-			// Other case... find the listener handler method reflectively.
-			String methodName = getListenerMethodName(event);
-
-			if (methodName == null) {
-				throw new InvalidDataAccessApiUsageException("No default listener method specified."
-					+ " Either specify a non-null value for the 'defaultListenerMethod' property"
-					+ " or override the 'getListenerMethodName' method.");
-			}
-
-			if (invoker == null) {
-				invoker = new MethodInvoker(delegate, methodName);
-			}
-
-			invokeListenerMethod(event, methodName);
-		} catch (Throwable th) {
-			handleListenerException(th);
+		}
+		catch (Throwable cause) {
+			handleListenerException(cause);
 		}
 	}
 
@@ -201,10 +199,10 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	/**
 	 * Handle the given exception that arose during listener execution.
 	 * The default implementation logs the exception at error level.
-	 * @param ex the exception to handle
+	 * @param cause the exception to handle
 	 */
-	protected void handleListenerException(Throwable ex) {
-		logger.error("Listener execution failed...", ex);
+	protected void handleListenerException(Throwable cause) {
+		logger.error("Listener execution failed...", cause);
 	}
 
 	/**
@@ -223,116 +221,122 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 			}
 			else {
 				throw new GemfireListenerExecutionFailedException(
-					String.format("Listener method '%1$s' threw exception...", methodName), e.getTargetException());
+					String.format("Listener method [%1$s] threw Exception...", methodName), e.getTargetException());
 			}
 		}
 		catch (Throwable e) {
 			throw new GemfireListenerExecutionFailedException(
-				String.format("Failed to invoke target listener method '%1$s'", methodName), e);
+				String.format("Failed to invoke the target listener method [%1$s]", methodName), e);
 		}
 	}
 
 	private class MethodInvoker {
+
 		private final Object delegate;
+
 		List<Method> methods;
 
 		MethodInvoker(Object delegate, final String methodName) {
-			this.delegate = delegate;
-
 			Class<?> c = delegate.getClass();
 
+			this.delegate = delegate;
 			methods = new ArrayList<Method>();
 
 			ReflectionUtils.doWithMethods(c, new MethodCallback() {
-
 					public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 						ReflectionUtils.makeAccessible(method);
 						methods.add(method);
 					}
-
 				}, new MethodFilter() {
 					public boolean matches(Method method) {
-						if (Modifier.isPublic(method.getModifiers()) && methodName.equals(method.getName())) {
-
-							// check out the arguments
-							Class<?>[] parameterTypes = method.getParameterTypes();
-							int objects = 0;
-							int operations = 0;
-
-							if (parameterTypes.length > 0) {
-								for (Class<?> paramType : parameterTypes) {
-
-									if (Object.class.equals(paramType)) {
-										objects++;
-										if (objects > 2) {
-											return false;
-										}
-									}
-									else if (Operation.class.equals(paramType)) {
-										operations++;
-										if (operations > 2) {
-											return false;
-										}
-									}
-									else if (CqEvent.class.equals(paramType)) {
-									}
-									else if (Throwable.class.equals(paramType)) {
-									}
-									else if (byte[].class.equals(paramType)) {
-									}
-									else if (CqQuery.class.equals(paramType)) {
-									}
-									else {
-										return false;
-									}
-								}
-								return true;
-							}
-						}
-						return false;
+						return isValidEventMethodSignature(method, methodName);
 					}
 				});
 
-			Assert.isTrue(!methods.isEmpty(), "Cannot find a suitable method named [" + c.getName() + "#" + methodName
-				+ "] - is the method public and has the proper arguments?");
+			Assert.isTrue(!methods.isEmpty(), String.format(
+				"Cannot find a suitable method named [%1$s#%2$s] - is the method public and does it have the proper arguments?",
+					c.getName(), methodName));
+		}
+
+		@SuppressWarnings("all")
+		boolean isValidEventMethodSignature(Method method, String methodName) {
+			if (Modifier.isPublic(method.getModifiers()) && methodName.equals(method.getName())) {
+				Class<?>[] parameterTypes = method.getParameterTypes();
+
+				int objects = 0;
+				int operations = 0;
+
+				if (parameterTypes.length > 0) {
+					for (Class<?> parameterType : parameterTypes) {
+						if (Object.class.equals(parameterType)) {
+							if (++objects > 2) {
+								return false;
+							}
+						}
+						else if (Operation.class.equals(parameterType)) {
+							if (++operations > 2) {
+								return false;
+							}
+						}
+						else if (byte[].class.equals(parameterType)) {
+						}
+						else if (CqEvent.class.equals(parameterType)) {
+						}
+						else if (CqQuery.class.equals(parameterType)) {
+						}
+						else if (Throwable.class.equals(parameterType)) {
+						}
+						else {
+							return false;
+						}
+					}
+
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		void invoke(CqEvent event) throws InvocationTargetException, IllegalAccessException {
-
-			for (Method m : methods) {
-				Class<?>[] types = m.getParameterTypes();
-				Object[] args = new Object[types.length];
-
-				boolean value = false;
-				boolean query = false;
-
-				for (int i = 0; i < types.length; i++) {
-					Class<?> paramType = types[i];
-
-					if (Object.class.equals(paramType)) {
-						args[i] = (!value ? event.getKey() : event.getNewValue());
-						value = true;
-					}
-					else if (Operation.class.equals(paramType)) {
-						args[i] = (!query ? event.getBaseOperation() : event.getQueryOperation());
-						query = true;
-					}
-					else if (CqEvent.class.equals(paramType)) {
-						args[i] = event;
-					}
-					else if (Throwable.class.equals(paramType)) {
-						args[i] = event.getThrowable();
-					}
-					else if (byte[].class.equals(paramType)) {
-						args[i] = event.getDeltaValue();
-					}
-					else if (CqQuery.class.equals(paramType)) {
-						args[i] = event.getCq();
-					}
-				}
-
-				m.invoke(delegate, args);
+			for (Method method : methods) {
+				method.invoke(delegate, getMethodArguments(method, event));
 			}
+		}
+
+		Object[] getMethodArguments(Method method, CqEvent event) {
+			Class<?>[] parameterTypes = method.getParameterTypes();
+			Object[] args = new Object[parameterTypes.length];
+
+			boolean query = false;
+			boolean value = false;
+
+			for (int index = 0; index < parameterTypes.length; index++) {
+				Class<?> parameterType = parameterTypes[index];
+
+				if (Object.class.equals(parameterType)) {
+					args[index] = (value ? event.getNewValue() : event.getKey());
+					value = true;
+				}
+				else if (Operation.class.equals(parameterType)) {
+					args[index] = (query ? event.getQueryOperation() : event.getBaseOperation());
+					query = true;
+				}
+				else if (byte[].class.equals(parameterType)) {
+					args[index] = event.getDeltaValue();
+				}
+				else if (CqEvent.class.equals(parameterType)) {
+					args[index] = event;
+				}
+				else if (CqQuery.class.equals(parameterType)) {
+					args[index] = event.getCq();
+				}
+				else if (Throwable.class.equals(parameterType)) {
+					args[index] = event.getThrowable();
+				}
+			}
+
+			return args;
 		}
 	}
 

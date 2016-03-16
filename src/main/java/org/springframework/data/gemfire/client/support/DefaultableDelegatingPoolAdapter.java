@@ -28,10 +28,12 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
- * The DefaultableDelegatingPoolAdapter class...
+ * The DefaultableDelegatingPoolAdapter class is a wrapper class around Pool allowing default configuration property
+ * values to be providing in the case that the Pool's setting were null.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see com.gemstone.gemfire.cache.client.Pool
+ * @since 1.8.0
  */
 @SuppressWarnings("unused")
 public abstract class DefaultableDelegatingPoolAdapter {
@@ -201,8 +203,12 @@ public abstract class DefaultableDelegatingPoolAdapter {
 	}
 
 	/* (non-Javadoc) */
-	public QueryService getQueryService() {
-		return getDelegate().getQueryService();
+	public QueryService getQueryService(QueryService defaultQueryService) {
+		return defaultIfNull(defaultQueryService, new ValueProvider<QueryService>() {
+			@Override public QueryService getValue() {
+				return getDelegate().getQueryService();
+			}
+		});
 	}
 
 	/* (non-Javadoc) */

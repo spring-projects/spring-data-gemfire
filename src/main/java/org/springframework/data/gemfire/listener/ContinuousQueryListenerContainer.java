@@ -116,7 +116,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/* (non-Javadoc) */
-	private String resolvePoolName() {
+	String resolvePoolName() {
 		String poolName = this.poolName;
 
 		if (!StringUtils.hasText(poolName)) {
@@ -129,29 +129,37 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/* (non-Javadoc) */
-	private String eagerlyInitializePool(String poolName) {
+	String eagerlyInitializePool(String poolName) {
 		try {
 			if (beanFactory != null && beanFactory.isTypeMatch(poolName, Pool.class)) {
 				beanFactory.getBean(poolName, Pool.class);
 			}
 		}
 		catch (BeansException ignore) {
-			Assert.notNull(PoolManager.find(poolName), String.format("No GemFire Pool with name [%1$s] was found.",
+			Assert.notNull(PoolManager.find(poolName), String.format("No GemFire Pool with name [%1$s] was found",
 				poolName));
 		}
 
 		return poolName;
 	}
 
-	private void initQueryService(String poolName) {
-		queryService = PoolManager.find(poolName).getQueryService();
+	/* (non-Javadoc) */
+	QueryService initQueryService(String poolName) {
+		if (queryService == null) {
+			queryService = PoolManager.find(poolName).getQueryService();
+		}
+
+		return queryService;
 	}
 
-	private void initExecutor() {
+	/* (non-Javadoc) */
+	Executor initExecutor() {
 		if (taskExecutor == null) {
-			manageExecutor = true;
 			taskExecutor = createDefaultTaskExecutor();
+			manageExecutor = true;
 		}
+
+		return taskExecutor;
 	}
 
 	/**
@@ -204,11 +212,11 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 			cq.execute();
 		}
 		catch (QueryException ex) {
-			throw new GemfireQueryException(String.format("Could not execute query '%1$s'; state is '%2$s'.",
+			throw new GemfireQueryException(String.format("Could not execute query [%1$s]; state is [%2$s].",
 				cq.getName(), cq.getState()), ex);
 		}
 		catch (RuntimeException ex) {
-			throw new GemfireQueryException(String.format("Could not execute query '%1$s'; state is '%2$s'.",
+			throw new GemfireQueryException(String.format("Could not execute query [%1$s]; state is [%2$s].",
 				cq.getName(), cq.getState()), ex);
 		}
 	}
@@ -286,12 +294,12 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
-	 * Determines whether the container has be started and is currently running.
+	 * Sets whether the CQ listener container should automatically start on startup.
 	 *
-	 * @return a boolean value indicating whether the container has been started and is currently running.
+	 * @param autoStartup a boolean value indicating whether this CQ listener container should automatically start.
 	 */
-	public synchronized boolean isRunning() {
-		return running;
+	public void setAutoStartup(final boolean autoStartup) {
+		this.autoStartup = autoStartup;
 	}
 
 	/**
@@ -305,12 +313,12 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
-	 * Sets whether the CQ listener container should automatically start on startup.
+	 * Determines whether the container has be started and is currently running.
 	 *
-	 * @param autoStartup a boolean value indicating whether this CQ listener container should automatically start.
+	 * @return a boolean value indicating whether the container has been started and is currently running.
 	 */
-	public void setAutoStartup(final boolean autoStartup) {
-		this.autoStartup = autoStartup;
+	public synchronized boolean isRunning() {
+		return running;
 	}
 
 	/**
@@ -358,6 +366,15 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
+	 * Sets the phase in which this CQ listener container will start in the Spring container.
+	 *
+	 * @param phase the phase value of this CQ listener container.
+	 */
+	public void setPhase(final int phase) {
+		this.phase = phase;
+	}
+
+	/**
 	 * Gets the phase in which this CQ listener container will start in the Spring container.
 	 *
 	 * @return the phase value of this CQ listener container.
@@ -365,15 +382,6 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 */
 	public int getPhase() {
 		return phase;
-	}
-
-	/**
-	 * Sets the phase in which this CQ listener container will start in the Spring container.
-	 *
-	 * @param phase the phase value of this CQ listener container.
-	 */
-	public void setPhase(final int phase) {
-		this.phase = phase;
 	}
 
 	/**
