@@ -25,7 +25,7 @@ import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListener
  * @author Costin Leau
  * @see ContinuousQueryListenerAdapter
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({ "serial", "unused" })
 public class GemfireListenerExecutionFailedException extends InvalidDataAccessApiUsageException {
 
 	/**

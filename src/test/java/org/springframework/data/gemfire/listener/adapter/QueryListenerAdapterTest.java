@@ -85,8 +85,7 @@ public class QueryListenerAdapterTest {
 		};
 	}
 
-	@SuppressWarnings("unused")
-	public static interface Delegate {
+	interface Delegate {
 
 		void handleEvent(CqEvent event);
 
@@ -116,8 +115,7 @@ public class QueryListenerAdapterTest {
 
 	@Test
 	public void testThatTheDefaultHandlingMethodNameIsTheConstantDefault() throws Exception {
-		assertEquals(ContinuousQueryListenerAdapter.ORIGINAL_DEFAULT_LISTENER_METHOD,
-			adapter.getDefaultListenerMethod());
+		assertEquals(ContinuousQueryListenerAdapter.DEFAULT_LISTENER_METHOD_NAME, adapter.getDefaultListenerMethod());
 	}
 
 	@Test
@@ -235,8 +233,8 @@ public class QueryListenerAdapterTest {
 		SampleListener listener = new SampleListener();
 
 		ContinuousQueryListener listenerAdapter = new ContinuousQueryListenerAdapter(listener) {
-			protected void handleListenerException(Throwable ex) {
-				throw new RuntimeException(ex);
+			protected void handleListenerException(Throwable cause) {
+				throw new RuntimeException(cause);
 			}
 		};
 
