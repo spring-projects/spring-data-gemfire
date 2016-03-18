@@ -3,6 +3,20 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.8.0.RC1 (2016-03-18)
+-----------------------------------------
+* SGF-481 - Upgrade to Spring Framework 4.2.5.RELEASE.
+* SGF-480 - Change default for use-bean-factory-locator to false.
+* SGF-479 - Remove lazy initialization option for configuring a GemFire cache.
+* SGF-478 - Release 1.8 RC1 (Hopper).
+* SGF-475 - Add additional logging to the MappingPdxSerializer.
+* SGF-474 - Fix the NPE in the MappingPdxSerializer.
+* SGF-473 - Allow a Spring-configured ClientCache to be constructed without a Pool.
+* SGF-472 - Dependency to Aspectjweaver missing in Hopper M1.
+* SGF-469 - Add support for CDI.
+* SGF-416 - Avoid eager creation of a GemFire DistributedSystem in the PoolFactoryBean by creating a ClientCache first.
+
+
 Changes in version 1.7.4.RELEASE (2016-02-23)
 ---------------------------------------------
 * SGF-473 - Allow a Spring-configured ClientCache to be constructed without a Pool.
