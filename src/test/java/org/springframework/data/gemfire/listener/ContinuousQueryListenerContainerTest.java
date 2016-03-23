@@ -45,6 +45,7 @@ import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
 
+import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
@@ -137,6 +138,23 @@ public class ContinuousQueryListenerContainerTest {
 	}
 
 	@Test
+	public void afterPropertiesSetThrowsIllegalStateExceptionWhenQueryServicesIsUninitialized() {
+		exception.expect(IllegalStateException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("QueryService was not properly initialized");
+
+		try {
+			listenerContainer.setPoolName("TestPool");
+			listenerContainer.afterPropertiesSet();
+		}
+		finally {
+			assertThat(listenerContainer.isActive(), is(false));
+			assertThat(listenerContainer.isAutoStartup(), is(true));
+			assertThat(listenerContainer.isRunning(), is(false));
+		}
+	}
+
+	@Test
 	public void resolvesToProvidedPoolName() {
 		listenerContainer.setPoolName("TestPool");
 		assertThat(listenerContainer.resolvePoolName(), is(equalTo("TestPool")));
@@ -222,7 +240,7 @@ public class ContinuousQueryListenerContainerTest {
 
 		try {
 			exception.expect(IllegalArgumentException.class);
-			exception.expectCause(nullValue(Throwable.class));
+			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage("No GemFire Pool with name [TestPool] was found");
 
 			listenerContainer.setBeanFactory(mockBeanFactory);
@@ -246,6 +264,17 @@ public class ContinuousQueryListenerContainerTest {
 	}
 
 	@Test
+	public void initializesQueryServiceFromContainer() {
+		QueryService mockQueryService = mock(QueryService.class);
+
+		listenerContainer.setQueryService(mockQueryService);
+
+		assertThat(listenerContainer.initQueryService("TestPool"), is(equalTo(mockQueryService)));
+
+		verifyZeroInteractions(mockQueryService);
+	}
+
+	@Test
 	public void initializesQueryServiceFromPool() {
 		Pool mockPool = mock(Pool.class);
 		QueryService mockQueryService = mock(QueryService.class);
@@ -255,6 +284,7 @@ public class ContinuousQueryListenerContainerTest {
 
 		try {
 			PoolManagerImpl.getPMI().register(mockPool);
+			listenerContainer.setQueryService(null);
 			assertThat(listenerContainer.initQueryService("TestPool"), is(equalTo(mockQueryService)));
 		}
 		finally {
@@ -262,6 +292,30 @@ public class ContinuousQueryListenerContainerTest {
 			verify(mockPool, times(2)).getName();
 			verify(mockPool, times(1)).getQueryService();
 			verifyZeroInteractions(mockQueryService);
+		}
+	}
+
+	@Test
+	public void initializesQueryServiceFromPoolInThePresenceOfAProvidedQueryService() {
+		Pool mockPool = mock(Pool.class);
+
+		QueryService mockQueryServiceOne = mock(QueryService.class);
+		QueryService mockQueryServiceTwo = mock(QueryService.class);
+
+		when(mockPool.getName()).thenReturn("TestPool");
+		when(mockPool.getQueryService()).thenReturn(mockQueryServiceOne);
+
+		try {
+			PoolManagerImpl.getPMI().register(mockPool);
+			listenerContainer.setQueryService(mockQueryServiceTwo);
+			assertThat(listenerContainer.initQueryService("TestPool"), is(equalTo(mockQueryServiceOne)));
+		}
+		finally {
+			assertThat(PoolManagerImpl.getPMI().unregister(mockPool), is(true));
+			verify(mockPool, times(2)).getName();
+			verify(mockPool, times(1)).getQueryService();
+			verifyZeroInteractions(mockQueryServiceOne);
+			verifyZeroInteractions(mockQueryServiceTwo);
 		}
 	}
 
@@ -279,6 +333,34 @@ public class ContinuousQueryListenerContainerTest {
 	@Test
 	public void initializesDefaultTaskExecutor() {
 		assertThat(listenerContainer.initExecutor(), is(instanceOf(Executor.class)));
+	}
+
+	@Test
+	public void setCacheSetsQueryService() {
+		QueryService mockQueryService = mock(QueryService.class);
+		RegionService mockRegionService = mock(RegionService.class);
+
+		when(mockRegionService.getQueryService()).thenReturn(mockQueryService);
+
+		listenerContainer.setCache(mockRegionService);
+
+		assertThat(listenerContainer.initQueryService(null), is(equalTo(mockQueryService)));
+
+		verify(mockRegionService, times(1)).getQueryService();
+		verifyZeroInteractions(mockQueryService);
+	}
+
+	@Test
+	public void setAndGetAutoStartup() {
+		assertThat(listenerContainer.isAutoStartup(), is(true));
+
+		listenerContainer.setAutoStartup(false);
+
+		assertThat(listenerContainer.isAutoStartup(), is(false));
+
+		listenerContainer.setAutoStartup(true);
+
+		assertThat(listenerContainer.isAutoStartup(), is(true));
 	}
 
 }

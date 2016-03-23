@@ -35,6 +35,8 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.gemfire.GemfireQueryException;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter;
+import org.springframework.data.gemfire.client.support.DelegatingPoolAdapter;
 import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -108,6 +110,9 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		initQueryService(eagerlyInitializePool(resolvePoolName()));
 		initExecutor();
 		initContinuousQueries(continuousQueryDefinitions);
+
+		Assert.state(queryService != null, "QueryService was not properly initialized");
+
 		initialized = true;
 
 		if (isAutoStartup()) {
@@ -145,8 +150,9 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 
 	/* (non-Javadoc) */
 	QueryService initQueryService(String poolName) {
-		if (queryService == null) {
-			queryService = PoolManager.find(poolName).getQueryService();
+		if (queryService == null || StringUtils.hasText(poolName)) {
+			queryService = DefaultableDelegatingPoolAdapter.from(DelegatingPoolAdapter.from(
+				PoolManager.find(poolName))).preferPool().getQueryService(queryService);
 		}
 
 		return queryService;

@@ -51,24 +51,24 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
- * The CustomEditorRegistrationBeanFactoryPostProcessorTest class...
+ * The CustomEditorRegisteringBeanFactoryPostProcessorTest class...
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.config.CustomEditorRegistrationBeanFactoryPostProcessor
+ * @see CustomEditorRegisteringBeanFactoryPostProcessor
  * @since 1.6.0
  */
 @SuppressWarnings("deprecation")
-public class CustomEditorRegistrationBeanFactoryPostProcessorTest {
+public class CustomEditorRegisteringBeanFactoryPostProcessorTest {
 
 	@Test
 	public void customEditorRegistration() {
 		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
 
-		new CustomEditorRegistrationBeanFactoryPostProcessor().postProcessBeanFactory(mockBeanFactory);
+		new CustomEditorRegisteringBeanFactoryPostProcessor().postProcessBeanFactory(mockBeanFactory);
 
-		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(ConnectionEndpoint[].class), eq(
-			CustomEditorRegistrationBeanFactoryPostProcessor.ConnectionEndpointArrayToIterableConverter.class));
+		//verify(mockBeanFactory, times(1)).registerCustomEditor(eq(ConnectionEndpoint[].class),
+		//	eq(CustomEditorRegisteringBeanFactoryPostProcessor.ConnectionEndpointArrayToIterableConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(EvictionAction.class),
 			eq(EvictionActionConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(EvictionPolicyType.class),
@@ -103,7 +103,7 @@ public class CustomEditorRegistrationBeanFactoryPostProcessorTest {
 			newConnectionEndpoint("localhost", 40404)
 		};
 
-		Iterable<ConnectionEndpoint> iterable = new CustomEditorRegistrationBeanFactoryPostProcessor
+		Iterable<ConnectionEndpoint> iterable = new CustomEditorRegisteringBeanFactoryPostProcessor
 			.ConnectionEndpointArrayToIterableConverter().convert(array);
 
 		assertThat(iterable, is(notNullValue()));

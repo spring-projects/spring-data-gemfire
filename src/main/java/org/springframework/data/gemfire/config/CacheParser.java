@@ -119,7 +119,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 	/* (non-Javadoc) */
 	void registerGemFireBeanFactoryPostProcessors(BeanDefinitionRegistry registry) {
 		BeanDefinitionReaderUtils.registerWithGeneratedName(BeanDefinitionBuilder.genericBeanDefinition(
-			CustomEditorRegistrationBeanFactoryPostProcessor.class).getBeanDefinition(), registry);
+			CustomEditorRegisteringBeanFactoryPostProcessor.class).getBeanDefinition(), registry);
 	}
 
 	private void parsePdxDiskStore(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
