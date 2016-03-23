@@ -49,20 +49,23 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.Gateway;
 
 /**
- * The CustomEditorRegistrationBeanFactoryPostProcessor class is a Spring BeanFactoryPostProcessor used to register
- * custom GemFire JavaBeans PropertyEditors and Spring Converters that are used to perform type conversions between
- * String-based configuration meta-data and actual GemFire or SDG defined enumerated types.
+ * The CustomEditorRegisteringBeanFactoryPostProcessor class is a Spring {@link BeanFactoryPostProcessor} used
+ * to register custom GemFire-specific JavaBeans {@link java.beans.PropertyEditor}s and Spring {@link Converter}s
+ * that are used to perform type conversions between String-based configuration meta-data and actual GemFire
+ * or Spring Data GemFire defined enumerated types.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
+ * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
  * @since 1.6.0
  */
 @SuppressWarnings({ "deprecation", "unused" })
-public class CustomEditorRegistrationBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
+class CustomEditorRegisteringBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
+	/* (non-Javadoc) */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		beanFactory.registerCustomEditor(ConnectionEndpoint[].class, ConnectionEndpointArrayToIterableConverter.class);
+		//beanFactory.registerCustomEditor(ConnectionEndpoint[].class, ConnectionEndpointArrayToIterableConverter.class);
 		beanFactory.registerCustomEditor(EvictionAction.class, EvictionActionConverter.class);
 		beanFactory.registerCustomEditor(EvictionPolicyType.class, EvictionPolicyConverter.class);
 		beanFactory.registerCustomEditor(ExpirationAction.class, ExpirationActionConverter.class);
@@ -76,7 +79,8 @@ public class CustomEditorRegistrationBeanFactoryPostProcessor implements BeanFac
 		beanFactory.registerCustomEditor(SubscriptionEvictionPolicy.class, SubscriptionEvictionPolicyConverter.class);
 	}
 
-	static final class ConnectionEndpointArrayToIterableConverter extends PropertyEditorSupport
+	/* (non-Javadoc) */
+	public static class ConnectionEndpointArrayToIterableConverter extends PropertyEditorSupport
 			implements Converter<ConnectionEndpoint[], Iterable>  {
 
 		@Override
