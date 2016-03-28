@@ -42,7 +42,7 @@ import org.springframework.util.Assert;
 @SuppressWarnings("unused")
 public abstract class AbstractGemFireClientServerIntegrationTest {
 
-	protected static long DEFAULT_WAIT_TIME_FOR_SERVER_TO_START = TimeUnit.SECONDS.toMillis(20);
+	protected static long DEFAULT_TIME_TO_WAIT_FOR_SERVER_TO_START = TimeUnit.SECONDS.toMillis(20);
 	protected static long FIVE_HUNDRED_MILLISECONDS = TimeUnit.MILLISECONDS.toMillis(500);
 	protected static long ONE_SECOND_IN_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
@@ -58,11 +58,11 @@ public abstract class AbstractGemFireClientServerIntegrationTest {
 		);
 	}
 
-	protected static ProcessWrapper setupGemFireServer(final Class<?> testClass) throws IOException {
-		return setupGemFireServer(testClass, DEFAULT_WAIT_TIME_FOR_SERVER_TO_START);
+	protected static ProcessWrapper runGemFireServer(Class<?> testClass) throws IOException {
+		return runGemFireServer(testClass, DEFAULT_TIME_TO_WAIT_FOR_SERVER_TO_START);
 	}
 
-	protected static ProcessWrapper setupGemFireServer(final Class<?> testClass, final long waitTimeInMilliseconds) throws IOException {
+	protected static ProcessWrapper runGemFireServer(Class<?> testClass, long waitTimeInMilliseconds) throws IOException {
 		String serverName = testClass.getSimpleName() + "Server";
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
@@ -74,18 +74,18 @@ public abstract class AbstractGemFireClientServerIntegrationTest {
 		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
 		arguments.add("/".concat(testClass.getName().replace(".", "/").concat("-server-context.xml")));
 
-		ProcessWrapper serverProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
+		ProcessWrapper gemfireServerProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
 			arguments.toArray(new String[arguments.size()]));
 
-		waitForServerToStart(serverProcess, waitTimeInMilliseconds);
+		waitForServerToStart(gemfireServerProcess, waitTimeInMilliseconds);
 
 		System.out.printf("The Spring-based, GemFire Cache Server process for %1$s should be running...%n",
 			testClass.getSimpleName());
 
-		return serverProcess;
+		return gemfireServerProcess;
 	}
 
-	static void waitForServerToStart(final ProcessWrapper process, final long duration) {
+	static void waitForServerToStart(final ProcessWrapper process, long duration) {
 		ThreadUtils.timedWait(Math.max(duration, FIVE_HUNDRED_MILLISECONDS), FIVE_HUNDRED_MILLISECONDS,
 			new ThreadUtils.WaitCondition() {
 				private File processPidControlFile = new File(process.getWorkingDirectory(),
@@ -98,7 +98,7 @@ public abstract class AbstractGemFireClientServerIntegrationTest {
 		);
 	}
 
-	protected static void tearDownGemFireServer(final ProcessWrapper process) {
+	protected static void stopGemFireServer(ProcessWrapper process) {
 		process.shutdown();
 
 		if (Boolean.valueOf(System.getProperty(PROCESS_WORKING_DIRECTORY_CLEAN_SYSTEM_PROPERTY, Boolean.TRUE.toString()))) {

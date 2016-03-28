@@ -43,21 +43,20 @@ public abstract class FileSystemUtils extends FileUtils {
 	public static final File USER_HOME = new File(System.getProperty("user.home"));
 	public static final File WORKING_DIRECTORY = new File(System.getProperty("user.dir"));
 
-	public static boolean deleteRecursive(final File path) {
-		assert path != null;
-
+	public static boolean deleteRecursive(File path) {
 		boolean success = true;
 
-		if (path.isDirectory()) {
+		if (isDirectory(path)) {
 			for (File file : safeListFiles(path)) {
 				success &= deleteRecursive(file);
 			}
 		}
 
-		return (path.delete() && success);
+		return ((path == null || path.delete()) && success);
 	}
 
-	public static File getRootRelativeToWorkingDirectoryOrPath(final File path) {
+	// returns sub-directory just below working directory
+	public static File getRootRelativeToWorkingDirectoryOrPath(File path) {
 		File localPath = path;
 
 		if (isDirectory(localPath)) {
@@ -69,14 +68,14 @@ public abstract class FileSystemUtils extends FileUtils {
 		return (localPath != null ? localPath : path);
 	}
 
-	public static File[] listFiles(final File directory, final FileFilter fileFilter) {
-		Assert.isTrue(directory != null && directory.isDirectory(), String.format(
-			"File (%1$s) does not refer to a valid directory", directory));
+	public static File[] listFiles(File directory, FileFilter fileFilter) {
+		Assert.isTrue(isDirectory(directory), String.format( "File (%1$s) does not refer to a valid directory",
+			directory));
 
 		List<File> results = new ArrayList<File>();
 
 		for (File file : safeListFiles(directory, fileFilter)) {
-			if (file.isDirectory()) {
+			if (isDirectory(file)) {
 				results.addAll(Arrays.asList(listFiles(file, fileFilter)));
 			}
 			else {
@@ -87,12 +86,12 @@ public abstract class FileSystemUtils extends FileUtils {
 		return results.toArray(new File[results.size()]);
 	}
 
-	public static File[] safeListFiles(final File directory) {
+	public static File[] safeListFiles(File directory) {
 		return safeListFiles(directory, AllFiles.INSTANCE);
 	}
 
-	public static File[] safeListFiles(final File directory, final FileFilter fileFilter) {
-		File[] files = (directory != null ? directory.listFiles(fileFilter) : new File[0]);
+	public static File[] safeListFiles(File directory, FileFilter fileFilter) {
+		File[] files = (directory != null ? directory.listFiles(fileFilter) : null);
 		return (files != null ? files : new File[0]);
 	}
 

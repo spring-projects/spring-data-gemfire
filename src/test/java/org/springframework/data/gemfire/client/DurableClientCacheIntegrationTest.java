@@ -111,12 +111,12 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 
 	@BeforeClass
 	public static void setupGemFireServer() throws IOException {
-		serverProcess = setupGemFireServer(DurableClientCacheIntegrationTest.class);
+		serverProcess = runGemFireServer(DurableClientCacheIntegrationTest.class);
 	}
 
 	@AfterClass
 	public static void tearDownGemFireServer() {
-		tearDownGemFireServer(serverProcess);
+		stopGemFireServer(serverProcess);
 		serverProcess = null;
 	}
 

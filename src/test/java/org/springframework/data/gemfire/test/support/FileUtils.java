@@ -49,12 +49,10 @@ public abstract class FileUtils extends IOUtils {
 		return (path != null && path.isFile());
 	}
 
-	// TODO refactor and perhaps replace with org.springframework.util.FileCopyUtils.copyToString(:Reader)
-	public static String read(final File file) throws IOException {
-		Assert.isTrue(file != null && file.isFile(), String.format(
-			"The File reference (%1$s) from which to read the contents is not a valid file!", file));
-
-		assert file != null;
+	@SuppressWarnings("all")
+	public static String read(File file) throws IOException {
+		Assert.isTrue(isFile(file), String.format(
+			"File [%1$s], from which to read the contents of, does not refer to a valid file", file));
 
 		BufferedReader fileReader = new BufferedReader(new FileReader(file));
 
@@ -73,10 +71,11 @@ public abstract class FileUtils extends IOUtils {
 		}
 	}
 
-	// TODO refactor and perhaps replace with org.springframework.util.FileCopyUtils.copy(:String, :Writer)
-	public static void write(final File file, final String contents) throws IOException {
-		Assert.notNull(file, "The File to write to must not be null!");
-		Assert.isTrue(StringUtils.hasText(contents), "The 'contents' of the file cannot be null or empty!");
+	public static void write(File file, String contents) throws IOException {
+		Assert.notNull(file, "File must not be null!");
+
+		Assert.isTrue(StringUtils.hasText(contents), String.format(
+			"The contents for File [%1$s] cannot be null or empty", file));
 
 		BufferedWriter fileWriter = null;
 
