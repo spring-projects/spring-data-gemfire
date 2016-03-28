@@ -30,9 +30,9 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 public abstract class IOUtils {
 
-	private static final Logger log = Logger.getLogger(IOUtils.class.getName());
+	protected static final Logger log = Logger.getLogger(IOUtils.class.getName());
 
-	public static boolean close(final Closeable closeable) {
+	public static boolean close(Closeable closeable) {
 		if (closeable != null) {
 			try {
 				closeable.close();
@@ -40,10 +40,9 @@ public abstract class IOUtils {
 			}
 			catch (IOException ignore) {
 				if (log.isLoggable(Level.FINE)) {
-					log.fine(String.format("Failed to close Closeable object (%1$s) due to I/O error:%n%2$s",
+					log.fine(String.format("Failed to close the Closeable object (%1$s) due to an I/O error:%n%2$s",
 						closeable, ThrowableUtils.toString(ignore)));
 				}
-
 			}
 		}
 

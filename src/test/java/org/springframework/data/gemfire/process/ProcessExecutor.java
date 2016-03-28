@@ -83,6 +83,7 @@ public abstract class ProcessExecutor {
 
 		command.add(JAVA_EXE.getAbsolutePath());
 		command.add("-server");
+		command.add("-ea");
 		command.add("-classpath");
 		command.add(StringUtils.hasText(classpath) ? classpath : JAVA_CLASSPATH);
 		command.addAll(getSpringGemFireSystemProperties());

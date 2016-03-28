@@ -69,8 +69,8 @@ public class ProcessWrapper {
 	private final Process process;
 	private final ProcessConfiguration processConfiguration;
 
-	public ProcessWrapper(final Process process, final ProcessConfiguration processConfiguration) {
-		Assert.notNull(process, "The Process object backing this wrapper must not be null!");
+	public ProcessWrapper(Process process, ProcessConfiguration processConfiguration) {
+		Assert.notNull(process, "Process must not be null");
 
 		Assert.notNull(processConfiguration, "The context and configuration meta-data providing details about"
 			+ " the environment in which the process is running and how the process was configured must not be null!");
@@ -114,9 +114,9 @@ public class ProcessWrapper {
 		};
 	}
 
-	protected Thread newThread(final String name, final Runnable task) {
-		Assert.isTrue(!StringUtils.isEmpty(name), "The name of the Thread must be specified!");
-		Assert.notNull(task, "The Thread task must not be null!");
+	protected Thread newThread(String name, Runnable task) {
+		Assert.isTrue(!StringUtils.isEmpty(name), "Thread name must be specified");
+		Assert.notNull(task, "Thread task must not be null");
 		Thread thread = new Thread(task, name);
 		thread.setDaemon(DEFAULT_DAEMON_THREAD);
 		thread.setPriority(Thread.NORM_PRIORITY);
@@ -153,7 +153,7 @@ public class ProcessWrapper {
 	}
 
 	public boolean isRunning() {
-		return ProcessUtils.isRunning(this.process);
+		return ProcessUtils.isRunning(process);
 	}
 
 	public File getWorkingDirectory() {
@@ -193,7 +193,7 @@ public class ProcessWrapper {
 		return FileUtils.read(log);
 	}
 
-	public boolean register(final ProcessInputStreamListener listener) {
+	public boolean register(ProcessInputStreamListener listener) {
 		return (listener != null && listeners.add(listener));
 	}
 
@@ -207,7 +207,7 @@ public class ProcessWrapper {
 
 	public void signalStop() {
 		try {
-			ProcessUtils.signalStop(this.process);
+			ProcessUtils.signalStop(process);
 		}
 		catch (IOException e) {
 			log.warning("Failed to signal the process to stop!");
@@ -222,8 +222,9 @@ public class ProcessWrapper {
 		return stop(DEFAULT_WAIT_TIME_MILLISECONDS);
 	}
 
-	public int stop(final long milliseconds) {
+	public int stop(long milliseconds) {
 		if (isRunning()) {
+			boolean interrupted = false;
 			int exitValue = -1;
 			final int pid = safeGetPid();
 			final long timeout = (System.currentTimeMillis() + milliseconds);
@@ -244,9 +245,10 @@ public class ProcessWrapper {
 				while (!exited.get() && System.currentTimeMillis() < timeout) {
 					try {
 						exitValue = futureExitValue.get(milliseconds, TimeUnit.MILLISECONDS);
-						log.info(String.format("Process [%1$s] has been stopped.%n", pid));
+						log.info(String.format("Process [%1$s] has stopped.%n", pid));
 					}
 					catch (InterruptedException ignore) {
+						interrupted = true;
 					}
 				}
 			}
@@ -260,6 +262,10 @@ public class ProcessWrapper {
 			}
 			finally {
 				executorService.shutdownNow();
+
+				if (interrupted) {
+					Thread.currentThread().interrupt();
+				}
 			}
 
 			return exitValue;
@@ -279,7 +285,7 @@ public class ProcessWrapper {
 		return stop();
 	}
 
-	public boolean unregister(final ProcessInputStreamListener listener) {
+	public boolean unregister(ProcessInputStreamListener listener) {
 		return listeners.remove(listener);
 	}
 
@@ -287,7 +293,7 @@ public class ProcessWrapper {
 		waitFor(DEFAULT_WAIT_TIME_MILLISECONDS);
 	}
 
-	public void waitFor(final long milliseconds) {
+	public void waitFor(long milliseconds) {
 		ThreadUtils.timedWait(milliseconds, 500, new ThreadUtils.WaitCondition() {
 			@Override public boolean waiting() {
 				return isRunning();

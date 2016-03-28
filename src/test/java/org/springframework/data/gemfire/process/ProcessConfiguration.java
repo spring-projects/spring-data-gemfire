@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -44,20 +45,20 @@ public class ProcessConfiguration {
 
 	private final Map<String, String> environment;
 
-	public static ProcessConfiguration create(final ProcessBuilder processBuilder) {
-		Assert.notNull(processBuilder, "The ProcessBuilder used to construct, configure and start the Process must not be null!");
+	public static ProcessConfiguration create(ProcessBuilder processBuilder) {
+		Assert.notNull(processBuilder, "The ProcessBuilder used to configure and start the Process must not be null!");
 
 		return new ProcessConfiguration(processBuilder.command(), processBuilder.directory(),
 			processBuilder.environment(), processBuilder.redirectErrorStream());
 	}
 
-	public ProcessConfiguration(final List<String> command, final File workingDirectory,
-			final Map<String, String> environment, final boolean redirectingErrorStream) {
+	public ProcessConfiguration(List<String> command, File workingDirectory, Map<String, String> environment,
+			boolean redirectingErrorStream) {
 
-		Assert.notEmpty(command, "The command used to run the process must be specified!");
+		Assert.notEmpty(command, "process command must be specified");
 
-		Assert.isTrue((workingDirectory != null && workingDirectory.isDirectory()), String.format(
-			"The process working directory (%1$s) is not valid!", workingDirectory));
+		Assert.isTrue(FileSystemUtils.isDirectory(workingDirectory), String.format(
+			"process working directory [%1$s] is not valid", workingDirectory));
 
 		this.command = new ArrayList<String>(command);
 		this.workingDirectory = workingDirectory;

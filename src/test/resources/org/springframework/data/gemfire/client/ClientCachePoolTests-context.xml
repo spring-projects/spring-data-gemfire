@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<gfe:client-cache pool-name="serverConnectionPool"/>
+
+	<gfe:pool id="serverConnectionPool">
+		<gfe:server host="localhost" port="36763"/>
+	</gfe:pool>
+
+	<gfe:client-region id="Factorials" shortcut="PROXY"/>
+
+</beans>

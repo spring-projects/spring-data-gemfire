@@ -31,6 +31,7 @@ import java.lang.management.RuntimeMXBean;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.IOUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -73,12 +74,12 @@ public abstract class ProcessUtils {
 			}
 		}
 
-		throw new PidUnavailableException(String.format("The process ID (PID) is not available (%1$s)!",
+		throw new PidUnavailableException(String.format("process ID (PID) not available [%1$s]",
 			runtimeMXBeanName), cause);
 	}
 
-	/*
-	public static boolean isRunning(final int processId) {
+	public static boolean isRunning(int processId) {
+		/*
 		for (VirtualMachineDescriptor vmDescriptor : VirtualMachine.list()) {
 			if (String.valueOf(processId).equals(vmDescriptor.id())) {
 				return true;
@@ -86,10 +87,11 @@ public abstract class ProcessUtils {
 		}
 
 		return false;
+		*/
+		throw new UnsupportedOperationException("operation not supported");
 	}
-	*/
 
-	public static boolean isRunning(final Process process) {
+	public static boolean isRunning(Process process) {
 		try {
 			process.exitValue();
 			return false;
@@ -99,7 +101,7 @@ public abstract class ProcessUtils {
 		}
 	}
 
-	public static void signalStop(final Process process) throws IOException {
+	public static void signalStop(Process process) throws IOException {
 		if (isRunning(process)) {
 			OutputStream processOutputStream = process.getOutputStream();
 			processOutputStream.write(TERM_TOKEN.concat("\n").getBytes());
@@ -107,30 +109,28 @@ public abstract class ProcessUtils {
 		}
 	}
 
+	@SuppressWarnings("all")
 	public static void waitForStopSignal() {
 		Scanner in = new Scanner(System.in);
 		while (!TERM_TOKEN.equals(in.next()));
 	}
 
-	public static int findAndReadPid(final File workingDirectory) {
-		Assert.isTrue(workingDirectory != null && workingDirectory.isDirectory(), String.format(
-			"The file system pathname (%1$s) expected to contain a PID file is not a valid directory!",
-			workingDirectory));
-
+	public static int findAndReadPid(File workingDirectory) {
 		File pidFile = findPidFile(workingDirectory);
 
 		if (pidFile == null) {
 			throw new PidUnavailableException(String.format(
-				"No PID file was found in working directory (%1$s) or any of it's sub-directories!",
+				"no PID file was found in working directory [%1$s] or any of it's sub-directories",
 					workingDirectory));
 		}
 
 		return readPid(pidFile);
 	}
 
-	protected static File findPidFile(final File workingDirectory) {
-		Assert.isTrue(workingDirectory != null && workingDirectory.isDirectory(), String.format(
-			"The file system pathname (%1$s) is not valid directory!", workingDirectory));
+	@SuppressWarnings("all")
+	protected static File findPidFile(File workingDirectory) {
+		Assert.isTrue(FileSystemUtils.isDirectory(workingDirectory), String.format(
+			"File [%1$s] is not a valid directory", workingDirectory));
 
 		for (File file : workingDirectory.listFiles(DirectoryPidFileFilter.INSTANCE)) {
 			if (file.isDirectory()) {
@@ -145,9 +145,10 @@ public abstract class ProcessUtils {
 		return null;
 	}
 
-	public static int readPid(final File pidFile) {
+	@SuppressWarnings("all")
+	public static int readPid(File pidFile) {
 		Assert.isTrue(pidFile != null && pidFile.isFile(), String.format(
-			"The file system pathname (%1$s) is not a valid file!", pidFile));
+			"File [%1$s] is not a valid file", pidFile));
 
 		BufferedReader fileReader = null;
 		String pidValue = null;
@@ -158,25 +159,26 @@ public abstract class ProcessUtils {
 			return Integer.parseInt(pidValue);
 		}
 		catch (FileNotFoundException e) {
-			throw new PidUnavailableException(String.format("PID file (%1$s) could not be found!", pidFile), e);
+			throw new PidUnavailableException(String.format("PID file [%1$s] not found", pidFile), e);
 		}
 		catch (IOException e) {
-			throw new PidUnavailableException(String.format("Unable to read PID from file (%1$s)!", pidFile), e);
+			throw new PidUnavailableException(String.format("failed to read PID from file [%1$s]", pidFile), e);
 		}
 		catch (NumberFormatException e) {
 			throw new PidUnavailableException(String.format(
-				"The value (%1$s) from PID file (%2$s) was not a valid numerical PID!", pidValue, pidFile), e);
+				"value [%1$s] from PID file [%2$s] was not a valid numerical PID", pidValue, pidFile), e);
 		}
 		finally {
 			IOUtils.close(fileReader);
 		}
 	}
 
-	public static void writePid(final File pidFile, final int pid) throws IOException {
+	@SuppressWarnings("all")
+	public static void writePid(File pidFile, int pid) throws IOException {
 		Assert.isTrue(pidFile != null && (pidFile.isFile() || pidFile.createNewFile()), String.format(
-			"The file system pathname (%1$s) in which the PID will be written is not a valid file!", pidFile));
+			"File [%1$s] is not a valid file", pidFile));
 
-		Assert.isTrue(pid > 0, String.format("The PID value (%1$d) must greater than 0!", pid));
+		Assert.isTrue(pid > 0, String.format("PID [%1$d] must greater than 0", pid));
 
 		PrintWriter fileWriter = new PrintWriter(new BufferedWriter(new FileWriter(pidFile, false), 16), true);
 
@@ -185,7 +187,7 @@ public abstract class ProcessUtils {
 		}
 		finally {
 			pidFile.deleteOnExit();
-			IOUtils.close(fileWriter);
+			FileSystemUtils.close(fileWriter);
 		}
 	}
 
@@ -194,8 +196,8 @@ public abstract class ProcessUtils {
 		protected static final DirectoryPidFileFilter INSTANCE = new DirectoryPidFileFilter();
 
 		@Override
-		public boolean accept(final File pathname) {
-			return (pathname != null && (pathname.isDirectory() || super.accept(pathname)));
+		public boolean accept(File path) {
+			return (path != null && (path.isDirectory() || super.accept(path)));
 		}
 	}
 
@@ -204,8 +206,8 @@ public abstract class ProcessUtils {
 		protected static final PidFileFilter INSTANCE = new PidFileFilter();
 
 		@Override
-		public boolean accept(final File pathname) {
-			return (pathname != null && pathname.isFile() && pathname.getName().endsWith(".pid"));
+		public boolean accept(File path) {
+			return (path != null && path.isFile() && path.getName().toLowerCase().endsWith(".pid"));
 		}
 	}
 
