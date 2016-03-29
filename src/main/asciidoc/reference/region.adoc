@@ -914,7 +914,12 @@ The following table offers a quick overview of configuration options specific to
 [[bootstrap:region:client]]
 == Client Region
 
-GemFire supports various deployment topologies for managing and distributing data. The topic is outside the scope of this documentation however to quickly recap, they can be classified in short in: peer-to-peer (p2p), client-server, and wide area cache network (or WAN). In the last two scenarios, it is common to declare *client* regions which connect to a cache server. Spring Data GemFire offers dedicated support for such configuration through <<bootstrap:cache:client>>, `client-region` and `pool` elements. As the names imply, the former defines a client region while the latter defines connection pools to be used/shared by the various client regions.
+GemFire supports various deployment topologies for managing and distributing data.  The topic is outside the scope
+of this documentation.  However, to quickly recap, they can be classified in short as: peer-to-peer (p2p), client-server,
+and wide area network (or WAN).  In the last two configurations, it is common to declare *client* regions which connect
+to a cache server.  _Spring Data GemFire_ offers dedicated support for such configuration through
+<<bootstrap:cache:client>>, `client-region` and `pool` elements.  As the names imply, the former defines a client region
+while the latter defines connection pools to be used/shared by the various client regions.
 
 Below is a typical client region configuration:
 
