@@ -1,15 +1,14 @@
 [[bootstrap:cache]]
 = Configuring a GemFire Cache
 
-In order to use GemFire, a developer needs to either create a new `Cache` or connect to an existing one.
-In the current version of GemFire, there can be only one open Cache per VM (or per `ClassLoader` to be
-technically correct). In most cases the Cache should only be created once.
+To use GemFire, a developer needs to either create a new `Cache` or connect to an existing one.  With the current
+version of GemFire, there can be only one open Cache per VM (technically, per `ClassLoader`).  In most cases, the
+`Cache` should only be created once.
 
-NOTE: This section describes the creation and configuration of a full Cache member, appropriate for peer-to-peer
-cache topologies and cache servers. A full cache is also commonly used for standalone applications, integration tests
-and proofs of concept. In a typical production system, most application processes will act as cache clients
-and will create a `ClientCache` instance instead. This is described in the sections <<bootstrap:cache:client>>
-and <<bootstrap:region:client>>
+NOTE: This section describes the creation and configuration of a cache member, appropriate in peer-to-peer topologies
+and cache servers. A cache member is also commonly used for standalone applications, integration tests and proof of
+concepts. In typical production systems, most application processes will act as cache clients, creating a `ClientCache`
+instance instead. This is described in the sections <<bootstrap:cache:client>> and <<bootstrap:region:client>>.
 
 A cache with default configuration can be created with a very simple declaration:
 
@@ -18,23 +17,24 @@ A cache with default configuration can be created with a very simple declaration
 <gfe:cache/>
 ----
 
-Upon initialization, a Spring application context containing this cache definition will register a `CacheFactoryBean`
-to create a Spring bean named `gemfireCache` referencing a GemFire `Cache` instance. This will either be an
-existing cache, or if one does not already exist, a newly created one. Since no additional properties were specified,
-a newly created cache will apply the default cache configuration.
+During Spring container initialization, any application context containing this cache definition will register
+a `CacheFactoryBean` that creates a Spring bean named `gemfireCache` referencing a GemFire `Cache` instance.
+This bean will refer to either an existing cache, or if one does not already exist, a newly created one.  Since no
+additional properties were specified, a newly created cache will apply the default cache configuration.
 
-All Spring Data GemFire components that depend on the cache respect this naming convention so that there is no need
-to explicitly declare the cache dependency. If you prefer, you can make the dependency explicit via the `cache-ref`
-attribute provided by various namespace elements. Also, you can easily override the cache's bean name:
+All _Spring Data GemFire_ components that depend on the cache respect this naming convention, so there is no need
+to explicitly declare the cache dependency.  If you prefer, you can make the dependency explicit via the `cache-ref`
+attribute provided by various SDG namespace elements.  Also, you can easily override the cache's bean name using
+the `id` attribute:
 
 [source,xml]
 ----
 <gfe:cache id="my-cache"/>
 ----
 
-Starting with Spring Data GemFire 1.2.0, the GemFire `Cache` may be fully configured using Spring. However, GemFire's
-native XML configuration file, `cache.xml`, is also supported. For scenarios in which the GemFire Cache needs to be
-configured natively, simply provide a reference to the GemFire configuration file using the `cache-xml-location`
+Starting with _Spring Data GemFire_ v1.2.0, a GemFire `Cache` can be fully configured using Spring.  However, GemFire's
+native XML configuration file, `cache.xml`, is also supported.  For situations in which the GemFire cache needs to be
+configured natively, simply provide a reference to the GemFire XML configuration file using the `cache-xml-location`
 attribute:
 
 [source,xml]
@@ -42,16 +42,19 @@ attribute:
 <gfe:cache id="cache-using-native-xml" cache-xml-location="classpath:cache.xml"/>
 ----
 
-In this example, if the cache needs to be created, it will use the file named `cache.xml` located in the classpath root.
+In this example, if the cache needs to be created, it will use the file named `cache.xml` located in the classpath root
+to configure it.
 
-NOTE: Note that the configuration makes use of Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#resources[`Resource`]
-abstraction to locate the file. This allows various search patterns to be used, depending on the runtime environment
+NOTE: The configuration makes use of Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#resources[`Resource`]
+abstraction to locate the file.  This allows various search patterns to be used, depending on the runtime environment
 or the prefix specified (if any) in the resource location.
 
-In addition to referencing an external configuration file one can specify GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/gemfire_properties.html[properties]
-using any of Spring's common properties support features. For example, one can use the `properties` element
-defined in the `util` namespace to define properties directly or load properties from a properties file. The latter is
-recommended for externalizing environment specific settings outside the application configuration:
+In addition to referencing an external XML configuration file, a developer may also specify GemFire System
+http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/gemfire_properties.html[properties]
+using any of Spring's `Properties` support features.
+
+For example, the developer may use the `properties` element defined in the `util` namespace to define `Properties`
+directly or load properties from a properties file:
 
 [source,xml]
 ----
@@ -71,8 +74,10 @@ recommended for externalizing environment specific settings outside the applicat
 </beans>
 ----
 
-NOTE: The cache settings apply only if a new cache needs to be created. If an open cache already exists in the VM,
-these settings will be ignored.
+The latter approach is recommended for externalizing environment specific settings outside the application configuration.
+
+NOTE: Cache settings apply only if a new cache needs to be created.  If an open cache already exists in the VM,
+these settings are ignored.
 
 [[bootstrap:cache:advanced]]
 == Advanced Cache Configuration
@@ -160,9 +165,9 @@ the required interface. More information on serialization support can be found i
 
 Setting the `<gfe:cache enable-auto-reconnect="[true|false*]>` attribute to true should be done with care.
 
-Generally, enabling 'auto-reconnect' should only be done in cases where Spring Data GemFire's XML namespace is used to
+Generally, enabling 'auto-reconnect' should only be done in cases where _Spring Data GemFire's_ XML namespace is used to
 configure and bootstrap a new GemFire Server data node to add to the cluster.  In other words, 'auto-reconnect'
-should not be used when Spring Data GemFire is used to develop and build an GemFire application that also happens
+should not be used when _Spring Data GemFire_ is used to develop and build an GemFire application that also happens
 to be a peer cache member of the GemFire cluster.
 
 The main reason is most GemFire applications use references to the GemFire cache or regions in order to perform
@@ -227,7 +232,8 @@ http://gemfire.docs.pivotal.io/latest/userguide/index.html#deploying/gfsh/gfsh_p
 [[bootstrap:cache:server]]
 == Configuring a GemFire Cache Server
 
-In Spring Data GemFire 1.1 dedicated support for configuring a http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/server/CacheServer.html[CacheServer] was added, allowing complete configuration through the Spring container:
+_Spring Data GemFire_ includes dedicated support for configuring a http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/server/CacheServer.html[CacheServer],
+allowing complete configuration through the Spring container:
 
 [source,xml]
 ----
@@ -244,13 +250,12 @@ In Spring Data GemFire 1.1 dedicated support for configuring a http://gemfire.do
 
   <!-- Advanced example depicting various cache server configuration options -->
   <gfe:cache-server id="advanced-config" auto-startup="true"
-       bind-address="localhost" port="${gfe.port.6}" host-name-for-clients="localhost"
-       load-poll-interval="2000" max-connections="22" max-threads="16"
-       max-message-count="1000" max-time-between-pings="30000"
+       bind-address="localhost" host-name-for-clients="localhost" port="${gemfire.cache.server.port}"
+       load-poll-interval="2000" max-connections="22" max-message-count="1000"
+       max-threads="16" max-time-between-pings="30000"
        groups="test-server">
-
-     <gfe:subscription-config eviction-type="ENTRY" capacity="1000" disk-store="file://${java.io.tmpdir}"/>
-   </gfe:cache-server>
+    <gfe:subscription-config eviction-type="ENTRY" capacity="1000" disk-store="file://${java.io.tmpdir}"/>
+  </gfe:cache-server>
 
    <context:property-placeholder location="classpath:cache-server.properties"/>
 
@@ -259,14 +264,28 @@ In Spring Data GemFire 1.1 dedicated support for configuring a http://gemfire.do
 
 The configuration above illustrates the `cache-server` element and the many options available.
 
-NOTE: Rather than hard-coding the port, this configuration uses Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config-body-schemas-context[context] namespace to declare a `property-placeholder`. http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-placeholderconfigurer[property placeholder] reads one or more properties file and then replaces property placeholders with values at runtime. This allows administrators to change such values without having to touch the main application configuration. Spring also provides http://docs.spring.io/spring/docs/3.2.11.RELEASE/spring-framework-reference/htmlsingle/#new-feature-el[SpEL] and the http://docs.spring.io/spring/docs/3.2.11.RELEASE/spring-framework-reference/htmlsingle/#new-in-3.1-environment-abstraction[environment abstraction] one to support externalization of environment specific properties from the main code base, easing the deployment across multiple machines.
+NOTE: Rather than hard-coding the port, this configuration uses Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config-body-schemas-context[context] namespace to declare a `property-placeholder`.
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-placeholderconfigurer[property placeholder]
+reads one or more properties files and then replaces property placeholders with values at runtime. This allows administrators
+to change values without having to touch the main application configuration.  Spring also provides the http://docs.spring.io/spring/docs/3.2.11.RELEASE/spring-framework-reference/htmlsingle/#new-feature-el[SpEL] and the http://docs.spring.io/spring/docs/3.2.11.RELEASE/spring-framework-reference/htmlsingle/#new-in-3.1-environment-abstraction[environment abstraction]
+to support externalization of environment-specific properties from the main codebase, easing deployment across multiple machines.
 
-NOTE: To avoid initialization problems, the `CacheServer`s started by Spring Data GemFire will start *after* the container has been fully initialized. This allows potential regions, listeners, writers or instantiators defined declaratively to be fully initialized and registered before the server starts accepting connections. Keep this in mind when programmatically configuring these items as the server might start after your components and thus not be seen by the clients connecting right away.
+NOTE: To avoid initialization problems, the `CacheServer` started by _Spring Data GemFire_ will start *after* the container
+has been fully initialized.  This allows potential regions, listeners, writers or instantiators defined declaratively
+to be fully initialized and registered before the server starts accepting connections.  Keep this in mind when
+programmatically configuring these elements as the server might start after your components and thus not be seen
+by the clients connecting right away.
 
 [[bootstrap:cache:client]]
-== Configuring a GemFire Client Cache
+== Configuring a GemFire ClientCache
 
-Another configuration addition in Spring Data GemFire 1.1 is the dedicated support for configuring http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html[ClientCache]. This is similar to a <<bootstrap:cache,cache>> in both usage and definition and supported by `org.springframework.data.gemfire.clientClientCacheFactoryBean`.
+In addition to defining a GemFire peer http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/Cache.html[Cache],
+_Spring Data GemFire_ also supports the definition of a GemFire http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html[ClientCache]
+in a Spring context.  A `ClientCache` definition is very similar in configuration and use to the GemFire peer <<bootstrap:cache,Cache>>
+and is supported by the `org.springframework.data.gemfire.client.ClientCacheFactoryBean`.
+
+The simplest definition of a GemFire cache client with default configuration can be accomplished with the following
+declaration:
 
 [source,xml]
 ----
@@ -275,22 +294,124 @@ Another configuration addition in Spring Data GemFire 1.1 is the dedicated suppo
 </beans>
 ----
 
-`client-cache` supports much of the same options as the *cache* element. However as opposed to a *full* cache, a client cache connects to a remote cache server through a pool. By default a pool is created to connect to a server on `localhost` port `40404`. The the default pool is used by all client regions unless the region is configured to use a different pool.
+`client-cache` supports much of the same options as the <<bootstrap:cache:advanced,cache>> element.  However, as opposed
+to a *full-fledged* cache member, a client cache connects to a remote cache server through a Pool.  By default, a Pool
+is created to connect to a server running on `localhost`, listening to port `40404`. The default Pool is used
+by all client Regions unless the Region is configured to use a different Pool.
 
-Pools can be defined through the `pool` element; The client side `pool` can be used to configure connectivity to the server for individual entities or for the entire cache. For example, to customize the default pool used by `client-cache`, one needs to define a pool and wire it to cache definition:
+Pools can be defined with the `pool` element.  This client-side Pool can be used to configure connectivity directly to
+a server for individual entities or to the entire cache through one or more Locators.
+
+For example, to customize the default Pool used by the `client-cache`, the developer needs to define a Pool and wire it
+to the cache definition:
 
 [source,xml]
 ----
 <beans>
-  <gfe:client-cache id="simple" pool-name="my-pool"/>
+  <gfe:client-cache id="my-cache" pool-name="my-pool"/>
 
   <gfe:pool id="my-pool" subscription-enabled="true">
-     <gfe:locator host="${locatorHost}" port="${locatorPort}"/>
+     <gfe:locator host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
  </gfe:pool>
 </beans>
 ----
 
-The <client-cache> tag also includes a `ready-for-events` attribute. If set to `true`, the client cache initialization will include http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html#readyForEvents()[ClientCache.readyForEvents()].
+The `<client-cache>` element also includes the `ready-for-events` attribute.  If set to `true`, the client cache
+initialization will include a call to http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html#readyForEvents()[ClientCache.readyForEvents()].
 
-Client side configuration is covered in more detail in <<bootstrap:region:client>>.
+Client-side configuration is covered in more detail in <<bootstrap:region:client>>.
 
+[[bootstrap:cache:client:pool]]
+=== GemFire's DEFAULT Pool and Spring Data GemFire Pool Definitions
+
+If a GemFire `ClientCache` is local-only, then no Pool definition is required.  For instance, a developer may define:
+
+[source,xml]
+----
+<gfe:client-cache/>
+
+<gfe:client-region id="Example" shortcut="LOCAL"/>
+----
+
+In this case, the "Example" Region is `LOCAL` and no data is distributed between the client and a server, therefore,
+no Pool is necessary.  This is true for any client-side, local-only Region, as defined by the GemFire's
+http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+(all `LOCAL_*` shortcuts).
+
+However, if the client Region is a (caching) proxy to a server-side Region, then a Pool is required.  There are several
+ways to define and use a Pool in this case.
+
+When a client cache, Pool and proxy-based Region are all defined, but not explicitly identified, _Spring Data GemFire_
+will resolve the references automatically for you.
+
+For example:
+
+[source,xml]
+----
+<gfe:client-cache/>
+
+<gfe:pool>
+  <gfe:locator host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
+</gfe:pool>
+
+<gfe:client-region id="Example" shortcut="PROXY"/>
+----
+
+In this case, the client cache is identified as `gemfireCache`, the Pool as `gemfirePool` and the client Region as,
+well, "Example".  However, the client cache will initialize GemFire's DEFAULT Pool from the `gemfirePool`
+and the client Region will use the `gemfirePool` when distributing data between the client and the server.
+
+_Spring Data GemFire_ basically resolves the above configuration to the following:
+
+[source,xml]
+----
+<gfe:client-cache id="gemfireCache" pool-name="gemfirePool"/>
+
+<gfe:pool id="gemfirePool">
+  <gfe:locator host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
+</gfe:pool>
+
+<gfe:client-region id="Example" cache-ref="gemfireCache" pool-name="gemfirePool" shortcut="PROXY"/>
+----
+
+GemFire still creates a Pool called "DEFAULT".  _Spring Data GemFire_ will just cause the "DEFAULT" Pool to be
+initialized from `gemfirePool`.  This is useful in situations where multiple Pools are defined and client Regions
+are using separate Pools.
+
+Consider the following:
+
+[source,xml]
+----
+<gfe:client-cache pool-name="locatorPool"/>
+
+<gfe:pool id="locatorPool">
+  <gfe:locator host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
+</gfe:pool>
+
+<gfe:pool id="serverPool">
+  <gfe:locator host="${gemfire.server.host}" port="${gemfire.server.port}"/>
+</gfe:pool>
+
+<gfe:client-region id="Example" pool-name="serverPool" shortcut="PROXY"/>
+
+<gfe:client-region id="AnotherExample" shortcut="CACHING_PROXY"/>
+
+<gfe:client-region id="YetAnotherExample" shortcut="LOCAL"/>
+----
+
+In this setup, the GemFire client cache's "DEFAULT" Pool is initialized from "locatorPool" as specified with the
+`pool-name` attribute.  There is no _Spring Data GemFire_-defined `gemfirePool` since both Pools were explicitly
+identified (named) "locatorPool" and "serverPool", respectively.
+
+The "Example" Region explicitly refers to and uses the "serverPool" exclusively.  The "AnotherExample" Region uses
+GemFire's "DEFAULT" Pool, which was configured from the "locatorPool" based on the client cache bean definition's
+`pool-name` attribute.
+
+Finally, the "YetAnotherExample" Region will not use a Pool since it is `LOCAL`.
+
+NOTE: The "AnotherExample" Region would first look for a Pool bean named `gemfirePool`, but that would require
+the definition of an anonymous Pool bean (i.e. `<gfe:pool/>`) or a Pool bean explicitly named `gemfirePool`
+(e.g. `<gfe:pool id="gemfirePool"/>`).
+
+NOTE: We could have either named "locatorPool", "gemfirePool", or made the Pool bean definition anonymous
+and it would have the same effect as the above configuration.
