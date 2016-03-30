@@ -15,66 +15,67 @@
  */
 package org.springframework.data.gemfire.support;
 
-import java.util.Collections;
 import java.util.Properties;
+
+import org.springframework.data.gemfire.GemfireUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.ServerLauncher;
 import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
 import com.gemstone.gemfire.distributed.ServerLauncherCacheProvider;
 
 /**
- * The SpringServerLauncherCacheProvider class is overrides the default behavior
- * of GemFire's ServerLauncher to bootstrap the cache using a Spring
- * ApplicationContext instead of a GemFire cache.xml inside a GemFire Server
- * JVM-based process. This enables a GemFire Cache Server resources to be
- * configured with Spring Data GemFire's XML namespace.
+ * The SpringServerLauncherCacheProvider class overrides the default behavior of GemFire's {@link ServerLauncher}
+ * to bootstrap the GemFire cache using a Spring {@link org.springframework.context.ApplicationContext} instead
+ * of GemFire cache.xml inside a GemFire Server JVM-based process. This enables a GemFire Cache Server's resources
+ * to be configured with Spring Data GemFire's XML namespace.
  * 
- * Unlike {@link SpringContextBootstrappingInitializer}, this allows the configuration
- * of the cache to specified in the Spring Context.
+ * Unlike {@link SpringContextBootstrappingInitializer}, this allows the configuration of the cache to specified
+ * in the Spring context.
  * 
- * To use this cache provider, ensure that the spring data gemfire jars are on 
- * the classpath of the GemFire server and specify the --spring-xml-location 
- * option from the command line or call {@link Builder#setSpringXmlLocation(String)} 
- * when launching the GemFire server.
+ * To use this cache provider, ensure that the Spring Data GemFire JAR file is on the classpath of the GemFire server
+ * and specify the --spring-xml-location option from the Gfsh command line or call
+ * {@link Builder#setSpringXmlLocation(String)} when launching the GemFire server.
  *
  * @author Dan Smith
- * @see ServerLauncherCacheProvider
- * @see SpringContextBootstrappingInitializer
+ * @author John Blum
  * @see org.springframework.context.ApplicationContext
- * @see org.springframework.context.ApplicationListener
- * @see org.springframework.context.ConfigurableApplicationContext
- * @see org.springframework.context.annotation.
- *      AnnotationConfigApplicationContext
- * @see org.springframework.context.event.ApplicationContextEvent
- * @see org.springframework.context.event.ApplicationEventMulticaster
- * @see org.springframework.context.support.ClassPathXmlApplicationContext
- * @see com.gemstone.gemfire.cache.Declarable
- * @link http://gemfire.docs.pivotal.io/latest/userguide/index.html#basic_config
- *       /the_cache/setting_cache_initializer.html
+ * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer
+ * @see com.gemstone.gemfire.distributed.ServerLauncherCacheProvider
+ * @since 1.7.0
+ * @link http://gemfire.docs.pivotal.io/latest/userguide/index.html#basic_config/the_cache/setting_cache_initializer.html
  */
 public class SpringServerLauncherCacheProvider implements ServerLauncherCacheProvider {
 
+	/* (non-Javadoc) */
 	@Override
 	public Cache createCache(Properties gemfireProperties, ServerLauncher serverLauncher) {
-		if (!serverLauncher.isSpringXmlLocationSpecified()) {
-			return null;
+		Cache cache = null;
+
+		if (serverLauncher.isSpringXmlLocationSpecified()) {
+			System.setProperty(gemfireName(), serverLauncher.getMemberName());
+			newSpringContextBootstrappingInitializer().init(createParameters(serverLauncher));
+			cache = SpringContextBootstrappingInitializer.getApplicationContext().getBean(Cache.class);
 		}
 
-		System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME,
-				serverLauncher.getMemberName());
-
-		createSpringContextBootstrappingInitializer().init(CollectionUtils.createProperties(
-				Collections.singletonMap(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
-						serverLauncher.getSpringXmlLocation())));
-
-		return SpringContextBootstrappingInitializer.getApplicationContext().getBean(Cache.class);
+		return cache;
 	}
 
-	/* Used for testing purposes */
-	protected SpringContextBootstrappingInitializer createSpringContextBootstrappingInitializer() {
+	/* (non-Javadoc) */
+	Properties createParameters(ServerLauncher serverLauncher) {
+		Properties parameters = new Properties();
+		parameters.setProperty(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
+			serverLauncher.getSpringXmlLocation());
+		return parameters;
+	}
+
+	/* (non-Javadoc) */
+	String gemfireName() {
+		return (GemfireUtils.GEMFIRE_PREFIX + GemfireUtils.NAME_PROPERTY_NAME);
+	}
+
+	/* (non-Javadoc) */
+	SpringContextBootstrappingInitializer newSpringContextBootstrappingInitializer() {
 		return new SpringContextBootstrappingInitializer();
 	}
 

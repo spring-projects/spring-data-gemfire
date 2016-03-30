@@ -15,78 +15,104 @@
  */
 package org.springframework.data.gemfire.support;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.Collections;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.data.gemfire.GemfireUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
 
 /**
  * The SpringServerLauncherCacheProviderTest class is a test suite of test cases testing the contract and functionality
- * of the SpringServerLauncherCacheProvider class. This test class focuses on testing isolated units of functionality in
- * the ServerLauncherCacheProvider class directly, mocking any dependencies as appropriate, in order for the class to
- * uphold it's contract.
+ * of the {@link SpringServerLauncherCacheProvider} class. This test class focuses on testing isolated units
+ * of functionality in the {@link com.gemstone.gemfire.distributed.ServerLauncherCacheProvider} class directly, mocking
+ * any dependencies as appropriate, in order for the class to uphold it's contract.
  *
  * @author Dan Smith
+ * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.data.gemfire.support.SpringServerLauncherCacheProvider
+ * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.distributed.ServerLauncher
+ * @see com.gemstone.gemfire.distributed.ServerLauncherCacheProvider
  */
 public class SpringServerLauncherCacheProviderTest {
-	
+
+	String gemfireName() {
+		return (GemfireUtils.GEMFIRE_PREFIX + GemfireUtils.NAME_PROPERTY_NAME);
+	}
+
+	Properties singletonProperties(String propertyName, String propertyValue) {
+		Properties properties = new Properties();
+		properties.setProperty(propertyName, propertyValue);
+		return properties;
+	}
+
 	@After
 	public void tearDown() {
-		System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME);
+		System.clearProperty(gemfireName());
 		SpringContextBootstrappingInitializer.applicationContext = null;
 	}
 
 	@Test
-	public void doesNothingWhenSpringXmlLocationNotSpecified() {
-		SpringServerLauncherCacheProvider provider = new SpringServerLauncherCacheProvider();
-		ServerLauncher launcher = mock(ServerLauncher.class);
-		when(launcher.isSpringXmlLocationSpecified()).thenReturn(false);
-		assertEquals(null, provider.createCache(null, launcher));
-		verify(launcher).isSpringXmlLocationSpecified();
-	}
-	
-	@Test
-	public void createCacheWithSpecifiedConfig() {
-		String xmlLocation = "xml/location";
-		
-		ServerLauncher launcher = mock(ServerLauncher.class);
-		when(launcher.isSpringXmlLocationSpecified()).thenReturn(true);
-		when(launcher.getSpringXmlLocation()).thenReturn(xmlLocation);
-		when(launcher.getMemberName()).thenReturn("membername");
-		
+	public void createsCacheWhenSpringXmlLocationIsSpecified() {
+		Cache mockCache = mock(Cache.class);
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class);
+		ServerLauncher mockServerLauncher = mock(ServerLauncher.class);
+
+		SpringContextBootstrappingInitializer.applicationContext = mockApplicationContext;
+
+		when(mockServerLauncher.isSpringXmlLocationSpecified()).thenReturn(true);
+		when(mockServerLauncher.getSpringXmlLocation()).thenReturn("test-context.xml");
+		when(mockServerLauncher.getMemberName()).thenReturn("TEST");
+		when(mockApplicationContext.getBean(eq(Cache.class))).thenReturn(mockCache);
+
 		final SpringContextBootstrappingInitializer initializer = mock(SpringContextBootstrappingInitializer.class);
-		ConfigurableApplicationContext context = mock(ConfigurableApplicationContext.class);
-		SpringContextBootstrappingInitializer.applicationContext = context;
-		Cache cache = mock(Cache.class);
-		when(context.getBean(eq(Cache.class))).thenReturn(cache );
-		
+
 		SpringServerLauncherCacheProvider provider = new SpringServerLauncherCacheProvider() {
 			@Override
-			public SpringContextBootstrappingInitializer createSpringContextBootstrappingInitializer() {
+			public SpringContextBootstrappingInitializer newSpringContextBootstrappingInitializer() {
 				return initializer;
 			}
 		};
-		
-		assertEquals(cache, provider.createCache(null, launcher));
-		verify(launcher).isSpringXmlLocationSpecified();
-		
-		verify(initializer).init(CollectionUtils.createProperties(
-				Collections.singletonMap(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
-						xmlLocation)));
+
+		Properties expectedParameters = singletonProperties(
+			SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER, "test-context.xml");
+
+		assertThat(provider.createCache(null, mockServerLauncher), is(equalTo(mockCache)));
+
+		verify(mockServerLauncher, times(1)).isSpringXmlLocationSpecified();
+		verify(mockServerLauncher, times(1)).getSpringXmlLocation();
+		verify(mockServerLauncher, times(1)).getMemberName();
+		verify(mockApplicationContext, times(1)).getBean(eq(Cache.class));
+		verify(initializer).init(eq(expectedParameters));
+	}
+
+	@Test
+	public void doesNothingWhenSpringXmlLocationNotSpecified() {
+		ServerLauncher launcher = mock(ServerLauncher.class);
+
+		when(launcher.isSpringXmlLocationSpecified()).thenReturn(false);
+
+		assertThat(new SpringServerLauncherCacheProvider().createCache(null, launcher), is(nullValue()));
+
+		verify(launcher, times(1)).isSpringXmlLocationSpecified();
 	}
 
 }
