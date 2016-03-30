@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- data source Spring XML configuration file and meta-data, using GemFire -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:util="http://www.springframework.org/schema/util"
@@ -11,15 +10,11 @@
 ">
 
 	<util:properties id="gemfireProperties">
-		<prop key="name">SpringContextBootstrappingInitializerTest</prop>
-		<prop key="statistic-sampling-enabled">false</prop>
+		<prop key="name">SpringServerLauncherCacheProviderIntegrationTest</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">config</prop>
+		<prop key="log-level">warn</prop>
 	</util:properties>
 
-	<gfe:cache properties-ref="gemfireProperties" use-bean-factory-locator="false"
-	  critical-heap-percentage="55"/>
-
-	<gfe:replicated-region id="TestRegion" persistent="false"/>
+	<gfe:cache properties-ref="gemfireProperties" critical-heap-percentage="55"/>
 
 </beans>
