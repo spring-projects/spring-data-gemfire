@@ -86,6 +86,7 @@ dependencies {
 		exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
 		exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
         exclude group: "org.apache.hbase", module: "hbase"
+		exclude group: "org.apache.logging.log4j", module: "slf4j-log4j12-impl"
 		exclude group: "org.slf4j", module: "slf4j-api"
 		exclude group: "org.springframework", module: "spring-aop"
 		exclude group: "org.springframework", module: "spring-beans"
