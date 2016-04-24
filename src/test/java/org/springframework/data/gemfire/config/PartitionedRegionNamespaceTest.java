@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -88,12 +89,13 @@ public class PartitionedRegionNamespaceTest {
 		RegionFactoryBean optionsRegionFactoryBean = context.getBean("&options", RegionFactoryBean.class);
 
 		assertTrue(optionsRegionFactoryBean instanceof PartitionedRegionFactoryBean);
-		assertEquals(null, TestUtils.readField("scope", optionsRegionFactoryBean));
 		assertEquals("redundant", TestUtils.readField("name", optionsRegionFactoryBean));
+		assertNull(TestUtils.readField("scope", optionsRegionFactoryBean));
 
 		RegionAttributes optionsRegionAttributes = TestUtils.readField("attributes", optionsRegionFactoryBean);
 
 		assertNotNull(optionsRegionAttributes);
+		assertTrue(optionsRegionAttributes.getOffHeap());
 		assertTrue(optionsRegionAttributes.getStatisticsEnabled());
 
 		PartitionAttributes optionsRegionPartitionAttributes = optionsRegionAttributes.getPartitionAttributes();

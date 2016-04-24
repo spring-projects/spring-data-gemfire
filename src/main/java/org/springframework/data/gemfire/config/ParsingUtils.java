@@ -325,6 +325,7 @@ abstract class ParsingUtils {
 		setPropertyValue(element, regionAttributesBuilder, "key-constraint");
 		setPropertyValue(element, regionAttributesBuilder, "load-factor");
 		setPropertyValue(element, regionAttributesBuilder, "multicast-enabled");
+		setPropertyValue(element, regionAttributesBuilder, "off-heap");
 		setPropertyValue(element, regionAttributesBuilder, "publisher");
 		setPropertyValue(element, regionAttributesBuilder, "value-constraint");
 

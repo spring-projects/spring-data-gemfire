@@ -875,15 +875,6 @@ for the "same" Region (by name), then this can cause confusion or have unexpecte
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="ignore-jta" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates whether operations on this Region participates in active JTA transactions or ignores them and operates
-outside of transactions.  This is primarily used in cache loaders, writers, and listeners that need to perform
-non-transactional operations on a Region, such as caching a result set.  GemFire default is false.
-								]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
 				<xsd:attribute name="initial-capacity" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
@@ -1080,11 +1071,29 @@ Specifies if WAN Gateway hub id if enable-gateway is true. (Deprecated since Gem
                                 ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<xsd:attribute name="ignore-jta" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether operations on this Region participates in active JTA transactions or ignores them and operates
+outside of transactions.  This is primarily used in cache loaders, writers, and listeners that need to perform
+non-transactional operations on a Region, such as caching a result set.  GemFire default is false.
+								]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="index-update-type" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Specifies whether Region indexes are maintained synchronously with Region modifications, or asynchronously
 in a background thread.  GemFire default is synchronous.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="off-heap" type="xsd:string" use="optional" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies that the region uses off-heap memory to store entry values, including values for region entries
+and queue entries. The region will still use heap memory for everything else, such as entry keys
+and the ConcurrentHashMap.  GemFire default is false.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>

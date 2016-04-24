@@ -133,6 +133,7 @@ public class LocalRegionNamespaceTest {
 		assertEquals(10, localRegionAttributes.getInitialCapacity());
 		assertEquals(String.class, localRegionAttributes.getKeyConstraint());
 		assertEquals("0.9", String.valueOf(localRegionAttributes.getLoadFactor()));
+		assertTrue(localRegionAttributes.getOffHeap());
 		assertEquals(String.class, localRegionAttributes.getValueConstraint());
 	}
 

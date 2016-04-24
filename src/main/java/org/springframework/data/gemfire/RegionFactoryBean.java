@@ -284,6 +284,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			regionFactory.setLockGrantor(regionAttributes.isLockGrantor());
 			regionFactory.setMembershipAttributes(regionAttributes.getMembershipAttributes());
 			regionFactory.setMulticastEnabled(regionAttributes.getMulticastEnabled());
+			regionFactory.setOffHeap(regionAttributes.getOffHeap());
 			mergePartitionAttributes(regionFactory, regionAttributes);
 			regionFactory.setPoolName(regionAttributes.getPoolName());
 			regionFactory.setRegionIdleTimeout(regionAttributes.getRegionIdleTimeout());

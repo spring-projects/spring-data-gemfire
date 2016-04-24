@@ -24,12 +24,16 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyFloat;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -167,6 +171,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 	protected RegionFactory<?, ?> createTestRegionFactory() {
 		return new TestRegionFactory();
 	}
+
 	@Test
 	public void testAssertDataPolicyAndPersistentAttributesAreCompatible() {
 		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<Object, Object>();
@@ -368,6 +373,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		when(mockRegionAttributes.isLockGrantor()).thenReturn(true);
 		when(mockRegionAttributes.getMembershipAttributes()).thenReturn(testMembershipAttributes);
 		when(mockRegionAttributes.getMulticastEnabled()).thenReturn(false);
+		when(mockRegionAttributes.getOffHeap()).thenReturn(true);
 		when(mockRegionAttributes.getPartitionAttributes()).thenReturn(testPartitionAttributes);
 		when(mockRegionAttributes.getPoolName()).thenReturn("swimming");
 		when(mockRegionAttributes.getRegionIdleTimeout()).thenReturn(testExpirationAttributes);
@@ -406,6 +412,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		verify(mockRegionFactory).setLockGrantor(eq(true));
 		verify(mockRegionFactory).setMembershipAttributes(same(testMembershipAttributes));
 		verify(mockRegionFactory).setMulticastEnabled(eq(false));
+		verify(mockRegionFactory).setOffHeap(eq(true));
 		verify(mockRegionFactory).setPartitionAttributes(eq(testPartitionAttributes));
 		verify(mockRegionFactory).setPoolName(eq("swimming"));
 		verify(mockRegionFactory).setRegionIdleTimeout(same(testExpirationAttributes));
@@ -420,30 +427,31 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 		factoryBean.mergeRegionAttributes(mockRegionFactory, null);
 
-		verify(mockRegionFactory, never()).setCloningEnabled(false);
-		verify(mockRegionFactory, never()).setConcurrencyChecksEnabled(true);
-		verify(mockRegionFactory, never()).setConcurrencyLevel(2);
+		verify(mockRegionFactory, never()).setCloningEnabled(anyBoolean());
+		verify(mockRegionFactory, never()).setConcurrencyChecksEnabled(anyBoolean());
+		verify(mockRegionFactory, never()).setConcurrencyLevel(anyInt());
 		verify(mockRegionFactory, never()).setCustomEntryIdleTimeout(any(CustomExpiry.class));
 		verify(mockRegionFactory, never()).setCustomEntryTimeToLive(any(CustomExpiry.class));
-		verify(mockRegionFactory, never()).setDiskSynchronous(true);
-		verify(mockRegionFactory, never()).setEnableAsyncConflation(true);
-		verify(mockRegionFactory, never()).setEnableSubscriptionConflation(false);
+		verify(mockRegionFactory, never()).setDiskSynchronous(anyBoolean());
+		verify(mockRegionFactory, never()).setEnableAsyncConflation(anyBoolean());
+		verify(mockRegionFactory, never()).setEnableSubscriptionConflation(anyBoolean());
 		verify(mockRegionFactory, never()).setEntryIdleTimeout(any(ExpirationAttributes.class));
 		verify(mockRegionFactory, never()).setEntryTimeToLive(any(ExpirationAttributes.class));
 		verify(mockRegionFactory, never()).setEvictionAttributes(any(EvictionAttributes.class));
-		verify(mockRegionFactory, never()).setIgnoreJTA(false);
-		verify(mockRegionFactory, never()).setIndexMaintenanceSynchronous(false);
-		verify(mockRegionFactory, never()).setInitialCapacity(51);
+		verify(mockRegionFactory, never()).setIgnoreJTA(anyBoolean());
+		verify(mockRegionFactory, never()).setIndexMaintenanceSynchronous(anyBoolean());
+		verify(mockRegionFactory, never()).setInitialCapacity(anyInt());
 		verify(mockRegionFactory, never()).setKeyConstraint(any(Class.class));
-		verify(mockRegionFactory, never()).setLoadFactor(0.75f);
-		verify(mockRegionFactory, never()).setLockGrantor(true);
+		verify(mockRegionFactory, never()).setLoadFactor(anyFloat());
+		verify(mockRegionFactory, never()).setLockGrantor(anyBoolean());
 		verify(mockRegionFactory, never()).setMembershipAttributes(any(MembershipAttributes.class));
-		verify(mockRegionFactory, never()).setMulticastEnabled(false);
+		verify(mockRegionFactory, never()).setMulticastEnabled(anyBoolean());
+		verify(mockRegionFactory, never()).setOffHeap(anyBoolean());
 		verify(mockRegionFactory, never()).setPartitionAttributes(any(PartitionAttributes.class));
 		verify(mockRegionFactory, never()).setPoolName(any(String.class));
 		verify(mockRegionFactory, never()).setRegionIdleTimeout(any(ExpirationAttributes.class));
 		verify(mockRegionFactory, never()).setRegionTimeToLive(any(ExpirationAttributes.class));
-		verify(mockRegionFactory, never()).setStatisticsEnabled(true);
+		verify(mockRegionFactory, never()).setStatisticsEnabled(anyBoolean());
 		verify(mockRegionFactory, never()).setSubscriptionAttributes(any(SubscriptionAttributes.class));
 		verify(mockRegionFactory, never()).setValueConstraint(any(Class.class));
 	}
@@ -474,6 +482,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		when(mockRegionAttributes.isLockGrantor()).thenReturn(false);
 		when(mockRegionAttributes.getMembershipAttributes()).thenReturn(null);
 		when(mockRegionAttributes.getMulticastEnabled()).thenReturn(true);
+		when(mockRegionAttributes.getOffHeap()).thenReturn(true);
 		when(mockRegionAttributes.getPartitionAttributes()).thenReturn(null);
 		when(mockRegionAttributes.getPoolName()).thenReturn("swimming");
 		when(mockRegionAttributes.getRegionIdleTimeout()).thenReturn(testExpirationAttributes);
@@ -512,6 +521,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		verify(mockRegionFactory).setLockGrantor(eq(false));
 		verify(mockRegionFactory).setMembershipAttributes(null);
 		verify(mockRegionFactory).setMulticastEnabled(eq(true));
+		verify(mockRegionFactory).setOffHeap(eq(true));
 		verify(mockRegionFactory, never()).setPartitionAttributes(any(PartitionAttributes.class));
 		verify(mockRegionFactory).setPoolName(eq("swimming"));
 		verify(mockRegionFactory).setRegionIdleTimeout(same(testExpirationAttributes));

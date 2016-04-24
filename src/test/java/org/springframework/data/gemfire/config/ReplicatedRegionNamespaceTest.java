@@ -143,6 +143,7 @@ public class ReplicatedRegionNamespaceTest {
 		assertEquals(0.50, regionAttributes.getLoadFactor(), 0.001);
 		assertTrue(regionAttributes.isLockGrantor());
 		assertTrue(regionAttributes.getMulticastEnabled());
+		assertTrue(regionAttributes.getOffHeap());
 		assertEquals(Scope.GLOBAL, regionAttributes.getScope());
 		assertEquals(String.class, regionAttributes.getValueConstraint());
 	}
