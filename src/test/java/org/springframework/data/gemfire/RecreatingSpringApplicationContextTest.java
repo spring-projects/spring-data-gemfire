@@ -18,35 +18,39 @@ package org.springframework.data.gemfire;
 
 import org.junit.After;
 import org.junit.Before;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 
 /**
- * Simple testing class that creates the app context after each method.
+ * The RecreatingSpringApplicationContextTest class is an abstract base class that creates the app context after each method.
  * Used to properly destroy the beans defined inside Spring.
  * 
  * @author Costin Leau
+ * @author John Blum
  */
-public abstract class RecreatingContextTest {
+public abstract class RecreatingSpringApplicationContextTest {
 
-	protected GenericXmlApplicationContext ctx;
-
-	protected abstract String location();
-	
-	protected  void configureContext(){
-	}
+	protected GenericXmlApplicationContext applicationContext;
 
 	@Before
-	public void createCtx() {
-		ctx = new GenericXmlApplicationContext();
-		configureContext();
-		ctx.load(location());
-		ctx.registerShutdownHook();
-		ctx.refresh();
+	public void createContext() {
+		applicationContext = configureContext(new GenericXmlApplicationContext());
+		applicationContext.load(location());
+		applicationContext.registerShutdownHook();
+		applicationContext.refresh();
+	}
+
+	protected abstract String location();
+
+	protected <T extends ConfigurableApplicationContext> T configureContext(T context){
+		return context;
 	}
 
 	@After
-	public void destroyCtx() {
-		if (ctx != null)
-			ctx.destroy();
+	public void destroyContext() {
+		if (applicationContext != null) {
+			applicationContext.destroy();
+		}
 	}
+
 }

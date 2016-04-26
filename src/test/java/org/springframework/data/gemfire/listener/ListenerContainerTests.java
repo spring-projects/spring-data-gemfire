@@ -24,13 +24,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
-import org.springframework.data.gemfire.test.GemfireProfileValueSource;
-import org.springframework.test.annotation.IfProfileValue;
-import org.springframework.test.annotation.ProfileValueSourceConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -40,10 +35,6 @@ import com.gemstone.gemfire.cache.query.CqEvent;
 /**
  * @author Costin Leau
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
-	value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
-@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 public class ListenerContainerTests {
 
 	private final List<CqEvent> bag = new ArrayList<CqEvent>();

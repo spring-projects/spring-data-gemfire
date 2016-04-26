@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.Region;
  * @author David Turanski
  * @author John Blum
  */
-public class SubRegionTest extends RecreatingContextTest {
+public class SubRegionTest extends RecreatingSpringApplicationContextTest {
 	@Override
 	protected String location() {
 		return "org/springframework/data/gemfire/basic-subregion.xml";
@@ -84,8 +84,8 @@ public class SubRegionTest extends RecreatingContextTest {
 
 	@SuppressWarnings("rawtypes")
 	private void testContext() throws Exception {
-		Region parent = ctx.getBean("parent", Region.class);
-		Region child = ctx.getBean("/parent/child", Region.class);
+		Region parent = applicationContext.getBean("parent", Region.class);
+		Region child = applicationContext.getBean("/parent/child", Region.class);
 		assertNotNull(parent.getSubregion("child"));
 		assertSame(child, parent.getSubregion("child"));
 		assertEquals("/parent/child", child.getFullPath());
@@ -93,7 +93,7 @@ public class SubRegionTest extends RecreatingContextTest {
 
 	@SuppressWarnings("rawtypes")
 	public void testChildOnly() throws Exception {
-		Region child = ctx.getBean("/parent/child", Region.class);
+		Region child = applicationContext.getBean("/parent/child", Region.class);
 		assertEquals("/parent/child", child.getFullPath());
 	}
 }

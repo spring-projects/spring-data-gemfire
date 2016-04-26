@@ -11,11 +11,11 @@
 	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="clientCacheConfigurationSettings">
+	<util:properties id="gemfireProperties">
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:client-cache use-bean-factory-locator="false" properties-ref="clientCacheConfigurationSettings" pool-name="clientPool"/>
+	<gfe:client-cache properties-ref="gemfireProperties" pool-name="clientPool"/>
 
 	<gfe:pool id="clientPool" subscription-enabled="true">
 		<gfe:server host="localhost" port="40404"/>

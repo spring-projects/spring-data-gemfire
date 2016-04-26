@@ -43,10 +43,14 @@ public abstract class GemfireUtils extends CacheUtils {
 	public final static String GEMFIRE_NAME = GemFireVersion.getProductName();
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
 
-	// TODO use a more reliable means of determining implementing class for GemFire features such as Java's SPI support
+	private static final String ASYNC_EVENT_QUEUE_ELEMENT_NAME = "async-event-queue";
 	private static final String ASYNC_EVENT_QUEUE_TYPE_NAME = "com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue";
+	private static final String CQ_ELEMENT_NAME = "cq-listener-container";
 	private static final String CQ_TYPE_NAME = "com.gemstone.gemfire.cache.query.internal.cq.CqServiceFactoryImpl";
-	private static final String GATEWAY_TYPE_NAME = "com.gemstone.gemfire.internal.cache.wan.GatewaySenderFactoryImpl";
+	private static final String GATEWAY_RECEIVER_ELEMENT_NAME = "gateway-receiver";
+	private static final String GATEWAY_RECEIVER_TYPE_NAME = "com.gemstone.gemfire.internal.cache.wan.GatewayReceiverFactoryImpl";
+	private static final String GATEWAY_SENDER_ELEMENT_NAME = "gateway-sender";
+	private static final String GATEWAY_SENDER_TYPE_NAME = "com.gemstone.gemfire.internal.cache.wan.GatewaySenderFactoryImpl";
 
 	/* (non-Javadoc) */
 	public static boolean isClassAvailable(String fullyQualifiedClassName) {
@@ -81,7 +85,7 @@ public abstract class GemfireUtils extends CacheUtils {
 
 	/* (non-Javadoc) */
 	private static boolean isAsyncEventQueue(Element element) {
-		return "async-event-queue".equals(element.getLocalName());
+		return ASYNC_EVENT_QUEUE_ELEMENT_NAME.equals(element.getLocalName());
 	}
 
 	/* (non-Javadoc) */
@@ -91,7 +95,7 @@ public abstract class GemfireUtils extends CacheUtils {
 
 	/* (non-Javadoc) */
 	private static boolean isContinuousQuery(Element element) {
-		return "cq-listener-container".equals(element.getLocalName());
+		return CQ_ELEMENT_NAME.equals(element.getLocalName());
 	}
 
 	/* (non-Javadoc) */
@@ -102,12 +106,13 @@ public abstract class GemfireUtils extends CacheUtils {
 	/* (non-Javadoc) */
 	private static boolean isGateway(Element element) {
 		String elementLocalName = element.getLocalName();
-		return ("gateway-receiver".equals(elementLocalName) || "gateway-sender".equals(elementLocalName));
+		return (GATEWAY_RECEIVER_ELEMENT_NAME.equals(elementLocalName)
+			|| GATEWAY_SENDER_ELEMENT_NAME.equals(elementLocalName));
 	}
 
 	/* (non-Javadoc) */
 	private static boolean isGatewayAvailable() {
-		return isClassAvailable(GATEWAY_TYPE_NAME);
+		return isClassAvailable(GATEWAY_SENDER_TYPE_NAME);
 	}
 
 	/* (non-Javadoc) */

@@ -23,13 +23,13 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Resource;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.data.gemfire.test.GemfireProfileValueSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.StringUtils;
@@ -98,12 +98,10 @@ public class LookupRegionMutationIntegrationTest {
 	}
 
 	protected void assertGatewaySenders(Region<?, ?> region, List<String> expectedGatewaySenderIds) {
-		if (GemfireProfileValueSource.isPivotalGemFire()) {
-			assertNotNull(region.getAttributes());
-			assertNotNull(region.getAttributes().getGatewaySenderIds());
-			assertEquals(expectedGatewaySenderIds.size(), region.getAttributes().getGatewaySenderIds().size());
-			assertTrue(expectedGatewaySenderIds.containsAll(region.getAttributes().getGatewaySenderIds()));
-		}
+		assertNotNull(region.getAttributes());
+		assertNotNull(region.getAttributes().getGatewaySenderIds());
+		assertEquals(expectedGatewaySenderIds.size(), region.getAttributes().getGatewaySenderIds().size());
+		assertTrue(expectedGatewaySenderIds.containsAll(region.getAttributes().getGatewaySenderIds()));
 	}
 
 	protected void assertGemFireComponent(Object gemfireComponent, String expectedName) {
@@ -156,7 +154,7 @@ public class LookupRegionMutationIntegrationTest {
 		assertNotNull(example.getAttributes().getAsyncEventQueueIds());
 		assertEquals(1, example.getAttributes().getAsyncEventQueueIds().size());
 		assertEquals("AEQ", example.getAttributes().getAsyncEventQueueIds().iterator().next());
-		assertGatewaySenders(example, Arrays.asList("GWS"));
+		assertGatewaySenders(example, Collections.singletonList("GWS"));
 	}
 
 	protected interface Nameable extends BeanNameAware {

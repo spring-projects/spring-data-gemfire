@@ -36,13 +36,11 @@
 		</gfe:replicated-region>
 	</gfe:replicated-region>
 
-	<beans profile="pivotal-gemfire">
-		<gfe:replicated-region id="Orders" persistent="false">
-			<gfe:replicated-region name="Items" persistent="false">
-				<gfe:gateway-sender remote-distributed-system-id="21" name="testSender" parallel="false"
-									manual-start="true"/>
-			</gfe:replicated-region>
+	<gfe:replicated-region id="Orders" persistent="false">
+		<gfe:replicated-region name="Items" persistent="false">
+			<gfe:gateway-sender remote-distributed-system-id="21" name="testSender" parallel="false"
+								manual-start="true"/>
 		</gfe:replicated-region>
-	</beans>
+	</gfe:replicated-region>
 
 </beans>

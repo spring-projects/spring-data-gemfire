@@ -26,10 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.test.GemfireProfileValueSource;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
-import org.springframework.test.annotation.IfProfileValue;
-import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -55,7 +52,6 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
  * @since 1.3.3
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @ContextConfiguration(locations = "subregionsubelement-ns.xml",
 	initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
@@ -87,8 +83,6 @@ public class SubRegionSubElementNamespaceTest {
 	}
 
 	@Test
-	@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
-		value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
 	public void testOrderItemsSubRegionGatewaySender() {
 		Region orderItemsRegion = applicationContext.getBean("/Orders/Items", Region.class);
 

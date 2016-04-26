@@ -29,16 +29,12 @@ import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.data.gemfire.RecreatingContextTest;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.data.gemfire.RecreatingSpringApplicationContextTest;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.test.GemfireProfileValueSource;
 import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
 import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
-import org.springframework.test.annotation.IfProfileValue;
-import org.springframework.test.annotation.ProfileValueSourceConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
@@ -52,33 +48,21 @@ import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
- * This test is only valid for GF 7.0 and above
+ * The GemfireV7GatewayNamespaceTest class is a test suite of test cases testing the GemFire 7.0 WAN functionality
+ * by configuring various Gateway senders and receivers.
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.data.gemfire.RecreatingSpringApplicationContextTest
+ * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
+ * @see com.gemstone.gemfire.cache.wan.GatewayReceiver
+ * @see com.gemstone.gemfire.cache.wan.GatewaySender
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
-	value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
-@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @SuppressWarnings("unused")
-public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.gemfire.RecreatingContextTest#location()
-	 */
-	@Override
-	protected String location() {
-		return "/org/springframework/data/gemfire/config/gateway-v7-ns.xml";
-	}
-
-	@Override
-	protected void configureContext() {
-		ctx.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
-	}
+public class GemfireV7GatewayNamespaceTest extends RecreatingSpringApplicationContextTest {
 
 	@AfterClass
+	@SuppressWarnings("all")
 	public static void tearDown() {
 		for (String name : new File(".").list(new FilenameFilter() {
 			@Override
@@ -90,9 +74,28 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.gemfire.RecreatingSpringApplicationContextTest#configureContext(ConfigurableApplicationContext)
+	 */
+	@Override
+	protected <T extends ConfigurableApplicationContext> T configureContext(final T context) {
+		context.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
+		return context;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.gemfire.RecreatingSpringApplicationContextTest#location()
+	 */
+	@Override
+	protected String location() {
+		return "/org/springframework/data/gemfire/config/gateway-v7-ns.xml";
+	}
+
 	@Test
 	public void testAsyncEventQueue() {
-		AsyncEventQueue asyncEventQueue = ctx.getBean("async-event-queue", AsyncEventQueue.class);
+		AsyncEventQueue asyncEventQueue = applicationContext.getBean("async-event-queue", AsyncEventQueue.class);
 
 		assertNotNull(asyncEventQueue);
 		assertTrue(asyncEventQueue.isBatchConflationEnabled());
@@ -108,7 +111,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	@Test
 	public void testGatewaySender() throws Exception {
-		GatewaySenderFactoryBean gatewaySenderFactoryBean = ctx.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
+		GatewaySenderFactoryBean gatewaySenderFactoryBean = applicationContext.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
@@ -136,12 +139,12 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testInnerGatewaySender() throws Exception {
-		Region<?, ?> region = ctx.getBean("region-inner-gateway-sender", Region.class);
+		Region<?, ?> region = applicationContext.getBean("region-inner-gateway-sender", Region.class);
 
 		assertNotNull(region.getAttributes().getGatewaySenderIds());
 		assertEquals(2, region.getAttributes().getGatewaySenderIds().size());
 
-		RegionFactoryBean regionFactoryBean = ctx.getBean("&region-inner-gateway-sender", RegionFactoryBean.class);
+		RegionFactoryBean regionFactoryBean = applicationContext.getBean("&region-inner-gateway-sender", RegionFactoryBean.class);
 
 		Object[] gatewaySenders = TestUtils.readField("gatewaySenders", regionFactoryBean);
 
@@ -183,7 +186,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	@Test
 	public void testGatewaySenderWithEventTransportFilterRefs() throws Exception {
-		GatewaySenderFactoryBean gatewaySenderFactoryBean = ctx.getBean("&gateway-sender-with-event-transport-filter-refs",
+		GatewaySenderFactoryBean gatewaySenderFactoryBean = applicationContext.getBean("&gateway-sender-with-event-transport-filter-refs",
 			GatewaySenderFactoryBean.class);
 
 		assertNotNull(gatewaySenderFactoryBean);
@@ -199,19 +202,19 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertNotNull(eventFilters);
 		assertEquals(1, eventFilters.size());
 		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
-		assertSame(ctx.getBean("event-filter"), eventFilters.get(0));
+		assertSame(applicationContext.getBean("event-filter"), eventFilters.get(0));
 
 		List<GatewayTransportFilter> transportFilters = TestUtils.readField("transportFilters", gatewaySenderFactoryBean);
 
 		assertNotNull(transportFilters);
 		assertEquals(1, transportFilters.size());
 		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
-		assertSame(ctx.getBean("transport-filter"), transportFilters.get(0));
+		assertSame(applicationContext.getBean("transport-filter"), transportFilters.get(0));
 	}
 
 	@Test
 	public void testGatewayReceiver() {
-		GatewayReceiver gatewayReceiver = ctx.getBean("gateway-receiver", GatewayReceiver.class);
+		GatewayReceiver gatewayReceiver = applicationContext.getBean("gateway-receiver", GatewayReceiver.class);
 
 		assertNotNull(gatewayReceiver);
 		assertEquals("192.168.0.1", gatewayReceiver.getBindAddress());

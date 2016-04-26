@@ -29,9 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
-import org.springframework.data.gemfire.test.GemfireProfileValueSource;
-import org.springframework.test.annotation.IfProfileValue;
-import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -44,9 +41,6 @@ import com.gemstone.gemfire.cache.query.CqQuery;
  * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
-	value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
-@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @ContextConfiguration("/org/springframework/data/gemfire/listener/container.xml")
 @SuppressWarnings("unused")
 public class ContainerXmlSetupTest {

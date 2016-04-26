@@ -97,7 +97,7 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>slf4j-log4j12-impl</artifactId>
+					<artifactId>log4j-slf4j-impl</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.codehaus.jackson</groupId>
@@ -164,6 +164,16 @@
 					<artifactId>spring-shell</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geode</groupId>
+			<artifactId>geode-cq</artifactId>
+			<version>${gemfire.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geode</groupId>
+			<artifactId>geode-wan</artifactId>
+			<version>${gemfire.version}</version>
 		</dependency>
 
 		<dependency>

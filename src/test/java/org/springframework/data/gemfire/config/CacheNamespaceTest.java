@@ -37,7 +37,6 @@ import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.test.GemfireProfileValueSource;
-import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -53,7 +52,6 @@ import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
  * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @ContextConfiguration(locations = "cache-ns.xml")
 @SuppressWarnings("unused")
 public class CacheNamespaceTest{
@@ -124,8 +122,6 @@ public class CacheNamespaceTest{
 	}
 
 	@Test
-	@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY,
-		value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
 	public void testCacheWithGatewayConflictResolver() {
 		Cache cache = context.getBean("cache-with-gateway-conflict-resolver", Cache.class);
 

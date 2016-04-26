@@ -35,7 +35,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanIsAbstractException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.test.GemfireProfileValueSource;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -182,13 +181,11 @@ public class TemplateRegionsNamespaceTests {
 	}
 
 	protected void assertGatewaySenders(final Region<?, ?> region, final String... gatewaySenderIds) {
-		if (GemfireProfileValueSource.isPivotalGemFire()) {
-			assertNotNull(region);
-			assertNotNull(region.getAttributes());
-			assertNotNull(region.getAttributes().getGatewaySenderIds());
-			assertEquals(gatewaySenderIds.length, region.getAttributes().getGatewaySenderIds().size());
-			assertTrue(Arrays.asList(gatewaySenderIds).containsAll(region.getAttributes().getGatewaySenderIds()));
-		}
+		assertNotNull(region);
+		assertNotNull(region.getAttributes());
+		assertNotNull(region.getAttributes().getGatewaySenderIds());
+		assertEquals(gatewaySenderIds.length, region.getAttributes().getGatewaySenderIds().size());
+		assertTrue(Arrays.asList(gatewaySenderIds).containsAll(region.getAttributes().getGatewaySenderIds()));
 	}
 
 	protected void assertDefaultMembershipAttributes(final MembershipAttributes membershipAttributes) {

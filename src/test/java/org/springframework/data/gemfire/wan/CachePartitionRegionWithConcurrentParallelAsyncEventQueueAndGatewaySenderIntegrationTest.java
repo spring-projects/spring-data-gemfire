@@ -27,9 +27,6 @@ import javax.annotation.Resource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.gemfire.test.GemfireProfileValueSource;
-import org.springframework.test.annotation.IfProfileValue;
-import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -56,8 +53,6 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-@IfProfileValue(name = GemfireProfileValueSource.PRODUCT_NAME_KEY, value = GemfireProfileValueSource.PIVOTAL_GEMFIRE_PRODUCT_NAME)
-@ProfileValueSourceConfiguration(GemfireProfileValueSource.class)
 @SuppressWarnings("unused")
 public class CachePartitionRegionWithConcurrentParallelAsyncEventQueueAndGatewaySenderIntegrationTest {
 

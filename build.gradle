@@ -86,7 +86,7 @@ dependencies {
 		exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
 		exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
         exclude group: "org.apache.hbase", module: "hbase"
-		exclude group: "org.apache.logging.log4j", module: "slf4j-log4j12-impl"
+		exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
 		exclude group: "org.slf4j", module: "slf4j-api"
 		exclude group: "org.springframework", module: "spring-aop"
 		exclude group: "org.springframework", module: "spring-beans"
@@ -100,6 +100,8 @@ dependencies {
 		exclude group: "org.springframework.data", module: "spring-data-commons"
 		exclude group: "org.springframework.shell", module: "spring-shell"
 	}
+    compile("org.apache.geode:geode-cq:$gemfireVersion")
+    compile("org.apache.geode:geode-wan:$gemfireVersion")
 	optional("com.google.code.findbugs:annotations:2.0.2")
 	runtime("antlr:antlr:$antlrVersion")
 

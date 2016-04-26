@@ -39,12 +39,10 @@
 		<gfe:server host="localhost" port="1234"/>
 	</gfe:pool>
 
-	<beans profile="pivotal-gemfire">
-		<gfe:cache id="cache-with-gateway-conflict-resolver">
-			<gfe:gateway-conflict-resolver>
-				<bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestGatewayConflictResolver"/>
-			</gfe:gateway-conflict-resolver>
-		</gfe:cache>
-	</beans>
+	<gfe:cache id="cache-with-gateway-conflict-resolver">
+		<gfe:gateway-conflict-resolver>
+			<bean class="org.springframework.data.gemfire.config.CacheNamespaceTest.TestGatewayConflictResolver"/>
+		</gfe:gateway-conflict-resolver>
+	</gfe:cache>
 
 </beans>
