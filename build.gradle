@@ -352,7 +352,7 @@ task wrapper(type: Wrapper) {
   gradleVersion = "1.12"
 
   doLast() {
-    def gradleOpts = "-XX:MaxPermSize=1024m -Xms256m -Xmx1024m"
+    def gradleOpts = "-Xms256m -Xmx1024m"
     def gradleBatOpts = "$gradleOpts -XX:MaxHeapSize=1024m"
     File wrapperFile = file("gradlew")
     wrapperFile.text = wrapperFile.text.replace("DEFAULT_JVM_OPTS=",
