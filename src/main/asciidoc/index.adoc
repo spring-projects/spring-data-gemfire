@@ -1,4 +1,4 @@
-= Spring Data GemFire Reference Guide
+= Spring Data Geode Reference Guide
 Costin Leau , David Turanski , John Blum , Oliver Gierke
 :baseDir: .
 :revnumber: {version}

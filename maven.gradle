@@ -8,6 +8,7 @@ ext.provided = { providedDeps << it }
 
 install {
     repositories.mavenInstaller {
+        pom.artifactId = rootProject.name
         customizePom(pom, project)
     }
 }
@@ -69,18 +70,15 @@ def customizePom(pom, gradleProject) {
 				name = 'Oliver Gierke'
 				email = 'ogierke@gopivotal.com'
 			  }
-			  developer {
-				id = 'ladams'
-				name = 'Lyndon Adams'
-				email = 'ladams@gopivotal.com'
-			  }
            }
 		   repositories {
+/*
 			   repository {
 				   id = 'apache-maven-snapshot-repo'
 				   name = 'Apache Maven Snapshot Repo'
 				   url = 'https://repository.apache.org/content/repositories/snapshots'
 			   }
+*/
 		   }
         }
     }

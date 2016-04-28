@@ -2,6 +2,7 @@ buildscript {
     repositories {
         maven { url 'https://repo.spring.io/plugins-release' }
     }
+
     dependencies {
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.0'
         classpath 'org.asciidoctor:asciidoctorj:1.5.0'
@@ -16,25 +17,34 @@ configurations {
     sharedResources
 }
 
-description = 'Spring Data GemFire'
-group = 'org.springframework.data'
-
-repositories {
-  maven { url "https://repo.spring.io/libs-release" }
-  maven { url "https://repo.spring.io/plugins-release"}
-  maven { url "https://repository.apache.org/content/repositories/snapshots" }
-}
-
 apply plugin: "java"
-apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'eclipse'
 apply from: "$rootDir/maven.gradle"
 apply plugin: 'bundlor'
 apply plugin: 'propdeps'
 apply plugin: 'docbook-reference'
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
 
-//project.bundlor.bundleSymbolicName = "${bundleSymbolicName}"
+description = 'Spring Data Geode'
+group = 'org.springframework.data'
+archivesBaseName = project.name
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+sourceSets {
+    main {
+        output.resourcesDir = 'build/classes/main'
+        output.classesDir   = 'build/classes/main'
+    }
+    test {
+        output.resourcesDir = 'build/classes/test'
+        output.classesDir   = 'build/classes/test'
+    }
+}
+
+[compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
 if (project.hasProperty('platformVersion')) {
     apply plugin: 'spring-io'
@@ -52,20 +62,29 @@ if (project.hasProperty('platformVersion')) {
     }
 }
 
-sourceSets {
-    main {
-        output.resourcesDir = 'build/classes/main'
-        output.classesDir   = 'build/classes/main'
-    }
-    test {
-        output.resourcesDir = 'build/classes/test'
-        output.classesDir   = 'build/classes/test'
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
     }
 }
 
-[compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
+tasks.withType(Test).all {
+    forkEvery = 1
+    systemProperties['gemfire.disableShutdownHook'] = 'true'
+    systemProperties['javax.net.ssl.keyStore'] = System.getProperty('user.dir') + '/src/test/resources/trusted.keystore'
+    systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
+    systemProperties['product.name'] = 'Apache Geode'
+    systemProperties['spring.profiles.active'] = 'apache-geode'
+}
 
-// Common dependencies
+repositories {
+    maven { url "https://repo.spring.io/libs-release" }
+    maven { url "https://repo.spring.io/plugins-release"}
+//  maven { url "https://repository.apache.org/content/repositories/snapshots" }
+}
+
 dependencies {
     // Spring Framework
     compile("org.springframework:spring-context-support:$springVersion") {
@@ -111,6 +130,7 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
     // Testing
+    testCompile "javax.annotation:jsr250-api:1.0", optional
     testCompile("org.springframework:spring-test:$springVersion") {
       exclude group: "commons-logging", module: "commons-logging"
     }
@@ -121,7 +141,6 @@ dependencies {
     testCompile "edu.umd.cs.mtc:multithreadedtc:$multiThreadedtcVersion"
     testCompile "org.apache.openwebbeans.test:cditest-owb:$openwebbeansVersion"
 
-    testCompile "javax.annotation:jsr250-api:1.0", optional
     testRuntime "javax.el:el-api:$cdiVersion"
     testRuntime "javax.servlet:servlet-api:$servletApiVersion"
 	testRuntime "log4j:log4j:$log4jVersion"
@@ -132,63 +151,10 @@ dependencies {
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
 }
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
-
-if (JavaVersion.current().isJava8Compatible()) {
-    allprojects {
-      tasks.withType(Javadoc) {
-        options.addStringOption('Xdoclint:none', '-quiet')
-      }
-    }
-  }
-
-tasks.withType(Test).all {
-    forkEvery = 1
-    systemProperties['gemfire.disableShutdownHook'] = 'true'
-    systemProperties['javax.net.ssl.keyStore'] = System.getProperty('user.dir') + '/src/test/resources/trusted.keystore'
-    systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
-    systemProperties['product.name'] = 'Apache Geode'
-    systemProperties['spring.profiles.active'] = 'apache-geode'
-}
-
-javadoc {
-  dependsOn = [ 'extractSharedResources' ]
-
-  ext.srcDir = file("${projectDir}/docs/src/api")
-  destinationDir = file("${buildDir}/api")
-  ext.tmpDir = file("${buildDir}/api-work")
-
-  configure(options) {
-      stylesheetFile = file("$buildDir/shared-resources/javadoc/spring-javadoc.css")
-      docFilesSubDirs = true
-      outputLevel = org.gradle.external.javadoc.JavadocOutputLevel.QUIET
-      breakIterator = true
-      showFromProtected()
-      groups = [
-        'Spring GemFire' : ['org.springframework.data.gemfire*'],
-      ]
-
-     links = [
-        "http://static.springframework.org/spring/docs/3.1.x/javadoc-api",
-        "http://download.oracle.com/javase/6/docs/api",
-        "http://www.gemstone.com/docs/6.5.1/product/docs/japi/",
-        "http://asm.objectweb.org/asm223/javadoc/user",
-        "http://logging.apache.org/log4j/docs/api/",
-        "http://atinject.googlecode.com/svn/trunk/javadoc/"
-     ]
-
-     exclude "org/springframework/data/gemfire/config/**"
-  }
-
-  title = "${rootProject.description} ${version} API"
-}
-
 jar {
-
     dependsOn = [ 'bundlor' ]
 
-    manifest.attributes['Implementation-Title'] = 'spring-data-gemfire'
+    manifest.attributes['Implementation-Title'] = project.name
     manifest.attributes['Implementation-Version'] = project.version
 
     from("$rootDir/docs/src/info") {
@@ -203,22 +169,41 @@ bundlor {
     manifestTemplate = file("template.mf").text
 }
 
-// Reference documentation
+javadoc {
+    dependsOn = [ 'extractSharedResources' ]
+    destinationDir = file("${buildDir}/api")
+    ext.srcDir = file("${projectDir}/docs/src/api")
+    ext.tmpDir = file("${buildDir}/api-work")
 
-reference {
-    // Avoid copy with expansions
-    expandPlaceholders = '';
-}
+    configure(options) {
+        stylesheetFile = file("$buildDir/shared-resources/javadoc/spring-javadoc.css")
+        docFilesSubDirs = true
+        outputLevel = org.gradle.external.javadoc.JavadocOutputLevel.QUIET
+        breakIterator = true
+        showFromProtected()
+        groups = [
+            'Spring GemFire' : ['org.springframework.data.gemfire*'],
+        ]
 
-referencePdf {
-    dependsOn = [ 'asciidoctor' ]
-    sourceDir = asciidoctor.outputDir
+        links = [
+            "http://static.springframework.org/spring/docs/3.1.x/javadoc-api",
+            "http://download.oracle.com/javase/6/docs/api",
+            "http://www.gemstone.com/docs/6.5.1/product/docs/japi/",
+            "http://asm.objectweb.org/asm223/javadoc/user",
+            "http://logging.apache.org/log4j/docs/api/",
+            "http://atinject.googlecode.com/svn/trunk/javadoc/"
+        ]
+
+        exclude "org/springframework/data/gemfire/config/**"
+    }
+
+    title = "${rootProject.description} ${version} API"
 }
 
 asciidoctor {
-    sourceDir = file("${projectDir}/src/main/asciidoc")
     dependsOn = [ 'extractSharedResources' ]
     backends = [ 'html5', 'docbook' ]
+    sourceDir = file("${projectDir}/src/main/asciidoc")
     options = [
         doctype: 'book',
         eruby: 'erubis',
@@ -238,21 +223,64 @@ asciidoctor {
     ]
 }
 
-task sourcesJar(type: Jar, dependsOn:classes) {
+reference {
+    // Avoid copy with expansions
+    expandPlaceholders = '';
+}
+
+referencePdf {
+    dependsOn = [ 'asciidoctor' ]
+    sourceDir = asciidoctor.outputDir
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    baseName = project.archivesBaseName
     classifier = 'sources'
     from sourceSets.main.allJava
 }
 
-task javadocJar(type: Jar) {
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    baseName = project.archivesBaseName
     classifier = 'javadoc'
     from javadoc
 }
 
-task docsZip(type: Zip) {
+task schemaZip(type: Zip) {
+    description = "Builds -${classifier} archive containing all XSDs for deployment"
+    baseName = project.archivesBaseName
+    classifier = 'schema'
     group = 'Distribution'
-    classifier = 'docs'
+
+    def Properties schemas = new Properties();
+
+    sourceSets.main.resources.find {
+        it.path.endsWith('META-INF' + File.separator + 'spring.schemas')
+    }?.withInputStream { schemas.load(it) }
+
+    for (def key : schemas.keySet()) {
+        def shortName = key.replaceAll(/http.*schema.(.*).spring-.*/, '$1')
+        def alias = key.replaceAll(/http.*schema.(.*).(spring-.*)/, '$2')
+
+        assert shortName != key
+
+        File xsdFile = sourceSets.main.resources.find {
+            it.path.replace('\\', '/').endsWith(schemas.get(key))
+        }
+
+        assert xsdFile != null
+
+        into (shortName) {
+            from xsdFile.path
+            rename { String fileName -> alias }
+        }
+    }
+}
+
+task docsZip(type: Zip, dependsOn: [javadoc, asciidoctor, referencePdf]) {
     description = "Builds -${classifier} archive containing api and reference for deployment"
-    dependsOn = [ 'javadoc', 'asciidoctor', 'referencePdf' ]
+    baseName = project.archivesBaseName
+    classifier = 'docs'
+    group = 'Distribution'
 
     from('docs/src/info') {
         include 'changelog.txt'
@@ -273,40 +301,15 @@ task docsZip(type: Zip) {
     }
 }
 
-task schemaZip(type: Zip) {
-    group = 'Distribution'
-    classifier = 'schema'
-    description = "Builds -${classifier} archive containing all XSDs for deployment"
-
-    def Properties schemas = new Properties();
-
-    sourceSets.main.resources.find {
-        it.path.endsWith('META-INF' + File.separator + 'spring.schemas')
-    }?.withInputStream { schemas.load(it) }
-
-    for (def key : schemas.keySet()) {
-        def shortName = key.replaceAll(/http.*schema.(.*).spring-.*/, '$1')
-        def alias = key.replaceAll(/http.*schema.(.*).(spring-.*)/, '$2')
-        assert shortName != key
-        File xsdFile = sourceSets.main.resources.find {
-            it.path.replace('\\', '/').endsWith(schemas.get(key))
-        }
-        assert xsdFile != null
-
-        into (shortName) {
-           from xsdFile.path
-           rename { String fileName -> alias }
-        }
-    }
-}
-
-task distZip(type: Zip, dependsOn: [jar, docsZip, schemaZip, sourcesJar, javadocJar]) {
-    group = 'Distribution'
-    classifier = 'dist'
+task distZip(type: Zip, dependsOn: [jar, sourcesJar, javadocJar, schemaZip, docsZip]) {
     description = "Builds -${classifier} archive, containing all jars and docs, " +
-                  "suitable for community download page."
+        "suitable for community download page."
 
-    ext.zipRootDir = "${project.name}-${project.version}"
+    baseName = project.archivesBaseName
+    classifier = 'dist'
+    group = 'Distribution'
+
+    ext.zipRootDir = "${project.archivesBaseName}-${project.version}"
 
     into (zipRootDir) {
         from('docs/src/info') {
@@ -338,12 +341,19 @@ task distZip(type: Zip, dependsOn: [jar, docsZip, schemaZip, sourcesJar, javadoc
     }
 }
 
+task extractSharedResources(type: Copy) {
+    from { // use of closure defers evaluation until execution time
+        configurations.sharedResources.collect { zipTree(it) }
+    }
+
+    into "$buildDir/shared-resources"
+}
+
 artifacts {
     archives sourcesJar
     archives javadocJar
-
-    archives docsZip
     archives schemaZip
+    archives docsZip
     archives distZip
 }
 
@@ -354,22 +364,17 @@ task wrapper(type: Wrapper) {
   doLast() {
     def gradleOpts = "-Xms256m -Xmx1024m"
     def gradleBatOpts = "$gradleOpts -XX:MaxHeapSize=1024m"
+
     File wrapperFile = file("gradlew")
+
     wrapperFile.text = wrapperFile.text.replace("DEFAULT_JVM_OPTS=",
-                                                "GRADLE_OPTS=\"$gradleOpts \$GRADLE_OPTS\"\nDEFAULT_JVM_OPTS=")
+        "GRADLE_OPTS=\"$gradleOpts \$GRADLE_OPTS\"\nDEFAULT_JVM_OPTS=")
+
     File wrapperBatFile = file("gradlew.bat")
+
     wrapperBatFile.text = wrapperBatFile.text.replace("set DEFAULT_JVM_OPTS=",
-                                                      "set GRADLE_OPTS=$gradleBatOpts %GRADLE_OPTS%\nset DEFAULT_JVM_OPTS=")
+        "set GRADLE_OPTS=$gradleBatOpts %GRADLE_OPTS%\nset DEFAULT_JVM_OPTS=")
   }
-}
-
-task extractSharedResources(type: Copy) {
-
-    from { // use of closure defers evaluation until execution time
-        configurations.sharedResources.collect { zipTree(it) }
-    }
-
-    into "$buildDir/shared-resources"
 }
 
 assemble.dependsOn = ['jar', 'sourcesJar']

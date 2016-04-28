@@ -1,5 +1,5 @@
 Bundle-ManifestVersion: 2
-Bundle-Name: Spring Data GemFire
+Bundle-Name: Spring Data Geode
 Bundle-SymbolicName: org.springframework.data.gemfire
 Bundle-Vendor: Pivotal Software, Inc.
 Import-Package: sun.reflect;version="0";resolution:=optional
