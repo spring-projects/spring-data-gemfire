@@ -82,7 +82,7 @@ tasks.withType(Test).all {
 repositories {
     maven { url "https://repo.spring.io/libs-release" }
     maven { url "https://repo.spring.io/plugins-release"}
-//  maven { url "https://repository.apache.org/content/repositories/snapshots" }
+    maven { url "https://repository.apache.org/content/repositories/snapshots" }
 }
 
 dependencies {

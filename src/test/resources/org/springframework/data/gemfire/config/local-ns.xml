@@ -14,6 +14,7 @@
 		<prop key="name">LocalNamespaceConfig</prop>
 		<prop key="mcast-port">0</prop>
 		<prop key="log-level">warning</prop>
+		<prop key="off-heap-memory-size">64m</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties"/>

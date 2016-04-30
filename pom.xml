@@ -20,7 +20,7 @@
 	<properties>
 		<dist.key>SGF</dist.key>
 		<antlr.version>2.7.7</antlr.version>
-		<gemfire.version>1.0.0-incubating.M2</gemfire.version>
+		<gemfire.version>1.0.0-incubating.M3-SNAPSHOT</gemfire.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
 		<springdata.commons>1.12.1.RELEASE</springdata.commons>
@@ -31,12 +31,10 @@
 			<id>spring-libs-release</id>
 			<url>https://repo.spring.io/libs-release</url>
 		</repository>
-<!--
 		<repository>
 			<id>apache-snapshots</id>
 			<url>https://repository.apache.org/content/repositories/snapshots</url>
 		</repository>
--->
 	</repositories>
 
 	<pluginRepositories>
