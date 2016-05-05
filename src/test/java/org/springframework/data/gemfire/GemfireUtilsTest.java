@@ -17,9 +17,7 @@
 package org.springframework.data.gemfire;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -34,7 +32,6 @@ import org.junit.Test;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.GemFireVersion;
 
 /**
  * The GemfireUtilsTest class is a test suite of test cases testing the contract and functionality of the GemfireUtils
@@ -86,7 +83,7 @@ public class GemfireUtilsTest {
 	}
 
 	@Test
-	public void isDurableWhenNotDurableClientIsFalse() {
+	public void isDurableWithNonDurableClientIsFalse() {
 		ClientCache mockClientCache = mock(ClientCache.class);
 		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
@@ -136,40 +133,6 @@ public class GemfireUtilsTest {
 		assertThat(GemfireUtils.isPeer(mockClientCache), is(false));
 
 		verifyZeroInteractions(mockClientCache);
-	}
-
-	// NOTE implementation is based on a GemFire internal class... com.gemstone.gemfire.internal.GemFireVersion.
-	protected int getGemFireVersion() {
-		try {
-			String gemfireVersion = GemFireVersion.getGemFireVersion();
-
-			return Integer.decode(String.format("%1$d%2$d", GemFireVersion.getMajorVersion(gemfireVersion),
-				GemFireVersion.getMinorVersion(gemfireVersion)));
-		}
-		catch (NumberFormatException ignore) {
-			return -1;
-		}
-	}
-
-	@Test
-	public void isGemfireVersion65OrAbove() {
-		int gemfireVersion = getGemFireVersion();
-		assumeTrue(gemfireVersion > -1);
-		assertEquals(getGemFireVersion() >= 65, GemfireUtils.isGemfireVersion65OrAbove());
-	}
-
-	@Test
-	public void isGemfireVersion7OrAbove() {
-		int gemfireVersion = getGemFireVersion();
-		assumeTrue(gemfireVersion > -1);
-		assertEquals(getGemFireVersion() >= 70, GemfireUtils.isGemfireVersion7OrAbove());
-	}
-
-	@Test
-	public void isGemfireVersion8OrAbove() {
-		int gemfireVersion = getGemFireVersion();
-		assumeTrue(gemfireVersion > -1);
-		assertEquals(getGemFireVersion() >= 80, GemfireUtils.isGemfireVersion8OrAbove());
 	}
 
 }

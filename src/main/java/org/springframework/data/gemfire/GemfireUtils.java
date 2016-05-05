@@ -16,15 +16,12 @@
 
 package org.springframework.data.gemfire;
 
-import java.util.concurrent.ConcurrentMap;
-
 import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.util.ClassUtils;
 import org.w3c.dom.Element;
 
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.GemFireVersion;
 
 /**
@@ -37,7 +34,6 @@ import com.gemstone.gemfire.internal.GemFireVersion;
  * @see com.gemstone.gemfire.cache.Region
  * @since 1.3.3
  */
-@SuppressWarnings("unused")
 public abstract class GemfireUtils extends CacheUtils {
 
 	public final static String GEMFIRE_NAME = GemFireVersion.getProductName();
@@ -113,48 +109,6 @@ public abstract class GemfireUtils extends CacheUtils {
 	/* (non-Javadoc) */
 	private static boolean isGatewayAvailable() {
 		return isClassAvailable(GATEWAY_SENDER_TYPE_NAME);
-	}
-
-	/* (non-Javadoc) */
-	public static boolean isGemfireVersionGreaterThanEqualTo(double expectedVersion) {
-		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
-		return (actualVersion >= expectedVersion);
-	}
-
-	/* (non-Javadoc) */
-	public static boolean isGemfireVersion65OrAbove() {
-		try {
-			return isGemfireVersionGreaterThanEqualTo(6.5);
-		}
-		catch (NumberFormatException e) {
-			// NOTE based on logic from the PartitionedRegionFactoryBean class...
-			return ConcurrentMap.class.isAssignableFrom(Region.class);
-		}
-	}
-
-	/* (non-Javadoc) */
-	public static boolean isGemfireVersion7OrAbove() {
-		try {
-			return isGemfireVersionGreaterThanEqualTo(7.0);
-		}
-		catch (NumberFormatException e) {
-			// NOTE the com.gemstone.gemfire.distributed.ServerLauncher class only exists in GemFire v 7.0.x or above...
-			return ClassUtils.isPresent("com.gemstone.gemfire.distributed.ServerLauncher",
-				Thread.currentThread().getContextClassLoader());
-		}
-	}
-
-	/* (non-Javadoc) */
-	public static boolean isGemfireVersion8OrAbove() {
-		try {
-			return isGemfireVersionGreaterThanEqualTo(8.0);
-		}
-		catch (NumberFormatException e) {
-			// NOTE the com.gemstone.gemfire.management.internal.web.domain.LinkIndex class only exists
-			// in GemFire v 8.0.0 or above...
-			return ClassUtils.isPresent("com.gemstone.gemfire.management.internal.web.domain.LinkIndex",
-				Thread.currentThread().getContextClassLoader());
-		}
 	}
 
 	public static void main(final String... args) {
