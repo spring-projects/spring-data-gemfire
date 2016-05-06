@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.mapping;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -25,6 +26,7 @@ import org.springframework.util.StringUtils;
  * mapped to etc.
  * 
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, GemfirePersistentProperty> {
 
@@ -41,9 +43,9 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 
 		Class<T> rawType = information.getType();
 		Region region = rawType.getAnnotation(Region.class);
-		String fallbackName = rawType.getSimpleName();
+		String defaultRegionName = rawType.getSimpleName();
 
-		this.regionName = region == null || !StringUtils.hasText(region.value()) ? fallbackName : region.value();
+		this.regionName = (region != null && StringUtils.hasText(region.value()) ? region.value() : defaultRegionName);
 	}
 
 	/**

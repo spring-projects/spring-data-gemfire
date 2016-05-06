@@ -35,16 +35,16 @@ import org.springframework.data.repository.core.support.PersistentEntityInformat
 public class DefaultGemfireEntityInformation<T, ID extends Serializable> extends PersistentEntityInformation<T, ID>
 		implements GemfireEntityInformation<T, ID> {
 
-	private final GemfirePersistentEntity<T> entity;
+	private final GemfirePersistentEntity<T> persistentEntity;
 
 	/**
 	 * Creates a new {@link DefaultGemfireEntityInformation}.
 	 *
-	 * @param entity must not be {@literal null}.
+	 * @param persistentEntity must not be {@literal null}.
 	 */
-	public DefaultGemfireEntityInformation(GemfirePersistentEntity<T> entity) {
-		super(entity);
-		this.entity = entity;
+	public DefaultGemfireEntityInformation(GemfirePersistentEntity<T> persistentEntity) {
+		super(persistentEntity);
+		this.persistentEntity = persistentEntity;
 	}
 
 	/*
@@ -53,7 +53,7 @@ public class DefaultGemfireEntityInformation<T, ID extends Serializable> extends
 	 */
 	@Override
 	public String getRegionName() {
-		return entity.getRegionName();
+		return persistentEntity.getRegionName();
 	}
 
 }
