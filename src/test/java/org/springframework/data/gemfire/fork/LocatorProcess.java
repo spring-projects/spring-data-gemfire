@@ -21,14 +21,15 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.process.support.ProcessUtils;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 
+import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.LocatorLauncher;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 
 /**
  * The LocatorProcess class is a main Java class that is used fork and launch a GemFire Locator process using the
@@ -130,27 +131,13 @@ public class LocatorProcess {
 	private static void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override public void run() {
-				stopLocator(stopSharedConfigurationService(InternalLocator.getLocator()));
+				stopLocator(GemfireUtils.getLocator());
 			}
 
-			private void stopLocator(final InternalLocator locator) {
+			private void stopLocator(final Locator locator) {
 				if (locator != null) {
 					locator.stop();
 				}
-			}
-
-			private InternalLocator stopSharedConfigurationService(final InternalLocator locator) {
-				if (isClusterConfigurationEnabled(locator)) {
-					SharedConfiguration sharedConfiguration = locator.getSharedConfiguration();
-
-					if (sharedConfiguration != null) {
-						if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
-							sharedConfiguration.destroySharedConfiguration();
-						}
-					}
-				}
-
-				return locator;
 			}
 		}));
 	}
@@ -170,5 +157,4 @@ public class LocatorProcess {
 				TimeUnit.MILLISECONDS);
 		}
 	}
-
 }
