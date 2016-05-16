@@ -1,0 +1,662 @@
+/*
+ * Copyright 2012 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+package org.springframework.data.gemfire.config.annotation;
+
+import static org.springframework.data.gemfire.CacheFactoryBean.DynamicRegionSupport;
+import static org.springframework.data.gemfire.CacheFactoryBean.JndiDataSource;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import com.gemstone.gemfire.cache.TransactionListener;
+import com.gemstone.gemfire.cache.TransactionWriter;
+import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
+import com.gemstone.gemfire.pdx.PdxSerializer;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ImportAware;
+import org.springframework.core.io.Resource;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+/**
+ * AbstractCacheConfiguration is an abstract base class for configuring either a Pivotal GemFire/Apache Geode
+ * client or peer-based cache instance using Spring's, Java-based
+ * {@link org.springframework.context.annotation.Configuration} support.
+ *
+ * This class contain configuration settings common to both GemFire peer {@link com.gemstone.gemfire.cache.Cache caches}
+ * and {@link com.gemstone.gemfire.cache.client.ClientCache client caches}.
+ *
+ * @author John Blum
+ * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.context.annotation.ImportAware
+ * @since 1.9.0
+ */
+@SuppressWarnings("unused")
+public abstract class AbstractCacheConfiguration implements BeanFactoryAware, BeanClassLoaderAware, ImportAware {
+
+	protected static final boolean DEFAULT_CLOSE = true;
+	protected static final boolean DEFAULT_COPY_ON_READ = false;
+	protected static final boolean DEFAULT_USE_BEAN_FACTORY_LOCATOR = false;
+
+	protected static final String DEFAULT_LOG_LEVEL = "config";
+	protected static final String DEFAULT_NAME = "SpringDataGemFireApplication";
+
+	private boolean close = DEFAULT_CLOSE;
+	private boolean copyOnRead = DEFAULT_COPY_ON_READ;
+	private boolean useBeanFactoryLocator = DEFAULT_USE_BEAN_FACTORY_LOCATOR;
+
+	private BeanFactory beanFactory;
+
+	private Boolean pdxIgnoreUnreadFields;
+	private Boolean pdxPersistent;
+	private Boolean pdxReadSerialized;
+
+	private ClassLoader beanClassLoader;
+
+	private DynamicRegionSupport dynamicRegionSupport;
+
+	private Float criticalHeapPercentage;
+	private Float evictionHeapPercentage;
+
+	private GatewayConflictResolver gatewayConflictResolver;
+
+	private List<JndiDataSource> jndiDataSources;
+	private List<TransactionListener> transactionListeners;
+
+	private PdxSerializer pdxSerializer;
+
+	private Resource cacheXml;
+
+	private String locators = "";
+	private String logLevel = DEFAULT_LOG_LEVEL;
+	private String name;
+	private String pdxDiskStoreName;
+
+	private TransactionWriter transactionWriter;
+
+	/**
+	 * Returns the given {@link List} if not null or an empty {@link List}.
+	 *
+	 * @param <T> Class type of the elements in the {@link List}.
+	 * @param list {@link List} on which to perform the null check.
+	 * @return the given {@link List} if not null or an empty {@link List}.
+	 * @see java.util.Collections#emptyList()
+	 * @see java.util.List
+	 */
+	protected static <T> List<T> nullSafeList(List<T> list) {
+		return (list != null ? list : Collections.<T>emptyList());
+	}
+
+	/**
+	 * Returns the given {@link Set} if not null or an empty {@link Set}.
+	 *
+	 * @param <T> Class type of the elements in the {@link Set}.
+	 * @param set {@link Set} on which to perform the null check.
+	 * @return the given {@link Set} if not null or an empty {@link Set}.
+	 * @see java.util.Collections#emptySet()
+	 * @see java.util.Set
+	 */
+	protected static <T> Set<T> nullSafeSet(Set<T> set) {
+		return (set != null ? set : Collections.<T>emptySet());
+	}
+
+	/**
+	 * Returns the given {@code value} if not null or the {@code defaultValue}.
+	 *
+	 * @param <T> Class type of the given {@code value} and {@code defaultValue}.
+	 * @param value value on which to perform the null check.
+	 * @param defaultValue value to return by default if the {@code value} is null.
+	 * @return the given {@code value} if not null or the {@code defaultValue}.
+	 */
+	protected static <T> T nullSafeValue(T value, T defaultValue) {
+		return (value != null ? value : defaultValue);
+	}
+
+	/**
+	 * Determines whether the give {@link Object} has value.  The {@link Object} is valuable
+	 * if it is not {@literal null}.
+	 *
+	 * @param value {@link Object} to evaluate.
+	 * @return a boolean value indicating whether the given {@link Object} has value.
+	 */
+	protected static boolean hasValue(Object value) {
+		return (value != null);
+	}
+
+	/**
+	 * Determines whether the given {@link Number} has value.  The {@link Number} is valuable
+	 * if it is not {@literal null} and is not equal to 0.0d.
+	 *
+	 * @param value {@link Number} to evaluate.
+	 * @return a boolean value indicating whether the given {@link Number} has value.
+	 */
+	protected static boolean hasValue(Number value) {
+		return (value != null && value.doubleValue() != 0.0d);
+	}
+
+	/**
+	 * Determines whether the given {@link String} has value.  The {@link String} is valuable
+	 * if it is not {@literal null} or empty.
+	 *
+	 * @param value {@link String} to evaluate.
+	 * @return a boolean value indicating whether the given {@link String} is valuable.
+	 */
+	protected static boolean hasValue(String value) {
+		return StringUtils.hasText(value);
+	}
+
+	/**
+	 * Returns a {@link Properties} object containing GemFire System properties used to configure
+	 * the GemFire cache.
+	 *
+	 * The name of the GemFire member/node is set to a pre-dined, descriptive default value depending
+	 * on the type configuraiton applied.
+	 *
+	 * Both 'mcast-port' and 'locators' are to set 0 and empty String respectively, which is necessary
+	 * for {@link com.gemstone.gemfire.cache.client.ClientCache cache client}-based applications.
+	 *
+	 * Finally GemFire's "log-level" System property defaults to "config".
+	 *
+	 * @return a {@link Properties} object containing GemFire System properties used to configure
+	 * the GemFire cache.
+	 * @see <a link="http://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html">GemFire Properties</a>
+	 * @see java.util.Properties
+	 * @see #name()
+	 * @see #logLevel()
+	 * @see #locators()
+	 */
+	@Bean
+	protected Properties gemfireProperties() {
+		Properties gemfireProperties = new Properties();
+		gemfireProperties.setProperty("name", name());
+		gemfireProperties.setProperty("mcast-port", "0");
+		gemfireProperties.setProperty("log-level", logLevel());
+		gemfireProperties.setProperty("locators", locators());
+		return gemfireProperties;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader beanClassLoader) {
+		this.beanClassLoader = beanClassLoader;
+	}
+
+	/**
+	 * Gets a reference to the {@link ClassLoader} use by the Spring {@link BeanFactory} to load classes
+	 * for bean definitions.
+	 *
+	 * @return the {@link ClassLoader} used by the Spring {@link BeanFactory} to load classes for bean definitions.
+	 * @see #setBeanClassLoader(ClassLoader)
+	 */
+	protected ClassLoader beanClassLoader() {
+		return beanClassLoader;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanFactoryAware
+	 */
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
+	/**
+	 * Gets a reference to the Spring {@link BeanFactory} in the current application context.
+	 *
+	 * @return a reference to the Spring {@link BeanFactory}.
+	 * @throws IllegalStateException if the Spring {@link BeanFactory} was not properly initialized.
+	 * @see org.springframework.beans.factory.BeanFactory
+	 */
+	protected BeanFactory beanFactory() {
+		Assert.state(this.beanFactory != null, "BeanFactory was not properly initialized");
+		return this.beanFactory;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.context.annotation.ImportAware
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 */
+	@Override
+	public void setImportMetadata(AnnotationMetadata importMetadata) {
+		configureCache(importMetadata);
+		configurePdx(importMetadata);
+		configureOther(importMetadata);
+	}
+
+	/**
+	 * Configures the GemFire cache settings.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing the cache meta-data used to configure
+	 * the GemFire cache.
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 */
+	protected void configureCache(AnnotationMetadata importMetadata) {
+		if (isClientPeerOrServerCacheApplication(importMetadata)) {
+			Map<String, Object> cacheMetadataAttributes =
+				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
+
+			setCopyOnRead(Boolean.TRUE.equals(cacheMetadataAttributes.get("copyOnRead")));
+
+			Float criticalHeapPercentage = (Float) cacheMetadataAttributes.get("criticalHeapPercentage");
+
+			if (hasValue(criticalHeapPercentage)) {
+				setCriticalHeapPercentage(criticalHeapPercentage);
+			}
+
+			Float evictionHeapPercentage = (Float) cacheMetadataAttributes.get("evictionHeapPercentage");
+
+			if (hasValue(evictionHeapPercentage)) {
+				setEvictionHeapPercentage(evictionHeapPercentage);
+			}
+
+			setLogLevel((String) cacheMetadataAttributes.get("logLevel"));
+			setName((String) cacheMetadataAttributes.get("name"));
+		}
+	}
+
+	/**
+	 * Configures GemFire's PDX Serialization feature.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing PDX meta-data used to configure
+	 * the GemFire cache with PDX de/serialization capabilities.
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/data_serialization/gemfire_pdx_serialization.html">GemFire PDX Serialization</a>
+	 */
+	protected void configurePdx(AnnotationMetadata importMetadata) {
+		if (importMetadata.hasAnnotation(EnablePdx.class.getName())) {
+			Map<String, Object> enablePdxAttributes = importMetadata.getAnnotationAttributes(EnablePdx.class.getName());
+
+			String pdxSerializerBeanName = (String) enablePdxAttributes.get("serializerBeanName");
+
+			if (beanFactory().containsBean(pdxSerializerBeanName)) {
+				PdxSerializer pdxSerializer = beanFactory().getBean(pdxSerializerBeanName, PdxSerializer.class);
+
+				setPdxDiskStoreName((String) enablePdxAttributes.get("diskStoreName"));
+				setPdxIgnoreUnreadFields(Boolean.TRUE.equals(enablePdxAttributes.get("ignoreUnreadFields")));
+				setPdxPersistent(Boolean.TRUE.equals(enablePdxAttributes.get("persistent")));
+				setPdxReadSerialized(Boolean.TRUE.equals(enablePdxAttributes.get("readSerialized")));
+				setPdxSerializer(pdxSerializer);
+			}
+		}
+	}
+
+	/**
+	 * Callback method to configure other, specific GemFire cache configuration settings.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing the cache meta-data used to configure
+	 * the GemFire cache.
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 */
+	protected void configureOther(AnnotationMetadata importMetadata) {
+	}
+
+	/**
+	 * Returns the GemFire cache application {@link java.lang.annotation.Annotation} type pertaining to
+	 * this configuration.
+	 *
+	 * @return the GemFire cache application {@link java.lang.annotation.Annotation} type used by this application.
+	 * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
+	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+	 */
+	protected abstract Class getAnnotationType();
+
+	/**
+	 * Returns the fully-qualified class name of the GemFire cache application {@link java.lang.annotation.Annotation}
+	 * type.
+	 *
+	 * @return the fully-qualified class name of the GemFire cache application {@link java.lang.annotation.Annotation}
+	 * type.
+	 * @see java.lang.Class#getName()
+	 * @see #getAnnotationType()
+	 */
+	protected String getAnnotationTypeName() {
+		return getAnnotationType().getName();
+	}
+
+	/**
+	 * Returns the simple class name of the GemFire cache application {@link java.lang.annotation.Annotation} type.
+	 *
+	 * @return the simple class name of the GemFire cache application {@link java.lang.annotation.Annotation} type.
+	 * @see java.lang.Class#getSimpleName()
+	 * @see #getAnnotationType()
+	 */
+	protected String getAnnotationTypeSimpleName() {
+		return getAnnotationType().getSimpleName();
+	}
+
+	/**
+	 * Determines whether this is a GemFire {@link com.gemstone.gemfire.cache.server.CacheServer} application,
+	 * which is indicated by the presence of the {@link CacheServerApplication} annotation on a Spring application
+	 * {@link org.springframework.context.annotation.Configuration @Configuration} class.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing application configuration meta-data
+	 * from the annotations used to configure the Spring application.
+	 * @return a boolean value indicating whether this is a GemFire cache server application.
+	 * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
+	 * @see #getAnnotationTypeName()
+	 * @see #getAnnotationType()
+	 */
+	protected boolean isCacheServerApplication(AnnotationMetadata importMetadata) {
+		return (CacheServerApplication.class.equals(getAnnotationType())
+			&& importMetadata.hasAnnotation(getAnnotationTypeName()));
+	}
+
+	/**
+	 * Determines whether this is a GemFire {@link com.gemstone.gemfire.cache.client.ClientCache} application,
+	 * which is indicated by the presence of the {@link ClientCacheApplication} annotation on a Spring application
+	 * {@link org.springframework.context.annotation.Configuration @Configuration} class.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing application configuration meta-data
+	 * from the annotations used to configure the Spring application.
+	 * @return a boolean value indicating whether this is a GemFire cache client application.
+	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+	 * @see #getAnnotationTypeName()
+	 * @see #getAnnotationType()
+	 */
+	protected boolean isClientCacheApplication(AnnotationMetadata importMetadata) {
+		return (ClientCacheApplication.class.equals(getAnnotationType())
+			&& importMetadata.hasAnnotation(getAnnotationTypeName()));
+	}
+
+	/**
+	 * Determines whether this is a GemFire peer {@link com.gemstone.gemfire.cache.Cache} application,
+	 * which is indicated by the presence of the {@link PeerCacheApplication} annotation on a Spring application
+	 * {@link org.springframework.context.annotation.Configuration @Configuration} class.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing application configuration meta-data
+	 * from the annotations used to configure the Spring application.
+	 * @return a boolean value indicating whether this is a GemFire peer cache application.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+	 * @see #getAnnotationTypeName()
+	 * @see #getAnnotationType()
+	 */
+	protected boolean isPeerCacheApplication(AnnotationMetadata importMetadata) {
+		return (PeerCacheApplication.class.equals(getAnnotationType())
+			&& importMetadata.hasAnnotation(getAnnotationTypeName()));
+	}
+
+	/**
+	 * Determine whether this Spring application is a {@link com.gemstone.gemfire.cache.server.CacheServer},
+	 * {@link com.gemstone.gemfire.cache.client.ClientCache} or a {@link com.gemstone.gemfire.cache.Cache} application
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing application configuration meta-data
+	 * from the annotations used to configure the Spring application.
+	 * @return a boolean value indicating whether this is a GemFire cache server, client cache or peer cache,
+	 * Spring application.
+	 * @see #isCacheServerApplication(AnnotationMetadata)
+	 * @see #isClientCacheApplication(AnnotationMetadata)
+	 * @see #isPeerCacheApplication(AnnotationMetadata)
+	 */
+	protected boolean isClientPeerOrServerCacheApplication(AnnotationMetadata importMetadata) {
+		return (isCacheServerApplication(importMetadata) || isClientCacheApplication(importMetadata)
+			|| isPeerCacheApplication(importMetadata));
+	}
+
+	/**
+	 * Constructs a new, initialized instance of the {@link CacheFactoryBean} based on the application
+	 * GemFire cache type (i.e. client or peer).
+	 *
+	 * @param <T> Class type of the {@link CacheFactoryBean}.
+	 * @return a new instance of the {@link CacheFactoryBean} for the particular application GemFire cache type
+	 * (i.e client or peer).
+	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+	 * @see org.springframework.data.gemfire.CacheFactoryBean
+	 * @see #setCommonCacheConfiguration(CacheFactoryBean)
+	 * @see #newCacheFactoryBean()
+	 */
+	protected <T extends CacheFactoryBean> T constructCacheFactoryBean() {
+		return setCommonCacheConfiguration(this.<T>newCacheFactoryBean());
+	}
+
+	/**
+	 * Constructs a new, uninitialized instance of the {@link CacheFactoryBean} based on the application
+	 * GemFire cache type (i.e. client or peer).
+	 *
+	 * @param <T> Class type of the {@link CacheFactoryBean}.
+	 * @return a new instance of the {@link CacheFactoryBean} for the particular application GemFire cache type
+	 * (i.e client or peer).
+	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+	 * @see org.springframework.data.gemfire.CacheFactoryBean
+	 */
+	protected abstract <T extends CacheFactoryBean> T newCacheFactoryBean();
+
+	/**
+	 * Configures common GemFire cache configuration settings.
+	 *
+	 * @param <T> Class type of the {@link CacheFactoryBean}.
+	 * @param gemfireCache specific {@link CacheFactoryBean} instance to configure.
+	 * @return the given {@link CacheFactoryBean} after common configuration settings have been applied.
+	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+	 * @see org.springframework.data.gemfire.CacheFactoryBean
+	 */
+	protected <T extends CacheFactoryBean> T setCommonCacheConfiguration(T gemfireCache) {
+		gemfireCache.setBeanClassLoader(beanClassLoader());
+		gemfireCache.setBeanFactory(beanFactory());
+		gemfireCache.setCacheXml(cacheXml());
+		gemfireCache.setClose(close());
+		gemfireCache.setCopyOnRead(copyOnRead());
+		gemfireCache.setCriticalHeapPercentage(criticalHeapPercentage());
+		gemfireCache.setDynamicRegionSupport(dynamicRegionSupport());
+		gemfireCache.setEvictionHeapPercentage(evictionHeapPercentage());
+		gemfireCache.setGatewayConflictResolver(gatewayConflictResolver());
+		gemfireCache.setJndiDataSources(jndiDataSources());
+		gemfireCache.setProperties(gemfireProperties());
+		gemfireCache.setPdxDiskStoreName(pdxDiskStoreName());
+		gemfireCache.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields());
+		gemfireCache.setPdxPersistent(pdxPersistent());
+		gemfireCache.setPdxReadSerialized(pdxReadSerialized());
+		gemfireCache.setPdxSerializer(pdxSerializer());
+		gemfireCache.setTransactionListeners(transactionListeners());
+		gemfireCache.setTransactionWriter(transactionWriter());
+
+		return gemfireCache;
+	}
+
+	/* (non-Javadoc) */
+	void setCacheXml(Resource cacheXml) {
+		this.cacheXml = cacheXml;
+	}
+
+	protected Resource cacheXml() {
+		return this.cacheXml;
+	}
+
+	/* (non-Javadoc) */
+	void setClose(boolean close) {
+		this.close = close;
+	}
+
+	protected boolean close() {
+		return this.close;
+	}
+
+	/* (non-Javadoc) */
+	void setCopyOnRead(boolean copyOnRead) {
+		this.copyOnRead = copyOnRead;
+	}
+
+	protected boolean copyOnRead() {
+		return this.copyOnRead;
+	}
+
+	/* (non-Javadoc) */
+	void setCriticalHeapPercentage(Float criticalHeapPercentage) {
+		this.criticalHeapPercentage = criticalHeapPercentage;
+	}
+
+	protected Float criticalHeapPercentage() {
+		return this.criticalHeapPercentage;
+	}
+
+	/* (non-Javadoc) */
+	void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
+		this.dynamicRegionSupport = dynamicRegionSupport;
+	}
+
+	protected DynamicRegionSupport dynamicRegionSupport() {
+		return this.dynamicRegionSupport;
+	}
+
+	/* (non-Javadoc) */
+	void setEvictionHeapPercentage(Float evictionHeapPercentage) {
+		this.evictionHeapPercentage = evictionHeapPercentage;
+	}
+
+	protected Float evictionHeapPercentage() {
+		return this.evictionHeapPercentage;
+	}
+
+	/* (non-Javadoc) */
+	void setGatewayConflictResolver(GatewayConflictResolver gatewayConflictResolver) {
+		this.gatewayConflictResolver = gatewayConflictResolver;
+	}
+
+	protected GatewayConflictResolver gatewayConflictResolver() {
+		return this.gatewayConflictResolver;
+	}
+
+	/* (non-Javadoc) */
+	void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
+		this.jndiDataSources = jndiDataSources;
+	}
+
+	protected List<CacheFactoryBean.JndiDataSource> jndiDataSources() {
+		return nullSafeList(this.jndiDataSources);
+	}
+
+	void setLocators(String locators) {
+		this.locators = locators;
+	}
+
+	protected String locators() {
+		return this.locators;
+	}
+
+	/* (non-Javadoc) */
+	void setLogLevel(String logLevel) {
+		this.logLevel = logLevel;
+	}
+
+	protected String logLevel() {
+		return nullSafeValue(this.logLevel, DEFAULT_LOG_LEVEL);
+	}
+
+	void setName(String name) {
+		this.name = name;
+	}
+
+	protected String name() {
+		return (StringUtils.hasText(name) ? name : toString());
+	}
+
+	/* (non-Javadoc) */
+	void setPdxDiskStoreName(String pdxDiskStoreName) {
+		this.pdxDiskStoreName = pdxDiskStoreName;
+	}
+
+	protected String pdxDiskStoreName() {
+		return this.pdxDiskStoreName;
+	}
+
+	/* (non-Javadoc) */
+	void setPdxIgnoreUnreadFields(Boolean pdxIgnoreUnreadFields) {
+		this.pdxIgnoreUnreadFields = pdxIgnoreUnreadFields;
+	}
+
+	protected Boolean pdxIgnoreUnreadFields() {
+		return this.pdxIgnoreUnreadFields;
+	}
+
+	/* (non-Javadoc) */
+	void setPdxPersistent(Boolean pdxPersistent) {
+		this.pdxPersistent = pdxPersistent;
+	}
+
+	protected Boolean pdxPersistent() {
+		return this.pdxPersistent;
+	}
+
+	/* (non-Javadoc) */
+	void setPdxReadSerialized(Boolean pdxReadSerialized) {
+		this.pdxReadSerialized = pdxReadSerialized;
+	}
+
+	protected Boolean pdxReadSerialized() {
+		return this.pdxReadSerialized;
+	}
+
+	/* (non-Javadoc) */
+	void setPdxSerializer(PdxSerializer pdxSerializer) {
+		this.pdxSerializer = pdxSerializer;
+	}
+
+	protected PdxSerializer pdxSerializer() {
+		return this.pdxSerializer;
+	}
+
+	/* (non-Javadoc) */
+	void setTransactionListeners(List<TransactionListener> transactionListeners) {
+		this.transactionListeners = transactionListeners;
+	}
+
+	protected List<TransactionListener> transactionListeners() {
+		return nullSafeList(this.transactionListeners);
+	}
+
+	/* (non-Javadoc) */
+	void setTransactionWriter(TransactionWriter transactionWriter) {
+		this.transactionWriter = transactionWriter;
+	}
+
+	protected TransactionWriter transactionWriter() {
+		return this.transactionWriter;
+	}
+
+	/* (non-Javadoc) */
+	void setUseBeanFactoryLocator(boolean useBeanFactoryLocator) {
+		this.useBeanFactoryLocator = useBeanFactoryLocator;
+	}
+
+	protected boolean useBeanFactoryLocator() {
+		return this.useBeanFactoryLocator;
+	}
+
+	@Override
+	public String toString() {
+		return DEFAULT_NAME;
+	}
+}
