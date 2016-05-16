@@ -23,6 +23,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.gemstone.gemfire.GemFireCheckedException;
+import com.gemstone.gemfire.GemFireException;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DynamicRegionFactory;
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.TransactionListener;
+import com.gemstone.gemfire.cache.TransactionWriter;
+import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.datasource.ConfigProperty;
+import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
+import com.gemstone.gemfire.pdx.PdxSerializable;
+import com.gemstone.gemfire.pdx.PdxSerializer;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -41,23 +58,6 @@ import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.datasource.ConfigProperty;
-import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-
 /**
  * FactoryBean used to configure a GemFire peer Cache node. Allows either retrieval of an existing, opened Cache
  * or the creation of a new Cache instance.
@@ -67,7 +67,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor}, for AOP-based translation
  * of native Exceptions to Spring DataAccessExceptions. Hence, the presence of this class automatically enables
  * a PersistenceExceptionTranslationPostProcessor to translate GemFire Exceptions appropriately.
- * 
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
@@ -645,7 +645,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	/**
 	 * Sets the cache properties.
-	 * 
+	 *
 	 * @param properties the properties to set
 	 */
 	public void setProperties(Properties properties) {
@@ -1026,40 +1026,40 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		private String diskDirectory;
 		private String poolName;
 
-		public String getDiskDir() {
-			return diskDirectory;
-		}
-
 		public void setDiskDir(String diskDirectory) {
 			this.diskDirectory = diskDirectory;
 		}
 
-		public Boolean getPersistent() {
-			return persistent;
+		public String getDiskDir() {
+			return diskDirectory;
 		}
 
 		public void setPersistent(Boolean persistent) {
 			this.persistent = persistent;
 		}
 
-		public String getPoolName() {
-			return poolName;
+		public Boolean getPersistent() {
+			return persistent;
 		}
 
 		public void setPoolName(String poolName) {
 			this.poolName = poolName;
 		}
 
-		public Boolean getRegisterInterest() {
-			return registerInterest;
+		public String getPoolName() {
+			return poolName;
 		}
 
 		public void setRegisterInterest(Boolean registerInterest) {
 			this.registerInterest = registerInterest;
 		}
 
+		public Boolean getRegisterInterest() {
+			return registerInterest;
+		}
+
 		public void initializeDynamicRegionFactory() {
-			File localDiskDirectory = (this.diskDirectory == null ? null : new File(this.diskDirectory));
+			File localDiskDirectory = (this.diskDirectory != null ? new File(this.diskDirectory) : null);
 
 			DynamicRegionFactory.Config config = new DynamicRegionFactory.Config(localDiskDirectory, poolName,
 				persistent, registerInterest);

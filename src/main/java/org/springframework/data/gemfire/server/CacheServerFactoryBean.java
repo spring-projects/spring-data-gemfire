@@ -19,6 +19,12 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.InterestRegistrationListener;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
+import com.gemstone.gemfire.cache.server.ServerLoadProbe;
+
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -26,12 +32,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.InterestRegistrationListener;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
  * FactoryBean for easy creation and configuration of GemFire {@link CacheServer} instances.

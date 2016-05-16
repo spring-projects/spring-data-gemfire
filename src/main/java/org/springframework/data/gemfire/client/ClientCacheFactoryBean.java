@@ -20,6 +20,15 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Properties;
 
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.pdx.PdxSerializer;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -36,18 +45,9 @@ import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-
 /**
  * FactoryBean dedicated to creating GemFire client caches.
- * 
+ *
  * @author Costin Leau
  * @author Lyndon Adams
  * @author John Blum
@@ -98,7 +98,6 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	private String durableClientId;
 	private String poolName;
 	private String serverGroup;
-	private String serverName;
 
 	@Override
 	protected void postProcessBeforeCacheInitialization(Properties gemfireProperties) {
@@ -782,5 +781,4 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	public final Boolean getUseClusterConfiguration() {
 		return Boolean.FALSE;
 	}
-
 }
