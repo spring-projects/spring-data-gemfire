@@ -119,13 +119,13 @@ public abstract class ProcessExecutor {
 		return springGemfireSystemProperties;
 	}
 
-	protected static boolean isJvmOption(final String option) {
-		return (!StringUtils.isEmpty(option) && (option.startsWith("-D") || option.startsWith("-X")));
+	protected static boolean isJvmOption(String option) {
+		return (StringUtils.hasText(option) && (option.startsWith("-D") || option.startsWith("-X")));
 	}
 
-	protected static File validateDirectory(final File workingDirectory) {
-		Assert.isTrue(workingDirectory != null && (workingDirectory.isDirectory() || workingDirectory.mkdirs()));
+	protected static File validateDirectory(File workingDirectory) {
+		Assert.isTrue(workingDirectory != null && (workingDirectory.isDirectory() || workingDirectory.mkdirs()),
+			String.format("Failed to create working directory [%1$s]", workingDirectory));
 		return workingDirectory;
 	}
-
 }

@@ -53,7 +53,7 @@ public class ClientCachePoolTests extends AbstractGemFireClientServerIntegration
 
 	@BeforeClass
 	public static void setupGemFireServer() throws Exception {
-		gemfireServerProcess = runGemFireServer(ClientCachePoolTests.class);
+		gemfireServerProcess = startGemFireServer(ClientCachePoolTests.class);
 	}
 
 	@AfterClass
