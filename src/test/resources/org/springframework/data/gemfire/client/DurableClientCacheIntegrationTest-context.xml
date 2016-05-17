@@ -37,8 +37,7 @@
 		<prop key="name">DurableClientCacheIntegrationTestClient</prop>
 	</util:properties>
 
-	<gfe:client-cache properties-ref="gemfireProperties" pool-name="gemfireServerPool"
-					  durable-client-id="${gemfire.cache.client.durable-client-id}"
+	<gfe:client-cache properties-ref="gemfireProperties" durable-client-id="${gemfire.cache.client.durable-client-id}"
 					  durable-client-timeout="${gemfire.cache.client.durable-client-timeout}"
 					  keep-alive="true" ready-for-events="true"/>
 

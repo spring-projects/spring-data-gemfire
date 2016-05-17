@@ -18,8 +18,8 @@ configurations {
 }
 
 apply plugin: "java"
-apply plugin: 'idea'
 apply plugin: 'eclipse'
+apply plugin: 'idea'
 apply from: "$rootDir/maven.gradle"
 apply plugin: 'bundlor'
 apply plugin: 'propdeps'
@@ -32,17 +32,6 @@ archivesBaseName = project.name
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
-
-sourceSets {
-    main {
-        output.resourcesDir = 'build/classes/main'
-        output.classesDir   = 'build/classes/main'
-    }
-    test {
-        output.resourcesDir = 'build/classes/test'
-        output.classesDir   = 'build/classes/test'
-    }
-}
 
 [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
@@ -79,6 +68,17 @@ tasks.withType(Test).all {
     systemProperties['spring.profiles.active'] = 'apache-geode'
 }
 
+sourceSets {
+    main {
+        output.resourcesDir = 'build/classes/main'
+        output.classesDir   = 'build/classes/main'
+    }
+    test {
+        output.resourcesDir = 'build/classes/test'
+        output.classesDir   = 'build/classes/test'
+    }
+}
+
 repositories {
     maven { url "https://repo.spring.io/libs-release" }
     maven { url "https://repo.spring.io/plugins-release"}
@@ -88,51 +88,51 @@ repositories {
 dependencies {
     // Spring Framework
     compile("org.springframework:spring-context-support:$springVersion") {
-      exclude group: "commons-logging", module: "commons-logging"
+        exclude group: "commons-logging", module: "commons-logging"
     }
     compile("org.springframework:spring-tx:$springVersion") {
-      exclude group: "commons-logging", module: "commons-logging"
+        exclude group: "commons-logging", module: "commons-logging"
     }
 
-	// Spring Data
-	compile("org.springframework.data:spring-data-commons:${springDataCommonsVersion}") {
-		exclude group: "commons-logging", module: "commons-logging"
-	}
+    // Spring Data
+    compile("org.springframework.data:spring-data-commons:${springDataCommonsVersion}") {
+        exclude group: "commons-logging", module: "commons-logging"
+    }
 
-	// Apache Geode (a.k.a. Pivotal GemFire)
-	compile("org.apache.geode:geode-core:$gemfireVersion") {
-		exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
-		exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
-		exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+    // Apache Geode (a.k.a. Pivotal GemFire)
+    compile("org.apache.geode:geode-core:$gemfireVersion") {
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
         exclude group: "org.apache.hbase", module: "hbase"
-		exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
-		exclude group: "org.slf4j", module: "slf4j-api"
-		exclude group: "org.springframework", module: "spring-aop"
-		exclude group: "org.springframework", module: "spring-beans"
-		exclude group: "org.springframework", module: "spring-context"
-		exclude group: "org.springframework", module: "spring-context-support"
-		exclude group: "org.springframework", module: "spring-core"
-		exclude group: "org.springframework", module: "spring-expression"
-		exclude group: "org.springframework", module: "spring-tx"
-		exclude group: "org.springframework", module: "spring-web"
-		exclude group: "org.springframework", module: "spring-webmvc"
-		exclude group: "org.springframework.data", module: "spring-data-commons"
-		exclude group: "org.springframework.shell", module: "spring-shell"
-	}
+        exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
+        exclude group: "org.slf4j", module: "slf4j-api"
+        exclude group: "org.springframework", module: "spring-aop"
+        exclude group: "org.springframework", module: "spring-beans"
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-context-support"
+        exclude group: "org.springframework", module: "spring-core"
+        exclude group: "org.springframework", module: "spring-expression"
+        exclude group: "org.springframework", module: "spring-tx"
+        exclude group: "org.springframework", module: "spring-web"
+        exclude group: "org.springframework", module: "spring-webmvc"
+        exclude group: "org.springframework.data", module: "spring-data-commons"
+        exclude group: "org.springframework.shell", module: "spring-shell"
+    }
     compile("org.apache.geode:geode-cq:$gemfireVersion")
     compile("org.apache.geode:geode-wan:$gemfireVersion")
-	optional("com.google.code.findbugs:annotations:2.0.2")
-	runtime("antlr:antlr:$antlrVersion")
+    optional("com.google.code.findbugs:annotations:2.0.2")
+    runtime("antlr:antlr:$antlrVersion")
 
     optional "javax.enterprise:cdi-api:$cdiVersion"
-	compile "org.aspectj:aspectjweaver:$aspectjVersion"
+    compile "org.aspectj:aspectjweaver:$aspectjVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
     // Testing
     testCompile "javax.annotation:jsr250-api:1.0", optional
     testCompile("org.springframework:spring-test:$springVersion") {
-      exclude group: "commons-logging", module: "commons-logging"
+        exclude group: "commons-logging", module: "commons-logging"
     }
     testCompile "junit:junit:$junitVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
@@ -143,12 +143,16 @@ dependencies {
 
     testRuntime "javax.el:el-api:$cdiVersion"
     testRuntime "javax.servlet:servlet-api:$servletApiVersion"
-	testRuntime "log4j:log4j:$log4jVersion"
-	testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
-	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    testRuntime "log4j:log4j:$log4jVersion"
+    testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
+    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
     testRuntime "org.springframework.shell:spring-shell:1.0.0.RELEASE"
 
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
+}
+
+bundlor {
+    manifestTemplate = file("template.mf").text
 }
 
 jar {
@@ -163,10 +167,6 @@ jar {
         into "META-INF"
         expand(copyright: new Date().format('yyyy'), version: project.version)
     }
-}
-
-bundlor {
-    manifestTemplate = file("template.mf").text
 }
 
 javadoc {
@@ -186,12 +186,10 @@ javadoc {
         ]
 
         links = [
-            "http://static.springframework.org/spring/docs/3.1.x/javadoc-api",
-            "http://download.oracle.com/javase/6/docs/api",
-            "http://www.gemstone.com/docs/6.5.1/product/docs/japi/",
-            "http://asm.objectweb.org/asm223/javadoc/user",
-            "http://logging.apache.org/log4j/docs/api/",
-            "http://atinject.googlecode.com/svn/trunk/javadoc/"
+          "http://docs.oracle.com/javase/6/docs/api/",
+          "http://docs.spring.io/spring/docs/current/javadoc-api/",
+          "http://gemfire.docs.pivotal.io/docs-gemfire/latest/javadocs/japi/",
+          "http://logging.apache.org/log4j/1.2/apidocs/",
         ]
 
         exclude "org/springframework/data/gemfire/config/**"
