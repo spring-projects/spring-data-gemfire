@@ -61,6 +61,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 
 /**
@@ -263,17 +264,17 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 
 		@Override
 		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-			if (bean instanceof ClientCache) {
-				ClientCache clientCache = (ClientCache) bean;
+			if (bean instanceof Pool && "gemfireServerPool".equals(beanName)) {
+				Pool gemfireServerPool = (Pool) bean;
 
 				if (isBeforeDirtiesContext()) {
 					// NOTE: A value of -2 indicates the client connected to the server for the first time...
-					assertThat(clientCache.getDefaultPool().getPendingEventCount(), is(equalTo(-2)));
+					assertThat(gemfireServerPool.getPendingEventCount(), is(equalTo(-2)));
 				}
 				else {
 					// NOTE: the pending event count could be 3 because it should minimally include the 2 puts
 					// from the client cache producer and possibly a "marker" as well...
-					assertThat(clientCache.getDefaultPool().getPendingEventCount(), is(greaterThanOrEqualTo(2)));
+					assertThat(gemfireServerPool.getPendingEventCount(), is(greaterThanOrEqualTo(2)));
 				}
 			}
 
