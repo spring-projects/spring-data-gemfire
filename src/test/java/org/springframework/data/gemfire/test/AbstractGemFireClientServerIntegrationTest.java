@@ -42,11 +42,11 @@ import org.springframework.util.Assert;
 @SuppressWarnings("unused")
 public abstract class AbstractGemFireClientServerIntegrationTest {
 
-	protected static long DEFAULT_TIME_TO_WAIT_FOR_SERVER_TO_START = TimeUnit.SECONDS.toMillis(20);
-	protected static long FIVE_HUNDRED_MILLISECONDS = TimeUnit.MILLISECONDS.toMillis(500);
-	protected static long ONE_SECOND_IN_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
+	protected static final long DEFAULT_TIME_TO_WAIT_FOR_SERVER_TO_START = TimeUnit.SECONDS.toMillis(20);
+	protected static final long FIVE_HUNDRED_MILLISECONDS = TimeUnit.MILLISECONDS.toMillis(500);
+	protected static final long ONE_SECOND_IN_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
 
-	protected static String PROCESS_WORKING_DIRECTORY_CLEAN_SYSTEM_PROPERTY = "spring.gemfire.force.clean";
+	protected static String CLEAN_PROCESS_WORKING_DIRECTORY_SYSTEM_PROPERTY = "spring.data.gemfire.force.clean";
 
 	protected static void pause(final long duration) {
 		ThreadUtils.timedWait(Math.max(duration, ONE_SECOND_IN_MILLISECONDS), ONE_SECOND_IN_MILLISECONDS,
@@ -58,12 +58,21 @@ public abstract class AbstractGemFireClientServerIntegrationTest {
 		);
 	}
 
-	protected static ProcessWrapper runGemFireServer(Class<?> testClass) throws IOException {
-		return runGemFireServer(testClass, DEFAULT_TIME_TO_WAIT_FOR_SERVER_TO_START);
+	protected static <T> T setSystemProperty(String propertyName, T propertyValue) {
+		System.setProperty(propertyName, String.valueOf(propertyValue));
+		return propertyValue;
 	}
 
-	protected static ProcessWrapper runGemFireServer(Class<?> testClass, long waitTimeInMilliseconds) throws IOException {
-		String serverName = testClass.getSimpleName() + "Server";
+	protected static ProcessWrapper startGemFireServer(Class<?> testClass) throws IOException {
+		return startGemFireServer(testClass, DEFAULT_TIME_TO_WAIT_FOR_SERVER_TO_START);
+	}
+
+	protected static ProcessWrapper startGemFireServer(Class<?> testClass, long waitTimeInMilliseconds)
+			throws IOException {
+
+		Assert.notNull(testClass, "'testClass' must not be null");
+
+		String serverName = (testClass.getSimpleName() + "Server");
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
 
@@ -71,7 +80,7 @@ public abstract class AbstractGemFireClientServerIntegrationTest {
 
 		List<String> arguments = new ArrayList<String>();
 
-		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
+		addTestClassSystemProperties(testClass, arguments).add(String.format("-Dgemfire.name=%1$s", serverName));
 		arguments.add("/".concat(testClass.getName().replace(".", "/").concat("-server-context.xml")));
 
 		ProcessWrapper gemfireServerProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
@@ -83,6 +92,18 @@ public abstract class AbstractGemFireClientServerIntegrationTest {
 			testClass.getSimpleName());
 
 		return gemfireServerProcess;
+	}
+
+	static List<String> addTestClassSystemProperties(Class<?> testClass, List<String> arguments) {
+		String testClassName = testClass.getName();
+
+		for (String propertyName : System.getProperties().stringPropertyNames()) {
+			if (propertyName.startsWith(testClassName)) {
+				arguments.add(String.format("-D%1$s=%2$s", propertyName, System.getProperty(propertyName)));
+			}
+		}
+
+		return arguments;
 	}
 
 	static void waitForServerToStart(final ProcessWrapper process, long duration) {
@@ -98,12 +119,31 @@ public abstract class AbstractGemFireClientServerIntegrationTest {
 		);
 	}
 
-	protected static void stopGemFireServer(ProcessWrapper process) {
-		process.shutdown();
+	protected static ProcessWrapper stopGemFireServer(ProcessWrapper process) {
+		try {
+			process.shutdown();
 
-		if (Boolean.valueOf(System.getProperty(PROCESS_WORKING_DIRECTORY_CLEAN_SYSTEM_PROPERTY, Boolean.TRUE.toString()))) {
-			org.springframework.util.FileSystemUtils.deleteRecursively(process.getWorkingDirectory());
+			boolean springGemFireForceClean = Boolean.valueOf(System.getProperty(
+				CLEAN_PROCESS_WORKING_DIRECTORY_SYSTEM_PROPERTY, Boolean.TRUE.toString()));
+
+			if (springGemFireForceClean) {
+				org.springframework.util.FileSystemUtils.deleteRecursively(process.getWorkingDirectory());
+			}
+
+			return null;
+		}
+		catch (Exception e) {
+			return process;
 		}
 	}
 
+	protected static void clearSystemProperties(Class<?> testClass) {
+		String testClassName = testClass.getName();
+
+		for (String propertyName : System.getProperties().stringPropertyNames()) {
+			if (propertyName.startsWith(testClassName)) {
+				System.clearProperty(propertyName);
+			}
+		}
+	}
 }

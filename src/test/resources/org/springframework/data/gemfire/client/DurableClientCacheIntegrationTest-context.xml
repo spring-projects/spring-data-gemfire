@@ -13,8 +13,16 @@
 
 	<util:properties id="clientProperties">
 		<prop key="gemfire.cache.client.durable-client-id">DurableClientCacheIntegrationTest</prop>
-		<prop key="gemfire.cache.client.server.host">localhost</prop>
-		<prop key="gemfire.cache.client.server.port">24842</prop>
+		<prop key="gemfire.cache.client.durable-client-timeout">
+			${org.springframework.data.gemfire.client.DurableClientCacheIntegrationTest.durable-client-timeout:300}
+		</prop>
+		<prop key="gemfire.cache.client.interests.result-policy">
+			${org.springframework.data.gemfire.client.DurableClientCacheIntegrationTest.interests-result-policy:KEYS_VALUES}
+		</prop>
+		<prop key="gemfire.cache.server.host">localhost</prop>
+		<prop key="gemfire.cache.server.port">
+			${org.springframework.data.gemfire.client.DurableClientCacheIntegrationTest.cache-server-port}
+		</prop>
 	</util:properties>
 
 	<context:property-placeholder properties-ref="clientProperties"/>
@@ -29,20 +37,20 @@
 		<prop key="name">DurableClientCacheIntegrationTestClient</prop>
 	</util:properties>
 
-	<gfe:pool id="gemfireServerPool" keep-alive="true" subscription-enabled="true">
-		<gfe:server host="${gemfire.cache.client.server.host}" port="${gemfire.cache.client.server.port}"/>
-	</gfe:pool>
-
-	<gfe:client-cache properties-ref="gemfireProperties" pool-name="gemfireServerPool" use-bean-factory-locator="false"
+	<gfe:client-cache properties-ref="gemfireProperties" pool-name="gemfireServerPool"
 					  durable-client-id="${gemfire.cache.client.durable-client-id}"
-					  durable-client-timeout="${gemfire.cache.client.durable-client-timeout:}"
+					  durable-client-timeout="${gemfire.cache.client.durable-client-timeout}"
 					  keep-alive="true" ready-for-events="true"/>
+
+	<gfe:pool id="gemfireServerPool" keep-alive="true" subscription-enabled="true">
+		<gfe:server host="${gemfire.cache.server.host}" port="${gemfire.cache.server.port}"/>
+	</gfe:pool>
 
 	<gfe:client-region id="Example" pool-name="gemfireServerPool" shortcut="CACHING_PROXY">
 		<gfe:cache-listener>
 			<bean class="org.springframework.data.gemfire.client.DurableClientCacheIntegrationTest.RegionEntryEventRecordingCacheListener"/>
 		</gfe:cache-listener>
-		<gfe:regex-interest durable="true" pattern= ".*" result-policy="${gemfire.cache.client.interests.result-policy:KEYS_VALUES}"/>
+		<gfe:regex-interest durable="true" pattern= ".*" result-policy="${gemfire.cache.client.interests.result-policy}"/>
 	</gfe:client-region>
 
 </beans>
