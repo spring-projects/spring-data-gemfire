@@ -54,6 +54,7 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
 		ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
 		ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
+		ParsingUtils.setPropertyValue(element, builder, "ignore-eviction-and-expiration");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
 		ParsingUtils.setPropertyValue(element, builder, "order-policy");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");

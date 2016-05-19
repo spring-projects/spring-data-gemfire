@@ -39,6 +39,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	private Boolean batchConflationEnabled;
 	private Boolean diskSynchronous;
+	private Boolean ignoreEvictionAndExpiration;
 	private Boolean parallel;
 	private Boolean persistent;
 
@@ -110,6 +111,10 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 		if (diskSynchronous != null) {
 			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
+		}
+
+		if (ignoreEvictionAndExpiration != null) {
+			asyncEventQueueFactory.setIgnoreEvictionAndExpiration(ignoreEvictionAndExpiration);
 		}
 
 		if (maximumQueueMemory != null) {
@@ -204,6 +209,11 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		this.dispatcherThreads = dispatcherThreads;
 	}
 
+	/* (non-Javadoc) */
+	public void setIgnoreEvictionAndExpiration(Boolean ignoreEvictionAndExpiration) {
+		this.ignoreEvictionAndExpiration = ignoreEvictionAndExpiration;
+	}
+
 	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
 		this.maximumQueueMemory = maximumQueueMemory;
 	}
@@ -234,5 +244,4 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
 	}
-
 }

@@ -38,6 +38,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 
 	private boolean batchConflationEnabled;
 	private boolean diskSynchronous;
+	private boolean ignoreEvictionAndExpiration;
 	private boolean parallel;
 	private boolean persistent;
 
@@ -55,28 +56,39 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 	private String diskStoreName;
 
 	@Override
-	public AsyncEventQueue create(final String name, final AsyncEventListener listener) {
+	public AsyncEventQueue create(String name, AsyncEventListener listener) {
 		when(asyncEventQueue.getAsyncEventListener()).thenReturn(listener);
-		when(asyncEventQueue.getBatchSize()).thenReturn(this.batchSize);
-		when(asyncEventQueue.getDiskStoreName()).thenReturn(this.diskStoreName);
-		when(asyncEventQueue.isPersistent()).thenReturn(this.persistent);
-		when(asyncEventQueue.getId()).thenReturn(name);
-		when(asyncEventQueue.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
-		when(asyncEventQueue.isParallel()).thenReturn(this.parallel);
 		when(asyncEventQueue.isBatchConflationEnabled()).thenReturn(this.batchConflationEnabled);
-		when(asyncEventQueue.isDiskSynchronous()).thenReturn(this.diskSynchronous);
+		when(asyncEventQueue.getBatchSize()).thenReturn(this.batchSize);
 		when(asyncEventQueue.getBatchTimeInterval()).thenReturn(this.batchTimeInterval);
-		when(asyncEventQueue.getOrderPolicy()).thenReturn(this.orderPolicy);
+		when(asyncEventQueue.getDiskStoreName()).thenReturn(this.diskStoreName);
+		when(asyncEventQueue.isDiskSynchronous()).thenReturn(this.diskSynchronous);
 		when(asyncEventQueue.getDispatcherThreads()).thenReturn(this.dispatcherThreads);
-		when(asyncEventQueue.getGatewayEventSubstitutionFilter()).thenReturn(this.gatewayEventSubstitutionFilter);
 		when(asyncEventQueue.getGatewayEventFilters()).thenReturn(Collections.unmodifiableList(gatewayEventFilters));
+		when(asyncEventQueue.getGatewayEventSubstitutionFilter()).thenReturn(this.gatewayEventSubstitutionFilter);
+		when(asyncEventQueue.getId()).thenReturn(name);
+		when(asyncEventQueue.isIgnoreEvictionAndExpiration()).thenReturn(this.ignoreEvictionAndExpiration);
+		when(asyncEventQueue.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
+		when(asyncEventQueue.getOrderPolicy()).thenReturn(this.orderPolicy);
+		when(asyncEventQueue.isParallel()).thenReturn(this.parallel);
+		when(asyncEventQueue.isPersistent()).thenReturn(this.persistent);
 
 		return this.asyncEventQueue;
+	}
+
+	public AsyncEventQueueFactory setBatchConflationEnabled(boolean batchConflationEnabled) {
+		this.batchConflationEnabled = batchConflationEnabled;
+		return this;
 	}
 
 	@Override
 	public AsyncEventQueueFactory setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
+		return this;
+	}
+
+	public AsyncEventQueueFactory setBatchTimeInterval(int batchTimeInterval) {
+		this.batchTimeInterval = batchTimeInterval;
 		return this;
 	}
 
@@ -86,32 +98,8 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		return this;
 	}
 
-	@Override
-	public AsyncEventQueueFactory setMaximumQueueMemory(int maxQueueMemory) {
-		this.maxQueueMemory = maxQueueMemory;
-		return this;
-	}
-
-	@Override
-	public AsyncEventQueueFactory setPersistent(boolean persistent) {
-		this.persistent = persistent;
-		return this;
-	}
-
-	@Override
-	public AsyncEventQueueFactory setParallel(boolean parallel) {
-		this.parallel = parallel;
-		return this;
-	}
-
-	//The following added in 7.0.1
-	public AsyncEventQueueFactory setBatchConflationEnabled(boolean batchConflationEnabled) {
-		this.batchConflationEnabled = batchConflationEnabled;
-		return this;
-	}
-
-	public AsyncEventQueueFactory setBatchTimeInterval(int batchTimeInterval) {
-		this.batchTimeInterval = batchTimeInterval;
+	public AsyncEventQueueFactory setDispatcherThreads(int dispatchThreads) {
+		this.dispatcherThreads = dispatchThreads;
 		return this;
 	}
 
@@ -120,8 +108,13 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		return this;
 	}
 
-	public AsyncEventQueueFactory setDispatcherThreads(int dispatchThreads) {
-		this.dispatcherThreads = dispatchThreads;
+	public AsyncEventQueueFactory setIgnoreEvictionAndExpiration(boolean ignoreEvictionAndExpiration) {
+		this.ignoreEvictionAndExpiration = ignoreEvictionAndExpiration;
+		return this;
+	}
+
+	public AsyncEventQueueFactory setMaximumQueueMemory(int maxQueueMemory) {
+		this.maxQueueMemory = maxQueueMemory;
 		return this;
 	}
 
@@ -130,22 +123,28 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		return this;
 	}
 
-	@Override
+	public AsyncEventQueueFactory setParallel(boolean parallel) {
+		this.parallel = parallel;
+		return this;
+	}
+
+	public AsyncEventQueueFactory setPersistent(boolean persistent) {
+		this.persistent = persistent;
+		return this;
+	}
+
 	public AsyncEventQueueFactory addGatewayEventFilter(final GatewayEventFilter gatewayEventFilter) {
 		gatewayEventFilters.add(gatewayEventFilter);
 		return this;
 	}
 
-	@Override
 	public AsyncEventQueueFactory removeGatewayEventFilter(final GatewayEventFilter gatewayEventFilter) {
 		gatewayEventFilters.remove(gatewayEventFilter);
 		return this;
 	}
 
-	@Override
 	public AsyncEventQueueFactory setGatewayEventSubstitutionListener(final GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
 		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
 		return this;
 	}
-
 }

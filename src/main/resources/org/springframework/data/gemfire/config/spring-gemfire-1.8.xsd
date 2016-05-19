@@ -2952,6 +2952,7 @@ if an inner bean.
                   ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="ignore-eviction-and-expiration" type="xsd:string" default="true"/>
 		<xsd:attributeGroup ref="commonWANQueueAttributes" />
 	</xsd:complexType>
 	<!-- -->
