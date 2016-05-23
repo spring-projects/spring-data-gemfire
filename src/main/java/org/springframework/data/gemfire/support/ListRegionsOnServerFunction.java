@@ -32,6 +32,8 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 @SuppressWarnings("serial")
 public class ListRegionsOnServerFunction implements Function {
 
+	private static final long serialVersionUID = 867530169l;
+
 	public static final String ID = ListRegionsOnServerFunction.class.getName();
 
 	/*
