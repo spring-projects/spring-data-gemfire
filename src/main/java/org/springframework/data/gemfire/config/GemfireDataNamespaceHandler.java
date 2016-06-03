@@ -36,10 +36,10 @@ class GemfireDataNamespaceHandler extends NamespaceHandlerSupport {
 	public void init() {
 		// Repository namespace
 		RepositoryConfigurationExtension extension = new GemfireRepositoryConfigurationExtension();
-		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(extension));
-		registerBeanDefinitionParser("function-executions", new FunctionExecutionBeanDefinitionParser());
 		registerBeanDefinitionParser("datasource", new GemfireDataSourceParser());
+		registerBeanDefinitionParser("function-executions", new FunctionExecutionBeanDefinitionParser());
 		registerBeanDefinitionParser("json-region-autoproxy", new GemfireRegionAutoProxyParser());
+		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(extension));
 		registerBeanDefinitionParser("snapshot-service", new SnapshotServiceParser());
 	}
 }
