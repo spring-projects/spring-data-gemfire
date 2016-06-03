@@ -104,5 +104,4 @@ public class ClientCachePoolTests extends AbstractGemFireClientServerIntegration
 		public void close() {
 		}
 	}
-
 }

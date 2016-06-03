@@ -87,6 +87,8 @@ public class PoolParserTest {
 
 	@Before
 	public void setup() {
+		PoolParser.INFRASTRUCTURE_REGISTRATION.set(true);
+
 		parser = new PoolParser() {
 			@Override BeanDefinitionRegistry getRegistry(final ParserContext parserContext) {
 				return mockRegistry;
