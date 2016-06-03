@@ -85,31 +85,31 @@ repositories {
 dependencies {
     // Spring Framework
     compile("org.springframework:spring-context-support:$springVersion") {
-      exclude group: "commons-logging", module: "commons-logging"
+        exclude group: "commons-logging", module: "commons-logging"
     }
     compile("org.springframework:spring-tx:$springVersion") {
-      exclude group: "commons-logging", module: "commons-logging"
+        exclude group: "commons-logging", module: "commons-logging"
     }
 
-	// Spring Data
-	compile("org.springframework.data:spring-data-commons:${springDataCommonsVersion}") {
-		exclude group: "commons-logging", module: "commons-logging"
-	}
+    // Spring Data
+    compile("org.springframework.data:spring-data-commons:${springDataCommonsVersion}") {
+        exclude group: "commons-logging", module: "commons-logging"
+    }
 
-	// GemFire
-	compile("com.gemstone.gemfire:gemfire:$gemfireVersion")
-	optional("com.google.code.findbugs:annotations:2.0.2")
-	runtime("antlr:antlr:$antlrVersion")
+    // GemFire
+    compile("com.gemstone.gemfire:gemfire:$gemfireVersion")
+    optional("com.google.code.findbugs:annotations:2.0.2")
+    runtime("antlr:antlr:$antlrVersion")
 
     optional "javax.enterprise:cdi-api:$cdiVersion"
-	compile "org.aspectj:aspectjweaver:$aspectjVersion"
+    compile "org.aspectj:aspectjweaver:$aspectjVersion"
     compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
     // Testing
     testCompile("org.springframework:spring-test:$springVersion") {
-      exclude group: "commons-logging", module: "commons-logging"
+        exclude group: "commons-logging", module: "commons-logging"
     }
     testCompile "junit:junit:$junitVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
@@ -121,9 +121,9 @@ dependencies {
     testCompile "javax.annotation:jsr250-api:1.0", optional
     testRuntime "javax.el:el-api:$cdiVersion"
     testRuntime "javax.servlet:servlet-api:$servletApiVersion"
-	testRuntime "log4j:log4j:$log4jVersion"
-	testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
-	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    testRuntime "log4j:log4j:$log4jVersion"
+    testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
+    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
     testRuntime "org.springframework.shell:spring-shell:1.0.0.RELEASE"
 
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"

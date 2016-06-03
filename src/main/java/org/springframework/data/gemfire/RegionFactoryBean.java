@@ -522,19 +522,22 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	@Override
 	public void destroy() throws Exception {
-		if (getRegion() != null) {
+		Region<K, V> region = getObject();
+
+		if (region != null) {
 			if (close) {
-				if (!getRegion().getRegionService().isClosed()) {
+				if (!region.getRegionService().isClosed()) {
 					try {
-						getRegion().close();
+						region.close();
 					}
 					catch (Exception ignore) {
 					}
 				}
 
 			}
+
 			if (destroy) {
-				getRegion().destroyRegion();
+				region.destroyRegion();
 			}
 		}
 	}
@@ -567,7 +570,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see com.gemstone.gemfire.cache.RegionAttributes
 	 */
 	public RegionAttributes getAttributes() {
-		return (getRegion() != null ? getRegion().getAttributes() : attributes);
+		Region<K, V> region = getRegion();
+		return (region != null ? region.getAttributes() : attributes);
 	}
 
 	/**

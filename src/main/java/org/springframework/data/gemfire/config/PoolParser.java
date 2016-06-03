@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -49,6 +50,8 @@ import org.w3c.dom.Element;
  */
 class PoolParser extends AbstractSingleBeanDefinitionParser {
 
+	static final AtomicBoolean INFRASTRUCTURE_REGISTRATION = new AtomicBoolean(false);
+
 	protected static final int DEFAULT_LOCATOR_PORT = GemfireUtils.DEFAULT_LOCATOR_PORT;
 	protected static final int DEFAULT_SERVER_PORT = GemfireUtils.DEFAULT_CACHE_SERVER_PORT;
 
@@ -62,6 +65,18 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	protected static final String SERVER_ELEMENT_NAME = "server";
 	protected static final String SERVERS_ATTRIBUTE_NAME = "servers";
 
+	/* (non-Javadoc) */
+	static void registerSupportingInfrastructureComponents(ParserContext parserContext) {
+		if (INFRASTRUCTURE_REGISTRATION.compareAndSet(false, true)) {
+			AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
+				.genericBeanDefinition(ClientRegionAndPoolBeanFactoryPostProcessor.class)
+				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
+				.getBeanDefinition();
+
+			BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, parserContext.getRegistry());
+		}
+	}
+
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return PoolFactoryBean.class;
@@ -69,6 +84,9 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		registerSupportingInfrastructureComponents(parserContext);
+
 		ParsingUtils.setPropertyValue(element, builder, "free-connection-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "idle-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "keep-alive");

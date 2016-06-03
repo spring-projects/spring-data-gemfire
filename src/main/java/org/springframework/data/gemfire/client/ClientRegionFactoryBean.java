@@ -31,7 +31,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
@@ -339,13 +338,12 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 					try {
 						region.close();
 					}
-					catch (CacheClosedException ignore) {
+					catch (Exception ignore) {
 					}
 				}
 			}
-			// TODO perhaps 'destroy' should take precedence over 'close' since 'destroy' is a functional superset
-			// of 'close'
-			else if (destroy) {
+
+			if (destroy) {
 				region.destroyRegion();
 			}
 		}

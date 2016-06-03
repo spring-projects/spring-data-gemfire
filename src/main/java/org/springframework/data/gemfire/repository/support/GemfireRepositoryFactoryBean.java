@@ -56,7 +56,7 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 
 	private Iterable<Region<?, ?>> regions;
 
-	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context;
+	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext;
 	
 	/**
 	 * Sets a reference to the Spring {@link ApplicationContext} in which this object runs.
@@ -81,11 +81,12 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 */
 	public void setGemfireMappingContext(MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext) {
 		setMappingContext(mappingContext);
-		this.context = mappingContext;
+		this.mappingContext = mappingContext;
 	}
 
 	/**
-	 * Gets a reference to the {@link MappingContext} used to perform domain object type to store mappings.
+	 * Returns a reference to the Spring Data {@link MappingContext} used to perform domain object type
+	 * to data store mappings.
 	 *
 	 * @return a reference to the {@link MappingContext}.
 	 * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
@@ -93,11 +94,17 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 * @see #setGemfireMappingContext(MappingContext)
 	 */
 	protected MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> getGemfireMappingContext() {
-		return this.context;
+		return this.mappingContext;
 	}
 
-	Iterable<Region<?, ?>> getRegions() {
-		return regions;
+	/**
+	 * Returns an {@link Iterable} reference to the GemFire {@link Region}s defined
+	 * in the Spring {@link ApplicationContext}.
+	 *
+	 * @return a reference to all GemFire {@link Region}s defined in the Spring {@link ApplicationContext}.
+	 */
+	protected Iterable<Region<?, ?>> getRegions() {
+		return this.regions;
 	}
 
 	/**
@@ -108,7 +115,7 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 */
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
-		return new GemfireRepositoryFactory(regions, context);
+		return new GemfireRepositoryFactory(getRegions(), getGemfireMappingContext());
 	}
 	
 	/* 
@@ -117,8 +124,7 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		Assert.state(context != null, "GemfireMappingContext must not be null!");
+		Assert.state(getGemfireMappingContext() != null, "GemfireMappingContext must not be null");
 		super.afterPropertiesSet();
 	}
-
 }

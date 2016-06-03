@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -28,18 +29,20 @@ import org.springframework.data.repository.config.XmlRepositoryConfigurationSour
 import org.springframework.util.StringUtils;
 
 /**
- * {@link RepositoryConfigurationExtension} implementation to add Gemfire specific extensions to the repository XML
- * namespace and annotation based configuration.
+ * {@link RepositoryConfigurationExtension} implementation handling GemFire specific extensions to the Repository XML
+ * namespace and annotation-based configuration meta-data.
  * 
  * @author Oliver Gierke
  * @author John Blum
+ * @see org.springframework.data.repository.config.RepositoryConfigurationExtension
  */
 public class GemfireRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-	private static final String ANNOTATION_MAPPING_CONTEXT_REF = "mappingContextRef";
+	private static final String GEMFIRE_MODULE_PREFIX = "gemfire";
 	private static final String MAPPING_CONTEXT_PROPERTY_NAME = "gemfireMappingContext";
-	private static final String XML_MAPPING_CONTEXT_REF = "mapping-context-ref";
-	
+	private static final String MAPPING_CONTEXT_REF_ANNOTATION_ATTRIBUTE = "mappingContextRef";
+	private static final String MAPPING_CONTEXT_REF_XML_ATTRIBUTE = "mapping-context-ref";
+
 	static final String DEFAULT_MAPPING_CONTEXT_BEAN_NAME = String.format("%1$s.%2$s",
 			GemfireMappingContext.class.getName(), "DEFAULT");
 
@@ -58,7 +61,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	 */
 	@Override
 	protected String getModulePrefix() {
-		return "gemfire";
+		return GEMFIRE_MODULE_PREFIX;
 	}
 
 	/* 
@@ -69,12 +72,10 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	public void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource) {
 
 		super.registerBeansForRoot(registry, configurationSource);
-		
-		String attribute = configurationSource.getAttribute(ANNOTATION_MAPPING_CONTEXT_REF);
 
-		if (!StringUtils.hasText(attribute)) {
+		if (!StringUtils.hasText(configurationSource.getAttribute(MAPPING_CONTEXT_REF_ANNOTATION_ATTRIBUTE))) {
 			registry.registerBeanDefinition(DEFAULT_MAPPING_CONTEXT_BEAN_NAME,
-					new RootBeanDefinition(GemfireMappingContext.class));
+				new RootBeanDefinition(GemfireMappingContext.class));
 		}
 	}
 
@@ -83,10 +84,9 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
 	 */
 	@Override
-	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
-
-		String mappingContextRef = config.getAttribute(ANNOTATION_MAPPING_CONTEXT_REF);
-		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, getDefaultedMappingContextBeanName(mappingContextRef));
+	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource configurationSource) {
+		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, resolveMappingContextBeanName(
+			configurationSource.getAttribute(MAPPING_CONTEXT_REF_ANNOTATION_ATTRIBUTE)));
 	}
 
 	/*
@@ -94,13 +94,13 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.XmlRepositoryConfigurationSource)
 	 */
 	@Override
-	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {
-
-		String mappingContextRef = config.getElement().getAttribute(XML_MAPPING_CONTEXT_REF);
-		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, getDefaultedMappingContextBeanName(mappingContextRef));
+	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource configurationSource) {
+		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, resolveMappingContextBeanName(
+			configurationSource.getElement().getAttribute(MAPPING_CONTEXT_REF_XML_ATTRIBUTE)));
 	}
 
-	private static String getDefaultedMappingContextBeanName(String source) {
-		return StringUtils.hasText(source) ? source : DEFAULT_MAPPING_CONTEXT_BEAN_NAME;
+	/* (non-Javadoc) */
+	private static String resolveMappingContextBeanName(String source) {
+		return (StringUtils.hasText(source) ? source : DEFAULT_MAPPING_CONTEXT_BEAN_NAME);
 	}
 }
