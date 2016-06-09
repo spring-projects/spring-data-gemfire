@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.RegionFactoryBean;
@@ -66,20 +67,22 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="diskstore-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
+// TODO move test cases into a DiskStoreIntegrationTests class
 public class DiskStoreAndEvictionRegionParsingTest {
-
-	@Autowired
-	private ApplicationContext context;
-
-	@Autowired
-	DiskStore diskStore1;
 
 	private static File diskStoreDirectory;
 
+	@Autowired
+	private ApplicationContext applicationContext;
+
+	@Autowired
+	@Qualifier("diskStore1")
+	private DiskStore diskStore;
+
 	@BeforeClass
 	public static void setUp() {
-		diskStoreDirectory = new File("./build/tmp");
-		assertTrue(diskStoreDirectory.isDirectory() || diskStoreDirectory.mkdir());
+		diskStoreDirectory = new File("./tmp");
+		assertTrue(diskStoreDirectory.isDirectory() || diskStoreDirectory.mkdirs());
 	}
 
 	@AfterClass
@@ -96,29 +99,28 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		}
 	}
 
-	
 	@Test
 	public void testDiskStore() {
-		assertNotNull(context.getBean("ds2"));
-		context.getBean("diskStore1");
- 		assertNotNull(diskStore1);
-		assertEquals("diskStore1", diskStore1.getName());
-		assertEquals(50, diskStore1.getQueueSize());
-		assertEquals(true, diskStore1.getAutoCompact());
-		assertEquals(DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD, diskStore1.getCompactionThreshold());
-		assertEquals(9999, diskStore1.getTimeInterval());
-		assertEquals(1, diskStore1.getMaxOplogSize());
-		assertEquals(diskStoreDirectory, diskStore1.getDiskDirs()[0]);
-		Cache cache = context.getBean("gemfireCache", Cache.class);
-		assertSame(diskStore1, cache.findDiskStore("diskStore1"));
+		assertNotNull(applicationContext.getBean("ds2"));
+		applicationContext.getBean("diskStore1");
+ 		assertNotNull(diskStore);
+		assertEquals("diskStore1", diskStore.getName());
+		assertEquals(50, diskStore.getQueueSize());
+		assertEquals(true, diskStore.getAutoCompact());
+		assertEquals(DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD, diskStore.getCompactionThreshold());
+		assertEquals(9999, diskStore.getTimeInterval());
+		assertEquals(1, diskStore.getMaxOplogSize());
+		assertEquals(diskStoreDirectory, diskStore.getDiskDirs()[0]);
+		Cache cache = applicationContext.getBean("gemfireCache", Cache.class);
+		assertSame(diskStore, cache.findDiskStore("diskStore1"));
 	}
 
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testReplicatedDataRegionAttributes() throws Exception {
-		assertTrue(context.containsBean("replicated-data"));
+		assertTrue(applicationContext.containsBean("replicated-data"));
 
-		RegionFactoryBean replicatedDataRegionFactoryBean = context.getBean("&replicated-data", RegionFactoryBean.class);
+		RegionFactoryBean replicatedDataRegionFactoryBean = applicationContext.getBean("&replicated-data", RegionFactoryBean.class);
 
 		assertTrue(replicatedDataRegionFactoryBean instanceof ReplicatedRegionFactoryBean);
 		assertEquals(DataPolicy.REPLICATE, replicatedDataRegionFactoryBean.getDataPolicy());
@@ -126,7 +128,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertEquals("diskStore1", TestUtils.readField("diskStoreName", replicatedDataRegionFactoryBean));
 		assertNull(TestUtils.readField("scope", replicatedDataRegionFactoryBean));
 
-		Region replicatedDataRegion = context.getBean("replicated-data", Region.class);
+		Region replicatedDataRegion = applicationContext.getBean("replicated-data", Region.class);
 
 		RegionAttributes replicatedDataRegionAttributes = TestUtils.readField("attributes", replicatedDataRegionFactoryBean);
 
@@ -145,8 +147,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testPartitionDataOptions() throws Exception {
-		assertTrue(context.containsBean("partition-data"));
-		RegionFactoryBean fb = context.getBean("&partition-data", RegionFactoryBean.class);
+		assertTrue(applicationContext.containsBean("partition-data"));
+		RegionFactoryBean fb = applicationContext.getBean("&partition-data", RegionFactoryBean.class);
 		assertTrue(fb instanceof PartitionedRegionFactoryBean);
 		assertTrue((Boolean) TestUtils.readField("persistent", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
@@ -164,8 +166,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testEntryTtl() throws Exception {
-		assertTrue(context.containsBean("replicated-data"));
-		RegionFactoryBean fb = context.getBean("&replicated-data", RegionFactoryBean.class);
+		assertTrue(applicationContext.containsBean("replicated-data"));
+		RegionFactoryBean fb = applicationContext.getBean("&replicated-data", RegionFactoryBean.class);
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 
 		ExpirationAttributes entryTTL = attrs.getEntryTimeToLive();
@@ -189,8 +191,8 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testCustomExpiry() throws Exception {
-		assertTrue(context.containsBean("replicated-data-custom-expiry"));
-		RegionFactoryBean fb = context.getBean("&replicated-data-custom-expiry", RegionFactoryBean.class);
+		assertTrue(applicationContext.containsBean("replicated-data-custom-expiry"));
+		RegionFactoryBean fb = applicationContext.getBean("&replicated-data-custom-expiry", RegionFactoryBean.class);
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 		
 		assertNotNull(attrs.getCustomEntryIdleTimeout());
@@ -199,23 +201,16 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		assertTrue(attrs.getCustomEntryIdleTimeout() instanceof TestCustomExpiry);
 		assertTrue(attrs.getCustomEntryTimeToLive() instanceof TestCustomExpiry);
 	}
-	
+
 	public static class TestCustomExpiry<K,V> implements CustomExpiry<K,V> {
-		/* (non-Javadoc)
-		 * @see com.gemstone.gemfire.cache.CacheCallback#close()
-		 */
-		@Override
-		public void close() {
-
-		}
-
-		/* (non-Javadoc)
-		 * @see com.gemstone.gemfire.cache.CustomExpiry#getExpiry(com.gemstone.gemfire.cache.Region.Entry)
-		 */
 		@Override
 		public ExpirationAttributes getExpiry(Entry<K, V> entry) {
 			return null;
 		}
-	}
 
+		@Override
+		public void close() {
+
+		}
+	}
 }
