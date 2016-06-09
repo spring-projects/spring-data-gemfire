@@ -25,7 +25,7 @@
         <prop key="compactionThreshold">70</prop>
         <prop key="diskUsageCriticalPercentage">90</prop>
         <prop key="diskUsageWarningPercentage">75</prop>
-        <prop key="location">./build/tmp</prop>
+        <prop key="location">./tmp</prop>
         <prop key="maxOplogSize">1</prop>
         <prop key="maxSize">10</prop>
         <prop key="queueSize">50</prop>
