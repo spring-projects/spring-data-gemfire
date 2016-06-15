@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.8.2.RELEASE (2016-06-15)
+---------------------------------------------
+* SGF-502 - DiskStoreAndEvictionRegionParsingTest fails when building with Maven due to missing Disk Store sub-directory.
+* SGF-501 - Add serialVersionUID to ListRegionsOnServerFunction.
+* SGF-499 - Prevent SDG-defined Pools from being destroyed before the Regions that use them.
+* SGF-497 - Intermittent failures in DurableClientCacheIntegrationTest.
+* SGF-487 - Release 1.8.2 (Hopper SR2).
+* SGF-484 - NoSuchMethodError  with Spring Data Gemfire RC1  version.
+
+
 Changes in version 1.8.1.RELEASE (2016-04-06)
 ---------------------------------------------
 * SGF-485 - Release 1.8.1 (Hopper SR1).
