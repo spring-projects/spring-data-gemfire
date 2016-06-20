@@ -31,7 +31,7 @@
 						   disk-store-ref="TestDiskStore"
 						   disk-synchronous="true"
 						   dispatcher-threads="4"
-						   ignore-eviction-and-expiration="false"
+						   forward-expiration-destroy="true"
 						   maximum-queue-memory="50"
 						   order-policy="KEY"
 						   parallel="false"

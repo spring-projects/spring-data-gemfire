@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
- * 
+ *
  * @author David Turanski
  * @author John Blum
  */
@@ -39,7 +39,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	private Boolean batchConflationEnabled;
 	private Boolean diskSynchronous;
-	private Boolean ignoreEvictionAndExpiration;
+	private Boolean forwardExpirationDestroy;
 	private Boolean parallel;
 	private Boolean persistent;
 
@@ -53,21 +53,21 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
-	 * 
+	 *
 	 * @param cache the GemFire Cache reference.
 	 * @see #AsyncEventQueueFactoryBean(com.gemstone.gemfire.cache.Cache, com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener)
 	 */
-	public AsyncEventQueueFactoryBean(final Cache cache) {
+	public AsyncEventQueueFactoryBean(Cache cache) {
 		this(cache, null);
 	}
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
-	 * 
+	 *
 	 * @param cache the GemFire Cache reference.
 	 * @param asyncEventListener required {@link AsyncEventListener}
 	 */
-	public AsyncEventQueueFactoryBean(final Cache cache, final AsyncEventListener asyncEventListener) {
+	public AsyncEventQueueFactoryBean(Cache cache, AsyncEventListener asyncEventListener) {
 		super(cache);
 		setAsyncEventListener(asyncEventListener);
 	}
@@ -79,12 +79,13 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	@Override
 	public Class<?> getObjectType() {
-		return AsyncEventQueue.class;
+		return (asyncEventQueue != null ? asyncEventQueue.getClass() : AsyncEventQueue.class);
 	}
 
 	@Override
 	protected void doInit() {
-		Assert.notNull(this.asyncEventListener, "The AsyncEventListener cannot be null.");
+
+		Assert.notNull(this.asyncEventListener, "AsyncEventListener must not be null");
 
 		AsyncEventQueueFactory asyncEventQueueFactory = (this.factory != null ? (AsyncEventQueueFactory) factory
 			: cache.createAsyncEventQueueFactory());
@@ -113,8 +114,8 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
 		}
 
-		if (ignoreEvictionAndExpiration != null) {
-			asyncEventQueueFactory.setIgnoreEvictionAndExpiration(ignoreEvictionAndExpiration);
+		if (forwardExpirationDestroy != null) {
+			asyncEventQueueFactory.setForwardExpirationDestroy(forwardExpirationDestroy);
 		}
 
 		if (maximumQueueMemory != null) {
@@ -124,10 +125,10 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		asyncEventQueueFactory.setParallel(isParallelEventQueue());
 
 		if (orderPolicy != null) {
-			Assert.isTrue(isSerialEventQueue(), "Order Policy cannot be used with a Parallel Event Queue.");
+			Assert.isTrue(isSerialEventQueue(), "Order Policy cannot be used with a Parallel Event Queue");
 
 			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()), String.format(
-				"The value of Order Policy '$1%s' is invalid.", orderPolicy));
+				"The value of Order Policy '$1%s' is invalid", orderPolicy));
 
 			asyncEventQueueFactory.setOrderPolicy(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
@@ -152,7 +153,8 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	public final void setAsyncEventListener(AsyncEventListener listener) {
 		Assert.state(this.asyncEventQueue == null,
-			"Setting an AsyncEventListener is not allowed once the AsyncEventQueue has been created.");
+			"Setting an AsyncEventListener is not allowed once the AsyncEventQueue has been created");
+
 		this.asyncEventListener = listener;
 	}
 
@@ -209,9 +211,19 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		this.dispatcherThreads = dispatcherThreads;
 	}
 
-	/* (non-Javadoc) */
-	public void setIgnoreEvictionAndExpiration(Boolean ignoreEvictionAndExpiration) {
-		this.ignoreEvictionAndExpiration = ignoreEvictionAndExpiration;
+	/**
+	 * Forwards expiration (action-based) destroy events to the {@link AsyncEventQueue} (AEQ).
+	 *
+	 * By default, destroy events are not added to the AEQ.  Setting this attribute to
+	 * {@literal true} will add all expiration destroy events to the AEQ.
+	 *
+	 * @param forwardExpirationDestroy boolean value indicating whether to forward expiration destroy events.
+	 * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory#setForwardExpirationDestroy(boolean)
+	 * @see com.gemstone.gemfire.cache.ExpirationAttributes#getAction()
+	 * @see com.gemstone.gemfire.cache.ExpirationAction#DESTROY
+	 */
+	public void setForwardExpirationDestroy(Boolean forwardExpirationDestroy) {
+		this.forwardExpirationDestroy = forwardExpirationDestroy;
 	}
 
 	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
@@ -233,12 +245,12 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		this.parallel = parallel;
 	}
 
-	public boolean isSerialEventQueue() {
-		return !isParallelEventQueue();
-	}
-
 	public boolean isParallelEventQueue() {
 		return Boolean.TRUE.equals(parallel);
+	}
+
+	public boolean isSerialEventQueue() {
+		return !isParallelEventQueue();
 	}
 
 	public void setPersistent(Boolean persistent) {

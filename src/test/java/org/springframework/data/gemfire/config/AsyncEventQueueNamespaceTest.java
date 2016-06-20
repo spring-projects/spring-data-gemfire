@@ -67,7 +67,7 @@ public class AsyncEventQueueNamespaceTest {
 		assertThat(asyncEventQueue.getDiskStoreName(), is(equalTo("TestDiskStore")));
 		assertThat(asyncEventQueue.isDiskSynchronous(), is(true));
 		assertThat(asyncEventQueue.getDispatcherThreads(), is(equalTo(4)));
-		assertThat(asyncEventQueue.isIgnoreEvictionAndExpiration(), is(false));
+		assertThat(asyncEventQueue.isForwardExpirationDestroy(), is(false));
 		assertThat(asyncEventQueue.getMaximumQueueMemory(), is(equalTo(50)));
 		assertThat(asyncEventQueue.getOrderPolicy(), is(equalTo(GatewaySender.OrderPolicy.KEY)));
 		assertThat(asyncEventQueue.isParallel(), is(false));

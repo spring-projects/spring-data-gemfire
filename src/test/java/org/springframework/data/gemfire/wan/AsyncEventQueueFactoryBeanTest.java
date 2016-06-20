@@ -53,14 +53,13 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  */
 public class AsyncEventQueueFactoryBeanTest {
 
-	protected Cache createMockCacheWithAsyncEventQueueInfrastructure(
-			final AsyncEventQueueFactory mockAsynEventQueueFactory) {
+	protected Cache createMockCacheWithAsyncEventQueueInfrastructure(AsyncEventQueueFactory mockAsyncEventQueueFactory) {
 		Cache mockCache = mock(Cache.class);
-		when((mockCache.createAsyncEventQueueFactory())).thenReturn(mockAsynEventQueueFactory);
+		when((mockCache.createAsyncEventQueueFactory())).thenReturn(mockAsyncEventQueueFactory);
 		return mockCache;
 	}
 
-	protected AsyncEventQueueFactory createMockAsyncEventQueueFactory(final String asyncEventQueueId) {
+	protected AsyncEventQueueFactory createMockAsyncEventQueueFactory(String asyncEventQueueId) {
 		AsyncEventQueueFactory mockAsyncEventQueueFactory = mock(AsyncEventQueueFactory.class);
 		AsyncEventQueue mockAsyncEventQueue = mock(AsyncEventQueue.class);
 
@@ -71,48 +70,49 @@ public class AsyncEventQueueFactoryBeanTest {
 		return mockAsyncEventQueueFactory;
 	}
 
-	protected AsyncEventListener createMockAsyncEventListener() {
+	protected AsyncEventListener mockAsyncEventListener() {
 		return mock(AsyncEventListener.class);
 	}
 
-	protected void verifyExpectations(final AsyncEventQueueFactory mockAsyncEventQueueFactory,
-			final AsyncEventQueueFactoryBean factoryBean) throws Exception {
-		Boolean parallel = TestUtils.readField("parallel", factoryBean);
+	protected void verifyExpectations(AsyncEventQueueFactory asyncEventQueueFactory,
+			AsyncEventQueueFactoryBean asyncEventQueueFactoryBean) throws Exception {
 
-		verify(mockAsyncEventQueueFactory).setParallel(eq(Boolean.TRUE.equals(parallel)));
+		Boolean parallel = TestUtils.readField("parallel", asyncEventQueueFactoryBean);
 
-		String orderPolicy = TestUtils.readField("orderPolicy", factoryBean);
+		verify(asyncEventQueueFactory).setParallel(eq(Boolean.TRUE.equals(parallel)));
+
+		String orderPolicy = TestUtils.readField("orderPolicy", asyncEventQueueFactoryBean);
 
 		if (orderPolicy != null) {
-			verify(mockAsyncEventQueueFactory).setOrderPolicy(eq(GatewaySender.OrderPolicy.valueOf(
+			verify(asyncEventQueueFactory).setOrderPolicy(eq(GatewaySender.OrderPolicy.valueOf(
 				orderPolicy.toUpperCase())));
 		}
 
-		Integer dispatcherThreads = TestUtils.readField("dispatcherThreads", factoryBean);
+		Integer dispatcherThreads = TestUtils.readField("dispatcherThreads", asyncEventQueueFactoryBean);
 
 		if (dispatcherThreads != null) {
-			verify(mockAsyncEventQueueFactory).setDispatcherThreads(eq(dispatcherThreads));
+			verify(asyncEventQueueFactory).setDispatcherThreads(eq(dispatcherThreads));
 		}
 
-		String diskStoreReference = TestUtils.readField("diskStoreReference", factoryBean);
+		String diskStoreReference = TestUtils.readField("diskStoreReference", asyncEventQueueFactoryBean);
 
 		if (diskStoreReference != null) {
-			verify(mockAsyncEventQueueFactory).setDiskStoreName(eq(diskStoreReference));
+			verify(asyncEventQueueFactory).setDiskStoreName(eq(diskStoreReference));
 		}
 
-		Boolean diskSynchronous = TestUtils.readField("diskSynchronous", factoryBean);
+		Boolean diskSynchronous = TestUtils.readField("diskSynchronous", asyncEventQueueFactoryBean);
 
 		if (diskSynchronous != null) {
-			verify(mockAsyncEventQueueFactory).setDiskSynchronous(eq(diskSynchronous));
+			verify(asyncEventQueueFactory).setDiskSynchronous(eq(diskSynchronous));
 		}
 
-		Boolean persistent = TestUtils.readField("persistent", factoryBean);
+		Boolean persistent = TestUtils.readField("persistent", asyncEventQueueFactoryBean);
 
 		if (persistent != null) {
-			verify(mockAsyncEventQueueFactory).setPersistent(eq(persistent));
+			verify(asyncEventQueueFactory).setPersistent(eq(persistent));
 		}
 		else {
-			verify(mockAsyncEventQueueFactory, never()).setPersistent(true);
+			verify(asyncEventQueueFactory, never()).setPersistent(true);
 		}
 	}
 
@@ -121,13 +121,13 @@ public class AsyncEventQueueFactoryBeanTest {
 		AsyncEventQueueFactoryBean factoryBean = new AsyncEventQueueFactoryBean(
 			createMockCacheWithAsyncEventQueueInfrastructure(createMockAsyncEventQueueFactory("testEventQueue")));
 
-		AsyncEventListener listenerOne = createMockAsyncEventListener();
+		AsyncEventListener listenerOne = mockAsyncEventListener();
 
 		factoryBean.setAsyncEventListener(listenerOne);
 
 		assertSame(listenerOne, TestUtils.readField("asyncEventListener", factoryBean));
 
-		AsyncEventListener listenerTwo = createMockAsyncEventListener();
+		AsyncEventListener listenerTwo = mockAsyncEventListener();
 
 		factoryBean.setAsyncEventListener(listenerTwo);
 
@@ -143,7 +143,7 @@ public class AsyncEventQueueFactoryBeanTest {
 
 		factoryBean.setName(asyncEventQueueId);
 
-		AsyncEventListener listenerOne = createMockAsyncEventListener();
+		AsyncEventListener listenerOne = mockAsyncEventListener();
 
 		factoryBean.setAsyncEventListener(listenerOne);
 
@@ -154,10 +154,10 @@ public class AsyncEventQueueFactoryBeanTest {
 		assertNotNull(TestUtils.readField("asyncEventQueue", factoryBean));
 
 		try {
-			factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+			factoryBean.setAsyncEventListener(mockAsyncEventListener());
 		}
 		catch (IllegalStateException expected) {
-			assertEquals("Setting an AsyncEventListener is not allowed once the AsyncEventQueue has been created.",
+			assertEquals("Setting an AsyncEventListener is not allowed once the AsyncEventQueue has been created",
 				expected.getMessage());
 			assertSame(listenerOne, TestUtils.readField("asyncEventListener", factoryBean));
 			throw expected;
@@ -175,7 +175,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			factoryBean.doInit();
 		}
 		catch (Exception e) {
-			assertEquals("The AsyncEventListener cannot be null.", e.getMessage());
+			assertEquals("AsyncEventListener must not be null", e.getMessage());
 			throw e;
 		}
 	}
@@ -188,7 +188,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
 
 		factoryBean.setName("000");
-		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setAsyncEventListener(mockAsyncEventListener());
 		factoryBean.setDispatcherThreads(8);
 		factoryBean.setParallel(true);
 		factoryBean.doInit();
@@ -209,7 +209,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
 
 		factoryBean.setName("123");
-		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setAsyncEventListener(mockAsyncEventListener());
 		factoryBean.setParallel(true);
 		factoryBean.doInit();
 
@@ -229,7 +229,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
 
 		factoryBean.setName("456");
-		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setAsyncEventListener(mockAsyncEventListener());
 		factoryBean.setOrderPolicy("Key");
 		factoryBean.setParallel(true);
 
@@ -237,7 +237,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			factoryBean.doInit();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Order Policy cannot be used with a Parallel Event Queue.",
+			assertEquals("Order Policy cannot be used with a Parallel Event Queue",
 				expected.getMessage());
 			throw expected;
 		}
@@ -251,7 +251,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFatory));
 
 		factoryBean.setName("789");
-		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setAsyncEventListener(mockAsyncEventListener());
 		factoryBean.setOrderPolicy("THREAD");
 		factoryBean.setParallel(false);
 		factoryBean.doInit();
@@ -272,7 +272,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFatory));
 
 		factoryBean.setName("abc");
-		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setAsyncEventListener(mockAsyncEventListener());
 		factoryBean.setDispatcherThreads(2);
 		factoryBean.setOrderPolicy("THREAD");
 		factoryBean.doInit();
@@ -293,7 +293,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
 
 		factoryBean.setName("123abc");
-		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setAsyncEventListener(mockAsyncEventListener());
 		factoryBean.setDiskStoreRef("queueOverflowDiskStore");
 		factoryBean.setPersistent(false);
 		factoryBean.doInit();
@@ -314,7 +314,7 @@ public class AsyncEventQueueFactoryBeanTest {
 			createMockCacheWithAsyncEventQueueInfrastructure(mockAsyncEventQueueFactory));
 
 		factoryBean.setName("12345");
-		factoryBean.setAsyncEventListener(createMockAsyncEventListener());
+		factoryBean.setAsyncEventListener(mockAsyncEventListener());
 		factoryBean.setDiskSynchronous(true);
 		factoryBean.doInit();
 
@@ -325,5 +325,4 @@ public class AsyncEventQueueFactoryBeanTest {
 		assertNotNull(evenQueue);
 		assertEquals("12345", evenQueue.getId());
 	}
-
 }

@@ -42,6 +42,7 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		builder.setLazyInit(false);
 
 		parseAsyncEventListener(element, parserContext, builder);
@@ -54,12 +55,11 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
 		ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
 		ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
-		ParsingUtils.setPropertyValue(element, builder, "ignore-eviction-and-expiration");
+		ParsingUtils.setPropertyValue(element, builder, "foward-expiration-destroy");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
 		ParsingUtils.setPropertyValue(element, builder, "order-policy");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
-
 		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
 
 		if (!StringUtils.hasText(element.getAttribute(NAME_ATTRIBUTE))) {
@@ -82,8 +82,7 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	private void parseAsyncEventListener(final Element element, final ParserContext parserContext,
-		final BeanDefinitionBuilder builder) {
+	private void parseAsyncEventListener(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
 
@@ -97,7 +96,7 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	private void parseCache(final Element element, final BeanDefinitionBuilder builder) {
+	private void parseCache(Element element, BeanDefinitionBuilder builder) {
 		String cacheRefAttribute = element.getAttribute("cache-ref");
 
 		String cacheName = (StringUtils.hasText(cacheRefAttribute) ? cacheRefAttribute
@@ -106,7 +105,7 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		builder.addConstructorArgReference(cacheName);
 	}
 
-	private void parseDiskStore(final Element element, final BeanDefinitionBuilder builder) {
+	private void parseDiskStore(Element element, BeanDefinitionBuilder builder) {
 		ParsingUtils.setPropertyValue(element, builder, "disk-store-ref");
 
 		String diskStoreRef = element.getAttribute("disk-store-ref");
@@ -115,5 +114,4 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 			builder.addDependsOn(diskStoreRef);
 		}
 	}
-
 }

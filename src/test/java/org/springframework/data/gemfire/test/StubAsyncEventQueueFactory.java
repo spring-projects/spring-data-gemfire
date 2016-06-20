@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -38,7 +38,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 
 	private boolean batchConflationEnabled;
 	private boolean diskSynchronous;
-	private boolean ignoreEvictionAndExpiration;
+	private boolean forwardExpirationDestroy;
 	private boolean parallel;
 	private boolean persistent;
 
@@ -67,7 +67,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		when(asyncEventQueue.getGatewayEventFilters()).thenReturn(Collections.unmodifiableList(gatewayEventFilters));
 		when(asyncEventQueue.getGatewayEventSubstitutionFilter()).thenReturn(this.gatewayEventSubstitutionFilter);
 		when(asyncEventQueue.getId()).thenReturn(name);
-		when(asyncEventQueue.isIgnoreEvictionAndExpiration()).thenReturn(this.ignoreEvictionAndExpiration);
+		when(asyncEventQueue.isForwardExpirationDestroy()).thenReturn(this.forwardExpirationDestroy);
 		when(asyncEventQueue.getMaximumQueueMemory()).thenReturn(this.maxQueueMemory);
 		when(asyncEventQueue.getOrderPolicy()).thenReturn(this.orderPolicy);
 		when(asyncEventQueue.isParallel()).thenReturn(this.parallel);
@@ -108,8 +108,8 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		return this;
 	}
 
-	public AsyncEventQueueFactory setIgnoreEvictionAndExpiration(boolean ignoreEvictionAndExpiration) {
-		this.ignoreEvictionAndExpiration = ignoreEvictionAndExpiration;
+	public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forwardExpirationDestroy) {
+		this.forwardExpirationDestroy = forwardExpirationDestroy;
 		return this;
 	}
 
