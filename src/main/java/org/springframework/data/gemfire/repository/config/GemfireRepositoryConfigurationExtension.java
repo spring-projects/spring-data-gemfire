@@ -16,10 +16,16 @@
 
 package org.springframework.data.gemfire.repository.config;
 
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
+import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
@@ -31,7 +37,7 @@ import org.springframework.util.StringUtils;
 /**
  * {@link RepositoryConfigurationExtension} implementation handling GemFire specific extensions to the Repository XML
  * namespace and annotation-based configuration meta-data.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  * @see org.springframework.data.repository.config.RepositoryConfigurationExtension
@@ -48,11 +54,20 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryFactoryClassName()
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getIdentifyingAnnotations()
 	 */
 	@Override
-	public String getRepositoryFactoryClassName() {
-		return GemfireRepositoryFactoryBean.class.getName();
+	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
+		return Collections.<Class<? extends Annotation>>singleton(Region.class);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getIdentifyingTypes()
+	 */
+	@Override
+	protected Collection<Class<?>> getIdentifyingTypes() {
+		return Collections.<Class<?>>singleton(GemfireRepository.class);
 	}
 
 	/*
@@ -64,19 +79,13 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 		return GEMFIRE_MODULE_PREFIX;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#registerBeansForRoot(org.springframework.beans.factory.support.BeanDefinitionRegistry, org.springframework.data.repository.config.RepositoryConfigurationSource)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryFactoryClassName()
 	 */
 	@Override
-	public void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource) {
-
-		super.registerBeansForRoot(registry, configurationSource);
-
-		if (!StringUtils.hasText(configurationSource.getAttribute(MAPPING_CONTEXT_REF_ANNOTATION_ATTRIBUTE))) {
-			registry.registerBeanDefinition(DEFAULT_MAPPING_CONTEXT_BEAN_NAME,
-				new RootBeanDefinition(GemfireMappingContext.class));
-		}
+	public String getRepositoryFactoryClassName() {
+		return GemfireRepositoryFactoryBean.class.getName();
 	}
 
 	/*
@@ -102,5 +111,20 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	/* (non-Javadoc) */
 	private static String resolveMappingContextBeanName(String source) {
 		return (StringUtils.hasText(source) ? source : DEFAULT_MAPPING_CONTEXT_BEAN_NAME);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#registerBeansForRoot(org.springframework.beans.factory.support.BeanDefinitionRegistry, org.springframework.data.repository.config.RepositoryConfigurationSource)
+	 */
+	@Override
+	public void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource) {
+
+		super.registerBeansForRoot(registry, configurationSource);
+
+		if (!StringUtils.hasText(configurationSource.getAttribute(MAPPING_CONTEXT_REF_ANNOTATION_ATTRIBUTE))) {
+			registry.registerBeanDefinition(DEFAULT_MAPPING_CONTEXT_BEAN_NAME,
+				new RootBeanDefinition(GemfireMappingContext.class));
+		}
 	}
 }
