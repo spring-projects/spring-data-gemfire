@@ -30,17 +30,25 @@ import static org.mockito.Mockito.when;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.beans.factory.parsing.PassThroughSourceExtractor;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.beans.factory.xml.XmlReaderContext;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.gemfire.mapping.Region;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Test suite of test cases testing the contract and functionality of the
@@ -54,14 +62,52 @@ import org.w3c.dom.Element;
  */
 public class GemfireRepositoryConfigurationExtensionTest {
 
-	private GemfireRepositoryConfigurationExtension repositoryConfigurationExtension;
+	private GemfireRepositoryConfigurationExtension repositoryConfigurationExtension =
+		new GemfireRepositoryConfigurationExtension();
 
-	private RuntimeBeanReference defaultMappingContextReference = new RuntimeBeanReference(
-		GemfireRepositoryConfigurationExtension.DEFAULT_MAPPING_CONTEXT_BEAN_NAME);
+	protected Object getPropertyValue(BeanDefinitionBuilder builder, String propertyName) {
+		return getPropertyValue(builder.getRawBeanDefinition(), propertyName);
+	}
 
-	@Before
-	public void setup() {
-		repositoryConfigurationExtension = new GemfireRepositoryConfigurationExtension();
+	protected Object getPropertyValue(BeanDefinition beanDefinition, String propertyName) {
+		PropertyValue propertyValue = beanDefinition.getPropertyValues().getPropertyValue(propertyName);
+
+		return (propertyValue != null ? propertyValue.getValue() : null);
+	}
+
+	protected Element mockElement() {
+		Element mockElement = mock(Element.class);
+		NodeList mockNodeList = mock(NodeList.class);
+
+		when(mockNodeList.getLength()).thenReturn(0);
+		when(mockElement.getChildNodes()).thenReturn(mockNodeList);
+
+		return mockElement;
+	}
+
+	protected Environment mockEnvironment() {
+		return mock(Environment.class);
+	}
+
+	protected ParserContext mockParserContext() {
+		XmlReaderContext xmlReaderContext = mockXmlReaderContext();
+
+		return new ParserContext(xmlReaderContext, newBeanDefinitionParserDelegate(xmlReaderContext));
+	}
+
+	protected XmlReaderContext mockXmlReaderContext() {
+		ResourceLoader mockResourceLoader = mock(ResourceLoader.class);
+		XmlBeanDefinitionReader mockXmlBeanDefinitionReader = mock(XmlBeanDefinitionReader.class);
+
+		when(mockResourceLoader.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
+		when(mockXmlBeanDefinitionReader.getResourceLoader()).thenReturn(mockResourceLoader);
+
+		return new XmlReaderContext(null, null, null, new PassThroughSourceExtractor(),
+			mockXmlBeanDefinitionReader, null);
+	}
+
+	protected BeanDefinitionParserDelegate newBeanDefinitionParserDelegate(XmlReaderContext readerContext) {
+		return new BeanDefinitionParserDelegate(readerContext);
 	}
 
 	@Test
@@ -103,8 +149,7 @@ public class GemfireRepositoryConfigurationExtensionTest {
 
 		repositoryConfigurationExtension.postProcess(beanDefinitionBuilder, mockRepositoryConfigurationSource);
 
-		Object mappingContextRef = beanDefinitionBuilder.getRawBeanDefinition().getPropertyValues()
-			.getPropertyValue("gemfireMappingContext").getValue();
+		Object mappingContextRef = getPropertyValue(beanDefinitionBuilder, "gemfireMappingContext");
 
 		assertThat(mappingContextRef, is(instanceOf(RuntimeBeanReference.class)));
 		assertThat(((RuntimeBeanReference) mappingContextRef).getBeanName(), is(equalTo("testMappingContext")));
@@ -123,58 +168,55 @@ public class GemfireRepositoryConfigurationExtensionTest {
 
 		repositoryConfigurationExtension.postProcess(beanDefinitionBuilder, mockRepositoryConfigurationSource);
 
-		PropertyValue mappingContextRef = beanDefinitionBuilder.getRawBeanDefinition().getPropertyValues()
-			.getPropertyValue("gemfireMappingContext");
+		Object mappingContextRef = getPropertyValue(beanDefinitionBuilder, "gemfireMappingContext");
 
-		assertThat(mappingContextRef.getValue(), is(equalTo((Object) defaultMappingContextReference)));
+		assertThat(mappingContextRef, is(instanceOf(RuntimeBeanReference.class)));
+		assertThat(((RuntimeBeanReference) mappingContextRef).getBeanName(),
+			is(equalTo(GemfireRepositoryConfigurationExtension.DEFAULT_MAPPING_CONTEXT_BEAN_NAME)));
 
 		verify(mockRepositoryConfigurationSource, times(1)).getAttribute(eq("mappingContextRef"));
 	}
 
 	@Test
 	public void postProcessWithXmlRepositoryConfigurationSource() {
-		Element mockElement = mock(Element.class);
+		Element mockElement = mockElement();
 
-		XmlRepositoryConfigurationSource mockRepositoryConfigurationSource =
-			mock(XmlRepositoryConfigurationSource.class);
-
-		when(mockRepositoryConfigurationSource.getElement()).thenReturn(mockElement);
 		when(mockElement.getAttribute(eq("mapping-context-ref"))).thenReturn("testMappingContext");
+
+		XmlRepositoryConfigurationSource repositoryConfigurationSource = new XmlRepositoryConfigurationSource(
+			mockElement, mockParserContext(), mockEnvironment());
 
 		BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition();
 
-		repositoryConfigurationExtension.postProcess(beanDefinitionBuilder, mockRepositoryConfigurationSource);
+		repositoryConfigurationExtension.postProcess(beanDefinitionBuilder, repositoryConfigurationSource);
 
-		Object mappingContextRef = beanDefinitionBuilder.getRawBeanDefinition().getPropertyValues()
-			.getPropertyValue("gemfireMappingContext").getValue();
+		Object mappingContextRef = getPropertyValue(beanDefinitionBuilder, "gemfireMappingContext");
 
 		assertThat(mappingContextRef, is(instanceOf(RuntimeBeanReference.class)));
 		assertThat(((RuntimeBeanReference) mappingContextRef).getBeanName(), is(equalTo("testMappingContext")));
 
-		verify(mockRepositoryConfigurationSource, times(1)).getElement();
 		verify(mockElement, times(1)).getAttribute(eq("mapping-context-ref"));
 	}
 
 	@Test
 	public void postProcessWithXmlRepositoryConfigurationSourceHavingNoMappingContextRefAttribute() {
-		Element mockElement = mock(Element.class);
+		Element mockElement = mockElement();
 
-		XmlRepositoryConfigurationSource mockRepositoryConfigurationSource =
-			mock(XmlRepositoryConfigurationSource.class);
-
-		when(mockRepositoryConfigurationSource.getElement()).thenReturn(mockElement);
 		when(mockElement.getAttribute(eq("mapping-context-ref"))).thenReturn(null);
+
+		XmlRepositoryConfigurationSource repositoryConfigurationSource = new XmlRepositoryConfigurationSource(
+			mockElement, mockParserContext(), mockEnvironment());
 
 		BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition();
 
-		repositoryConfigurationExtension.postProcess(beanDefinitionBuilder, mockRepositoryConfigurationSource);
+		repositoryConfigurationExtension.postProcess(beanDefinitionBuilder, repositoryConfigurationSource);
 
-		PropertyValue mappingContextRef = beanDefinitionBuilder.getRawBeanDefinition().getPropertyValues()
-			.getPropertyValue("gemfireMappingContext");
+		Object mappingContextRef = getPropertyValue(beanDefinitionBuilder, "gemfireMappingContext");
 
-		assertThat(mappingContextRef.getValue(), is(equalTo((Object) defaultMappingContextReference)));
+		assertThat(mappingContextRef, is(instanceOf(RuntimeBeanReference.class)));
+		assertThat(((RuntimeBeanReference) mappingContextRef).getBeanName(),
+			is(equalTo(GemfireRepositoryConfigurationExtension.DEFAULT_MAPPING_CONTEXT_BEAN_NAME)));
 
-		verify(mockRepositoryConfigurationSource, times(1)).getElement();
 		verify(mockElement, times(1)).getAttribute(eq("mapping-context-ref"));
 	}
 }
