@@ -46,8 +46,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 
 	private static final String GEMFIRE_MODULE_PREFIX = "gemfire";
 	private static final String MAPPING_CONTEXT_PROPERTY_NAME = "gemfireMappingContext";
-	private static final String MAPPING_CONTEXT_REF_ANNOTATION_ATTRIBUTE = "mappingContextRef";
-	private static final String MAPPING_CONTEXT_REF_XML_ATTRIBUTE = "mapping-context-ref";
+	private static final String MAPPING_CONTEXT_REF_ATTRIBUTE_NAME = "mappingContextRef";
 
 	static final String DEFAULT_MAPPING_CONTEXT_BEAN_NAME = String.format("%1$s.%2$s",
 			GemfireMappingContext.class.getName(), "DEFAULT");
@@ -95,7 +94,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource configurationSource) {
 		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, resolveMappingContextBeanName(
-			configurationSource.getAttribute(MAPPING_CONTEXT_REF_ANNOTATION_ATTRIBUTE)));
+			configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME)));
 	}
 
 	/*
@@ -105,7 +104,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource configurationSource) {
 		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, resolveMappingContextBeanName(
-			configurationSource.getElement().getAttribute(MAPPING_CONTEXT_REF_XML_ATTRIBUTE)));
+			configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME)));
 	}
 
 	/* (non-Javadoc) */
@@ -122,7 +121,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 
 		super.registerBeansForRoot(registry, configurationSource);
 
-		if (!StringUtils.hasText(configurationSource.getAttribute(MAPPING_CONTEXT_REF_ANNOTATION_ATTRIBUTE))) {
+		if (!StringUtils.hasText(configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME))) {
 			registry.registerBeanDefinition(DEFAULT_MAPPING_CONTEXT_BEAN_NAME,
 				new RootBeanDefinition(GemfireMappingContext.class));
 		}
