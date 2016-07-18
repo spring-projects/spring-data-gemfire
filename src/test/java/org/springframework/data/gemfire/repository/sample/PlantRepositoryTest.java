@@ -43,7 +43,7 @@ public class PlantRepositoryTest {
 			"PlantRepositoryTest-context.xml");
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testStorePlantHavingStringIdInPlantsRegionWithLongKey() {
+	public void storePlantHavingStringIdInPlantsRegionWithLongKey() {
 		try {
 			ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(
 				APPLICATION_CONTEXT_CONFIG_LOCATION);
@@ -54,10 +54,9 @@ public class PlantRepositoryTest {
 		catch (BeanCreationException expected) {
 			//expected.printStackTrace(System.err);
 			assertTrue(expected.getCause() instanceof IllegalArgumentException);
-			assertEquals(String.format("The Region referenced only supports keys of type %1$s but the entity to be stored has an id of type %2$s!",
-				Long.class, String.class), expected.getCause().getMessage());
+			assertEquals(String.format("The Region referenced only supports keys of type %1$s, but the entity to be stored has an id of type %2$s",
+				Long.class.getName(), String.class.getName()), expected.getCause().getMessage());
 			throw (IllegalArgumentException) expected.getCause();
 		}
 	}
-
 }

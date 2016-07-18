@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * GemFire specific {@link QueryMethod}.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  * @see org.springframework.data.repository.query.QueryMethod
@@ -50,7 +50,7 @@ public class GemfireQueryMethod extends QueryMethod {
 
 	/**
 	 * Creates a new {@link GemfireQueryMethod} from the given {@link Method} and {@link RepositoryMetadata}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
@@ -77,11 +77,11 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see org.springframework.data.domain.Pageable
 	 * @see java.lang.reflect.Method#getParameterTypes()
 	 */
-	private void assertNonPagingQueryMethod(final Method method) {
+	private void assertNonPagingQueryMethod(Method method) {
 		for (Class<?> type : method.getParameterTypes()) {
 			if (Pageable.class.isAssignableFrom(type)) {
-				throw new IllegalStateException(String.format("Pagination is not supported by GemFire Repositories!"
-					+ " Offending method: %1$s", method.toString()));
+				throw new IllegalStateException(String.format("Pagination is not supported by GemFire Repositories;"
+					+ " Offending method: %1$s", method.getName()));
 			}
 		}
 	}
@@ -108,7 +108,7 @@ public class GemfireQueryMethod extends QueryMethod {
 
 	/**
 	 * Returns the annotated query for the query method if present.
-	 * 
+	 *
 	 * @return the annotated query or {@literal null} in case it's empty or not present.
 	 * @see org.springframework.data.gemfire.repository.Query
 	 * @see java.lang.reflect.Method#getAnnotation(Class)

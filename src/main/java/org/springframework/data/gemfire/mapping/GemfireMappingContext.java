@@ -24,7 +24,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  */
@@ -58,7 +58,7 @@ public class GemfireMappingContext extends AbstractMappingContext<GemfirePersist
 	@Override
 	protected GemfirePersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
 			GemfirePersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
+
 		return new GemfirePersistentProperty(field, descriptor, owner, simpleTypeHolder);
 	}
-
 }

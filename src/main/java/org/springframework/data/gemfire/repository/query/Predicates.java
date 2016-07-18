@@ -27,7 +27,7 @@ class Predicates implements Predicate {
 
 	/**
 	 * Creates a new {@link Predicates} wrapper instance.
-	 * 
+	 *
 	 * @param predicate must not be {@literal null}.
 	 */
 	private Predicates(Predicate predicate) {
@@ -40,23 +40,22 @@ class Predicates implements Predicate {
 
 	/**
 	 * Creates a new Predicate for the given {@link Part} and index iterator.
-	 * 
+	 *
 	 * @param part must not be {@literal null}.
-	 * @param value must not be {@literal null}.
-	 * @return
+	 * @param indexes must not be {@literal null}.
+	 * @return an instance of {@link Predicates} wrapping the WHERE clause condition expression ({@link Part}).
 	 */
-	public static Predicates create(Part part, Iterator<Integer> value) {
-		return create(new AtomicPredicate(part, value));
+	public static Predicates create(Part part, Iterator<Integer> indexes) {
+		return create(new AtomicPredicate(part, indexes));
 	}
 
 	/**
 	 * And-concatenates the given {@link Predicate} to the current one.
-	 * 
+	 *
 	 * @param predicate must not be {@literal null}.
-	 * @return
+	 * @return an instance of {@link Predicates} wrapping an AND condition.
 	 */
 	public Predicates and(final Predicate predicate) {
-
 		return create(new Predicate() {
 			@Override
 			public String toString(String alias) {
@@ -67,12 +66,11 @@ class Predicates implements Predicate {
 
 	/**
 	 * Or-concatenates the given {@link Predicate} to the current one.
-	 * 
+	 *
 	 * @param predicate must not be {@literal null}.
-	 * @return
+	 * @return an instance of {@link Predicates} wrapping an OR condition.
 	 */
 	public Predicates or(final Predicate predicate) {
-
 		return create(new Predicate() {
 			@Override
 			public String toString(String alias) {
@@ -92,66 +90,96 @@ class Predicates implements Predicate {
 
 	/**
 	 * Predicate to create a predicate expression for a {@link Part}.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	public static class AtomicPredicate implements Predicate {
 
+		private final Iterator<Integer> indexes;
+
 		private final Part part;
-		private final Iterator<Integer> value;
 
 		/**
 		 * Creates a new {@link AtomicPredicate}.
-		 * 
+		 *
 		 * @param part must not be {@literal null}.
-		 * @param value must not be {@literal null}.
+		 * @param indexes must not be {@literal null}.
 		 */
-		public AtomicPredicate(Part part, Iterator<Integer> value) {
-
-			Assert.notNull(part);
-			Assert.notNull(value);
+		public AtomicPredicate(Part part, Iterator<Integer> indexes) {
+			Assert.notNull(part, "Query Predicate Part must not be null");
+			Assert.notNull(indexes, "Iterator of numeric, indexed query parameter placeholders must not be null");
 
 			this.part = part;
-			this.value = value;
+			this.indexes = indexes;
 		}
 
-		/*
-		 * (non-Javadoc)
+		/**
+		 * Builds a conditional expression for the entity property in the WHERE clause of the GemFire OQL
+		 * query statement.
+		 *
 		 * @see org.springframework.data.gemfire.repository.query.Predicate#toString(java.lang.String)
 		 */
 		@Override
 		public String toString(String alias) {
-			Type type = part.getType();
+			if (isIgnoreCase()) {
+				return String.format("%s.equalsIgnoreCase($%d)", resolveProperty(alias), indexes.next());
+			}
+			else {
+				Type partType = part.getType();
 
-			return String.format("%s.%s %s", alias == null ? QueryBuilder.DEFAULT_ALIAS : alias,
-				part.getProperty().toDotPath(), toClause(type));
-		}
-
-		private String toClause(Type type) {
-			switch (type) {
-				case FALSE:
-				case TRUE:
-					return String.format("%1$s %2$s", getOperator(type), Type.TRUE.equals(type));
-				case IS_NULL:
-				case IS_NOT_NULL:
-					return String.format("%s NULL", getOperator(type));
-				default:
-					return String.format("%s $%s", getOperator(type), value.next());
+				switch (partType) {
+					case IS_NULL:
+					case IS_NOT_NULL:
+						return String.format("%s %s NULL", resolveProperty(alias), resolveOperator(partType));
+					case FALSE:
+					case TRUE:
+						return String.format("%s %s %s", resolveProperty(alias), resolveOperator(partType),
+							Type.TRUE.equals(partType));
+					default:
+						return String.format("%s %s $%d", resolveProperty(alias), resolveOperator(partType),
+							indexes.next());
+				}
 			}
 		}
 
+		boolean isIgnoreCase() {
+			switch (part.shouldIgnoreCase()) {
+				case ALWAYS:
+				case WHEN_POSSIBLE:
+					return true;
+				case NEVER:
+				default:
+					return false;
+			}
+		}
+
+		String resolveProperty(String alias) {
+			return String.format("%1$s.%2$s", resolveAlias(alias), part.getProperty().toDotPath());
+		}
+
+		String resolveAlias(String alias) {
+			return (alias != null ? alias : QueryBuilder.DEFAULT_ALIAS);
+		}
+
 		/**
-		 * Maps the given {@link Type} to an OQL operator.
-		 * 
-		 * @param type
-		 * @return
+		 * Resolves the given {@link Type} as an GemFire OQL operator.
+		 *
+		 * @param partType the conditional expression (e.g. 'IN') in the query method name.
+		 * @return a GemFire OQL operator.
 		 */
-		private String getOperator(Type type) {
-			switch (type) {
-				case IN:
-					return "IN SET";
-				case NOT_IN:
-					return "NOT IN SET";
+		String resolveOperator(Type partType) {
+			switch (partType) {
+				// Equality - Is
+				case FALSE:
+				case IS_NULL:
+				case SIMPLE_PROPERTY:
+				case TRUE:
+					return "=";
+				// Equality - Is Not
+				case IS_NOT_NULL:
+				case NEGATING_SIMPLE_PROPERTY:
+					return "!=";
+				// Relational Comparison
 				case GREATER_THAN:
 					return ">";
 				case GREATER_THAN_EQUAL:
@@ -160,26 +188,19 @@ class Predicates implements Predicate {
 					return "<";
 				case LESS_THAN_EQUAL:
 					return "<=";
-				case IS_NOT_NULL:
-				case NEGATING_SIMPLE_PROPERTY:
-					return "!=";
-				/*
-				NOTE unfortunately, 'NOT LIKE' operator is not supported by GemFire's Query/OQL syntax
-				case NOT_LIKE:
-					return "NOT LIKE";
-				*/
+				// Set Containment
+				case IN:
+					return "IN SET";
+				case NOT_IN:
+					return "NOT IN SET";
+				// Wildcard Matching
 				case LIKE:
 				case STARTING_WITH:
 				case ENDING_WITH:
 				case CONTAINING:
 					return "LIKE";
-				case FALSE:
-				case IS_NULL:
-				case SIMPLE_PROPERTY:
-				case TRUE:
-					return "=";
 				default:
-					throw new IllegalArgumentException(String.format("Unsupported operator %s!", type));
+					throw new IllegalArgumentException(String.format("Unsupported operator %s!", partType));
 			}
 		}
 	}

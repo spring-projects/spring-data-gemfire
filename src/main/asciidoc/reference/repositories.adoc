@@ -109,6 +109,10 @@ gets to verbose you can annotate the query methods with `@Query` as seen for met
 | `findByFirstnameNotIn(Collection<String> x)`
 | `x.firstname NOT IN SET $1`
 
+| `IgnoreCase`
+| `findByFirstnameIgnoreCase(String firstName)`
+| `x.firstname.equalsIgnoreCase($1)`
+
 | (No keyword)
 | `findByFirstname(String name)`
 | `x.firstname = $1`

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.cache.Region;
 
 /**
  * Value object to work with OQL query strings.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
@@ -58,7 +58,7 @@ public class QueryString {
 
 	/**
 	 * Creates a {@link QueryString} from the given {@link String} query.
-	 * 
+	 *
 	 * @param source a String containing the OQL Query.
 	 */
 	public QueryString(String source) {
@@ -68,7 +68,7 @@ public class QueryString {
 
 	/**
 	 * Creates a {@literal SELECT} query for the given domain class.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 */
 	@SuppressWarnings("unused")
@@ -78,7 +78,7 @@ public class QueryString {
 
 	/**
 	 * Creates a {@literal SELECT} query for the given domain class.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @param isCountQuery indicates if this is a count query
 	 */
@@ -118,7 +118,7 @@ public class QueryString {
 
   /**
 	 * Returns the parameter indexes used in this query.
-	 * 
+	 *
 	 * @return the parameter indexes used in this query or an empty {@link Iterable} if none are used.
 	 * @see java.lang.Iterable
 	 */
@@ -195,5 +195,4 @@ public class QueryString {
 	public String toString() {
 		return query;
 	}
-
 }
