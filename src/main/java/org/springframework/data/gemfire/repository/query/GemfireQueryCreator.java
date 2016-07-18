@@ -27,30 +27,32 @@ import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * Query creator to create {@link QueryString} instances.
- * 
+ *
  * @author Oliver Gierke
+ * @author John Blum
  */
 class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> {
 
 	private static final Log LOG = LogFactory.getLog(GemfireQueryCreator.class);
 
-	private final QueryBuilder query;
 	private Iterator<Integer> indexes;
+
+	private final QueryBuilder queryBuilder;
 
 	/**
 	 * Creates a new {@link GemfireQueryCreator} using the given {@link PartTree} and domain class.
-	 * 
+	 *
 	 * @param tree must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 */
 	public GemfireQueryCreator(PartTree tree, GemfirePersistentEntity<?> entity) {
 		super(tree);
 
-		this.query = new QueryBuilder(entity, tree);
+		this.queryBuilder = new QueryBuilder(entity, tree);
 		this.indexes = new IndexProvider();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#createQuery(org.springframework.data.domain.Sort)
 	 */
@@ -69,7 +71,7 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 		return Predicates.create(part, this.indexes);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#and(org.springframework.data.repository.query.parser.Part, java.lang.Object, java.util.Iterator)
 	 */
@@ -78,7 +80,7 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 		return base.and(Predicates.create(part, this.indexes));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#or(java.lang.Object, java.lang.Object)
 	 */
@@ -87,21 +89,28 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 		return base.or(criteria);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#complete(java.lang.Object, org.springframework.data.domain.Sort)
 	 */
 	@Override
 	protected QueryString complete(Predicates criteria, Sort sort) {
-		QueryString result = query.create(criteria).orderBy(sort);
+		QueryString query = queryBuilder.create(criteria).orderBy(sort);
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug(String.format("Created Query '%1$s'", result.toString()));
+			LOG.debug(String.format("Created Query '%1$s'", query.toString()));
 		}
 
-		return result;
+		return query;
 	}
 
+	/**
+	 * {@link IndexProvider} is an {@link Iterator} providing sequentially numbered placeholders (starting at 1),
+	 * in a generated GemFire OQL statement corresponding to all possible arguments passed to
+	 * the query's indexed parameters.
+	 *
+	 * @see java.util.Iterator
+	 */
 	private static class IndexProvider implements Iterator<Integer> {
 
 		private int index;
@@ -110,17 +119,17 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 			this.index = 1;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.util.Iterator#hasNext()
 		 */
 		@Override
+		@SuppressWarnings("all")
 		public boolean hasNext() {
-			// TODO really?
-			return index <= Integer.MAX_VALUE;
+			return (index <= Integer.MAX_VALUE);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
@@ -129,7 +138,7 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 			return index++;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.util.Iterator#remove()
 		 */
@@ -138,5 +147,4 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 			throw new UnsupportedOperationException();
 		}
 	}
-
 }

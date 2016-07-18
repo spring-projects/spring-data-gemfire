@@ -56,7 +56,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	/**
 	 * Creates a new {@link StringBasedGemfireRepositoryQuery} using the given {@link GemfireQueryMethod} and
 	 * {@link GemfireTemplate}. The actual query {@link String} will be looked up from the query method.
-	 * 
+	 *
 	 * @param queryMethod must not be {@literal null}.
 	 * @param template must not be {@literal null}.
 	 */
@@ -67,7 +67,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	/**
 	 * Creates a new {@link StringBasedGemfireRepositoryQuery} using the given query {@link String},
 	 * {@link GemfireQueryMethod} and {@link GemfireTemplate}.
-	 * 
+	 *
 	 * @param query will fall back to the query annotated to the given {@link GemfireQueryMethod} if {@literal null}.
 	 * @param queryMethod must not be {@literal null}.
 	 * @param template must not be {@literal null}.

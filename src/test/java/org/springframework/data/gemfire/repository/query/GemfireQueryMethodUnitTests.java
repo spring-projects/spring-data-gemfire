@@ -48,7 +48,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Unit tests for {@link GemfireQueryMethod}.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  */
@@ -114,6 +114,7 @@ public class GemfireQueryMethodUnitTests {
 	}
 
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setup() {
 		when(metadata.getDomainType()).thenReturn((Class) Person.class);
 		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) Person.class);
@@ -145,7 +146,7 @@ public class GemfireQueryMethodUnitTests {
 	public void rejectsQueryMethodWithPageableParameter() throws Exception {
 		expectedException.expect(IllegalStateException.class);
 		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage(Matchers.startsWith("Pagination is not supported by GemFire Repositories!"));
+		expectedException.expectMessage(Matchers.startsWith("Pagination is not supported by GemFire Repositories; Offending method: someMethod"));
 
 		new GemfireQueryMethod(Invalid.class.getMethod("someMethod", Pageable.class), metadata, context);
 	}
@@ -279,5 +280,4 @@ public class GemfireQueryMethodUnitTests {
 		void unlimitedQuery();
 
 	}
-
 }

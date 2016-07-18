@@ -15,8 +15,9 @@
  */
 package org.springframework.data.gemfire.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +28,9 @@ import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * Unit tests for {@link GemfireQueryCreator}.
- * 
+ *
  * @author Oliver Gierke
+ * @author John Blum
  */
 public class GemfireQueryCreatorUnitTests {
 
@@ -37,18 +39,28 @@ public class GemfireQueryCreatorUnitTests {
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() {
-
-		GemfireMappingContext context = new GemfireMappingContext();
-		entity = (GemfirePersistentEntity<Person>) context.getPersistentEntity(Person.class);
+		entity = (GemfirePersistentEntity<Person>) new GemfireMappingContext().getPersistentEntity(Person.class);
 	}
 
 	@Test
 	public void createsQueryForSimplePropertyReferenceCorrectly() {
+		PartTree partTree = new PartTree("findByLastname", Person.class);
 
-		PartTree partTree = new PartTree("findByFirstname", Person.class);
-		GemfireQueryCreator creator = new GemfireQueryCreator(partTree, entity);
+		GemfireQueryCreator queryCreator = new GemfireQueryCreator(partTree, entity);
 
-		QueryString query = creator.createQuery();
-		assertThat(query.toString(), is("SELECT * FROM /simple x WHERE x.firstname = $1"));
+		QueryString query = queryCreator.createQuery();
+
+		assertThat(query.toString(), is(equalTo("SELECT * FROM /simple x WHERE x.lastname = $1")));
+	}
+
+	@Test
+	public void createsQueryForNestedPropertyReferenceCorrectly() {
+		PartTree partTree = new PartTree("findPersonByAddressCity", Person.class);
+
+		GemfireQueryCreator queryCreator = new GemfireQueryCreator(partTree, entity);
+
+		QueryString query = queryCreator.createQuery();
+
+		assertThat(query.toString(), is(equalTo("SELECT * FROM /simple x WHERE x.address.city = $1")));
 	}
 }
