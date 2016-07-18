@@ -36,21 +36,22 @@ public class Regions implements Iterable<Region<?, ?>> {
 
 	private final Map<String, Region<?, ?>> regions;
 
-	private final MappingContext<? extends GemfirePersistentEntity<?>, ?> context;
+	private final MappingContext<? extends GemfirePersistentEntity<?>, ?> mappingContext;
 
 	/**
 	 * Creates a new {@link Regions} wrapper for the given {@link Region}s and
 	 * {@link MappingContext}.
-	 * 
+	 *
 	 * @param regions must not be {@literal null}.
-	 * @param context must not be {@literal null}.
+	 * @param mappingContext must not be {@literal null}.
 	 */
-	public Regions(Iterable<Region<?, ?>> regions, MappingContext<? extends GemfirePersistentEntity<?>, ?> context) {
+	public Regions(Iterable<Region<?, ?>> regions,
+			MappingContext<? extends GemfirePersistentEntity<?>, ?> mappingContext) {
 
-		Assert.notNull(regions);
-		Assert.notNull(context);
+		Assert.notNull(regions, "Regions must not be null");
+		Assert.notNull(mappingContext, "MappingContext must not be null");
 
-		Map<String, com.gemstone.gemfire.cache.Region<?, ?>> regionMap = new HashMap<String, Region<?, ?>>();
+		Map<String, Region<?, ?>> regionMap = new HashMap<String, Region<?, ?>>();
 
 		for (Region<?, ?> region : regions) {
 			regionMap.put(region.getName(), region);
@@ -58,7 +59,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 		}
 
 		this.regions = Collections.unmodifiableMap(regionMap);
-		this.context = context;
+		this.mappingContext = mappingContext;
 	}
 
 	/**
@@ -67,15 +68,15 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 * information is found.
 	 *
 	 * @param <T> the Region value class type.
-	 * @param type must not be {@literal null}.
+	 * @param entityType must not be {@literal null}.
 	 * @return the {@link Region} the given type is mapped to.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Region<?, T> getRegion(Class<T> type) {
-		Assert.notNull(type);
+	public <T> Region<?, T> getRegion(Class<T> entityType) {
+		Assert.notNull(entityType, "entityType must not be null");
 
-		GemfirePersistentEntity<?> entity = context.getPersistentEntity(type);
-		String regionName = (entity != null ? entity.getRegionName() : type.getSimpleName());
+		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(entityType);
+		String regionName = (entity != null ? entity.getRegionName() : entityType.getSimpleName());
 
 		return (Region<?, T>) regions.get(regionName);
 	}
@@ -90,18 +91,18 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <S, T> Region<S, T> getRegion(String namePath) {
-		Assert.notNull(namePath);
+		Assert.hasText(namePath, "Region name/path is required");
+
 		return (Region<S, T>) regions.get(namePath);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Iterable#iterator()
 	 */
 	@Override
 	public Iterator<Region<?, ?>> iterator() {
 		return regions.values().iterator();
 	}
-
 }

@@ -21,10 +21,11 @@ import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Query;
+import org.springframework.data.gemfire.repository.query.annotation.Trace;
 
 /**
  * Sample Repository interface managing {@link Person}s.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
@@ -39,23 +40,26 @@ public interface PersonRepository extends GemfireRepository<Person, Long> {
 
 	Collection<Person> findByFirstname(String firstname);
 
-	Collection<Person> findByFirstnameIn(Collection<String> firstnames);
+	Collection<Person> findByFirstnameContaining(String firstName);
 
-	Collection<Person> findByFirstnameIn(String... firstnames);
+	Collection<Person> findByFirstnameIn(Collection<String> firstNames);
 
-	Collection<Person> findByFirstnameAndLastname(String firstname, String lastname);
+	Collection<Person> findByFirstnameIn(String... firstNames);
 
-	Collection<Person> findByFirstnameOrLastname(String firstname, String lastname);
+	Collection<Person> findByFirstnameLike(String firstName);
 
-	Person findByLastname(String lastname);
+	Collection<Person> findByFirstnameStartingWith(String firstName);
 
-	Collection<Person> findByFirstnameLike(String firstname);
+	Collection<Person> findByFirstnameAndLastname(String firstName, String lastName);
 
-	Collection<Person> findByFirstnameStartingWith(String firstname);
+	@Trace
+	Collection<Person> findByFirstnameIgnoreCaseAndLastnameIgnoreCase(String firstName, String lastName);
 
-	Collection<Person> findByLastnameEndingWith(String lastname);
+	Collection<Person> findByFirstnameOrLastname(String firstName, String lastName);
 
-	Collection<Person> findByFirstnameContaining(String firstname);
+	Person findByLastname(String lastName);
+
+	Collection<Person> findByLastnameEndingWith(String lastName);
 
 	List<Person> findDistinctByLastname(String lastName, Sort order);
 
