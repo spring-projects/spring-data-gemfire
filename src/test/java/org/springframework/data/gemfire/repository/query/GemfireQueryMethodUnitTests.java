@@ -16,9 +16,12 @@
 
 package org.springframework.data.gemfire.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 
@@ -47,7 +50,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Unit tests for {@link GemfireQueryMethod}.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  */
@@ -58,7 +61,7 @@ public class GemfireQueryMethodUnitTests {
 	public ExpectedException expectedException = ExpectedException.none();
 
 	private GemfireMappingContext context = new GemfireMappingContext();
-	
+
 	private ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 
 	@Mock
@@ -115,6 +118,7 @@ public class GemfireQueryMethodUnitTests {
 	}
 
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setup() {
 		when(metadata.getDomainType()).thenReturn((Class) Person.class);
 		when(metadata.getReturnedDomainClass(Mockito.any(Method.class))).thenReturn((Class) Person.class);
@@ -146,7 +150,7 @@ public class GemfireQueryMethodUnitTests {
 	public void rejectsQueryMethodWithPageableParameter() throws Exception {
 		expectedException.expect(IllegalStateException.class);
 		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage(Matchers.startsWith("Pagination is not supported by GemFire Repositories!"));
+		expectedException.expectMessage(Matchers.startsWith("Pagination is not supported by GemFire Repositories; Offending method: someMethod"));
 
 		new GemfireQueryMethod(Invalid.class.getMethod("someMethod", Pageable.class), metadata, factory, context);
 	}
@@ -280,5 +284,4 @@ public class GemfireQueryMethodUnitTests {
 		void unlimitedQuery();
 
 	}
-
 }

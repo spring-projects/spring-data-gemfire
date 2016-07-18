@@ -56,5 +56,4 @@ class QueryBuilder {
 	public String toString() {
 		return query;
 	}
-
 }
