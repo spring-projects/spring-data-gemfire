@@ -3,6 +3,24 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.0.M1 (2016-07-27)
+----------------------------------------
+* SGF-507 - Handle case-insensitive OQL queries defined as Repository query methods.
+* SGF-506 - ExceptionInInitializerError with  Spring Gemfire 1.8.1.
+* SGF-504 - Support Repositories with multiple Spring Data modules on the class path.
+* SGF-502 - DiskStoreAndEvictionRegionParsingTest fails when building with Maven due to missing Disk Store sub-directory.
+* SGF-501 - Add serialVersionUID to ListRegionsOnServerFunction.
+* SGF-499 - Prevent SDG-defined Pools from being destroyed before the Regions that use them.
+* SGF-497 - Intermittent failures in DurableClientCacheIntegrationTest.
+* SGF-496 - Upgrade to Pivotal GemFire 8.2.1.
+* SGF-495 - Add 1.9 XML schemas for SDG namespaces.
+* SGF-494 - Fix bug in GemfirePersistentEntity caused by Spring Data Commons ClassGeneratingPropertyAccessorFactory.
+* SGF-492 - Improve GemFire Java-based configuration support - Iteration 1.
+* SGF-486 - Release 1.9 M1 (Ingalls).
+* SGF-445 - Remove MaxPermSize Java option from Gradle build.
+* SGF-267 - Backwards Compatibility Testing between Clients and Servers as well as between GemFire Peer Members.
+
+
 Changes in version 1.8.2.RELEASE (2016-06-15)
 ---------------------------------------------
 * SGF-502 - DiskStoreAndEvictionRegionParsingTest fails when building with Maven due to missing Disk Store sub-directory.
