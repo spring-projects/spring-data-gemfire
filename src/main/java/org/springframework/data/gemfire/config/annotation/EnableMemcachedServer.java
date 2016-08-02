@@ -27,20 +27,21 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableMemcachedServer annotation marks a Spring {@link org.springframework.context.annotation.Configuration}
- * class to embed the Gemcached service in the GemFire server-side data member node.
+ * The EnableMemcachedServer annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * annotated class to start an embedded Memcached Server (Gemcached) service in the GemFire server/data node.
  *
- * The Gemcached service implements the Memcached server protocol enabling Memcached clients to connect and speak
- * to Pivotal GemFire or Apache Geode.
+ * The Gemcached service implements the Memcached Server protocol enabling Memcached clients to connect to
+ * and communicate with Pivotal GemFire or Apache Geode servers.
  *
  * @author John Blum
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.MemcachedServerConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
+@Documented
 @Import(MemcachedServerConfiguration.class)
 @SuppressWarnings("unused")
 public @interface EnableMemcachedServer {
@@ -51,7 +52,7 @@ public @interface EnableMemcachedServer {
 	 *
 	 * Default to {@literal 11211}.
 	 */
-	int port() default 11211;
+	int port() default MemcachedServerConfiguration.DEFAULT_MEMCACHED_SERVER_PORT;
 
 	/**
 	 * Sets the protocol used by an embedded Gemcached server. Valid values are BINARY and ASCII.

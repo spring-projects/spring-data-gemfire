@@ -27,27 +27,28 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableEmbeddedLocator annotation marks a Spring {@link org.springframework.context.annotation.Configuration}
- * class to embed a GemFire Manager service in the GemFire server-side data member node.
+ * The EnableEmbeddedManager annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * annotated class to embed and start a GemFire Manager service in the GemFire server/data node.
  *
  * @author John Blum
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.EmbeddedManagerConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
+@Documented
 @Import(EmbeddedManagerConfiguration.class)
 @SuppressWarnings("unused")
 public @interface EnableEmbeddedManager {
 
 	/**
-	 * If {@code true} then this member is willing to be a JMX Manager. All the other JMX Manager properties will be
-	 * used when it does become a manager. If this property is {@code false} then all other jmx-manager-* properties
+	 * If {@literal true} then this member is willing to be a JMX Manager. All the other JMX Manager properties will be
+	 * used when it does become a manager. If this property is {@literal false} then all other jmx-manager-* properties
 	 * are ignored.
 	 *
-	 * Defaults to {@code true}.
+	 * Defaults to {@literal true}.
 	 */
 	boolean jmxManager() default true;
 
@@ -64,46 +65,46 @@ public @interface EnableEmbeddedManager {
 	/**
 	 * By default, the JMX Manager (when configured with a port) will listen on all the local host's addresses.
 	 * You can use this property to configure what IP address or host name the JMX Manager will listen on for
-	 * non-HTTP connections. Ignored if JMX Manager is {@code false} or {@literal jmx-manager-port} is zero.
+	 * non-HTTP connections. Ignored if JMX Manager is {@literal false} or {@literal jmx-manager-port} is zero.
 	 *
 	 * Defaults to {@literal localhost}.
 	 */
-	String jmxManagerBindAddress() default "localhost";
+	String jmxManagerBindAddress() default "";
 
 	/**
 	 * Lets you control what hostname will be given to clients that ask the Locator for the location of a JMX Manager.
 	 * By default, the IP address that the JMX Manager reports is used. But for clients on a different network
 	 * this property allows you to configure a different hostname that will be given to clients. Ignored if
-	 * {@literal jmx-manager} is {@code false} or {@literal jmx-manager-port} is zero.
+	 * {@literal jmx-manager} is {@literal false} or {@literal jmx-manager-port} is zero.
 	 *
 	 * Defaults to {@literal localhost}.
 	 */
-	String jmxManagerHostnameForClients() default "localhost";
+	String jmxManagerHostnameForClients() default "";
 
 	/**
 	 * By default, the JMX Manager will allow clients without credentials to connect. If this property is set to
 	 * the name of a file then only clients that connect with credentials that match an entry in this file will
 	 * be allowed. Most JVMs require that the file is only readable by the owner. For more information about the
 	 * format of this file see Oracle's documentation of the {@literal com.sun.management.jmxremote.password.file}
-	 * System property. Ignored if {@literal jmx-manager} is {@code false} or {@literal jmx-manager-port} is zero.
+	 * System property. Ignored if {@literal jmx-manager} is {@literal false} or {@literal jmx-manager-port} is zero.
 	 */
 	String jmxManagerPasswordFile() default "";
 
 	/**
 	 * The port this JMX Manager will listen to for client connections. If this property is set to zero then GemFire
 	 * will not allow remote client connections but you can alternatively use the standard System properties supported
-	 * by the JVM for configuring access from remote JMX clients. Ignored if {@literal jmx-manager} is {@code false}.
+	 * by the JVM for configuring access from remote JMX clients. Ignored if {@literal jmx-manager} is {@literal false}.
 	 *
 	 * Defaults to {@literal 1099}.
 	 */
-	int jmxManagerPort() default 1099;
+	int jmxManagerPort() default EmbeddedManagerConfiguration.DEFAULT_JMX_MANAGER_PORT;
 
 	/**
-	 * Enables or disables SSL for connections to the JMX Manager. If {@code true} and {@literal jmx-manager-port}
+	 * Enables or disables SSL for connections to the JMX Manager. If {@literal true} and {@literal jmx-manager-port}
 	 * is not zero, then the JMX Manager will only accept SSL connections. If this property is not set, then GemFire
 	 * uses the value of {@literal cluster-ssl-enabled} to determine whether JMX connections should use SSL.
 	 *
-	 * Defaults to {@code false}.
+	 * Defaults to {@literal false}.
 	 */
 	boolean jmxManagerSslEnabled() default false;
 
@@ -130,17 +131,17 @@ public @interface EnableEmbeddedManager {
 	 * then GemFire uses the value of {@literal cluster-ssl-require-authentication} to determine whether JMX connections
 	 * require authentication.
 	 *
-	 * Defaults to {@code true}.
+	 * Defaults to {@literal true}.
 	 */
 	boolean jmxManagerSslRequireAuthentication() default true;
 
 	/**
 	 * If true then this member will start a JMX Manager when it creates a cache. Management tools like Gfsh can be
 	 * configured to connect to the JMX Manager. In most cases you should not set this because a JMX Manager will
-	 * automatically be started when needed on a member that sets {@literal jmx-manager} to {@code true}. Ignored if
-	 * {@literal jmx-manager} is {@code false}.
+	 * automatically be started when needed on a member that sets {@literal jmx-manager} to {@literal true}. Ignored if
+	 * {@literal jmx-manager} is {@literal false}.
 	 *
-	 * Defaults to {@code false}.
+	 * Defaults to {@literal false}.
 	 */
 	boolean jmxManagerStart() default false;
 
@@ -149,7 +150,7 @@ public @interface EnableEmbeddedManager {
 	 * should be greater than or equal to the {@literal statistic-sample-rate}. Setting this value too high will
 	 * cause stale values to be seen by Gfsh and GemFire Pulse.
 	 *
-	 * Defaults to {@code 2000}.
+	 * Defaults to {@literal 2000}.
 	 */
 	int jmxManagerUpdateRate() default 2000;
 

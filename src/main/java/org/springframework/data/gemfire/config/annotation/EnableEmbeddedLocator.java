@@ -27,37 +27,36 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableEmbeddedLocator annotation marks a Spring {@link org.springframework.context.annotation.Configuration}
- * class to embed a GemFire Locator service in the GemFire server-side data member node.
+ * The EnableEmbeddedLocator annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * annotated class to start an embedded GemFire Locator service in this GemFire server/data node.
  *
  * @author John Blum
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.EmbeddedLocatorConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
+@Documented
 @Import(EmbeddedLocatorConfiguration.class)
 @SuppressWarnings("unused")
 public @interface EnableEmbeddedLocator {
 
 	/**
-	 * If set, automatically starts a Locator in the current process when the member connects to the distributed system
-	 * and stops the Locator when the member disconnects.
-	 * To use, specify the Locator with an optional address or host specification and a required port number, in one of
-	 * these formats:
+	 * Configures the host/IP address on which the embedded Locator service will bind to for accepting connections
+	 * from clients sending Locator requests.
 	 *
-	 * start-locator=address[port1]
-	 *
-	 * start-locator=port1
-	 *
-	 * If you only specify the port, the address assigned to the member is used for the Locator.
-	 * If not already there, this locator is automatically added to the list of Locators in this
-	 * set of GemFire Properties.
-	 *
-	 * Defaults to {@literal 10334} (The default GemFire Locator port).
+	 * Default is {@literal localhost}.
 	 */
-	String startLocator() default "localhost[10334]";
+	String host() default EmbeddedLocatorConfiguration.DEFAULT_HOST;
+
+	/**
+	 * Configures the port on which the embedded Locator service will bind to listening for client connections
+	 * sending Locator requests.
+	 *
+	 * Default is {@literal 10334}.
+	 */
+	int port() default EmbeddedLocatorConfiguration.DEFAULT_LOCATOR_PORT;
 
 }

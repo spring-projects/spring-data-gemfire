@@ -25,26 +25,49 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The EnablePdx class...
+ * The EnablePdx annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * annotated class to enable the GemFire PDX features and functionality in a GemFire server/data node
+ * or GemFire cache client application.
  *
  * @author John Blum
- * @since 1.0.0
+ * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
+@Documented
 @SuppressWarnings("unused")
 public @interface EnablePdx {
 
-	String diskStoreName();
+	/**
+	 * Configures the disk store that is used for PDX meta data.
+	 */
+	String diskStoreName() default "";
 
+	/**
+	 * Configures whether pdx ignores fields that were unread during deserialization.
+	 *
+	 * Default is {@literal false}.
+	 */
 	boolean ignoreUnreadFields() default false;
 
+	/**
+	 * Configures whether the type metadata for PDX objects is persisted to disk.
+	 *
+	 * Default is {@literal false}.
+	 */
 	boolean persistent() default false;
 
+	/**
+	 * Configures the object preference to {@link com.gemstone.gemfire.pdx.PdxInstance} type or {@link Object}.
+	 *
+	 * Default is {@literal false}.
+	 */
 	boolean readSerialized() default false;
 
+	/**
+	 * Configures the PDX serializer to be used by the cache to serialize object data.
+	 */
 	String serializerBeanName() default "";
 
 }

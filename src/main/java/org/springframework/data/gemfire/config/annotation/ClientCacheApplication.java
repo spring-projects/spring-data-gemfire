@@ -55,7 +55,7 @@ public @interface ClientCacheApplication {
 	/**
 	 * Indicates whether the "copy on read" is enabled for this cache.
 	 *
-	 * Default is {@code false}.
+	 * Default is {@literal false}.
 	 */
 	boolean copyOnRead() default false;
 
@@ -104,7 +104,7 @@ public @interface ClientCacheApplication {
 	/**
 	 * Configures whether to keep the client queues alive on the server when the client is disconnected
 	 *
-	 * Default is {@code false}.
+	 * Default is {@literal false}.
 	 */
 	boolean keepAlive() default false;
 
@@ -164,7 +164,7 @@ public @interface ClientCacheApplication {
 	long pingInterval() default PoolFactory.DEFAULT_PING_INTERVAL;
 
 	/**
-	 * By default {@code prSingleHopEnabled} is {@code true} in which case the client is aware of the location
+	 * By default {@code prSingleHopEnabled} is {@literal true} in which case the client is aware of the location
 	 * of partitions on servers hosting Regions with {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}.
 	 *
 	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_PR_SINGLE_HOP_ENABLED
@@ -182,7 +182,7 @@ public @interface ClientCacheApplication {
 	/**
 	 * Notifies the server that this durable client is ready to receive updates.
 	 *
-	 * Default is {@code false}.
+	 * Default is {@literal false}.
 	 */
 	boolean readyForEvents() default false;
 

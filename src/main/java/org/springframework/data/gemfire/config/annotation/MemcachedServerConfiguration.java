@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
+import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
  * The MemcachedServerConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
@@ -28,10 +29,13 @@ import org.springframework.data.gemfire.config.annotation.support.EmbeddedServic
  * an embedded Memcached server.
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.config.annotation.EnableMemcachedServer
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
 public class MemcachedServerConfiguration extends EmbeddedServiceConfigurationSupport {
+
+	protected static final int DEFAULT_MEMCACHED_SERVER_PORT = 11211;
 
 	@Override
 	protected Class getAnnotationType() {
@@ -40,11 +44,9 @@ public class MemcachedServerConfiguration extends EmbeddedServiceConfigurationSu
 
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		Properties gemfireProperties = new Properties();
-
-		setProperty(gemfireProperties, "memcached-port", annotationAttributes.get("port"));
-		setProperty(gemfireProperties, "memcached-protocol", annotationAttributes.get("protocol"));
-
-		return gemfireProperties;
+		return new PropertiesBuilder()
+			.setProperty("memcached-port", resolvePort((Integer) annotationAttributes.get("port"), DEFAULT_MEMCACHED_SERVER_PORT))
+			.setProperty("memcached-protocol", annotationAttributes.get("protocol"))
+			.build();
 	}
 }

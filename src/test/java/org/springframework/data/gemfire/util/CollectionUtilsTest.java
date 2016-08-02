@@ -148,18 +148,17 @@ public class CollectionUtilsTest {
 			iterator.next();
 		}
 		catch (NoSuchElementException ignore) {
-			assertThat(ignore.getMessage(), is(equalTo("no elements in this Iterator")));
+			assertThat(ignore.getMessage(), is(equalTo("No more elements")));
 			assertThat(ignore.getCause(), is(nullValue()));
 
 			try {
 				iterator.remove();
 			}
 			catch (UnsupportedOperationException expected) {
-				assertThat(expected.getMessage(), is(equalTo("operation not supported")));
+				assertThat(expected.getMessage(), is(equalTo("Operation not supported")));
 				assertThat(expected.getCause(), is(nullValue()));
 				throw expected;
 			}
 		}
 	}
-
 }
