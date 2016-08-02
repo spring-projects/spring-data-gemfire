@@ -18,9 +18,6 @@ package org.springframework.data.gemfire.util;
 
 import java.util.Properties;
 
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -29,6 +26,9 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.DistributionLocator;
+
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * DistributedSystemUtils is an abstract utility class for working with the GemFire DistributedSystem.

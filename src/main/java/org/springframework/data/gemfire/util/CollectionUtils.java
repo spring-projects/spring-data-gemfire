@@ -77,7 +77,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @return the given Collection if not null, otherwise return an empty Collection (List).
 	 * @see java.util.Collections#emptyList()
 	 */
-	public static <T> Collection<T> nullSafeCollection(final Collection<T> collection) {
+	public static <T> Collection<T> nullSafeCollection(Collection<T> collection) {
 		return (collection != null ? collection : Collections.<T>emptyList());
 	}
 
@@ -100,15 +100,14 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 					}
 
 					@Override public T next() {
-						throw new NoSuchElementException("no elements in this Iterator");
+						throw new NoSuchElementException("No more elements");
 					}
 
 					@Override  public void remove() {
-						throw new UnsupportedOperationException("operation not supported");
+						throw new UnsupportedOperationException("Operation not supported");
 					}
 				};
 			}
 		});
 	}
-
 }

@@ -20,6 +20,7 @@ package org.springframework.data.gemfire.config.annotation;
 import static org.springframework.data.gemfire.CacheFactoryBean.DynamicRegionSupport;
 import static org.springframework.data.gemfire.CacheFactoryBean.JndiDataSource;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -57,6 +59,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.ImportAware
+ * @see org.springframework.core.type.AnnotationMetadata
  * @since 1.9.0
  */
 @SuppressWarnings("unused")
@@ -65,6 +68,8 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	protected static final boolean DEFAULT_CLOSE = true;
 	protected static final boolean DEFAULT_COPY_ON_READ = false;
 	protected static final boolean DEFAULT_USE_BEAN_FACTORY_LOCATOR = false;
+
+	protected static final int DEFAULT_MCAST_PORT = 0;
 
 	protected static final String DEFAULT_LOG_LEVEL = "config";
 	protected static final String DEFAULT_NAME = "SpringDataGemFireApplication";
@@ -83,6 +88,8 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 	private DynamicRegionSupport dynamicRegionSupport;
 
+	private Integer mcastPort = 0;
+
 	private Float criticalHeapPercentage;
 	private Float evictionHeapPercentage;
 
@@ -93,12 +100,15 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 	private PdxSerializer pdxSerializer;
 
+	private PropertiesBuilder customGemFireProperties = new PropertiesBuilder();
+
 	private Resource cacheXml;
 
 	private String locators = "";
 	private String logLevel = DEFAULT_LOG_LEVEL;
 	private String name;
 	private String pdxDiskStoreName;
+	private String startLocator;
 
 	private TransactionWriter transactionWriter;
 
@@ -174,19 +184,18 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/**
-	 * Returns a {@link Properties} object containing GemFire System properties used to configure
-	 * the GemFire cache.
+	 * Returns a {@link Properties} object containing GemFire System properties used to configure the GemFire cache.
 	 *
-	 * The name of the GemFire member/node is set to a pre-dined, descriptive default value depending
-	 * on the type configuraiton applied.
+	 * The name of the GemFire member/node in the cluster is set to a default, pre-defined, descriptive value
+	 * depending on the type of configuration meta-data applied.
 	 *
 	 * Both 'mcast-port' and 'locators' are to set 0 and empty String respectively, which is necessary
-	 * for {@link com.gemstone.gemfire.cache.client.ClientCache cache client}-based applications.
+	 * for {@link com.gemstone.gemfire.cache.client.ClientCache cache client}-based applications.  These values
+	 * can be changed for peer cache and cache server applications.
 	 *
-	 * Finally GemFire's "log-level" System property defaults to "config".
+	 * Finally, GemFire's {@literal log-level} System property defaults to {@literal config}.
 	 *
-	 * @return a {@link Properties} object containing GemFire System properties used to configure
-	 * the GemFire cache.
+	 * @return a {@link Properties} object containing GemFire System properties used to configure the GemFire cache.
 	 * @see <a link="http://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html">GemFire Properties</a>
 	 * @see java.util.Properties
 	 * @see #name()
@@ -195,12 +204,16 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 */
 	@Bean
 	protected Properties gemfireProperties() {
-		Properties gemfireProperties = new Properties();
+		PropertiesBuilder gemfireProperties = new PropertiesBuilder();
+
 		gemfireProperties.setProperty("name", name());
-		gemfireProperties.setProperty("mcast-port", "0");
+		gemfireProperties.setProperty("mcast-port", mcastPort());
 		gemfireProperties.setProperty("log-level", logLevel());
 		gemfireProperties.setProperty("locators", locators());
-		return gemfireProperties;
+		gemfireProperties.setProperty("start-locator", startLocator());
+		gemfireProperties.add(customGemFireProperties);
+
+		return gemfireProperties.build();
 	}
 
 	/*
@@ -213,7 +226,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/**
-	 * Gets a reference to the {@link ClassLoader} use by the Spring {@link BeanFactory} to load classes
+	 * Returns a reference to the {@link ClassLoader} use by the Spring {@link BeanFactory} to load classes
 	 * for bean definitions.
 	 *
 	 * @return the {@link ClassLoader} used by the Spring {@link BeanFactory} to load classes for bean definitions.
@@ -233,7 +246,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/**
-	 * Gets a reference to the Spring {@link BeanFactory} in the current application context.
+	 * Returns a reference to the Spring {@link BeanFactory} in the current application context.
 	 *
 	 * @return a reference to the Spring {@link BeanFactory}.
 	 * @throws IllegalStateException if the Spring {@link BeanFactory} was not properly initialized.
@@ -252,6 +265,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 		configureCache(importMetadata);
+		configureMemcachedServer(importMetadata);
 		configurePdx(importMetadata);
 		configureOther(importMetadata);
 	}
@@ -284,6 +298,32 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 			setLogLevel((String) cacheMetadataAttributes.get("logLevel"));
 			setName((String) cacheMetadataAttributes.get("name"));
+		}
+	}
+
+	/**
+	 * Configures the embedded GemFire Memcached Server (Gemcached) service in a GemFire server/data node.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing the Gemcached meta-data used to configure
+	 * the embedded GemFire Memcached Server (Gemcached) service.
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 */
+	protected void configureMemcachedServer(AnnotationMetadata importMetadata) {
+		if (isCacheServerApplication(importMetadata) || isPeerCacheApplication(importMetadata)) {
+			if (importMetadata.hasAnnotation(EnableMemcachedServer.class.getName())) {
+				Map<String, Object> enableMemcachedServerAttributes =
+					importMetadata.getAnnotationAttributes(EnableMemcachedServer.class.getName());
+
+				Properties gemfireMemcachedProperties = new Properties();
+
+				gemfireMemcachedProperties.setProperty("memcached-port",
+					String.valueOf(enableMemcachedServerAttributes.get("port")));
+
+				gemfireMemcachedProperties.setProperty("memcached-protocol",
+					String.valueOf(enableMemcachedServerAttributes.get("protocol")));
+
+				add(gemfireMemcachedProperties);
+			}
 		}
 	}
 
@@ -367,12 +407,10 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 * from the annotations used to configure the Spring application.
 	 * @return a boolean value indicating whether this is a GemFire cache server application.
 	 * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
-	 * @see #getAnnotationTypeName()
-	 * @see #getAnnotationType()
+	 * @see #isTypedCacheApplication(Class, AnnotationMetadata)
 	 */
 	protected boolean isCacheServerApplication(AnnotationMetadata importMetadata) {
-		return (CacheServerApplication.class.equals(getAnnotationType())
-			&& importMetadata.hasAnnotation(getAnnotationTypeName()));
+		return isTypedCacheApplication(CacheServerApplication.class, importMetadata);
 	}
 
 	/**
@@ -384,12 +422,10 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 * from the annotations used to configure the Spring application.
 	 * @return a boolean value indicating whether this is a GemFire cache client application.
 	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
-	 * @see #getAnnotationTypeName()
-	 * @see #getAnnotationType()
+	 * @see #isTypedCacheApplication(Class, AnnotationMetadata)
 	 */
 	protected boolean isClientCacheApplication(AnnotationMetadata importMetadata) {
-		return (ClientCacheApplication.class.equals(getAnnotationType())
-			&& importMetadata.hasAnnotation(getAnnotationTypeName()));
+		return isTypedCacheApplication(ClientCacheApplication.class, importMetadata);
 	}
 
 	/**
@@ -401,21 +437,38 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 * from the annotations used to configure the Spring application.
 	 * @return a boolean value indicating whether this is a GemFire peer cache application.
 	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+	 * @see #isTypedCacheApplication(Class, AnnotationMetadata)
+	 */
+	protected boolean isPeerCacheApplication(AnnotationMetadata importMetadata) {
+		return isTypedCacheApplication(PeerCacheApplication.class, importMetadata);
+	}
+
+	/**
+	 * Determines whether this Spring application is annotated with the given GemFire cache type annotation.
+	 *
+	 * @param annotationType {@link Annotation} cache type.
+	 * @param importMetadata {@link AnnotationMetadata} containing application configuration meta-data
+	 * from the annotations used to configure the Spring application.
+	 * @return a boolean value indicating if this Spring application is annotated with the given GemFire
+	 * cache type annotation.
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 * @see java.lang.annotation.Annotation
 	 * @see #getAnnotationTypeName()
 	 * @see #getAnnotationType()
 	 */
-	protected boolean isPeerCacheApplication(AnnotationMetadata importMetadata) {
-		return (PeerCacheApplication.class.equals(getAnnotationType())
-			&& importMetadata.hasAnnotation(getAnnotationTypeName()));
+	protected boolean isTypedCacheApplication(Class<? extends Annotation> annotationType,
+			AnnotationMetadata importMetadata) {
+
+		return (annotationType.equals(getAnnotationType()) && importMetadata.hasAnnotation(getAnnotationTypeName()));
 	}
 
 	/**
 	 * Determine whether this Spring application is a {@link com.gemstone.gemfire.cache.server.CacheServer},
-	 * {@link com.gemstone.gemfire.cache.client.ClientCache} or a {@link com.gemstone.gemfire.cache.Cache} application
+	 * {@link com.gemstone.gemfire.cache.client.ClientCache} or a {@link com.gemstone.gemfire.cache.Cache} application.
 	 *
 	 * @param importMetadata {@link AnnotationMetadata} containing application configuration meta-data
-	 * from the annotations used to configure the Spring application.
-	 * @return a boolean value indicating whether this is a GemFire cache server, client cache or peer cache,
+	 * from the class type-level annotations used to configure the Spring application.
+	 * @return a boolean value indicating whether this is a GemFire cache server, client cache or peer cache
 	 * Spring application.
 	 * @see #isCacheServerApplication(AnnotationMetadata)
 	 * @see #isClientCacheApplication(AnnotationMetadata)
@@ -427,12 +480,13 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/**
-	 * Constructs a new, initialized instance of the {@link CacheFactoryBean} based on the application
-	 * GemFire cache type (i.e. client or peer).
+	 * Constructs a new, initialized instance of the {@link CacheFactoryBean} based on the Spring application's
+	 * GemFire cache type (i.e. client or peer) preference specified via annotation.
 	 *
 	 * @param <T> Class type of the {@link CacheFactoryBean}.
-	 * @return a new instance of the {@link CacheFactoryBean} for the particular application GemFire cache type
-	 * (i.e client or peer).
+	 * @return a new instance of an appropriate {@link CacheFactoryBean} given the Spring application's
+	 * GemFire cache type preference  (i.e client or peer) specified with the corresponding annotation
+	 * (e.g. {@link ClientCacheApplication} or {@link PeerCacheApplication});
 	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
 	 * @see #setCommonCacheConfiguration(CacheFactoryBean)
@@ -443,12 +497,13 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/**
-	 * Constructs a new, uninitialized instance of the {@link CacheFactoryBean} based on the application
-	 * GemFire cache type (i.e. client or peer).
+	 * Constructs a new, uninitialized instance of the {@link CacheFactoryBean} based on the Spring application's
+	 * GemFire cache type (i.e. client or peer) preference specified via annotation.
 	 *
 	 * @param <T> Class type of the {@link CacheFactoryBean}.
-	 * @return a new instance of the {@link CacheFactoryBean} for the particular application GemFire cache type
-	 * (i.e client or peer).
+	 * @return a new instance of an appropriate {@link CacheFactoryBean} given the Spring application's
+	 * GemFire cache type preference (i.e client or peer) specified with the corresponding annotation
+	 * (e.g. {@link ClientCacheApplication} or {@link PeerCacheApplication}).
 	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
 	 */
@@ -458,7 +513,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 * Configures common GemFire cache configuration settings.
 	 *
 	 * @param <T> Class type of the {@link CacheFactoryBean}.
-	 * @param gemfireCache specific {@link CacheFactoryBean} instance to configure.
+	 * @param gemfireCache {@link CacheFactoryBean} instance to configure.
 	 * @return the given {@link CacheFactoryBean} after common configuration settings have been applied.
 	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
@@ -558,6 +613,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 		return nullSafeList(this.jndiDataSources);
 	}
 
+	/* (non-Javadoc) */
 	void setLocators(String locators) {
 		this.locators = locators;
 	}
@@ -575,6 +631,15 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 		return nullSafeValue(this.logLevel, DEFAULT_LOG_LEVEL);
 	}
 
+	void setMcastPort(Integer mcastPort) {
+		this.mcastPort = mcastPort;
+	}
+
+	protected Integer mcastPort() {
+		return (mcastPort != null ? mcastPort : DEFAULT_MCAST_PORT);
+	}
+
+	/* (non-Javadoc) */
 	void setName(String name) {
 		this.name = name;
 	}
@@ -629,6 +694,15 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/* (non-Javadoc) */
+	void setStartLocator(String startLocator) {
+		this.startLocator = startLocator;
+	}
+
+	protected String startLocator() {
+		return this.startLocator;
+	}
+
+	/* (non-Javadoc) */
 	void setTransactionListeners(List<TransactionListener> transactionListeners) {
 		this.transactionListeners = transactionListeners;
 	}
@@ -653,6 +727,10 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 	protected boolean useBeanFactoryLocator() {
 		return this.useBeanFactoryLocator;
+	}
+
+	public void add(Properties gemfireProperties) {
+		customGemFireProperties.add(gemfireProperties);
 	}
 
 	@Override

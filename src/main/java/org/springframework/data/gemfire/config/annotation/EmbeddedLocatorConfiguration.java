@@ -20,18 +20,25 @@ package org.springframework.data.gemfire.config.annotation;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
+import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The EmbeddedManagerConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
+ * The EmbeddedLocatorConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
  * that applies additional GemFire configuration by way of GemFire System properties to configure
  * an embedded GemFire Locator.
  *
  * @author John Blum
- * @see EmbeddedServiceConfigurationSupport
+ * @see org.springframework.data.gemfire.config.annotation.EnableEmbeddedLocator
+ * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
 public class EmbeddedLocatorConfiguration extends EmbeddedServiceConfigurationSupport {
+
+	protected static final int DEFAULT_LOCATOR_PORT = GemfireUtils.DEFAULT_LOCATOR_PORT;
+
+	protected static final String START_LOCATOR_GEMFIRE_SYSTEM_PROPERTY_NAME = "start-locator";
 
 	@Override
 	protected Class getAnnotationType() {
@@ -40,10 +47,11 @@ public class EmbeddedLocatorConfiguration extends EmbeddedServiceConfigurationSu
 
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		Properties gemfireProperties = new Properties();
+		String host = resolveHost((String) annotationAttributes.get("host"));
+		int port = resolvePort((Integer) annotationAttributes.get("port"), DEFAULT_LOCATOR_PORT);
 
-		setProperty(gemfireProperties, "start-locator", annotationAttributes.get("startLocator"));
-
-		return gemfireProperties;
+		return new PropertiesBuilder()
+			.setProperty(START_LOCATOR_GEMFIRE_SYSTEM_PROPERTY_NAME, String.format("%s[%d]", host, port))
+			.build();
 	}
 }

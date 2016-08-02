@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
+import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
  * The EmbeddedManagerConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
@@ -28,10 +29,13 @@ import org.springframework.data.gemfire.config.annotation.support.EmbeddedServic
  * an embedded GemFire Manager.
  *
  * @author John Blum
- * @see EmbeddedServiceConfigurationSupport
+ * @see org.springframework.data.gemfire.config.annotation.EnableEmbeddedManager
+ * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
 public class EmbeddedManagerConfiguration extends EmbeddedServiceConfigurationSupport {
+
+	protected static final int DEFAULT_JMX_MANAGER_PORT = 1099;
 
 	@Override
 	protected Class getAnnotationType() {
@@ -40,30 +44,30 @@ public class EmbeddedManagerConfiguration extends EmbeddedServiceConfigurationSu
 
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		Properties gemfireProperties = new Properties();
+		PropertiesBuilder gemfireProperties = new PropertiesBuilder();
 
 		boolean jmxManager = Boolean.valueOf(String.valueOf(annotationAttributes.get("jmxManager")));
 
 		if (jmxManager) {
-			setProperty(gemfireProperties, "jmx-manager", Boolean.TRUE.toString());
-			setProperty(gemfireProperties, "jmx-manager-access-file", annotationAttributes.get("jmxManagerAccessFile"));
-			setProperty(gemfireProperties, "jmx-manager-bind-address", annotationAttributes.get("jmxManagerBindAddress"));
-			setProperty(gemfireProperties, "jmx-manager-hostname-for-clients", annotationAttributes.get("jmxManagerHostnameForClients"));
-			setProperty(gemfireProperties, "jmx-manager-password-file", annotationAttributes.get("jmxManagerPasswordFile"));
-			setProperty(gemfireProperties, "jmx-manager-port", annotationAttributes.get("jmxManagerPort"));
-			setProperty(gemfireProperties, "jmx-manager-start", annotationAttributes.get("jmxManagerStart"));
-			setProperty(gemfireProperties, "jmx-manager-update-rate", annotationAttributes.get("jmxManagerUpdateRate"));
+			gemfireProperties.setProperty("jmx-manager", Boolean.TRUE.toString());
+			gemfireProperties.setProperty("jmx-manager-access-file", annotationAttributes.get("jmxManagerAccessFile"));
+			gemfireProperties.setProperty("jmx-manager-bind-address", annotationAttributes.get("jmxManagerBindAddress"));
+			gemfireProperties.setProperty("jmx-manager-hostname-for-clients", annotationAttributes.get("jmxManagerHostnameForClients"));
+			gemfireProperties.setProperty("jmx-manager-password-file", annotationAttributes.get("jmxManagerPasswordFile"));
+			gemfireProperties.setProperty("jmx-manager-port", resolvePort((Integer) annotationAttributes.get("jmxManagerPort"), DEFAULT_JMX_MANAGER_PORT));
+			gemfireProperties.setProperty("jmx-manager-start", annotationAttributes.get("jmxManagerStart"));
+			gemfireProperties.setProperty("jmx-manager-update-rate", annotationAttributes.get("jmxManagerUpdateRate"));
 
 			boolean jmxManagerSslEnabled = Boolean.valueOf(String.valueOf(annotationAttributes.get("jmxManagerSslEnabled")));
 
 			if (jmxManagerSslEnabled) {
-				setProperty(gemfireProperties, "jmx-manager-ssl-enabled", Boolean.TRUE.toString());
-				setProperty(gemfireProperties, "jmx-manager-ssl-ciphers", annotationAttributes.get("jmxManagerSslCiphers"));
-				setProperty(gemfireProperties, "jmx-manager-ssl-protocols", annotationAttributes.get("jmxManagerSslProtocols"));
-				setProperty(gemfireProperties, "jmx-manager-ssl-require-authentication", annotationAttributes.get("jmxManagerSslRequireAuthentication"));
+				gemfireProperties.setProperty("jmx-manager-ssl-enabled", Boolean.TRUE.toString());
+				gemfireProperties.setProperty("jmx-manager-ssl-ciphers", annotationAttributes.get("jmxManagerSslCiphers"));
+				gemfireProperties.setProperty("jmx-manager-ssl-protocols", annotationAttributes.get("jmxManagerSslProtocols"));
+				gemfireProperties.setProperty("jmx-manager-ssl-require-authentication", annotationAttributes.get("jmxManagerSslRequireAuthentication"));
 			}
 		}
 
-		return gemfireProperties;
+		return gemfireProperties.build();
 	}
 }

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -42,42 +44,21 @@ import org.springframework.util.StringUtils;
  */
 public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanDefinitionRegistrar {
 
-	/* (non-Javadoc) */
-	protected static Properties setProperty(Properties properties, String key, Object value) {
-		if (value != null) {
-			setProperty(properties, key, value.toString());
-		}
+	public static final String DEFAULT_HOST = "localhost";
 
-		return properties;
+	@Autowired
+	@SuppressWarnings("all")
+	private AbstractCacheConfiguration cacheConfiguration;
+
+	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
+	protected <T extends AbstractCacheConfiguration> T cacheConfiguration() {
+		Assert.state(cacheConfiguration != null, "AbstractCacheConfiguration was not properly initialized");
+		return (T) this.cacheConfiguration;
 	}
 
 	/* (non-Javadoc) */
-	protected static Properties setProperty(Properties properties, String key, String value) {
-		Assert.notNull(properties, "Properties must not be null");
-		Assert.hasText(key, "Key must not be null or empty");
-
-		if (StringUtils.hasText(value)) {
-			properties.setProperty(key, value);
-		}
-
-		return properties;
-	}
-
-	/* (non-Javadoc) */
-	@Override
-	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-
-		if (importingClassMetadata.hasAnnotation(getAnnotationTypeName())) {
-			Map<String, Object> annotationAttributes =
-				importingClassMetadata.getAnnotationAttributes(getAnnotationTypeName());
-
-			Properties customizedGemFireProperties = toGemFireProperties(annotationAttributes);
-
-			if (!CollectionUtils.isEmpty(customizedGemFireProperties)) {
-				registerGemFirePropertiesBeanPostProcessor(registry, customizedGemFireProperties);
-			}
-		}
-	}
+	protected abstract Class getAnnotationType();
 
 	/* (non-Javadoc) */
 	protected String getAnnotationTypeName() {
@@ -90,31 +71,68 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	}
 
 	/* (non-Javadoc) */
-	protected abstract Class getAnnotationType();
+	@Override
+	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+		if (importingClassMetadata.hasAnnotation(getAnnotationTypeName())) {
+			Map<String, Object> annotationAttributes =
+				importingClassMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
-	/* (non-Javadoc) */
-	protected String getBeanName() {
-		return String.format("%1$s.%2$s", getClass().getName(), getAnnotationTypeSimpleName());
-	}
+			Properties customGemFireProperties = toGemFireProperties(annotationAttributes);
 
-	/* (non-Javadoc) */
-	protected BeanDefinitionHolder newBeanDefinitionHolder(BeanDefinitionBuilder builder) {
-		return new BeanDefinitionHolder(builder.getBeanDefinition(), getBeanName());
+			if (hasProperties(customGemFireProperties)) {
+				try {
+					cacheConfiguration().add(customGemFireProperties);
+				}
+				catch (Exception ignore) {
+					registerGemFirePropertiesBeanPostProcessor(registry, customGemFireProperties);
+				}
+			}
+		}
 	}
 
 	/* (non-Javadoc) */
 	protected abstract Properties toGemFireProperties(Map<String, Object> annotationAttributes);
 
 	/* (non-Javadoc) */
+	protected boolean hasProperties(Properties properties) {
+		return !CollectionUtils.isEmpty(properties);
+	}
+
+	/* (non-Javadoc) */
 	protected void registerGemFirePropertiesBeanPostProcessor(BeanDefinitionRegistry registry,
-			Properties customizedGemFireProperties) {
+			Properties customGemFireProperties) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
 			GemFirePropertiesBeanPostProcessor.class);
 
-		builder.addConstructorArgValue(customizedGemFireProperties);
+		builder.addConstructorArgValue(customGemFireProperties);
 
 		BeanDefinitionReaderUtils.registerBeanDefinition(newBeanDefinitionHolder(builder), registry);
+	}
+
+	/* (non-Javadoc) */
+	protected BeanDefinitionHolder newBeanDefinitionHolder(BeanDefinitionBuilder builder) {
+		return new BeanDefinitionHolder(builder.getBeanDefinition(), generateBeanName());
+	}
+
+	/* (non-Javadoc) */
+	protected String generateBeanName() {
+		return String.format("%1$s.%2$s", getClass().getName(), getAnnotationTypeSimpleName());
+	}
+
+	/* (non-Javadoc) */
+	protected String resolveHost(String hostname) {
+		return resolveHost(hostname, DEFAULT_HOST);
+	}
+
+	/* (non-Javadoc) */
+	protected String resolveHost(String hostname, String defaultHostname) {
+		return (StringUtils.hasText(hostname) ? hostname : defaultHostname);
+	}
+
+	/* (non-Javadoc) */
+	protected Integer resolvePort(Integer port, Integer defaultPort) {
+		return (port != null ? port : defaultPort);
 	}
 
 	/**
@@ -125,7 +143,7 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	 */
 	protected static class GemFirePropertiesBeanPostProcessor implements BeanPostProcessor {
 
-		static final String GEMFIRE_PROPERTIES_BEAN_NAME = "gemfireProperties";
+		protected static final String GEMFIRE_PROPERTIES_BEAN_NAME = "gemfireProperties";
 
 		private final Properties gemfireProperties;
 

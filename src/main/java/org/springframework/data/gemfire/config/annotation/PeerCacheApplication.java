@@ -52,7 +52,7 @@ public @interface PeerCacheApplication {
 	/**
 	 * Indicates whether the "copy on read" is enabled for this cache.
 	 *
-	 * Default is {@code false}.
+	 * Default is {@literal false}.
 	 */
 	boolean copyOnRead() default false;
 
@@ -68,7 +68,7 @@ public @interface PeerCacheApplication {
 	 * after it has been forced out of the distributed system by a network partition event or has otherwise been
 	 * shunned by other members. Use this property to enable the auto-reconnect behavior.
 	 *
-	 * Default is {@code false}.
+	 * Default is {@literal false}.
 	 */
 	boolean enableAutoReconnect() default false;
 
@@ -133,7 +133,7 @@ public @interface PeerCacheApplication {
 	 * Configures whether this GemFire cache member node would pull it's configuration meta-data
 	 * from the cluster-based Cluster Configuration service.
 	 *
-	 * Default is {@code false}.
+	 * Default is {@literal false}.
 	 */
 	boolean useClusterConfiguration() default false;
 
