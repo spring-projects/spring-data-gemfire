@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
+import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
  * The RedisServerConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
@@ -28,10 +29,13 @@ import org.springframework.data.gemfire.config.annotation.support.EmbeddedServic
  * an embedded Redis server.
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.config.annotation.EnableRedisServer
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
 public class RedisServerConfiguration extends EmbeddedServiceConfigurationSupport {
+
+	protected static final int DEFAULT_REDIS_PORT = 6379;
 
 	@Override
 	protected Class getAnnotationType() {
@@ -40,11 +44,9 @@ public class RedisServerConfiguration extends EmbeddedServiceConfigurationSuppor
 
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		Properties gemfireProperties = new Properties();
-
-		setProperty(gemfireProperties, "redis-bind-address", annotationAttributes.get("bindAddress"));
-		setProperty(gemfireProperties, "redis-port", annotationAttributes.get("port"));
-
-		return gemfireProperties;
+		return new PropertiesBuilder()
+			.setProperty("redis-bind-address", annotationAttributes.get("bindAddress"))
+			.setProperty("redis-port", resolvePort((Integer)annotationAttributes.get("port"), DEFAULT_REDIS_PORT))
+			.build();
 	}
 }

@@ -50,13 +50,13 @@ public @interface EnableRedisServer {
 	 *
 	 * Defaults to {@literal localhost}.
 	 */
-	String bindAddress() default "localhost";
+	String bindAddress() default "";
 
 	/**
 	 * Configures the Network port on which the Redis server will listen for Redis client connections.
 	 *
 	 * Defaults to {@literal 6379}.
 	 */
-	int port() default 6379;
+	int port() default RedisServerConfiguration.DEFAULT_REDIS_PORT;
 
 }
