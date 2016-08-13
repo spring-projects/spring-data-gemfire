@@ -265,7 +265,6 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 		configureCache(importMetadata);
-		configureMemcachedServer(importMetadata);
 		configurePdx(importMetadata);
 		configureOther(importMetadata);
 	}
@@ -298,32 +297,6 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 			setLogLevel((String) cacheMetadataAttributes.get("logLevel"));
 			setName((String) cacheMetadataAttributes.get("name"));
-		}
-	}
-
-	/**
-	 * Configures the embedded GemFire Memcached Server (Gemcached) service in a GemFire server/data node.
-	 *
-	 * @param importMetadata {@link AnnotationMetadata} containing the Gemcached meta-data used to configure
-	 * the embedded GemFire Memcached Server (Gemcached) service.
-	 * @see org.springframework.core.type.AnnotationMetadata
-	 */
-	protected void configureMemcachedServer(AnnotationMetadata importMetadata) {
-		if (isCacheServerApplication(importMetadata) || isPeerCacheApplication(importMetadata)) {
-			if (importMetadata.hasAnnotation(EnableMemcachedServer.class.getName())) {
-				Map<String, Object> enableMemcachedServerAttributes =
-					importMetadata.getAnnotationAttributes(EnableMemcachedServer.class.getName());
-
-				Properties gemfireMemcachedProperties = new Properties();
-
-				gemfireMemcachedProperties.setProperty("memcached-port",
-					String.valueOf(enableMemcachedServerAttributes.get("port")));
-
-				gemfireMemcachedProperties.setProperty("memcached-protocol",
-					String.valueOf(enableMemcachedServerAttributes.get("protocol")));
-
-				add(gemfireMemcachedProperties);
-			}
 		}
 	}
 
