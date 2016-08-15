@@ -27,21 +27,21 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableEmbeddedLocator annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * The EnableLocator annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
  * annotated class to start an embedded GemFire Locator service in this GemFire server/data node.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.Import
- * @see org.springframework.data.gemfire.config.annotation.EmbeddedLocatorConfiguration
+ * @see LocatorConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(EmbeddedLocatorConfiguration.class)
+@Import(LocatorConfiguration.class)
 @SuppressWarnings("unused")
-public @interface EnableEmbeddedLocator {
+public @interface EnableLocator {
 
 	/**
 	 * Configures the host/IP address on which the embedded Locator service will bind to for accepting connections
@@ -49,7 +49,7 @@ public @interface EnableEmbeddedLocator {
 	 *
 	 * Default is {@literal localhost}.
 	 */
-	String host() default EmbeddedLocatorConfiguration.DEFAULT_HOST;
+	String host() default LocatorConfiguration.DEFAULT_HOST;
 
 	/**
 	 * Configures the port on which the embedded Locator service will bind to listening for client connections
@@ -57,6 +57,6 @@ public @interface EnableEmbeddedLocator {
 	 *
 	 * Default is {@literal 10334}.
 	 */
-	int port() default EmbeddedLocatorConfiguration.DEFAULT_LOCATOR_PORT;
+	int port() default LocatorConfiguration.DEFAULT_LOCATOR_PORT;
 
 }

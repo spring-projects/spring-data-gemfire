@@ -152,8 +152,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 			setSubscriptionEnabled(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("subscriptionEnabled")));
 			setSubscriptionMessageTrackingTimeout((Integer) clientCacheApplicationAttributes.get("subscriptionMessageTrackingTimeout"));
 			setSubscriptionRedundancy((Integer) clientCacheApplicationAttributes.get("subscriptionRedundancy"));
-			setThreadLocalConnections(Boolean.TRUE.equals(
-				clientCacheApplicationAttributes.get("threadLocalConnections")));
+			setThreadLocalConnections(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("threadLocalConnections")));
 
 			configureLocatorOrServer(clientCacheApplicationAttributes);
 		}

@@ -24,22 +24,22 @@ import org.springframework.data.gemfire.config.annotation.support.EmbeddedServic
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The EmbeddedManagerConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
+ * The ManagerConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
  * that applies additional GemFire configuration by way of GemFire System properties to configure
  * an embedded GemFire Manager.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.EnableEmbeddedManager
+ * @see EnableManager
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
-public class EmbeddedManagerConfiguration extends EmbeddedServiceConfigurationSupport {
+public class ManagerConfiguration extends EmbeddedServiceConfigurationSupport {
 
 	protected static final int DEFAULT_JMX_MANAGER_PORT = 1099;
 
 	@Override
 	protected Class getAnnotationType() {
-		return EnableEmbeddedManager.class;
+		return EnableManager.class;
 	}
 
 	@Override

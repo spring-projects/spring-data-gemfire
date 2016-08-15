@@ -27,21 +27,21 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableEmbeddedManager annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * The EnableManager annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
  * annotated class to embed and start a GemFire Manager service in the GemFire server/data node.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.Import
- * @see org.springframework.data.gemfire.config.annotation.EmbeddedManagerConfiguration
+ * @see ManagerConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(EmbeddedManagerConfiguration.class)
+@Import(ManagerConfiguration.class)
 @SuppressWarnings("unused")
-public @interface EnableEmbeddedManager {
+public @interface EnableManager {
 
 	/**
 	 * If {@literal true} then this member is willing to be a JMX Manager. All the other JMX Manager properties will be
@@ -97,7 +97,7 @@ public @interface EnableEmbeddedManager {
 	 *
 	 * Defaults to {@literal 1099}.
 	 */
-	int jmxManagerPort() default EmbeddedManagerConfiguration.DEFAULT_JMX_MANAGER_PORT;
+	int jmxManagerPort() default ManagerConfiguration.DEFAULT_JMX_MANAGER_PORT;
 
 	/**
 	 * Enables or disables SSL for connections to the JMX Manager. If {@literal true} and {@literal jmx-manager-port}

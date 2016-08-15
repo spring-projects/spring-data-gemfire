@@ -45,8 +45,8 @@ import org.springframework.data.gemfire.GemfireUtils;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
+@Documented
 @Configuration
 @Import(ClientCacheConfiguration.class)
 @SuppressWarnings("unused")
