@@ -42,8 +42,8 @@ import org.springframework.context.annotation.Import;
  */
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
+@Documented
 @Configuration
 @Import(PeerCacheConfiguration.class)
 @SuppressWarnings("unused")

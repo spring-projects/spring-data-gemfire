@@ -25,16 +25,16 @@ import org.springframework.data.gemfire.config.annotation.support.EmbeddedServic
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The EmbeddedLocatorConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
+ * The LocatorConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
  * that applies additional GemFire configuration by way of GemFire System properties to configure
  * an embedded GemFire Locator.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.EnableEmbeddedLocator
+ * @see EnableLocator
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
-public class EmbeddedLocatorConfiguration extends EmbeddedServiceConfigurationSupport {
+public class LocatorConfiguration extends EmbeddedServiceConfigurationSupport {
 
 	protected static final int DEFAULT_LOCATOR_PORT = GemfireUtils.DEFAULT_LOCATOR_PORT;
 
@@ -42,7 +42,7 @@ public class EmbeddedLocatorConfiguration extends EmbeddedServiceConfigurationSu
 
 	@Override
 	protected Class getAnnotationType() {
-		return EnableEmbeddedLocator.class;
+		return EnableLocator.class;
 	}
 
 	@Override
