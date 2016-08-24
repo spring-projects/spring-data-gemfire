@@ -67,7 +67,7 @@ See <<bootstrap:region:common:attributes,Common Region Attributes>> and <<bootst
 for more details.
 * Enables Spring Data GemFire to be fully built and ran on JDK 7 and JDK 8 (Note, however, GemFire has not yet
 been fully tested and supported on JDK 8;
-See http://gemfire.docs.pivotal.io/latest/userguide/index.html#supported_configs/supported_configs_and_system_reqs.html[GemFire User Guide]
+See http://gemfire.docs.pivotal.io/docs-gemfire/supported_configs/supported_configs_and_system_reqs.html[GemFire User Guide]
 for additional details.
 
 [[new-in-1-5-0]]

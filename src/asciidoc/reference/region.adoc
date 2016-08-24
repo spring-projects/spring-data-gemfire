@@ -10,7 +10,7 @@ GemFire implements the following types of regions:
 * *Local* - Data only exists on the local node.
 * *Client* - Technically a client region is a local region that acts as a proxy to a replicated or partitioned region hosted on cache servers. It may hold data created or fetched locally. Alternately, it can be empty. Local updates are synchronized to the cache server. Also, a client region may subscribe to events in order to stay synchronized with changes originating from remote processes that access the same region.
 
-For more information about the various region types and their capabilities as well as configuration options, please refer to the GemFire Developer's http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/book_intro.html[Guide] and community http://www.pivotal.io/big-data/pivotal-gemfire[site].
+For more information about the various region types and their capabilities as well as configuration options, please refer to the GemFire Developer's http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/book_intro.html[Guide] and community http://www.pivotal.io/big-data/pivotal-gemfire[site].
 
 [[bootstrap:region:lookup]]
 == Using an externally configured Region
@@ -132,7 +132,7 @@ Spring Data GemFire provides comprehensive support for configuring any type of G
 * Partitioned Region `<partitioned-region>`
 * Client Region `<client-region>`
 
-For a comprehensive description of http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/region_options/region_types.html[Region types] please consult the GemFire product documentation.
+For a comprehensive description of http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/region_options/region_types.html[Region types] please consult the GemFire product documentation.
 
 [[bootstrap:region:common:attributes]]
 === Common Region Attributes
@@ -163,7 +163,7 @@ The following table(s) list attributes available for various region types:
 | Determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to distributed Regions.
 
 | data-policy
-| *See GemFire's http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/index.html[Data Policy]*
+| *See GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/821/javadocs/japi/index.html[Data Policy]*
 | The Region's Data Policy. Note, not all Data Policies are supported for every Region type.
 
 | destroy
@@ -584,7 +584,7 @@ This is discussed further in <<bootstrap-diskstore>>
 [[bootstrap:region:subscription]]
 == Subscription Interest Policy
 
-GemFire allows configuration of subscriptions to control http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/events/configure_p2p_event_messaging.html[peer to peer event handling]. Spring Data GemFire provides a `<gfe:subscription/>` to set the interest policy on replicated and partitioned regions to either `ALL` or `CACHE_CONTENT`.
+GemFire allows configuration of subscriptions to control http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/events/configure_p2p_event_messaging.html[peer to peer event handling]. Spring Data GemFire provides a `<gfe:subscription/>` to set the interest policy on replicated and partitioned regions to either `ALL` or `CACHE_CONTENT`.
 
 [source,xml]
 ----
@@ -619,7 +619,7 @@ When configuring regions for overflow, it is recommended to configure the storag
 for maximum efficiency.
 
 For a detailed description of eviction policies, see the GemFire documentation (such as
-http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/eviction/how_eviction_works.html[this] page).
+http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/eviction/how_eviction_works.html[this] page).
 
 [[bootstrap:region:expiration]]
 == Data Expiration
@@ -687,7 +687,7 @@ Region Expiration using the SDG XML namespace, like so...
 ====
 
 Spring Data GemFire's @Expiration annotation support is implemented with GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/CustomExpiry.html[`CustomExpiry`] interface.
-See http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/expiration/configuring_data_expiration.html[GemFire's User Guide] for more details
+See http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/expiration/configuring_data_expiration.html[GemFire's User Guide] for more details
 
 The Spring Data GemFire `AnnotationBasedExpiration` class (and `CustomExpiry` implementation) is specifically responsible
 for processing the SDG @Expiration annotations and applying the Expiration policy and settings appropriately

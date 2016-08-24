@@ -121,9 +121,9 @@ or child elements:
 The `close` attribute determines if the cache should be closed when the Spring application context is closed. The default is `true` however for cases in which multiple application contexts use the cache (common in web applications), set this value to `false`.
 The `lazy-init` attribute determines if the cache should be initialized before another bean references it. The default is `true` however in some cases it may be convenient to set this value to `false`.
 <2> Setting the `enable-auto-reconnect` attribute to true (default is false), allows a disconnected GemFire member to automatically reconnect and rejoin a GemFire cluster.
-See the GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#relnotes/release_notes.html#topic_5mbwjl__section_wxb_v35_v4[product documentation] for more details.
+See the GemFire http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/autoreconnect/member-reconnect.html[product documentation] for more details.
 <3> Setting the `use-cluster-configuration` attribute to true (default is false) to enable a GemFire member to retrieve the common, shared Cluster-based configuration from a Locator.
-See the GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#relnotes/release_notes.html#topic_5mbwjl__section_zk2_p35_v4[product documentation] for more details.
+See the GemFire http://gemfire.docs.pivotal.io/docs-gemfire/configuring/cluster_config/gfsh_persist.html[product documentation] for more details.
 <4> An example of a `TransactionListener` callback declaration using a bean reference. The referenced bean must implement
 http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionListener.html[TransactionListener].
 `TransactionListener(s)` can be implemented to handle transaction related events.
@@ -192,7 +192,7 @@ Unfortunately there is no way to be "notified" of a disconnect and subsequently 
 developer would then have a clean way to know when to call ConfigurableApplicationContext.refresh(), if even applicable
 for an application to do so, which is why this "feature" of GemFire 8 is not recommended for peer cache GemFire applications.
 
-For more information about 'auto-reconnect', see GemFire's http://gemfire.docs.pivotal.io/latest/userguide/index.html#managing/autoreconnect/member-reconnect.html#concept_22EE6DDE677F4E8CAF5786E17B4183A9[product documentation].
+For more information about 'auto-reconnect', see GemFire's http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/autoreconnect/member-reconnect.html[product documentation].
 
 [[bootstrap:cache:cluster-configuration]]
 === Using Cluster-based Configuration
@@ -222,7 +222,7 @@ specified with the XML namespace is not recorded.  The same is true when using G
 it too is not recorded.
 
 For more information on GemFire's Cluster Configuration Service, see the
-http://gemfire.docs.pivotal.io/latest/userguide/index.html#deploying/gfsh/gfsh_persist.html[product documentation].
+http://gemfire.docs.pivotal.io/docs-gemfire/configuring/cluster_config/gfsh_persist.html[product documentation].
 
 [[bootstrap:cache:server]]
 == Configuring a GemFire Cache Server
