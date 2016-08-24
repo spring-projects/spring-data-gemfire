@@ -4,7 +4,7 @@
 == Introduction
 
 Spring Data GemFire 1.3.0 introduces annotation support to simplify working with
-http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/function_exec/chapter_overview.html[GemFire Function Execution].
+http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/function_exec/chapter_overview.html[GemFire Function Execution].
 The GemFire API provides classes to implement and register http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Function.html[Functions]
 deployed to Cache servers that may be invoked remotely by member applications, typically cache clients.
 Functions may execute in parallel, distributed among multiple servers, combining results in a map-reduce pattern,
@@ -253,7 +253,7 @@ variable argument List.
 
 == Function Execution with PDX
 
-When using Spring Data GemFire's Function annotation support combined with GemFire's http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/data_serialization/gemfire_pdx_serialization.html[PDX serialization],
+When using Spring Data GemFire's Function annotation support combined with GemFire's http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/data_serialization/gemfire_pdx_serialization.html[PDX serialization],
 there are a few logistical things to keep in mind.
 
 As explained above, and by way of example, typically developers will define GemFire Functions using POJO classes
@@ -321,8 +321,8 @@ This causes all values read from the Cache (i.e. Regions) as well as information
 or peers to remain in serialized form, include, but not limited to Function arguments.
 
 GemFire will only serialize application domain object types that you have specifically configured (registered),
-either using GemFire's http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/data_serialization/auto_serialization.html[ReflectionBasedAutoSerializer],
-or specifically (and recommended) using a "custom" GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#developing/data_serialization/use_pdx_serializer.html[PdxSerializer]
+either using GemFire's http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/data_serialization/auto_serialization.html[ReflectionBasedAutoSerializer],
+or specifically (and recommended) using a "custom" GemFire http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/data_serialization/use_pdx_serializer.html[PdxSerializer]
 for your application domain types.
 
 What is less than apparent, is that GemFire automatically handles Java Enum types regardless of whether they are
