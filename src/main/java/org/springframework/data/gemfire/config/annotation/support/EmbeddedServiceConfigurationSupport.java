@@ -73,9 +73,8 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	/* (non-Javadoc) */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-		if (importingClassMetadata.hasAnnotation(getAnnotationTypeName())) {
-			Map<String, Object> annotationAttributes =
-				importingClassMetadata.getAnnotationAttributes(getAnnotationTypeName());
+		if (isAnnotationPresent(importingClassMetadata)) {
+			Map<String, Object> annotationAttributes = getAnnotationAttributes(importingClassMetadata);
 
 			Properties customGemFireProperties = toGemFireProperties(annotationAttributes);
 
@@ -94,8 +93,18 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	protected abstract Properties toGemFireProperties(Map<String, Object> annotationAttributes);
 
 	/* (non-Javadoc) */
+	protected boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata) {
+		return importingClassMetadata.hasAnnotation(getAnnotationTypeName());
+	}
+
+	/* (non-Javadoc) */
 	protected boolean hasProperties(Properties properties) {
 		return !CollectionUtils.isEmpty(properties);
+	}
+
+	/* (non-Javadoc) */
+	protected Map<String, Object> getAnnotationAttributes(AnnotationMetadata importingClassMetadata) {
+		return importingClassMetadata.getAnnotationAttributes(getAnnotationTypeName());
 	}
 
 	/* (non-Javadoc) */

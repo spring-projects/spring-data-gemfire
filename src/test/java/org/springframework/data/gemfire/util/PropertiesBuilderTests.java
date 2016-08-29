@@ -39,7 +39,7 @@ import org.junit.Test;
  * @author John Blum
  * @see java.util.Properties
  * @see org.springframework.data.gemfire.util.PropertiesBuilder
- * @since 1.0.0
+ * @since 1.9.0
  */
 public class PropertiesBuilderTests {
 
@@ -84,57 +84,8 @@ public class PropertiesBuilderTests {
 
 		assertThat(properties, is(notNullValue(Properties.class)));
 		assertThat(properties.size(), is(equalTo(1)));
+		assertThat(properties.containsKey("one"), is(true));
 		assertThat(properties.getProperty("one"), is(equalTo("1")));
-	}
-
-	@Test
-	public void propertiesBuilderIsSingleton() {
-		assertThat(new PropertiesBuilder().isSingleton(), is(true));
-	}
-
-	@Test
-	public void addPropertiesFromPropertiesIsSuccessful() {
-		PropertiesBuilder builder = PropertiesBuilder.create()
-			.setProperty("one", "1")
-			.setProperty("two", "@");
-
-		Properties sink = builder.build();
-
-		assertThat(sink, is(notNullValue(Properties.class)));
-		assertThat(sink.size(), is(2));
-		assertThat(sink.getProperty("one"), is(equalTo("1")));
-		assertThat(sink.getProperty("two"), is(equalTo("@")));
-		assertThat(sink.containsKey("three"), is(false));
-
-		Properties source = new Properties();
-
-		source.setProperty("two", "2");
-		source.setProperty("three", "3");
-
-		builder.add(source);
-
-		sink = builder.build();
-
-		assertThat(sink, is(notNullValue(Properties.class)));
-		assertThat(sink.size(), is(equalTo(3)));
-		assertThat(sink, is(not(sameInstance(source))));
-		assertThat(sink.getProperty("one"), is(equalTo("1")));
-		assertThat(sink.getProperty("two"), is(equalTo("2")));
-		assertThat(sink.getProperty("three"), is(equalTo("3")));
-	}
-
-	@Test
-	public void addPropertiesFromPropertiesBuilderIsSuccessful() {
-		PropertiesBuilder source = PropertiesBuilder.create()
-			.setProperty("one", "1")
-			.setProperty("two", "2");
-
-		Properties properties = new PropertiesBuilder().add(source).build();
-
-		assertThat(properties, is(notNullValue(Properties.class)));
-		assertThat(properties.size(), is(equalTo(2)));
-		assertThat(properties.getProperty("one"), is(equalTo("1")));
-		assertThat(properties.getProperty("two"), is(equalTo("2")));
 	}
 
 	@Test
@@ -145,7 +96,7 @@ public class PropertiesBuilderTests {
 
 		source.store(out, "fromInputStreamIsSuccessfulTest");
 
-		Properties sink = PropertiesBuilder.create().from(new ByteArrayInputStream(out.toByteArray())).build();
+		Properties sink = PropertiesBuilder.from(new ByteArrayInputStream(out.toByteArray())).build();
 
 		assertThat(sink, is(notNullValue(Properties.class)));
 		assertThat(sink, is(not(sameInstance(source))));
@@ -160,7 +111,7 @@ public class PropertiesBuilderTests {
 
 		source.store(writer, "fromReaderIsSuccessfulTest");
 
-		Properties sink = PropertiesBuilder.create().from(new StringReader(writer.toString())).build();
+		Properties sink = PropertiesBuilder.from(new StringReader(writer.toString())).build();
 
 		assertThat(sink, is(notNullValue(Properties.class)));
 		assertThat(sink, is(not(sameInstance(source))));
@@ -175,11 +126,74 @@ public class PropertiesBuilderTests {
 
 		source.storeToXML(out, "fromXmlInputStreamIsSuccessfulTest");
 
-		Properties sink = PropertiesBuilder.create().fromXml(new ByteArrayInputStream(out.toByteArray())).build();
+		Properties sink = PropertiesBuilder.fromXml(new ByteArrayInputStream(out.toByteArray())).build();
 
 		assertThat(sink, is(notNullValue(Properties.class)));
 		assertThat(sink, is(not(sameInstance(source))));
 		assertThat(sink, is(equalTo(source)));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void propertiesBuilderObjectTypeIsPropertiesClass() {
+		assertThat((Class<Properties>) PropertiesBuilder.create().getObjectType(), is(equalTo(Properties.class)));
+	}
+
+	@Test
+	public void propertiesBuilderIsSingletonIsTrue() {
+		assertThat(new PropertiesBuilder().isSingleton(), is(true));
+	}
+
+	@Test
+	public void addPropertiesFromPropertiesIsSuccessful() {
+		PropertiesBuilder builder = PropertiesBuilder.create()
+			.setProperty("one", "1")
+			.setProperty("two", "@");
+
+		Properties sink = builder.build();
+
+		assertThat(sink, is(notNullValue(Properties.class)));
+		assertThat(sink.size(), is(2));
+		assertThat(sink.containsKey("one"), is(true));
+		assertThat(sink.containsKey("two"), is(true));
+		assertThat(sink.containsKey("three"), is(false));
+		assertThat(sink.getProperty("one"), is(equalTo("1")));
+		assertThat(sink.getProperty("two"), is(equalTo("@")));
+
+		Properties source = new Properties();
+
+		source.setProperty("two", "2");
+		source.setProperty("three", "3");
+
+		builder.add(source);
+
+		sink = builder.build();
+
+		assertThat(sink, is(notNullValue(Properties.class)));
+		assertThat(sink.size(), is(equalTo(3)));
+		assertThat(sink, is(not(sameInstance(source))));
+		assertThat(sink.containsKey("one"), is(true));
+		assertThat(sink.containsKey("two"), is(true));
+		assertThat(sink.containsKey("three"), is(true));
+		assertThat(sink.getProperty("one"), is(equalTo("1")));
+		assertThat(sink.getProperty("two"), is(equalTo("2")));
+		assertThat(sink.getProperty("three"), is(equalTo("3")));
+	}
+
+	@Test
+	public void addPropertiesFromPropertiesBuilderIsSuccessful() {
+		PropertiesBuilder source = PropertiesBuilder.create()
+			.setProperty("one", "1")
+			.setProperty("two", "2");
+
+		Properties properties = PropertiesBuilder.create().add(source).build();
+
+		assertThat(properties, is(notNullValue(Properties.class)));
+		assertThat(properties.size(), is(equalTo(2)));
+		assertThat(properties.containsKey("one"), is(true));
+		assertThat(properties.containsKey("two"), is(true));
+		assertThat(properties.getProperty("one"), is(equalTo("1")));
+		assertThat(properties.getProperty("two"), is(equalTo("2")));
 	}
 
 	@Test
@@ -202,8 +216,20 @@ public class PropertiesBuilderTests {
 	}
 
 	@Test
+	public void setObjectArrayPropertyValueIsSuccessful() {
+		Properties properties = PropertiesBuilder.create()
+			.setProperty("numbers", new Object[] { "one", "two", "three" })
+			.build();
+
+		assertThat(properties, is(notNullValue(Properties.class)));
+		assertThat(properties.size(), is(equalTo(1)));
+		assertThat(properties.containsKey("numbers"), is(true));
+		assertThat(properties.getProperty("numbers"), is(equalTo("one,two,three")));
+	}
+
+	@Test
 	public void setPropertyIgnoresNullObjectValue() {
-		Properties properties = PropertiesBuilder.create().setProperty("object", null).build();
+		Properties properties = PropertiesBuilder.create().setProperty("object", (Object) null).build();
 
 		assertThat(properties, is(notNullValue(Properties.class)));
 		assertThat(properties.isEmpty(), is(true));
@@ -215,7 +241,24 @@ public class PropertiesBuilderTests {
 			.setProperty("blank", "  ")
 			.setProperty("empty", "")
 			.setProperty("null", "null")
+			.setProperty("nullWithWhiteSpace", " null  ")
 			.build();
+
+		assertThat(properties, is(notNullValue(Properties.class)));
+		assertThat(properties.isEmpty(), is(true));
+	}
+
+	@Test
+	public void setPropertyIgnoresEmptyObjectArray() {
+		Properties properties = PropertiesBuilder.create().setProperty("emptyArray", new Object[0]).build();
+
+		assertThat(properties, is(notNullValue(Properties.class)));
+		assertThat(properties.isEmpty(), is(true));
+	}
+
+	@Test
+	public void setPropertyIgnoresNullObjectArray() {
+		Properties properties = PropertiesBuilder.create().setProperty("nullArray", (Object[]) null).build();
 
 		assertThat(properties, is(notNullValue(Properties.class)));
 		assertThat(properties.isEmpty(), is(true));
@@ -230,6 +273,8 @@ public class PropertiesBuilderTests {
 
 		assertThat(properties, is(notNullValue(Properties.class)));
 		assertThat(properties.size(), is(equalTo(2)));
+		assertThat(properties.containsKey("one"), is(true));
+		assertThat(properties.containsKey("two"), is(true));
 		assertThat(properties.getProperty("one"), is(equalTo("1")));
 		assertThat(properties.getProperty("two"), is(equalTo("2")));
 	}
