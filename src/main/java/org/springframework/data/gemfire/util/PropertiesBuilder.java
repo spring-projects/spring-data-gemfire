@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -50,6 +51,70 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	}
 
 	/**
+	 * Constructs and initializes a {@link PropertiesBuilder} containing all properties
+	 * from the given {@link InputStream}.
+	 *
+	 * @param in {@link InputStream} source containing properties to use as the defaults for the constructed builder.
+	 * @return a {@link PropertiesBuilder} initialized with properties from the given {@link InputStream}.
+	 * @throws IllegalArgumentException if the {@link InputStream} cannot be read.
+	 * @see java.io.InputStream
+	 * @see java.util.Properties#load(InputStream)
+	 */
+	public static PropertiesBuilder from(InputStream in) {
+		try {
+			Properties defaults = new Properties();
+			defaults.load(in);
+			return new PropertiesBuilder(defaults);
+		}
+		catch (IOException e) {
+			throw new IllegalArgumentException("Failed to read properties from InputStream", e);
+		}
+	}
+
+	/**
+	 * Constructs and initializes a {@link PropertiesBuilder} containing all properties
+	 * from the given {@link Reader}.
+	 *
+	 * @param reader {@link Reader} source containing properties to use as the defaults for the constructed builder.
+	 * @return a {@link PropertiesBuilder} initialized with properties from the given {@link Reader}.
+	 * @throws IllegalArgumentException if the {@link Reader} cannot be read.
+	 * @see java.io.Reader
+	 * @see java.util.Properties#load(Reader)
+	 */
+	public static PropertiesBuilder from(Reader reader) {
+		try {
+			Properties defaults = new Properties();
+			defaults.load(reader);
+			return new PropertiesBuilder(defaults);
+		}
+		catch (IOException e) {
+			throw new IllegalArgumentException("Failed to read properties from Reader", e);
+		}
+	}
+
+	/**
+	 * Constructs and initializes a {@link PropertiesBuilder} containing all properties
+	 * from the given {@link InputStream} in XML format.
+	 *
+	 * @param xml {@link InputStream} source containing properties in XML format to use as defaults
+	 * for the constructed builder.
+	 * @return a {@link PropertiesBuilder} initialized with properties from the given XML {@link InputStream}.
+	 * @throws IllegalArgumentException if the XML {@link InputStream} cannot be read.
+	 * @see java.io.InputStream
+	 * @see java.util.Properties#loadFromXML(InputStream)
+	 */
+	public static PropertiesBuilder fromXml(InputStream xml) {
+		try {
+			Properties defaults = new Properties();
+			defaults.loadFromXML(xml);
+			return new PropertiesBuilder(defaults);
+		}
+		catch (IOException e) {
+			throw new IllegalArgumentException("Failed to read properties from XML", e);
+		}
+	}
+
+	/**
 	 * Constructs an instance of the {@link PropertiesBuilder} class.
 	 */
 	public PropertiesBuilder() {
@@ -60,6 +125,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * Constructs an instance of the {@link PropertiesBuilder} class initialized with the default {@link Properties}.
 	 *
 	 * @param defaults {@link Properties} used as the defaults.
+	 * @throws NullPointerException if the {@link Properties} reference is {@literal null}.
 	 * @see java.util.Properties
 	 */
 	public PropertiesBuilder(Properties defaults) {
@@ -72,10 +138,11 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * {@link PropertiesBuilder} providing the default {@link Properties} for this builder.
 	 *
 	 * @param builder {@link PropertiesBuilder} providing the default {@link Properties} for this builder.
+	 * @throws NullPointerException if the {@link PropertiesBuilder} reference is {@literal null}.
 	 * @see #PropertiesBuilder(Properties)
 	 */
 	public PropertiesBuilder(PropertiesBuilder builder) {
-		this(builder != null ? builder.build() : null);
+		this(builder.build());
 	}
 
 	/*
@@ -130,68 +197,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see org.springframework.data.gemfire.util.PropertiesBuilder
 	 */
 	public PropertiesBuilder add(PropertiesBuilder builder) {
-		if (builder != null) {
-			add(builder.build());
-		}
-
-		return this;
-	}
-
-	/**
-	 * Adds all properties from the given {@link InputStream} to this builder.
-	 *
-	 * @param in {@link InputStream} source containing properties to add to this builder.
-	 * @return a reference to this {@link PropertiesBuilder}.
-	 * @throws IllegalArgumentException if the {@link InputStream} cannot be read.
-	 * @see java.util.Properties#load(InputStream)
-	 * @see java.io.InputStream
-	 */
-	public PropertiesBuilder from(InputStream in) {
-		try {
-			this.properties.load(in);
-			return this;
-		}
-		catch (IOException e) {
-			throw new IllegalArgumentException("Failed to read properties from InputStream", e);
-		}
-	}
-
-	/**
-	 * Adds all properties from the given {@link Reader} to this builder.
-	 *
-	 * @param reader {@link Reader} source containing properties to add to this builder.
-	 * @return a reference to this {@link PropertiesBuilder}.
-	 * @throws IllegalArgumentException if the {@link Reader} cannot be read.
-	 * @see java.util.Properties#load(Reader)
-	 * @see java.io.Reader
-	 */
-	public PropertiesBuilder from(Reader reader) {
-		try {
-			this.properties.load(reader);
-			return this;
-		}
-		catch (IOException e) {
-			throw new IllegalArgumentException("Failed to read properties from Reader", e);
-		}
-	}
-
-	/**
-	 * Adds all properties from the given {@link InputStream} in XML format to this builder.
-	 *
-	 * @param xml {@link InputStream} source containing properties in XML format to add to this builder.
-	 * @return a reference to this {@link PropertiesBuilder}.
-	 * @throws IllegalArgumentException if the XML {@link InputStream} cannot be read.
-	 * @see java.util.Properties#loadFromXML(InputStream)
-	 * @see java.io.InputStream
-	 */
-	public PropertiesBuilder fromXml(InputStream xml) {
-		try {
-			this.properties.loadFromXML(xml);
-			return this;
-		}
-		catch (IOException e) {
-			throw new IllegalArgumentException("Failed to read properties from XML", e);
-		}
+		return (builder != null ? add(builder.build()) : this);
 	}
 
 	/**
@@ -206,6 +212,11 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 		return (value != null ? setProperty(name, value.toString()) : this);
 	}
 
+	public PropertiesBuilder setProperty(String name, Object[] values) {
+		return (!ObjectUtils.isEmpty(values) ? setProperty(name, StringUtils.arrayToCommaDelimitedString(values))
+			: this);
+	}
+
 	/**
 	 * Sets a property with the given name to the specified {@link String} value.  The property is only set
 	 * if the value is not {@literal null}, an empty {@link String} or not equal to the {@link String} literal
@@ -218,13 +229,17 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see java.util.Properties#setProperty(String, String)
 	 */
 	public PropertiesBuilder setProperty(String name, String value) {
-		Assert.hasText(name, String.format("Name [%s] must not be specified", name));
+		Assert.hasText(name, String.format("Name [%s] must be specified", name));
 
 		if (isValuable(value)) {
 			this.properties.setProperty(name, value);
 		}
 
 		return this;
+	}
+
+	public <T> PropertiesBuilder setPropertyIfNotDefault(String name, Object value, T defaultValue) {
+		return (defaultValue == null || !defaultValue.equals(value) ? setProperty(name, value) : this);
 	}
 
 	/**
