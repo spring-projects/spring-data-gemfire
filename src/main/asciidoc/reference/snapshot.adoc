@@ -1,11 +1,11 @@
 [[bootstrap:snapshot]]
 = Using the GemFire Snapshot Service
 
-Spring Data GemFire supports `Cache` and `Region` snapshots using http://gemfire81.docs.pivotal.io/latest/userguide/index.html#managing/cache_snapshots/chapter_overview.html[GemFire's Snapshot Service].
+Spring Data GemFire supports `Cache` and `Region` snapshots using http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/cache_snapshots/chapter_overview.html[GemFire's Snapshot Service].
 The out-of-the-box Snapshot Service support offers several convenient features to simply the use of GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/CacheSnapshotService.html[Cache]
 and http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/RegionSnapshotService.html[Region] Snapshot Service APIs.
 
-As http://gemfire81.docs.pivotal.io/latest/userguide/index.html#managing/cache_snapshots/chapter_overview.html[GemFire documentation] describes,
+As http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/cache_snapshots/chapter_overview.html[GemFire documentation] describes,
 snapshots allow you to save and subsequently reload the data later, which can be useful for moving data between environments,
 say from production to a staging or test environment in order to reproduce data-related issues in a controlled context.
 You can imagine combining Spring Data GemFire's Snapshot Service support with http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-definition-profiles[Spring's bean definition profiles]
