@@ -1,9 +1,9 @@
 [[bootstrap:snapshot]]
 = Using the GemFire Snapshot Service
 
-Spring Data GemFire supports `Cache` and `Region` snapshots using http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/cache_snapshots/chapter_overview.html[GemFire's Snapshot Service].
-The out-of-the-box Snapshot Service support offers several convenient features to simply the use of GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/CacheSnapshotService.html[Cache]
-and http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/RegionSnapshotService.html[Region] Snapshot Service APIs.
+Spring Data GemFire supports `Cache` and `Region` snapshots using http://gemfire81.docs.pivotal.io/latest/userguide/index.html#managing/cache_snapshots/chapter_overview.html[GemFire's Snapshot Service].
+The out-of-the-box Snapshot Service support offers several convenient features to simply the use of GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/CacheSnapshotService.html[Cache]
+and http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/RegionSnapshotService.html[Region] Snapshot Service APIs.
 
 As http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/cache_snapshots/chapter_overview.html[GemFire documentation] describes,
 snapshots allow you to save and subsequently reload the data later, which can be useful for moving data between environments,
@@ -55,7 +55,7 @@ It is also straightforward to define a snapshot service for a GemFire Region by 
 
 When the `region-ref` attribute is specified the Spring Data GemFire `SnapshotServiceFactoryBean` resolves
 the `region-ref` attribute to a Region bean defined in the Spring context and then proceeds to create a
-http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/RegionSnapshotService.html[RegionSnapshotService].
+http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/RegionSnapshotService.html[RegionSnapshotService].
 Again, the snapshot import and export definitions function the same way, however, the `location` must refer to a file
 on export.
 
@@ -70,9 +70,9 @@ This is useful when data exported from 1 Region is used to feed the import of an
 [[bootstrap:snapshot:location]]
 == Snapshot Location
 
-For a `Cache`-based SnapshotService (i.e. a GemFire http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/CacheSnapshotService.html[CacheSnapshotService])
+For a `Cache`-based SnapshotService (i.e. a GemFire http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/CacheSnapshotService.html[CacheSnapshotService])
 a developer would typically pass it a directory containing all the snapshot files to load rather than individual snapshot files,
-as the overloaded http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/CacheSnapshotService.html#load(java.io.File,%20com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat)[load] method
+as the overloaded http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/CacheSnapshotService.html#load(java.io.File,%20com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat)[load] method
 in the `CacheSnapshotService` API indicates.
 
 NOTE: Of course, a developer may use the other, overloaded `load(:File[], :SnapshotFormat, :SnapshotOptions)` method
@@ -97,7 +97,7 @@ Spring Data GemFire will conveniently extract the provided ZIP file and treat it
 == Snapshot Filters
 
 The real power of defining multiple snapshot imports and exports is realized through the use of snapshot filters.
-Snapshot filters implement GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/SnapshotFilter.html[SnapshotFilter] interface
+Snapshot filters implement GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/SnapshotFilter.html[SnapshotFilter] interface
 and are used to filter Region entries for inclusion into the Region on import and for inclusion into the snapshot on export.
 
 Spring Data GemFire makes it brain dead simple to utilize snapshot filters on import and export using the `filter-ref`
@@ -130,7 +130,7 @@ attribute or an anonymous, nested bean definition:
 ----
 
 In addition, more complex snapshot filters can be expressed with the `ComposableSnapshotFilter` Spring Data GemFire class.
-This class implements GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/SnapshotFilter.html[SnapshotFilter] interface
+This class implements GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/SnapshotFilter.html[SnapshotFilter] interface
 as well as the https://en.wikipedia.org/wiki/Composite_pattern[Composite] software design pattern.  In a nutshell, the
 https://en.wikipedia.org/wiki/Composite_pattern[Composite] design pattern allows developers to compose multiple objects
 of the same type and treat the conglomerate as single instance of the object type, a very powerful and useful abstraction

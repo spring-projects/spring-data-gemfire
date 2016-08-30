@@ -223,7 +223,7 @@ The following table(s) list attributes available for various region types:
 | Indicates whether the Region persists entries to a Disk Store (disk).
 
 | shorcut
-| *See http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/RegionShortcut.html
+| *See http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/RegionShortcut.html
 | The RegionShortcut for this Region. Allows easy initialization of the region based on pre-defined defaults.
 
 | statistics
@@ -243,7 +243,7 @@ The following table(s) list attributes available for various region types:
 === Cache Listeners
 
 `CacheListeners` are registered with a Region to handle Region events such as entries being created, updated, destroyed,
-etc. A `CacheListener` can be any bean that implements the http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheListener.html[`CacheListener`] interface.
+etc. A `CacheListener` can be any bean that implements the http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/CacheListener.html[`CacheListener`] interface.
 A Region may have multiple listeners, declared using the `cache-listener` element enclosed in a `*-region` element.
 
 In the example below, there are two `CacheListener's` declared. The first references a top-level named Spring bean;
@@ -279,7 +279,7 @@ are mutually exclusive and using both on the same element will result in an exce
 
     <bean id="c-listener" class="some.pkg.SimpleCacheListener"/>
  </beans>
-    
+
 ----
 
 .Bean Reference Conventions
@@ -303,7 +303,7 @@ from an external data source, a database for example. A `CacheWriter` is invoked
 intended for synchronizing to an external data source. The difference is GemFire only supports at most a single instance
 of each for each Region. However, either declaration style may be used.
 
-See http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheLoader.html[`CacheLoader`] and http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/CacheWriter.html[`CacheWriter`] for more details.
+See http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/CacheLoader.html[`CacheLoader`] and http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/CacheWriter.html[`CacheWriter`] for more details.
 
 [[bootstrap:region:common:subregions]]
 === Subregions
@@ -563,7 +563,7 @@ To enable persistence with Spring Data GemFire, simply set the `persistent` attr
 
 IMPORTANT: Persistence for partitioned regions is supported from GemFire 6.5 onwards - configuring this option on a previous release will trigger an initialization exception.
 
-Persistence may also be configured using the `data-policy` attribute, set to one of http://gemfire.docs.pivotal.io/7.0.2/javadocs/japi/com/gemstone/gemfire/cache/DataPolicy.html[GemFire's data policy settings]. For instance...
+Persistence may also be configured using the `data-policy` attribute, set to one of http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/DataPolicy.html[GemFire's data policy settings]. For instance...
 
 [source,xml]
 ----
@@ -686,7 +686,7 @@ Region Expiration using the SDG XML namespace, like so...
 ----
 ====
 
-Spring Data GemFire's @Expiration annotation support is implemented with GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/CustomExpiry.html[`CustomExpiry`] interface.
+Spring Data GemFire's @Expiration annotation support is implemented with GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/CustomExpiry.html[`CustomExpiry`] interface.
 See http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/expiration/configuring_data_expiration.html[GemFire's User Guide] for more details
 
 The Spring Data GemFire `AnnotationBasedExpiration` class (and `CustomExpiry` implementation) is specifically responsible
@@ -971,7 +971,7 @@ A special key `ALL_KEYS` means interest is registered for all keys (identical to
 [[bootstrap:region:json]]
 == JSON Support
 
-Gemfire 7.0 introduced support for caching JSON documents with OQL query support. These are stored internally as http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/pdx/PdxInstance.html[PdxInstance] types using the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/pdx/JSONFormatter.html[JSONFormatter] to perform conversion to and from JSON strings. Spring Data GemFire provides a `<gfe-data:json-region-autoproxy/>` tag to enable a http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#aop-introduction[AOP with Spring] component to advise appropriate region operations, effectively encapsulating the JSONFormatter, allowing your application to work directly with JSON strings. In addition, Java objects written to JSON configured regions will be automatically converted to JSON using the Jackson ObjectMapper. Reading these values will return a JSON string.
+Gemfire 7.0 introduced support for caching JSON documents with OQL query support. These are stored internally as http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/pdx/PdxInstance.html[PdxInstance] types using the http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/pdx/JSONFormatter.html[JSONFormatter] to perform conversion to and from JSON strings. Spring Data GemFire provides a `<gfe-data:json-region-autoproxy/>` tag to enable a http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#aop-introduction[AOP with Spring] component to advise appropriate region operations, effectively encapsulating the JSONFormatter, allowing your application to work directly with JSON strings. In addition, Java objects written to JSON configured regions will be automatically converted to JSON using the Jackson ObjectMapper. Reading these values will return a JSON string.
 
 By default, `<gfe-data:json-region-autoproxy/>` will perform the conversion on all regions. To apply this feature to selected regions, provide a comma delimited list of their ids via the `region-refs` attribute. Other attributes include a `pretty-print` flag (false by default) and `convert-returned-collections`. By default the results of region operations getAll() and values() will be converted for configured regions. This is done by creating a parallel structure in local memory. This can incur significant overhead for large collections. Set this flag to false to disable automatic conversion for these operation. NOTE: Certain region operations, specifically those that use GemFire's proprietary Region.Entry such as entries(boolean), entrySet(boolean) and getEntry() type are not targeted for AOP advice. In addition, the entrySet() method which returns a Set<java.util.Map.Entry<?,?>> is not affected.
 

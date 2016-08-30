@@ -5,7 +5,7 @@
 
 Spring Data GemFire 1.3.0 introduces annotation support to simplify working with
 http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/function_exec/chapter_overview.html[GemFire Function Execution].
-The GemFire API provides classes to implement and register http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Function.html[Functions]
+The GemFire API provides classes to implement and register http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Function.html[Functions]
 deployed to Cache servers that may be invoked remotely by member applications, typically cache clients.
 Functions may execute in parallel, distributed among multiple servers, combining results in a map-reduce pattern,
 or may be targeted at a single server. A Function execution may be also be targeted to a specific Region.
@@ -21,14 +21,14 @@ the ability to invoke registered Functions remotely via annotated interfaces.
 == Implementation vs Execution
 
 There are two separate concerns to address. First is the Function implementation (server) which must interact with
-the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/FunctionContext.html[FunctionContext]
-to obtain the invocation arguments, the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultSender.html[ResultsSender]
+the http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/FunctionContext.html[FunctionContext]
+to obtain the invocation arguments, the http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultSender.html[ResultsSender]
 and other execution context information. The Function implementation typically accesses the Cache and or Region
-and is typically registered with the http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/FunctionService.html[FunctionService]
+and is typically registered with the http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/FunctionService.html[FunctionService]
 under a unique Id. The application invoking a Function (the client) does not depend on the implementation. To invoke
-a Function remotely, the application instantiates an http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Execution.html[Execution]
+a Function remotely, the application instantiates an http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Execution.html[Execution]
 providing the Function ID, invocation arguments, the Function target or scope (Region, server, servers,
-member, members). If the Function produces a result, the invoker uses a http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultCollector.html[ResultCollector]
+member, members). If the Function produces a result, the invoker uses a http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultCollector.html[ResultCollector]
 to aggregate and acquire the execution results. In certain scenarios, a custom ResultCollector implementation
 is required and may be registered with the Execution.
 
@@ -170,7 +170,7 @@ To support client-side Function execution, the following annotations are provide
 `@OnServers`, `@OnMember`, `@OnMembers`. These correspond to the Execution implementations GemFire's FunctionService
 provides. Each annotation exposes the appropriate attributes. These annotations also provide an optional
 `resultCollector` attribute whose value is the name of a Spring bean implementing
-http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultCollector.html[ResultCollector]
+http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/ResultCollector.html[ResultCollector]
 to use for the execution.
 
 NOTE: The proxy interface binds all declared methods to the same execution configuration. Although it is expected
@@ -348,7 +348,7 @@ But, in actuality, what GemFire executes the Function on the Server is...
   process(regionData, order:PdxInstance, :PdxInstanceEnum, 400);
 ----
 
-Notice that the `Order` and `OrderSource` have passed to the Function as http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/pdx/PdxInstance.html[PDX instances].
+Notice that the `Order` and `OrderSource` have passed to the Function as http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/pdx/PdxInstance.html[PDX instances].
 Again, this is all because `read-serialized` is set to true on the GemFire Server, which may be necessary in cases
 where the GemFire Servers are interacting with multiple different client types (e.g. native clients).
 
@@ -370,7 +370,7 @@ where the SDG annotated POJO Function is registered and used, e.g. ...
 <gfe:cache ... pdx-serializer-ref="customPdxSerializeer" pdx-read-serialized="true"/>
 ----
 
-Alternatively, a developer my use GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/pdx/ReflectionBasedAutoSerializer.html[ReflectionBasedAutoSerializer].
+Alternatively, a developer my use GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/pdx/ReflectionBasedAutoSerializer.html[ReflectionBasedAutoSerializer].
 Of course, it is recommend to use a "custom" `PdxSerializer` where possible to maintain finer grained control over your
 serialization strategy.
 
