@@ -165,22 +165,22 @@ Currently, the set of OQL Query language extensions that are supported by Spring
 | Description
 | Arguments
 
-| http://gemfire.docs.pivotal.io/latest/userguide/developing/query_index/query_index_hints.html#topic_cfb_mxn_jq[HINT]
+| http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_index/query_index_hints.html#topic_cfb_mxn_jq[HINT]
 | `@Hint`
 | OQL Query Index Hints
 | `String[]` (e.g. @Hint({ "IdIdx", "TxDateIdx" }))
 
-| http://gemfire.docs.pivotal.io/latest/userguide/developing/query_select/the_import_statement.html#concept_2E9F15B2FE9041238B54736103396BF7[IMPORT]
+| http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_select/the_import_statement.html#concept_2E9F15B2FE9041238B54736103396BF7[IMPORT]
 | `@Import`
 | Qualify application-specific types.
 | `String` (e.g. @Import("org.example.app.domain.Type"))
 
-| http://gemfire.docs.pivotal.io/latest/userguide/developing/query_select/the_select_statement.html#concept_85AE7D6B1E2941ED8BD2A8310A81753E__section_25D7055B33EC47B19B1B70264B39212F[LIMIT]
+| http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_select/the_select_statement.html#concept_85AE7D6B1E2941ED8BD2A8310A81753E__section_25D7055B33EC47B19B1B70264B39212F[LIMIT]
 | `@Limit`
 | Limit the returned query result set.
 | `Integer` (e.g. @Limit(10); default is Integer.MAX_VALUE)
 
-| http://gemfire.docs.pivotal.io/latest/userguide/developing/query_additional/query_debugging.html#concept_2D557E24AAB24044A3DB36B3124F6748[TRACE]
+| http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_additional/query_debugging.html#concept_2D557E24AAB24044A3DB36B3124F6748[TRACE]
 | `@Trace`
 | Enable OQL Query specific debugging.
 | NA
