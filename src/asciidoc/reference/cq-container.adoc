@@ -17,7 +17,7 @@ The container is fully customizable - one can chose either to use the CQ thread 
 [[apis:cq-container:adapter]]
 == The `ContinuousQueryListenerAdapter` and `ContinuousQueryListener`
 
-The `ContinuousQueryListenerAdapter` class is the final component in Spring Data GemFire CQ support: in a nutshell, it allows you to expose almost *any* class as a EDP (there are of course some constraints) - it implements `ContinuousQueryListener`, a simpler listener interface similar to GemFire http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/query/CqListener.html[CqListener].
+The `ContinuousQueryListenerAdapter` class is the final component in Spring Data GemFire CQ support: in a nutshell, it allows you to expose almost *any* class as a EDP (there are of course some constraints) - it implements `ContinuousQueryListener`, a simpler listener interface similar to GemFire http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/query/CqListener.html[CqListener].
 
 Consider the following interface definition. Notice the various event handling methods and their parameters:
 

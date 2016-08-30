@@ -48,7 +48,7 @@ NOTE: Note that the configuration makes use of Spring's http://docs.spring.io/sp
 abstraction to locate the file. This allows various search patterns to be used, depending on the runtime environment
 or the prefix specified (if any) in the resource location.
 
-In addition to referencing an external configuration file one can specify GemFire http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/gemfire_properties.html[properties]
+In addition to referencing an external configuration file one can specify GemFire http://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html[properties]
 using any of Spring's common properties support features. For example, one can use the `properties` element
 defined in the `util` namespace to define properties directly or load properties from a properties file. The latter is
 recommended for externalizing environment specific settings outside the application configuration:
@@ -125,15 +125,15 @@ See the GemFire http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/auto
 <3> Setting the `use-cluster-configuration` attribute to true (default is false) to enable a GemFire member to retrieve the common, shared Cluster-based configuration from a Locator.
 See the GemFire http://gemfire.docs.pivotal.io/docs-gemfire/configuring/cluster_config/gfsh_persist.html[product documentation] for more details.
 <4> An example of a `TransactionListener` callback declaration using a bean reference. The referenced bean must implement
-http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionListener.html[TransactionListener].
+http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionListener.html[TransactionListener].
 `TransactionListener(s)` can be implemented to handle transaction related events.
 <5> An example of a `TransactionWriter` callback declaration using an inner bean declaration this time. The bean must implement
-http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionWriter.html[TransactionWriter].
+http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionWriter.html[TransactionWriter].
 `TransactionWriter` is a callback that is allowed to veto a transaction.
 <6> An example of a `GatewayConflictResolver` declaration using a bean reference. The referenced bean must implement
-http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/util/GatewayConflictResolver.html[GatewayConflictResolver].
+http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/util/GatewayConflictResolver.html[GatewayConflictResolver].
 GatewayConflictResolver is a Cache-level plugin that is called upon to decide what to do with events that originate in other systems and arrive through the WAN Gateway.
-<7> Enable GemFire's http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/DynamicRegionFactory.html[DynamicRegionFactory],
+<7> Enable GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/DynamicRegionFactory.html[DynamicRegionFactory],
 which provides a distributed region creation service.
 <8> Declares a JNDI binding to enlist an external DataSource in a GemFire transaction.
 
@@ -227,7 +227,7 @@ http://gemfire.docs.pivotal.io/docs-gemfire/configuring/cluster_config/gfsh_pers
 [[bootstrap:cache:server]]
 == Configuring a GemFire Cache Server
 
-In Spring Data GemFire 1.1 dedicated support for configuring a http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/server/CacheServer.html[CacheServer] was added, allowing complete configuration through the Spring container:
+In Spring Data GemFire 1.1 dedicated support for configuring a http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/server/CacheServer.html[CacheServer] was added, allowing complete configuration through the Spring container:
 
 [source,xml]
 ----
@@ -266,7 +266,7 @@ NOTE: To avoid initialization problems, the `CacheServer`s started by Spring Dat
 [[bootstrap:cache:client]]
 == Configuring a GemFire Client Cache
 
-Another configuration addition in Spring Data GemFire 1.1 is the dedicated support for configuring http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html[ClientCache]. This is similar to a <<bootstrap:cache,cache>> in both usage and definition and supported by `org.springframework.data.gemfire.clientClientCacheFactoryBean`.
+Another configuration addition in Spring Data GemFire 1.1 is the dedicated support for configuring http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html[ClientCache]. This is similar to a <<bootstrap:cache,cache>> in both usage and definition and supported by `org.springframework.data.gemfire.clientClientCacheFactoryBean`.
 
 [source,xml]
 ----
@@ -290,7 +290,7 @@ Pools can be defined through the `pool` element; The client side `pool` can be u
 </beans>
 ----
 
-The <client-cache> tag also includes a `ready-for-events` attribute. If set to `true`, the client cache initialization will include http://gemfire.docs.pivotal.io/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html#readyForEvents()[ClientCache.readyForEvents()].
+The <client-cache> tag also includes a `ready-for-events` attribute. If set to `true`, the client cache initialization will include http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html#readyForEvents()[ClientCache.readyForEvents()].
 
 Client side configuration is covered in more detail in <<bootstrap:region:client>>.
 
