@@ -28,11 +28,14 @@ import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.Authenticator;
 
+import org.springframework.context.annotation.Import;
+
 /**
  * The EnableAuth annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
  * annotated class to configure and enable GemFire/Geode's Authentication and Authorization framework services.
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.config.annotation.AuthConfiguration
  * @see com.gemstone.gemfire.security.AccessControl
  * @see com.gemstone.gemfire.security.AuthInitialize
  * @see com.gemstone.gemfire.security.Authenticator
@@ -44,6 +47,7 @@ import com.gemstone.gemfire.security.Authenticator;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Import(AuthConfiguration.class)
 @SuppressWarnings({ "deprecation", "unused" })
 public @interface EnableAuth {
 
