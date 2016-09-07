@@ -24,18 +24,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Import;
+
 /**
  * The EnableLogging annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
  * annotated class to configure and enable GemFire/Geode system logging.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation
+ * @see org.springframework.data.gemfire.config.annotation.LoggingConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Import(LoggingConfiguration.class)
 @SuppressWarnings("unused")
 public @interface EnableLogging {
 

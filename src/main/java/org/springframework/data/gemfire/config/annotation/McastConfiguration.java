@@ -24,26 +24,28 @@ import org.springframework.data.gemfire.config.annotation.support.EmbeddedServic
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The LoggingConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
+ * The McastConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
  * that applies additional GemFire/Geode configuration by way of GemFire/Geode System properties to configure
- * GemFire/Geode logging.
+ * GemFire/Geode multi-cast networking rather than the (preferred) Locator-based location services.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.EnableLogging
+ * @see org.springframework.data.gemfire.config.annotation.EnableMcast
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
-public class LoggingConfiguration extends EmbeddedServiceConfigurationSupport {
+public class McastConfiguration extends EmbeddedServiceConfigurationSupport {
 
-	public static final int DEFAULT_LOG_DISK_SPACE_LIMIT = 0;
-	public static final int DEFAULT_LOG_FILE_SIZE_LIMIT = 0;
+	public static final int DEFAULT_MCAST_PORT = 10334;
+	public static final int DEFAULT_MCAST_RECEIVE_BUFFER_SIZE = 1048576;
+	public static final int DEFAULT_MCAST_SEND_BUFFER_SIZE = 65535;
 
-	public static final String DEFAULT_LOG_LEVEL = "config";
+	public static final String DEFAULT_MCAST_ADDRESS = "239.192.81.1";
+	public static final String DEFAULT_MCAST_FLOW_CONTROL = "1048576,0.25,5000";
 
 	/* (non-Javadoc) */
 	@Override
 	protected Class getAnnotationType() {
-		return EnableLogging.class;
+		return EnableMcast.class;
 	}
 
 	/* (non-Javadoc) */
@@ -51,16 +53,19 @@ public class LoggingConfiguration extends EmbeddedServiceConfigurationSupport {
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
-		gemfireProperties.setPropertyIfNotDefault("log-disk-space-limit",
-			annotationAttributes.get("logDiskSpaceLimit"), DEFAULT_LOG_DISK_SPACE_LIMIT);
+		gemfireProperties.setPropertyIfNotDefault("mcast-address",
+			annotationAttributes.get("address"), DEFAULT_MCAST_ADDRESS);
 
-		gemfireProperties.setProperty("log-file", annotationAttributes.get("logFile"));
+		gemfireProperties.setPropertyIfNotDefault("mcast-flow-control",
+			annotationAttributes.get("flowControl"), DEFAULT_MCAST_FLOW_CONTROL);
 
-		gemfireProperties.setPropertyIfNotDefault("log-file-size-limit",
-			annotationAttributes.get("logFileSizeLimit"), DEFAULT_LOG_FILE_SIZE_LIMIT);
+		gemfireProperties.setPropertyIfNotDefault("mcast-port", annotationAttributes.get("port"), DEFAULT_MCAST_PORT);
 
-		gemfireProperties.setPropertyIfNotDefault("log-level",
-			annotationAttributes.get("logLevel"), DEFAULT_LOG_LEVEL);
+		gemfireProperties.setPropertyIfNotDefault("mcast-recv-buffer-size",
+			annotationAttributes.get("receiveBufferSize"), DEFAULT_MCAST_RECEIVE_BUFFER_SIZE);
+
+		gemfireProperties.setPropertyIfNotDefault("mcast-send-buffer-size",
+			annotationAttributes.get("sendBufferSize"), DEFAULT_MCAST_SEND_BUFFER_SIZE);
 
 		return gemfireProperties.build();
 	}
