@@ -72,19 +72,30 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 
 	/* (non-Javadoc) */
 	@Override
-	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+	public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		if (isAnnotationPresent(importingClassMetadata)) {
 			Map<String, Object> annotationAttributes = getAnnotationAttributes(importingClassMetadata);
+			registerBeanDefinitions(importingClassMetadata, annotationAttributes, registry);
+			setGemFireProperties(registry, annotationAttributes);
+		}
+	}
 
-			Properties customGemFireProperties = toGemFireProperties(annotationAttributes);
+	/* (non-Javadoc) */
+	@SuppressWarnings("unused")
+	protected void registerBeanDefinitions(AnnotationMetadata importingClassMetaData,
+			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+	}
 
-			if (hasProperties(customGemFireProperties)) {
-				try {
-					cacheConfiguration().add(customGemFireProperties);
-				}
-				catch (Exception ignore) {
-					registerGemFirePropertiesBeanPostProcessor(registry, customGemFireProperties);
-				}
+	/* (non-Javadoc) */
+	protected void setGemFireProperties(BeanDefinitionRegistry registry, Map<String, Object> annotationAttributes) {
+		Properties gemfireProperties = toGemFireProperties(annotationAttributes);
+
+		if (hasProperties(gemfireProperties)) {
+			try {
+				cacheConfiguration().add(gemfireProperties);
+			}
+			catch (Exception ignore) {
+				registerGemFirePropertiesBeanPostProcessor(registry, gemfireProperties);
 			}
 		}
 	}
@@ -126,7 +137,17 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 
 	/* (non-Javadoc) */
 	protected String generateBeanName() {
-		return String.format("%1$s.%2$s", getClass().getName(), getAnnotationTypeSimpleName());
+		return generateBeanName(getAnnotationTypeSimpleName());
+	}
+
+	/* (non-Javadoc) */
+	protected String generateBeanName(Class<?> typeQualifier) {
+		return generateBeanName(typeQualifier.getSimpleName());
+	}
+
+	/* (non-Javadoc) */
+	protected String generateBeanName(String nameQualifier) {
+		return String.format("%1$s.%2$s", getClass().getName(), nameQualifier);
 	}
 
 	/* (non-Javadoc) */
