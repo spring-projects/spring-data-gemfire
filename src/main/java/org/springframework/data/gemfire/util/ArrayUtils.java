@@ -79,16 +79,18 @@ public abstract class ArrayUtils {
 	}
 
 	/**
-	 * Null-safe, empty array operation returning the given Object array if not null or an empty Object array
+	 * Null-safe, empty array operation returning the given object array if not null or an empty object array
 	 * if the array argument is null.
 	 *
-	 * @param <T> the element Class type of the array.
-	 * @param array the Object array on which a null check is performed.
-	 * @return the given Object array if not null, otherwise return an empty Object array.
+	 * @param <T> Class type of the array elements.
+	 * @param array array of objects on which a null check is performed.
+	 * @param componentType Class type of the array elements.
+	 * @return the given object array if not null, otherwise return an empty object array.
+	 * @see java.lang.reflect.Array#newInstance(Class, int)
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T[] nullSafeArray(T[] array) {
-		return (array != null ? array : (T[]) new Object[0]);
+	public static <T> T[] nullSafeArray(T[] array, Class<T> componentType) {
+		return (array != null ? array : (T[]) Array.newInstance(componentType, 0));
 	}
 
 	/**

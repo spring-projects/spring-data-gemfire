@@ -102,27 +102,27 @@ public class ArrayUtilsTest {
 	public void nullSafeArrayWithNonNullArray() {
 		String[] stringArray = { "test", "testing", "tested" };
 
-		assertThat(ArrayUtils.nullSafeArray(stringArray), is(sameInstance(stringArray)));
-
-		Double[] emptyDoubleArray = {};
-
-		assertThat(ArrayUtils.nullSafeArray(emptyDoubleArray), is(sameInstance(emptyDoubleArray)));
+		assertThat(ArrayUtils.nullSafeArray(stringArray, String.class), is(sameInstance(stringArray)));
 
 		Integer[] numberArray = { 1, 2, 3 };
 
-		assertThat(ArrayUtils.nullSafeArray(numberArray), is(sameInstance(numberArray)));
+		assertThat(ArrayUtils.nullSafeArray(numberArray, Integer.class), is(sameInstance(numberArray)));
+
+		Double[] emptyDoubleArray = {};
+
+		assertThat(ArrayUtils.nullSafeArray(emptyDoubleArray, Double.class), is(sameInstance(emptyDoubleArray)));
 
 		Character[] characterArray = { 'A', 'B', 'C' };
 
-		assertThat(ArrayUtils.nullSafeArray(characterArray), is(sameInstance(characterArray)));
+		assertThat(ArrayUtils.nullSafeArray(characterArray, Character.class), is(sameInstance(characterArray)));
 	}
 
 	@Test
 	public void nullSafeArrayWithNullArray() {
-		Object array = ArrayUtils.nullSafeArray(null);
+		Object array = ArrayUtils.nullSafeArray(null, String.class);
 
-		assertThat(array, is(instanceOf(Object[].class)));
-		assertThat(((Object[]) array).length, is(equalTo(0)));
+		assertThat(array, is(instanceOf(String[].class)));
+		assertThat(((String[]) array).length, is(equalTo(0)));
 	}
 
 	@Test

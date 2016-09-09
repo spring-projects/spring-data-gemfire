@@ -99,7 +99,7 @@ public class ConnectionEndpointList extends AbstractList<ConnectionEndpoint> {
 	public static ConnectionEndpointList parse(int defaultPort, String... hostsPorts) {
 		List<ConnectionEndpoint> connectionEndpoints = new ArrayList<ConnectionEndpoint>(hostsPorts.length);
 
-		for (String hostPort : ArrayUtils.nullSafeArray(hostsPorts)) {
+		for (String hostPort : ArrayUtils.nullSafeArray(hostsPorts, String.class)) {
 			connectionEndpoints.add(ConnectionEndpoint.parse(hostPort, defaultPort));
 		}
 
