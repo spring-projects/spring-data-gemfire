@@ -16,16 +16,14 @@
 
 package org.springframework.data.gemfire.util;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,24 +35,69 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.junit.Test;
 
 /**
- * The CollectionUtilsTest class is a test suite of test cases testing the contract and functionality
- * of the CollectionUtils class.
+ * Test suite of test cases testing the contract and functionality of the {@link CollectionUtils} class.
  *
  * @author John Blum
  * @see java.util.Collection
+ * @see java.util.Collections
+ * @see java.util.List
  * @see java.util.Enumeration
  * @see java.util.Iterator
+ * @see java.util.Map
+ * @see java.util.Set
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.util.CollectionUtils
  * @since 1.7.0
  */
 public class CollectionUtilsTest {
+
+	@Test
+	public void asSetContainsAllArrayElements() {
+		Object[] elements = { "a", "b", "c" };
+
+		Set<?> set = CollectionUtils.asSet(elements);
+
+		assertThat(set, is(notNullValue(Set.class)));
+		assertThat(set.size(), is(equalTo(elements.length)));
+		assertThat(set.containsAll(Arrays.asList(elements)), is(true));
+	}
+
+	@Test
+	public void asSetContainsUniqueArrayElements() {
+		Object[] elements = { 1, 2, 1 };
+
+		Set<?> set = CollectionUtils.asSet(elements);
+
+		assertThat(set, is(notNullValue(Set.class)));
+		assertThat(set.size(), is(equalTo(2)));
+		assertThat(set.containsAll(Arrays.asList(elements)), is(true));
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void asSetReturnsUnmodifiableSet() {
+		Set<Integer> set = CollectionUtils.asSet(1, 2, 3);
+
+		assertThat(set, is(notNullValue(Set.class)));
+		assertThat(set.size(), is(equalTo(3)));
+
+		try {
+			set.add(4);
+			set.remove(1);
+			set.remove(2);
+		}
+		catch (UnsupportedOperationException e) {
+			assertThat(set.size(), is(equalTo(3)));
+			throw e;
+		}
+	}
 
 	@Test
 	@SuppressWarnings("unchecked")
@@ -108,17 +151,17 @@ public class CollectionUtilsTest {
 
 	@Test
 	public void nullSafeCollectionWithNonNullCollection() {
-		List<?> mockList = mock(List.class);
+		Collection<?> mockCollection = mock(Collection.class);
 
-		assertSame(mockList, CollectionUtils.nullSafeCollection(mockList));
+		assertSame(mockCollection, CollectionUtils.nullSafeCollection(mockCollection));
 	}
 
 	@Test
 	public void nullSafeCollectionWithNullCollection() {
 		Collection collection = CollectionUtils.nullSafeCollection(null);
 
-		assertNotNull(collection);
-		assertTrue(collection.isEmpty());
+		assertThat(collection, is(notNullValue(Collection.class)));
+		assertThat(collection.isEmpty(), is(true));
 	}
 
 	@Test
@@ -133,8 +176,8 @@ public class CollectionUtilsTest {
 	public void nullSafeIterableWithNullIterable() {
 		Iterable<Object> iterable = CollectionUtils.nullSafeIterable(null);
 
-		assertThat(iterable, is(not(nullValue())));
-		assertThat(iterable.iterator(), is(not(nullValue())));
+		assertThat(iterable, is(not(nullValue(Iterable.class))));
+		assertThat(iterable.iterator(), is(not(nullValue(Iterator.class))));
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -160,5 +203,50 @@ public class CollectionUtilsTest {
 				throw expected;
 			}
 		}
+	}
+
+	@Test
+	public void nullSafeListWithNonNullList() {
+		List<?> mockList = mock(List.class);
+
+		assertSame(mockList, CollectionUtils.nullSafeList(mockList));
+	}
+
+	@Test
+	public void nullSafeListWithNullList() {
+		List<?> list = CollectionUtils.nullSafeList(null);
+
+		assertThat(list, is(notNullValue(List.class)));
+		assertThat(list.isEmpty(), is(true));
+	}
+
+	@Test
+	public void nullSafeMapWithNonNullMap() {
+		Map<?, ?> mockMap = mock(Map.class);
+
+		assertSame(mockMap, CollectionUtils.nullSafeMap(mockMap));
+	}
+
+	@Test
+	public void nullSafeMapWithNullMap() {
+		Map<?, ?> map = CollectionUtils.nullSafeMap(null);
+
+		assertThat(map, is(notNullValue(Map.class)));
+		assertThat(map.isEmpty(), is(true));
+	}
+
+	@Test
+	public void nullSafeSetWithNonNullSet() {
+		Set<?> mockSet = mock(Set.class);
+
+		assertSame(mockSet, CollectionUtils.nullSafeSet(mockSet));
+	}
+
+	@Test
+	public void nullSafeSetWithNullSet() {
+		Set<?> set = CollectionUtils.nullSafeSet(null);
+
+		assertThat(set, is(notNullValue(Set.class)));
+		assertThat(set.isEmpty(), is(true));
 	}
 }
