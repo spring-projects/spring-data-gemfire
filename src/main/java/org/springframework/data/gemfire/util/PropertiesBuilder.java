@@ -212,6 +212,16 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 		return (value != null ? setProperty(name, value.toString()) : this);
 	}
 
+	/**
+	 * Sets the named property to the given array of object values.  The property is only set
+	 * if the array of object value is not null or empty.
+	 *
+	 * @param name name of the property to set.
+	 * @param values array of object values used as the property's value.
+	 * @return a reference to this {@link PropertiesBuilder}
+	 * @see org.springframework.util.StringUtils#arrayToCommaDelimitedString(Object[])
+	 * @see #setProperty(String, String)
+	 */
 	public PropertiesBuilder setProperty(String name, Object[] values) {
 		return (!ObjectUtils.isEmpty(values) ? setProperty(name, StringUtils.arrayToCommaDelimitedString(values))
 			: this);
@@ -238,8 +248,33 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 		return this;
 	}
 
+	/**
+	 * Sets the named property to the given {@literal value} if the {@literal defaultValue} is not null
+	 * and {@literal value} is not equal to {@literal defaultValue}.
+	 *
+	 * @param <T> Class type of the property value.
+	 * @param name name of the property to set.
+	 * @param value value to set for the property.
+	 * @param defaultValue default value of the property to compare with the given value
+	 * when determining whether to set the property.
+	 * @return a reference to this {@link PropertiesBuilder}.
+	 * @see #setProperty(String, Object)
+	 */
 	public <T> PropertiesBuilder setPropertyIfNotDefault(String name, Object value, T defaultValue) {
 		return (defaultValue == null || !defaultValue.equals(value) ? setProperty(name, value) : this);
+	}
+
+	/**
+	 * Un-sets the named property.  This method sets the given named property to an empty {@link String}.
+	 *
+	 * @param name name of the property to unset.
+	 * @return a reference to this {@link PropertiesBuilder}.
+	 * @throws IllegalArgumentException if the property name is not specified.
+	 */
+	public PropertiesBuilder unsetProperty(String name) {
+		Assert.hasText(name, String.format("Name [%s] mut be specified", name));
+		this.properties.setProperty(name, "");
+		return this;
 	}
 
 	/**

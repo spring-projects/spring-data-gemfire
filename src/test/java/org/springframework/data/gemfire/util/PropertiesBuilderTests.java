@@ -280,6 +280,16 @@ public class PropertiesBuilderTests {
 	}
 
 	@Test
+	public void unsetPropertyIsSuccessful() {
+		Properties properties = PropertiesBuilder.create().unsetProperty("example").build();
+
+		assertThat(properties, is(notNullValue(Properties.class)));
+		assertThat(properties.size(), is(equalTo(1)));
+		assertThat(properties.containsKey("example"), is(true));
+		assertThat(properties.getProperty("example"), is(equalTo("")));
+	}
+
+	@Test
 	public void stringLiteralIsValuable() {
 		assertThat(PropertiesBuilder.create().isValuable("test"), is(true));
 	}
