@@ -18,17 +18,6 @@ package org.springframework.data.gemfire;
 
 import java.lang.reflect.Field;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.context.SmartLifecycle;
-import org.springframework.core.io.Resource;
-import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.support.RegionShortcutWrapper;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.ReflectionUtils;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
@@ -47,6 +36,17 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.support.RegionShortcutWrapper;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Base class for FactoryBeans used to create GemFire {@link Region}s. Will try
@@ -71,6 +71,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	private boolean destroy = false;
 	private boolean running;
 
+	private Boolean offHeap;
 	private Boolean persistent;
 
 	private CacheListener<K, V>[] cacheListeners;
@@ -110,15 +111,15 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		RegionFactory<K, V> regionFactory = createRegionFactory(cache);
 
-		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			for (Object gatewaySender : gatewaySenders) {
-				regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId());
-			}
-		}
-
 		if (!ObjectUtils.isEmpty(asyncEventQueues)) {
 			for (Object asyncEventQueue : asyncEventQueues) {
 				regionFactory.addAsyncEventQueueId(((AsyncEventQueue) asyncEventQueue).getId());
+			}
+		}
+
+		if (!ObjectUtils.isEmpty(gatewaySenders)) {
+			for (Object gatewaySender : gatewaySenders) {
+				regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId());
 			}
 		}
 
@@ -431,6 +432,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see com.gemstone.gemfire.cache.RegionFactory
 	 */
 	protected void postProcess(RegionFactory<K, V> regionFactory) {
+		regionFactory.setOffHeap(Boolean.TRUE.equals(offHeap));
 	}
 
 	/**
@@ -662,6 +664,37 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.gatewaySenders = gatewaySenders;
 	}
 
+	/**
+	 * Sets whether to enable this {@link Region} to store it's data in off-heap memory.
+	 *
+	 * @param offHeap Boolean value indicating whether to enable off-heap memory for this Region.
+	 * @see com.gemstone.gemfire.cache.RegionFactory#setOffHeap(boolean)
+	 */
+	public void setOffHeap(Boolean offHeap) {
+		this.offHeap = offHeap;
+	}
+
+	/**
+	 * Returns a {@link Boolean} value indicating whether off-heap memory was enabled for this {@link Region}.
+	 * Off-heap will be enabled if this method returns a non-{@literal null} {@link Boolean} value that evaluates
+	 * to {@literal true}.
+	 *
+	 * @return a {@link Boolean} value indicating whether off-heap is enabled for this {@link Region}.
+	 */
+	public Boolean getOffHeap() {
+		return offHeap;
+	}
+
+	/**
+	 * Returns a boolean value indicating whether off-heap has been enabled for this {@link Region}.
+	 *
+	 * @return a {@literal boolean} value indicating whether off-heap has been enabled for this {@link Region}.
+	 * @see #getOffHeap()
+	 */
+	public boolean isOffHeap() {
+		return Boolean.TRUE.equals(getOffHeap());
+	}
+
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
 	}
@@ -778,5 +811,4 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		stop();
 		callback.run();
 	}
-
 }
