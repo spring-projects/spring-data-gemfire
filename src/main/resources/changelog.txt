@@ -3,6 +3,18 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.7.5.RELEASE (2016-09-20)
+---------------------------------------------
+* SGF-532 - org.springframework.shell:spring-shell is listed in the pom as a runtime dependency.
+* SGF-530 - Move project build to Maven.
+* SGF-529 - Release 1.7.5 (Gosling SR5).
+* SGF-522 - There are a few broken links in SDG documentation.
+* SGF-507 - Handle case-insensitive OQL queries defined as Repository query methods.
+* SGF-504 - Support Repositories with multiple Spring Data modules on the class path.
+* SGF-475 - Add additional logging to the MappingPdxSerializer.
+* SGF-474 - Fix the NPE in the MappingPdxSerializer.
+
+
 Changes in version 1.8.3.RELEASE (2016-09-20)
 ---------------------------------------------
 * SGF-522 - There are a few broken links in SDG documentation.
