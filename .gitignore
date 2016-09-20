@@ -5,7 +5,6 @@ out/
 target/
 .gradle
 .springBeans
-pom.xml
 *.iml
 *.ipr
 *.iws
