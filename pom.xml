@@ -109,7 +109,7 @@
 			<groupId>org.springframework.shell</groupId>
 			<artifactId>spring-shell</artifactId>
 			<version>${spring-shell.version}</version>
-			<scope>runtime</scope>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
