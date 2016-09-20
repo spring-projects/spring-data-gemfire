@@ -3,6 +3,15 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.8.3.RELEASE (2016-09-20)
+---------------------------------------------
+* SGF-522 - There are a few broken links in SDG documentation.
+* SGF-507 - Handle case-insensitive OQL queries defined as Repository query methods.
+* SGF-506 - ExceptionInInitializerError with  Spring Gemfire 1.8.1.
+* SGF-504 - Support Repositories with multiple Spring Data modules on the class path.
+* SGF-503 - Release 1.8.3 (Hopper SR3).
+
+
 Changes in version 1.9.0.M1 (2016-07-27)
 ----------------------------------------
 * SGF-507 - Handle case-insensitive OQL queries defined as Repository query methods.
