@@ -101,29 +101,16 @@ dependencies {
 
     // Apache Geode (a.k.a. Pivotal GemFire)
     compile("org.apache.geode:geode-core:$gemfireVersion") {
-        exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
-        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
-        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
-        exclude group: "org.apache.hbase", module: "hbase"
+        exclude group: "org.apache.logging.log4j", module: "log4j-jcl"
+        exclude group: "org.apache.logging.log4j", module: "log4j-jul"
         exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
-        exclude group: "org.slf4j", module: "slf4j-api"
-        exclude group: "org.springframework", module: "spring-aop"
-        exclude group: "org.springframework", module: "spring-beans"
-        exclude group: "org.springframework", module: "spring-context"
-        exclude group: "org.springframework", module: "spring-context-support"
-        exclude group: "org.springframework", module: "spring-core"
-        exclude group: "org.springframework", module: "spring-expression"
-        exclude group: "org.springframework", module: "spring-tx"
-        exclude group: "org.springframework", module: "spring-web"
-        exclude group: "org.springframework", module: "spring-webmvc"
-        exclude group: "org.springframework.data", module: "spring-data-commons"
-        exclude group: "org.springframework.shell", module: "spring-shell"
     }
     compile("org.apache.geode:geode-cq:$gemfireVersion")
     compile("org.apache.geode:geode-wan:$gemfireVersion")
-    optional("com.google.code.findbugs:annotations:2.0.2")
+    optional("com.google.code.findbugs:annotations:$googleCodeFindbugsVersion")
     runtime("antlr:antlr:$antlrVersion")
 
+    // Java & 3rd Party Dependencies
     optional "javax.enterprise:cdi-api:$cdiVersion"
     compile "org.aspectj:aspectjweaver:$aspectjVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
@@ -146,7 +133,9 @@ dependencies {
     testRuntime "log4j:log4j:$log4jVersion"
     testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
     testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
-    testRuntime "org.springframework.shell:spring-shell:1.0.0.RELEASE"
+    testRuntime ("org.springframework.shell:spring-shell:$springShellVersion") {
+        exclude group: "com.google.guava", module: "guava"
+    }
 
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
 }
@@ -161,7 +150,7 @@ jar {
     manifest.attributes['Implementation-Title'] = project.name
     manifest.attributes['Implementation-Version'] = project.version
 
-    from("$rootDir/docs/src/info") {
+    from("$rootDir/src/main/resources") {
         include "license.txt"
         include "notice.txt"
         into "META-INF"
@@ -172,7 +161,7 @@ jar {
 javadoc {
     dependsOn = [ 'extractSharedResources' ]
     destinationDir = file("${buildDir}/api")
-    ext.srcDir = file("${projectDir}/docs/src/api")
+    ext.srcDir = file("$buildDir/shared-resources")
     ext.tmpDir = file("${buildDir}/api-work")
 
     configure(options) {
@@ -280,7 +269,7 @@ task docsZip(type: Zip, dependsOn: [javadoc, asciidoctor, referencePdf]) {
     classifier = 'docs'
     group = 'Distribution'
 
-    from('docs/src/info') {
+    from('src/main/resources') {
         include 'changelog.txt'
     }
 
@@ -300,8 +289,7 @@ task docsZip(type: Zip, dependsOn: [javadoc, asciidoctor, referencePdf]) {
 }
 
 task distZip(type: Zip, dependsOn: [jar, sourcesJar, javadocJar, schemaZip, docsZip]) {
-    description = "Builds -${classifier} archive, containing all jars and docs, " +
-        "suitable for community download page."
+    description = "Builds -${classifier} archive, containing all jars and docs, suitable for community download page."
 
     baseName = project.archivesBaseName
     classifier = 'dist'
@@ -310,10 +298,10 @@ task distZip(type: Zip, dependsOn: [jar, sourcesJar, javadocJar, schemaZip, docs
     ext.zipRootDir = "${project.archivesBaseName}-${project.version}"
 
     into (zipRootDir) {
-        from('docs/src/info') {
-            include 'readme.txt'
+        from('src/main/resources') {
             include 'license.txt'
             include 'notice.txt'
+            include 'readme.txt'
             expand(copyright: new Date().format('yyyy'), version: project.version)
         }
 

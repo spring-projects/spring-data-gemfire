@@ -8,22 +8,24 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.8.1.RELEASE</version>
+		<version>1.8.3.RELEASE</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-geode</artifactId>
-	<version>1.0.0.APACHE-GEODE-INCUBATING-SNAPSHOT</version>
+	<version>1.0.0.APACHE-GEODE-INCUBATING-M3-SNAPSHOT</version>
 
 	<name>Spring Data Geode</name>
 
 	<properties>
 		<dist.key>SGF</dist.key>
 		<antlr.version>2.7.7</antlr.version>
-		<gemfire.version>1.0.0-incubating.M3-SNAPSHOT</gemfire.version>
+		<gemfire.version>1.0.0-incubating.M3</gemfire.version>
+		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
-		<springdata.commons>1.12.1.RELEASE</springdata.commons>
+		<springdata.commons>1.12.3.RELEASE</springdata.commons>
+		<spring-shell.version>1.1.0.RELEASE</spring-shell.version>
 	</properties>
 
 	<repositories>
@@ -31,10 +33,12 @@
 			<id>spring-libs-release</id>
 			<url>https://repo.spring.io/libs-release</url>
 		</repository>
+<!--
 		<repository>
 			<id>apache-snapshots</id>
 			<url>https://repository.apache.org/content/repositories/snapshots</url>
 		</repository>
+-->
 	</repositories>
 
 	<pluginRepositories>
@@ -76,92 +80,16 @@
 			<version>${gemfire.version}</version>
 			<exclusions>
 				<exclusion>
-					<groupId>com.fasterxml</groupId>
-					<artifactId>jackson-annotation</artifactId>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-jcl</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.fasterxml</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.hbase</groupId>
-					<artifactId>hbase</artifactId>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-jul</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.apache.logging.log4j</groupId>
 					<artifactId>log4j-slf4j-impl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-core-asl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-jaxrs</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-mapper-asl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-xc</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-aop</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-beans</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-context</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-context-support</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-expression</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-tx</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-web</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-webmvc</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework.data</groupId>
-					<artifactId>spring-data-commons</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework.shell</groupId>
-					<artifactId>spring-shell</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -186,7 +114,7 @@
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>annotations</artifactId>
-			<version>2.0.2</version>
+			<version>${google-code-findbugs.version}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -251,6 +179,19 @@
 			<artifactId>multithreadedtc</artifactId>
 			<version>${multithreadedtc.version}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.shell</groupId>
+			<artifactId>spring-shell</artifactId>
+			<version>${spring-shell.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 	</dependencies>
