@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.7.5.BUILD-SNAPSHOT</version>
+		<version>1.7.5.RELEASE</version>
 	</parent>
 
 	<properties>
@@ -20,7 +20,7 @@
 		<antlr.version>2.7.7</antlr.version>
 		<gemfire.version>8.1.0</gemfire.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
-		<springdata.commons>1.11.5.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.11.5.RELEASE</springdata.commons>
 		<spring-shell.version>1.0.0.RELEASE</spring-shell.version>
 	</properties>
 
@@ -174,8 +174,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-release</id>
+			<url>https://repo.spring.io/libs-release</url>
 		</repository>
 	</repositories>
 
