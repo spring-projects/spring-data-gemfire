@@ -52,10 +52,13 @@ public interface PersonRepository extends GemfireRepository<Person, Long> {
 
 	Collection<Person> findByFirstnameAndLastname(String firstName, String lastName);
 
-	@Trace
 	Collection<Person> findByFirstnameIgnoreCaseAndLastnameIgnoreCase(String firstName, String lastName);
 
+	Collection<Person> findByFirstnameAndLastnameAllIgnoringCase(String firstName, String lastName);
+
 	Collection<Person> findByFirstnameOrLastname(String firstName, String lastName);
+
+	Collection<Person> findDistinctByFirstnameOrLastname(String firstName, String lastName, Sort order);
 
 	Person findByLastname(String lastName);
 
