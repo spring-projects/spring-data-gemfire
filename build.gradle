@@ -111,6 +111,7 @@ dependencies {
     testCompile("org.springframework:spring-test:$springVersion") {
         exclude group: "commons-logging", module: "commons-logging"
     }
+    testCompile "org.assertj:assertj-core:$assertjVersion"
     testCompile "junit:junit:$junitVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"

@@ -39,7 +39,7 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * Basic Repository implementation for GemFire.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
@@ -56,12 +56,12 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/**
 	 * Creates a new {@link SimpleGemfireRepository}.
-	 * 
+	 *
 	 * @param template must not be {@literal null}.
 	 * @param entityInformation must not be {@literal null}.
 	 */
 	public SimpleGemfireRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
-		
+
 		Assert.notNull(template);
 		Assert.notNull(entityInformation);
 
@@ -71,7 +71,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.springframework.data.repository.CrudRepository#save(S)
 	 */
 	@Override
@@ -82,7 +82,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
 	 */
 	@Override
@@ -123,7 +123,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
 	 */
 	@Override
@@ -144,7 +144,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.springframework.data.repository.CrudRepository#findAll()
 	 */
 	@Override
@@ -158,7 +158,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 * @see org.springframework.data.gemfire.repository.GemfireRepository.sort(:org.springframework.data.domain.Sort)
 	 */
 	@Override
-	public Iterable<T> findAll(final Sort sort) {
+	public Iterable<T> findAll(Sort sort) {
 		QueryString query = new QueryString("SELECT * FROM /RegionPlaceholder")
 			.forRegion(entityInformation.getJavaType(), template.getRegion())
 			.orderBy(sort);
@@ -197,7 +197,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
 	 */
@@ -208,7 +208,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
 	 */
@@ -267,7 +267,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
 	 */
 	@Override

@@ -16,14 +16,12 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,7 +46,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * The PersonRepositoryTest class...
+ * The PersonRepositoryIntegrationTests class...
  *
  * @author John Blum
  * @see org.junit.Test
@@ -60,18 +58,20 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @since 1.4.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = PersonRepositoryTest.GemFireConfiguration.class)
+@ContextConfiguration(classes = PersonRepositoryIntegrationTests.GemFireConfiguration.class)
 @SuppressWarnings("unused")
-public class PersonRepositoryTest {
+public class PersonRepositoryIntegrationTests {
 
-	private static final String GEMFIRE_LOG_LEVEL = System.getProperty("gemfire.log-level", "warning");
+	private static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = System.getProperty("gemfire.log-level", DEFAULT_GEMFIRE_LOG_LEVEL);
 
-	protected final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+	protected final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
 
 	private Person cookieDoe = newPerson("Cookie", "Doe");
 	private Person janeDoe = newPerson("Jane", "Doe");
 	private Person jonDoe = newPerson("Jon", "Doe");
 	private Person pieDoe = newPerson("Pie", "Doe");
+	private Person sourDoe = newPerson("Sour", "Doe");
 	private Person jackHandy = newPerson("Jack", "Handy");
 	private Person sandyHandy = newPerson("Sandy", "Handy");
 	private Person imaPigg = newPerson("Ima", "Pigg");
@@ -82,6 +82,7 @@ public class PersonRepositoryTest {
 	@Before
 	public void setup() {
 		if (personRepository.count() == 0) {
+			sourDoe = personRepository.save(sourDoe);
 			sandyHandy = personRepository.save(sandyHandy);
 			jonDoe = personRepository.save(jonDoe);
 			jackHandy = personRepository.save(jackHandy);
@@ -91,18 +92,28 @@ public class PersonRepositoryTest {
 			cookieDoe = personRepository.save(cookieDoe);
 		}
 
-		assertThat(personRepository.count(), is(equalTo(7L)));
+		assertThat(personRepository.count()).isEqualTo(8L);
+	}
+
+	protected <T> List<T> asList(Iterable<T> iterable) {
+		List<T> list = new ArrayList<T>();
+
+		for (T element : iterable) {
+			list.add(element);
+		}
+
+		return list;
 	}
 
 	protected Person newPerson(String firstName, String lastName) {
 		return new Person(ID_SEQUENCE.incrementAndGet(), firstName, lastName);
 	}
 
-	protected Sort.Order newOrder(String property) {
-		return newOrder(property, Sort.Direction.ASC);
+	protected Sort.Order newSortOrder(String property) {
+		return newSortOrder(property, Sort.Direction.ASC);
 	}
 
-	protected Sort.Order newOrder(String property, Sort.Direction direction) {
+	protected Sort.Order newSortOrder(String property, Sort.Direction direction) {
 		return new Sort.Order(direction, property);
 	}
 
@@ -111,33 +122,71 @@ public class PersonRepositoryTest {
 	}
 
 	@Test
-	public void findDistinctPeopleOrderedByFirstnameDescending() {
-		List<Person> actualPeople = personRepository.findDistinctPeopleByOrderByLastnameDesc(
-			newSort(newOrder("firstname")));
+	public void findAllPeopleSorted() {
+		Iterable<Person> people = personRepository.findAll(newSort(newSortOrder("firstname")));
 
-		assertThat(actualPeople, is(notNullValue(List.class)));
-		assertThat(actualPeople.size(), is(equalTo(7)));
-		assertThat(actualPeople, is(equalTo(Arrays.asList(
-			imaPigg, jackHandy, sandyHandy, cookieDoe, janeDoe, jonDoe, pieDoe))));
+		assertThat(people).isNotNull();
+
+		List<Person> peopleList = asList(people);
+
+		assertThat(peopleList.size()).isEqualTo(8);
+		assertThat(peopleList).isEqualTo(
+			Arrays.asList(cookieDoe, imaPigg, jackHandy, janeDoe, jonDoe, pieDoe, sandyHandy, sourDoe));
 	}
 
 	@Test
-	public void findDistinctPersonWithUnordered() {
+	public void findDistinctPeopleOrderedByLastnameDescendingFirstnameAscending() {
+		List<Person> actualPeople = personRepository.findDistinctPeopleByOrderByLastnameDesc(
+			newSort(newSortOrder("firstname")));
+
+		assertThat(actualPeople).isNotNull();
+		assertThat(actualPeople.size()).isEqualTo(8);
+		assertThat(actualPeople).isEqualTo(Arrays.asList(
+			imaPigg, jackHandy, sandyHandy, cookieDoe, janeDoe, jonDoe, pieDoe, sourDoe));
+	}
+
+	@Test
+	public void findDistinctPeopleByLastnameUnordered() {
 		List<Person> actualPeople = personRepository.findDistinctByLastname("Handy", null);
 
-		assertThat(actualPeople, is(notNullValue(List.class)));
-		assertThat(actualPeople.size(), is(equalTo(2)));
-		assertThat(String.format("Expected '%1$s'; but was '%2$s'", Arrays.asList(jackHandy, sandyHandy), actualPeople),
-			actualPeople, contains(jackHandy, sandyHandy));
+		assertThat(actualPeople).isNotNull();
+		assertThat(actualPeople.size()).isEqualTo(2);
+		assertThat(actualPeople).containsAll(Arrays.asList(jackHandy, sandyHandy));
+	}
+
+	@Test
+	public void findDistinctPeopleByFirstOrLastNameWithSort() {
+		Collection<Person> people = personRepository.findDistinctByFirstnameOrLastname("Cookie", "Pigg",
+			newSort(newSortOrder("lastname", Sort.Direction.DESC), newSortOrder("firstname", Sort.Direction.ASC)));
+
+		assertThat(people).isNotNull();
+		assertThat(people.size()).isEqualTo(2);
+
+		Iterator<Person> peopleIterator = people.iterator();
+
+		assertThat(peopleIterator.hasNext()).isTrue();
+		assertThat(peopleIterator.next()).isEqualTo(imaPigg);
+		assertThat(peopleIterator.hasNext()).isTrue();
+		assertThat(peopleIterator.next()).isEqualTo(cookieDoe);
+		assertThat(peopleIterator.hasNext()).isFalse();
 	}
 
 	@Test
 	public void findPersonByFirstAndLastNameIgnoringCase() {
 		Collection<Person> people = personRepository.findByFirstnameIgnoreCaseAndLastnameIgnoreCase("jON", "doE");
 
-		assertThat(people, is(notNullValue(Collection.class)));
-		assertThat(people.size(), is(equalTo(1)));
-		assertThat(people.iterator().next(), is(equalTo(jonDoe)));
+		assertThat(people).isNotNull();
+		assertThat(people.size()).isEqualTo(1);
+		assertThat(people.iterator().next()).isEqualTo(jonDoe);
+	}
+
+	@Test
+	public void findByFirstAndLastNameAllIgnoringCase() {
+		Collection<Person> people = personRepository.findByFirstnameAndLastnameAllIgnoringCase("IMa", "PIGg");
+
+		assertThat(people).isNotNull();
+		assertThat(people.size()).isEqualTo(1);
+		assertThat(people.iterator().next()).isEqualTo(imaPigg);
 	}
 
 	@Configuration
@@ -146,22 +195,23 @@ public class PersonRepositoryTest {
 			value = org.springframework.data.gemfire.repository.sample.PersonRepository.class))
 	public static class GemFireConfiguration {
 
-		String applicationName() {
-			return PersonRepositoryTest.class.getSimpleName();
-		}
-
-		String logLevel() {
-			return GEMFIRE_LOG_LEVEL;
-		}
-
 		Properties gemfireProperties() {
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", applicationName());
 			gemfireProperties.setProperty("mcast-port", "0");
+			gemfireProperties.setProperty("locators", "");
 			gemfireProperties.setProperty("log-level", logLevel());
 
 			return gemfireProperties;
+		}
+
+		String applicationName() {
+			return PersonRepositoryIntegrationTests.class.getSimpleName();
+		}
+
+		String logLevel() {
+			return GEMFIRE_LOG_LEVEL;
 		}
 
 		@Bean
