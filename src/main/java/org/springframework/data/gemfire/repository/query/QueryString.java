@@ -21,15 +21,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.gemstone.gemfire.cache.Region;
+
 import org.springframework.data.domain.Sort;
+import org.springframework.data.gemfire.repository.query.support.OqlKeyword;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Region;
-
 /**
- * Value object to work with OQL query strings.
+ * The QueryString class is a utility class for working with GemFire OQL query statement syntax.
  *
  * @author Oliver Gierke
  * @author David Turanski
@@ -43,52 +44,74 @@ public class QueryString {
 	protected static final Pattern TRACE_PATTERN = Pattern.compile("<TRACE>");
 
 	// OQL Query Templates
-	private static final String HINTS_QUERY_TEMPLATE = "<HINT %1$s> %2$s";
-	private static final String IMPORT_QUERY_TEMPLATE = "IMPORT %1$s; %2$s";
-	private static final String LIMIT_QUERY_TEMPLATE = "%1$s LIMIT %2$d";
-	private static final String SELECT_QUERY_TEMPLATE = "SELECT %1$s FROM /%2$s";
-	private static final String TRACE_QUERY_TEMPLATE = "<TRACE> %1$s";
+	private static final String HINTS_OQL_TEMPLATE = "<HINT %1$s> %2$s";
+	private static final String IMPORT_OQL_TEMPLATE = "IMPORT %1$s; %2$s";
+	private static final String LIMIT_OQL_TEMPLATE = "%1$s LIMIT %2$d";
+	private static final String SELECT_OQL_TEMPLATE = "SELECT %1$s FROM /%2$s";
+	private static final String TRACE_OQL_TEMPLATE = "<TRACE> %1$s";
 
-	// Query Regular Expression Patterns
+	// OQL Query Regular Expression Patterns
 	private static final String IN_PATTERN = "(?<=IN (SET|LIST) )\\$\\d";
 	private static final String IN_PARAMETER_PATTERN = "(?<=IN (SET|LIST) \\$)\\d";
 	private static final String REGION_PATTERN = "\\/(\\/?\\w)+";
 
 	private final String query;
 
-	/**
-	 * Creates a {@link QueryString} from the given {@link String} query.
-	 *
-	 * @param source a String containing the OQL Query.
-	 */
-	public QueryString(String source) {
-		Assert.hasText(source, "The OQL statement (Query) to execute must be specified!");
-		this.query = source;
+	/* (non-Javadoc) */
+	static String asQuery(Class<?> domainType, boolean isCountQuery) {
+		return String.format(SELECT_OQL_TEMPLATE, (isCountQuery ? "count(*)" : "*"),
+			validateDomainType(domainType).getSimpleName());
+	}
+
+	/* (non-Javadoc) */
+	static <T> Class<T> validateDomainType(Class<T> domainType) {
+		Assert.notNull(domainType, "domainType must not be null");
+		return domainType;
+	}
+
+	/* (non-Javadoc) */
+	static String validateQuery(String query) {
+		Assert.hasText(query, "An OQL Query must be specified");
+		return query;
 	}
 
 	/**
-	 * Creates a {@literal SELECT} query for the given domain class.
+	 * Constructs an instance of {@link QueryString} initialized with the given GemFire OQL Query {@link String}.
 	 *
-	 * @param domainClass must not be {@literal null}.
+	 * @param query {@link String} specifying the GemFire OQL Query.
+	 * @throws IllegalArgumentException if the query string is unspecified (null or empty).
+	 */
+	public QueryString(String query) {
+		this.query = validateQuery(query);
+	}
+
+	/**
+	 * Constructs a GemFire OQL {@literal SELECT} Query for the given domain class.
+	 *
+	 * @param domainType application domain object type to query; must not be {@literal null}.
+	 * @see #QueryString(Class, boolean)
 	 */
 	@SuppressWarnings("unused")
-	public QueryString(Class<?> domainClass) {
-		this(domainClass, false);
+	public QueryString(Class<?> domainType) {
+		this(domainType, false);
 	}
 
 	/**
-	 * Creates a {@literal SELECT} query for the given domain class.
+	 * Constructs a GemFire OQL {@literal SELECT} Query for the given domain class.  {@code isCountQuery} indicates
+	 * whether to select a count or select the contents of the objects of the given domain object type.
 	 *
-	 * @param domainClass must not be {@literal null}.
-	 * @param isCountQuery indicates if this is a count query
+	 * @param domainType application domain object type to query; must not be {@literal null}.
+	 * @param isCountQuery boolean value to indicate if this is a count query.
+	 * @throws IllegalArgumentException if {@code domainType} is null.
+	 * @see #QueryString(String)
 	 */
-	public QueryString(Class<?> domainClass, boolean isCountQuery) {
-		this(String.format(SELECT_QUERY_TEMPLATE, (isCountQuery ? "count(*)" : "*"), domainClass.getSimpleName()));
+	public QueryString(Class<?> domainType, boolean isCountQuery) {
+		this(asQuery(domainType, isCountQuery));
 	}
 
 	/**
-	 * Binds the given values to the {@literal IN} parameter keyword by expanding the given values into a comma-separated
-	 * {@link String}.
+	 * Binds the given {@link Collection} of values into the {@literal IN} parameters of the OQL Query by expanding
+	 * the given values into a comma-separated {@link String}.
 	 *
 	 * @param values the values to bind, returns the {@link QueryString} as is if {@literal null} is given.
 	 * @return a Query String having "in" parameters bound with values.
@@ -96,7 +119,7 @@ public class QueryString {
 	public QueryString bindIn(Collection<?> values) {
 		if (values != null) {
 			String valueString = StringUtils.collectionToDelimitedString(values, ", ", "'", "'");
-			return new QueryString(query.replaceFirst(IN_PATTERN, String.format("(%s)", valueString)));
+			return new QueryString(this.query.replaceFirst(IN_PATTERN, String.format("(%s)", valueString)));
 		}
 
 		return this;
@@ -113,7 +136,7 @@ public class QueryString {
 	 */
 	@SuppressWarnings("unused")
 	public QueryString forRegion(Class<?> domainClass, Region<?, ?> region) {
-		return new QueryString(query.replaceAll(REGION_PATTERN, region.getFullPath()));
+		return new QueryString(this.query.replaceAll(REGION_PATTERN, region.getFullPath()));
 	}
 
   /**
@@ -135,11 +158,11 @@ public class QueryString {
 	}
 
 	/**
-	 * Appends the Sort order to this GemFire OQL Query string.
+	 * Appends the {@link Sort} order to this GemFire OQL Query string.
 	 *
-	 * @param sort the Sort object indicating the order by criteria.
-	 * @return this QueryString with an ORDER BY clause if the Sort object is not null, or this QueryString as-is
-	 * if the Sort object is null.
+	 * @param sort {@link Sort} indicating the order of the query results.
+	 * @return a new {@link QueryString} with an ORDER BY clause if {@link Sort} is not {@literal null},
+	 * or this {@link QueryString} as-is if {@link Sort} is {@literal null}.
 	 * @see org.springframework.data.domain.Sort
 	 * @see org.springframework.data.gemfire.repository.query.QueryString
 	 */
@@ -153,12 +176,30 @@ public class QueryString {
 				orderClause.append(String.format("%1$s %2$s", order.getProperty(), order.getDirection()));
 			}
 
-			return new QueryString(String.format("%1$s %2$s", this.query, orderClause.toString()));
+			return new QueryString(String.format("%1$s %2$s", makeDistinct(this.query), orderClause.toString()));
 		}
 
 		return this;
 	}
 
+	/**
+	 * Replaces the SELECT query with a SELECT DISTINCT query if the query does not contain the DISTINCT OQL keyword.
+	 *
+	 * @param query {@link String} containing the query to evaluate.
+	 * @return a SELECT DISTINCT query if {@code query} does not contain the DISTINCT OQL keyword.
+	 */
+	String makeDistinct(String query) {
+		return (query.contains(OqlKeyword.DISTINCT.getKeyword()) ? query
+			: query.replaceFirst(OqlKeyword.SELECT.getKeyword(),
+				String.format("%1$s %2$s", OqlKeyword.SELECT.getKeyword(), OqlKeyword.DISTINCT.getKeyword())));
+	}
+
+	/**
+	 * Applies HINTS to the OQL Query.
+	 *
+	 * @param hints array of {@link String Strings} containing query hints.
+	 * @return a new {@link QueryString} if hints are not null or empty, or return this {@link QueryString}.
+	 */
 	public QueryString withHints(String... hints) {
 		if (!ObjectUtils.isEmpty(hints)) {
 			StringBuilder builder = new StringBuilder();
@@ -168,23 +209,40 @@ public class QueryString {
 				builder.append(String.format("'%1$s'", hint));
 			}
 
-			return new QueryString(String.format(HINTS_QUERY_TEMPLATE, builder.toString(), query));
+			return new QueryString(String.format(HINTS_OQL_TEMPLATE, builder.toString(), query));
 		}
 
 		return this;
 	}
 
+	/**
+	 * Applies an IMPORT to the OQL Query.
+	 *
+	 * @param importExpression {@link String} containing the import clause.
+	 * @return a new {@link QueryString} if an import was declared, or return this {@link QueryString}.
+	 */
 	public QueryString withImport(String importExpression) {
-		return (StringUtils.hasText(importExpression) ? new QueryString(
-			String.format(IMPORT_QUERY_TEMPLATE, importExpression, query)) : this);
+		return (StringUtils.hasText(importExpression) ?
+			new QueryString(String.format(IMPORT_OQL_TEMPLATE, importExpression, query)) : this);
 	}
 
+	/**
+	 * Applies a LIMIT to the OQL Query.
+	 *
+	 * @param limit {@link Integer} indicating the number of results to return from the query.
+	 * @return a new {@link QueryString} if a limit was specified, or return this {@link QueryString}.
+	 */
 	public QueryString withLimit(Integer limit) {
-		return (limit != null ? new QueryString(String.format(LIMIT_QUERY_TEMPLATE, query, limit)) : this);
+		return (limit != null ? new QueryString(String.format(LIMIT_OQL_TEMPLATE, query, limit)) : this);
 	}
 
+	/**
+	 * Applies TRACE logging to the OQL Query.
+	 *
+	 * @return a new {@link QueryString} with tracing enabled.
+	 */
 	public QueryString withTrace() {
-		return new QueryString(String.format(TRACE_QUERY_TEMPLATE, query));
+		return new QueryString(String.format(TRACE_OQL_TEMPLATE, query));
 	}
 
 	/*

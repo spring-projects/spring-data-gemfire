@@ -16,19 +16,26 @@
 
 package org.springframework.data.gemfire.repository.query;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.never;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.repository.query.QueryString.HINT_PATTERN;
+import static org.springframework.data.gemfire.repository.query.QueryString.IMPORT_PATTERN;
+import static org.springframework.data.gemfire.repository.query.QueryString.LIMIT_PATTERN;
+import static org.springframework.data.gemfire.repository.query.QueryString.TRACE_PATTERN;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.regex.Pattern;
 
+import com.gemstone.gemfire.cache.Region;
+
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -36,250 +43,299 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.gemfire.repository.sample.RootUser;
 
-import com.gemstone.gemfire.cache.Region;
-
 /**
- * 
+ * Test suite of test cases testing the contract and functionality of the {@link QueryString} class.
+ *
  * @author Oliver Gierke
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.mockito.Mock
+ * @see org.springframework.data.gemfire.repository.query.QueryString
  */
 @RunWith(MockitoJUnitRunner.class)
 public class QueryStringUnitTests {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
 	@SuppressWarnings("rawtypes")
 	Region region;
 
-	protected Sort.Order createOrder(final String property) {
-		return createOrder(property, Sort.Direction.ASC);
+	protected Sort.Order newSortOrder(String property) {
+		return newSortOrder(property, Sort.Direction.ASC);
 	}
 
-	protected Sort.Order createOrder(final String property, final Sort.Direction direction) {
+	protected Sort.Order newSortOrder(String property, Sort.Direction direction) {
 		return new Sort.Order(direction, property);
 	}
 
-	protected Sort createSort(Sort.Order... orders) {
+	protected Sort newSort(Sort.Order... orders) {
 		return new Sort(orders);
 	}
 
 	@Test
-	public void createQueryStringWithCount() {
-		QueryString queryString = new QueryString(Person.class, true);
-
-		assertThat(queryString, is(notNullValue()));
-		assertThat(queryString.toString(), is(equalTo("SELECT count(*) FROM /Person")));
+	public void createQueryStringWithDomainType() {
+		assertThat(new QueryString(Person.class).toString()).isEqualTo("SELECT * FROM /Person");
 	}
 
 	@Test
-	public void createQueryStringWithoutCount() {
-		QueryString queryString = new QueryString(Person.class);
+	public void createQueryStringWithDomainTypeHavingCount() {
+		assertThat(new QueryString(Person.class, true).toString()).isEqualTo("SELECT count(*) FROM /Person");
+	}
 
-		assertThat(queryString, is(notNullValue()));
-		assertThat(queryString.toString(), is(equalTo("SELECT * FROM /Person")));
+	@Test
+	public void createQueryStringWithNullDomainType() {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage(is(equalTo("domainType must not be null")));
+
+		new QueryString((Class<?>) null);
+	}
+
+	@Test
+	public void createQueryStringWithQuery() {
+		String query = "SELECT * FROM /Example";
+
+		assertThat(new QueryString(query).toString()).isEqualTo(query);
+	}
+
+	@Test
+	public void createQueryStringWithUnspecifiedQueryThrowsIllegalArgumentException() {
+		assertUnspecifiedQueryThrowsIllegalArgumentException("");
+		assertUnspecifiedQueryThrowsIllegalArgumentException("  ");
+		assertUnspecifiedQueryThrowsIllegalArgumentException(null);
+	}
+
+	protected void assertUnspecifiedQueryThrowsIllegalArgumentException(String query) {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage(is(equalTo("An OQL Query must be specified")));
+
+		new QueryString(query);
 	}
 
 	@Test
 	public void hintPatternMatches() {
-		assertThat(QueryString.HINT_PATTERN.matcher("<HINT 'ExampleIdx'>").find(), is(true));
-		assertThat(QueryString.HINT_PATTERN.matcher("<HINT 'IdIdx'> SELECT * FROM /Example WHERE id = $1").find(), is(true));
-		assertThat(QueryString.HINT_PATTERN.matcher("<HINT 'LastNameIdx', 'BirthDateIdx'> SELECT * FROM /Person WHERE lastName = $1 AND birthDate = $2").find(), is(true));
+		assertThat(matches(HINT_PATTERN, "<HINT 'ExampleIndex'>")).isTrue();
+		assertThat(matches(HINT_PATTERN, "<HINT 'IdIdx'> SELECT * FROM /Example WHERE id = $1")).isTrue();
+		assertThat(matches(HINT_PATTERN, "<HINT 'LastNameIdx', 'BirthDateIdx'> SELECT * FROM /Person WHERE lastName = $1 AND birthDate = $2")).isTrue();
 	}
 
 	@Test
 	public void hintPatternNoMatches() {
-		assertThat(QueryString.HINT_PATTERN.matcher("HINT").find(), is(false));
-		assertThat(QueryString.HINT_PATTERN.matcher("<HINT>").find(), is(false));
-		assertThat(QueryString.HINT_PATTERN.matcher("<HINT ''>").find(), is(false));
-		assertThat(QueryString.HINT_PATTERN.matcher("<HINT IdIdx>").find(), is(false));
-		assertThat(QueryString.HINT_PATTERN.matcher("<HINT IdIdx, LastNameIdx>").find(), is(false));
-		assertThat(QueryString.HINT_PATTERN.matcher("SELECT * FROM /Example").find(), is(false));
-		assertThat(QueryString.HINT_PATTERN.matcher("SELECT * FROM /Hint").find(), is(false));
-		assertThat(QueryString.HINT_PATTERN.matcher("SELECT x.hint FROM /Clues x WHERE x.hint > $1").find(), is(false));
+		assertThat(matches(HINT_PATTERN, "HINT")).isFalse();
+		assertThat(matches(HINT_PATTERN, "<HINT>")).isFalse();
+		assertThat(matches(HINT_PATTERN, "<HINT ''>")).isFalse();
+		assertThat(matches(HINT_PATTERN, "<HINT '  '>")).isFalse();
+		assertThat(matches(HINT_PATTERN, "<HINT IdIdx>")).isFalse();
+		assertThat(matches(HINT_PATTERN, "<HINT LastNameIdx, FirstNameIdx>")).isFalse();
+		assertThat(matches(HINT_PATTERN, "SELECT * FROM /Example")).isFalse();
+		assertThat(matches(HINT_PATTERN, "SELECT * FROM /Hint")).isFalse();
+		assertThat(matches(HINT_PATTERN, "SELECT x.hint FROM /Clues x WHERE x.hint > $1")).isFalse();
 	}
 
 	@Test
 	public void importPatternMatches() {
-		assertThat(QueryString.IMPORT_PATTERN.matcher("IMPORT *;").find(), is(true));
-		assertThat(QueryString.IMPORT_PATTERN.matcher("IMPORT org.example.*;").find(), is(true));
-		assertThat(QueryString.IMPORT_PATTERN.matcher("IMPORT org.example.Type;").find(), is(true));
-		assertThat(QueryString.IMPORT_PATTERN.matcher("IMPORT org.example.app.DomainType; SELECT * FROM /Domain").find(), is(true));
+		assertThat(matches(IMPORT_PATTERN, "IMPORT *;")).isTrue();
+		assertThat(matches(IMPORT_PATTERN, "IMPORT org.example.*;")).isTrue();
+		assertThat(matches(IMPORT_PATTERN, "IMPORT org.example.Type;")).isTrue();
+		assertThat(matches(IMPORT_PATTERN, "IMPORT org.example.app.domain.DomainType; SELECT * FROM /DomainType")).isTrue();
 	}
 
 	@Test
 	public void importPatternNoMatches() {
-		assertThat(QueryString.IMPORT_PATTERN.matcher("IMPORT").find(), is(false));
-		assertThat(QueryString.IMPORT_PATTERN.matcher("IMPORT ;").find(), is(false));
-		assertThat(QueryString.IMPORT_PATTERN.matcher("IMPORT *").find(), is(false));
-		assertThat(QueryString.IMPORT_PATTERN.matcher("SELECT * FROM /Example").find(), is(false));
+		assertThat(matches(IMPORT_PATTERN, "IMPORT")).isFalse();
+		assertThat(matches(IMPORT_PATTERN, "IMPORT ;")).isFalse();
+		assertThat(matches(IMPORT_PATTERN, "IMPORT *")).isFalse();
+		assertThat(matches(IMPORT_PATTERN, "IMPORT *:")).isFalse();
+		assertThat(matches(IMPORT_PATTERN, "SELECT * FROM /Example")).isFalse();
 	}
 
 	@Test
 	public void limitPatternMatches() {
-		assertThat(QueryString.LIMIT_PATTERN.matcher("LIMIT 10").find(), is(true));
-		assertThat(QueryString.LIMIT_PATTERN.matcher("SELECT * FROM /Example LIMIT 10").find(), is(true));
-		assertThat(QueryString.LIMIT_PATTERN.matcher("SELECT * FROM /Example WHERE id = $1 LIMIT 10").find(), is(true));
+		assertThat(matches(LIMIT_PATTERN, "LIMIT 0")).isTrue();
+		assertThat(matches(LIMIT_PATTERN, "LIMIT 1")).isTrue();
+		assertThat(matches(LIMIT_PATTERN, "LIMIT 10")).isTrue();
+		assertThat(matches(LIMIT_PATTERN, "SELECT * FROM /Example LIMIT 10")).isTrue();
+		assertThat(matches(LIMIT_PATTERN, "SELECT * FROM /Example WHERE id = $1 LIMIT 10")).isTrue();
 	}
 
 	@Test
 	public void limitPatternNoMatches() {
-		assertThat(QueryString.LIMIT_PATTERN.matcher("LIMIT").find(), is(false));
-		assertThat(QueryString.LIMIT_PATTERN.matcher("LIMIT lO").find(), is(false));
-		assertThat(QueryString.LIMIT_PATTERN.matcher("LIMIT FF").find(), is(false));
-		assertThat(QueryString.LIMIT_PATTERN.matcher("LIMIT ten").find(), is(false));
-		assertThat(QueryString.LIMIT_PATTERN.matcher("SELECT * FROM /Example LIMIT").find(), is(false));
-		assertThat(QueryString.LIMIT_PATTERN.matcher("SELECT * FROM /Example WHERE id = $1 LIM 10").find(), is(false));
+		assertThat(matches(LIMIT_PATTERN, "LIMIT")).isFalse();
+		assertThat(matches(LIMIT_PATTERN, "LIMIT lO")).isFalse();
+		assertThat(matches(LIMIT_PATTERN, "LIMIT AF")).isFalse();
+		assertThat(matches(LIMIT_PATTERN, "LIMIT ten")).isFalse();
+		assertThat(matches(LIMIT_PATTERN, "SELECT * FROM /Example LIMIT")).isFalse();
+		assertThat(matches(LIMIT_PATTERN, "SELECT * FROM /Example WHERE id = $1 LIM 10")).isFalse();
 	}
 
 	@Test
 	public void tracePatternMatches() {
-		assertThat(QueryString.TRACE_PATTERN.matcher("<TRACE>").find(), is(true));
-		assertThat(QueryString.TRACE_PATTERN.matcher("<TRACE> SELECT * FROM /Example").find(), is(true));
-		assertThat(QueryString.TRACE_PATTERN.matcher("<TRACE>SELECT * FROM /Example").find(), is(true));
-		assertThat(QueryString.TRACE_PATTERN.matcher("SELECT * FROM /Example<TRACE>").find(), is(true));
+		assertThat(matches(TRACE_PATTERN, "<TRACE>")).isTrue();
+		assertThat(matches(TRACE_PATTERN, "<TRACE> SELECT * FROM /Example")).isTrue();
+		assertThat(matches(TRACE_PATTERN, "<TRACE>SELECT * FROM /Example")).isTrue();
+		assertThat(matches(TRACE_PATTERN, "SELECT * FROM /Example<TRACE>")).isTrue();
+	}
+
+	@Test
+	public void tracePatternNoMatches() {
+		assertThat(matches(TRACE_PATTERN, "TRACE")).isFalse();
+		assertThat(matches(TRACE_PATTERN, "TRACE SELECT * FROM /Example")).isFalse();
+		assertThat(matches(TRACE_PATTERN, "<TRACE SELECT * FROM /Example>")).isFalse();
+	}
+
+	protected boolean matches(Pattern pattern, String value) {
+		return pattern.matcher(value).find();
 	}
 
 	// SGF-251
 	@Test
-	public void replacesDomainObjectWithRegionPathCorrectly() {
-		QueryString query = new QueryString("SELECT * FROM /Person p WHERE p.firstname = $1");
+	public void replacesDomainTypeSimpleNameWithRegionPathCorrectly() {
+		QueryString query = new QueryString(Person.class);
 
 		when(region.getFullPath()).thenReturn("/foo/bar");
 
-		assertThat(query.forRegion(Person.class, region).toString(), is("SELECT * FROM /foo/bar p WHERE p.firstname = $1"));
+		assertThat(query.forRegion(Person.class, region).toString()).isEqualTo("SELECT * FROM /foo/bar");
 
-		verify(region, never()).getName();
+		verify(region, times(1)).getFullPath();
 	}
-	
-	// SGF-156
-	// SGF-251
+
+	// SGF-156, SGF-251
 	@Test
-	public void replacesDomainObjectWithPluralRegionPathCorrectly() {
-		QueryString query = new QueryString("SELECT * FROM /Persons p WHERE p.firstname = $1");
+	public void replacesFromClauseWithRegionPathCorrectly() {
+		QueryString query = new QueryString("SELECT * FROM /Persons p WHERE p.lastname = $1");
 
 		when(region.getFullPath()).thenReturn("/People");
 
-		assertThat(query.forRegion(Person.class, region).toString(),
-			is("SELECT * FROM /People p WHERE p.firstname = $1"));
+		assertThat(query.forRegion(Person.class, region).toString())
+			.isEqualTo("SELECT * FROM /People p WHERE p.lastname = $1");
 
-		verify(region, never()).getName();
+		verify(region, times(1)).getFullPath();
 	}
 
 	// SGF-252
 	@Test
-	public void replacesFullyQualifiedSubRegionReferenceWithRegionPathCorrectly() {
+	public void replacesFullyQualifiedSubRegionPathWithRegionPathCorrectly() {
 		QueryString query = new QueryString("SELECT * FROM //Local/Root/Users u WHERE u.username = $1");
 
-		when(region.getFullPath()).thenReturn("/Local/Root/Users");
+		when(region.getFullPath()).thenReturn("/Remote/Root/Users");
 
-		assertThat(query.forRegion(RootUser.class, region).toString(), is(equalTo(
-			"SELECT * FROM /Local/Root/Users u WHERE u.username = $1")));
+		assertThat(query.forRegion(RootUser.class, region).toString())
+			.isEqualTo("SELECT * FROM /Remote/Root/Users u WHERE u.username = $1");
 
-		verify(region, never()).getName();
+		verify(region, times(1)).getFullPath();
 	}
 
 	@Test
 	public void bindsInValuesCorrectly() {
-		QueryString query = new QueryString("SELECT * FROM /Person p WHERE p.firstname IN SET $1");
-		List<Integer> values = Arrays.asList(1, 2, 3);
-		assertThat(query.bindIn(values).toString(), is("SELECT * FROM /Person p WHERE p.firstname IN SET ('1', '2', '3')"));
+		QueryString query = new QueryString("SELECT * FROM /Collection WHERE elements IN SET $1");
+
+		assertThat(query.bindIn(Arrays.asList(1, 2, 3)).toString())
+			.isEqualTo("SELECT * FROM /Collection WHERE elements IN SET ('1', '2', '3')");
 	}
 
 	@Test
 	public void detectsInParameterIndexesCorrectly() {
-		QueryString query = new QueryString("IN SET $1 OR IN SET $2");
-		Iterable<Integer> indexes = query.getInParameterIndexes();
-		assertThat(indexes, is((Iterable<Integer>) Arrays.asList(1, 2)));
+		QueryString query = new QueryString("SELECT * FROM /Example WHERE values IN SET $1 OR IN SET $2");
+
+		assertThat(query.getInParameterIndexes()).isEqualTo(Arrays.asList(1, 2));
 	}
 
 	@Test
 	public void addsNoOrderByClauseCorrectly() {
 		QueryString query = new QueryString("SELECT * FROM /People p").orderBy(null);
 
-		assertThat(query.toString(), is(equalTo("SELECT * FROM /People p")));
+		assertThat(query.toString()).isEqualTo("SELECT * FROM /People p");
 	}
 
 	@Test
 	public void addsOrderByClauseCorrectly() {
 		QueryString query = new QueryString("SELECT * FROM /People p WHERE p.lastName = $1")
-			.orderBy(createSort(createOrder("lastName", Sort.Direction.DESC), createOrder("firstName")));
+			.orderBy(newSort(newSortOrder("lastName", Sort.Direction.DESC), newSortOrder("firstName")));
 
-		assertThat(query.toString(), is(equalTo(
-			"SELECT * FROM /People p WHERE p.lastName = $1 ORDER BY lastName DESC, firstName ASC")));
+		assertThat(query.toString())
+			.isEqualTo("SELECT DISTINCT * FROM /People p WHERE p.lastName = $1 ORDER BY lastName DESC, firstName ASC");
 	}
 
 	@Test
 	public void addsSingleOrderByClauseCorrectly() {
 		QueryString query = new QueryString("SELECT DISTINCT p.lastName FROM /People p WHERE p.firstName = $1")
-			.orderBy(createSort(createOrder("lastName")));
+			.orderBy(newSort(newSortOrder("lastName")));
 
-		assertThat(query.toString(), is(equalTo(
-			"SELECT DISTINCT p.lastName FROM /People p WHERE p.firstName = $1 ORDER BY lastName ASC")));
+		assertThat(query.toString())
+			.isEqualTo("SELECT DISTINCT p.lastName FROM /People p WHERE p.firstName = $1 ORDER BY lastName ASC");
 	}
 
 	@Test
 	public void withHints() {
-		assertThat(new QueryString("SELECT * FROM /Example").withHints("IdIdx").toString(),
-			is(equalTo("<HINT 'IdIdx'> SELECT * FROM /Example")));
-		assertThat(new QueryString("SELECT * FROM /Example").withHints("IdIdx", "SpatialIdx", "TxDateIdx").toString(),
-			is(equalTo("<HINT 'IdIdx', 'SpatialIdx', 'TxDateIdx'> SELECT * FROM /Example")));
+		assertThat(new QueryString("SELECT * FROM /Example").withHints("IdIdx").toString())
+			.isEqualTo("<HINT 'IdIdx'> SELECT * FROM /Example");
+
+		assertThat(new QueryString("SELECT * FROM /Example").withHints("IdIdx", "SpatialIdx", "TxDateIdx").toString())
+			.isEqualTo("<HINT 'IdIdx', 'SpatialIdx', 'TxDateIdx'> SELECT * FROM /Example");
 	}
 
 	@Test
 	public void withoutHints() {
 		QueryString expectedQueryString = new QueryString("SELECT * FROM /Example");
 
-		assertThat(expectedQueryString.withHints((String[]) null), is(sameInstance(expectedQueryString)));
-		assertThat(expectedQueryString.withHints(), is(sameInstance(expectedQueryString)));
+		assertThat(expectedQueryString.withHints()).isSameAs(expectedQueryString);
+		assertThat(expectedQueryString.withHints((String[]) null)).isSameAs(expectedQueryString);
 	}
 
 	@Test
 	public void withImport() {
-		assertThat(new QueryString("SELECT * FROM /People").withImport("org.example.app.domain.Person").toString(),
-			is(equalTo("IMPORT org.example.app.domain.Person; SELECT * FROM /People")));
+		assertThat(new QueryString("SELECT * FROM /People").withImport("org.example.app.domain.Person").toString())
+			.isEqualTo("IMPORT org.example.app.domain.Person; SELECT * FROM /People");
 	}
 
 	@Test
 	public void withoutImport() {
 		QueryString expectedQueryString = new QueryString("SELECT * FROM /Example");
 
-		assertThat(expectedQueryString.withImport(null), is(sameInstance(expectedQueryString)));
-		assertThat(expectedQueryString.withImport(""), is(sameInstance(expectedQueryString)));
-		assertThat(expectedQueryString.withImport("  "), is(sameInstance(expectedQueryString)));
+		assertThat(expectedQueryString.withImport(null)).isSameAs(expectedQueryString);
+		assertThat(expectedQueryString.withImport("")).isSameAs(expectedQueryString);
+		assertThat(expectedQueryString.withImport("  ")).isSameAs(expectedQueryString);
 	}
 
 	@Test
 	public void withLimit() {
-		assertThat(new QueryString("SELECT * FROM /Example").withLimit(10).toString(),
-			is(equalTo("SELECT * FROM /Example LIMIT 10")));
-		assertThat(new QueryString("SELECT * FROM /Example").withLimit(-5).toString(),
-			is(equalTo("SELECT * FROM /Example LIMIT -5")));
-		assertThat(new QueryString("SELECT * FROM /Example").withLimit(0).toString(),
-			is(equalTo("SELECT * FROM /Example LIMIT 0")));
+		assertThat(new QueryString("SELECT * FROM /Example").withLimit(10).toString())
+			.isEqualTo("SELECT * FROM /Example LIMIT 10");
+
+		assertThat(new QueryString("SELECT * FROM /Example").withLimit(0).toString())
+			.isEqualTo("SELECT * FROM /Example LIMIT 0");
+
+		assertThat(new QueryString("SELECT * FROM /Example").withLimit(-5).toString())
+			.isEqualTo("SELECT * FROM /Example LIMIT -5");
 	}
 
 	@Test
 	public void withoutLimit() {
 		QueryString expectedQueryString = new QueryString("SELECT * FROM /Example");
-		assertThat(expectedQueryString.withLimit(null), is(sameInstance(expectedQueryString)));
+
+		assertThat(expectedQueryString.withLimit(null)).isSameAs(expectedQueryString);
 	}
 
 	@Test
 	public void withTrace() {
-		assertThat(new QueryString("SELECT * FROM /Example").withTrace().toString(),
-			is(equalTo("<TRACE> SELECT * FROM /Example")));
+		assertThat(new QueryString("SELECT * FROM /Example").withTrace().toString())
+			.isEqualTo("<TRACE> SELECT * FROM /Example");
 	}
 
 	@Test
 	public void withHintAndTrace() {
-		assertThat(new QueryString("SELECT * FROM /Example").withHints("IdIdx").withTrace().toString(),
-			is(equalTo("<TRACE> <HINT 'IdIdx'> SELECT * FROM /Example")));
+		assertThat(new QueryString("SELECT * FROM /Example").withHints("IdIdx").withTrace().toString())
+			.isEqualTo("<TRACE> <HINT 'IdIdx'> SELECT * FROM /Example");
 	}
 
 	@Test
 	public void withHintImportLimitAndTrace() {
-		assertThat(new QueryString("SELECT * FROM /Example").withImport("org.example.domain.Type")
-			.withHints("IdIdx", "NameIdx").withLimit(20).withTrace().toString(),
-				is(equalTo("<TRACE> <HINT 'IdIdx', 'NameIdx'> IMPORT org.example.domain.Type; SELECT * FROM /Example LIMIT 20")));
-	}
+		QueryString query = new QueryString("SELECT * FROM /Example");
 
+		assertThat(query.withImport("org.example.domain.Type").withHints("IdIdx", "NameIdx").withLimit(20).withTrace().toString())
+			.isEqualTo("<TRACE> <HINT 'IdIdx', 'NameIdx'> IMPORT org.example.domain.Type; SELECT * FROM /Example LIMIT 20");
+	}
 }
