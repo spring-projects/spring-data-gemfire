@@ -20,6 +20,7 @@
 	<properties>
 		<dist.key>SGF</dist.key>
 		<antlr.version>2.7.7</antlr.version>
+		<assertj.version>3.5.2</assertj.version>
 		<gemfire.version>1.0.0-incubating.M3</gemfire.version>
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
@@ -157,6 +158,13 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>${servlet-api.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
 			<scope>test</scope>
 		</dependency>
 
