@@ -4,9 +4,11 @@ buildscript {
     }
 
     dependencies {
+        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
+        classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.0'
         classpath 'org.asciidoctor:asciidoctorj:1.5.0'
-        classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.2'
+        classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.3'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.6'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
         classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
@@ -32,6 +34,17 @@ archivesBaseName = project.name
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
+
+sourceSets {
+    main {
+        output.classesDir   = 'build/classes/main'
+        output.resourcesDir = 'build/classes/main'
+    }
+    test {
+        output.classesDir   = 'build/classes/test'
+        output.resourcesDir = 'build/classes/test'
+    }
+}
 
 [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
@@ -66,17 +79,6 @@ tasks.withType(Test).all {
     systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
     systemProperties['product.name'] = 'Apache Geode'
     systemProperties['spring.profiles.active'] = 'apache-geode'
-}
-
-sourceSets {
-    main {
-        output.resourcesDir = 'build/classes/main'
-        output.classesDir   = 'build/classes/main'
-    }
-    test {
-        output.resourcesDir = 'build/classes/test'
-        output.classesDir   = 'build/classes/test'
-    }
 }
 
 repositories {
@@ -121,13 +123,13 @@ dependencies {
     testCompile("org.springframework:spring-test:$springVersion") {
         exclude group: "commons-logging", module: "commons-logging"
     }
-    testCompile "org.assertj:assertj-core:$assertjVersion"
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.apache.openwebbeans.test:cditest-owb:$openwebbeansVersion"
+    testCompile "org.assertj:assertj-core:$assertjVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "edu.umd.cs.mtc:multithreadedtc:$multiThreadedtcVersion"
-    testCompile "org.apache.openwebbeans.test:cditest-owb:$openwebbeansVersion"
 
     testRuntime "javax.el:el-api:$cdiVersion"
     testRuntime "javax.servlet:servlet-api:$servletApiVersion"
@@ -159,33 +161,42 @@ jar {
     }
 }
 
-javadoc {
-    dependsOn = [ 'extractSharedResources' ]
-    destinationDir = file("${buildDir}/api")
-    ext.srcDir = file("$buildDir/shared-resources")
-    ext.tmpDir = file("${buildDir}/api-work")
-
-    configure(options) {
-        stylesheetFile = file("$buildDir/shared-resources/javadoc/spring-javadoc.css")
-        docFilesSubDirs = true
-        outputLevel = org.gradle.external.javadoc.JavadocOutputLevel.QUIET
-        breakIterator = true
-        showFromProtected()
-        groups = [
-            'Spring GemFire' : ['org.springframework.data.gemfire*'],
-        ]
-
-        links = [
-          "http://docs.oracle.com/javase/6/docs/api/",
-          "http://docs.spring.io/spring/docs/current/javadoc-api/",
-          "http://gemfire.docs.pivotal.io/docs-gemfire/latest/javadocs/japi/",
-          "http://logging.apache.org/log4j/1.2/apidocs/",
-        ]
-
-        exclude "org/springframework/data/gemfire/config/**"
+task extractSharedResources(type: Copy) {
+    from {
+        // use of closure defers evaluation until execution time
+        configurations.sharedResources.collect { zipTree(it) }
     }
+    into "$buildDir/shared-resources"
+}
 
-    title = "${rootProject.description} ${version} API"
+javadoc {
+  dependsOn = [ 'extractSharedResources' ]
+
+  destinationDir = file("${buildDir}/api")
+  ext.tmpDir = file("${buildDir}/api-work")
+
+  configure(options) {
+      breakIterator = true
+      docFilesSubDirs = true
+      outputLevel = org.gradle.external.javadoc.JavadocOutputLevel.QUIET
+      stylesheetFile = file("$buildDir/shared-resources/javadoc/spring-javadoc.css")
+      showFromProtected()
+
+      groups = [
+        'Spring GemFire' : ['org.springframework.data.gemfire*'],
+      ]
+
+      links = [
+        "http://docs.oracle.com/javase/6/docs/api/",
+        "http://docs.spring.io/spring/docs/current/javadoc-api/",
+        "http://gemfire.docs.pivotal.io/docs-gemfire/latest/javadocs/japi/",
+        "http://logging.apache.org/log4j/1.2/apidocs/",
+      ]
+
+      exclude "org/springframework/data/gemfire/config/**"
+  }
+
+  title = "${rootProject.description} ${version} API"
 }
 
 asciidoctor {
@@ -233,6 +244,31 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc
 }
 
+task docsZip(type: Zip) {
+    group = 'Distribution'
+    classifier = 'docs'
+    description = "Builds -${classifier} archive containing api and reference for deployment"
+    dependsOn = [ 'javadoc', 'asciidoctor', 'referencePdf' ]
+
+    from('docs/src/info') {
+        include 'changelog.txt'
+    }
+
+    from (javadoc) {
+        into 'api'
+    }
+
+    from (asciidoctor.outputDir) {
+        include "index.html"
+        include "spring.css"
+        into 'reference/html'
+    }
+
+    from (referencePdf.outputDir) {
+        into 'reference'
+    }
+}
+
 task schemaZip(type: Zip) {
     description = "Builds -${classifier} archive containing all XSDs for deployment"
     baseName = project.archivesBaseName
@@ -264,32 +300,7 @@ task schemaZip(type: Zip) {
     }
 }
 
-task docsZip(type: Zip, dependsOn: [javadoc, asciidoctor, referencePdf]) {
-    description = "Builds -${classifier} archive containing api and reference for deployment"
-    baseName = project.archivesBaseName
-    classifier = 'docs'
-    group = 'Distribution'
-
-    from('src/main/resources') {
-        include 'changelog.txt'
-    }
-
-    from (javadoc) {
-        into 'api'
-    }
-
-    from (asciidoctor.outputDir) {
-        include "index.html"
-        include "spring.css"
-        into 'reference/html'
-    }
-
-    from (referencePdf.outputDir) {
-        into 'reference'
-    }
-}
-
-task distZip(type: Zip, dependsOn: [jar, sourcesJar, javadocJar, schemaZip, docsZip]) {
+task distZip(type: Zip, dependsOn: [jar, docsZip, schemaZip, sourcesJar, javadocJar]) {
     description = "Builds -${classifier} archive, containing all jars and docs, suitable for community download page."
 
     baseName = project.archivesBaseName
@@ -300,6 +311,7 @@ task distZip(type: Zip, dependsOn: [jar, sourcesJar, javadocJar, schemaZip, docs
 
     into (zipRootDir) {
         from('src/main/resources') {
+            include 'changelog.txt'
             include 'license.txt'
             include 'notice.txt'
             include 'readme.txt'
@@ -326,14 +338,6 @@ task distZip(type: Zip, dependsOn: [jar, sourcesJar, javadocJar, schemaZip, docs
             from rootProject.collect { project -> project.libsDir }
         }
     }
-}
-
-task extractSharedResources(type: Copy) {
-    from { // use of closure defers evaluation until execution time
-        configurations.sharedResources.collect { zipTree(it) }
-    }
-
-    into "$buildDir/shared-resources"
 }
 
 artifacts {

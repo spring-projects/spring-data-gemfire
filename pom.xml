@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.8.3.RELEASE</version>
+		<version>1.9.0.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
@@ -20,7 +20,7 @@
 	<properties>
 		<dist.key>SGF</dist.key>
 		<antlr.version>2.7.7</antlr.version>
-		<assertj.version>3.5.2</assertj.version>
+		<assertj.version>2.5.0</assertj.version>
 		<gemfire.version>1.0.0-incubating.M3</gemfire.version>
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
@@ -169,16 +169,16 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.openwebbeans.test</groupId>
-			<artifactId>cditest-owb</artifactId>
-			<version>${webbeans}</version>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derbyLocale_zh_TW</artifactId>
+			<version>10.9.1.0</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derbyLocale_zh_TW</artifactId>
-			<version>10.9.1.0</version>
+			<groupId>org.apache.openwebbeans.test</groupId>
+			<artifactId>cditest-owb</artifactId>
+			<version>${webbeans}</version>
 			<scope>test</scope>
 		</dependency>
 
