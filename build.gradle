@@ -4,12 +4,12 @@ buildscript {
     }
 
     dependencies {
+        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
+        classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.0'
         classpath 'org.asciidoctor:asciidoctorj:1.5.0'
         classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.3'
 		classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.6'
-        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
-        classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
     }
 }
 
@@ -31,6 +31,17 @@ group = 'org.springframework.data'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
+
+sourceSets {
+    main {
+        output.classesDir   = 'build/classes/main'
+        output.resourcesDir = 'build/classes/main'
+    }
+    test {
+        output.classesDir   = 'build/classes/test'
+        output.resourcesDir = 'build/classes/test'
+    }
+}
 
 [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial"]
 
@@ -66,17 +77,6 @@ tasks.withType(Test).all {
         System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
 }
 
-sourceSets {
-    main {
-        output.resourcesDir = 'build/classes/main'
-        output.classesDir   = 'build/classes/main'
-    }
-    test {
-        output.resourcesDir = 'build/classes/test'
-        output.classesDir   = 'build/classes/test'
-    }
-}
-
 repositories {
   maven { url "https://repo.spring.io/libs-snapshot" }
   maven { url "https://repo.spring.io/plugins-release"}
@@ -98,12 +98,11 @@ dependencies {
 
     // GemFire
     compile("com.gemstone.gemfire:gemfire:$gemfireVersion")
-    optional("com.google.code.findbugs:annotations:2.0.2")
+    optional("com.google.code.findbugs:annotations:$googleCodeFindbugsVersion")
     runtime("antlr:antlr:$antlrVersion")
 
     optional "javax.enterprise:cdi-api:$cdiVersion"
     compile "org.aspectj:aspectjweaver:$aspectjVersion"
-    compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
@@ -111,13 +110,13 @@ dependencies {
     testCompile("org.springframework:spring-test:$springVersion") {
         exclude group: "commons-logging", module: "commons-logging"
     }
-    testCompile "org.assertj:assertj-core:$assertjVersion"
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.apache.openwebbeans.test:cditest-owb:$openwebbeansVersion"
+    testCompile "org.assertj:assertj-core:$assertjVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "edu.umd.cs.mtc:multithreadedtc:$multiThreadedtcVersion"
-    testCompile "org.apache.openwebbeans.test:cditest-owb:$openwebbeansVersion"
 
     testCompile "javax.annotation:jsr250-api:1.0", optional
     testRuntime "javax.el:el-api:$cdiVersion"
@@ -125,7 +124,7 @@ dependencies {
     testRuntime "log4j:log4j:$log4jVersion"
     testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
     testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
-    testRuntime "org.springframework.shell:spring-shell:1.0.0.RELEASE"
+    testRuntime "org.springframework.shell:spring-shell:$springShellVersion"
 
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
 }
@@ -146,11 +145,18 @@ jar {
     }
 }
 
+task extractSharedResources(type: Copy) {
+    from {
+        // use of closure defers evaluation until execution time
+        configurations.sharedResources.collect { zipTree(it) }
+    }
+    into "$buildDir/shared-resources"
+}
+
 javadoc {
   dependsOn = [ 'extractSharedResources' ]
 
   destinationDir = file("${buildDir}/api")
-  ext.srcDir = file("${projectDir}/docs/src/api")
   ext.tmpDir = file("${buildDir}/api-work")
 
   configure(options) {
@@ -219,33 +225,6 @@ task javadocJar(type: Jar) {
     from javadoc
 }
 
-task schemaZip(type: Zip) {
-    group = 'Distribution'
-    classifier = 'schema'
-    description = "Builds -${classifier} archive containing all XSDs for deployment"
-
-    def Properties schemas = new Properties();
-
-    sourceSets.main.resources.find {
-        it.path.endsWith('META-INF' + File.separator + 'spring.schemas')
-    }?.withInputStream { schemas.load(it) }
-
-    for (def key : schemas.keySet()) {
-        def shortName = key.replaceAll(/http.*schema.(.*).spring-.*/, '$1')
-        def alias = key.replaceAll(/http.*schema.(.*).(spring-.*)/, '$2')
-        assert shortName != key
-        File xsdFile = sourceSets.main.resources.find {
-            it.path.replace('\\', '/').endsWith(schemas.get(key))
-        }
-        assert xsdFile != null
-
-        into (shortName) {
-            from xsdFile.path
-            rename { String fileName -> alias }
-        }
-    }
-}
-
 task docsZip(type: Zip) {
     group = 'Distribution'
     classifier = 'docs'
@@ -271,6 +250,35 @@ task docsZip(type: Zip) {
     }
 }
 
+task schemaZip(type: Zip) {
+    group = 'Distribution'
+    classifier = 'schema'
+    description = "Builds -${classifier} archive containing all XSDs for deployment"
+
+    def Properties schemas = new Properties();
+
+    sourceSets.main.resources.find {
+        it.path.endsWith('META-INF' + File.separator + 'spring.schemas')
+    }?.withInputStream { schemas.load(it) }
+
+    for (def key : schemas.keySet()) {
+        def shortName = key.replaceAll(/http.*schema.(.*).spring-.*/, '$1')
+        def alias = key.replaceAll(/http.*schema.(.*).(spring-.*)/, '$2')
+
+        assert shortName != key
+
+        File xsdFile = sourceSets.main.resources.find {
+            it.path.replace('\\', '/').endsWith(schemas.get(key))
+        }
+
+        assert xsdFile != null
+
+        into (shortName) {
+            from xsdFile.path
+            rename { String fileName -> alias }
+        }
+    }
+}
 
 task distZip(type: Zip, dependsOn: [jar, docsZip, schemaZip, sourcesJar, javadocJar]) {
     description = "Builds -${classifier} archive, containing all jars and docs, suitable for community download page."
@@ -280,10 +288,11 @@ task distZip(type: Zip, dependsOn: [jar, docsZip, schemaZip, sourcesJar, javadoc
     ext.zipRootDir = "${project.name}-${project.version}"
 
     into (zipRootDir) {
-        from('docs/src/info') {
-            include 'readme.txt'
+        from('src/main/resources') {
+            include 'changelog.txt'
             include 'license.txt'
             include 'notice.txt'
+            include 'readme.txt'
             expand(copyright: new Date().format('yyyy'), version: project.version)
         }
         from('samples/') {
@@ -304,14 +313,6 @@ task distZip(type: Zip, dependsOn: [jar, docsZip, schemaZip, sourcesJar, javadoc
             from rootProject.collect { project -> project.libsDir }
         }
     }
-}
-
-task extractSharedResources(type: Copy) {
-    from {
-        // use of closure defers evaluation until execution time
-        configurations.sharedResources.collect { zipTree(it) }
-    }
-    into "$buildDir/shared-resources"
 }
 
 artifacts {

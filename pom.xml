@@ -3,27 +3,42 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.springframework.data</groupId>
-	<artifactId>spring-data-gemfire</artifactId>
-	<version>1.9.0.BUILD-SNAPSHOT</version>
-
-	<name>Spring Data Gemfire</name>
-
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
 		<version>1.9.0.BUILD-SNAPSHOT</version>
 	</parent>
 
+	<groupId>org.springframework.data</groupId>
+	<artifactId>spring-data-gemfire</artifactId>
+	<version>1.9.0.BUILD-SNAPSHOT</version>
+
+	<name>Spring Data Gemfire</name>
+
 	<properties>
 		<dist.key>SGF</dist.key>
 		<antlr.version>2.7.7</antlr.version>
-		<assertj.version>3.5.2</assertj.version>
-		<gemfire.version>8.2.0</gemfire.version>
+		<assertj.version>2.5.0</assertj.version>
+		<gemfire.version>8.2.1</gemfire.version>
+		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
 		<springdata.commons>1.13.0.BUILD-SNAPSHOT</springdata.commons>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-plugins-release</id>
+			<url>https://repo.spring.io/plugins-release</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<dependencies>
 
@@ -67,7 +82,7 @@
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>annotations</artifactId>
-			<version>2.0.2</version>
+			<version>${google-code-findbugs.version}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -121,16 +136,16 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.openwebbeans.test</groupId>
-			<artifactId>cditest-owb</artifactId>
-			<version>${webbeans}</version>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derbyLocale_zh_TW</artifactId>
+			<version>10.9.1.0</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derbyLocale_zh_TW</artifactId>
-			<version>10.9.1.0</version>
+			<groupId>org.apache.openwebbeans.test</groupId>
+			<artifactId>cditest-owb</artifactId>
+			<version>${webbeans}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -200,19 +215,5 @@
 			</build>
 		</profile>
 	</profiles>
-
-	<repositories>
-		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/libs-snapshot</url>
-		</repository>
-	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-plugins-release</id>
-			<url>https://repo.spring.io/plugins-release</url>
-		</pluginRepository>
-	</pluginRepositories>
 
 </project>
