@@ -38,12 +38,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
-import org.junit.Test;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.data.gemfire.TestUtils;
-
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -51,6 +45,12 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.pdx.PdxSerializer;
+
+import org.junit.Test;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.data.gemfire.TestUtils;
 
 /**
  * The ClientCacheFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -570,5 +570,4 @@ public class ClientCacheFactoryBeanTest {
 	public void useClusterConfiguration() {
 		new ClientCacheFactoryBean().setUseClusterConfiguration(true);
 	}
-
 }

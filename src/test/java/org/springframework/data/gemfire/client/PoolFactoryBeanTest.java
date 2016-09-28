@@ -30,18 +30,17 @@ import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
+
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolFactory;
 
 import org.junit.Test;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.util.ReflectionUtils;
-
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
 
 /**
  * The PoolFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -68,6 +67,7 @@ public class PoolFactoryBeanTest {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void testAfterPropertiesSet() throws Exception {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockSpringBeanFactory");
 		final PoolFactory mockPoolFactory = mock(PoolFactory.class, "MockGemFirePoolFactory");
@@ -139,13 +139,14 @@ public class PoolFactoryBeanTest {
 		verify(mockPoolFactory, times(1)).create(eq("GemFirePool"));
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test(expected = IllegalArgumentException.class)
 	public void testAfterPropertiesSetWithNoLocatorsServersSpecified() throws Exception {
 		try {
 			PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 			poolFactoryBean.setName("GemFirePool");
-			poolFactoryBean.setLocators((Collection) null);
+			poolFactoryBean.setLocators(null);
 			poolFactoryBean.setServers(Collections.<InetSocketAddress>emptyList());
 			poolFactoryBean.afterPropertiesSet();
 		}
@@ -243,5 +244,4 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setPool(null);
 		poolFactoryBean.destroy();
 	}
-
 }

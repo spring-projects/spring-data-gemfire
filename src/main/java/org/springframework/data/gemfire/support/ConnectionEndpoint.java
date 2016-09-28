@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.support;
 
 import java.net.InetSocketAddress;
 
+import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -126,10 +127,15 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 	 * @see ConnectionEndpoint#DEFAULT_HOST
 	 */
 	public ConnectionEndpoint(String host, int port) {
-		Assert.isTrue(port >= 0 && port <= 65535, String.format("port number (%1$d) must be between 0 and 65535", port));
+		Assert.isTrue(isValidPort(port), String.format("port number [%d] must be between 0 and 65535", port));
 
-		this.host = (StringUtils.hasText(host) ? host : DEFAULT_HOST);
+		this.host = SpringUtils.defaultIfEmpty(host, DEFAULT_HOST);
 		this.port = port;
+	}
+
+	/* (non-Javadoc) */
+	private boolean isValidPort(int port) {
+		return (port >= 0 && port <= 65535);
 	}
 
 	/**
@@ -196,5 +202,4 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 	public String toString() {
 		return String.format("%1$s[%2$d]", getHost(), getPort());
 	}
-
 }

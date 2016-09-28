@@ -45,7 +45,7 @@ import org.junit.rules.ExpectedException;
 public class ConnectionEndpointTest {
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void fromInetSocketAddress() {
@@ -150,33 +150,34 @@ public class ConnectionEndpointTest {
 
 	@Test
 	public void parseWithBlankHost() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("'hostPort' must be specified");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("'hostPort' must be specified");
 		ConnectionEndpoint.parse("  ", 12345);
 	}
 
 	@Test
 	public void parseWithEmptyHost() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("'hostPort' must be specified");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("'hostPort' must be specified");
 		ConnectionEndpoint.parse("", 12345);
 	}
 
 	@Test
 	public void parseWithNullHost() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("'hostPort' must be specified");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("'hostPort' must be specified");
 		ConnectionEndpoint.parse(null, 12345);
 	}
 
 	@Test
 	public void parseWithInvalidDefaultPort() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("port number (-1248) must be between 0 and 65535");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("port number [-1248] must be between 0 and 65535");
+
 		ConnectionEndpoint.parse("localhost", -1248);
 	}
 
@@ -217,9 +218,10 @@ public class ConnectionEndpointTest {
 
 	@Test
 	public void constructConnectionEndpointWithInvalidPort() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("port number (-1) must be between 0 and 65535");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("port number [-1] must be between 0 and 65535");
+
 		new ConnectionEndpoint("localhost", -1);
 	}
 
@@ -252,5 +254,4 @@ public class ConnectionEndpointTest {
 		assertThat(connectionEndpointThree.compareTo(connectionEndpointTwo), is(greaterThan(0)));
 		assertThat(connectionEndpointThree.compareTo(connectionEndpointThree), is(equalTo(0)));
 	}
-
 }

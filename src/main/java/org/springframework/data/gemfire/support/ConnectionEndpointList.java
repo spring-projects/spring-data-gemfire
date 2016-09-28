@@ -32,6 +32,7 @@ import org.springframework.data.gemfire.util.CollectionUtils;
  * @author John Blum
  * @see java.lang.Iterable
  * @see java.net.InetSocketAddress
+ * @see java.util.AbstractList
  * @see org.springframework.data.gemfire.support.ConnectionEndpoint
  * @since 1.6.3
  */
@@ -80,9 +81,10 @@ public class ConnectionEndpointList implements Iterable<ConnectionEndpoint> {
 	 * @see org.springframework.data.gemfire.support.ConnectionEndpoint#parse(String, int)
 	 */
 	public static ConnectionEndpointList parse(int defaultPort, String... hostsPorts) {
-		List<ConnectionEndpoint> connectionEndpoints = new ArrayList<ConnectionEndpoint>(hostsPorts.length);
+		List<ConnectionEndpoint> connectionEndpoints = new ArrayList<ConnectionEndpoint>(
+			ArrayUtils.length((Object) hostsPorts));
 
-		for (String hostPort : ArrayUtils.nullSafeArray(hostsPorts)) {
+		for (String hostPort : ArrayUtils.nullSafeArray(hostsPorts, String.class)) {
 			connectionEndpoints.add(ConnectionEndpoint.parse(hostPort, defaultPort));
 		}
 
@@ -215,5 +217,4 @@ public class ConnectionEndpointList implements Iterable<ConnectionEndpoint> {
 	public String toString() {
 		return connectionEndpoints.toString();
 	}
-
 }
