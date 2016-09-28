@@ -25,25 +25,25 @@
 
 	<gfe:pool id="simple"/>
 
-	<gfe:pool id="locator" locators="skullbox, yorktown[12480]"/>
+	<gfe:pool id="locator" locators="skullbox, ghostrider[12480]"/>
 
 	<gfe:pool id="server" free-connection-timeout="2000" idle-timeout="20000" load-conditioning-interval="10000"
 			  keep-alive="true" max-connections="100" min-connections="5" multi-user-authentication="true"
 			  ping-interval="5000" pr-single-hop-enabled="false" read-timeout="500" retry-attempts="5"
-			  server-group="TestGroup" socket-buffer-size="65536" statistic-interval="5000"
+			  server-group="TestGroup" socket-buffer-size="65536" statistic-interval="250"
 			  subscription-ack-interval="250" subscription-enabled="true" subscription-message-tracking-timeout="30000"
-			  subscription-redundancy="2" thread-local-connections="true">
+			  subscription-redundancy="2" thread-local-connections="false">
 		<gfe:server host="localhost" port="${gfe.port.4}"/>
-		<gfe:server host="localhost" port="40405"/>
+		<gfe:server host="localhost" port="50505"/>
 	</gfe:pool>
 
-	<gfe:pool id="combo-locators" locators="lavatube[11235], zod">
-		<gfe:locator host="foobar" port="55421"/>
+	<gfe:pool id="locators" locators="venus[11235], mars, [12480]">
+		<gfe:locator host="earth" port="54321"/>
 	</gfe:pool>
 
-	<gfe:pool id="combo-servers" servers="skullbox[9110]">
-		<gfe:server host="scorch" port="21480"/>
-		<gfe:server host="scorn" port="51515"/>
+	<gfe:pool id="servers" servers="skullbox[9110]">
+		<gfe:server host="duke" port="21480"/>
+		<gfe:server host="nukem" port="51515"/>
 	</gfe:pool>
 
 </beans>

@@ -16,14 +16,16 @@
 
 package org.springframework.data.gemfire.client;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.Properties;
+
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolFactory;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,15 +39,13 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
-import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
+import org.springframework.util.Assert;
 
 /**
- * The PoolUsingLocatorsAndServersPropertyPlaceholdersTest class is a test suite of test cases testing the use of
+ * The PoolsConfiguredWithLocatorsAndServersExpressionsIntegrationTests class is a test suite of test cases testing the use of
  * property placeholder values in the nested &lt;gfe:locator&gt; and &lt;gfe:server&gt; sub-elements
  * of the &lt;gfe:pool&gt; element as well as the <code>locators</code> and <code>servers</code> attributes.
  *
@@ -61,8 +61,9 @@ import com.gemstone.gemfire.cache.client.PoolFactory;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class PoolUsingLocatorsAndServersPropertyPlaceholdersTest {
+public class PoolsConfiguredWithLocatorsAndServersExpressionsIntegrationTests {
 
+	private static ConnectionEndpointList anotherLocators = new ConnectionEndpointList();
 	private static ConnectionEndpointList anotherServers = new ConnectionEndpointList();
 	private static ConnectionEndpointList locators = new ConnectionEndpointList();
 	private static ConnectionEndpointList servers = new ConnectionEndpointList();
@@ -78,6 +79,11 @@ public class PoolUsingLocatorsAndServersPropertyPlaceholdersTest {
 	private Pool serverPool;
 
 	@Autowired
+	@Qualifier("anotherLocatorPool")
+	@SuppressWarnings("unused")
+	private Pool anotherLocatorPool;
+
+	@Autowired
 	@Qualifier("anotherServerPool")
 	@SuppressWarnings("unused")
 	private Pool anotherServerPool;
@@ -87,54 +93,67 @@ public class PoolUsingLocatorsAndServersPropertyPlaceholdersTest {
 	}
 
 	protected void assertConnectionEndpoints(Iterable<ConnectionEndpoint> connectionEndpoints, String... expected) {
-		assertThat(connectionEndpoints, is(notNullValue()));
+		assertThat(connectionEndpoints).isNotNull();
 
 		int index = 0;
 
 		for (ConnectionEndpoint connectionEndpoint : connectionEndpoints) {
-			assertThat(connectionEndpoint.toString(), is(equalTo(expected[index++])));
+			assertThat(connectionEndpoint.toString()).isEqualTo(expected[index++]);
 		}
 
-		assertThat(index, is(equalTo(expected.length)));
+		assertThat(index).isEqualTo(expected.length);
+	}
+
+	@Test
+	public void anotherLocatorPoolFactoryConfiguration() {
+		String[] expected = { "localhost[10335]", "cardboardbox[10334]", "safetydepositbox[10336]", "pobox[10334]" };
+
+		assertThat(anotherLocators.size()).isEqualTo(expected.length);
+		assertConnectionEndpoints(anotherLocators, expected);
 	}
 
 	@Test
 	public void anotherServerPoolFactoryConfiguration() {
 		String[] expected = { "boombox[1234]", "jambox[40404]", "toolbox[8181]" };
 
-		assertThat(anotherServers.size(), is(equalTo(expected.length)));
-
-		assertConnectionEndpoints(SpringUtils.sort(anotherServers), expected);
+		assertThat(anotherServers.size()).isEqualTo(expected.length);
+		assertConnectionEndpoints(CollectionUtils.sort(anotherServers), expected);
 	}
 
 	@Test
 	public void locatorPoolFactoryConfiguration() {
 		String[] expected = { "backspace[10334]", "jambox[11235]", "mars[30303]", "pluto[20668]", "skullbox[12480]" };
 
-		assertThat(locators.size(), is(equalTo(expected.length)));
-
-		assertConnectionEndpoints(SpringUtils.sort(locators), expected);
+		assertThat(locators.size()).isEqualTo(expected.length);
+		assertConnectionEndpoints(CollectionUtils.sort(locators), expected);
 	}
 
 	@Test
 	public void serverPoolFactoryConfiguration() {
-		String[] expected = { "earth[4554]", "jupiter[40404]", "mercury[1234]", "neptune[42424]", "saturn[41414]",
+		String[] expected = { "earth[4554]", "jupiter[40404]", "mars[5112]", "mercury[1234]", "neptune[42424]", "saturn[41414]",
 			"uranis[0]", "venus[9876]" };
 
-		assertThat(servers.size(), is(equalTo(expected.length)));
-
-		assertConnectionEndpoints(SpringUtils.sort(servers), expected);
+		assertThat(servers.size()).isEqualTo(expected.length);
+		assertConnectionEndpoints(CollectionUtils.sort(servers), expected);
 	}
 
 	public static class TestBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 		@Override
 		public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+			BeanDefinition anotherLocatorPoolBeanDefinition = beanFactory.getBeanDefinition("anotherLocatorPool");
+			anotherLocatorPoolBeanDefinition.setBeanClassName(AnotherLocatorPoolFactoryBean.class.getName());
 			BeanDefinition anotherServerPoolBeanDefinition = beanFactory.getBeanDefinition("anotherServerPool");
 			anotherServerPoolBeanDefinition.setBeanClassName(AnotherServerPoolFactoryBean.class.getName());
 			BeanDefinition locatorPoolBeanDefinition = beanFactory.getBeanDefinition("locatorPool");
 			locatorPoolBeanDefinition.setBeanClassName(LocatorPoolFactoryBean.class.getName());
 			BeanDefinition serverPoolBeanDefinition = beanFactory.getBeanDefinition("serverPool");
 			serverPoolBeanDefinition.setBeanClassName(ServerPoolFactoryBean.class.getName());
+		}
+	}
+
+	public static class AnotherLocatorPoolFactoryBean extends TestPoolFactoryBean {
+		@Override ConnectionEndpointList getLocatorList() {
+			return anotherLocators;
 		}
 	}
 
@@ -153,6 +172,29 @@ public class PoolUsingLocatorsAndServersPropertyPlaceholdersTest {
 	public static class ServerPoolFactoryBean extends TestPoolFactoryBean {
 		@Override ConnectionEndpointList getServerList() {
 			return servers;
+		}
+	}
+
+	@SuppressWarnings("unused")
+	public static class SpELBoundBean {
+
+		private final Properties clientProperties;
+
+		public SpELBoundBean(Properties clientProperties) {
+			Assert.notNull(clientProperties, "clientProperties must not be null");
+			this.clientProperties = clientProperties;
+		}
+
+		public String locatorsHostsPorts() {
+			return "safetydepositbox[10336], pobox";
+		}
+
+		public String serverTwoHost() {
+			return clientProperties.getProperty("gemfire.cache.client.server.2.host");
+		}
+
+		public String serverTwoPort() {
+			return clientProperties.getProperty("gemfire.cache.client.server.2.port");
 		}
 	}
 
@@ -198,5 +240,4 @@ public class PoolUsingLocatorsAndServersPropertyPlaceholdersTest {
 			return true;
 		}
 	}
-
 }

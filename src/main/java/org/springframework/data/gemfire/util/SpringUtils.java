@@ -17,10 +17,6 @@
 
 package org.springframework.data.gemfire.util;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +27,7 @@ import org.springframework.util.StringUtils;
  * @since 1.8.0
  */
 @SuppressWarnings("unused")
+// TODO rename this utiltiy class using a more intuitive, meaningful name
 public abstract class SpringUtils {
 
 	/* (non-Javadoc) */
@@ -47,22 +44,4 @@ public abstract class SpringUtils {
 	public static String dereferenceBean(String beanName) {
 		return String.format("%1$s%2$s", BeanFactory.FACTORY_BEAN_PREFIX, beanName);
 	}
-
-	/* (non-Javadoc) */
-	public static <T> T[] toArray(T... array) {
-		return array;
-	}
-
-	/* (non-Javadoc) */
-	public static <T extends Comparable<T>> T[] sort(T[] array) {
-		Arrays.sort(array);
-		return array;
-	}
-
-	/* (non-Javadoc) */
-	public static <T extends Comparable<T>> List<T> sort(List<T> list) {
-		Collections.sort(list);
-		return list;
-	}
-
 }

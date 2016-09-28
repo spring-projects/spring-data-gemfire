@@ -16,22 +16,18 @@
 
 package org.springframework.data.gemfire.config;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
+
+import com.gemstone.gemfire.cache.client.Pool;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.client.PoolAdapter;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
@@ -40,8 +36,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
+ * Integration tests for {@link PoolParser} and {@link PoolFactoryBean}.
+ *
  * @author Costin Leau
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.springframework.data.gemfire.client.PoolAdapter
+ * @see org.springframework.data.gemfire.client.PoolFactoryBean
+ * @see org.springframework.data.gemfire.config.PoolParser
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
+ * @see com.gemstone.gemfire.cache.client.Pool
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "pool-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
@@ -49,141 +53,150 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class PoolNamespaceTest {
 
 	@Autowired
-	private ApplicationContext context;
+	private ApplicationContext applicationContext;
 
-	protected void assertConnectionEndpoint(ConnectionEndpoint connectionEndpoint, String expectedHost, int expectedPort) {
-		assertThat(connectionEndpoint, is(notNullValue()));
-		assertThat(connectionEndpoint.getHost(), is(equalTo(expectedHost)));
-		assertThat(connectionEndpoint.getPort(), is(equalTo(expectedPort)));
+	protected void assertConnectionEndpoint(ConnectionEndpointList connectionEndpoints,
+		String expectedHost, int expectedPort) {
+
+		assertThat(connectionEndpoints).isNotNull();
+		assertThat(connectionEndpoints.size()).isEqualTo(1);
+		assertConnectionEndpoint(connectionEndpoints.get(0), expectedHost, expectedPort);
+	}
+
+	protected void assertConnectionEndpoint(ConnectionEndpoint connectionEndpoint,
+			String expectedHost, int expectedPort) {
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo(expectedHost);
+		assertThat(connectionEndpoint.getPort()).isEqualTo(expectedPort);
+	}
+
+	protected void assertNoConnectionEndpoints(ConnectionEndpointList connectionEndpoints) {
+		assertThat(connectionEndpoints).isNotNull();
+		assertThat(connectionEndpoints.isEmpty()).isTrue();
 	}
 
 	@Test
-	public void testBasicClient() throws Exception {
-		assertThat(context.containsBean("gemfirePool"), is(true));
-		assertThat(context.containsBean("gemfire-pool"), is(true));
+	public void gemfirePoolIsConfiguredProperly() throws Exception {
+		assertThat(applicationContext.containsBean("gemfirePool")).isTrue();
+		assertThat(applicationContext.containsBean("gemfire-pool")).isTrue();
 
-		PoolFactoryBean poolFactoryBean = context.getBean("&gemfirePool", PoolFactoryBean.class);
+		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&gemfirePool", PoolFactoryBean.class);
 
 		ConnectionEndpointList locators = TestUtils.readField("locators", poolFactoryBean);
 
-		assertThat(locators, is(notNullValue()));
-		assertThat(locators.size(), is(equalTo(1)));
-
-		assertConnectionEndpoint(locators.iterator().next(), "localhost", 40403);
+		assertConnectionEndpoint(locators, "localhost", 40403);
 	}
 
 	@Test
-	public void testSimplePool() throws Exception {
-		assertThat(context.containsBean("simple"), is(true));
+	public void simplePoolIsConfiguredProperly() throws Exception {
+		assertThat(applicationContext.containsBean("simple")).isTrue();
 
-		PoolFactoryBean poolFactoryBean = context.getBean("&simple", PoolFactoryBean.class);
+		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&simple", PoolFactoryBean.class);
 
 		ConnectionEndpointList servers = TestUtils.readField("servers", poolFactoryBean);
 
-		assertThat(servers, is(notNullValue()));
-		assertThat(servers.size(), is(equalTo(1)));
-
-		assertConnectionEndpoint(servers.iterator().next(), PoolParser.DEFAULT_HOST, PoolParser.DEFAULT_SERVER_PORT);
+		assertConnectionEndpoint(servers, PoolParser.DEFAULT_HOST, PoolParser.DEFAULT_SERVER_PORT);
 
 		ConnectionEndpointList locators = TestUtils.readField("locators", poolFactoryBean);
 
-		assertThat(locators, is(notNullValue()));
-		assertThat(locators.isEmpty(), is(true));
+		assertNoConnectionEndpoints(locators);
 	}
 
 	@Test
-	public void testLocatorPool() throws Exception {
-		assertThat(context.containsBean("locator"), is(true));
+	public void locatorPoolIsConfiguredProperly() throws Exception {
+		assertThat(applicationContext.containsBean("locator")).isTrue();
 
-		PoolFactoryBean poolFactoryBean = context.getBean("&locator", PoolFactoryBean.class);
+		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&locator", PoolFactoryBean.class);
 
 		ConnectionEndpointList locators = TestUtils.readField("locators", poolFactoryBean);
 
-		assertThat(locators, is(notNullValue()));
-		assertThat(locators.size(), is(equalTo(2)));
+		assertThat(locators).isNotNull();
+		assertThat(locators.size()).isEqualTo(2);
 
 		Iterator<ConnectionEndpoint> it = locators.iterator();
 
 		assertConnectionEndpoint(it.next(), "skullbox", PoolParser.DEFAULT_LOCATOR_PORT);
-		assertConnectionEndpoint(it.next(), "yorktown", 12480);
+		assertConnectionEndpoint(it.next(), "ghostrider", 12480);
 
 		ConnectionEndpointList servers = TestUtils.readField("servers", poolFactoryBean);
 
-		assertThat(servers, is(notNullValue()));
+		assertNoConnectionEndpoints(servers);
 	}
 
 	@Test
-	public void testServerPool() throws Exception {
-		assertTrue(context.containsBean("server"));
+	public void serverPoolIsConfiguredProperly() throws Exception {
+		assertThat(applicationContext.containsBean("server")).isTrue();
 
-		PoolFactoryBean poolFactoryBean = context.getBean("&server", PoolFactoryBean.class);
+		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&server", PoolFactoryBean.class);
+		Pool pool = poolFactoryBean.getPool();
 
-		assertEquals(2000, TestUtils.readField("freeConnectionTimeout", poolFactoryBean));
-		assertEquals(20000l, TestUtils.readField("idleTimeout", poolFactoryBean));
-		assertEquals(10000, TestUtils.readField("loadConditioningInterval", poolFactoryBean));
-		assertEquals(true, TestUtils.readField("keepAlive", poolFactoryBean));
-		assertEquals(100, TestUtils.readField("maxConnections", poolFactoryBean));
-		assertEquals(5, TestUtils.readField("minConnections", poolFactoryBean));
-		assertEquals(5, TestUtils.readField("minConnections", poolFactoryBean));
-		assertTrue((Boolean) TestUtils.readField("multiUserAuthentication", poolFactoryBean));
-		assertEquals(5000l, TestUtils.readField("pingInterval", poolFactoryBean));
-		assertFalse((Boolean) TestUtils.readField("prSingleHopEnabled", poolFactoryBean));
-		assertEquals(500, TestUtils.readField("readTimeout", poolFactoryBean));
-		assertEquals(5, TestUtils.readField("retryAttempts", poolFactoryBean));
-		assertEquals("TestGroup", TestUtils.readField("serverGroup", poolFactoryBean));
-		assertEquals(65536, TestUtils.readField("socketBufferSize", poolFactoryBean));
-		assertEquals(5000, TestUtils.readField("statisticInterval", poolFactoryBean));
-		assertEquals(250, TestUtils.readField("subscriptionAckInterval", poolFactoryBean));
-		assertTrue((Boolean) TestUtils.readField("subscriptionEnabled", poolFactoryBean));
-		assertEquals(30000, TestUtils.readField("subscriptionMessageTrackingTimeout", poolFactoryBean));
-		assertEquals(2, TestUtils.readField("subscriptionRedundancy", poolFactoryBean));
-		assertTrue((Boolean) TestUtils.readField("threadLocalConnections", poolFactoryBean));
+		assertThat(pool).isInstanceOf(PoolAdapter.class);
+		assertThat(pool.getFreeConnectionTimeout()).isEqualTo(2000);
+		assertThat(pool.getIdleTimeout()).isEqualTo(20000L);
+		assertThat(pool.getLoadConditioningInterval()).isEqualTo(10000);
+		assertThat(Boolean.TRUE.equals(TestUtils.readField("keepAlive", poolFactoryBean))).isTrue();
+		assertThat(pool.getMaxConnections()).isEqualTo(100);
+		assertThat(pool.getMinConnections()).isEqualTo(5);
+		assertThat(pool.getMultiuserAuthentication()).isTrue();
+		assertThat(pool.getPingInterval()).isEqualTo(5000L);
+		assertThat(pool.getPRSingleHopEnabled()).isFalse();
+		assertThat(pool.getReadTimeout()).isEqualTo(500);
+		assertThat(pool.getRetryAttempts()).isEqualTo(5);
+		assertThat(pool.getServerGroup()).isEqualTo("TestGroup");
+		assertThat(pool.getSocketBufferSize()).isEqualTo(65536);
+		assertThat(pool.getStatisticInterval()).isEqualTo(250);
+		assertThat(pool.getSubscriptionAckInterval()).isEqualTo(250);
+		assertThat(pool.getSubscriptionEnabled()).isTrue();
+		assertThat(pool.getSubscriptionMessageTrackingTimeout()).isEqualTo(30000);
+		assertThat(pool.getSubscriptionRedundancy()).isEqualTo(2);
+		assertThat(pool.getThreadLocalConnections()).isFalse();
 
 		ConnectionEndpointList servers = TestUtils.readField("servers", poolFactoryBean);
 
-		assertNotNull(servers);
-		assertEquals(2, servers.size());
+		assertThat(servers).isNotNull();
+		assertThat(servers.size()).isEqualTo(2);
 
 		Iterator<ConnectionEndpoint> serversIterator = servers.iterator();
 
 		assertConnectionEndpoint(serversIterator.next(), "localhost", 40404);
-		assertConnectionEndpoint(serversIterator.next(), "localhost", 40405);
+		assertConnectionEndpoint(serversIterator.next(), "localhost", 50505);
 	}
 
 	@Test
-	public void testComboLocatorPool() throws Exception {
-		assertThat(context.containsBean("combo-locators"), is(true));
+	public void locatorsPoolIsConfiguredProperly() throws Exception {
+		assertThat(applicationContext.containsBean("locators")).isTrue();
 
-		PoolFactoryBean poolFactoryBean = context.getBean("&combo-locators", PoolFactoryBean.class);
+		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&locators", PoolFactoryBean.class);
 
 		ConnectionEndpointList locators = TestUtils.readField("locators", poolFactoryBean);
 
-		assertThat(locators, is(notNullValue()));
-		assertThat(locators.size(), is(equalTo(3)));
+		assertThat(locators).isNotNull();
+		assertThat(locators.size()).isEqualTo(4);
 
 		Iterator<ConnectionEndpoint> locatorIterator = locators.iterator();
 
-		assertConnectionEndpoint(locatorIterator.next(), "foobar", 55421);
-		assertConnectionEndpoint(locatorIterator.next(), "lavatube", 11235);
-		assertConnectionEndpoint(locatorIterator.next(), "zod", 10334);
+		assertConnectionEndpoint(locatorIterator.next(), "earth", 54321);
+		assertConnectionEndpoint(locatorIterator.next(), "venus", 11235);
+		assertConnectionEndpoint(locatorIterator.next(), "mars", 10334);
+		assertConnectionEndpoint(locatorIterator.next(), "localhost", 12480);
 	}
 
 	@Test
-	public void testComboServerPool() throws Exception {
-		assertThat(context.containsBean("combo-servers"), is(true));
+	public void serversPoolIsConfiguredProperly() throws Exception {
+		assertThat(applicationContext.containsBean("servers")).isTrue();
 
-		PoolFactoryBean poolFactoryBean = context.getBean("&combo-servers", PoolFactoryBean.class);
+		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&servers", PoolFactoryBean.class);
 
 		ConnectionEndpointList servers = TestUtils.readField("servers", poolFactoryBean);
 
-		assertThat(servers, is(notNullValue()));
-		assertThat(servers.size(), is(equalTo(3)));
+		assertThat(servers).isNotNull();
+		assertThat(servers.size()).isEqualTo(3);
 
 		Iterator<ConnectionEndpoint> serverIterator = servers.iterator();
 
-		assertConnectionEndpoint(serverIterator.next(), "scorch", 21480);
-		assertConnectionEndpoint(serverIterator.next(), "scorn", 51515);
+		assertConnectionEndpoint(serverIterator.next(), "duke", 21480);
+		assertConnectionEndpoint(serverIterator.next(), "nukem", 51515);
 		assertConnectionEndpoint(serverIterator.next(), "skullbox", 9110);
 	}
-
 }

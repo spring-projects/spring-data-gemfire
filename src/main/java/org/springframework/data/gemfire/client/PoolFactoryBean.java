@@ -19,6 +19,13 @@ package org.springframework.data.gemfire.client;
 import java.net.InetSocketAddress;
 import java.util.List;
 
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -35,17 +42,10 @@ import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-
 /**
  * FactoryBean for easy declaration and configuration of a GemFire {@link Pool}. If a new {@link Pool} is created,
  * its lifecycle is bound to that of this declaring factory.
- * 
+ *
  * Note, if a {@link Pool} having the configured name already exists, then the existing {@link Pool} will be returned
  * as is without any modifications and its lifecycle will be unaffected by this factory.
  *
@@ -596,5 +596,4 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	public void setThreadLocalConnections(boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
 	}
-
 }

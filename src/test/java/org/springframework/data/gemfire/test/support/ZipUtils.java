@@ -25,6 +25,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 
@@ -66,5 +67,4 @@ public abstract class ZipUtils {
 			}
 		}
 	}
-
 }

@@ -176,7 +176,8 @@ public class ConnectionEndpointTest {
 	public void parseWithInvalidDefaultPort() {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("port number (-1248) must be between 0 and 65535");
+		exception.expectMessage("port number [-1248] must be between 0 and 65535");
+
 		ConnectionEndpoint.parse("localhost", -1248);
 	}
 
@@ -219,7 +220,8 @@ public class ConnectionEndpointTest {
 	public void constructConnectionEndpointWithInvalidPort() {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("port number (-1) must be between 0 and 65535");
+		exception.expectMessage("port number [-1] must be between 0 and 65535");
+
 		new ConnectionEndpoint("localhost", -1);
 	}
 
@@ -266,5 +268,4 @@ public class ConnectionEndpointTest {
 		assertThat(socketAddress.getHostName(), is(equalTo(connectionEndpoint.getHost())));
 		assertThat(socketAddress.getPort(), is(equalTo(connectionEndpoint.getPort())));
 	}
-
 }
