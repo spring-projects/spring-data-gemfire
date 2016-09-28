@@ -40,20 +40,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.data.gemfire.repository.sample.Animal;
-import org.springframework.data.gemfire.test.support.CollectionUtils;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.repository.core.EntityInformation;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * The SimpleGemfireRepositoryUnitTest class is a test suite of test cases testing the contract and functionality
@@ -390,5 +390,4 @@ public class SimpleGemfireRepositoryUnitTest {
 		verify(mockRegion, times(0)).clear();
 		verify(mockRegion, times(1)).removeAll(eq(keys));
 	}
-
 }

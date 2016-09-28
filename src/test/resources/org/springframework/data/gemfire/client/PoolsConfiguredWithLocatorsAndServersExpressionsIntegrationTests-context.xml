@@ -17,12 +17,18 @@
 		<prop key="gemfire.cache.client.locators.hosts-and-ports">backspace,jambox[11235],skullbox[12480]</prop>
 		<prop key="gemfire.cache.client.server.1.host">saturn</prop>
 		<prop key="gemfire.cache.client.server.1.port">41414</prop>
+		<prop key="gemfire.cache.client.server.2.host">mars</prop>
+		<prop key="gemfire.cache.client.server.2.port">5112</prop>
 		<prop key="gemfire.cache.client.servers.hosts-and-ports">boombox[1234],jambox,toolbox[81$81%]*</prop>
 	</util:properties>
 
 	<context:property-placeholder properties-ref="clientProperties"/>
 
-	<bean class="org.springframework.data.gemfire.client.PoolUsingLocatorsAndServersPropertyPlaceholdersTest.TestBeanFactoryPostProcessor"/>
+	<bean class="org.springframework.data.gemfire.client.PoolsConfiguredWithLocatorsAndServersExpressionsIntegrationTests.TestBeanFactoryPostProcessor"/>
+
+	<bean id="spelBean" class="org.springframework.data.gemfire.client.PoolsConfiguredWithLocatorsAndServersExpressionsIntegrationTests.SpELBoundBean">
+		<constructor-arg index="0" ref="clientProperties"/>
+	</bean>
 
 	<gfe:pool id="locatorPool" locators="${gemfire.cache.client.locators.hosts-and-ports}">
 		<gfe:locator host="${gemfire.cache.client.locator.1.host}" port="${gemfire.cache.client.locator.1.port}"/>
@@ -30,9 +36,12 @@
 	</gfe:pool>
 
 	<gfe:pool id="serverPool" servers="mercury[1234],venus[9876],earth[4554],jupiter[],uranis[$Ox0+(!)*]">
+		<gfe:server host="#{spelBean.serverTwoHost()}" port="#{spelBean.serverTwoPort()}"/>
 		<gfe:server host="${gemfire.cache.client.server.1.host}" port="${gemfire.cache.client.server.1.port}"/>
 		<gfe:server host="neptune" port="42424"/>
 	</gfe:pool>
+
+	<gfe:pool id="anotherLocatorPool" locators="[10335], cardboardbox[], #{spelBean.locatorsHostsPorts()}"/>
 
 	<gfe:pool id="anotherServerPool" servers="${gemfire.cache.client.servers.hosts-and-ports}"/>
 

@@ -14,6 +14,7 @@
 package org.springframework.data.gemfire.util;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 
 /**
  * The ArrayUtils class is a utility class for working with Object arrays.
@@ -23,6 +24,44 @@ import java.lang.reflect.Array;
  * @see java.lang.reflect.Array
  */
 public abstract class ArrayUtils {
+
+	/**
+	 * Returns the given varargs {@code element} as an array.
+	 *
+	 * @param <T> Class type of the elements.
+	 * @param elements variable list of arguments to return as an array.
+	 * @return an arry for the given varargs {@code elements}.
+	 */
+	public static <T> T[] asArray(T... elements) {
+		return elements;
+	}
+
+	/**
+	 * Null-safe method to return the first element in the array or {@literal null}
+	 * if the array is {@literal null} or empty.
+	 *
+	 * @param <T> Class type of the array elements.
+	 * @param array the array from which to extract the first element.
+	 * @return the first element in the array or {@literal null} if the array is null or empty.
+	 * @see #getFirst(Object[], Object)
+	 */
+	public static <T> T getFirst(T... array) {
+		return getFirst(array, null);
+	}
+
+	/**
+	 * Null-safe method to return the first element in the array or the {@code defaultValue}
+	 * if the array is {@literal null} or empty.
+	 *
+	 * @param <T> Class type of the array elements.
+	 * @param array the array from which to extract the first element.
+	 * @param defaultValue value to return if the array is {@literal null} or empty.
+	 * @return the first element in the array or {@code defaultValue} if the array is {@literal null} or empty.
+	 * @see #getFirst(Object[], Object)
+	 */
+	public static <T> T getFirst(T[] array, T defaultValue) {
+		return (isEmpty(array) ? defaultValue : array[0]);
+	}
 
 	/**
 	 * Insert an element into the given array at position (index).  The element is inserted at the given position
@@ -118,5 +157,18 @@ public abstract class ArrayUtils {
 		}
 
 		return newArray;
+	}
+
+	/**
+	 * Sort the array of elements according to the elements natural ordering.
+	 *
+	 * @param <T> {@link Comparable} class type of the array elements.
+	 * @param array array of elements to sort.
+	 * @return the sorted array of elements.
+	 * @see java.util.Arrays#sort(Object[])
+	 */
+	public static <T extends Comparable<T>> T[] sort(T[] array) {
+		Arrays.sort(array);
+		return array;
 	}
 }

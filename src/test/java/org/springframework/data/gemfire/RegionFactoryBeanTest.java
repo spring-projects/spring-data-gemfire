@@ -38,11 +38,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.After;
-import org.junit.Test;
-import org.springframework.data.gemfire.support.AbstractRegionFactoryBeanTest;
-import org.springframework.data.gemfire.test.support.ArrayUtils;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -57,6 +52,11 @@ import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+
+import org.junit.After;
+import org.junit.Test;
+import org.springframework.data.gemfire.support.AbstractRegionFactoryBeanTest;
+import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
  * The RegionFactoryBeanTest class is a test suite of test cases testing the contract and functionality of the
