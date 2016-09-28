@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -14,6 +14,7 @@
 package org.springframework.data.gemfire.util;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 
 /**
  * The ArrayUtils class is a utility class for working with Object arrays.
@@ -23,6 +24,44 @@ import java.lang.reflect.Array;
  * @see java.lang.reflect.Array
  */
 public abstract class ArrayUtils {
+
+	/**
+	 * Returns the given varargs {@code element} as an array.
+	 *
+	 * @param <T> Class type of the elements.
+	 * @param elements variable list of arguments to return as an array.
+	 * @return an arry for the given varargs {@code elements}.
+	 */
+	public static <T> T[] asArray(T... elements) {
+		return elements;
+	}
+
+	/**
+	 * Null-safe method to return the first element in the array or {@literal null}
+	 * if the array is {@literal null} or empty.
+	 *
+	 * @param <T> Class type of the array elements.
+	 * @param array the array from which to extract the first element.
+	 * @return the first element in the array or {@literal null} if the array is null or empty.
+	 * @see #getFirst(Object[], Object)
+	 */
+	public static <T> T getFirst(T... array) {
+		return getFirst(array, null);
+	}
+
+	/**
+	 * Null-safe method to return the first element in the array or the {@code defaultValue}
+	 * if the array is {@literal null} or empty.
+	 *
+	 * @param <T> Class type of the array elements.
+	 * @param array the array from which to extract the first element.
+	 * @param defaultValue value to return if the array is {@literal null} or empty.
+	 * @return the first element in the array or {@code defaultValue} if the array is {@literal null} or empty.
+	 * @see #getFirst(Object[], Object)
+	 */
+	public static <T> T getFirst(T[] array, T defaultValue) {
+		return (isEmpty(array) ? defaultValue : array[0]);
+	}
 
 	/**
 	 * Insert an element into the given array at position (index).  The element is inserted at the given position
@@ -79,16 +118,18 @@ public abstract class ArrayUtils {
 	}
 
 	/**
-	 * Null-safe, empty array operation returning the given Object array if not null or an empty Object array
+	 * Null-safe, empty array operation returning the given object array if not null or an empty object array
 	 * if the array argument is null.
 	 *
-	 * @param <T> the element Class type of the array.
-	 * @param array the Object array on which a null check is performed.
-	 * @return the given Object array if not null, otherwise return an empty Object array.
+	 * @param <T> Class type of the array elements.
+	 * @param array array of objects on which a null check is performed.
+	 * @param componentType Class type of the array elements.
+	 * @return the given object array if not null, otherwise return an empty object array.
+	 * @see java.lang.reflect.Array#newInstance(Class, int)
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T[] nullSafeArray(T[] array) {
-		return (array != null ? array : (T[]) new Object[0]);
+	public static <T> T[] nullSafeArray(T[] array, Class<T> componentType) {
+		return (array != null ? array : (T[]) Array.newInstance(componentType, 0));
 	}
 
 	/**
@@ -118,4 +159,16 @@ public abstract class ArrayUtils {
 		return newArray;
 	}
 
+	/**
+	 * Sort the array of elements according to the elements natural ordering.
+	 *
+	 * @param <T> {@link Comparable} class type of the array elements.
+	 * @param array array of elements to sort.
+	 * @return the sorted array of elements.
+	 * @see java.util.Arrays#sort(Object[])
+	 */
+	public static <T extends Comparable<T>> T[] sort(T[] array) {
+		Arrays.sort(array);
+		return array;
+	}
 }

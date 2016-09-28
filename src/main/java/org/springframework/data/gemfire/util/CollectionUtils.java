@@ -16,11 +16,18 @@
 
 package org.springframework.data.gemfire.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.springframework.util.Assert;
 
 /**
  * The CollectionUtils class is a utility class for working with Java Collections Framework and classes.
@@ -28,11 +35,29 @@ import java.util.NoSuchElementException;
  * @author John Blum
  * @see java.util.Collection
  * @see java.util.Collections
+ * @see java.util.Enumeration
+ * @see java.util.Iterator
+ * @see java.util.List
+ * @see java.util.Map
+ * @see java.util.Set
  * @see org.springframework.util.CollectionUtils
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
 public abstract class CollectionUtils extends org.springframework.util.CollectionUtils {
+
+	/**
+	 * Returns an unmodifiable {@link Set} containing the elements from the given object array.
+	 *
+	 * @param <T> Class type of the elements.
+	 * @param elements array of objects to add to the {@link Set}.
+	 * @return an unmodifiable {@link Set} containing the elements from the given object array.
+	 */
+	public static <T> Set<T> asSet(T... elements) {
+		Set<T> set = new HashSet<T>(elements.length);
+		Collections.addAll(set, elements);
+		return Collections.unmodifiableSet(set);
+	}
 
 	/**
 	 * Adapts the given Enumeration as an Iterable object for use within a for each loop.
@@ -76,6 +101,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @param collection the Collection to evaluate for being null.
 	 * @return the given Collection if not null, otherwise return an empty Collection (List).
 	 * @see java.util.Collections#emptyList()
+	 * @see java.util.Collection
 	 */
 	public static <T> Collection<T> nullSafeCollection(final Collection<T> collection) {
 		return (collection != null ? collection : Collections.<T>emptyList());
@@ -100,15 +126,96 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 					}
 
 					@Override public T next() {
-						throw new NoSuchElementException("no elements in this Iterator");
+						throw new NoSuchElementException("No more elements");
 					}
 
 					@Override  public void remove() {
-						throw new UnsupportedOperationException("operation not supported");
+						throw new UnsupportedOperationException("Operation not supported");
 					}
 				};
 			}
 		});
 	}
 
+	/**
+	 * Null-safe operation returning the given {@link List} if not {@literal null}
+	 * or an empty {@link List} if {@literal null}.
+	 *
+	 * @param <T> Class type of the {@link List} elements.
+	 * @param list {@link List} to evaluate.
+	 * @return the given {@link List} if not null or an empty {@link List}.
+	 * @see java.util.Collections#emptyList()
+	 * @see java.util.List
+	 */
+	public static <T> List<T> nullSafeList(List<T> list) {
+		return (list != null ? list : Collections.<T>emptyList());
+	}
+
+	/**
+	 * Null-safe operation returning the given {@link Map} if not {@literal null}
+	 * or an empty {@link Map} if {@literal null}.
+	 *
+	 * @param <K> Class type of the {@link Map Map's} keys.
+	 * @param <V> Class type of the {@link Map Map's} values.
+	 * @param map {@link Map} to evaluate.
+	 * @return the given {@link Map} if not null or an empty {@link Map}.
+	 * @see java.util.Collections#emptyMap()
+	 * @see java.util.Map
+	 */
+	public static <K, V> Map<K, V> nullSafeMap(Map<K, V> map) {
+		return (map != null ? map : Collections.<K, V>emptyMap());
+	}
+
+	/**
+	 * Null-safe operation returning the given {@link Set} if not {@literal null}
+	 * or an empty {@link Set} if {@literal null}.
+	 *
+	 * @param <T> Class type of the {@link Set} elements.
+	 * @param set {@link Set} to evaluate.
+	 * @return the given {@link Set} if not null or an empty {@link Set}.
+	 * @see java.util.Collections#emptySet()
+	 * @see java.util.Set
+	 */
+	public static <T> Set<T> nullSafeSet(Set<T> set) {
+		return (set != null ? set : Collections.<T>emptySet());
+	}
+
+	/**
+	 * Sors the elements of the given {@link List} by their natural, {@link Comparable} ordering.
+	 *
+	 * @param <T> {@link Comparable} class type of the collection elements.
+	 * @param list {@link List} of elements to sort.
+	 * @return the {@link List} sorted.
+	 * @see java.util.Collections#sort(List)
+	 * @see java.util.List
+	 */
+	public static <T extends Comparable<T>> List<T> sort(List<T> list) {
+		Collections.sort(list);
+		return list;
+	}
+
+	/**
+	 * Returns a sub-list of elements from the given {@link List} based on the provided {@code indices}.
+	 *
+	 * @param <T> Class type of the elements in the list.
+	 * @param source {@link List} from which the elements of the sub-list is constructed.
+	 * @param indices array of indexes in the {@code source} {@link List} to the elements
+	 * used to construct the sub-list.
+	 * @return a sub-list of elements from the given {@link List} based on the provided {@code indices}.
+	 * @throws IndexOutOfBoundsException if the array of indexes contains an index that is not within
+	 * the bounds of the list.
+	 * @throws NullPointerException if either the list or indexes are null.
+	 * @see java.util.List
+	 */
+	public static <T> List<T> subList(List<T> source, int... indices) {
+		Assert.notNull(source, "List must not be null");
+
+		List<T> result = new ArrayList<T>(indices.length);
+
+		for (int index : indices) {
+			result.add(source.get(index));
+		}
+
+		return result;
+	}
 }

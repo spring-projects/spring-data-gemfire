@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
-import org.springframework.data.gemfire.util.SpringUtils;
 
 /**
  * The ConnectionEndpointList class is an Iterable collection of ConnectionEndpoint objects.
@@ -34,6 +33,7 @@ import org.springframework.data.gemfire.util.SpringUtils;
  * @author John Blum
  * @see java.lang.Iterable
  * @see java.net.InetSocketAddress
+ * @see java.util.AbstractList
  * @see org.springframework.data.gemfire.support.ConnectionEndpoint
  * @since 1.6.3
  */
@@ -97,9 +97,10 @@ public class ConnectionEndpointList extends AbstractList<ConnectionEndpoint> {
 	 * @see org.springframework.data.gemfire.support.ConnectionEndpoint#parse(String, int)
 	 */
 	public static ConnectionEndpointList parse(int defaultPort, String... hostsPorts) {
-		List<ConnectionEndpoint> connectionEndpoints = new ArrayList<ConnectionEndpoint>(hostsPorts.length);
+		List<ConnectionEndpoint> connectionEndpoints = new ArrayList<ConnectionEndpoint>(
+			ArrayUtils.length((Object) hostsPorts));
 
-		for (String hostPort : ArrayUtils.nullSafeArray(hostsPorts)) {
+		for (String hostPort : ArrayUtils.nullSafeArray(hostsPorts, String.class)) {
 			connectionEndpoints.add(ConnectionEndpoint.parse(hostPort, defaultPort));
 		}
 
@@ -139,7 +140,7 @@ public class ConnectionEndpointList extends AbstractList<ConnectionEndpoint> {
 	/* (non-Javadoc) */
 	@Override
 	public boolean add(ConnectionEndpoint connectionEndpoint) {
-		return (add(SpringUtils.toArray(connectionEndpoint)) == this);
+		return (add(ArrayUtils.asArray(connectionEndpoint)) == this);
 	}
 
 	/**
@@ -334,5 +335,4 @@ public class ConnectionEndpointList extends AbstractList<ConnectionEndpoint> {
 	public String toString() {
 		return connectionEndpoints.toString();
 	}
-
 }

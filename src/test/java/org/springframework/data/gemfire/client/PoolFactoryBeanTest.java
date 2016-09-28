@@ -38,19 +38,19 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.query.QueryService;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
-import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.util.ReflectionUtils;
-
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
  * The PoolFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -276,7 +276,7 @@ public class PoolFactoryBeanTest {
 		assertThat(poolFactoryBean.getLocators().findOne("skullbox"), is(equalTo(skullbox)));
 		assertThat(poolFactoryBean.getLocators().findOne("boombox"), is(equalTo(boombox)));
 
-		poolFactoryBean.setLocators(SpringUtils.toArray(localhost));
+		poolFactoryBean.setLocators(ArrayUtils.asArray(localhost));
 
 		assertThat(poolFactoryBean.getLocators().size(), is(equalTo(1)));
 		assertThat(poolFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
@@ -311,7 +311,7 @@ public class PoolFactoryBeanTest {
 		assertThat(poolFactoryBean.getServers().findOne("skullbox"), is(equalTo(skullbox)));
 		assertThat(poolFactoryBean.getServers().findOne("boombox"), is(equalTo(boombox)));
 
-		poolFactoryBean.setServers(SpringUtils.toArray(localhost));
+		poolFactoryBean.setServers(ArrayUtils.asArray(localhost));
 
 		assertThat(poolFactoryBean.getServers().size(), is(equalTo(1)));
 		assertThat(poolFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
@@ -339,7 +339,7 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setFreeConnectionTimeout(5000);
 		poolFactoryBean.setIdleTimeout(120000l);
 		poolFactoryBean.setLoadConditioningInterval(300000);
-		poolFactoryBean.setLocators(SpringUtils.toArray(newConnectionEndpoint("skullbox", 11235)));
+		poolFactoryBean.setLocators(ArrayUtils.asArray(newConnectionEndpoint("skullbox", 11235)));
 		poolFactoryBean.setMaxConnections(500);
 		poolFactoryBean.setMinConnections(50);
 		poolFactoryBean.setMultiUserAuthentication(true);
@@ -348,7 +348,7 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setReadTimeout(30000);
 		poolFactoryBean.setRetryAttempts(1);
 		poolFactoryBean.setServerGroup("TestGroup");
-		poolFactoryBean.setServers(SpringUtils.toArray(newConnectionEndpoint("boombox", 12480)));
+		poolFactoryBean.setServers(ArrayUtils.asArray(newConnectionEndpoint("boombox", 12480)));
 		poolFactoryBean.setSocketBufferSize(16384);
 		poolFactoryBean.setStatisticInterval(500);
 		poolFactoryBean.setSubscriptionAckInterval(200);
@@ -539,5 +539,4 @@ public class PoolFactoryBeanTest {
 
 		pool.releaseThreadLocalConnection();
 	}
-
 }

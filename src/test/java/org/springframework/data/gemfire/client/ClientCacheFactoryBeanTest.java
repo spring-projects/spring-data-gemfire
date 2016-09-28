@@ -45,6 +45,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.pdx.PdxSerializer;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -54,16 +62,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.GemfireConstants;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
+import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
-import org.springframework.data.gemfire.util.SpringUtils;
-
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
  * The ClientCacheFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -1359,7 +1359,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getLocators().findOne("skullbox"), is(equalTo(skullbox)));
 		assertThat(clientCacheFactoryBean.getLocators().findOne("boombox"), is(equalTo(boombox)));
 
-		clientCacheFactoryBean.setLocators(SpringUtils.toArray(localhost));
+		clientCacheFactoryBean.setLocators(ArrayUtils.asArray(localhost));
 
 		assertThat(clientCacheFactoryBean.getLocators().size(), is(equalTo(1)));
 		assertThat(clientCacheFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
@@ -1394,7 +1394,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getServers().findOne("skullbox"), is(equalTo(skullbox)));
 		assertThat(clientCacheFactoryBean.getServers().findOne("boombox"), is(equalTo(boombox)));
 
-		clientCacheFactoryBean.setServers(SpringUtils.toArray(localhost));
+		clientCacheFactoryBean.setServers(ArrayUtils.asArray(localhost));
 
 		assertThat(clientCacheFactoryBean.getServers().size(), is(equalTo(1)));
 		assertThat(clientCacheFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
@@ -1404,5 +1404,4 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getServers(), is(notNullValue()));
 		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
 	}
-
 }

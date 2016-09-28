@@ -16,11 +16,8 @@
 
 package org.springframework.data.gemfire.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -42,20 +39,23 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Parser for GFE &lt;pool;gt; bean definitions.
- *  
+ * Parser for &lt;gfe:pool&gt; bean definitions.
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.config.BeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
+ * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
+ * @see org.springframework.data.gemfire.client.PoolFactoryBean
  */
 class PoolParser extends AbstractSingleBeanDefinitionParser {
 
-	static final AtomicBoolean INFRASTRUCTURE_REGISTRATION = new AtomicBoolean(false);
+	static final AtomicBoolean INFRASTRUCTURE_COMPONENTS_REGISTERED = new AtomicBoolean(false);
 
 	protected static final int DEFAULT_LOCATOR_PORT = GemfireUtils.DEFAULT_LOCATOR_PORT;
 	protected static final int DEFAULT_SERVER_PORT = GemfireUtils.DEFAULT_CACHE_SERVER_PORT;
-
-	protected static final Pattern PROPERTY_PLACEHOLDER_PATTERN = Pattern.compile("\\$\\{.+\\}");
 
 	protected static final String DEFAULT_HOST = "localhost";
 	protected static final String HOST_ATTRIBUTE_NAME = "host";
@@ -66,8 +66,8 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	protected static final String SERVERS_ATTRIBUTE_NAME = "servers";
 
 	/* (non-Javadoc) */
-	static void registerSupportingInfrastructureComponents(ParserContext parserContext) {
-		if (INFRASTRUCTURE_REGISTRATION.compareAndSet(false, true)) {
+	static void registerInfrastructureComponents(ParserContext parserContext) {
+		if (INFRASTRUCTURE_COMPONENTS_REGISTERED.compareAndSet(false, true)) {
 			AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
 				.genericBeanDefinition(ClientRegionAndPoolBeanFactoryPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
@@ -85,7 +85,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		registerSupportingInfrastructureComponents(parserContext);
+		registerInfrastructureComponents(parserContext);
 
 		ParsingUtils.setPropertyValue(element, builder, "free-connection-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "idle-timeout");
@@ -124,13 +124,13 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 			}
 		}
 
-		locators.addAll(parseLocators(element, getRegistry(parserContext)));
-		servers.addAll(parseServers(element, getRegistry(parserContext)));
+		boolean locatorsSet = parseLocators(element, getRegistry(parserContext));
+		boolean serversSet = parseServers(element, getRegistry(parserContext));
 
-		// NOTE if neither Locators nor Servers were specified, then setup a connection to a Server
-		// running on localhost, listening on the default CacheServer port, 40404
-		if (childElements.isEmpty() && !hasAttributes(element, LOCATORS_ATTRIBUTE_NAME, SERVERS_ATTRIBUTE_NAME)) {
-			servers.add(buildConnection(DEFAULT_HOST, String.valueOf(DEFAULT_SERVER_PORT), false));
+		// NOTE: if neither Locators nor Servers were configured, then setup a connection to a Server
+		// running on localhost, listening on the default CacheServer port 40404
+		if (childElements.isEmpty() && !(locatorsSet || serversSet)) {
+			servers.add(buildConnection(DEFAULT_HOST, String.valueOf(DEFAULT_SERVER_PORT), true));
 		}
 
 		if (!locators.isEmpty()) {
@@ -143,47 +143,31 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	/* (non-Javadoc) */
-	boolean hasAttributes(Element element, String... attributeNames) {
-		for (String attributeName : attributeNames) {
-			if (element.hasAttribute(attributeName)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/* (non-Javadoc) */
-	boolean isPropertyPlaceholder(String value) {
-		return PROPERTY_PLACEHOLDER_PATTERN.matcher(value).matches();
-	}
-
-	/* (non-Javadoc) */
 	BeanDefinitionRegistry getRegistry(ParserContext parserContext) {
 		return parserContext.getRegistry();
 	}
 
 	/* (non-Javadoc) */
-	BeanDefinition buildConnections(String propertyPlaceholder, boolean server) {
-		BeanDefinitionBuilder connectionEndpointListBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-			ConnectionEndpointList.class);
-
-		connectionEndpointListBuilder.setFactoryMethod("parse");
-		connectionEndpointListBuilder.addConstructorArgValue(defaultPort(null, server));
-		connectionEndpointListBuilder.addConstructorArgValue(propertyPlaceholder);
-
-		return connectionEndpointListBuilder.getBeanDefinition();
-	}
-
-	/* (non-Javadoc) */
 	BeanDefinition buildConnection(String host, String port, boolean server) {
-		BeanDefinitionBuilder connectionEndpointBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-			ConnectionEndpoint.class);
+		BeanDefinitionBuilder connectionEndpointBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(ConnectionEndpoint.class);
 
 		connectionEndpointBuilder.addConstructorArgValue(defaultHost(host));
 		connectionEndpointBuilder.addConstructorArgValue(defaultPort(port, server));
 
 		return connectionEndpointBuilder.getBeanDefinition();
+	}
+
+	/* (non-Javadoc) */
+	BeanDefinition buildConnections(String expression, boolean server) {
+		BeanDefinitionBuilder connectionEndpointListBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(ConnectionEndpointList.class);
+
+		connectionEndpointListBuilder.setFactoryMethod("parse");
+		connectionEndpointListBuilder.addConstructorArgValue(defaultPort(null, server));
+		connectionEndpointListBuilder.addConstructorArgValue(expression);
+
+		return connectionEndpointListBuilder.getBeanDefinition();
 	}
 
 	/* (non-Javadoc) */
@@ -198,65 +182,18 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	/* (non-Javadoc) */
-	List<BeanDefinition> parseConnections(String hostPortCommaDelimitedList, boolean server) {
-		List<BeanDefinition> connections = Collections.emptyList();
-
-		if (StringUtils.hasText(hostPortCommaDelimitedList)) {
-			String[] hostsPorts = hostPortCommaDelimitedList.split(",");
-
-			connections = new ArrayList<BeanDefinition>(hostsPorts.length);
-
-			for (String hostPort : hostsPorts) {
-				connections.add(parseConnection(hostPort, server));
-			}
-		}
-
-		return connections;
-	}
-
-	/* (non-Javadoc) */
-	BeanDefinition parseConnection(String hostPort, boolean server) {
-		String host = hostPort.trim();
-		String port = defaultPort(null, server);
-
-		int portIndex = host.indexOf('[');
-
-		if (portIndex > -1) {
-			port = parseDigits(host.substring(portIndex)).trim();
-			host = host.substring(0, portIndex).trim();
-		}
-
-		return buildConnection(host, port, server);
-	}
-
-	/* (non-Javadoc) */
-	String parseDigits(String value) {
-		StringBuilder digits = new StringBuilder();
-
-		for (char character : value.toCharArray()) {
-			if (Character.isDigit(character)) {
-				digits.append(character);
-			}
-		}
-
-		return digits.toString();
-	}
-
-	/* (non-Javadoc) */
 	BeanDefinition parseLocator(Element element) {
 		return buildConnection(element.getAttribute(HOST_ATTRIBUTE_NAME),
 			element.getAttribute(PORT_ATTRIBUTE_NAME), false);
 	}
 
 	/* (non-Javadoc) */
-	List<BeanDefinition> parseLocators(Element element, BeanDefinitionRegistry registry) {
-		List<BeanDefinition> beanDefinitions = Collections.emptyList();
-
+	boolean parseLocators(Element element, BeanDefinitionRegistry registry) {
 		String locatorsAttributeValue = element.getAttribute(LOCATORS_ATTRIBUTE_NAME);
 
-		if (isPropertyPlaceholder(locatorsAttributeValue)) {
-			BeanDefinitionBuilder addLocatorsMethodInvokingBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-				MethodInvokingBean.class);
+		if (StringUtils.hasText(locatorsAttributeValue)) {
+			BeanDefinitionBuilder addLocatorsMethodInvokingBeanBuilder =
+				BeanDefinitionBuilder.genericBeanDefinition(MethodInvokingBean.class);
 
 			addLocatorsMethodInvokingBeanBuilder.addPropertyReference("targetObject", resolveDereferencedId(element));
 			addLocatorsMethodInvokingBeanBuilder.addPropertyValue("targetMethod", "addLocators");
@@ -267,12 +204,11 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 				addLocatorsMethodInvokingBeanBuilder.getBeanDefinition();
 
 			BeanDefinitionReaderUtils.registerWithGeneratedName(addLocatorsMethodInvokingBean, registry);
-		}
-		else {
-			beanDefinitions = parseConnections(locatorsAttributeValue, false);
+
+			return true;
 		}
 
-		return beanDefinitions;
+		return false;
 	}
 
 	/* (non-Javadoc) */
@@ -282,14 +218,12 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	/* (non-Javadoc) */
-	List<BeanDefinition> parseServers(Element element, BeanDefinitionRegistry registry) {
-		List<BeanDefinition> beanDefinitions = Collections.emptyList();
-
+	boolean parseServers(Element element, BeanDefinitionRegistry registry) {
 		String serversAttributeValue = element.getAttribute(SERVERS_ATTRIBUTE_NAME);
 
-		if (isPropertyPlaceholder(serversAttributeValue)) {
-			BeanDefinitionBuilder addServersMethodInvokingBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-				MethodInvokingBean.class);
+		if (StringUtils.hasText(serversAttributeValue)) {
+			BeanDefinitionBuilder addServersMethodInvokingBeanBuilder =
+				BeanDefinitionBuilder.genericBeanDefinition(MethodInvokingBean.class);
 
 			addServersMethodInvokingBeanBuilder.addPropertyReference("targetObject", resolveDereferencedId(element));
 			addServersMethodInvokingBeanBuilder.addPropertyValue("targetMethod", "addServers");
@@ -300,12 +234,11 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 				addServersMethodInvokingBeanBuilder.getBeanDefinition();
 
 			BeanDefinitionReaderUtils.registerWithGeneratedName(addServersMethodInvokingBean, registry);
-		}
-		else {
-			beanDefinitions = parseConnections(serversAttributeValue, true);
+
+			return true;
 		}
 
-		return beanDefinitions;
+		return false;
 	}
 
 	/* (non-Javadoc) */
@@ -333,5 +266,4 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 		return id;
 	}
-
 }
