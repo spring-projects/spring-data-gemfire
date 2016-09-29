@@ -3,6 +3,13 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.8.4.RELEASE (2016-09-29)
+---------------------------------------------
+* SGF-535 - Allow both SpEL and property placeholder expressions to be used in the locators/servers attributes of the <gfe:pool> XML namespace element.
+* SGF-534 - Fix ordered GemfireRepository.findAll(Sort) queries.
+* SGF-531 - Release 1.8.4 (Hopper SR4).
+
+
 Changes in version 1.7.6.RELEASE (2016-09-29)
 ---------------------------------------------
 * SGF-536 - Release 1.7.6 (Gosling SR6).
