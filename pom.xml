@@ -28,7 +28,7 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-release</id>
+			<id>spring-libs-snapshot</id>
 			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
