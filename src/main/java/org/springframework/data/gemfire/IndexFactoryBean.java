@@ -25,7 +25,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -43,7 +43,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
  * Spring FactoryBean for easy declarative creation of GemFire Indexes.
- * 
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
@@ -267,7 +267,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 	/**
 	 * Sets the underlying cache used for creating indexes.
-	 * 
+	 *
 	 * @param cache cache used for creating indexes.
 	 */
 	public void setCache(RegionService cache) {
@@ -276,7 +276,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 	/**
 	 * Sets the query service used for creating indexes.
-	 * 
+	 *
 	 * @param service query service used for creating indexes.
 	 */
 	public void setQueryService(QueryService service) {

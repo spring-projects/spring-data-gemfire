@@ -27,7 +27,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 import com.gemstone.gemfire.cache.Cache;
 

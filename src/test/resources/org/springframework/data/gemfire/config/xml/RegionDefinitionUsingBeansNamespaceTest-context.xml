@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">RegionDefinitionUsingBeansNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<bean id="Example" class="org.springframework.data.gemfire.config.xml.RegionDefinitionUsingBeansNamespaceTest$TestRegionFactoryBean"
+		  p:cache-ref="gemfireCache">
+		<property name="attributes">
+			<bean class="org.springframework.data.gemfire.RegionAttributesFactoryBean"
+				  p:dataPolicy="PERSISTENT_PARTITION"
+				  p:statisticsEnabled="true">
+				<property name="partitionAttributes">
+					<bean class="org.springframework.data.gemfire.PartitionAttributesFactoryBean"
+						  p:redundantCopies="1" p:recoveryDelay="0"/>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="AnotherExample" class="org.springframework.data.gemfire.config.xml.RegionDefinitionUsingBeansNamespaceTest$TestRegionFactoryBean"
+		  p:cache-ref="gemfireCache" p:dataPolicy="PERSISTENT_PARTITION" p:persistent="true">
+		<property name="attributes">
+			<bean class="org.springframework.data.gemfire.RegionAttributesFactoryBean" p:dataPolicy="PARTITION">
+				<property name="partitionAttributes">
+					<bean class="org.springframework.data.gemfire.PartitionAttributesFactoryBean" p:redundantCopies="2"/>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+</beans>

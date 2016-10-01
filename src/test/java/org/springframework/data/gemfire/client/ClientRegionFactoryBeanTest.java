@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAttributes;

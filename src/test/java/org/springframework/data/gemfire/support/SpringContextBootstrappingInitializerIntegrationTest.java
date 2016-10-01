@@ -40,7 +40,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.LazyWiringDeclarableSupport;
-import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.repository.sample.User;
 import org.springframework.data.gemfire.support.sample.TestUserDao;
 import org.springframework.data.gemfire.support.sample.TestUserService;

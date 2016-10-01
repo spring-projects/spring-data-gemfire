@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+" default-lazy-init="true">
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">GemfireV7GatewayNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">config</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:partitioned-region id="region-inner-gateway-sender" >
+        <gfe:gateway-sender remote-distributed-system-id="1"
+							manual-start="false"
+							alert-threshold="10"
+							batch-size="11"
+							batch-time-interval="3000"
+							dispatcher-threads="2"
+							disk-store-ref="diskstore"
+							disk-synchronous="true"
+							enable-batch-conflation="true"
+							maximum-queue-memory="50"
+							order-policy="THREAD"
+							persistent="true"
+							parallel="false"
+							socket-buffer-size="16536"
+							socket-read-timeout="3000">
+			<gfe:event-filter>
+				<bean class="org.springframework.data.gemfire.config.xml.GemfireV7GatewayNamespaceTest.TestEventFilter"/>
+			</gfe:event-filter>
+			<gfe:transport-filter>
+				<bean class="org.springframework.data.gemfire.config.xml.GemfireV7GatewayNamespaceTest.TestTransportFilter"/>
+			</gfe:transport-filter>
+		</gfe:gateway-sender>
+		<gfe:gateway-sender-ref bean="gateway-sender"/>
+    </gfe:partitioned-region>
+
+    <gfe:async-event-queue id="async-event-queue"
+						   batch-conflation-enabled="true"
+						   batch-size="10"
+						   batch-time-interval="3"
+						   dispatcher-threads="4"
+						   disk-store-ref="diskstore"
+						   disk-synchronous="true"
+						   maximum-queue-memory="50"
+						   parallel="false"
+						   persistent="true"
+						   order-policy="KEY">
+		<gfe:async-event-listener>
+			<bean class="org.springframework.data.gemfire.config.xml.GemfireV7GatewayNamespaceTest.TestAsyncEventListener"/>
+		</gfe:async-event-listener>
+    </gfe:async-event-queue>
+
+    <gfe:disk-store id="diskstore"/>
+
+    <gfe:gateway-receiver id="gateway-receiver" bind-address="192.168.0.1" start-port="12345" end-port="23456"
+						  maximum-time-between-pings="3000" socket-buffer-size="16536">
+        <gfe:transport-filter>
+            <bean class="org.springframework.data.gemfire.config.xml.GemfireV7GatewayNamespaceTest.TestTransportFilter"/>
+        </gfe:transport-filter>
+    </gfe:gateway-receiver>
+
+    <!-- need manual-start=true for the unit test because GF will throw an exception if no locators are configured -->
+    <gfe:gateway-sender id="gateway-sender" remote-distributed-system-id="2" alert-threshold="10"
+						batch-conflation-enabled="true" batch-size="11" dispatcher-threads="12" disk-synchronous="false"
+						manual-start="true">
+		<gfe:event-filter>
+			<ref bean="event-filter"/>
+			<bean class="org.springframework.data.gemfire.config.xml.GemfireV7GatewayNamespaceTest.TestEventFilter"/>
+		</gfe:event-filter>
+		<gfe:transport-filter>
+			<ref bean="transport-filter"/>
+			<bean class="org.springframework.data.gemfire.config.xml.GemfireV7GatewayNamespaceTest.TestTransportFilter"/>
+		</gfe:transport-filter>
+   </gfe:gateway-sender>
+
+	<gfe:gateway-sender id="gateway-sender-with-event-transport-filter-refs" remote-distributed-system-id="3"
+						batch-conflation-enabled="true" batch-size="50" dispatcher-threads="10" enable-batch-conflation="false"
+						manual-start="true">
+		<gfe:event-filter ref="event-filter"/>
+		<gfe:transport-filter ref="transport-filter"/>
+	</gfe:gateway-sender>
+
+   <bean id="event-filter" class="org.springframework.data.gemfire.config.xml.GemfireV7GatewayNamespaceTest.TestEventFilter"/>
+   <bean id="transport-filter" class="org.springframework.data.gemfire.config.xml.GemfireV7GatewayNamespaceTest.TestTransportFilter"/>
+
+</beans>

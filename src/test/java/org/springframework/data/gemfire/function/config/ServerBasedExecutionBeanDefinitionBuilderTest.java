@@ -36,7 +36,7 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 /**
  * The ServerBasedExecutionBeanDefinitionBuilderTest class is test suite of test cases testing the contract

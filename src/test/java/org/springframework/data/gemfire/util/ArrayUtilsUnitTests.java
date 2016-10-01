@@ -107,26 +107,26 @@ public class ArrayUtilsUnitTests {
 
 	@Test
 	public void isEmptyIsFalse() {
-		assertThat(ArrayUtils.isEmpty("test", "testing", "tested")).isFalse();
-		assertThat(ArrayUtils.isEmpty("test")).isFalse();
-		assertThat(ArrayUtils.isEmpty("")).isFalse();
-		assertThat(ArrayUtils.isEmpty(null, null, null)).isFalse();
+		assertThat(ArrayUtils.isEmpty(ArrayUtils.asArray("test", "testing", "tested"))).isFalse();
+		assertThat(ArrayUtils.isEmpty(ArrayUtils.asArray("test"))).isFalse();
+		assertThat(ArrayUtils.isEmpty(ArrayUtils.asArray(""))).isFalse();
+		assertThat(ArrayUtils.isEmpty(ArrayUtils.asArray(null, null, null))).isFalse();
 	}
 
 	@Test
 	public void isEmptyIsTrue() {
-		assertThat(ArrayUtils.isEmpty()).isTrue();
-		assertThat(ArrayUtils.isEmpty((Object[]) null)).isTrue();
+		assertThat(ArrayUtils.isEmpty(new Object[0])).isTrue();
+		assertThat(ArrayUtils.isEmpty(null)).isTrue();
 	}
 
 	@Test
 	public void length() {
-		assertThat(ArrayUtils.length("test", "testing", "tested")).isEqualTo(3);
-		assertThat(ArrayUtils.length("test")).isEqualTo(1);
-		assertThat(ArrayUtils.length("")).isEqualTo(1);
-		assertThat(ArrayUtils.length(null, null, null)).isEqualTo(3);
-		assertThat(ArrayUtils.length()).isEqualTo(0);
-		assertThat(ArrayUtils.length((Object[]) null)).isEqualTo(0);
+		assertThat(ArrayUtils.length(ArrayUtils.asArray("test", "testing", "tested"))).isEqualTo(3);
+		assertThat(ArrayUtils.length(ArrayUtils.asArray("test"))).isEqualTo(1);
+		assertThat(ArrayUtils.length(ArrayUtils.asArray(""))).isEqualTo(1);
+		assertThat(ArrayUtils.length(ArrayUtils.asArray(null, null, null))).isEqualTo(3);
+		assertThat(ArrayUtils.length(new Object[0])).isEqualTo(0);
+		assertThat(ArrayUtils.length(null)).isEqualTo(0);
 	}
 
 	@Test

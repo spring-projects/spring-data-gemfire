@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   default-lazy-init="true"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="disable-tcp">false</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:cache/>
+
+	<gfe:cache id="cache-with-name"/>
+
+	<gfe:cache id="cache-with-xml-and-props" cache-xml-location="classpath:gemfire-cache.xml" properties-ref="gemfireProperties"
+			   pdx-read-serialized="true" pdx-ignore-unread-fields="false" pdx-persistent="true"/>
+
+	<gfe:cache id="cache-with-gateway-conflict-resolver" properties-ref="gemfireProperties">
+		<gfe:gateway-conflict-resolver>
+			<bean class="org.springframework.data.gemfire.config.xml.CacheNamespaceTest.TestGatewayConflictResolver"/>
+		</gfe:gateway-conflict-resolver>
+	</gfe:cache>
+
+	<gfe:cache id="cache-with-auto-reconnect-disabled" properties-ref="gemfireProperties" enable-auto-reconnect="false"/>
+
+	<gfe:cache id="cache-with-auto-reconnect-enabled" properties-ref="gemfireProperties" enable-auto-reconnect="true"/>
+
+	<gfe:cache id="heap-tuned-cache" properties-ref="gemfireProperties" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
+
+	<gfe:cache id="no-bean-factory-locator-cache" properties-ref="gemfireProperties" use-bean-factory-locator="false"/>
+
+	<gfe:client-cache id="client-cache-with-name"/>
+
+	<gfe:client-cache id="client-cache-with-xml" cache-xml-location="classpath:gemfire-client-cache.xml"/>
+
+	<gfe:pool>
+		<gfe:server host="localhost" port="1234"/>
+	</gfe:pool>
+
+</beans>
