@@ -26,7 +26,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.DataPolicyConverter;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
-import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -371,7 +371,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	/**
 	 * Set the interests for this client region. Both key and regex interest are
 	 * supported.
-	 * 
+	 *
 	 * @param interests the interests to set
 	 */
 	public void setInterests(Interest<K>[] interests) {

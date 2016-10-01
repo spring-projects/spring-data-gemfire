@@ -43,7 +43,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.Pool;

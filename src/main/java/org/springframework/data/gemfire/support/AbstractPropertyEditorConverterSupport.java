@@ -35,32 +35,32 @@ public abstract class AbstractPropertyEditorConverterSupport<T> extends Property
 		implements Converter<String, T> {
 
 	/**
-	 * Asserts that the given String was successfully converted into an instance of Class type T.
+	 * Asserts that the given {@link String} was converted into an instance of {@link Class type} T.
 	 *
-	 * @param source the String to convert.
-	 * @param convertedValue the value of the String converted into instance of Class type T.
-	 * @param type the target Class type of the converted value.
-	 * @return the converted value of Class type T if not null.
-	 * @throws java.lang.IllegalArgumentException if the String could not be converted into
-	 * an instance of Class type T.
+	 * @param source {@link String} to convert.
+	 * @param convertedValue converted value of {@link Class type} T.
+	 * @param type {@link Class type} of the converted value.
+	 * @return the converted value.
+	 * @throws java.lang.IllegalArgumentException if the {@link String} could not be converted into
+	 * an instance of {@link Class type} T.
 	 */
-	protected T assertConverted(final String source, final T convertedValue, final Class<T> type) {
-		Assert.notNull(convertedValue, String.format("(%1$s) is not a valid %2$s!", source, type.getSimpleName()));
+	protected T assertConverted(String source, T convertedValue, Class<T> type) {
+		Assert.notNull(convertedValue, String.format("[%1$s] is not a valid %2$s", source, type.getSimpleName()));
 		return convertedValue;
 	}
 
 	/**
-	 * Sets the value of this PropertyEditor with the given String converted to the appropriate Class type.
+	 * Sets the value of this {@link java.beans.PropertyEditor} to the given {@link String}
+	 * converted to the appropriate {@link Class type}.
 	 *
-	 * @param text the String to convert.
-	 * @throws java.lang.IllegalArgumentException if the String could not be converted into
-	 * an instance of Class type T.
+	 * @param text {@link String} to convert.
+	 * @throws java.lang.IllegalArgumentException if the {@link String} could not be converted into
+	 * an instance of {@link Class type} T.
 	 * @see #convert(Object)
 	 * @see #setValue(Object)
 	 */
 	@Override
-	public void setAsText(final String text) throws IllegalArgumentException {
+	public void setAsText(String text) throws IllegalArgumentException {
 		setValue(convert(text));
 	}
-
 }

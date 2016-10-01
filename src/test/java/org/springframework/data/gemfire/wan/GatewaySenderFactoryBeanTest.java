@@ -26,12 +26,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.Test;
-import org.springframework.data.gemfire.TestUtils;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
+
+import org.junit.Test;
+import org.springframework.data.gemfire.TestUtils;
 
 /**
  * The GatewaySenderFactoryBeanTest class is a test suite of test cases testing the contract and functionality of the
@@ -278,10 +278,9 @@ public class GatewaySenderFactoryBeanTest {
 				.setOrderPolicy("invalid");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals(String.format("(invalid) is not a valid %1$s!", GatewaySender.OrderPolicy.class.getSimpleName()),
+			assertEquals(String.format("[invalid] is not a valid %s", GatewaySender.OrderPolicy.class.getSimpleName()),
 				expected.getMessage());
 			throw expected;
 		}
 	}
-
 }

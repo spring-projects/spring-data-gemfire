@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+" default-lazy-init="true">
+
+    <gfe:function-service>
+        <gfe:function>
+         <bean class="org.springframework.data.gemfire.config.xml.FunctionServiceNamespaceTest.Function1"/>
+         <ref bean="function2"/>
+        </gfe:function>
+    </gfe:function-service>
+
+    <bean id="function2" class="org.springframework.data.gemfire.config.xml.FunctionServiceNamespaceTest.Function2"/>
+
+</beans>

@@ -103,7 +103,7 @@ public abstract class ArrayUtils {
 	 * @return a boolean value indicating whether the given array is empty.
 	 * @see #length(Object...)
 	 */
-	public static boolean isEmpty(Object... array) {
+	public static boolean isEmpty(Object[] array) {
 		return (length(array) == 0);
 	}
 
@@ -113,7 +113,7 @@ public abstract class ArrayUtils {
 	 * @param array the array to determine it's length.
 	 * @return the length of the given array or 0 if the array reference is null.
 	 */
-	public static int length(Object... array) {
+	public static int length(Object[] array) {
 		return (array != null ? array.length : 0);
 	}
 

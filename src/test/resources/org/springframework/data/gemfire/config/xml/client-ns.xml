@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+" default-lazy-init="true">
+
+	<util:properties id="placeholderProperties">
+		<prop key="client.interests.durable">true</prop>
+		<prop key="client.interests.receive-values">false</prop>
+		<prop key="client.key.interests.result-policy">keys</prop>
+		<prop key="client.regex.interests.result-policy">Keys_VALUes</prop>
+	</util:properties>
+
+	<context:property-placeholder properties-ref="placeholderProperties"/>
+
+	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<gfe:client-cache properties-ref="gemfireProperties"/>
+
+	<gfe:client-region id="simple" name="SimpleRegion"/>
+
+	<gfe:client-region id="empty" name="Publisher" data-policy="EMPTY" pool-name="gemfire-pool" close="true" destroy="false"/>
+
+	<gfe:client-region id="complex" name="ComplexRegion" load-factor="0.5" pool-name="gemfire-pool" statistics="true" close="true" destroy="false">
+		<gfe:cache-listener>
+			<ref bean="c-listener"/>
+			<bean class="org.springframework.data.gemfire.SimpleCacheListener"/>
+		</gfe:cache-listener>
+		<gfe:entry-ttl action="INVALIDATE" timeout="500"/>
+		<gfe:eviction threshold="5"/>
+	</gfe:client-region>
+
+	<gfe:client-region id="persistent" name="PersistentRegion" pool-name="gemfire-pool" persistent="true" disk-store-ref="diskStore" disk-synchronous="true"/>
+
+	<gfe:disk-store id="diskStore" auto-compact="true" max-oplog-size="5" queue-size="50" time-interval="9999">
+		<gfe:disk-dir location="./" max-size="10"/>
+	</gfe:disk-store>
+
+	<gfe:client-region id="overflow" name="OverflowRegion" disk-store-ref="diskStore" pool-name="gemfire-pool">
+		<gfe:eviction type="MEMORY_SIZE" threshold="10" action="OVERFLOW_TO_DISK">
+			<gfe:object-sizer>
+				<bean class="org.springframework.data.gemfire.SimpleObjectSizer"/>
+			</gfe:object-sizer>
+		</gfe:eviction>
+	</gfe:client-region>
+
+	<gfe:client-region id="loadWithWrite" name="LoadedFullOfWrites" shortcut="LOCAL">
+		<gfe:cache-loader>
+			<bean class="org.springframework.data.gemfire.config.xml.ClientRegionNamespaceTest$TestCacheLoader"/>
+		</gfe:cache-loader>
+		<gfe:cache-writer>
+			<bean class="org.springframework.data.gemfire.config.xml.ClientRegionNamespaceTest$TestCacheWriter"/>
+		</gfe:cache-writer>
+	</gfe:client-region>
+
+	<gfe:client-region id="Compressed" pool-name="gemfire-pool" shortcut="PROXY">
+		<gfe:compressor ref="testCompressor"/>
+	</gfe:client-region>
+
+	<gfe:client-region id="client-with-attributes"
+					   cloning-enabled="false"
+					   concurrency-checks-enabled="true"
+					   concurrency-level="8"
+					   initial-capacity="64"
+					   key-constraint="java.lang.Long"
+					   load-factor="0.85"
+					   persistent="false"
+					   pool-name="gemfire-pool"
+					   shortcut="CACHING_PROXY"
+					   value-constraint="java.lang.String"/>
+
+	<bean id="mockCache" class="org.springframework.data.gemfire.config.xml.ClientRegionNamespaceTest$MockCacheFactoryBean"/>
+
+	<gfe:client-region id="client-with-interests" ignore-if-exists="true" shortcut="PROXY" cache-ref="mockCache">
+		<gfe:key-interest durable="${client.interests.durable}" receive-values="${client.interests.receive-values}"
+						  result-policy="${client.key.interests.result-policy}">
+			<bean class="java.lang.String">
+				<constructor-arg value=".*"/>
+			</bean>
+		</gfe:key-interest>
+		<gfe:regex-interest pattern="keyPrefix.*" durable="${client.interests.durable}"
+							receive-values="${client.interests.receive-values}"
+							result-policy="${client.regex.interests.result-policy}"/>
+	</gfe:client-region>
+
+	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
+	<bean id="testCompressor" class="org.springframework.data.gemfire.config.xml.ClientRegionNamespaceTest$TestCompressor" p:name="STD"/>
+
+</beans>

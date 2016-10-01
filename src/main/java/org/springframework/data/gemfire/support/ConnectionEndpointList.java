@@ -98,7 +98,7 @@ public class ConnectionEndpointList extends AbstractList<ConnectionEndpoint> {
 	 */
 	public static ConnectionEndpointList parse(int defaultPort, String... hostsPorts) {
 		List<ConnectionEndpoint> connectionEndpoints = new ArrayList<ConnectionEndpoint>(
-			ArrayUtils.length((Object) hostsPorts));
+			ArrayUtils.length(hostsPorts));
 
 		for (String hostPort : ArrayUtils.nullSafeArray(hostsPorts, String.class)) {
 			connectionEndpoints.add(ConnectionEndpoint.parse(hostPort, defaultPort));

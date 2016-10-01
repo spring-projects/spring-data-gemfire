@@ -37,7 +37,7 @@ import org.springframework.data.gemfire.GemfireQueryException;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter;
 import org.springframework.data.gemfire.client.support.DelegatingPoolAdapter;
-import org.springframework.data.gemfire.config.GemfireConstants;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ErrorHandler;

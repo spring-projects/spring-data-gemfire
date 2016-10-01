@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">GemfireV8GatewayNamespaceTest</prop>
+		<prop key="mcast-port">0</prop>
+		<prop key="log-level">config</prop>
+	</util:properties>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:gateway-sender id="gateway-sender-with-event-substitution-filter" remote-distributed-system-id="3"
+						dispatcher-threads="10" parallel="true" manual-start="true">
+		<gfe:event-substitution-filter>
+			<bean class="org.springframework.data.gemfire.config.xml.GemfireV8GatewayNamespaceTest$TestGatewayEventSubstitutionFilter" p:name="inner"/>
+		</gfe:event-substitution-filter>
+	</gfe:gateway-sender>
+
+	<gfe:gateway-sender id="gateway-sender-with-event-substitution-filter-ref" remote-distributed-system-id="33"
+						dispatcher-threads="1" parallel="false" manual-start="true">
+		<gfe:event-substitution-filter ref="testGatewayEventSubstitutionFilter"/>
+	</gfe:gateway-sender>
+
+	<bean id="testGatewayEventSubstitutionFilter" class="org.springframework.data.gemfire.config.xml.GemfireV8GatewayNamespaceTest$TestGatewayEventSubstitutionFilter" p:name="ref"/>
+
+</beans>

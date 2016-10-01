@@ -17,7 +17,12 @@
 
 package org.springframework.data.gemfire.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.util.StringUtils;
 
 /**
@@ -27,8 +32,21 @@ import org.springframework.util.StringUtils;
  * @since 1.8.0
  */
 @SuppressWarnings("unused")
-// TODO rename this utiltiy class using a more intuitive, meaningful name
+// TODO rename this utiltiy class using a more descriptive, intuitive and meaningful name
 public abstract class SpringUtils {
+
+	/* (non-Javadoc) */
+	public static BeanDefinition addDependsOn(BeanDefinition bean, String beanName) {
+		String[] dependsOn = bean.getDependsOn();
+		List<String> dependsOnList = new ArrayList<String>();
+
+		Collections.addAll(dependsOnList, ArrayUtils.nullSafeArray(dependsOn, String.class));
+
+		dependsOnList.add(beanName);
+		bean.setDependsOn(dependsOnList.toArray(new String[dependsOnList.size()]));
+
+		return bean;
+	}
 
 	/* (non-Javadoc) */
 	public static String defaultIfEmpty(String value, String defaultValue) {
@@ -38,6 +56,11 @@ public abstract class SpringUtils {
 	/* (non-Javadoc) */
 	public static <T> T defaultIfNull(T value, T defaultValue) {
 		return (value != null ? value : defaultValue);
+	}
+
+	/* (non-Javadoc) */
+	public static boolean equalsIgnoreNull(Object obj1, Object obj2) {
+		return (obj1 == null ? obj2 == null : obj1.equals(obj2));
 	}
 
 	/* (non-Javadoc) */
