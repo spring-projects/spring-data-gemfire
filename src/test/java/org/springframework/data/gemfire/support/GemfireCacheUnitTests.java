@@ -97,9 +97,10 @@ public class GemfireCacheUnitTests {
 	}
 
 	@Test
-	public void evictCallsRegionDestoryWithKey() {
+	public void evictCallsRegionRemoveWithKey() {
 		GemfireCache.wrap(mockRegion).evict("key");
-		verify(mockRegion, times(1)).destroy(eq("key"));
+		verify(mockRegion, never()).destroy(anyObject());
+		verify(mockRegion, times(1)).remove(eq("key"));
 	}
 
 	@Test

@@ -101,7 +101,7 @@ public class GemfireCache implements Cache {
 	 * @see com.gemstone.gemfire.cache.Region#destroy(Object)
 	 */
 	public void evict(Object key) {
-		getNativeCache().destroy(key);
+		getNativeCache().remove(key);
 	}
 
 	/**
