@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The PeerCacheApplication annotation enables an embedded GemFire peer {@link com.gemstone.gemfire.cache.Cache}
+ * The {@link PeerCacheApplication} annotation enables an embedded GemFire peer {@link com.gemstone.gemfire.cache.Cache}
  * instance in a Spring Data GemFire based application.
  *
  * @author John Blum

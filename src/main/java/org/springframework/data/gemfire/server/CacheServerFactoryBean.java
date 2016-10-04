@@ -40,8 +40,8 @@ import org.springframework.util.StringUtils;
  * @author John Blum
  */
 @SuppressWarnings("unused")
-public class CacheServerFactoryBean implements FactoryBean<CacheServer>, InitializingBean, DisposableBean,
-		SmartLifecycle {
+public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
+		InitializingBean, DisposableBean, SmartLifecycle {
 
 	private boolean autoStartup = true;
 	private boolean notifyBySubscription = CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION;
@@ -73,18 +73,9 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 
 	private SubscriptionEvictionPolicy subscriptionEvictionPolicy = SubscriptionEvictionPolicy.DEFAULT;
 
-	public CacheServer getObject() {
-		return cacheServer;
-	}
-
-	public Class<?> getObjectType() {
-		return (this.cacheServer != null ? cacheServer.getClass() : CacheServer.class);
-	}
-
-	public boolean isSingleton() {
-		return true;
-	}
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@SuppressWarnings("deprecation")
 	public void afterPropertiesSet() throws IOException {
 		Assert.notNull(cache, "A GemFire Cache is required.");
@@ -118,24 +109,51 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		}
 	}
 
-	public boolean isAutoStartup() {
-		return autoStartup;
+	/**
+	 * {@inheritDoc}
+	 */
+	public CacheServer getObject() {
+		return cacheServer;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	public Class<?> getObjectType() {
+		return (this.cacheServer != null ? cacheServer.getClass() : CacheServer.class);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isSingleton() {
+		return true;
+	}
+
+	/* (non-Javadoc) */
 	public boolean isRunning() {
 		return (cacheServer != null && cacheServer.isRunning());
 	}
 
+	/* (non-Javadoc) */
+	public boolean isAutoStartup() {
+		return autoStartup;
+	}
+
+	/**
+	 * Start at the latest possible moment.
+	 */
 	public int getPhase() {
-		// start at the latest possible moment
 		return Integer.MAX_VALUE;
 	}
 
+	/* (non-Javadoc) */
 	public void destroy() {
 		stop();
 		cacheServer = null;
 	}
 
+	/* (non-Javadoc) */
 	public void start() {
 		try {
 			cacheServer.start();
@@ -145,26 +163,31 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 		}
 	}
 
+	/* (non-Javadoc) */
 	public void stop(final Runnable callback) {
 		stop();
 		callback.run();
 	}
 
+	/* (non-Javadoc) */
 	public void stop() {
 		if (cacheServer != null) {
 			cacheServer.stop();
 		}
 	}
 
+	/* (non-Javadoc) */
 	public void setAutoStartup(boolean autoStartup) {
 		this.autoStartup = autoStartup;
 	}
 
+	/* (non-Javadoc) */
 	public void setBindAddress(String bindAddress) {
 		this.bindAddress = bindAddress;
 	}
 
-	public void setCache(final Cache cache) {
+	/* (non-Javadoc) */
+	public void setCache(Cache cache) {
 		this.cache = cache;
 	}
 
@@ -172,76 +195,92 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>, Initial
 	 * (non-Javadoc)
 	 * For testing purposes only!
 	 */
-	void setCacheServer(final CacheServer cacheServer) {
+	void setCacheServer(CacheServer cacheServer) {
 		this.cacheServer = cacheServer;
 	}
 
+	/* (non-Javadoc) */
 	public void setHostNameForClients(String hostNameForClients) {
 		this.hostNameForClients = hostNameForClients;
 	}
 
+	/* (non-Javadoc) */
 	public void setListeners(Set<InterestRegistrationListener> listeners) {
 		this.listeners = listeners;
 	}
 
+	/* (non-Javadoc) */
 	public void setLoadPollInterval(long loadPollInterval) {
 		this.loadPollInterval = loadPollInterval;
 	}
 
+	/* (non-Javadoc) */
 	public void setMaxConnections(int maxConnections) {
 		this.maxConnections = maxConnections;
 	}
 
+	/* (non-Javadoc) */
 	public void setMaxMessageCount(int maxMessageCount) {
 		this.maxMessageCount = maxMessageCount;
 	}
 
+	/* (non-Javadoc) */
 	public void setMaxThreads(int maxThreads) {
 		this.maxThreads = maxThreads;
 	}
 
+	/* (non-Javadoc) */
 	public void setMaxTimeBetweenPings(int maxTimeBetweenPings) {
 		this.maxTimeBetweenPings = maxTimeBetweenPings;
 	}
 
+	/* (non-Javadoc) */
 	public void setMessageTimeToLive(int messageTimeToLive) {
 		this.messageTimeToLive = messageTimeToLive;
 	}
 
+	/* (non-Javadoc) */
 	public void setNotifyBySubscription(boolean notifyBySubscription) {
 		this.notifyBySubscription = notifyBySubscription;
 	}
 
+	/* (non-Javadoc) */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
+	/* (non-Javadoc) */
 	public void setServerGroups(String[] serverGroups) {
 		this.serverGroups = serverGroups;
 	}
 
+	/* (non-Javadoc) */
 	public void setServerLoadProbe(ServerLoadProbe serverLoadProbe) {
 		this.serverLoadProbe = serverLoadProbe;
 	}
 
+	/* (non-Javadoc) */
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
+	/* (non-Javadoc) */
 	public void setSubscriptionCapacity(int subscriptionCapacity) {
 		this.subscriptionCapacity = subscriptionCapacity;
 	}
 
+	/* (non-Javadoc) */
 	public void setSubscriptionDiskStore(String diskStoreName) {
 		this.subscriptionDiskStore = diskStoreName;
 	}
 
+	/* (non-Javadoc) */
 	SubscriptionEvictionPolicy getSubscriptionEvictionPolicy() {
 		return (subscriptionEvictionPolicy != null ? subscriptionEvictionPolicy : SubscriptionEvictionPolicy.DEFAULT);
 	}
 
+	/* (non-Javadoc) */
 	public void setSubscriptionEvictionPolicy(SubscriptionEvictionPolicy evictionPolicy) {
 		this.subscriptionEvictionPolicy = evictionPolicy;
 	}
-
 }

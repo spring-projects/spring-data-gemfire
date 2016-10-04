@@ -31,6 +31,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
+import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.util.SpringUtils;
 
 /**
  * Spring {@link Configuration} class used to configure, construct and initialize and GemFire {@link CacheServer}
@@ -153,7 +155,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected String bindAddress() {
-		return nullSafeValue(this.bindAddress, CacheServer.DEFAULT_BIND_ADDRESS);
+		return SpringUtils.defaultIfNull(this.bindAddress, CacheServer.DEFAULT_BIND_ADDRESS);
 	}
 
 	/* (non-Javadoc) */
@@ -162,7 +164,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected String hostnameForClients() {
-		return nullSafeValue(this.hostnameForClients, CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS);
+		return SpringUtils.defaultIfNull(this.hostnameForClients, CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS);
 	}
 
 	/* (non-Javadoc) */
@@ -171,7 +173,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Set<InterestRegistrationListener> interestRegistrationListeners() {
-		return nullSafeSet(this.interestRegistrationListeners);
+		return CollectionUtils.nullSafeSet(this.interestRegistrationListeners);
 	}
 
 	/* (non-Javadoc) */
@@ -180,7 +182,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Long loadPollInterval() {
-		return nullSafeValue(this.loadPollInterval, CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
+		return SpringUtils.defaultIfNull(this.loadPollInterval, CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
 	}
 
 	/* (non-Javadoc) */
@@ -189,7 +191,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer maxConnections() {
-		return nullSafeValue(this.maxConnections, CacheServer.DEFAULT_MAX_CONNECTIONS);
+		return SpringUtils.defaultIfNull(this.maxConnections, CacheServer.DEFAULT_MAX_CONNECTIONS);
 	}
 
 	/* (non-Javadoc) */
@@ -198,7 +200,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer maxMessageCount() {
-		return nullSafeValue(this.maxMessageCount, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT);
+		return SpringUtils.defaultIfNull(this.maxMessageCount, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT);
 	}
 
 	/* (non-Javadoc) */
@@ -207,7 +209,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer maxThreads() {
-		return nullSafeValue(this.maxThreads, CacheServer.DEFAULT_MAX_THREADS);
+		return SpringUtils.defaultIfNull(this.maxThreads, CacheServer.DEFAULT_MAX_THREADS);
 	}
 
 	/* (non-Javadoc) */
@@ -216,7 +218,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer maxTimeBetweenPings() {
-		return nullSafeValue(this.maxTimeBetweenPings, CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
+		return SpringUtils.defaultIfNull(this.maxTimeBetweenPings, CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
 	}
 
 	/* (non-Javadoc) */
@@ -225,7 +227,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer messageTimeToLive() {
-		return nullSafeValue(this.messageTimeToLive, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE);
+		return SpringUtils.defaultIfNull(this.messageTimeToLive, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE);
 	}
 
 	/* (non-Javadoc) */
@@ -234,7 +236,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer port() {
-		return nullSafeValue(this.port, CacheServer.DEFAULT_PORT);
+		return SpringUtils.defaultIfNull(this.port, CacheServer.DEFAULT_PORT);
 	}
 
 	/* (non-Javadoc) */
@@ -243,7 +245,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected ServerLoadProbe serverLoadProbe() {
-		return nullSafeValue(this.serverLoadProbe, CacheServer.DEFAULT_LOAD_PROBE);
+		return SpringUtils.defaultIfNull(this.serverLoadProbe, CacheServer.DEFAULT_LOAD_PROBE);
 	}
 
 	/* (non-Javadoc) */
@@ -252,7 +254,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer socketBufferSize() {
-		return nullSafeValue(this.socketBufferSize, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE);
+		return SpringUtils.defaultIfNull(this.socketBufferSize, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE);
 	}
 
 	/* (non-Javadoc) */
@@ -261,7 +263,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer subscriptionCapacity() {
-		return nullSafeValue(this.subscriptionCapacity, ClientSubscriptionConfig.DEFAULT_CAPACITY);
+		return SpringUtils.defaultIfNull(this.subscriptionCapacity, ClientSubscriptionConfig.DEFAULT_CAPACITY);
 	}
 
 	/* (non-Javadoc) */
@@ -279,7 +281,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected SubscriptionEvictionPolicy subscriptionEvictionPolicy() {
-		return nullSafeValue(this.subscriptionEvictionPolicy, SubscriptionEvictionPolicy.DEFAULT);
+		return SpringUtils.defaultIfNull(this.subscriptionEvictionPolicy, SubscriptionEvictionPolicy.DEFAULT);
 	}
 
 	@Override

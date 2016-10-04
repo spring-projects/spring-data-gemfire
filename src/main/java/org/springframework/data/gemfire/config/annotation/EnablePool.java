@@ -24,68 +24,35 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.control.ResourceManager;
 
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.GemfireUtils;
 
 /**
- * The {@link ClientCacheApplication} annotation enables a Spring Data GemFire based application to become
- * a GemFire cache client (i.e. {@link com.gemstone.gemfire.cache.client.ClientCache}).
+ * The {@link EnablePool} annotation configures a Spring {@link org.springframework.context.annotation.Configuration}
+ * annotated class with a "named" GemFire client {@link Pool} bean in the application context.
+ *
+ * This annotation is used in conjunction with the {@link ClientCacheApplication} annotation to add an additional
+ * {@link Pool} to a GemFire cache client application configured with Spring (Data GemFire).
+ *
+ * To add more than 1 {@link Pool} to your application, this annotation can be nested in the {@link EnablePools}
+ * annotation.
  *
  * @author John Blum
- * @see org.springframework.context.annotation.Configuration
- * @see org.springframework.context.annotation.Import
- * @see org.springframework.data.gemfire.config.annotation.ClientCacheConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.AddPoolConfiguration
+ * @see com.gemstone.gemfire.cache.client.Pool
  * @see com.gemstone.gemfire.cache.client.PoolFactory
- * @see com.gemstone.gemfire.cache.control.ResourceManager
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Configuration
-@Import(ClientCacheConfiguration.class)
+@Import(AddPoolConfiguration.class)
 @SuppressWarnings("unused")
-public @interface ClientCacheApplication {
-
-	/**
-	 * Indicates whether the "copy on read" is enabled for this cache.
-	 *
-	 * Default is {@literal false}.
-	 */
-	boolean copyOnRead() default false;
-
-	/**
-	 * Configures the percentage of heap at or above which the cache is considered in danger of becoming inoperable.
-	 *
-	 * @see com.gemstone.gemfire.cache.control.ResourceManager#DEFAULT_CRITICAL_HEAP_PERCENTAGE
-	 */
-	float criticalHeapPercentage() default ResourceManager.DEFAULT_CRITICAL_HEAP_PERCENTAGE;
-
-	/**
-	 * Used only for clients in a client/server installation. If set, this indicates that the client is durable
-	 * and identifies the client. The ID is used by servers to reestablish any messaging that was interrupted
-	 * by client downtime.
-	 */
-	String durableClientId() default "";
-
-	/**
-	 * Used only for clients in a client/server installation. Number of seconds this client can remain disconnected
-	 * from its server and have the server continue to accumulate durable events for it.
-	 */
-	int durableClientTimeout() default 300;
-
-	/**
-	 * Configures the percentage of heap at or above which the eviction should begin on Regions configured
-	 * for HeapLRU eviction.
-	 *
-	 * @see com.gemstone.gemfire.cache.control.ResourceManager#DEFAULT_EVICTION_HEAP_PERCENTAGE
-	 */
-	float evictionHeapPercentage() default ResourceManager.DEFAULT_EVICTION_HEAP_PERCENTAGE;
+public @interface EnablePool {
 
 	/**
 	 * Configures the free connection timeout for this pool.
@@ -102,13 +69,6 @@ public @interface ClientCacheApplication {
 	long idleTimeout() default PoolFactory.DEFAULT_IDLE_TIMEOUT;
 
 	/**
-	 * Configures whether to keep the client queues alive on the server when the client is disconnected
-	 *
-	 * Default is {@literal false}.
-	 */
-	boolean keepAlive() default false;
-
-	/**
 	 * Configures the load conditioning interval for this pool.
 	 *
 	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_LOAD_CONDITIONING_INTERVAL
@@ -116,17 +76,18 @@ public @interface ClientCacheApplication {
 	int loadConditioningInterval() default PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL;
 
 	/**
-	 * Configures the GemFire {@link com.gemstone.gemfire.distributed.Locator}s to which
+	 * Configures the GemFire {@link com.gemstone.gemfire.distributed.Locator Locators} to which
 	 * this cache client will connect.
 	 */
 	Locator[] locators() default {};
 
 	/**
-	 * Configures the log level used to output log messages at GemFire cache runtime.
+	 * A {@link String} containing a comma-delimited list of hosts and ports defining the connection endpoints
+	 * of GemFire Locators in the cluster.
 	 *
-	 * Default is {@literal config}.
+	 * The {@link String} must be formatted as: 'host1[port], host2[port], ..., hostN[port]'.
 	 */
-	String logLevel() default ClientCacheConfiguration.DEFAULT_LOG_LEVEL;
+	String locatorsString() default "";
 
 	/**
 	 * Configures the max number of client to server connections that the pool will create.
@@ -150,11 +111,9 @@ public @interface ClientCacheApplication {
 	boolean multiUserAuthentication() default PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION;
 
 	/**
-	 * Configures the name of this GemFire member in the cluster (distributed system).
-	 *
-	 * Default is {@literal SpringBasedCacheClientApplication}.
+	 * Specifies the name of the GemFire client {@link Pool}.
 	 */
-	String name() default ClientCacheConfiguration.DEFAULT_NAME;
+	String name();
 
 	/**
 	 * Configures how often to ping servers to verify that they are still alive.
@@ -180,13 +139,6 @@ public @interface ClientCacheApplication {
 	int readTimeout() default PoolFactory.DEFAULT_READ_TIMEOUT;
 
 	/**
-	 * Notifies the server that this durable client is ready to receive updates.
-	 *
-	 * Default is {@literal false}.
-	 */
-	boolean readyForEvents() default false;
-
-	/**
 	 * Configures the number of times to retry a request after timeout/exception.
 	 *
 	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_RETRY_ATTEMPTS
@@ -201,10 +153,18 @@ public @interface ClientCacheApplication {
 	String serverGroup() default PoolFactory.DEFAULT_SERVER_GROUP;
 
 	/**
-	 * Configures the GemFire {@link com.gemstone.gemfire.cache.server.CacheServer}s to which
+	 * Configures the GemFire {@link com.gemstone.gemfire.cache.server.CacheServer CacheServers} to which
 	 * this cache client will connect.
 	 */
 	Server[] servers() default {};
+
+	/**
+	 * A {@link String} containing a comma-delimited list of hosts and ports defining the connection endpoints
+	 * of GemFire Servers in the cluster.
+	 *
+	 * The {@link String} must be formatted as: 'host1[port], host2[port], ..., hostN[port]'.
+	 */
+	String serversString() default "";
 
 	/**
 	 * Configures the socket buffer size for each connection made in this pool.

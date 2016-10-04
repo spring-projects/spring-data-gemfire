@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The WithGemFireProperties annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * The {@link EnableGemFireProperties} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
  * annotated class to configure GemFire/Geode System properties at runtime during [Spring Boot] application startup.
  *
  * @author John Blum
@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Import;
 @Documented
 @Import(GemFirePropertiesConfiguration.class)
 @SuppressWarnings("unused")
-public @interface WithGemFireProperties {
+public @interface EnableGemFireProperties {
 
 	/**
 	 * Number of seconds the distributed system will wait after the {@literal ack-wait-threshold} for a message

@@ -27,21 +27,29 @@ import java.lang.annotation.Target;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 
 /**
- * The EnableCacheServer class...
+ * The {@link EnableCacheServer} annotation configures a Spring {@link org.springframework.context.annotation.Configuration}
+ * annotated class with a GemFire {@link CacheServer} bean in the Spring application context.
  *
+ * This annotation is used in conjunction with the {@link CacheServerApplication}, or {@link PeerCacheApplication}
+ * annotations to add an additional {@link CacheServer CacheServers} to a GemFire peer cache application
+ * configured with Spring (Data GemFire).
+ *
+ * To add more than 1 {@link CacheServer} to your application, this annotation can be nested in
+ * the {@link EnableCacheServers} annotation.
+
  * @author John Blum
- * @since 1.0.0
+ * @see org.springframework.data.gemfire.config.annotation.AddCacheServerConfiguration
+ * @see com.gemstone.gemfire.cache.server.CacheServer
+ * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Configuration
 @Import(AddCacheServerConfiguration.class)
 @SuppressWarnings("unused")
 public @interface EnableCacheServer {

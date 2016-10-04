@@ -24,20 +24,20 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
- * The AddCacheServersConfiguration class registers {@link org.springframework.data.gemfire.server.CacheServerFactoryBean}
+ * The {@link AddCacheServersConfiguration} class registers {@link org.springframework.data.gemfire.server.CacheServerFactoryBean}
  * bean definitions for all {@link EnableCacheServer} annotation configuration meta-data defined in
- * the {@link EnableCacheServers} annotation on the GemFire cache application class.
+ * the {@link EnableCacheServers} annotation on a GemFire peer cache application class.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.AddCacheServerConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.EnableCacheServer
  * @see org.springframework.data.gemfire.config.annotation.EnableCacheServers
  * @since 1.9.0
  */
 public class AddCacheServersConfiguration extends AddCacheServerConfiguration {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(AnnotationMetadata, BeanDefinitionRegistry)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
@@ -49,7 +49,7 @@ public class AddCacheServersConfiguration extends AddCacheServerConfiguration {
 				(AnnotationAttributes[]) enableCacheServersAttributes.get("servers");
 
 			for (AnnotationAttributes enableCacheServerAttributes : serversAttributes) {
-				addCacheServerFactoryBeanDefinition(enableCacheServerAttributes, registry);
+				registerCacheServerFactoryBeanDefinition(enableCacheServerAttributes, registry);
 			}
 		}
 	}

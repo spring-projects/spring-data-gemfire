@@ -28,9 +28,9 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 
 /**
- * The AddCacheServerConfiguration class is a Spring {@link ImportBeanDefinitionRegistrar} that registers
+ * The {@link AddCacheServerConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that registers
  * a {@link CacheServerFactoryBean} definition for the {@link com.gemstone.gemfire.cache.server.CacheServer}
- * configuration meta-data.
+ * configuration meta-data defined in {@link EnableCacheServer}.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
@@ -39,9 +39,8 @@ import org.springframework.data.gemfire.server.CacheServerFactoryBean;
  */
 public class AddCacheServerConfiguration implements ImportBeanDefinitionRegistrar {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(AnnotationMetadata, BeanDefinitionRegistry)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
@@ -49,7 +48,7 @@ public class AddCacheServerConfiguration implements ImportBeanDefinitionRegistra
 			Map<String, Object> enableCacheServerAttributes = importingClassMetadata.getAnnotationAttributes(
 				EnableCacheServer.class.getName());
 
-			addCacheServerFactoryBeanDefinition(enableCacheServerAttributes, registry);
+			registerCacheServerFactoryBeanDefinition(enableCacheServerAttributes, registry);
 		}
 	}
 
@@ -57,33 +56,33 @@ public class AddCacheServerConfiguration implements ImportBeanDefinitionRegistra
 	 * Registers a {@link CacheServerFactoryBean} bean definition for the given {@link EnableCacheServer} annotation
 	 * configuration meta-data.
 	 *
-	 * @param annotationAttributes attributes for the {@link EnableCacheServer} annotation.
+	 * @param enableCacheServerAttributes attributes for the {@link EnableCacheServer} annotation.
 	 * @param registry {@link BeanDefinitionRegistry} used to register the {@link CacheServerFactoryBean}
 	 * bean definition.
 	 * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
 	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 * @see org.springframework.data.gemfire.server.CacheServerFactoryBean
 	 */
-	protected void addCacheServerFactoryBeanDefinition(Map<String, Object> annotationAttributes,
+	protected void registerCacheServerFactoryBeanDefinition(Map<String, Object> enableCacheServerAttributes,
 			BeanDefinitionRegistry registry) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(CacheServerFactoryBean.class);
 
 		builder.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
-		builder.addPropertyValue("autoStartup", annotationAttributes.get("autoStartup"));
-		builder.addPropertyValue("bindAddress", annotationAttributes.get("bindAddress"));
-		builder.addPropertyValue("hostNameForClients", annotationAttributes.get("hostnameForClients"));
-		builder.addPropertyValue("loadPollInterval", annotationAttributes.get("loadPollInterval"));
-		builder.addPropertyValue("maxConnections", annotationAttributes.get("maxConnections"));
-		builder.addPropertyValue("maxMessageCount", annotationAttributes.get("maxMessageCount"));
-		builder.addPropertyValue("maxThreads", annotationAttributes.get("maxThreads"));
-		builder.addPropertyValue("maxTimeBetweenPings", annotationAttributes.get("maxTimeBetweenPings"));
-		builder.addPropertyValue("messageTimeToLive", annotationAttributes.get("messageTimeToLive"));
-		builder.addPropertyValue("port", annotationAttributes.get("port"));
-		builder.addPropertyValue("socketBufferSize", annotationAttributes.get("socketBufferSize"));
-		builder.addPropertyValue("subscriptionCapacity", annotationAttributes.get("subscriptionCapacity"));
-		builder.addPropertyValue("subscriptionDiskStore", annotationAttributes.get("subscriptionDiskStoreName"));
-		builder.addPropertyValue("subscriptionEvictionPolicy", annotationAttributes.get("subscriptionEvictionPolicy"));
+		builder.addPropertyValue("autoStartup", enableCacheServerAttributes.get("autoStartup"));
+		builder.addPropertyValue("bindAddress", enableCacheServerAttributes.get("bindAddress"));
+		builder.addPropertyValue("hostNameForClients", enableCacheServerAttributes.get("hostnameForClients"));
+		builder.addPropertyValue("loadPollInterval", enableCacheServerAttributes.get("loadPollInterval"));
+		builder.addPropertyValue("maxConnections", enableCacheServerAttributes.get("maxConnections"));
+		builder.addPropertyValue("maxMessageCount", enableCacheServerAttributes.get("maxMessageCount"));
+		builder.addPropertyValue("maxThreads", enableCacheServerAttributes.get("maxThreads"));
+		builder.addPropertyValue("maxTimeBetweenPings", enableCacheServerAttributes.get("maxTimeBetweenPings"));
+		builder.addPropertyValue("messageTimeToLive", enableCacheServerAttributes.get("messageTimeToLive"));
+		builder.addPropertyValue("port", enableCacheServerAttributes.get("port"));
+		builder.addPropertyValue("socketBufferSize", enableCacheServerAttributes.get("socketBufferSize"));
+		builder.addPropertyValue("subscriptionCapacity", enableCacheServerAttributes.get("subscriptionCapacity"));
+		builder.addPropertyValue("subscriptionDiskStore", enableCacheServerAttributes.get("subscriptionDiskStoreName"));
+		builder.addPropertyValue("subscriptionEvictionPolicy", enableCacheServerAttributes.get("subscriptionEvictionPolicy"));
 
 		BeanDefinitionReaderUtils.registerWithGeneratedName(builder.getBeanDefinition(), registry);
 	}

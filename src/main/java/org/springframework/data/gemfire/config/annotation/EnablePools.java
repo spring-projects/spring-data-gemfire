@@ -27,25 +27,25 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableCacheServers} annotation enables 1 or more GemFire {@link com.gemstone.gemfire.cache.server.CacheServer CacheServers}
- * to be defined and used in a GemFire peer cache application configured with Spring (Data GemFire).
+ * The {@link EnablePools} annotation enables 1 or more GemFire {@link com.gemstone.gemfire.cache.client.Pool Pools}
+ * to be defined and used in a GemFire client cache application configured with Spring (Data GemFire).
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.AddCacheServersConfiguration
- * @see org.springframework.data.gemfire.config.annotation.EnableCacheServer
+ * @see org.springframework.data.gemfire.config.annotation.AddPoolsConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.EnablePool
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(AddCacheServersConfiguration.class)
+@Import(AddPoolsConfiguration.class)
 @SuppressWarnings("unused")
-public @interface EnableCacheServers {
+public @interface EnablePools {
 
 	/**
-	 * Enables the definition of multiple GemFire {@link com.gemstone.gemfire.cache.server.CacheServer CacheServers}.
+	 * Enables the definition of multiple GemFire {@link com.gemstone.gemfire.cache.client.Pool Pools}.
 	 */
-	EnableCacheServer[] servers() default {};
+	EnablePool[] pools() default {};
 
 }
