@@ -103,7 +103,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 		Collection<Cache> caches = new HashSet<Cache>(regions.size());
 
 		for (Region<?, ?> region : regions) {
-			caches.add(GemfireCache.wrap(region));
+			caches.add(newGemfireCache(region));
 		}
 
 		return caches;
@@ -136,6 +136,18 @@ public class GemfireCacheManager extends AbstractCacheManager {
 		return (collection != null && collection.iterator().hasNext());
 	}
 
+	/**
+	 * Constructs a new instance of {@link GemfireCache} initialized with the given GemFire {@link Region}.
+	 *
+	 * @param region GemFire {@link Region} to wrap (adapt).
+	 * @return an instance of {@link GemfireCache} initialized with the given GemFire {@link Region}.
+	 * @see org.springframework.data.gemfire.support.GemfireCache
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	protected GemfireCache newGemfireCache(Region<?, ?> region) {
+		return GemfireCache.wrap(region);
+	}
+
 	/* (non-Javadoc) */
 	Region<?, ?> regionFor(GemFireCache gemfireCache, String cacheName) {
 		return assertGemFireRegionAvailable(assertGemFireCacheAvailable(gemfireCache).getRegion(cacheName), cacheName);
@@ -159,7 +171,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	protected Cache getMissingCache(String name) {
 		Cache cache = super.getMissingCache(name);
 
-		return (cache != null ? cache : (isDynamic() ? GemfireCache.wrap(regionFor(this.gemfireCache, name)) : null));
+		return (cache != null ? cache : (isDynamic() ? newGemfireCache(regionFor(this.gemfireCache, name)) : null));
 	}
 
 	/**
