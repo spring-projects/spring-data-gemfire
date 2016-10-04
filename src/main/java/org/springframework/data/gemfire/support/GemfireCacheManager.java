@@ -20,30 +20,31 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.Region;
+
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.AbstractCacheManager;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * Spring Framework {@link CacheManager} backed by a Gemfire {@link com.gemstone.gemfire.cache.Cache}. Automatically
  * discovers the created caches (or {@link Region}s in Gemfire terminology).
- * 
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.cache.Cache
  * @see org.springframework.cache.CacheManager
  * @see org.springframework.cache.support.AbstractCacheManager
- * @see com.gemstone.gemfire.cache.Cache
+ * @see com.gemstone.gemfire.cache.GemFireCache
  * @see com.gemstone.gemfire.cache.Region
  */
 @SuppressWarnings("unused")
 public class GemfireCacheManager extends AbstractCacheManager {
 
-	private com.gemstone.gemfire.cache.Cache gemfireCache;
+	private com.gemstone.gemfire.cache.GemFireCache gemfireCache;
 
 	private Set<Region<?,?>> regions;
 
@@ -61,12 +62,12 @@ public class GemfireCacheManager extends AbstractCacheManager {
 			Assert.state(!gemfireCache.isClosed(), "The GemFire Cache is closed; an open instance is required.");
 
 			regions = gemfireCache.rootRegions();
-		}  
+		}
 
 		Collection<Cache> caches = new LinkedHashSet<Cache>(regions.size());
 
 		for (Region<?,?> region: this.regions) {
-			caches.add(new GemfireCache(region));
+			caches.add(newGemfireCache(region));
 		}
 
 		return caches;
@@ -80,6 +81,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	 * @see org.springframework.cache.Cache
 	 */
 	@Override
+	@SuppressWarnings("deprecation")
 	public Cache getCache(String name) {
 		Cache cache = super.getCache(name);
 
@@ -88,7 +90,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 			Region<?, ?> region = gemfireCache.getRegion(name);
 
 			if (region != null) {
-				cache = new GemfireCache(region);
+				cache = newGemfireCache(region);
 				addCache(cache);
 			}
 		}
@@ -97,15 +99,27 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	}
 
 	/**
+	 * Constructs a new instance of {@link GemfireCache} initialized with the given GemFire {@link Region}.
+	 *
+	 * @param region GemFire {@link Region} to wrap (adapt).
+	 * @return an instance of {@link GemfireCache} initialized with the given GemFire {@link Region}.
+	 * @see org.springframework.data.gemfire.support.GemfireCache
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	protected GemfireCache newGemfireCache(Region<?, ?> region) {
+		return new GemfireCache(region);
+	}
+
+	/**
 	 * Sets the GemFire Cache backing this {@link CacheManager}.
-	 * 
+	 *
 	 * @param gemfireCache the GemFire Peer Cache instance.
 	 * @see com.gemstone.gemfire.cache.Cache
 	 */
-	public void setCache(com.gemstone.gemfire.cache.Cache gemfireCache) {
+	public void setCache(GemFireCache gemfireCache) {
 		this.gemfireCache = gemfireCache;
 	}
-	
+
 	/**
 	 * Sets the Regions to use (alternative to injecting the GemFire Cache).
 	 *
@@ -115,5 +129,4 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	public void setRegions(Set<Region<?,?>> regions) {
 		this.regions = regions;
 	}
-
 }

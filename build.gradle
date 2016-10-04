@@ -108,16 +108,19 @@ dependencies {
       exclude group: "commons-logging", module: "commons-logging"
     }
     testCompile "org.assertj:assertj-core:$assertjVersion"
-    testCompile "junit:junit:$junitVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
+    testCompile "org.projectlombok:lombok:$lombokVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testCompile "junit:junit:$junitVersion"
     testCompile "edu.umd.cs.mtc:multithreadedtc:$multiThreadedtcVersion"
 
     testCompile "javax.annotation:jsr250-api:1.0", optional
+
 	testRuntime "log4j:log4j:$log4jVersion"
 	testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
 	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    testRuntime "org.springframework.shell:spring-shell:1.0.0.RELEASE"
 
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
 }
