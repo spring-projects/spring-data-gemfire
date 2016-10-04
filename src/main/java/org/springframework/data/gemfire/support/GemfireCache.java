@@ -18,12 +18,12 @@ package org.springframework.data.gemfire.support;
 
 import java.util.concurrent.Callable;
 
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.Region;
+
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.util.ObjectUtils;
-
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * Spring Framework {@link Cache} implementation backed by a GemFire {@link Region}.
@@ -43,7 +43,7 @@ public class GemfireCache implements Cache {
 
 	/**
 	 * Creates a {@link GemFireCache} instance.
-	 * 
+	 *
 	 * @param region backing GemFire region
 	 */
 	public GemfireCache(final Region<?, ?> region) {
@@ -62,8 +62,14 @@ public class GemfireCache implements Cache {
 		region.clear();
 	}
 
-	public void evict(final Object key) {
-		region.destroy(key);
+	/**
+	 * Evicts (destroys) the entry (key/value) mapped to the given key from this Spring {@link Cache}.
+	 *
+	 * @param key key used to identify the cache entry to evict.
+	 * @see com.gemstone.gemfire.cache.Region#destroy(Object)
+	 */
+	public void evict(Object key) {
+		getNativeCache().remove(key);
 	}
 
 	public ValueWrapper get(final Object key) {
@@ -121,7 +127,7 @@ public class GemfireCache implements Cache {
 	/**
 	 * Implementation to satisfy extension of the {@link Cache} interface in Spring 4.1. Don't add the {@link Override}
 	 * annotation as this will break the compilation on 4.0.
-	 * 
+	 *
 	 * @see org.springframework.cache.Cache#putIfAbsent(java.lang.Object, java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
@@ -130,5 +136,4 @@ public class GemfireCache implements Cache {
 
 		return (existingValue == null ? null : new SimpleValueWrapper(existingValue));
 	}
-
 }
