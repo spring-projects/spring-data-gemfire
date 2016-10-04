@@ -24,12 +24,12 @@ import org.springframework.data.gemfire.config.annotation.support.EmbeddedServic
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The GemFirePropertiesConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * capable of configuring additional GemFire Properties on the (Spring Boot) application class at runtime
+ * The {@link GemFirePropertiesConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
+ * capable of configuring additional GemFire Properties on a (Spring Boot) application class at runtime
  * during startup.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.WithGemFireProperties
+ * @see org.springframework.data.gemfire.config.annotation.EnableGemFireProperties
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
@@ -69,7 +69,7 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 	/* (non-Javadoc) */
 	@Override
 	protected Class getAnnotationType() {
-		return WithGemFireProperties.class;
+		return EnableGemFireProperties.class;
 	}
 
 	/* (non-Javadoc) */

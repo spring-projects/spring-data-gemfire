@@ -26,7 +26,7 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 
 /**
  * Spring {@link Configuration} class used to configure, construct and initialize
- * a GemFire {@link com.gemstone.gemfire.cache.Cache} instance in a Spring application context.
+ * a GemFire peer {@link com.gemstone.gemfire.cache.Cache} instance in a Spring application context.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.Bean
@@ -67,6 +67,9 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return gemfireCache;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("unchecked")
     protected <T extends CacheFactoryBean> T newCacheFactoryBean() {
@@ -103,6 +106,9 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Class getAnnotationType() {
         return PeerCacheApplication.class;

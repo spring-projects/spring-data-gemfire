@@ -19,13 +19,13 @@ package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.CacheFactoryBean.DynamicRegionSupport;
 import static org.springframework.data.gemfire.CacheFactoryBean.JndiDataSource;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+import static org.springframework.data.gemfire.util.SpringUtils.defaultIfNull;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
@@ -46,12 +46,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * AbstractCacheConfiguration is an abstract base class for configuring either a Pivotal GemFire/Apache Geode
- * client or peer-based cache instance using Spring's, Java-based
+ * {@link AbstractCacheConfiguration} is an abstract base class for configuring either a Pivotal GemFire/Apache Geode
+ * client or peer-based cache instance using Spring's Java-based, Annotation
  * {@link org.springframework.context.annotation.Configuration} support.
  *
- * This class contain configuration settings common to both GemFire peer {@link com.gemstone.gemfire.cache.Cache caches}
- * and {@link com.gemstone.gemfire.cache.client.ClientCache client caches}.
+ * This class encapsulates configuration settings common to both GemFire peer
+ * {@link com.gemstone.gemfire.cache.Cache caches} and
+ * {@link com.gemstone.gemfire.cache.client.ClientCache client caches}.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.BeanClassLoaderAware
@@ -59,7 +60,9 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.ImportAware
+ * @see org.springframework.core.io.Resource
  * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.CacheFactoryBean
  * @since 1.9.0
  */
 @SuppressWarnings("unused")
@@ -111,44 +114,6 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	private String startLocator;
 
 	private TransactionWriter transactionWriter;
-
-	/**
-	 * Returns the given {@link List} if not null or an empty {@link List}.
-	 *
-	 * @param <T> Class type of the elements in the {@link List}.
-	 * @param list {@link List} on which to perform the null check.
-	 * @return the given {@link List} if not null or an empty {@link List}.
-	 * @see java.util.Collections#emptyList()
-	 * @see java.util.List
-	 */
-	protected static <T> List<T> nullSafeList(List<T> list) {
-		return (list != null ? list : Collections.<T>emptyList());
-	}
-
-	/**
-	 * Returns the given {@link Set} if not null or an empty {@link Set}.
-	 *
-	 * @param <T> Class type of the elements in the {@link Set}.
-	 * @param set {@link Set} on which to perform the null check.
-	 * @return the given {@link Set} if not null or an empty {@link Set}.
-	 * @see java.util.Collections#emptySet()
-	 * @see java.util.Set
-	 */
-	protected static <T> Set<T> nullSafeSet(Set<T> set) {
-		return (set != null ? set : Collections.<T>emptySet());
-	}
-
-	/**
-	 * Returns the given {@code value} if not null or the {@code defaultValue}.
-	 *
-	 * @param <T> Class type of the given {@code value} and {@code defaultValue}.
-	 * @param value value on which to perform the null check.
-	 * @param defaultValue value to return by default if the {@code value} is null.
-	 * @return the given {@code value} if not null or the {@code defaultValue}.
-	 */
-	protected static <T> T nullSafeValue(T value, T defaultValue) {
-		return (value != null ? value : defaultValue);
-	}
 
 	/**
 	 * Determines whether the give {@link Object} has value.  The {@link Object} is valuable
@@ -216,9 +181,8 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 		return gemfireProperties.build();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
@@ -236,9 +200,8 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 		return beanClassLoader;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
@@ -257,10 +220,8 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 		return this.beanFactory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.annotation.ImportAware
-	 * @see org.springframework.core.type.AnnotationMetadata
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
@@ -601,7 +562,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	protected String logLevel() {
-		return nullSafeValue(this.logLevel, DEFAULT_LOG_LEVEL);
+		return defaultIfNull(this.logLevel, DEFAULT_LOG_LEVEL);
 	}
 
 	void setMcastPort(Integer mcastPort) {
@@ -706,6 +667,9 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 		customGemFireProperties.add(gemfireProperties);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return DEFAULT_NAME;

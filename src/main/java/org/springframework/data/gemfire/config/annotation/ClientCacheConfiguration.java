@@ -17,8 +17,6 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
@@ -28,6 +26,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
+import org.springframework.data.gemfire.support.ConnectionEndpointList;
 
 /**
  * Spring {@link Configuration} class used to configure, construct and initialize
@@ -110,6 +109,9 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return gemfireCache;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	protected <T extends CacheFactoryBean> T newCacheFactoryBean() {
@@ -136,7 +138,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 			setFreeConnectionTimeout((Integer) clientCacheApplicationAttributes.get("freeConnectionTimeout"));
 			setIdleTimeout((Long) clientCacheApplicationAttributes.get("idleTimeout"));
 			setKeepAlive(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("keepAlive")));
-			setLoadConditioningInterval((Integer) clientCacheApplicationAttributes.get("loadConditionInterval"));
+			setLoadConditioningInterval((Integer) clientCacheApplicationAttributes.get("loadConditioningInterval"));
 			setMaxConnections((Integer) clientCacheApplicationAttributes.get("maxConnections"));
 			setMinConnections((Integer) clientCacheApplicationAttributes.get("minConnections"));
 			setMultiUserAuthentication(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("multiUserAuthentication")));
@@ -154,35 +156,50 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 			setSubscriptionRedundancy((Integer) clientCacheApplicationAttributes.get("subscriptionRedundancy"));
 			setThreadLocalConnections(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("threadLocalConnections")));
 
-			configureLocatorOrServer(clientCacheApplicationAttributes);
+			configureLocatorsAndServers(clientCacheApplicationAttributes);
 		}
 	}
 
-	/* (non-Javadoc) */
-	void configureLocatorOrServer(Map<String, Object> clientCacheApplicationAttributes) {
-		AnnotationAttributes[] locators =
-			(AnnotationAttributes[]) clientCacheApplicationAttributes.get("locators");
+	/**
+	 * Uses the list of GemFire Locator and Server connection endpoint definitions and meta-data to configure
+	 * the GemFire client {@link com.gemstone.gemfire.cache.client.Pool} used to communicate with the servers
+	 * in the GemFire cluster.
+	 *
+	 * @param clientCacheApplicationAttributes {@link ClientCacheApplication} annotation containing
+	 * {@link com.gemstone.gemfire.cache.client.Pool} Locator/Server connection endpoint meta-data.
+	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+	 * @see java.util.Map
+	 */
+	protected void configureLocatorsAndServers(Map<String, Object> clientCacheApplicationAttributes) {
+		ConnectionEndpointList poolLocators = new ConnectionEndpointList();
 
-		List<ConnectionEndpoint> poolLocators = new ArrayList<ConnectionEndpoint>(locators.length);
+		AnnotationAttributes[] locators = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("locators");
 
 		for (AnnotationAttributes locator : locators) {
-			poolLocators.add(new ConnectionEndpoint((String) locator.get("host"), (Integer) locator.get("port")));
+			poolLocators.add(newConnectionEndpoint((String) locator.get("host"), (Integer) locator.get("port")));
 		}
 
 		setPoolLocators(poolLocators);
 
-		AnnotationAttributes[] servers =
-			(AnnotationAttributes[]) clientCacheApplicationAttributes.get("servers");
+		ConnectionEndpointList poolServers = new ConnectionEndpointList();
 
-		List<ConnectionEndpoint> poolServers = new ArrayList<ConnectionEndpoint>(servers.length);
+		AnnotationAttributes[] servers = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("servers");
 
 		for (AnnotationAttributes server : servers) {
-			poolServers.add(new ConnectionEndpoint((String) server.get("host"), (Integer) server.get("port")));
+			poolServers.add(newConnectionEndpoint((String) server.get("host"), (Integer) server.get("port")));
 		}
 
 		setPoolServers(poolServers);
 	}
 
+	/* (non-Javadoc) */
+	protected ConnectionEndpoint newConnectionEndpoint(String host, Integer port) {
+		return new ConnectionEndpoint(host, port);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return ClientCacheApplication.class;
