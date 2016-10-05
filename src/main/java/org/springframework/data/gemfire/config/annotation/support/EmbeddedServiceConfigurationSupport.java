@@ -35,42 +35,72 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The EmbeddedServiceConfigurationSupport class is an abstract base class supporting the configuration
+ * The {@link EmbeddedServiceConfigurationSupport} class is an abstract base class supporting the configuration
  * of Pivotal GemFire and Apache Geode embedded services.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @since 1.9.0
  */
+@SuppressWarnings("unused")
 public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanDefinitionRegistrar {
 
+	public static final Integer DEFAULT_PORT = 0;
 	public static final String DEFAULT_HOST = "localhost";
 
 	@Autowired
 	@SuppressWarnings("all")
 	private AbstractCacheConfiguration cacheConfiguration;
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns a reference to an instance of the {@link AbstractCacheConfiguration} class used to configure
+	 * a GemFire (Singleton, client or peer) cache instance along with it's associated, embedded services.
+	 *
+	 * @param <T> {@link Class} type extension of {@link AbstractCacheConfiguration}.
+	 * @return a reference to a single {@link AbstractCacheConfiguration} instance.
+	 * @throws IllegalStateException if the {@link AbstractCacheConfiguration} reference was not configured.
+	 * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
+	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends AbstractCacheConfiguration> T cacheConfiguration() {
 		Assert.state(cacheConfiguration != null, "AbstractCacheConfiguration was not properly initialized");
 		return (T) this.cacheConfiguration;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns the configured GemFire cache application annotation type
+	 * (e.g. {@link org.springframework.data.gemfire.config.annotation.ClientCacheApplication}
+	 * or {@link org.springframework.data.gemfire.config.annotation.PeerCacheApplication}.
+	 *
+	 * @return an {@link Class annotation} defining the GemFire cache application type.
+	 */
 	protected abstract Class getAnnotationType();
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns the fully-qualified class name of the GemFire cache application annotation type.
+	 *
+	 * @return a fully-qualified class name of the GemFire cache application annotation type.
+	 * @see java.lang.Class#getName()
+	 * @see #getAnnotationType()
+	 */
 	protected String getAnnotationTypeName() {
 		return getAnnotationType().getName();
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns the simple class name of the GemFire cache application annotation type.
+	 *
+	 * @return the simple class name of the GemFire cache application annotation type.
+	 * @see java.lang.Class#getSimpleName()
+	 * @see #getAnnotationType()
+	 */
 	protected String getAnnotationTypeSimpleName() {
 		return getAnnotationType().getSimpleName();
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		if (isAnnotationPresent(importingClassMetadata)) {
@@ -161,13 +191,18 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	}
 
 	/* (non-Javadoc) */
+	protected Integer resolvePort(Integer port) {
+		return resolvePort(port, DEFAULT_PORT);
+	}
+
+	/* (non-Javadoc) */
 	protected Integer resolvePort(Integer port, Integer defaultPort) {
 		return (port != null ? port : defaultPort);
 	}
 
 	/**
-	 * Spring {@link BeanPostProcessor} used to post process before initialization in GemFire System properties
-	 * Spring bean defined in the application context.
+	 * Spring {@link BeanPostProcessor} used to process GemFire System properties defined as a Spring bean
+	 * in the Spring application context before initialization.
 	 *
 	 * @see org.springframework.beans.factory.config.BeanPostProcessor
 	 */
@@ -177,11 +212,15 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 
 		private final Properties gemfireProperties;
 
+		/* (non-Javadoc) */
 		protected GemFirePropertiesBeanPostProcessor(Properties gemfireProperties) {
 			Assert.notEmpty(gemfireProperties, "GemFire Properties must not be null or empty");
 			this.gemfireProperties = gemfireProperties;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 			if (bean instanceof Properties && GEMFIRE_PROPERTIES_BEAN_NAME.equals(beanName)) {
@@ -192,6 +231,9 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 			return bean;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 			return bean;
