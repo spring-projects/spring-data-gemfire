@@ -18,13 +18,17 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
+import org.springframework.data.gemfire.config.support.ClientRegionPoolBeanFactoryPostProcessor;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
 
@@ -42,6 +46,9 @@ import org.springframework.data.gemfire.support.ConnectionEndpointList;
 @Configuration
 @SuppressWarnings("unused")
 public class ClientCacheConfiguration extends AbstractCacheConfiguration {
+
+	private static final AtomicBoolean CLIENT_REGION_POOL_BEAN_FACTORY_POST_PROCESSOR_REGISTERED =
+		new AtomicBoolean(false);
 
 	protected static final boolean DEFAULT_READY_FOR_EVENTS = false;
 
@@ -116,6 +123,23 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	@SuppressWarnings("unchecked")
 	protected <T extends CacheFactoryBean> T newCacheFactoryBean() {
 		return (T) new ClientCacheFactoryBean();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void configureInfrastructure(AnnotationMetadata importMetadata) {
+		super.configureInfrastructure(importMetadata);
+		registerClientRegionPoolBeanFactoryPostProcessor(importMetadata);
+	}
+
+	/* (non-Javadoc) */
+	protected void registerClientRegionPoolBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
+		if (CLIENT_REGION_POOL_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
+			register(BeanDefinitionBuilder.rootBeanDefinition(ClientRegionPoolBeanFactoryPostProcessor.class)
+				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
+		}
 	}
 
 	/**
