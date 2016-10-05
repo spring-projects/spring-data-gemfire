@@ -51,6 +51,7 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor;
 import org.springframework.data.gemfire.config.support.DefinedIndexesApplicationListener;
 import org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor;
+import org.springframework.data.gemfire.config.support.PdxDiskStoreAwareBeanFactoryPostProcessor;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -83,6 +84,8 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	private static final AtomicBoolean CUSTOM_EDITORS_REGISTERED = new AtomicBoolean(false);
 	private static final AtomicBoolean DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED = new AtomicBoolean(false);
 	private static final AtomicBoolean DISK_STORE_DIRECTORY_BEAN_POST_PROCESSOR_REGISTERED = new AtomicBoolean(false);
+	private static final AtomicBoolean PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED =
+		new AtomicBoolean(false);
 
 	protected static final boolean DEFAULT_CLOSE = true;
 	protected static final boolean DEFAULT_COPY_ON_READ = false;
@@ -256,9 +259,10 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
 	protected void configureInfrastructure(AnnotationMetadata importMetadata) {
-		registerCustomEditorBeanFactoryPostProcessor();
-		registerDefinedIndexesApplicationListener();
-		registerDiskStoreDirectoryBeanPostProcessor();
+		registerCustomEditorBeanFactoryPostProcessor(importMetadata);
+		registerDefinedIndexesApplicationListener(importMetadata);
+		registerDiskStoreDirectoryBeanPostProcessor(importMetadata);
+		registerPdxDiskStoreAwareBeanFactoryPostProcessor(importMetadata);
 	}
 
 	/**
@@ -329,7 +333,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/* (non-Javadoc) */
-	protected void registerCustomEditorBeanFactoryPostProcessor() {
+	protected void registerCustomEditorBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
 		if (CUSTOM_EDITORS_REGISTERED.compareAndSet(false, true)) {
 			register(BeanDefinitionBuilder.rootBeanDefinition(CustomEditorBeanFactoryPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
@@ -337,7 +341,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/* (non-Javadoc) */
-	protected void registerDefinedIndexesApplicationListener() {
+	protected void registerDefinedIndexesApplicationListener(AnnotationMetadata importMetadata) {
 		if (DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED.compareAndSet(false, true)) {
 			register(BeanDefinitionBuilder.rootBeanDefinition(DefinedIndexesApplicationListener.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
@@ -345,9 +349,17 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/* (non-Javadoc) */
-	protected void registerDiskStoreDirectoryBeanPostProcessor() {
+	protected void registerDiskStoreDirectoryBeanPostProcessor(AnnotationMetadata importMetadata) {
 		if (DISK_STORE_DIRECTORY_BEAN_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
 			register(BeanDefinitionBuilder.rootBeanDefinition(DiskStoreDirectoryBeanPostProcessor.class)
+				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
+		}
+	}
+
+	/* (non-Javadoc) */
+	protected void registerPdxDiskStoreAwareBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
+		if (PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
+			register(BeanDefinitionBuilder.rootBeanDefinition(PdxDiskStoreAwareBeanFactoryPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
 		}
 	}
