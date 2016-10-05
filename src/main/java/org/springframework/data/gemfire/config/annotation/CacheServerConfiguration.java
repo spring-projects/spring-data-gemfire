@@ -135,6 +135,9 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return CacheServerApplication.class;
