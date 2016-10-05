@@ -26,6 +26,7 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.TransactionWriter;
@@ -36,11 +37,18 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -59,14 +67,18 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.ImportAware
  * @see org.springframework.core.io.Resource
  * @see org.springframework.core.type.AnnotationMetadata
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @since 1.9.0
  */
+@Configuration
 @SuppressWarnings("unused")
 public abstract class AbstractCacheConfiguration implements BeanFactoryAware, BeanClassLoaderAware, ImportAware {
+
+	private static final AtomicBoolean CUSTOM_EDITORS_REGISTERED = new AtomicBoolean(false);
 
 	protected static final boolean DEFAULT_CLOSE = true;
 	protected static final boolean DEFAULT_COPY_ON_READ = false;
@@ -116,7 +128,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	private TransactionWriter transactionWriter;
 
 	/**
-	 * Determines whether the give {@link Object} has value.  The {@link Object} is valuable
+	 * Determines whether the given {@link Object} has value.  The {@link Object} is valuable
 	 * if it is not {@literal null}.
 	 *
 	 * @param value {@link Object} to evaluate.
@@ -225,9 +237,22 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
+		configureInfrastructure(importMetadata);
 		configureCache(importMetadata);
 		configurePdx(importMetadata);
 		configureOther(importMetadata);
+	}
+
+	/**
+	 * Configures Spring container infrastructure components used by Spring Data GemFire
+	 * to enable GemFire to function properly inside a Spring context.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing annotation meta-data
+	 * for the Spring GemFire cache application class.
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 */
+	protected void configureInfrastructure(AnnotationMetadata importMetadata) {
+		registerCustomEditorBeanFactoryPostProcessor();
 	}
 
 	/**
@@ -262,7 +287,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	}
 
 	/**
-	 * Configures GemFire's PDX Serialization feature.
+	 * Configures GemFire's PDX Serialization components.
 	 *
 	 * @param importMetadata {@link AnnotationMetadata} containing PDX meta-data used to configure
 	 * the GemFire cache with PDX de/serialization capabilities.
@@ -290,11 +315,42 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	/**
 	 * Callback method to configure other, specific GemFire cache configuration settings.
 	 *
-	 * @param importMetadata {@link AnnotationMetadata} containing the cache meta-data used to configure
+	 * @param importMetadata {@link AnnotationMetadata} containing meta-data used to configure
 	 * the GemFire cache.
 	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
 	protected void configureOther(AnnotationMetadata importMetadata) {
+	}
+
+	/* (non-Javadoc) */
+	protected void registerCustomEditorBeanFactoryPostProcessor() {
+		if (CUSTOM_EDITORS_REGISTERED.compareAndSet(false, true)) {
+			BeanDefinitionBuilder customEditorBeanFactoryPostProcessor =
+				BeanDefinitionBuilder.rootBeanDefinition(CustomEditorBeanFactoryPostProcessor.class);
+
+			customEditorBeanFactoryPostProcessor.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			register(customEditorBeanFactoryPostProcessor.getBeanDefinition());
+		}
+	}
+
+	/**
+	 * Registers the given {@link BeanDefinition} with the {@link BeanDefinitionRegistry} using a generated bean name.
+	 *
+	 * @param beanDefinition {@link AbstractBeanDefinition} to register.
+	 * @return the given {@link BeanDefinition}.
+	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition
+	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
+	 * @see org.springframework.beans.factory.support.BeanDefinitionReaderUtils
+	 * 	#registerWithGeneratedName(AbstractBeanDefinition, BeanDefinitionRegistry)
+	 * @see #beanFactory()
+	 */
+	protected AbstractBeanDefinition register(AbstractBeanDefinition beanDefinition) {
+		if (beanFactory() instanceof BeanDefinitionRegistry) {
+			BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition,
+				((BeanDefinitionRegistry) beanFactory()));
+		}
+
+		return beanDefinition;
 	}
 
 	/**
