@@ -36,16 +36,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.FileSystemUtils;
 
 /**
- * Integration tests for {@link DiskStoreBeanPostProcessor}.
+ * Integration tests for {@link DiskStoreDirectoryBeanPostProcessor}.
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.config.support.DiskStoreBeanPostProcessor
+ * @see org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor
  * @since 1.5.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class DiskStoreBeanPostProcessorIntegrationTests {
+public class DiskStoreDirectoryBeanPostProcessorIntegrationTests {
 
 	@BeforeClass
 	public static void testSuiteSetup() {
@@ -68,16 +68,10 @@ public class DiskStoreBeanPostProcessorIntegrationTests {
 
 	@PeerCacheApplication(logLevel = "warning")
 	@SuppressWarnings("unused")
-	static class DiskStoreBeanPostProcessorConfiguration {
+	static class DiskStoreDirectoryBeanPostProcessorConfiguration {
 
 		DiskStoreFactoryBean.DiskDir newDiskDir(String location) {
 			return new DiskStoreFactoryBean.DiskDir(location);
-		}
-
-		@Bean
-		// TODO remove when the Annotation config model includes support
-		DiskStoreBeanPostProcessor diskStoreBeanPostProcessor() {
-			return new DiskStoreBeanPostProcessor();
 		}
 
 		@Bean
