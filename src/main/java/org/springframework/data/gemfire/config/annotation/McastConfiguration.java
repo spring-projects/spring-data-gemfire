@@ -24,9 +24,10 @@ import org.springframework.data.gemfire.config.annotation.support.EmbeddedServic
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The McastConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * that applies additional GemFire/Geode configuration by way of GemFire/Geode System properties to configure
- * GemFire/Geode multi-cast networking rather than the (preferred) Locator-based location services.
+ * The {@link McastConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
+ * that applies additional GemFire configuration by way of GemFire System properties to configure and use
+ * multi-cast networking for GemFire communication and distribution rather than the (preferred)
+ * Locator-based location services.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.EnableMcast
@@ -42,16 +43,22 @@ public class McastConfiguration extends EmbeddedServiceConfigurationSupport {
 	public static final String DEFAULT_MCAST_ADDRESS = "239.192.81.1";
 	public static final String DEFAULT_MCAST_FLOW_CONTROL = "1048576,0.25,5000";
 
-	/* (non-Javadoc) */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableMcast.class;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
+
+		gemfireProperties.unsetProperty("locators");
 
 		gemfireProperties.setPropertyIfNotDefault("mcast-address",
 			annotationAttributes.get("address"), DEFAULT_MCAST_ADDRESS);

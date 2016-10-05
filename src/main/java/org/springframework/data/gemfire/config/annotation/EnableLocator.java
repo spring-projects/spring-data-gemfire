@@ -27,12 +27,12 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableLocator annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * The EnableLocator annotation configures a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
  * annotated class to start an embedded GemFire Locator service in this GemFire server/data node.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.Import
- * @see LocatorConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.LocatorConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)

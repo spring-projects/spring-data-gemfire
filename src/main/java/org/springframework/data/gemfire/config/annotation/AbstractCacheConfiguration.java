@@ -79,7 +79,7 @@ import org.springframework.util.StringUtils;
  */
 @Configuration
 @SuppressWarnings("unused")
-public abstract class AbstractCacheConfiguration implements BeanFactoryAware, BeanClassLoaderAware, ImportAware {
+public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware, BeanFactoryAware, ImportAware {
 
 	private static final AtomicBoolean CUSTOM_EDITORS_REGISTERED = new AtomicBoolean(false);
 	private static final AtomicBoolean DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED = new AtomicBoolean(false);
@@ -93,6 +93,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 	protected static final int DEFAULT_MCAST_PORT = 0;
 
+	protected static final String DEFAULT_LOCATORS = "";
 	protected static final String DEFAULT_LOG_LEVEL = "config";
 	protected static final String DEFAULT_NAME = "SpringDataGemFireApplication";
 
@@ -122,11 +123,11 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 	private PdxSerializer pdxSerializer;
 
-	private PropertiesBuilder customGemFireProperties = new PropertiesBuilder();
+	private PropertiesBuilder customGemFireProperties = PropertiesBuilder.create();
 
 	private Resource cacheXml;
 
-	private String locators = "";
+	private String locators = DEFAULT_LOCATORS;
 	private String logLevel = DEFAULT_LOG_LEVEL;
 	private String name;
 	private String pdxDiskStoreName;
@@ -188,7 +189,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 */
 	@Bean
 	protected Properties gemfireProperties() {
-		PropertiesBuilder gemfireProperties = new PropertiesBuilder();
+		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
 		gemfireProperties.setProperty("name", name());
 		gemfireProperties.setProperty("mcast-port", mcastPort());
@@ -637,6 +638,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	/* (non-Javadoc) */
 	void setLocators(String locators) {
 		this.locators = locators;
+		setMcastPort(DEFAULT_MCAST_PORT);
 	}
 
 	protected String locators() {
@@ -654,6 +656,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 	void setMcastPort(Integer mcastPort) {
 		this.mcastPort = mcastPort;
+		setLocators(DEFAULT_LOCATORS);
 	}
 
 	protected Integer mcastPort() {
