@@ -31,6 +31,7 @@ import org.springframework.data.gemfire.util.PropertiesBuilder;
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.EnableGemFireProperties
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
+ * @see org.springframework.data.gemfire.util.PropertiesBuilder
  * @since 1.9.0
  */
 public class GemFirePropertiesConfiguration extends EmbeddedServiceConfigurationSupport {
@@ -66,13 +67,17 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 	public static final String DEFAULT_DEPLOY_WORKING_DIRECTORY = ".";
 	public static final String DEFAULT_MEMBERSHIP_PORT_RANGE = "1024-65535";
 
-	/* (non-Javadoc) */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableGemFireProperties.class;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 		PropertiesBuilder gemfireProperties = new PropertiesBuilder();
