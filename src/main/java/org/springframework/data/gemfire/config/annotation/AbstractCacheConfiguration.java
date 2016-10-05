@@ -49,6 +49,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor;
+import org.springframework.data.gemfire.config.support.DefinedIndexesApplicationListener;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -79,6 +80,7 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractCacheConfiguration implements BeanFactoryAware, BeanClassLoaderAware, ImportAware {
 
 	private static final AtomicBoolean CUSTOM_EDITORS_REGISTERED = new AtomicBoolean(false);
+	private static final AtomicBoolean DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED = new AtomicBoolean(false);
 
 	protected static final boolean DEFAULT_CLOSE = true;
 	protected static final boolean DEFAULT_COPY_ON_READ = false;
@@ -253,6 +255,7 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 	 */
 	protected void configureInfrastructure(AnnotationMetadata importMetadata) {
 		registerCustomEditorBeanFactoryPostProcessor();
+		registerDefinedIndexesApplicationListener();
 	}
 
 	/**
@@ -330,6 +333,17 @@ public abstract class AbstractCacheConfiguration implements BeanFactoryAware, Be
 
 			customEditorBeanFactoryPostProcessor.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 			register(customEditorBeanFactoryPostProcessor.getBeanDefinition());
+		}
+	}
+
+	/* (non-Javadoc) */
+	protected void registerDefinedIndexesApplicationListener() {
+		if (DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED.compareAndSet(false, true)) {
+			BeanDefinitionBuilder definedIndexesApplicationListener =
+				BeanDefinitionBuilder.rootBeanDefinition(DefinedIndexesApplicationListener.class);
+
+			definedIndexesApplicationListener.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			register(definedIndexesApplicationListener.getBeanDefinition());
 		}
 	}
 
