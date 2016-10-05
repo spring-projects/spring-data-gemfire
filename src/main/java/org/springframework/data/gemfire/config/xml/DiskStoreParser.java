@@ -28,7 +28,7 @@ import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.DiskStoreFactoryBean;
 import org.springframework.data.gemfire.DiskStoreFactoryBean.DiskDir;
-import org.springframework.data.gemfire.config.support.DiskStoreBeanPostProcessor;
+import org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -46,10 +46,10 @@ class DiskStoreParser extends AbstractSingleBeanDefinitionParser {
 	private static final AtomicBoolean REGISTERED = new AtomicBoolean(false);
 
 	/* (non-Javadoc) */
-	private static void registerDiskStoreBeanPostProcessor(ParserContext parserContext) {
+	private static void registerDiskStoreDirectoryBeanPostProcessor(ParserContext parserContext) {
 		if (REGISTERED.compareAndSet(false, true)) {
 			AbstractBeanDefinition diskStoreBeanPostProcessor = BeanDefinitionBuilder
-				.rootBeanDefinition(DiskStoreBeanPostProcessor.class)
+				.rootBeanDefinition(DiskStoreDirectoryBeanPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
 				.getBeanDefinition();
 
@@ -73,7 +73,7 @@ class DiskStoreParser extends AbstractSingleBeanDefinitionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		super.doParse(element, parserContext, builder);
 
-		registerDiskStoreBeanPostProcessor(parserContext);
+		registerDiskStoreDirectoryBeanPostProcessor(parserContext);
 
 		builder.setLazyInit(false);
 
