@@ -15,21 +15,23 @@
  */
 package org.springframework.data.gemfire.mapping;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.isA;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+
+import com.gemstone.gemfire.pdx.PdxReader;
+import com.gemstone.gemfire.pdx.PdxSerializer;
+import com.gemstone.gemfire.pdx.PdxWriter;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,13 +48,9 @@ import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.PdxWriter;
-
 /**
  * Unit tests for {@link MappingPdxSerializer}.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  * @see org.junit.Rule
@@ -102,6 +100,49 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
+	public void createFullyInitialized() {
+		ConversionService mockConversionService = mock(ConversionService.class);
+		GemfireMappingContext mockMappingContext = mock(GemfireMappingContext.class);
+
+		MappingPdxSerializer pdxSerializer = MappingPdxSerializer.create(mockMappingContext, mockConversionService);
+
+		assertThat(pdxSerializer).isNotNull();
+		assertThat(pdxSerializer.getConversionService()).isEqualTo(mockConversionService);
+		assertThat(pdxSerializer.getMappingContext()).isEqualTo(mockMappingContext);
+	}
+
+	@Test
+	public void createWithNullConversionService() {
+		GemfireMappingContext mockMappingContext = mock(GemfireMappingContext.class);
+
+		MappingPdxSerializer pdxSerializer = MappingPdxSerializer.create(mockMappingContext, null);
+
+		assertThat(pdxSerializer).isNotNull();
+		assertThat(pdxSerializer.getConversionService()).isInstanceOf(ConversionService.class);
+		assertThat(pdxSerializer.getMappingContext()).isEqualTo(mockMappingContext);
+	}
+
+	@Test
+	public void createWithNullMappingContext() {
+		ConversionService mockConversionService = mock(ConversionService.class);
+
+		MappingPdxSerializer pdxSerializer = MappingPdxSerializer.create(null, mockConversionService);
+
+		assertThat(pdxSerializer).isNotNull();
+		assertThat(pdxSerializer.getConversionService()).isEqualTo(mockConversionService);
+		assertThat(pdxSerializer.getMappingContext()).isInstanceOf(GemfireMappingContext.class);
+	}
+
+	@Test
+	public void createWithNullConversionServiceAndNullMappingContext() {
+		MappingPdxSerializer pdxSerializer = MappingPdxSerializer.create(null, null);
+
+		assertThat(pdxSerializer).isNotNull();
+		assertThat(pdxSerializer.getConversionService()).isInstanceOf(ConversionService.class);
+		assertThat(pdxSerializer.getMappingContext()).isInstanceOf(GemfireMappingContext.class);
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
 	public void usesRegisteredInstantiator() {
 		Address address = new Address();
@@ -142,14 +183,14 @@ public class MappingPdxSerializerUnitTests {
 
 		Object obj = serializer.fromData(Person.class, mockReader);
 
-		assertThat(obj, is(instanceOf(Person.class)));
+		assertThat(obj).isInstanceOf(Person.class);
 
 		Person jonDoe = (Person) obj;
 
-		assertThat(jonDoe.getAddress(), is(equalTo(expectedAddress)));
-		assertThat(jonDoe.getId(), is(equalTo(1l)));
-		assertThat(jonDoe.getFirstname(), is(equalTo("Jon")));
-		assertThat(jonDoe.getLastname(), is(equalTo("Doe")));
+		assertThat(jonDoe.getAddress()).isEqualTo(expectedAddress);
+		assertThat(jonDoe.getId()).isEqualTo(1l);
+		assertThat(jonDoe.getFirstname()).isEqualTo("Jon");
+		assertThat(jonDoe.getLastname()).isEqualTo("Doe");
 
 		verify(mockInstantiator, times(1)).createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class));
 		verify(mockReader, times(1)).readField(eq("id"));
@@ -193,7 +234,7 @@ public class MappingPdxSerializerUnitTests {
 		serializer.setCustomSerializers(Collections.<Class<?>, PdxSerializer>singletonMap(
 			Address.class, mockAddressSerializer));
 
-		assertThat(serializer.toData(jonDoe, mockWriter), is(true));
+		assertThat(serializer.toData(jonDoe, mockWriter)).isTrue();
 
 		verify(mockAddressSerializer, times(1)).toData(eq(address), eq(mockWriter));
 		verify(mockWriter, times(1)).writeField(eq("id"), eq(1l), eq(Long.class));
@@ -231,5 +272,4 @@ public class MappingPdxSerializerUnitTests {
 			verify(mockWriter, never()).markIdentityField(anyString());
 		}
 	}
-
 }

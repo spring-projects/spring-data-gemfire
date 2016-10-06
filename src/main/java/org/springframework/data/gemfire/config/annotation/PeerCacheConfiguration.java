@@ -82,12 +82,13 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
      * @param importMetadata {@link AnnotationMetadata} containing peer cache meta-data used to configure
      * the GemFire peer {@link com.gemstone.gemfire.cache.Cache}.
      * @see org.springframework.core.type.AnnotationMetadata
+     * @see #isCacheServerOrPeerCacheApplication(AnnotationMetadata)
      */
     @Override
     protected void configureCache(AnnotationMetadata importMetadata) {
         super.configureCache(importMetadata);
 
-        if (isPeerCacheApplication(importMetadata) || isCacheServerApplication(importMetadata)) {
+        if (isCacheServerOrPeerCacheApplication(importMetadata)) {
             Map<String, Object> peerCacheApplicationAttributes =
                 importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 

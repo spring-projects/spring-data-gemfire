@@ -18,6 +18,10 @@ package org.springframework.data.gemfire.mapping;
 import java.util.Collections;
 import java.util.Map;
 
+import com.gemstone.gemfire.pdx.PdxReader;
+import com.gemstone.gemfire.pdx.PdxSerializer;
+import com.gemstone.gemfire.pdx.PdxWriter;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -36,14 +40,10 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.PdxWriter;
-
 /**
  * GemFire {@link PdxSerializer} implementation that uses a Spring Data GemFire {@link GemfireMappingContext}
  * to read and write entities.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
@@ -74,8 +74,34 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	private SpELContext context;
 
 	/**
-	 * Creates a new {@link MappingPdxSerializer} using the default
-	 * {@link GemfireMappingContext} and {@link DefaultConversionService}.
+	 * Factory method to construct a new instance of the {@link MappingPdxSerializer} initialized with the given
+	 * {@link GemfireMappingContext} and Spring {@link ConversionService}.  If either the {@link GemfireMappingContext}
+	 * or Spring {@link ConversionService} are {@literal null}, then this factory method will construct default
+	 * instances of each.
+	 *
+	 * @param mappingContext {@link GemfireMappingContext} used by this {@link PdxSerializer} to handle mappings
+	 * between application domain object types and PDX Serialization meta-data/data.
+	 * @param conversionService Spring's {@link ConversionService} used to convert PDX deserialized data to application
+	 * object property types.
+	 * @return an initialized instance of the {@link MappingPdxSerializer}.
+	 * @see org.springframework.core.convert.ConversionService
+	 * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
+	 */
+	public static MappingPdxSerializer create(GemfireMappingContext mappingContext,
+			ConversionService conversionService) {
+
+		mappingContext = (mappingContext != null ? mappingContext : new GemfireMappingContext());
+		conversionService = (conversionService != null ? conversionService : new DefaultConversionService());
+
+		return new MappingPdxSerializer(mappingContext, conversionService);
+	}
+
+	/**
+	 * Creates a new {@link MappingPdxSerializer} using the default {@link GemfireMappingContext}
+	 * and {@link DefaultConversionService}.
+	 *
+	 * @see org.springframework.core.convert.support.DefaultConversionService
+	 * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
 	 */
 	public MappingPdxSerializer() {
 		this(new GemfireMappingContext(), new DefaultConversionService());
@@ -100,11 +126,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		this.context = new SpELContext(PdxReaderPropertyAccessor.INSTANCE);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(
-	 * 	org.springframework.context.ApplicationContext)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -151,11 +174,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		return mappingContext;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.gemstone.gemfire.pdx.PdxSerializer#fromData(java.lang.Class,
-	 * com.gemstone.gemfire.pdx.PdxReader)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Object fromData(final Class<?> type, final PdxReader reader) {
@@ -205,11 +225,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		return accessor.getBean();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.gemstone.gemfire.pdx.PdxSerializer#toData(java.lang.Object,
-	 * com.gemstone.gemfire.pdx.PdxWriter)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public boolean toData(final Object value, final PdxWriter writer) {
@@ -240,7 +257,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 					}
 					else {
 						writer.writeField(persistentProperty.getName(), propertyValue, (Class) persistentProperty.getType());
-					} 
+					}
 				}
 				catch (Exception e) {
 					throw new MappingException(String.format(
@@ -298,5 +315,4 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	protected GemfirePersistentEntity<?> getPersistentEntity(Class<?> entityType) {
 		return getMappingContext().getPersistentEntity(entityType);
 	}
-
 }

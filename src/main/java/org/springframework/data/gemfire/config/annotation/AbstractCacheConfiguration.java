@@ -37,7 +37,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -45,6 +47,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
@@ -52,6 +55,8 @@ import org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPo
 import org.springframework.data.gemfire.config.support.DefinedIndexesApplicationListener;
 import org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor;
 import org.springframework.data.gemfire.config.support.PdxDiskStoreAwareBeanFactoryPostProcessor;
+import org.springframework.data.gemfire.mapping.GemfireMappingContext;
+import org.springframework.data.gemfire.mapping.MappingPdxSerializer;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -117,6 +122,9 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	private Float evictionHeapPercentage;
 
 	private GatewayConflictResolver gatewayConflictResolver;
+
+	@Autowired(required = false)
+	private GemfireMappingContext mappingContext;
 
 	private List<JndiDataSource> jndiDataSources;
 	private List<TransactionListener> transactionListeners;
@@ -306,20 +314,16 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	 * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/data_serialization/gemfire_pdx_serialization.html">GemFire PDX Serialization</a>
 	 */
 	protected void configurePdx(AnnotationMetadata importMetadata) {
-		if (importMetadata.hasAnnotation(EnablePdx.class.getName())) {
-			Map<String, Object> enablePdxAttributes = importMetadata.getAnnotationAttributes(EnablePdx.class.getName());
+		String enablePdxTypeName = EnablePdx.class.getName();
 
-			String pdxSerializerBeanName = (String) enablePdxAttributes.get("serializerBeanName");
+		if (importMetadata.hasAnnotation(enablePdxTypeName)) {
+			Map<String, Object> enablePdxAttributes = importMetadata.getAnnotationAttributes(enablePdxTypeName);
 
-			if (beanFactory().containsBean(pdxSerializerBeanName)) {
-				PdxSerializer pdxSerializer = beanFactory().getBean(pdxSerializerBeanName, PdxSerializer.class);
-
-				setPdxDiskStoreName((String) enablePdxAttributes.get("diskStoreName"));
-				setPdxIgnoreUnreadFields(Boolean.TRUE.equals(enablePdxAttributes.get("ignoreUnreadFields")));
-				setPdxPersistent(Boolean.TRUE.equals(enablePdxAttributes.get("persistent")));
-				setPdxReadSerialized(Boolean.TRUE.equals(enablePdxAttributes.get("readSerialized")));
-				setPdxSerializer(pdxSerializer);
-			}
+			setPdxDiskStoreName((String) enablePdxAttributes.get("diskStoreName"));
+			setPdxIgnoreUnreadFields(Boolean.TRUE.equals(enablePdxAttributes.get("ignoreUnreadFields")));
+			setPdxPersistent(Boolean.TRUE.equals(enablePdxAttributes.get("persistent")));
+			setPdxReadSerialized(Boolean.TRUE.equals(enablePdxAttributes.get("readSerialized")));
+			setPdxSerializer(resolvePdxSerializer((String) enablePdxAttributes.get("serializerBeanName")));
 		}
 	}
 
@@ -331,6 +335,27 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
 	protected void configureOther(AnnotationMetadata importMetadata) {
+	}
+
+	/* (non-Javadoc) */
+	protected PdxSerializer resolvePdxSerializer(String pdxSerializerBeanName) {
+		BeanFactory beanFactory = beanFactory();
+		PdxSerializer pdxSerializer = pdxSerializer();
+
+		return (beanFactory.containsBean(pdxSerializerBeanName)
+			? beanFactory.getBean(pdxSerializerBeanName, PdxSerializer.class)
+			: (pdxSerializer != null ? pdxSerializer : newPdxSerializer()));
+	}
+
+	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
+	protected <T extends PdxSerializer> T newPdxSerializer() {
+		BeanFactory beanFactory = beanFactory();
+
+		ConversionService conversionService = (beanFactory instanceof ConfigurableBeanFactory
+			? ((ConfigurableBeanFactory) beanFactory).getConversionService() : null);
+
+		return (T) MappingPdxSerializer.create(this.mappingContext, conversionService);
 	}
 
 	/* (non-Javadoc) */
@@ -482,6 +507,25 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 			AnnotationMetadata importMetadata) {
 
 		return (annotationType.equals(getAnnotationType()) && importMetadata.hasAnnotation(getAnnotationTypeName()));
+	}
+
+	/**
+	 * Determines whether this is a GemFire {@link com.gemstone.gemfire.cache.server.CacheServer} or
+	 * {@link com.gemstone.gemfire.cache.Cache peer cache} application, which is indicated by the presence
+	 * of either the {@link CacheServerApplication} annotation or the {@link PeerCacheApplication} annotation
+	 * on a Spring application {@link org.springframework.context.annotation.Configuration @Configuration} class.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing application configuration meta-data
+	 * from the annotations used to configure the Spring application.
+	 * @return a boolean value indicating whether this is a GemFire cache server or peer cache application.
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+	 * @see #isCacheServerApplication(AnnotationMetadata)
+	 * @see #isPeerCacheApplication(AnnotationMetadata)
+	 */
+	protected boolean isCacheServerOrPeerCacheApplication(AnnotationMetadata importMetadata) {
+		return (isCacheServerApplication(importMetadata) || isPeerCacheApplication(importMetadata));
 	}
 
 	/**
@@ -652,6 +696,15 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 
 	protected String logLevel() {
 		return defaultIfNull(this.logLevel, DEFAULT_LOG_LEVEL);
+	}
+
+	/* (non-Javadoc) */
+	void setMappingContext(GemfireMappingContext mappingContext) {
+		this.mappingContext = mappingContext;
+	}
+
+	protected GemfireMappingContext mappingContext() {
+		return this.mappingContext;
 	}
 
 	void setMcastPort(Integer mcastPort) {
