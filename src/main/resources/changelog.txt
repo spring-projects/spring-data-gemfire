@@ -1,7 +1,159 @@
-SPRING DATA GEMFIRE CHANGELOG
------------------------------
-http://www.springsource.org/spring-gemfire
-=============================
+SPRING DATA GEODE CHANGELOG
+---------------------------
+http://projects.spring.io/spring-data-gemfire/
+==============================================
+
+
+Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M2 (2016-10-05)
+----------------------------------------------------------------
+* SGF-267 - Backwards Compatibility Testing between Clients and Servers as well as between GemFire Peer Members
+* SGF-484 - NoSuchMethodError with Spring Data Gemfire RC1 version
+* SGF-492 - Improve GemFire Java-based configuration support - Iteration 1
+* SGF-493 - Remove unnecessary GemFire/Geode version checks.
+* SGF-497 - Intermittent failures in DurableClientCacheIntegrationTest
+* SGF-498 - Fix apache-geode build due to recent changes in Apache Geode that removed the SharedConfiguration.destroySharedConfiguration() method from the API.
+* SGF-499 - Prevent SDG-defined Pools from being destroyed before the Regions that use them
+* SGF-500 - Add support for ignoreEvictionAndExpiration in the AsyncEventQueueFactoryBean API and XML namespace.
+* SGF-501 - Add serialVersionUID to ListRegionsOnServerFunction
+* SGF-502 - DiskStoreAndEvictionRegionParsingTest fails when building with Maven due to missing Disk Store sub-directory.
+* SGF-504 - Support Repositories with multiple Spring Data modules on the class path
+* SGF-505 - Add support for forwardExpirationDestroy in the AsyncEventQueueFactoryBean API and XML namespace.
+* SGF-506 - ExceptionInInitializerError with Spring Gemfire 1.8.1
+* SGF-507 - Handle case-insensitive OQL queries defined as Repository query methods.
+* SGF-508 - Fix embedded Locator and Manager service configuration using Java-based configuration meta-data with @Enabled annotations.
+* SGF-510 - Create 1.0.0.APACHE-GEODE-INCUBATING-M3-SNAPSHOT
+* SGF-511 - Configure additional CacheServers with annotations.
+* SGF-512 - Configure GemFire System Properties with annotations.
+* SGF-513 - Configure SSL with annotations.
+* SGF-514 - Configure HttpService with annotations.
+* SGF-517 - Configure Authentication/Authorization with annotations.
+* SGF-518 - Configure Logging with annotations.
+* SGF-519 - Configure Mcast with annotations.
+* SGF-520 - Configure Statistics with annotations.
+* SGF-522 - There are a few broken links in SDG documentation
+* SGF-525 - Set Apache Geode version to 1.0.0-incubating.M3.
+* SGF-528 - Enable GemfireCacheManager to explicitly specify Cache names referring to Regions that will be used in Spring's Caching Infrastructure.
+* SGF-533 - Update Spring dependencies, set Apache Geode version to 1.0.0-incubating.M3 and refactor exclusions
+* SGF-534 - Fix ordered GemfireRepository.findAll(Sort) queries
+* SGF-535 - Allow both SpEL and property placeholder expressions to be used in the locators/servers attributes of the <gfe:pool> XML namespace element.
+* SGF-538 - Reorganize the XML configuration classes and support in SDG.
+* SGF-539 - Change GemfireCache.evict(key) to call Region.remove(key).
+* SGF-540 - Configure additional Pools using annotations.
+* SGF-541 - Register the CustomEditorBeanFactoryPostProcessor for the Annotation config model.
+* SGF-542 - Register the DefinedIndexesApplicationListener for the new Annotation config model.
+* SGF-543 - Register the DiskStoreDirectoryBeanPostProcessor for the new Annotation config model.
+* SGF-544 - Register the PdxDiskStoreAwareBeanFactoryPostProcessor for the new Annotation config model.
+* SGF-545 - Register the ClientRegionPoolBeanFactoryPostProcessor for the new Annotation config model.
+* SGF-546 - Configure Auto Region Lookup using annotations.
+* SGF-552 - Unset 'mcast-port' when 'locators' are specified and unset 'locators' when @EnableMcast is used.
+* SGF-553 - Use SDG's MappingPdxSerializer as the default PdxSerializer when PDX is configured with @EnablePdx.
+* SGF-554 - Release 1.0.0.APACHE-GEODE-INCUBATING-M3
+
+
+Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M2 (2016-04-25)
+----------------------------------------------------------------
+* SGF-372 - Add GemFire Off-Heap support.
+* SGF-445 - Remove MaxPermSize Java option from Gradle build
+* SGF-469 - Add support for CDI.
+* SGF-475 - Add additional logging to the MappingPdxSerializer
+* SGF-476 - Support bootstrapping a Geode server after Geode removes SDG dependency - GEODE-1025
+* SGF-477 - Change compile dependency from gemfire-core to geode-core.
+* SGF-481 - Upgrade to Spring Framework 4.2.5.RELEASE
+* SGF-489 - Update Spring Data and 3rd party dependencies.
+* SGF-490 - Re-instate GemFire WAN and CQ functionality.
+* SGF-491 - Release 1.0.0.APACHE-GEODE-INCUBATING-M2
+
+
+Changes in version 1.7.0.APACHE-GEODE-EA-M1 (2016-02-12)
+--------------------------------------------------------
+* SGF-373 - Implement a Spring Session Adapter for GemFire to back an HttpSession similar to Redis.
+* SGF-398 - Provide early support of Apache Geode (Pivotal GemFire OSS).
+* SGF-431 - Remove mavenLocal() from the repository declarations.
+* SGF-435 - Fix apache-geode build due to recent changes in Apache Geode that removed the deprecated BridgeServer code.
+* SGF-440 - Optimize imports across the SDG codebase.
+* SGF-442 - Remove incorrect statements about GemFire Java Reflection-based (PDX) Serialization in the SDG Reference Guide.
+* SGF-443 - Fix apache-geode build due to recent changes in Apache Geode that removed HDFS support.
+* SGF-444 - Fix apache-geode build due to recent changes in Apache Geode that moved Lucene into a separate module.
+* SGF-447 - Fix apache-geode build due to recent changes in Apache Geode that removed various internal utility classes in favor of external Spring classes.
+* SGF-448 - GemfireRepositoryConfigurationExtension needs to override the RepositoryConfigurationExtensionSupport postProcess(:BeanDefinitionBuilder, :AnnotationRepositoryConfigurationSource) method.
+* SGF-449 - GemfireRepositoryFactoryBean.setGemfireMappingContext needs to call RepositoryFactoryBeanSupport.setMappingContext.
+* SGF-450 - GemfireRepositoryFactoryBean needs to explicitly register a "default" GemfireMappingContext when not explicitly defined as a bean in the application's Spring context.
+* SGF-457 - Clean up Javadoc warnings.
+* SGF-458 - Enable resolution of GemFire's DistributedSystem and System properties to be overridden in PoolFactoryBean.
+* SGF-459 - Add support for the get(key:Object, valueLoader:Callable) method in Spring Framework 4.3's Cache interface.
+* SGF-460 - Remove unnecessary SLF4J compile-time dependency.
+* SGF-461 - Upgrade to Spring Framework 4.1.9.RELEASE.
+* SGF-462 - Add appinfo hint to client region element in XSD
+* SGF-463 - Remove gemfire-jgroups dependency
+* SGF-465 - Move project build to Maven
+* SGF-466 - Restore function to the Gradle-based build
+* SGF-467 - Add Code of Conduct
+* SGF-468 - Improve coordination between the PoolFactoryBean and ClientCacheFactoryBean when configuring and resolving the GemFire DistributedSystem
+* SGF-471 - Release 1.7.0.APACHE-GEODE-EA-M1
+
+
+Changes in version 1.8.4.RELEASE (2016-09-29)
+---------------------------------------------
+* SGF-535 - Allow both SpEL and property placeholder expressions to be used in the locators/servers attributes of the <gfe:pool> XML namespace element.
+* SGF-534 - Fix ordered GemfireRepository.findAll(Sort) queries.
+* SGF-531 - Release 1.8.4 (Hopper SR4).
+
+
+Changes in version 1.7.6.RELEASE (2016-09-29)
+---------------------------------------------
+* SGF-536 - Release 1.7.6 (Gosling SR6).
+* SGF-535 - Allow both SpEL and property placeholder expressions to be used in the locators/servers attributes of the <gfe:pool> XML namespace element.
+* SGF-534 - Fix ordered GemfireRepository.findAll(Sort) queries.
+
+
+Changes in version 1.7.5.RELEASE (2016-09-20)
+---------------------------------------------
+* SGF-532 - org.springframework.shell:spring-shell is listed in the pom as a runtime dependency.
+* SGF-530 - Move project build to Maven.
+* SGF-529 - Release 1.7.5 (Gosling SR5).
+* SGF-522 - There are a few broken links in SDG documentation.
+* SGF-507 - Handle case-insensitive OQL queries defined as Repository query methods.
+* SGF-504 - Support Repositories with multiple Spring Data modules on the class path.
+* SGF-475 - Add additional logging to the MappingPdxSerializer.
+* SGF-474 - Fix the NPE in the MappingPdxSerializer.
+
+
+Changes in version 1.8.3.RELEASE (2016-09-20)
+---------------------------------------------
+* SGF-522 - There are a few broken links in SDG documentation.
+* SGF-507 - Handle case-insensitive OQL queries defined as Repository query methods.
+* SGF-506 - ExceptionInInitializerError with  Spring Gemfire 1.8.1.
+* SGF-504 - Support Repositories with multiple Spring Data modules on the class path.
+* SGF-503 - Release 1.8.3 (Hopper SR3).
+
+
+Changes in version 1.9.0.M1 (2016-07-27)
+----------------------------------------
+* SGF-507 - Handle case-insensitive OQL queries defined as Repository query methods.
+* SGF-506 - ExceptionInInitializerError with  Spring Gemfire 1.8.1.
+* SGF-504 - Support Repositories with multiple Spring Data modules on the class path.
+* SGF-502 - DiskStoreAndEvictionRegionParsingTest fails when building with Maven due to missing Disk Store sub-directory.
+* SGF-501 - Add serialVersionUID to ListRegionsOnServerFunction.
+* SGF-499 - Prevent SDG-defined Pools from being destroyed before the Regions that use them.
+* SGF-497 - Intermittent failures in DurableClientCacheIntegrationTest.
+* SGF-496 - Upgrade to Pivotal GemFire 8.2.1.
+* SGF-495 - Add 1.9 XML schemas for SDG namespaces.
+* SGF-494 - Fix bug in GemfirePersistentEntity caused by Spring Data Commons ClassGeneratingPropertyAccessorFactory.
+* SGF-492 - Improve GemFire Java-based configuration support - Iteration 1.
+* SGF-486 - Release 1.9 M1 (Ingalls).
+* SGF-445 - Remove MaxPermSize Java option from Gradle build.
+* SGF-267 - Backwards Compatibility Testing between Clients and Servers as well as between GemFire Peer Members.
+
+
+Changes in version 1.8.2.RELEASE (2016-06-15)
+---------------------------------------------
+* SGF-502 - DiskStoreAndEvictionRegionParsingTest fails when building with Maven due to missing Disk Store sub-directory.
+* SGF-501 - Add serialVersionUID to ListRegionsOnServerFunction.
+* SGF-499 - Prevent SDG-defined Pools from being destroyed before the Regions that use them.
+* SGF-497 - Intermittent failures in DurableClientCacheIntegrationTest.
+* SGF-487 - Release 1.8.2 (Hopper SR2).
+* SGF-484 - NoSuchMethodError  with Spring Data Gemfire RC1  version.
+
 
 Changes in version 1.8.1.RELEASE (2016-04-06)
 ---------------------------------------------
@@ -399,51 +551,44 @@ Changes in version 1.4.0.RC1 (2014-05-02)
 
 Changes in version 1.4 M1 (2014-03-31)
 --------------------------------------
-** Bug
-    * [SGF-225] - Inconsistent data policy defaults for subregions that are replicated regions
-    * [SGF-230] - Cannot specify a Disk Store to be used for overflow on a Gateway Sender without enabling persistence.
-    * [SGF-231] - Unable to specify Ordering Policy for Serial GW Sender
-    * [SGF-232] - Unable to specify Order Policy for Serial Async Event Queue
-    * [SGF-233] - Cannot specify a Disk Store to be used for overflow on an Async Event Queue without enabling persistence.
-    * [SGF-234] - The docs indicate that the PDX attribute pdx-persistent defaults to true, however this does not seem to be the case.
-    * [SGF-235] - NPE in DefaultFunctionArgumentResolver.resolveFunctionArguments(30) when a Function has no arguments and none are provided.
-    * [SGF-238] - "jndi-prop" is not parced correctly
-    * [SGF-239] - The value "XaPooledDataSource" of jndi-binding "type" attribute should be changed to "XAPooledDataSource"
-    * [SGF-240] - XML schema type restrictions should be avoided in order to support placeholders (al types should be xs:string)
-    * [SGF-242] - When defining "membership-attributes" for a Region, the bean definition "required-roles" attribute is required and, when specified, causes a BeanCreationException in the Spring container during initialization.
-    * [SGF-244] - The nested <gfe:gateway-sender/>, <gfe:event-filter/> element is missing the ref attribute in the XSD.
-    * [SGF-245] - <gfe:cache> always creates cache with default values ignoring all the specified attributes
-    * [SGF-246] - execute function always assumes arguments are passed
-    * [SGF-247] - boolean based repository queries generate UnsupportedOperationException in non PDX serialized entities
-    * [SGF-249] - The SDG XSD is restricting the use of property placeholder values on <gfe:disk-store/>, compaction-threshold attributes given the attribute type is a short and not string.
-    * [SGF-251] - Creating and using GemFire Repositories based on the Spring Data Commons Repository abstraction does not work properly for domain objects stored in Subregions. 
-    * [SGF-252] - Spring GemFire's Repository extension does not properly handle multiple, identically named Subregions for persisting corresponding application domain objects associated by way of the @Region annotation.
-    * [SGF-255] - The <gfe:eviction> element's 'threshold' attribute is required even when the Eviction type is 'HEAP_PERCENTAGE'.
-    * [SGF-258] - The SDG XML namespace <partitioned-region> element is missing the 'data-policy' attribute.
-    * [SGF-263] - The 'disk-synchronous' Region attribute does not get successfully applied when explicitly set to false.
-
-** Improvement
-    * [SGF-88] - Create Regions in Spring Context with Region Shortcuts
-    * [SGF-187] - Consider appending to the list of listener a new listener defined by another peer member
-    * [SGF-201] - Create a Spring Boot Starter POM for Spring Data GemFire
-    * [SGF-204] - The existing RegionFactoryBean does a lookup of a Region before trying to create one. 
-    * [SGF-209] - GemfireTemplate creates a temporary object for every operation.
-    * [SGF-210] - GemfireRepository requires that there be an attribute in the entity class for the key.
-    * [SGF-236] - Sub-Region Bean names require prepended "/" (vs. previous use of gfe:lookup-region for sub-regions)
-    * [SGF-241] - Add support for defining client sub-Regions using nested <gfe:client-region/> SDG XML namespace elements.
-    * [SGF-256] - Upgrade to the latest version of the Spring Framework (3.2.8) and Spring Data Commons (1.8.0)
-    * [SGF-257] - Specify strict type rules in the Spring Data GemFire XSD for peer Region 'data-policy' and 'shortcut' attributes as currently enforced by the <gfe:client-region> element's 'shortcut' attribute.
-    * [SGF-259] - Handle cyclic bean dependencies in SDG XML config between Async Event Queues and Async Event Listeners.
-    * [SGF-260] - Add the ability to set @Id to a method name.
-    * [SGF-261] - Add ability to persist application domain objects (entities) to multiple Regions in a GemFire Cache.
-    * [SGF-265] - Upgrade to the latest version GemFire (7.0.2)
-
-** New Feature
-    * [SGF-132] - Being able to get cacheservers overall status on the client
-    * [SGF-248] - Ability to bootstrap a Spring context inside a GemFire Server JVM process by starting the GemFire Server with Gfsh.
-
-** Task
-    * [SGF-266] - Release 1.4 M1
+* SGF-88 - Create Regions in Spring Context with Region Shortcuts
+* SGF-132 - Being able to get cacheservers overall status on the client
+* SGF-187 - Consider appending to the list of listener a new listener defined by another peer member
+* SGF-201 - Create a Spring Boot Starter POM for Spring Data GemFire
+* SGF-204 - The existing RegionFactoryBean does a lookup of a Region before trying to create one.
+* SGF-209 - GemfireTemplate creates a temporary object for every operation.
+* SGF-210 - GemfireRepository requires that there be an attribute in the entity class for the key.
+* SGF-225 - Inconsistent data policy defaults for subregions that are replicated regions
+* SGF-230 - Cannot specify a Disk Store to be used for overflow on a Gateway Sender without enabling persistence.
+* SGF-231 - Unable to specify Ordering Policy for Serial GW Sender
+* SGF-232 - Unable to specify Order Policy for Serial Async Event Queue
+* SGF-233 - Cannot specify a Disk Store to be used for overflow on an Async Event Queue without enabling persistence.
+* SGF-234 - The docs indicate that the PDX attribute pdx-persistent defaults to true, however this does not seem to be the case.
+* SGF-235 - NPE in DefaultFunctionArgumentResolver.resolveFunctionArguments(30) when a Function has no arguments and none are provided.
+* SGF-238 - "jndi-prop" is not parced correctly
+* SGF-239 - The value "XaPooledDataSource" of jndi-binding "type" attribute should be changed to "XAPooledDataSource"
+* SGF-240 - XML schema type restrictions should be avoided in order to support placeholders (al types should be xs:string)
+* SGF-242 - When defining "membership-attributes" for a Region, the bean definition "required-roles" attribute is required and, when specified, causes a BeanCreationException in the Spring container during initialization.
+* SGF-244 - The nested <gfe:gateway-sender/>, <gfe:event-filter/> element is missing the ref attribute in the XSD.
+* SGF-245 - <gfe:cache> always creates cache with default values ignoring all the specified attributes
+* SGF-246 - execute function always assumes arguments are passed
+* SGF-247 - boolean based repository queries generate UnsupportedOperationException in non PDX serialized entities
+* SGF-249 - The SDG XSD is restricting the use of property placeholder values on <gfe:disk-store/>, compaction-threshold attributes given the attribute type is a short and not string.
+* SGF-251 - Creating and using GemFire Repositories based on the Spring Data Commons Repository abstraction does not work properly for domain objects stored in Subregions.
+* SGF-252 - Spring GemFire's Repository extension does not properly handle multiple, identically named Subregions for persisting corresponding application domain objects associated by way of the @Region annotation.
+* SGF-255 - The <gfe:eviction> element's 'threshold' attribute is required even when the Eviction type is 'HEAP_PERCENTAGE'.
+* SGF-258 - The SDG XML namespace <partitioned-region> element is missing the 'data-policy' attribute.
+* SGF-263 - The 'disk-synchronous' Region attribute does not get successfully applied when explicitly set to false.
+* SGF-236 - Sub-Region Bean names require prepended "/" (vs. previous use of gfe:lookup-region for sub-regions)
+* SGF-241 - Add support for defining client sub-Regions using nested <gfe:client-region/> SDG XML namespace elements.
+* SGF-248 - Ability to bootstrap a Spring context inside a GemFire Server JVM process by starting the GemFire Server with Gfsh.
+* SGF-256 - Upgrade to the latest version of the Spring Framework (3.2.8) and Spring Data Commons (1.8.0)
+* SGF-257 - Specify strict type rules in the Spring Data GemFire XSD for peer Region 'data-policy' and 'shortcut' attributes as currently enforced by the <gfe:client-region> element's 'shortcut' attribute.
+* SGF-259 - Handle cyclic bean dependencies in SDG XML config between Async Event Queues and Async Event Listeners.
+* SGF-260 - Add the ability to set @Id to a method name.
+* SGF-261 - Add ability to persist application domain objects (entities) to multiple Regions in a GemFire Cache.
+* SGF-265 - Upgrade to the latest version GemFire (7.0.2)
+* SGF-266 - Release 1.4 M1
 
 
 Changes in Version 1.3.4 (2014-04-04)
@@ -513,7 +658,7 @@ Changes in version 1.3.1.RELEASE(2013-04-18)
 ** Bug
     * [SGF-159] - isRollbackOnCommitFailure flag is ignored by GemfireTransactionManager when transaction fails.
     * [SGF-169] - Unidirectional Gateway hubs cannot be created and fail with an exception
-    * [SGF-173] - Function Execution throws exception on void return. 
+    * [SGF-173] - Function Execution throws exception on void return.
 
 
 Changes in version 1.3.0.RELEASE (2013-03-14)
@@ -584,7 +729,7 @@ General
 Package org.springframework.data.gemfire
 * Fixed incorrect parsing of pdx-serializer (from value to reference)
 * Fixed incorrect parsing of use-bean-factory-locator
-* Fixed GemfireTransactionCommitException class hierarchy 
+* Fixed GemfireTransactionCommitException class hierarchy
 * Improved handling of GemFire 6.5+ transaction exceptions
 
 Package org.springframework.data.gemfire.client
