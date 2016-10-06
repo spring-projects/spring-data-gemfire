@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
  *
  * @author John Blum
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+ * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
  * @since 1.9.0
  */
 @SuppressWarnings("unused")
@@ -102,11 +103,13 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+	public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
+			BeanDefinitionRegistry registry) {
+
 		if (isAnnotationPresent(importingClassMetadata)) {
 			Map<String, Object> annotationAttributes = getAnnotationAttributes(importingClassMetadata);
 			registerBeanDefinitions(importingClassMetadata, annotationAttributes, registry);
-			setGemFireProperties(registry, annotationAttributes);
+			setGemFireProperties(importingClassMetadata, annotationAttributes, registry);
 		}
 	}
 
@@ -117,7 +120,9 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	}
 
 	/* (non-Javadoc) */
-	protected void setGemFireProperties(BeanDefinitionRegistry registry, Map<String, Object> annotationAttributes) {
+	protected void setGemFireProperties(AnnotationMetadata importingClassMetadata,
+			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+
 		Properties gemfireProperties = toGemFireProperties(annotationAttributes);
 
 		if (hasProperties(gemfireProperties)) {
