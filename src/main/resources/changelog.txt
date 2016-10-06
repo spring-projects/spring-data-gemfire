@@ -26,6 +26,7 @@ Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M2 (2016-10-05)
 * SGF-512 - Configure GemFire System Properties with annotations.
 * SGF-513 - Configure SSL with annotations.
 * SGF-514 - Configure HttpService with annotations.
+* SGF-515 - Configure Geode Off-Heap Memory with annotations.
 * SGF-517 - Configure Authentication/Authorization with annotations.
 * SGF-518 - Configure Logging with annotations.
 * SGF-519 - Configure Mcast with annotations.
