@@ -16,21 +16,22 @@
 
 package org.springframework.data.gemfire;
 
+import com.gemstone.gemfire.GemFireCheckedException;
+import com.gemstone.gemfire.GemFireException;
+import com.gemstone.gemfire.cache.Region;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.cache.Region;
-
 /**
- * Base class for GemfireTemplate and GemfireInterceptor, defining common properties such as {@link Region}. 
+ * {@link GemfireAccessor} is a base class for {@link GemfireTemplate} defining common operations and properties,
+ * such as {@link Region}.
  *
- * Not intended to be used directly.
- * 
+ * This class is not intended to be used directly.
+ *
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean
@@ -66,7 +67,7 @@ public class GemfireAccessor implements InitializingBean {
 	}
 
 	public void afterPropertiesSet() {
-		Assert.notNull(getRegion(), "The GemFire Cache Region is required.");
+		Assert.notNull(getRegion(), "Region is required");
 	}
 
 	/**
@@ -96,12 +97,11 @@ public class GemfireAccessor implements InitializingBean {
 	 * <code>org.springframework.dao</code> hierarchy. Note that this particular implementation
 	 * is called only for GemFire querying exception that do <b>NOT</b> extend from GemFire exception.
 	 * May be overridden in subclasses.
-	 * 
+	 *
 	 * @param ex GemFireException that occurred
 	 * @return the corresponding DataAccessException instance
 	 */
 	public DataAccessException convertGemFireQueryException(RuntimeException ex) {
 		return GemfireCacheUtils.convertQueryExceptions(ex);
 	}
-
 }

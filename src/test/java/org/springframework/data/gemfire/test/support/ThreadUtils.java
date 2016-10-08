@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.test.support;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The ThreadUtils class is a utility class for working with Java Threads.
+ * {@link ThreadUtils} is an abstract utility class for managing Java {@link Thread Threads}.
  *
  * @author John Blum
  * @see java.lang.Thread
@@ -28,46 +28,52 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("unused")
 public abstract class ThreadUtils {
 
-	public static boolean sleep(final long milliseconds) {
+	/* (non-Javadoc) */
+	public static boolean sleep(long milliseconds) {
 		try {
 			Thread.sleep(milliseconds);
 			return true;
 		}
 		catch (InterruptedException ignore) {
+			Thread.currentThread().interrupt();
 			return false;
 		}
 	}
 
-	public static void timedWait(final long duration) {
-		timedWait(duration, duration);
+	public static boolean timedWait(long duration) {
+		return timedWait(duration, duration);
 	}
 
-	public static void timedWait(final long duration, final long interval) {
-		timedWait(duration, interval, new WaitCondition() {
+	public static boolean timedWait(long duration, long interval) {
+		return timedWait(duration, interval, new WaitCondition() {
 			@Override public boolean waiting() {
 				return true;
 			}
 		});
 	}
 
-	public static void timedWait(final long duration, long interval, final WaitCondition waitCondition) {
+	@SuppressWarnings("all")
+	public static boolean timedWait(long duration, long interval, WaitCondition waitCondition) {
 		final long timeout = (System.currentTimeMillis() + duration);
 
 		interval = Math.min(interval, duration);
 
-		while (waitCondition.waiting() && (System.currentTimeMillis() < timeout)) {
-			try {
+		try {
+			while (waitCondition.waiting() && (System.currentTimeMillis() < timeout)) {
 				synchronized (waitCondition) {
 					TimeUnit.MILLISECONDS.timedWait(waitCondition, interval);
 				}
 			}
-			catch (InterruptedException ignore) {
-			}
 		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+
+		return !waitCondition.waiting();
 	}
 
-	public static interface WaitCondition {
+	// TODO rename interface to Condition and waiting() method to evaluate()
+	public interface WaitCondition {
 		boolean waiting();
 	}
-
 }

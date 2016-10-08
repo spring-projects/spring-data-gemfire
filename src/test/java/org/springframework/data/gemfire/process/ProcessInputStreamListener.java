@@ -19,8 +19,8 @@ package org.springframework.data.gemfire.process;
 import java.util.EventListener;
 
 /**
- * The ProcessStreamListener interface is a callback listener that gets called when input arrives from either a
- * process's standard output steam or standard error stream.
+ * The {@link ProcessInputStreamListener} is a callback interface that gets called when input arrives from either a
+ * {@link Process process's} standard output steam or standard error stream.
  *
  * @author John Blum
  * @see java.util.EventListener
@@ -28,6 +28,14 @@ import java.util.EventListener;
  */
 public interface ProcessInputStreamListener extends EventListener {
 
+	/**
+	 * Callback method that gets called when the {@link Process} sends output from either its standard out
+	 * or standard error streams.
+	 *
+	 * @param input {@link String} containing output from the {@link Process} that this listener is listening to.
+	 * @see java.lang.Process#getErrorStream()
+	 * @see java.lang.Process#getInputStream()
+	 */
 	void onInput(String input);
 
 }

@@ -31,13 +31,13 @@ import java.lang.management.RuntimeMXBean;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.IOUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The ProcessUtils class is a utility class for working with process, or specifically instances
- * of the Java Process class.
+ * The {@link ProcessUtils} class is a utility class for working with Operating System (OS) {@link Process processes}.
  *
  * @author John Blum
  * @see java.io.File
@@ -73,8 +73,8 @@ public abstract class ProcessUtils {
 			}
 		}
 
-		throw new PidUnavailableException(String.format("The process ID (PID) is not available (%1$s)!",
-			runtimeMXBeanName), cause);
+		throw new PidUnavailableException(String.format("Process ID (PID) not available [%s]", runtimeMXBeanName),
+			cause);
 	}
 
 	/*
@@ -121,16 +121,17 @@ public abstract class ProcessUtils {
 
 		if (pidFile == null) {
 			throw new PidUnavailableException(String.format(
-				"No PID file was found in working directory (%1$s) or any of it's sub-directories!",
+				"No PID file was found in working directory [%s] or any of it's sub-directories",
 					workingDirectory));
 		}
 
 		return readPid(pidFile);
 	}
 
-	protected static File findPidFile(final File workingDirectory) {
-		Assert.isTrue(workingDirectory != null && workingDirectory.isDirectory(), String.format(
-			"The file system pathname (%1$s) is not valid directory!", workingDirectory));
+	@SuppressWarnings("all")
+	protected static File findPidFile(File workingDirectory) {
+		Assert.isTrue(FileSystemUtils.isDirectory(workingDirectory), String.format(
+			"File [%s] is not a valid directory", workingDirectory));
 
 		for (File file : workingDirectory.listFiles(DirectoryPidFileFilter.INSTANCE)) {
 			if (file.isDirectory()) {
@@ -147,7 +148,7 @@ public abstract class ProcessUtils {
 
 	public static int readPid(final File pidFile) {
 		Assert.isTrue(pidFile != null && pidFile.isFile(), String.format(
-			"The file system pathname (%1$s) is not a valid file!", pidFile));
+			"File [%s] is not a valid file", pidFile));
 
 		BufferedReader fileReader = null;
 		String pidValue = null;
@@ -155,6 +156,7 @@ public abstract class ProcessUtils {
 		try {
 			fileReader = new BufferedReader(new FileReader(pidFile));
 			pidValue = String.valueOf(fileReader.readLine()).trim();
+
 			return Integer.parseInt(pidValue);
 		}
 		catch (FileNotFoundException e) {
@@ -174,9 +176,9 @@ public abstract class ProcessUtils {
 
 	public static void writePid(final File pidFile, final int pid) throws IOException {
 		Assert.isTrue(pidFile != null && (pidFile.isFile() || pidFile.createNewFile()), String.format(
-			"The file system pathname (%1$s) in which the PID will be written is not a valid file!", pidFile));
+			"File [%s] is not a valid file", pidFile));
 
-		Assert.isTrue(pid > 0, String.format("The PID value (%1$d) must greater than 0!", pid));
+		Assert.isTrue(pid > 0, String.format("PID [%d] must greater than 0", pid));
 
 		PrintWriter fileWriter = new PrintWriter(new BufferedWriter(new FileWriter(pidFile, false), 16), true);
 
@@ -208,5 +210,4 @@ public abstract class ProcessUtils {
 			return (pathname != null && pathname.isFile() && pathname.getName().endsWith(".pid"));
 		}
 	}
-
 }
