@@ -28,10 +28,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The ProcessContext class is a container encapsulating configuration and context meta-data for a running process.
+ * The {@link ProcessConfiguration} class is a container encapsulating configuration and context meta-data
+ * for a running process.
  *
  * @author John Blum
  * @see java.lang.ProcessBuilder
+ * @see org.springframework.data.gemfire.process.ProcessExecutor
  * @since 1.5.0
  */
 @SuppressWarnings("unused")
@@ -46,23 +48,23 @@ public class ProcessConfiguration {
 	private final Map<String, String> environment;
 
 	public static ProcessConfiguration create(ProcessBuilder processBuilder) {
-		Assert.notNull(processBuilder, "The ProcessBuilder used to configure and start the Process must not be null!");
+		Assert.notNull(processBuilder, "The ProcessBuilder used to configure and start the Process must not be null");
 
 		return new ProcessConfiguration(processBuilder.command(), processBuilder.directory(),
 			processBuilder.environment(), processBuilder.redirectErrorStream());
 	}
 
 	public ProcessConfiguration(List<String> command, File workingDirectory, Map<String, String> environment,
-			boolean redirectingErrorStream) {
+			boolean redirectErrorStream) {
 
-		Assert.notEmpty(command, "process command must be specified");
+		Assert.notEmpty(command, "Process command must be specified");
 
 		Assert.isTrue(FileSystemUtils.isDirectory(workingDirectory), String.format(
-			"process working directory [%1$s] is not valid", workingDirectory));
+			"Process working directory [%s] is not valid", workingDirectory));
 
 		this.command = new ArrayList<String>(command);
 		this.workingDirectory = workingDirectory;
-		this.redirectingErrorStream = redirectingErrorStream;
+		this.redirectingErrorStream = redirectErrorStream;
 
 		this.environment = (environment != null
 			? Collections.unmodifiableMap(new HashMap<String, String>(environment))
@@ -93,9 +95,8 @@ public class ProcessConfiguration {
 	public String toString() {
 		return "{ command = ".concat(getCommandString())
 			.concat(", workingDirectory = ".concat(getWorkingDirectory().getAbsolutePath()))
-			.concat(", redirectingErrorStream = ".concat(String.valueOf(isRedirectingErrorStream())))
 			.concat(", environment = ".concat(String.valueOf(getEnvironment())))
+			.concat(", redirectingErrorStream = ".concat(String.valueOf(isRedirectingErrorStream())))
 			.concat(" }");
 	}
-
 }
