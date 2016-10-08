@@ -51,6 +51,18 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	}
 
 	/**
+	 * Factory method to create an instance of {@link PropertiesBuilder} initialized with the given {@link Properties}.
+	 *
+	 * @param properties {@link Properties} used as the default properties of the constructed {@link PropertiesBuilder}.
+	 * @return an instance of {@link PropertiesBuilder} initialized with the given {@link Properties}.
+	 * @see java.util.Properties
+	 * @see #PropertiesBuilder(Properties)
+	 */
+	public static PropertiesBuilder from(Properties properties) {
+		return new PropertiesBuilder(properties);
+	}
+
+	/**
 	 * Constructs and initializes a {@link PropertiesBuilder} containing all properties
 	 * from the given {@link InputStream}.
 	 *

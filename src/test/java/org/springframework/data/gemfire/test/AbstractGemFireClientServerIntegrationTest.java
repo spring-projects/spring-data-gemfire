@@ -39,6 +39,7 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.gemfire.process.ProcessWrapper
  * @since 1.8.0
  */
+@Deprecated
 @SuppressWarnings("unused")
 public abstract class AbstractGemFireClientServerIntegrationTest {
 

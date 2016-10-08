@@ -28,11 +28,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The ProcessExecutor class is a utility class for launching and running Java processes.
+ * The {@link ProcessExecutor} class is a utility class for launching and running Java processes.
  *
  * @author John Blum
  * @see java.lang.Process
  * @see java.lang.ProcessBuilder
+ * @see java.lang.System
  * @see org.springframework.data.gemfire.process.ProcessConfiguration
  * @see org.springframework.data.gemfire.process.ProcessWrapper
  * @since 1.5.0
@@ -68,7 +69,7 @@ public abstract class ProcessExecutor {
 
 		processWrapper.register(new ProcessInputStreamListener() {
 			@Override public void onInput(final String input) {
-				System.err.printf("[FORK-OUT] - %1$s%n", input);
+				System.err.printf("[FORK-OUT] - %s%n", input);
 			}
 		});
 
@@ -76,7 +77,7 @@ public abstract class ProcessExecutor {
 	}
 
 	protected static String[] buildCommand(String classpath, Class<?> type, String... args) {
-		Assert.notNull(type, "The main Java class to launch must not be null!");
+		Assert.notNull(type, "The main Java class to launch must not be null");
 
 		List<String> command = new ArrayList<String>();
 		List<String> programArgs = Collections.emptyList();
@@ -125,7 +126,8 @@ public abstract class ProcessExecutor {
 
 	protected static File validateDirectory(File workingDirectory) {
 		Assert.isTrue(workingDirectory != null && (workingDirectory.isDirectory() || workingDirectory.mkdirs()),
-			String.format("Failed to create working directory [%1$s]", workingDirectory));
+			String.format("Failed to create working directory [%s]", workingDirectory));
+
 		return workingDirectory;
 	}
 }
