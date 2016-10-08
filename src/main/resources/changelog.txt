@@ -49,6 +49,7 @@ Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M3 (2016-10-05)
 * SGF-552 - Unset 'mcast-port' when 'locators' are specified and unset 'locators' when @EnableMcast is used.
 * SGF-553 - Use SDG's MappingPdxSerializer as the default PdxSerializer when PDX is configured with @EnablePdx.
 * SGF-554 - Release 1.0.0.APACHE-GEODE-INCUBATING-M3
+* SGF-555 - Repository queries on client Regions associated with a Pool configured for a specific server group can lead to a RegionNotFoundException.
 
 
 Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M2 (2016-04-25)
