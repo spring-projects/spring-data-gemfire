@@ -20,8 +20,8 @@ package org.springframework.data.gemfire.client.support;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.query.QueryService;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.query.QueryService;
 
 /**
  * DelegatingPoolAdapter is an abstract implementation of GemFire's {@link Pool} interface and extension of
@@ -33,7 +33,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
  *
  * @author John Blum
  * @see FactoryDefaultsPoolAdapter
- * @see com.gemstone.gemfire.cache.client.Pool
+ * @see org.apache.geode.cache.client.Pool
  * @since 1.8.0
  */
 @SuppressWarnings("unused")

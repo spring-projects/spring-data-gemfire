@@ -26,10 +26,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.junit.Test;
 import org.springframework.data.gemfire.TestUtils;
 
@@ -41,9 +40,9 @@ import org.springframework.data.gemfire.TestUtils;
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.wan.GatewaySenderFactoryBean
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.wan.GatewaySender
- * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.wan.GatewaySender
+ * @see org.apache.geode.cache.wan.GatewaySenderFactory
  * @since 1.4.0
  */
 public class GatewaySenderFactoryBeanTest {

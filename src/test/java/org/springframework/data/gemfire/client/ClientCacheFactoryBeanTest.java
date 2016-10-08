@@ -45,14 +45,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.pdx.PdxSerializer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -73,8 +72,8 @@ import org.springframework.data.gemfire.util.DistributedSystemUtils;
  * @see org.mockito.Mockito
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientCacheFactory
  * @since 1.7.0
  */
 public class ClientCacheFactoryBeanTest {

@@ -24,8 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.Region;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanFactory;

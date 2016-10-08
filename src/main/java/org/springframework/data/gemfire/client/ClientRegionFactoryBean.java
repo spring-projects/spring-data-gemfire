@@ -18,6 +18,17 @@ package org.springframework.data.gemfire.client;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -31,18 +42,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-
 /**
  * Client extension for GemFire Regions.
  *
@@ -53,16 +52,16 @@ import com.gemstone.gemfire.cache.client.Pool;
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.data.gemfire.RegionLookupFactoryBean
- * @see com.gemstone.gemfire.cache.CacheListener
- * @see com.gemstone.gemfire.cache.CacheLoader
- * @see com.gemstone.gemfire.cache.CacheWriter
- * @see com.gemstone.gemfire.cache.DataPolicy
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.RegionAttributes
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.client.ClientRegionFactory
- * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.CacheListener
+ * @see org.apache.geode.cache.CacheLoader
+ * @see org.apache.geode.cache.CacheWriter
+ * @see org.apache.geode.cache.DataPolicy
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionAttributes
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientRegionFactory
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
  */
 @SuppressWarnings("unused")
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
@@ -183,7 +182,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				}
 				else {
 					// NOTE the Data Policy validation is based on the ClientRegionShortcut initialization logic
-					// in com.gemstone.gemfire.internal.cache.GemFireCacheImpl.initializeClientRegionShortcuts
+					// in org.apache.geode.internal.cache.GemFireCacheImpl.initializeClientRegionShortcuts
 					throw new IllegalArgumentException(String.format(
 						"Data Policy '%1$s' is invalid for Client Regions.", this.dataPolicy));
 				}
@@ -239,7 +238,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * configuration meta-data.
 	 * @see #isPersistent()
 	 * @see #isNotPersistent()
-	 * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
 	protected void assertClientRegionShortcutAndPersistentAttributeAreCompatible(final ClientRegionShortcut resolvedShortcut) {
 		final boolean persistentNotSpecified = (this.persistent == null);
@@ -263,7 +262,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * meta-data.
 	 * @see #isPersistent()
 	 * @see #isNotPersistent()
-	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	protected void assertDataPolicyAndPersistentAttributeAreCompatible(final DataPolicy resolvedDataPolicy) {
 		if (resolvedDataPolicy.withPersistence()) {
@@ -454,7 +453,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * Sets the CacheLoader used to load data local to the client's Region on cache misses.
 	 *
 	 * @param cacheLoader a GemFire CacheLoader used to load data into the client Region.
-	 * @see com.gemstone.gemfire.cache.CacheLoader
+	 * @see org.apache.geode.cache.CacheLoader
 	 */
 	public void setCacheLoader(CacheLoader<K, V> cacheLoader) {
 		this.cacheLoader = cacheLoader;
@@ -464,7 +463,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * Sets the CacheWriter used to perform a synchronous write-behind when data is put into the client's Region.
 	 *
 	 * @param cacheWriter the GemFire CacheWriter used to perform synchronous write-behinds on put ops.
-	 * @see com.gemstone.gemfire.cache.CacheWriter
+	 * @see org.apache.geode.cache.CacheWriter
 	 */
 	public void setCacheWriter(CacheWriter<K, V> cacheWriter) {
 		this.cacheWriter = cacheWriter;
@@ -474,7 +473,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * Sets the Data Policy. Used only when a new Region is created.
 	 *
 	 * @param dataPolicy the client Region's Data Policy.
-	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	public void setDataPolicy(DataPolicy dataPolicy) {
 		this.dataPolicy = dataPolicy;
@@ -484,8 +483,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * An alternate way to set the Data Policy, using the String name of the enumerated value.
 	 *
 	 * @param dataPolicyName the enumerated value String name of the Data Policy.
-	 * @see com.gemstone.gemfire.cache.DataPolicy
-	 * @see #setDataPolicy(com.gemstone.gemfire.cache.DataPolicy)
+	 * @see org.apache.geode.cache.DataPolicy
+	 * @see #setDataPolicy(org.apache.geode.cache.DataPolicy)
 	 * @deprecated use setDataPolicy(:DataPolicy) instead.
 	 */
 	@Deprecated

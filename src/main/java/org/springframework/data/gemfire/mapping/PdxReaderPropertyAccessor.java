@@ -15,22 +15,21 @@
  */
 package org.springframework.data.gemfire.mapping;
 
+import org.apache.geode.pdx.PdxReader;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.TypedValue;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-
 /**
  * {@link PropertyAccessor} to read values from a {@link PdxReader}.
- * 
+ *
  * @author Oliver Gierke
  */
 enum PdxReaderPropertyAccessor implements PropertyAccessor {
 
 	INSTANCE;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.expression.PropertyAccessor#getSpecificTargetClasses()
 	 */
@@ -39,7 +38,7 @@ enum PdxReaderPropertyAccessor implements PropertyAccessor {
 		return new Class<?>[] { PdxReader.class };
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.expression.PropertyAccessor#canRead(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 	 */
@@ -48,7 +47,7 @@ enum PdxReaderPropertyAccessor implements PropertyAccessor {
 		return ((PdxReader) target).hasField(name);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.expression.PropertyAccessor#read(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 	 */
@@ -58,7 +57,7 @@ enum PdxReaderPropertyAccessor implements PropertyAccessor {
 		return object == null ? TypedValue.NULL : new TypedValue(object);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.expression.PropertyAccessor#canWrite(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 	 */
@@ -67,7 +66,7 @@ enum PdxReaderPropertyAccessor implements PropertyAccessor {
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.expression.PropertyAccessor#write(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String, java.lang.Object)
 	 */

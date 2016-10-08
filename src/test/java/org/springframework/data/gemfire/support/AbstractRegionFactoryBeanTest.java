@@ -21,14 +21,13 @@ import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.geode.cache.GemFireCache;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.test.StubCache;
-
-import com.gemstone.gemfire.cache.GemFireCache;
 
 /**
  * @author David Turanski

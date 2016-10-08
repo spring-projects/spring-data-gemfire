@@ -39,10 +39,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.ResultsBag;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.ResultsBag;
 
 /**
  * The SpringBasedGemfireRepositoryQueryTest class is a test suite of test cases testing the contract and functionality

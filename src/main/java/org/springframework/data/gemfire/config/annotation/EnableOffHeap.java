@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Import;
 /**
  * The EnableOffHeap annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
  * annotated class to configure and enable Apache Geode Off-Heap Memory support and data storage
- * in Geode's cache {@link com.gemstone.gemfire.cache.Region Regions}.
+ * in Geode's cache {@link org.apache.geode.cache.Region Regions}.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.OffHeapConfiguration

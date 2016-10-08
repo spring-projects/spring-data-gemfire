@@ -20,18 +20,17 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.server.CacheServer;
 import org.springframework.data.gemfire.ForkUtil;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.server.CacheServer;
 
 /**
  * @author Costin Leau
@@ -45,8 +44,8 @@ public class FunctionCacheServerProcess {
 		props.setProperty("name", "FunctionServer");
 		props.setProperty("log-level", "config");
 		props.setProperty("groups","g1,g2,g3");
-		 
-		 
+
+
 		Cache cache = new CacheFactory(props).create();
 
 		// Create region.
@@ -59,34 +58,34 @@ public class FunctionCacheServerProcess {
 		// Start Cache Server.
 		CacheServer server = cache.addCacheServer();
 		server.setPort(40404);
-		server.start(); 
+		server.start();
 		System.out.println("Server started");
 
-		 
+
 		testRegion.put("one", 1);
 		testRegion.put("two", 2);
-		testRegion.put("three", 3);	
-		
+		testRegion.put("three", 3);
+
 		System.out.println("Registering ServerFunction");
 		FunctionService.registerFunction(new ServerFunction());
 		System.out.println("Registered ServerFunction");
-		
+
 		System.out.println("Registering EchoFunction");
 		FunctionService.registerFunction(new EchoFunction());
 		System.out.println("Registered EchoFunction");
-		
+
 		ForkUtil.createControlFile(FunctionCacheServerProcess.class.getName());
-		
+
 		System.out.println("Waiting for shutdown");
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 		bufferedReader.readLine();
 	}
-	
+
 	@SuppressWarnings("serial")
 	static class ServerFunction extends FunctionAdapter {
-		 
+
 		/* (non-Javadoc)
-		 * @see com.gemstone.gemfire.cache.execute.FunctionAdapter#execute(com.gemstone.gemfire.cache.execute.FunctionContext)
+		 * @see org.apache.geode.cache.execute.FunctionAdapter#execute(org.apache.geode.cache.execute.FunctionContext)
 		 */
 		@Override
 		public void execute(FunctionContext functionContext) {
@@ -96,20 +95,20 @@ public class FunctionCacheServerProcess {
 		}
 
 		/* (non-Javadoc)
-		 * @see com.gemstone.gemfire.cache.execute.FunctionAdapter#getId()
+		 * @see org.apache.geode.cache.execute.FunctionAdapter#getId()
 		 */
 		@Override
 		public String getId() {
-			return "serverFunction"; 
+			return "serverFunction";
 		}
- 
+
 	}
-	
+
 	@SuppressWarnings("serial")
 	static class EchoFunction extends FunctionAdapter {
-		 
+
 		/* (non-Javadoc)
-		 * @see com.gemstone.gemfire.cache.execute.FunctionAdapter#execute(com.gemstone.gemfire.cache.execute.FunctionContext)
+		 * @see org.apache.geode.cache.execute.FunctionAdapter#execute(org.apache.geode.cache.execute.FunctionContext)
 		 */
 		@Override
 		public void execute(FunctionContext functionContext) {
@@ -121,15 +120,15 @@ public class FunctionCacheServerProcess {
 					functionContext.getResultSender().sendResult(args[i]);
 				}
 			}
-		 
-			
+
+
 		}
 		@Override
 		public String getId() {
-			return "echoFunction"; 
+			return "echoFunction";
 		}
- 
+
 	}
-	
-	
+
+
 }

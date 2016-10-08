@@ -16,12 +16,11 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.cache.Region;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.GemFireCheckedException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.cache.Region;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
@@ -35,7 +34,7 @@ import org.springframework.util.Assert;
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  */
 public class GemfireAccessor implements InitializingBean {
 
@@ -49,7 +48,7 @@ public class GemfireAccessor implements InitializingBean {
 	 * @param <K> the Region key class type.
 	 * @param <V> the Region value class type.
 	 * @return the GemFire Cache Region.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	@SuppressWarnings("unchecked")
 	public <K, V> Region<K, V> getRegion() {
@@ -60,7 +59,7 @@ public class GemfireAccessor implements InitializingBean {
 	 * Sets the template GemFire Cache Region.
 	 *
 	 * @param region the GemFire Cache Region used by this template.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	public void setRegion(Region<?, ?> region) {
 		this.region = region;

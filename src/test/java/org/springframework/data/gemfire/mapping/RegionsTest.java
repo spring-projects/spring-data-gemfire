@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.geode.cache.Region;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,8 +42,6 @@ import org.springframework.data.gemfire.repository.sample.GuestUser;
 import org.springframework.data.gemfire.repository.sample.RootUser;
 import org.springframework.data.gemfire.repository.sample.User;
 import org.springframework.data.mapping.context.MappingContext;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The RegionsTest class is a test suite of test cases testing the contract and functionality of the Regions class.

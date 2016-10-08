@@ -18,9 +18,8 @@ package org.springframework.data.gemfire;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import org.apache.geode.cache.DataPolicy;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.DataPolicy;
 
 /**
  * @author David Turanski

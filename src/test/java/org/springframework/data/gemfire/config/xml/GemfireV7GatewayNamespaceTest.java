@@ -27,17 +27,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -54,9 +53,9 @@ import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.data.gemfire.RecreatingSpringApplicationContextTest
- * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
- * @see com.gemstone.gemfire.cache.wan.GatewayReceiver
- * @see com.gemstone.gemfire.cache.wan.GatewaySender
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+ * @see org.apache.geode.cache.wan.GatewayReceiver
+ * @see org.apache.geode.cache.wan.GatewaySender
  */
 @SuppressWarnings("unused")
 public class GemfireV7GatewayNamespaceTest extends RecreatingSpringApplicationContextTest {

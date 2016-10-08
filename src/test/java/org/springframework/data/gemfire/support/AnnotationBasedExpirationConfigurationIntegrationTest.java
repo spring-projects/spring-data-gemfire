@@ -29,6 +29,10 @@ import static org.mockito.Mockito.when;
 
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,11 +44,6 @@ import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitia
 import org.springframework.expression.EvaluationException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The AnnotationBasedExpirationConfigurationIntegrationTest class is a test suite of test cases testing
@@ -59,9 +58,9 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.CustomExpiry
- * @see com.gemstone.gemfire.cache.ExpirationAction
- * @see com.gemstone.gemfire.cache.ExpirationAttributes
+ * @see org.apache.geode.cache.CustomExpiry
+ * @see org.apache.geode.cache.ExpirationAction
+ * @see org.apache.geode.cache.ExpirationAttributes
  * @since 1.7.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)

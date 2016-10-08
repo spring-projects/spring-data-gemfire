@@ -20,8 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.gemstone.gemfire.cache.InterestPolicy;
-
+import org.apache.geode.cache.InterestPolicy;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +32,7 @@ import org.junit.rules.ExpectedException;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.InterestPolicyConverter
- * @see com.gemstone.gemfire.cache.InterestPolicy
+ * @see org.apache.geode.cache.InterestPolicy
  * @since 1.6.0
  */
 public class InterestPolicyConverterUnitTests {

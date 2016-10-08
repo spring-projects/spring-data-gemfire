@@ -18,12 +18,11 @@ package org.springframework.data.gemfire.mapping;
 import java.util.Collections;
 import java.util.Map;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.PdxWriter;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.PdxWriter;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -55,9 +54,9 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.mapping.PersistentPropertyAccessor
  * @see org.springframework.data.mapping.model.PersistentEntityParameterValueProvider
  * @see org.springframework.data.mapping.model.SpELContext
- * @see com.gemstone.gemfire.pdx.PdxReader
- * @see com.gemstone.gemfire.pdx.PdxSerializer
- * @see com.gemstone.gemfire.pdx.PdxWriter
+ * @see org.apache.geode.pdx.PdxReader
+ * @see org.apache.geode.pdx.PdxSerializer
+ * @see org.apache.geode.pdx.PdxWriter
  */
 public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAware {
 
@@ -285,7 +284,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @return a "custom" PdxSerializer for the given class type or null if no custom PdxSerializer
 	 * for the given class type was registered.
 	 * @see #getCustomSerializers()
-	 * @see com.gemstone.gemfire.pdx.PdxSerializer
+	 * @see org.apache.geode.pdx.PdxSerializer
 	 */
 	protected PdxSerializer getCustomSerializer(Class<?> type) {
 		return getCustomSerializers().get(type);

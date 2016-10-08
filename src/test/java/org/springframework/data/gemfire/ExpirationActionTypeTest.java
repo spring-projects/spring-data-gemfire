@@ -21,9 +21,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import org.apache.geode.cache.ExpirationAction;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.ExpirationAction;
 
 /**
  * The ExpirationActionTypeTest class is a test suite of test cases testing the contract and functionality
@@ -32,7 +31,7 @@ import com.gemstone.gemfire.cache.ExpirationAction;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.ExpirationActionType
- * @see com.gemstone.gemfire.cache.ExpirationAction
+ * @see org.apache.geode.cache.ExpirationAction
  * @since 1.6.0
  */
 public class ExpirationActionTypeTest {

@@ -15,23 +15,22 @@
  */
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.SubscriptionAttributes;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
 
 /**
  * The SubscriptionAttributesFactoryBean class is a Spring FactoryBean used for defining and constructing
  * a GemFire SubscriptionAttributes object, which determines the Subscription policy used by Regions to
  * declared their data interests.
- * 
+ *
  * @author Lyndon Adams
  * @author John Blum
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.gemstone.gemfire.cache.InterestPolicy
- * @see com.gemstone.gemfire.cache.SubscriptionAttributes
+ * @see org.apache.geode.cache.InterestPolicy
+ * @see org.apache.geode.cache.SubscriptionAttributes
  * @since 1.3.0
  */
 public class SubscriptionAttributesFactoryBean implements FactoryBean<SubscriptionAttributes>, InitializingBean {
@@ -48,7 +47,7 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	public void afterPropertiesSet() throws Exception {
 		subscriptionAttributes = new SubscriptionAttributes(getInterestPolicy());
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
@@ -81,8 +80,8 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	 * the data interests and distribution of changes.
 	 *
 	 * @param interestPolicy the GemFire InterestsPolicy to set for Subscription.
-	 * @see com.gemstone.gemfire.cache.InterestPolicy
-	 * @see com.gemstone.gemfire.cache.SubscriptionAttributes#SubscriptionAttributes(com.gemstone.gemfire.cache.InterestPolicy)
+	 * @see org.apache.geode.cache.InterestPolicy
+	 * @see org.apache.geode.cache.SubscriptionAttributes#SubscriptionAttributes(org.apache.geode.cache.InterestPolicy)
 	 */
 	public void setInterestPolicy(final InterestPolicy interestPolicy) {
 		this.interestPolicy = interestPolicy;
@@ -93,8 +92,8 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	 * and distribution of changes.
 	 *
 	 * @return the GemFire InterestsPolicy set for Subscription.
-	 * @see com.gemstone.gemfire.cache.InterestPolicy
-	 * @see com.gemstone.gemfire.cache.SubscriptionAttributes#getInterestPolicy()
+	 * @see org.apache.geode.cache.InterestPolicy
+	 * @see org.apache.geode.cache.SubscriptionAttributes#getInterestPolicy()
 	 */
 	public InterestPolicy getInterestPolicy() {
 		return (interestPolicy != null ? interestPolicy : InterestPolicy.DEFAULT);

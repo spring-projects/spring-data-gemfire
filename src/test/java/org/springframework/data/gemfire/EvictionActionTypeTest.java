@@ -20,9 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import org.apache.geode.cache.EvictionAction;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.EvictionAction;
 
 /**
  * The EvictionActionTypeTest class is a test suite of test cases testing the contract and functionality
@@ -31,7 +30,7 @@ import com.gemstone.gemfire.cache.EvictionAction;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.EvictionActionType
- * @see com.gemstone.gemfire.cache.EvictionAction
+ * @see org.apache.geode.cache.EvictionAction
  * @since 1.6.0
  */
 public class EvictionActionTypeTest {

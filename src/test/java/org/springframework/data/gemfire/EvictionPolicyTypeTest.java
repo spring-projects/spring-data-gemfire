@@ -19,9 +19,8 @@ package org.springframework.data.gemfire;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import org.apache.geode.cache.EvictionAlgorithm;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
 
 /**
  * The EvictionTypeTest class is a test suite of test cases testing the contract and functionality
@@ -30,7 +29,7 @@ import com.gemstone.gemfire.cache.EvictionAlgorithm;
  * @author John Blum
  * @see org.junit.Test
  * @see EvictionPolicyType
- * @see com.gemstone.gemfire.cache.EvictionAlgorithm
+ * @see org.apache.geode.cache.EvictionAlgorithm
  * @since 1.6.0
  */
 public class EvictionPolicyTypeTest {

@@ -32,8 +32,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,15 +64,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-
 /**
  * The DurableClientCacheIntegrationTest class is a test suite of test cases testing GemFire's Durable Client
  * functionality in the context of Spring Data GemFire.
@@ -77,9 +77,9 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
  * @see org.springframework.data.gemfire.test.AbstractGemFireClientServerIntegrationTest
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.util.CacheListenerAdapter
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.util.CacheListenerAdapter
  * @since 1.6.3
  */
 @RunWith(SpringJUnit4ClassRunner.class)

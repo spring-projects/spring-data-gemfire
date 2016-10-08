@@ -26,13 +26,13 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 
 /**
  * Spring {@link Configuration} class used to configure, construct and initialize
- * a GemFire peer {@link com.gemstone.gemfire.cache.Cache} instance in a Spring application context.
+ * a GemFire peer {@link org.apache.geode.cache.Cache} instance in a Spring application context.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
- * @see com.gemstone.gemfire.cache.Cache
+ * @see org.apache.geode.cache.Cache
  * @since 1.9.0
  */
 @Configuration
@@ -77,10 +77,10 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
     }
 
     /**
-     * Configures GemFire peer {@link com.gemstone.gemfire.cache.Cache} specific settings.
+     * Configures GemFire peer {@link org.apache.geode.cache.Cache} specific settings.
      *
      * @param importMetadata {@link AnnotationMetadata} containing peer cache meta-data used to configure
-     * the GemFire peer {@link com.gemstone.gemfire.cache.Cache}.
+     * the GemFire peer {@link org.apache.geode.cache.Cache}.
      * @see org.springframework.core.type.AnnotationMetadata
      * @see #isCacheServerOrPeerCacheApplication(AnnotationMetadata)
      */

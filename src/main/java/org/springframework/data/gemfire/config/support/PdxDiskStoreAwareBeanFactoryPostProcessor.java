@@ -16,10 +16,9 @@
 
 package org.springframework.data.gemfire.config.support;
 
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -39,9 +38,9 @@ import org.springframework.util.Assert;
  * @author John Blum
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
  * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
- * @see com.gemstone.gemfire.cache.DiskStore
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
+ * @see org.apache.geode.cache.DiskStore
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
  * @since 1.3.3
  */
 public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPostProcessor {

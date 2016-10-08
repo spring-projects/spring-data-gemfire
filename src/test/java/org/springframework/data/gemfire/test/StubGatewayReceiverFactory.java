@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -22,18 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-
 /**
  * @author David Turanski
  * @author John Blum
- * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory
+ * @see org.apache.geode.cache.wan.GatewayReceiverFactory
  */
 @SuppressWarnings("unused")
 public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
@@ -54,7 +53,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	private String hostnameForSenders;
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setStartPort(int)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#setStartPort(int)
 	 */
 	@Override
 	public GatewayReceiverFactory setStartPort(int startPort) {
@@ -63,7 +62,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setEndPort(int)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#setEndPort(int)
 	 */
 	@Override
 	public GatewayReceiverFactory setEndPort(int endPort) {
@@ -72,7 +71,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setSocketBufferSize(int)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#setSocketBufferSize(int)
 	 */
 	@Override
 	public GatewayReceiverFactory setSocketBufferSize(int socketBufferSize) {
@@ -81,7 +80,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setBindAddress(java.lang.String)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#setBindAddress(java.lang.String)
 	 */
 	@Override
 	public GatewayReceiverFactory setBindAddress(String address) {
@@ -90,7 +89,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#addGatewayTransportFilter(com.gemstone.gemfire.cache.wan.GatewayTransportFilter)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#addGatewayTransportFilter(org.apache.geode.cache.wan.GatewayTransportFilter)
 	 */
 	@Override
 	public GatewayReceiverFactory addGatewayTransportFilter(GatewayTransportFilter filter) {
@@ -99,7 +98,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#removeGatewayTransportFilter(com.gemstone.gemfire.cache.wan.GatewayTransportFilter)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#removeGatewayTransportFilter(org.apache.geode.cache.wan.GatewayTransportFilter)
 	 */
 	@Override
 	public GatewayReceiverFactory removeGatewayTransportFilter(GatewayTransportFilter filter) {
@@ -108,7 +107,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setMaximumTimeBetweenPings(int)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#setMaximumTimeBetweenPings(int)
 	 */
 	@Override
 	public GatewayReceiverFactory setMaximumTimeBetweenPings(int time) {
@@ -117,8 +116,8 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setHostnameForClients(String)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiver#getHost
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#setHostnameForClients(String)
+	 * @see org.apache.geode.cache.wan.GatewayReceiver#getHost
 	 */
 	//@Override
 	public GatewayReceiverFactory setHostnameForClients(final String name) {
@@ -127,7 +126,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setHostnameForSenders(String)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#setHostnameForSenders(String)
 	 */
 	@Override
 	public GatewayReceiverFactory setHostnameForSenders(final String hostnameForSenders) {
@@ -137,7 +136,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#setManualStart(boolean)
+	 * @see org.apache.geode.cache.wan.GatewayReceiverFactory#setManualStart(boolean)
 	 */
 	@Override
 	public GatewayReceiverFactory setManualStart(final boolean manualStart) {
@@ -151,7 +150,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	}
 
 	/* (non-Javadoc)
-	* @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory#create()
+	* @see org.apache.geode.cache.wan.GatewayReceiverFactory#create()
 	*/
 	@Override
 	public GatewayReceiver create() {
@@ -196,5 +195,4 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 
 		return gatewayReceiver;
 	}
-
 }

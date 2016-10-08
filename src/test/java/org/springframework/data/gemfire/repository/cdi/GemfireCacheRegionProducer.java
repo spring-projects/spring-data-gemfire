@@ -20,14 +20,13 @@ package org.springframework.data.gemfire.repository.cdi;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
 
 /**
  * The GemfireCacheRegionProducer class is an application scoped CDI context bean that is responsible
@@ -36,10 +35,10 @@ import com.gemstone.gemfire.cache.RegionShortcut;
  * @author John Blum
  * @see javax.enterprise.context.ApplicationScoped
  * @see javax.enterprise.inject.Produces
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.CacheFactory
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.RegionFactory
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.CacheFactory
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionFactory
  * @since 1.8.0
  */
 @SuppressWarnings("unused")

@@ -18,15 +18,14 @@ package org.springframework.data.gemfire;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * Simple FactoryBean for retrieving generic GemFire {@link Region}s. If lookups are not enabled or the Region
@@ -37,7 +36,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.beans.factory.BeanNameAware
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  */
 @SuppressWarnings("unused")
 public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>, InitializingBean, BeanNameAware {
@@ -85,7 +84,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 
 	/**
 	 * Fallback method in case the named Region does not exist.  By default, this implementation throws an exception.
-	 * 
+	 *
 	 * @param cache a reference to the GemFire Cache.
 	 * @param regionName the name of the GemFire Cache Region.
 	 * @return the Region in the GemFire Cache with the given name.
@@ -125,7 +124,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	 *
 	 * @param cache a reference to the Cache.
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see org.apache.geode.cache.GemFireCache
 	 */
 	public void setCache(GemFireCache cache) {
 		this.cache = cache;
@@ -137,7 +136,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	 *
 	 * @param name the region name
 	 * @see #setBeanName(String)
-	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
+	 * @see org.apache.geode.cache.Region#getFullPath()
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -147,7 +146,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	 * Sets a reference to the parent Region if this FactoryBean represents a GemFire Cache Sub-Region.
 	 *
 	 * @param parent a reference to the parent Region if this Region is a Sub-Region.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	public void setParent(Region<?, ?> parent) {
 		this.parent = parent;
@@ -157,7 +156,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	 * Gets a reference to the parent Region if this FactoryBean represents a GemFire Cache Sub-Region.
 	 *
 	 * @return a reference to the parent Region or null if this Region is not a Sub-Region.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	protected Region<?, ?> getParent() {
 		return parent;
@@ -167,7 +166,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	 * Gets the reference to the GemFire Region obtained by this Spring FactoryBean during the lookup operation.
 	 *
 	 * @return a reference to the GemFire Region found during lookup.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	protected Region<K, V> getRegion() {
 		return region;
@@ -179,7 +178,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	 *
 	 * @param regionName a String indicating the name of the Region in GemFire.
 	 * @see #setName(String)
-	 * @see com.gemstone.gemfire.cache.Region#getName()
+	 * @see org.apache.geode.cache.Region#getName()
 	 */
 	public void setRegionName(String regionName) {
 		this.regionName = regionName;

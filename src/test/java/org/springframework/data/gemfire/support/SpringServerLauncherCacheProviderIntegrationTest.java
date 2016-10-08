@@ -21,22 +21,21 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.AbstractLauncher.Status;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.gemfire.GemfireUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
-import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.distributed.ServerLauncher.ServerState;
 
 /**
  * The SpringServerLauncherCacheProviderTest class is a test suite of test cases testing the contract and functionality
  * of the {@link SpringServerLauncherCacheProvider} class.
  *
  * This test class focuses on testing isolated units of functionality in the
- * {@link com.gemstone.gemfire.distributed.ServerLauncherCacheProvider} class directly, mocking any dependencies
+ * {@link org.apache.geode.distributed.ServerLauncherCacheProvider} class directly, mocking any dependencies
  * as appropriate, in order for the class to uphold it's contract.
  *
  * @author Dan Smith
@@ -45,8 +44,8 @@ import com.gemstone.gemfire.distributed.ServerLauncher.ServerState;
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.data.gemfire.support.SpringServerLauncherCacheProvider
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.distributed.ServerLauncher
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.distributed.ServerLauncher
  */
 public class SpringServerLauncherCacheProviderIntegrationTest {
 

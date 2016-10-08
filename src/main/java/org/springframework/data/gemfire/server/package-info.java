@@ -1,5 +1,5 @@
 /**
- * Support package for GemFire {@link com.gemstone.gemfire.cache.server.CacheServer}.
+ * Support package for GemFire {@link org.apache.geode.cache.server.CacheServer}.
  *
  */
 package org.springframework.data.gemfire.server;

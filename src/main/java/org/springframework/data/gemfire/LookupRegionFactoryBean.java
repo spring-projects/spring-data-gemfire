@@ -16,19 +16,18 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.EvictionAttributesMutator;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.EvictionAttributesMutator;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The LookupRegionFactoryBean class is a concrete implementation of RegionLookupFactoryBean for handling
@@ -36,7 +35,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.RegionLookupFactoryBean
- * @see com.gemstone.gemfire.cache.AttributesMutator
+ * @see org.apache.geode.cache.AttributesMutator
  * @since 1.6.0
  */
 @SuppressWarnings("unused")

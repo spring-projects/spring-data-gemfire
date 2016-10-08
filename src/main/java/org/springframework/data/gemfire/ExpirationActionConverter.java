@@ -16,9 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.ExpirationAction;
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
-
-import com.gemstone.gemfire.cache.ExpirationAction;
 
 /**
  * The ExpirationActionTypeConverter class is a Spring Converter used to convert a String value into
@@ -39,7 +38,7 @@ public class ExpirationActionConverter extends AbstractPropertyEditorConverterSu
 	 * @return an GemFire ExpirationAction value for the given String.
 	 * @throws java.lang.IllegalArgumentException if the String is not a valid GemFire ExpirationAction.
 	 * @see org.springframework.data.gemfire.ExpirationActionType#valueOfIgnoreCase(String)
-	 * @see com.gemstone.gemfire.cache.ExpirationAction
+	 * @see org.apache.geode.cache.ExpirationAction
 	 */
 	@Override
 	public ExpirationAction convert(final String source) {

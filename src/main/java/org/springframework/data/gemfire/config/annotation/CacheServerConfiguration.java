@@ -20,12 +20,11 @@ package org.springframework.data.gemfire.config.annotation;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.InterestRegistrationListener;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.cache.server.ServerLoadProbe;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.AnnotationMetadata;
@@ -42,8 +41,8 @@ import org.springframework.data.gemfire.util.SpringUtils;
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfiguration
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.server.CacheServer
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.server.CacheServer
  * @since 1.9.0
  */
 @Configuration

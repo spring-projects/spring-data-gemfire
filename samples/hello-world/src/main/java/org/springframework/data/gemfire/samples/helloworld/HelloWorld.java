@@ -24,11 +24,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Region;
 
 /**
- * Main bean for interacting with the cache from the console. 
- * 
+ * Main bean for interacting with the cache from the console.
+ *
  * @author Costin Leau
  */
 @Component

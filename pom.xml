@@ -13,7 +13,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-geode</artifactId>
-	<version>1.0.0.APACHE-GEODE-INCUBATING-M3</version>
+	<version>1.0.0.APACHE-GEODE-INCUBATING-SNAPSHOT</version>
 
 	<name>Spring Data Geode</name>
 
@@ -21,7 +21,7 @@
 		<dist.key>SGF</dist.key>
 		<antlr.version>2.7.7</antlr.version>
 		<assertj.version>2.5.0</assertj.version>
-		<gemfire.version>1.0.0-incubating.M3</gemfire.version>
+		<gemfire.version>1.1.0-incubating-SNAPSHOT</gemfire.version>
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
@@ -35,12 +35,10 @@
 			<id>spring-libs-release</id>
 			<url>https://repo.spring.io/libs-release</url>
 		</repository>
-<!--
 		<repository>
 			<id>apache-snapshots</id>
 			<url>https://repository.apache.org/content/repositories/snapshots</url>
 		</repository>
--->
 	</repositories>
 
 	<pluginRepositories>

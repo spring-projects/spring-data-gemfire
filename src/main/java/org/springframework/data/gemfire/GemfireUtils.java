@@ -16,13 +16,12 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.GemFireVersion;
 import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.util.ClassUtils;
 import org.w3c.dom.Element;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.internal.GemFireVersion;
 
 /**
  * GemfireUtils is an abstract utility class encapsulating common functionality to access features and capabilities
@@ -30,8 +29,8 @@ import com.gemstone.gemfire.internal.GemFireVersion;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
- * @see com.gemstone.gemfire.cache.CacheFactory
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.CacheFactory
+ * @see org.apache.geode.cache.Region
  * @since 1.3.3
  */
 public abstract class GemfireUtils extends CacheUtils {
@@ -40,13 +39,13 @@ public abstract class GemfireUtils extends CacheUtils {
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
 
 	private static final String ASYNC_EVENT_QUEUE_ELEMENT_NAME = "async-event-queue";
-	private static final String ASYNC_EVENT_QUEUE_TYPE_NAME = "com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue";
+	private static final String ASYNC_EVENT_QUEUE_TYPE_NAME = "org.apache.geode.cache.asyncqueue.AsyncEventQueue";
 	private static final String CQ_ELEMENT_NAME = "cq-listener-container";
-	private static final String CQ_TYPE_NAME = "com.gemstone.gemfire.cache.query.internal.cq.CqServiceFactoryImpl";
+	private static final String CQ_TYPE_NAME = "org.apache.geode.cache.query.internal.cq.CqServiceFactoryImpl";
 	private static final String GATEWAY_RECEIVER_ELEMENT_NAME = "gateway-receiver";
-	private static final String GATEWAY_RECEIVER_TYPE_NAME = "com.gemstone.gemfire.internal.cache.wan.GatewayReceiverFactoryImpl";
+	private static final String GATEWAY_RECEIVER_TYPE_NAME = "org.apache.geode.internal.cache.wan.GatewayReceiverFactoryImpl";
 	private static final String GATEWAY_SENDER_ELEMENT_NAME = "gateway-sender";
-	private static final String GATEWAY_SENDER_TYPE_NAME = "com.gemstone.gemfire.internal.cache.wan.GatewaySenderFactoryImpl";
+	private static final String GATEWAY_SENDER_TYPE_NAME = "org.apache.geode.internal.cache.wan.GatewaySenderFactoryImpl";
 
 	/* (non-Javadoc) */
 	public static boolean isClassAvailable(String fullyQualifiedClassName) {

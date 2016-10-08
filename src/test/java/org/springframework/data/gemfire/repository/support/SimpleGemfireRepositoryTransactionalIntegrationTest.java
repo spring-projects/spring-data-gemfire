@@ -25,8 +25,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.Region;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,8 +44,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The SimpleGemfireRepositoryTransactionalIntegrationTest class is a test suite of test cases testing

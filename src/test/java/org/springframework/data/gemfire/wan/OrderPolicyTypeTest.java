@@ -20,9 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.apache.geode.cache.wan.GatewaySender;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The OrderPolicyTypeTest class is a test suite of test cases testing the contract and functionality
@@ -31,7 +30,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.wan.OrderPolicyType
- * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
+ * @see org.apache.geode.cache.wan.GatewaySender.OrderPolicy
  * @since 1.7.0
  */
 @SuppressWarnings("deprecation")

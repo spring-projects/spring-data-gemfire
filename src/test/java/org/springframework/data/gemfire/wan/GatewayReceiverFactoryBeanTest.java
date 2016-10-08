@@ -25,11 +25,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * The GatewayReceiverFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -37,7 +36,7 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean
- * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory
+ * @see org.apache.geode.cache.wan.GatewayReceiverFactory
  * @since 1.5.0
  */
 public class GatewayReceiverFactoryBeanTest {

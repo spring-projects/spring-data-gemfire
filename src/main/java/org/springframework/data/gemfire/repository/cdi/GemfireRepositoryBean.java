@@ -22,16 +22,16 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
+import org.apache.geode.cache.Region;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory;
 import org.springframework.data.repository.cdi.CdiRepositoryBean;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * A CDI-based bean that represents a GemFire Repository.
@@ -45,7 +45,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory
  * @see org.springframework.data.repository.cdi.CdiRepositoryBean
  * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.8.0
  */
 class GemfireRepositoryBean<T> extends CdiRepositoryBean<T> {

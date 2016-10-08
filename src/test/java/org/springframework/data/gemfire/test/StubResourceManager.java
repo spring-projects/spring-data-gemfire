@@ -20,9 +20,9 @@ package org.springframework.data.gemfire.test;
 import java.util.Collections;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.control.RebalanceFactory;
-import com.gemstone.gemfire.cache.control.RebalanceOperation;
-import com.gemstone.gemfire.cache.control.ResourceManager;
+import org.apache.geode.cache.control.RebalanceFactory;
+import org.apache.geode.cache.control.RebalanceOperation;
+import org.apache.geode.cache.control.ResourceManager;
 
 /**
  * The StubResourceManager class...

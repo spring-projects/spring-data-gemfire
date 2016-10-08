@@ -16,6 +16,9 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.Region;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.NoTransactionException;
@@ -28,38 +31,34 @@ import org.springframework.transaction.support.ResourceTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * Local transaction manager for GemFire Enterprise Fabric (GEF). Provides a
  * {@link PlatformTransactionManager} implementation for a single GemFire
  * {@link CacheTransactionManager}.
- * 
+ *
  * Binds one or multiple GemFire regions for the specified {@link Cache} to the
  * thread, potentially allowing for one region per cache model.
- * 
+ *
  * <p>
  * This local strategy is an alternative to executing cache operations within
  * JTA transactions. Its advantage is that is able to work in any environment,
  * for example a stand-alone application or a test suite. It is <i>not</i> able
  * to provide XA transactions, for example to share transactions with data
  * access.
- * 
+ *
  * <p>
  * To prevent dirty reads, by default, the cache is configured to return copies
  * rather then direct references for <code>get</code> operations. As a
  * workaround, one could use explicitly deep copy objects before making changes
  * to them to avoid unnecessary copying on every fetch.
- * 
- * @see com.gemstone.gemfire.cache.CacheTransactionManager
- * @see com.gemstone.gemfire.cache.Cache#setCopyOnRead(boolean)
- * @see com.gemstone.gemfire.cache.Region#get(Object)
- * @see com.gemstone.gemfire.CopyHelper#copy(Object)
+ *
+ * @see org.apache.geode.cache.CacheTransactionManager
+ * @see org.apache.geode.cache.Cache#setCopyOnRead(boolean)
+ * @see org.apache.geode.cache.Region#get(Object)
+ * @see org.apache.geode.CopyHelper#copy(Object)
  * @see #setCopyOnRead(boolean)
  * @see org.springframework.transaction.support.AbstractPlatformTransactionManager
- * 
+ *
  * @author Costin Leau
  */
 // TODO add lenient behavior if a transaction is already started on the current
@@ -80,7 +79,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	/**
 	 * Creates a new GemfireTransactionManager instance.
-	 * 
+	 *
 	 * @param cache a reference to the GemFire Cache associated with Cache transactions.
 	 */
 	public GemfireTransactionManager(Cache cache) {
@@ -147,8 +146,8 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 			throw new NoTransactionException(
 					"No transaction associated with the current thread; are there multiple transaction managers ?", ex);
 		}
-		
-		catch (com.gemstone.gemfire.cache.TransactionException ex) {
+
+		catch (org.apache.geode.cache.TransactionException ex) {
 			throw new GemfireTransactionCommitException("Unexpected failure on commit of Cache local transaction", ex);
 		}
 	}
@@ -189,7 +188,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	/**
 	 * Returns the Cache that this instance manages local transactions for.
-	 * 
+	 *
 	 * @return Gemfire cache
 	 */
 	public Cache getCache() {
@@ -198,7 +197,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	/**
 	 * Sets the Cache that this instance manages local transactions for.
-	 * 
+	 *
 	 * @param cache Gemfire cache
 	 */
 	public void setCache(Cache cache) {
@@ -229,11 +228,11 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 * concurrent threads in the same VM, whether or not transactions are used.
 	 *
 	 * One could explicitly deep copy objects before making changes (for example
-	 * by using {@link com.gemstone.gemfire.CopyHelper#copy(Object)} in which
+	 * by using {@link org.apache.geode.CopyHelper#copy(Object)} in which
 	 * case this setting can be set to <code>false</code>. However, unless there
 	 * is a measurable performance penalty, the recommendation is to keep this
 	 * setting to <code>true</code>
-	 * 
+	 *
 	 * @param copyOnRead whether copies (default) rather then direct references
 	 * will be returned on fetch operations
 	 */
@@ -243,7 +242,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	/**
 	 * Indicates whether copy on read is set or not on the transaction manager.
-	 * 
+	 *
 	 * @see #setCopyOnRead(boolean)
 	 * @return the copyOnRead
 	 */
@@ -253,7 +252,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	/**
 	 * GemfireTM local transaction object.
-	 * 
+	 *
 	 * @author Costin Leau
 	 */
 	private static class CacheTransactionObject {

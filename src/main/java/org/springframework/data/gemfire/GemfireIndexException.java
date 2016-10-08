@@ -16,24 +16,23 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.query.IndexCreationException;
+import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexInvalidException;
+import org.apache.geode.cache.query.IndexMaintenanceException;
+import org.apache.geode.cache.query.IndexNameConflictException;
 import org.springframework.dao.DataIntegrityViolationException;
-
-import com.gemstone.gemfire.cache.query.IndexCreationException;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 
 /**
  * Gemfire-specific subclass thrown on Index management.
- *  
+ *
  * @author Costin Leau
  * @author John Blum
- * @see com.gemstone.gemfire.cache.query.IndexCreationException
- * @see com.gemstone.gemfire.cache.query.IndexExistsException
- * @see com.gemstone.gemfire.cache.query.IndexInvalidException
- * @see com.gemstone.gemfire.cache.query.IndexMaintenanceException
- * @see com.gemstone.gemfire.cache.query.IndexNameConflictException
+ * @see org.apache.geode.cache.query.IndexCreationException
+ * @see org.apache.geode.cache.query.IndexExistsException
+ * @see org.apache.geode.cache.query.IndexInvalidException
+ * @see org.apache.geode.cache.query.IndexMaintenanceException
+ * @see org.apache.geode.cache.query.IndexNameConflictException
  */
 @SuppressWarnings({ "serial", "unused" })
 public class GemfireIndexException extends DataIntegrityViolationException {

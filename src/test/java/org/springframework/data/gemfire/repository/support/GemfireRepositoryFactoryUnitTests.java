@@ -33,9 +33,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

@@ -24,6 +24,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqQuery;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.gemfire.listener.ContinuousQueryListener;
@@ -33,16 +36,12 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.ReflectionUtils.MethodFilter;
 
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.query.CqEvent;
-import com.gemstone.gemfire.cache.query.CqQuery;
-
 /**
  * Event listener adapter that delegates the handling of messages to target
  * listener methods via reflection, with flexible event type conversion.
  * Allows listener methods to operate on event content types, completely
  * independent from the GemFire API.
- * 
+ *
  * <p>Modeled as much as possible after the JMS MessageListenerAdapter in
  * Spring Framework.
  *
@@ -93,7 +92,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
 	/**
 	 * Create a new {@link ContinuousQueryListenerAdapter} for the given delegate.
-	 * 
+	 *
 	 * @param delegate the delegate object
 	 */
 	public ContinuousQueryListenerAdapter(Object delegate) {
@@ -106,7 +105,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	 * <p>If no explicit delegate object has been specified, listener
 	 * methods are expected to present on this adapter instance, that is,
 	 * on a custom subclass of this adapter, defining listener methods.
-	 * 
+	 *
 	 * @param delegate delegate object
 	 */
 	public void setDelegate(Object delegate) {
@@ -117,7 +116,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
 	/**
 	 * Returns the target object to delegate event listening to.
-	 * 
+	 *
 	 * @return event listening delegation
 	 */
 	public Object getDelegate() {
@@ -150,7 +149,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	 * <p>Delegates the event to the target listener method, with appropriate
 	 * conversion of the event argument. In case of an exception, the
 	 * {@link #handleListenerException(Throwable)} method will be invoked.
-	 * 
+	 *
 	 * @param event the incoming GemFire event
 	 * @see #handleListenerException
 	 */

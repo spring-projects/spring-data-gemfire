@@ -16,19 +16,18 @@
 
 package org.springframework.data.gemfire.client;
 
+import org.apache.geode.cache.InterestResultPolicy;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.Constants;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-
 /**
  * The Interest class holds details for registering a client interest.
- * 
+ *
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.gemstone.gemfire.cache.InterestResultPolicy
+ * @see org.apache.geode.cache.InterestResultPolicy
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
@@ -85,7 +84,7 @@ public class Interest<K> implements InitializingBean {
 
 	/**
 	 * Returns the key of interest.
-	 * 
+	 *
 	 * @return the key
 	 */
 	public K getKey() {
@@ -94,7 +93,7 @@ public class Interest<K> implements InitializingBean {
 
 	/**
 	 * Sets the key of interest.
-	 * 
+	 *
 	 * @param key the key to set
 	 */
 	public void setKey(K key) {
@@ -103,7 +102,7 @@ public class Interest<K> implements InitializingBean {
 
 	/**
 	 * Returns the interest policy.
-	 * 
+	 *
 	 * @return the policy
 	 */
 	public InterestResultPolicy getPolicy() {
@@ -114,7 +113,7 @@ public class Interest<K> implements InitializingBean {
 	 * Sets the interest policy. The argument is set as an Object
 	 * to be able to accept both InterestResultType instances but also
 	 * Strings (for XML configurations).
-	 * 
+	 *
 	 * @param policy the policy to set
 	 */
 	public void setPolicy(Object policy) {
@@ -132,7 +131,7 @@ public class Interest<K> implements InitializingBean {
 
 	/**
 	 * Returns the interest durability.
-	 * 
+	 *
 	 * @return the durable
 	 */
 	public boolean isDurable() {
@@ -141,7 +140,7 @@ public class Interest<K> implements InitializingBean {
 
 	/**
 	 * Sets the interest durability.
-	 * 
+	 *
 	 * @param durable the durable to set
 	 */
 	public void setDurable(boolean durable) {
@@ -150,7 +149,7 @@ public class Interest<K> implements InitializingBean {
 
 	/**
 	 * Returns the type of values received by the listener.
-	 * 
+	 *
 	 * @return the receiveValues
 	 */
 	public boolean isReceiveValues() {
@@ -159,7 +158,7 @@ public class Interest<K> implements InitializingBean {
 
 	/**
 	 * Switches between the different entities received by the listener.
-	 * 
+	 *
 	 * @param receiveValues the receiveValues to set
 	 */
 	public void setReceiveValues(boolean receiveValues) {

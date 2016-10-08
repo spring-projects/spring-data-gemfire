@@ -23,9 +23,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DynamicRegionFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -16,11 +16,10 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
 
 /**
  * The ExpirationAttributesFactoryBean class is a Spring FactoryBean used to create GemFire ExpirationAttributes
@@ -30,7 +29,7 @@ import com.gemstone.gemfire.cache.ExpirationAttributes;
  * @author John Blum
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.gemstone.gemfire.cache.ExpirationAttributes
+ * @see org.apache.geode.cache.ExpirationAttributes
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
@@ -69,7 +68,7 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 	 * Sets the action to perform when a Region or an Entry expire.
 	 *
 	 * @param action the type of action to perform on expiration
-	 * @see com.gemstone.gemfire.cache.ExpirationAction
+	 * @see org.apache.geode.cache.ExpirationAction
 	 */
 	public void setAction(final ExpirationAction action) {
 		this.action = action;
@@ -80,7 +79,7 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 	 *
 	 * @return the type of action to perform on expiration.
 	 * @see org.springframework.data.gemfire.ExpirationActionType
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes#getAction()
+	 * @see org.apache.geode.cache.ExpirationAttributes#getAction()
 	 */
 	public ExpirationAction getAction() {
 		return (action != null ? action : DEFAULT_EXPIRATION_ACTION);
@@ -99,7 +98,7 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 	 * Gets the number of seconds before a Region or an Entry expires.
 	 *
 	 * @return the number of seconds before a Region or an Entry expires.
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes#getTimeout()
+	 * @see org.apache.geode.cache.ExpirationAttributes#getTimeout()
 	 */
 	public int getTimeout() {
 		return (timeout != null ? timeout : DEFAULT_TIMEOUT);
@@ -112,7 +111,7 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 	 * @see #getAction()
 	 * @see #getTimeout()
 	 * @see org.springframework.data.gemfire.ExpirationActionType#getExpirationAction()
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes
+	 * @see org.apache.geode.cache.ExpirationAttributes
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {

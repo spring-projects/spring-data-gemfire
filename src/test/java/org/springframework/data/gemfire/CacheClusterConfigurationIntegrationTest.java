@@ -28,6 +28,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -51,10 +54,6 @@ import org.springframework.data.gemfire.test.support.ThrowableUtils;
 import org.springframework.data.gemfire.test.support.ZipUtils;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The CacheClusterConfigurationIntegrationTest class is a test suite of test cases testing the integration of

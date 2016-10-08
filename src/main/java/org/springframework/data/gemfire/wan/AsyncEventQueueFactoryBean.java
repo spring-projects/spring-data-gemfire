@@ -15,14 +15,13 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
@@ -55,7 +54,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
 	 *
 	 * @param cache the GemFire Cache reference.
-	 * @see #AsyncEventQueueFactoryBean(com.gemstone.gemfire.cache.Cache, com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener)
+	 * @see #AsyncEventQueueFactoryBean(org.apache.geode.cache.Cache, org.apache.geode.cache.asyncqueue.AsyncEventListener)
 	 */
 	public AsyncEventQueueFactoryBean(Cache cache) {
 		this(cache, null);
@@ -218,9 +217,9 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	 * {@literal true} will add all expiration destroy events to the AEQ.
 	 *
 	 * @param forwardExpirationDestroy boolean value indicating whether to forward expiration destroy events.
-	 * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory#setForwardExpirationDestroy(boolean)
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes#getAction()
-	 * @see com.gemstone.gemfire.cache.ExpirationAction#DESTROY
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory#setForwardExpirationDestroy(boolean)
+	 * @see org.apache.geode.cache.ExpirationAttributes#getAction()
+	 * @see org.apache.geode.cache.ExpirationAction#DESTROY
 	 */
 	public void setForwardExpirationDestroy(Boolean forwardExpirationDestroy) {
 		this.forwardExpirationDestroy = forwardExpirationDestroy;

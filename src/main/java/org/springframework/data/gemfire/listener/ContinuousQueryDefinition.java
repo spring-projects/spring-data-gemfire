@@ -16,15 +16,14 @@
 
 package org.springframework.data.gemfire.listener;
 
+import org.apache.geode.cache.query.CqQuery;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.query.CqQuery;
 
 /**
  * Basic holder class for defining an {@link CqQuery}. Useful for configuring GemFire {@link CqQuery}s by mean of
  * XML or using JavaBeans.
- * 
+ *
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean

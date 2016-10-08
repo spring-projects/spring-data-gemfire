@@ -18,18 +18,17 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Test;
 
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-
 /**
- * The ClientRegionShortcutConverterTest class is a test suite of test cases testing the contract and functionality 
+ * The ClientRegionShortcutConverterTest class is a test suite of test cases testing the contract and functionality
  * of the ClientRegionShortcutConverter class
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.ClientRegionShortcutConverter
- * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @since 1.3.4
  */
 public class ClientRegionShortcutConverterTest {

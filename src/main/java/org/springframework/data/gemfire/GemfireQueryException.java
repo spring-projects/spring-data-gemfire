@@ -16,16 +16,15 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryExecutionTimeoutException;
+import org.apache.geode.cache.query.QueryInvalidException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
-
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryExecutionTimeoutException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
 
 /**
  * GemFire-specific subclass of {@link InvalidDataAccessResourceUsageException} thrown on invalid
  * OQL query syntax.
- * 
+ *
  * @author Costin Leau
  */
 @SuppressWarnings("serial")

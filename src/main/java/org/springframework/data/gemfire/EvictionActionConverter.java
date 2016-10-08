@@ -16,9 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.EvictionAction;
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
-
-import com.gemstone.gemfire.cache.EvictionAction;
 
 /**
  * The EvictionActionConverter class is a Spring Converter and JavaBeans PropertyEditor that converts
@@ -27,7 +26,7 @@ import com.gemstone.gemfire.cache.EvictionAction;
  * @author John Blum
  * @see org.springframework.data.gemfire.EvictionActionType
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
- * @see com.gemstone.gemfire.cache.EvictionAction
+ * @see org.apache.geode.cache.EvictionAction
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
@@ -40,7 +39,7 @@ public class EvictionActionConverter extends AbstractPropertyEditorConverterSupp
 	 * @return the GemFire EvictionAction value matching the given String.
 	 * @throws java.lang.IllegalArgumentException if the String could not be converted into
 	 * an instance of GemFire EvictionAction.
-	 * @see com.gemstone.gemfire.cache.EvictionAction
+	 * @see org.apache.geode.cache.EvictionAction
 	 */
 	@Override
 	public EvictionAction convert(final String source) {

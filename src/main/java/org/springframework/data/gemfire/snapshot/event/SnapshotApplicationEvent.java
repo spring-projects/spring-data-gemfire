@@ -18,10 +18,9 @@ package org.springframework.data.gemfire.snapshot.event;
 
 import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata;
 
+import org.apache.geode.cache.Region;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The SnapshotApplicationEvent class is a Spring ApplicationEvent signaling a GemFire Cache or Region snapshot event,
@@ -29,7 +28,7 @@ import com.gemstone.gemfire.cache.Region;
  *
  * @author John Blum
  * @see org.springframework.context.ApplicationEvent
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
@@ -70,7 +69,7 @@ public abstract class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
 	 * Gets the absolute pathname of the Region in GemFire for which the snapshot will be taken.
 	 *
 	 * @return a String indicating the absolute pathname of the Region.
-	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
+	 * @see org.apache.geode.cache.Region#getFullPath()
 	 */
 	public String getRegionPath() {
 		return regionPath;
@@ -111,7 +110,7 @@ public abstract class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
 	 *
 	 * @param region the Region being evaluated as the subject of this event.
 	 * @return a boolean value indicating whether this event has been targeted for the specified Region
-	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
+	 * @see org.apache.geode.cache.Region#getFullPath()
 	 * @see #getRegionPath()
 	 * @see #matches(String)
 	 */

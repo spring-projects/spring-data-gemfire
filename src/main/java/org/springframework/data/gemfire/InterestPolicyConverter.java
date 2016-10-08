@@ -16,9 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.InterestPolicy;
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
-
-import com.gemstone.gemfire.cache.InterestPolicy;
 
 /**
  * The InterestPolicyConverter class is a Spring Converter implementation and Java PropertyEditor handling
@@ -26,7 +25,7 @@ import com.gemstone.gemfire.cache.InterestPolicy;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
- * @see com.gemstone.gemfire.cache.InterestPolicy
+ * @see org.apache.geode.cache.InterestPolicy
  * @since 1.6.0
  */
 @SuppressWarnings("unused")

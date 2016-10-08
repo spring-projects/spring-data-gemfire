@@ -18,13 +18,12 @@ package org.springframework.data.gemfire.config.support;
 
 import java.beans.PropertyEditorSupport;
 
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;

@@ -35,6 +35,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Executor;
 
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,11 +48,6 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
-
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
 
 /**
  * The ContinuousQueryListenerContainerTest class is a test suite of test cases testing the contract and functionality

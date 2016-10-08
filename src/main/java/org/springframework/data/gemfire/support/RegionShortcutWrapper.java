@@ -16,16 +16,15 @@
 
 package org.springframework.data.gemfire.support;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.springframework.util.ObjectUtils;
-
-import com.gemstone.gemfire.cache.RegionShortcut;
 
 /**
  * The RegionShortcutWrapper enum is a Java enumerated type that wraps GemFire's RegionShortcuts
  * with Spring Data GemFire RegionShortcutWrapper enumerated values.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.RegionShortcut
+ * @see org.apache.geode.cache.RegionShortcut
  * @since 1.4.0
  */
 @SuppressWarnings("unused")

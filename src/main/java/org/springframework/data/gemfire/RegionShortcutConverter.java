@@ -16,9 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.springframework.core.convert.converter.Converter;
-
-import com.gemstone.gemfire.cache.RegionShortcut;
 
 /**
  * The RegionShortcutConverter class is a Spring Converter implementation converting String value Region Shortcut
@@ -26,7 +25,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
  *
  * @author John Blum
  * @see org.springframework.core.convert.converter.Converter
- * @see com.gemstone.gemfire.cache.RegionShortcut
+ * @see org.apache.geode.cache.RegionShortcut
  * @since 1.3.4
  */
 @SuppressWarnings("unused")
@@ -52,7 +51,7 @@ public class RegionShortcutConverter implements Converter<String, RegionShortcut
 	 * @param source the String representation of the Region Shortcut to convert.
 	 * @return a RegionShortcut enumerated value for the String representation.
 	 * @throws IllegalArgumentException if the String source is not a valid RegionShortcut enumerated value.
-	 * @see com.gemstone.gemfire.cache.RegionShortcut#valueOf(String)
+	 * @see org.apache.geode.cache.RegionShortcut#valueOf(String)
 	 */
 	@Override
 	public RegionShortcut convert(final String source) {

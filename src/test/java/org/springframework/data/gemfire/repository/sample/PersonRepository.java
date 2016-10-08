@@ -21,7 +21,6 @@ import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Query;
-import org.springframework.data.gemfire.repository.query.annotation.Trace;
 
 /**
  * Sample Repository interface managing {@link Person}s.

@@ -26,23 +26,22 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.pdx.internal.PdxInstanceEnum;
+import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxInstanceFactory;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
 
 /**
  * The PdxFunctionArgumentResolverTest class is a test suite of test cases testing the contract and functionality
@@ -52,11 +51,11 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.function.PdxFunctionArgumentResolver
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.execute.FunctionContext
- * @see com.gemstone.gemfire.pdx.PdxInstance
- * @see com.gemstone.gemfire.pdx.PdxSerializer
- * @see com.gemstone.gemfire.pdx.internal.PdxInstanceEnum
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.execute.FunctionContext
+ * @see org.apache.geode.pdx.PdxInstance
+ * @see org.apache.geode.pdx.PdxSerializer
+ * @see org.apache.geode.pdx.internal.PdxInstanceEnum
  * @since 1.5.2
  */
 @SuppressWarnings("unused")

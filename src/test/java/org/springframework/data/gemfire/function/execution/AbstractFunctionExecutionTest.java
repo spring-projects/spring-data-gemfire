@@ -37,17 +37,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
 
 /**
  * The AbstractFunctionExecutionTest class is a test suite of test cases testing the contract and functionality
@@ -59,7 +58,7 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
  * @see org.mockito.Mockito
  * @see org.mockito.runners.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
- * @see com.gemstone.gemfire.cache.execute.Execution
+ * @see org.apache.geode.cache.execute.Execution
  * @since 1.7.0
  */
 @RunWith(MockitoJUnitRunner.class)

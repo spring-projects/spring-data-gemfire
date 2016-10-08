@@ -22,6 +22,8 @@ import static org.junit.Assert.assertSame;
 
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,9 +33,6 @@ import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.fork.SpringCacheServerProcess;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
 
 /**
  * The ClientSubRegionTest class is a test suite of test cases testing SubRegion functionality from a client

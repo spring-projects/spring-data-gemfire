@@ -33,8 +33,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.pdx.PdxSerializer;
-
+import org.apache.geode.pdx.PdxSerializer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

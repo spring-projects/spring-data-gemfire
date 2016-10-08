@@ -28,8 +28,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,9 +48,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-
 /**
  * The GemFireDataSourceIntegrationTest class is a test suite of test cases testing the contract and functionality
  * of the &lt;gfe-data:datasource&gt; element in the context of a GemFire cluster running both native,
@@ -60,8 +60,8 @@ import com.gemstone.gemfire.cache.client.ClientCache;
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.client.ClientCache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
  * @since 1.7.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)

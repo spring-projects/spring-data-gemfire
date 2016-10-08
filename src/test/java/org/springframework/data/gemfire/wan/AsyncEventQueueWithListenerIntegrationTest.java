@@ -23,8 +23,13 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
@@ -32,11 +37,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The AsyncEventQueueWithListenerIntegrationTest class is a test suite of test cases testing the circular references
@@ -48,7 +48,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
  * @since 1.0.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -104,9 +104,9 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 	 * The QueueAsyncEventListener class is an implementation of the AsyncEventListener interface that contains
 	 * a reference to the AsyncEventQueue upon which it is registered.
 	 *
-	 * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEvent
-	 * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener
-	 * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEvent
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventListener
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
 	 */
 	@SuppressWarnings("unused")
 	public static class TestAsyncEventListener implements AsyncEventListener {

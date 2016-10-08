@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.repository.query;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.geode.cache.query.SelectResults;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
@@ -25,8 +26,6 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * {@link GemfireRepositoryQuery} using plain {@link String} based OQL queries.
@@ -183,7 +182,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @see java.util.Arrays#asList(Object[])
 	 * @see java.util.Collection
 	 * @see org.springframework.util.CollectionUtils#arrayToList(Object)
-	 * @see com.gemstone.gemfire.cache.query.SelectResults
+	 * @see org.apache.geode.cache.query.SelectResults
 	 */
 	Collection<?> toCollection(final Object source) {
 		if (source instanceof SelectResults) {

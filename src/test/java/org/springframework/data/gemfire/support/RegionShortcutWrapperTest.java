@@ -21,9 +21,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.RegionShortcut;
 
 /**
  * The RegionShortcutWrapperTest class is a test suite of test cases testing the contract and functionality of the
@@ -32,7 +31,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.support.RegionShortcutWrapper
- * @see com.gemstone.gemfire.cache.RegionShortcut
+ * @see org.apache.geode.cache.RegionShortcut
  * @since 1.4.0
  */
 public class RegionShortcutWrapperTest {

@@ -26,8 +26,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.Region;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,8 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The SubRegionRepositoryTest class is a test suite of test cases testing the use of GemFire Repositories on GemFire
@@ -50,7 +50,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.data.gemfire.repository.sample.ProgrammerRepository
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @link https://jira.springsource.org/browse/SGF-251
  * @link https://jira.springsource.org/browse/SGF-252
  * @since 1.4.0

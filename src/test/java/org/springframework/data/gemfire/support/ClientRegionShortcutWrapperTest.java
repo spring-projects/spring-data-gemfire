@@ -21,9 +21,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 
 /**
  * The ClientRegionShortcutWrapperTest class is a test suite of test cases testing the contract and functionality of the
@@ -32,7 +31,7 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.support.ClientRegionShortcutWrapper
- * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @since 1.4.0
  */
 public class ClientRegionShortcutWrapperTest {

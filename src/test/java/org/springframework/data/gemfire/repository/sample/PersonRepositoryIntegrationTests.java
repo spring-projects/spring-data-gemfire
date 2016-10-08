@@ -26,9 +26,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.RegionAttributes;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.RegionAttributes;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

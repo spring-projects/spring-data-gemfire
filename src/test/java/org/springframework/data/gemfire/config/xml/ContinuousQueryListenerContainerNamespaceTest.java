@@ -29,10 +29,9 @@ import java.util.concurrent.Executor;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.cache.query.CqQuery;
-
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqQuery;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,9 +58,9 @@ import org.springframework.util.ErrorHandler;
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.query.CqListener
- * @see com.gemstone.gemfire.cache.query.CqQuery
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.query.CqListener
+ * @see org.apache.geode.cache.query.CqQuery
  * @since 1.4.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)

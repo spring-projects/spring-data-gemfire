@@ -16,6 +16,54 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.CancelException;
+import org.apache.geode.CopyException;
+import org.apache.geode.GemFireCacheException;
+import org.apache.geode.GemFireCheckedException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.IncompatibleSystemException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.InvalidValueException;
+import org.apache.geode.LicenseException;
+import org.apache.geode.NoSystemException;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.SystemIsRunningException;
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheExistsException;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.CommitIncompleteException;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.FailedSynchronizationException;
+import org.apache.geode.cache.OperationAbortedException;
+import org.apache.geode.cache.PartitionedRegionDistributionException;
+import org.apache.geode.cache.PartitionedRegionStorageException;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.ResourceException;
+import org.apache.geode.cache.RoleException;
+import org.apache.geode.cache.StatisticsDisabledException;
+import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.cache.VersionException;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.query.CqClosedException;
+import org.apache.geode.cache.query.IndexInvalidException;
+import org.apache.geode.cache.query.IndexMaintenanceException;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryExecutionTimeoutException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.distributed.LeaseExpiredException;
+import org.apache.geode.security.GemFireSecurityException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,58 +76,9 @@ import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.dao.TypeMismatchDataAccessException;
 import org.springframework.util.ClassUtils;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.CopyException;
-import com.gemstone.gemfire.GemFireCacheException;
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.IncompatibleSystemException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.InvalidValueException;
-import com.gemstone.gemfire.LicenseException;
-import com.gemstone.gemfire.NoSystemException;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.SystemIsRunningException;
-import com.gemstone.gemfire.UnmodifiableException;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheExistsException;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.CommitIncompleteException;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.FailedSynchronizationException;
-import com.gemstone.gemfire.cache.OperationAbortedException;
-import com.gemstone.gemfire.cache.PartitionedRegionDistributionException;
-import com.gemstone.gemfire.cache.PartitionedRegionStorageException;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.ResourceException;
-import com.gemstone.gemfire.cache.RoleException;
-import com.gemstone.gemfire.cache.StatisticsDisabledException;
-import com.gemstone.gemfire.cache.SynchronizationCommitConflictException;
-import com.gemstone.gemfire.cache.VersionException;
-import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.query.CqClosedException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryExecutionTimeoutException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.distributed.LeaseExpiredException;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-
 /**
  * Helper class featuring methods for GemFire Cache or Region handling.
- * 
+ *
  * @author Costin Leau
  */
 public abstract class GemfireCacheUtils {
@@ -90,7 +89,7 @@ public abstract class GemfireCacheUtils {
 		Class<?> type = null;
 
 		try {
-			type = ClassUtils.resolveClassName("com.gemstone.gemfire.cache.query.CqInvalidException",
+			type = ClassUtils.resolveClassName("org.apache.geode.cache.query.CqInvalidException",
 				GemfireCacheUtils.class.getClassLoader());
 
 		}
@@ -104,7 +103,7 @@ public abstract class GemfireCacheUtils {
 	/**
 	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
 	 * <code>org.springframework.dao</code> hierarchy.
-	 * 
+	 *
 	 * @param ex Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
 	 */
@@ -154,7 +153,7 @@ public abstract class GemfireCacheUtils {
 				return new GemfireIndexException((IndexMaintenanceException) ex);
 			}
 			if (ex instanceof OperationAbortedException) {
-				// treat user exceptions first 
+				// treat user exceptions first
 				if (ex instanceof CacheLoaderException) {
 					return new GemfireSystemException(ex);
 				}
@@ -176,7 +175,7 @@ public abstract class GemfireCacheUtils {
 			if (ex instanceof RegionDestroyedException) {
 				return new InvalidDataAccessResourceUsageException(ex.getMessage(), ex);
 			}
-			if (ex instanceof com.gemstone.gemfire.admin.RegionNotFoundException) {
+			if (ex instanceof org.apache.geode.admin.RegionNotFoundException) {
 				return new InvalidDataAccessResourceUsageException(ex.getMessage(), ex);
 			}
 			if (ex instanceof ResourceException) {
@@ -195,7 +194,7 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof CopyException) {
 			return new GemfireSystemException(ex);
 		}
-		if (ex instanceof com.gemstone.gemfire.cache.EntryNotFoundInRegion) {
+		if (ex instanceof org.apache.geode.cache.EntryNotFoundInRegion) {
 			return new DataRetrievalFailureException(ex.getMessage(), ex);
 		}
 		if (ex instanceof FunctionException) {
@@ -231,7 +230,7 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof NoSystemException) {
 			return new GemfireSystemException(ex);
 		}
-		if (ex instanceof com.gemstone.gemfire.admin.RuntimeAdminException) {
+		if (ex instanceof org.apache.geode.admin.RuntimeAdminException) {
 			return new GemfireSystemException(ex);
 		}
 		if (ex instanceof ServerConnectivityException) {
@@ -295,7 +294,7 @@ public abstract class GemfireCacheUtils {
 			return new DataAccessResourceFailureException(ex.getMessage(), ex);
 		}
 		// admin exception
-		if (ex instanceof com.gemstone.gemfire.admin.AdminException) {
+		if (ex instanceof org.apache.geode.admin.AdminException) {
 			return new GemfireSystemException(ex);
 		}
 		// fall back

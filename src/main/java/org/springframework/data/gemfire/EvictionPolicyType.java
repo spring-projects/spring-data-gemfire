@@ -16,15 +16,15 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAlgorithm;
 
 /**
  * The EvictionPolicyType enum is an enumeration of all GemFire Eviction policies, where the Eviction 'policy'
  * is a combination of the Eviction algorithm mixed with the monitored resource (e.g. such as JVM HEAP memory).
- * 
+ *
  * @author Costin Leau
  * @author John Blum
- * @see com.gemstone.gemfire.cache.EvictionAlgorithm
+ * @see org.apache.geode.cache.EvictionAlgorithm
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
@@ -40,7 +40,7 @@ public enum EvictionPolicyType {
 	 * Constructs an instance of the EvictionPolicyType enum initialized with the matching GemFire EvictionAlgorithm.
 	 *
 	 * @param evictionAlgorithm the GemFire EvictionAlgorithm represented by this EvictionPolicyType enumerated value.
-	 * @see com.gemstone.gemfire.cache.EvictionAlgorithm
+	 * @see org.apache.geode.cache.EvictionAlgorithm
 	 */
 	EvictionPolicyType(final EvictionAlgorithm evictionAlgorithm) {
 		this.evictionAlgorithm = evictionAlgorithm;
@@ -51,7 +51,7 @@ public enum EvictionPolicyType {
 	 *
 	 * @param evictionPolicyType the EvictionPolicyType from which to extract the GemFire EvictionAlgorithm.
 	 * @return the GemFire EvictionAlgorithm for the corresponding EvictionPolicyType or null if evictionType is null.
-	 * @see com.gemstone.gemfire.cache.EvictionAlgorithm
+	 * @see org.apache.geode.cache.EvictionAlgorithm
 	 * @see #getEvictionAlgorithm()
 	 */
 	public static EvictionAlgorithm getEvictionAlgorithm(final EvictionPolicyType evictionPolicyType) {
@@ -63,7 +63,7 @@ public enum EvictionPolicyType {
 	 *
 	 * @param evictionAlgorithm the GemFire EvictionAlgorithm used to lookup and match the EvictionPolicyType.
 	 * @return an EvictionPolicyType matching the specified GemFire EvictionAlgorithm or null if no match was found.
-	 * @see com.gemstone.gemfire.cache.EvictionAlgorithm
+	 * @see org.apache.geode.cache.EvictionAlgorithm
 	 * @see #getEvictionAlgorithm()
 	 */
 	public static EvictionPolicyType valueOf(final EvictionAlgorithm evictionAlgorithm) {
@@ -98,7 +98,7 @@ public enum EvictionPolicyType {
 	 * Gets the GemFire EvictionAlgorithm represented by this enumerated value.
 	 *
 	 * @return the GemFire EvictionAlgorithm represented by this enum.
-	 * @see com.gemstone.gemfire.cache.EvictionAlgorithm
+	 * @see org.apache.geode.cache.EvictionAlgorithm
 	 */
 	public EvictionAlgorithm getEvictionAlgorithm() {
 		return evictionAlgorithm;

@@ -16,13 +16,13 @@
 
 package org.springframework.data.gemfire.serialization;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 
 /**
  * Factory that  generates {@link Instantiator} classes to improve instantiation of
  * custom types.
- * 
+ *
  * @author Costin Leau
  */
 public interface InstantiatorGenerator {
@@ -30,7 +30,7 @@ public interface InstantiatorGenerator {
 	/**
 	 * Returns a (potentially new) Instantiator that optimizes the instantiation of the given types.
 	 *
-	 * @param clazz class produced by the instantiator 
+	 * @param clazz class produced by the instantiator
 	 * @param classId instantiator class id
 	 * @return an instantiator optimized for the given type.
 	 */

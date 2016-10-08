@@ -19,9 +19,8 @@ package org.springframework.data.gemfire.config.xml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.internal.datasource.GemFireBasicDataSource;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.datasource.GemFireBasicDataSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

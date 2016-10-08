@@ -21,9 +21,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import org.apache.geode.cache.InterestResultPolicy;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.InterestResultPolicy;
 
 /**
  * The InterestResultPolicyTypeTest class is a test suite of test cases testing the contract and functionality
@@ -32,7 +31,7 @@ import com.gemstone.gemfire.cache.InterestResultPolicy;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.client.InterestResultPolicyTypeTest
- * @see com.gemstone.gemfire.cache.InterestResultPolicy
+ * @see org.apache.geode.cache.InterestResultPolicy
  * @since 1.6.0
  */
 public class InterestResultPolicyTypeTest {

@@ -29,11 +29,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -51,9 +50,9 @@ import org.springframework.data.gemfire.util.ArrayUtils;
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.config.support.PdxDiskStoreAwareBeanFactoryPostProcessor
- * @see com.gemstone.gemfire.cache.DiskStore
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
+ * @see org.apache.geode.cache.DiskStore
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
  * @since 1.3.3
  */
 public class PdxDiskStoreAwareBeanFactoryPostProcessorUnitTests {

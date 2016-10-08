@@ -18,6 +18,15 @@ package org.springframework.data.gemfire;
 
 import java.util.Collection;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexInvalidException;
+import org.apache.geode.cache.query.IndexNameConflictException;
+import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.cache.query.QueryService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -31,16 +40,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.cache.query.QueryService;
-
 /**
  * Spring FactoryBean for easy declarative creation of GemFire Indexes.
  *
@@ -52,9 +51,9 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.data.gemfire.IndexFactoryBean.IndexWrapper
- * @see com.gemstone.gemfire.cache.RegionService
- * @see com.gemstone.gemfire.cache.query.Index
- * @see com.gemstone.gemfire.cache.query.QueryService
+ * @see org.apache.geode.cache.RegionService
+ * @see org.apache.geode.cache.query.Index
+ * @see org.apache.geode.cache.query.QueryService
  * @since 1.0.0
  */
 public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, BeanNameAware, BeanFactoryAware {
@@ -466,7 +465,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 		@Override
 		@SuppressWarnings("deprecation")
-		public com.gemstone.gemfire.cache.query.IndexType getType() {
+		public org.apache.geode.cache.query.IndexType getType() {
 			return getIndex().getType();
 		}
 

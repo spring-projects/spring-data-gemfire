@@ -29,15 +29,14 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
 
 /**
  * @author Costin Leau

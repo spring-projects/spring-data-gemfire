@@ -28,13 +28,12 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
 
 /**
  * The AbstractFunctionTemplateTest class is a test suite of test cases testing the contract and functionality
@@ -45,8 +44,8 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
  * @see org.springframework.data.gemfire.function.execution.AbstractFunctionTemplate
- * @see com.gemstone.gemfire.cache.execute.Function
- * @see com.gemstone.gemfire.cache.execute.ResultCollector
+ * @see org.apache.geode.cache.execute.Function
+ * @see org.apache.geode.cache.execute.ResultCollector
  * @since 1.7.0
  */
 @RunWith(MockitoJUnitRunner.class)

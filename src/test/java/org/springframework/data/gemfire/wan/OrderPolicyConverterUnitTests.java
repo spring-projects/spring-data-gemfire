@@ -20,8 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-
+import org.apache.geode.cache.wan.GatewaySender;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +32,7 @@ import org.junit.rules.ExpectedException;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.wan.OrderPolicyConverter
- * @see com.gemstone.gemfire.cache.util.Gateway.OrderPolicy
+ * @see org.apache.geode.cache.util.Gateway.OrderPolicy
  * @since 1.7.0
  */
 public class OrderPolicyConverterUnitTests {

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
+import org.apache.geode.cache.Cache;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.BeanFactory;
@@ -27,12 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.Cache;
-
 
 /**
- * Integration test for declarable support (and GEF bean factory locator). 
- * 
+ * Integration test for declarable support (and GEF bean factory locator).
+ *
  * @author Costin Leau
  */
 @RunWith(SpringJUnit4ClassRunner.class)

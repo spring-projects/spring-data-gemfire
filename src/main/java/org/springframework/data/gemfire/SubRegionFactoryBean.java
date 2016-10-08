@@ -17,16 +17,15 @@ package org.springframework.data.gemfire;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * FactoryBean for creating a Gemfire sub-Regions.
@@ -40,7 +39,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  */
 @Deprecated
 @SuppressWarnings({"deprecation", "unused"})
-public class SubRegionFactoryBean<K, V> extends com.gemstone.gemfire.cache.AttributesFactory<K, V>
+public class SubRegionFactoryBean<K, V> extends org.apache.geode.cache.AttributesFactory<K, V>
 		implements FactoryBean<Region<K, V>>, InitializingBean {
 
 	protected final Log log = LogFactory.getLog(getClass());
@@ -124,7 +123,7 @@ public class SubRegionFactoryBean<K, V> extends com.gemstone.gemfire.cache.Attri
 	/**
 	 * Sets the cache listeners used for the region used by this factory. Used
 	 * only when a new region is created. Overrides the settings specified
-	 * through setAttributes(com.gemstone.gemfire.cache.RegionAttributes).
+	 * through setAttributes(org.apache.geode.cache.RegionAttributes).
 	 *
 	 * @param cacheListeners the cacheListeners to set on a newly created region
 	 */

@@ -30,8 +30,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.sql.DataSource;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,14 +55,6 @@ import org.springframework.data.gemfire.support.sample.TestUserService;
 import org.springframework.data.gemfire.test.support.DataSourceAdapter;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * The SpringContextBootstrappingInitializerTest class is a test suite of test cases testing the integrated
  * functionality of the SpringContextBootstrappingInitializer class.
@@ -64,10 +64,10 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.data.gemfire.LazyWiringDeclarableSupport
  * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.CacheFactory
- * @see com.gemstone.gemfire.cache.CacheLoader
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.CacheFactory
+ * @see org.apache.geode.cache.CacheLoader
+ * @see org.apache.geode.cache.Region
  * @since 1.4.0
  */
 @SuppressWarnings("unused")

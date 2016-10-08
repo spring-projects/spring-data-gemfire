@@ -61,11 +61,11 @@ class QueryBuilder {
 
 	/**
 	 * Constructs an instance of {@link QueryBuilder} with the given {@link GemfirePersistentEntity}
-	 * and {@link PartTree} that determines the GemFire {@link com.gemstone.gemfire.cache.Region}
+	 * and {@link PartTree} that determines the GemFire {@link org.apache.geode.cache.Region}
 	 * to query and whether the query should capture unique results.
 	 *
 	 * @param entity {@link GemfirePersistentEntity} used to determine the GemFire
-	 * {@link com.gemstone.gemfire.cache.Region} to query.
+	 * {@link org.apache.geode.cache.Region} to query.
 	 * @param tree {@link PartTree} containing parts of the OQL Query for determining things
 	 * like uniqueness.
 	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity

@@ -15,18 +15,17 @@ package org.springframework.data.gemfire.wan;
 
 import java.util.List;
 
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * @author David Turanski
  * @author John Blum
- * @see com.gemstone.gemfire.cache.util.Gateway
- * @see com.gemstone.gemfire.cache.wan.GatewaySender
+ * @see org.apache.geode.cache.util.Gateway
+ * @see org.apache.geode.cache.wan.GatewaySender
  */
 public class GatewaySenderWrapper implements GatewaySender {
 

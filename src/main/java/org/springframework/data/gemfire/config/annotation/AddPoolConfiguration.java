@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link AddCacheServerConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that registers
- * a {@link PoolFactoryBean} definition for the {@link com.gemstone.gemfire.cache.client.Pool}
+ * a {@link PoolFactoryBean} definition for the {@link org.apache.geode.cache.client.Pool}
  * configuration meta-data defined in {@link EnablePool}.
  *
  * @author John Blum
@@ -106,11 +106,11 @@ public class AddPoolConfiguration implements ImportBeanDefinitionRegistrar {
 
 	/**
 	 * Uses the list of GemFire Locator and Server connection endpoint definitions and meta-data to configure
-	 * the GemFire client {@link com.gemstone.gemfire.cache.client.Pool} used to communicate with the servers
+	 * the GemFire client {@link org.apache.geode.cache.client.Pool} used to communicate with the servers
 	 * in the GemFire cluster.
 	 *
 	 * @param enablePoolAttributes {@link EnablePool} annotation containing
-	 * {@link com.gemstone.gemfire.cache.client.Pool} Locator/Server connection endpoint meta-data.
+	 * {@link org.apache.geode.cache.client.Pool} Locator/Server connection endpoint meta-data.
 	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
 	 * @see java.util.Map
 	 */

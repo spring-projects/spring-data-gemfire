@@ -28,13 +28,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The {@link DiskStoreDirectoryBeanPostProcessor} processes any GemFire {@link com.gemstone.gemfire.cache.DiskStore},
+ * The {@link DiskStoreDirectoryBeanPostProcessor} processes any GemFire {@link org.apache.geode.cache.DiskStore},
  * {@link DiskDir} Spring beans defined in the application context to ensure that the directory actually exists
- * before creating the {@link com.gemstone.gemfire.cache.DiskStore}.
+ * before creating the {@link org.apache.geode.cache.DiskStore}.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.config.BeanPostProcessor
- * @see com.gemstone.gemfire.cache.DiskStore
+ * @see org.apache.geode.cache.DiskStore
  * @since 1.5.0
  */
 @SuppressWarnings("unused")

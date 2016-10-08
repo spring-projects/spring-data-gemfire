@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.FieldVisitor;
 import org.springframework.asm.MethodVisitor;
@@ -33,14 +35,11 @@ import org.springframework.asm.Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
-
 /**
  * ASM based {@link InstantiatorGenerator} implementation. This class relies on ASM 2.x package
  * repacked by Spring framework to minimize the number of dependencies and avoid any versioning
  * confusion.
- * 
+ *
  * @author Costin Leau
  */
 public class AsmInstantiatorGenerator implements InstantiatorGenerator, Opcodes {
@@ -109,7 +108,7 @@ public class AsmInstantiatorGenerator implements InstantiatorGenerator, Opcodes 
 
 	/**
 	 * Returns an instance of the custom instantiator created for the given class.
-	 *  
+	 *
 	 * @param clazz
 	 * @param classId
 	 * @return
@@ -123,7 +122,7 @@ public class AsmInstantiatorGenerator implements InstantiatorGenerator, Opcodes 
 	/**
 	 * Does basic sanity checks to make sure the constructor can be properly invoked by our generated
 	 * class.
-	 *  
+	 *
 	 * @param clazz
 	 */
 	private void validateClass(Class<? extends DataSerializable> clazz) {
@@ -140,12 +139,12 @@ public class AsmInstantiatorGenerator implements InstantiatorGenerator, Opcodes 
 
 	/**
 	 * Generates a new Instantiator class for the given custom class.
-	 * 
+	 *
 	 * The generated class has the following definition:
-	 * 
+	 *
 	 * <pre>
 	 * package org.springframework.data.gemfire.serialization;
-	 * 
+	 *
 	 * public class &lt;<i>T</i>>Instantiator$Synthetic<i>Counter</i> extends Instantiator implements Serializable {
 	 *
 	 *  private static final Class&lt;<i>T</i>> clazz = T.class;
@@ -154,7 +153,7 @@ public class AsmInstantiatorGenerator implements InstantiatorGenerator, Opcodes 
 	 *  public DateInstantiator() {
 	 *     this(clazz, classId);
 	 *  }
-	 *	
+	 *
 	 *  public DateInstantiator(Class<? extends DataSerializable> c, int classId) {
 	 *     super(c, classId);
 	 *  }
@@ -164,7 +163,7 @@ public class AsmInstantiatorGenerator implements InstantiatorGenerator, Opcodes 
 	 *  }
 	 * }
 	 * </pre>
-	 * 
+	 *
 	 * @param clazz
 	 * @return
 	 */

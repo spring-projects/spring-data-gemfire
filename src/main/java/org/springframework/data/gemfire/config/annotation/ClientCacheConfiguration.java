@@ -34,13 +34,13 @@ import org.springframework.data.gemfire.support.ConnectionEndpointList;
 
 /**
  * Spring {@link Configuration} class used to configure, construct and initialize
- * a GemFire {@link com.gemstone.gemfire.cache.client.ClientCache} instance in a Spring application context.
+ * a GemFire {@link org.apache.geode.cache.client.ClientCache} instance in a Spring application context.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
- * @see com.gemstone.gemfire.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientCache
  * @since 1.0.0
  */
 @Configuration
@@ -143,10 +143,10 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	}
 
 	/**
-	 * Configures GemFire {@link com.gemstone.gemfire.cache.client.ClientCache} specific settings.
+	 * Configures GemFire {@link org.apache.geode.cache.client.ClientCache} specific settings.
 	 *
 	 * @param importMetadata {@link AnnotationMetadata} containing client cache meta-data used to configure
-	 * the GemFire {@link com.gemstone.gemfire.cache.client.ClientCache}.
+	 * the GemFire {@link org.apache.geode.cache.client.ClientCache}.
 	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
 	@Override
@@ -186,11 +186,11 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 
 	/**
 	 * Uses the list of GemFire Locator and Server connection endpoint definitions and meta-data to configure
-	 * the GemFire client {@link com.gemstone.gemfire.cache.client.Pool} used to communicate with the servers
+	 * the GemFire client {@link org.apache.geode.cache.client.Pool} used to communicate with the servers
 	 * in the GemFire cluster.
 	 *
 	 * @param clientCacheApplicationAttributes {@link ClientCacheApplication} annotation containing
-	 * {@link com.gemstone.gemfire.cache.client.Pool} Locator/Server connection endpoint meta-data.
+	 * {@link org.apache.geode.cache.client.Pool} Locator/Server connection endpoint meta-data.
 	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
 	 * @see java.util.Map
 	 */

@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
+
 import javax.annotation.Resource;
 
 import org.junit.Test;
@@ -43,7 +44,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientCache
  * @link https://jira.spring.io/browse/SGF-441
  * @since 1.8.0
  */

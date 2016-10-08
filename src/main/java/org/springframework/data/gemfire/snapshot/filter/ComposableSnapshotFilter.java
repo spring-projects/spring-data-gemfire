@@ -18,14 +18,14 @@ package org.springframework.data.gemfire.snapshot.filter;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
+import org.apache.geode.cache.snapshot.SnapshotFilter;
 
 /**
  * The ComposableSnapshotFilter class is a GemFire SnapshotFilter implementation of the Composition design pattern
  * allowing 2 or more SnapshotFilters to be combined by logical AND and OR operators acting as a single SnapshotFilter.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
+ * @see org.apache.geode.cache.snapshot.SnapshotFilter
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
@@ -66,7 +66,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * @param rightOperand the operator used to combine the resulting boolean expressions
 	 * from the evaluation of the operands.
 	 * @see ComposableSnapshotFilter.Operator
-	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
+	 * @see org.apache.geode.cache.snapshot.SnapshotFilter
 	 */
 	private ComposableSnapshotFilter(SnapshotFilter<K, V> leftOperand, Operator operator, SnapshotFilter<K, V> rightOperand) {
 		this.leftOperand = leftOperand;
@@ -90,7 +90,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * using the Operator.
 	 * @return a SnapshotFilter implementation composed of the SnapshotFilters using the specified Operator.
 	 * @see ComposableSnapshotFilter.Operator
-	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
+	 * @see org.apache.geode.cache.snapshot.SnapshotFilter
 	 */
 	protected static <K, V> SnapshotFilter<K, V> compose(Operator operator, SnapshotFilter<K, V>... snapshotFilters) {
 		SnapshotFilter<K, V> composedSnapshotFilter = null;
@@ -112,7 +112,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * using the AND Operator.
 	 * @return a SnapshotFilter implementation composed of the SnapshotFilters using the AND Operator.
 	 * @see ComposableSnapshotFilter.Operator#AND
-	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
+	 * @see org.apache.geode.cache.snapshot.SnapshotFilter
 	 */
 	public static <K, V> SnapshotFilter<K, V> and(SnapshotFilter<K, V>... snapshotFilters) {
 		return compose(Operator.AND, snapshotFilters);
@@ -127,7 +127,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * using the OR Operator.
 	 * @return a SnapshotFilter implementation composed of the SnapshotFilters using the OR Operator.
 	 * @see ComposableSnapshotFilter.Operator#OR
-	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
+	 * @see org.apache.geode.cache.snapshot.SnapshotFilter
 	 */
 	public static <K, V> SnapshotFilter<K, V> or(SnapshotFilter<K, V>... snapshotFilters) {
 		return compose(Operator.OR, snapshotFilters);
@@ -139,7 +139,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * @param entry the Map.Entry to evaluate.
 	 * @return a boolean value indicating whether this composed SnapshotFilter accepts the Map Entry.
 	 * @see ComposableSnapshotFilter.Operator
-	 * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter#accept(Map.Entry)
+	 * @see org.apache.geode.cache.snapshot.SnapshotFilter#accept(Map.Entry)
 	 * @see java.util.Map.Entry
 	 */
 	@Override

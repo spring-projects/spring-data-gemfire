@@ -21,10 +21,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.geode.cache.Region;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * Simple value object to abstract access to regions by name and mapped type.

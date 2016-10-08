@@ -18,18 +18,17 @@ package org.springframework.data.gemfire;
 
 import java.util.List;
 
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.partition.PartitionListener;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.partition.PartitionListener;
 
 /**
  * Spring-friendly bean for creating {@link PartitionAttributes}. Eliminates the need of using
  * a XML 'factory-method' tag and allows the attributes properties to be set directly.
- * 
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
@@ -37,8 +36,8 @@ import com.gemstone.gemfire.cache.partition.PartitionListener;
 @SuppressWarnings({ "rawtypes", "unchecked", "unused" })
 public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttributes>, InitializingBean {
 
-	private final com.gemstone.gemfire.cache.PartitionAttributesFactory partitionAttributesFactory =
-		new com.gemstone.gemfire.cache.PartitionAttributesFactory();
+	private final org.apache.geode.cache.PartitionAttributesFactory partitionAttributesFactory =
+		new org.apache.geode.cache.PartitionAttributesFactory();
 
 	private List<PartitionListener> listeners;
 

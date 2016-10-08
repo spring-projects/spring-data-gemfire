@@ -16,13 +16,13 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.LoaderHelper;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
 
 /**
  * User object used for testing Spring wiring.
- * 
+ *
  * @author Costin Leau
  */
 @SuppressWarnings("rawtypes")

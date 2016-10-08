@@ -16,24 +16,23 @@
 
 package org.springframework.data.gemfire.support;
 
+import org.apache.geode.cache.Region;
 import org.springframework.dao.support.DaoSupport;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * Convenient super class for GemFire data access objects. Intended for
- * GemfireTemplate usage. 
- * 
- * <p>Requires a Region to be set, providing a GemfireTemplate based on it to subclasses. 
+ * GemfireTemplate usage.
+ *
+ * <p>Requires a Region to be set, providing a GemfireTemplate based on it to subclasses.
  * Can alternatively be initialized directly via a GemfireTemplate, to reuse the latter's
  * settings.
  *
- * <p>This class will create its own GemfireTemplate if an Region reference is passed in. 
+ * <p>This class will create its own GemfireTemplate if an Region reference is passed in.
  * A custom GemfireTemplate instance can be used through overriding <code>createGemfireTemplate</code>.
- * 
+ *
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.dao.support.DaoSupport
@@ -47,8 +46,8 @@ public class GemfireDaoSupport extends DaoSupport {
 	 * an instance of the GemfireTemplate for the given Region.
 	 *
 	 * @param region the GemFire Cache Region upon which this DAO operates.
-	 * @see com.gemstone.gemfire.cache.Region
-	 * @see #createGemfireTemplate(com.gemstone.gemfire.cache.Region)
+	 * @see org.apache.geode.cache.Region
+	 * @see #createGemfireTemplate(org.apache.geode.cache.Region)
 	 */
 	public void setRegion(Region<?, ?> region) {
 		this.gemfireTemplate = createGemfireTemplate(region);
@@ -84,7 +83,7 @@ public class GemfireDaoSupport extends DaoSupport {
 	 *
 	 * @param region the GemFire Cache Region for which the GemfireTemplate is created.
 	 * @return a new GemfireTemplate instance configured with the given GemFire Cache Region.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 * @see #setRegion
 	 */
 	protected GemfireOperations createGemfireTemplate(Region<?, ?> region) {

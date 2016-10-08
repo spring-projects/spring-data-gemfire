@@ -18,15 +18,14 @@ package org.springframework.data.gemfire.util;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.DistributionLocator;
-
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.DistributionLocator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -34,11 +33,11 @@ import org.springframework.util.StringUtils;
  * DistributedSystemUtils is an abstract utility class for working with the GemFire DistributedSystem.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.distributed.DistributedSystem
- * @see com.gemstone.gemfire.distributed.internal.DistributionConfig
- * @see com.gemstone.gemfire.distributed.internal.InternalDistributedSystem
- * @see com.gemstone.gemfire.internal.DistributionLocator
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.distributed.DistributedSystem
+ * @see org.apache.geode.distributed.internal.DistributionConfig
+ * @see org.apache.geode.distributed.internal.InternalDistributedSystem
+ * @see org.apache.geode.internal.DistributionLocator
  * @since 1.7.0
  */
 @SuppressWarnings("unused")

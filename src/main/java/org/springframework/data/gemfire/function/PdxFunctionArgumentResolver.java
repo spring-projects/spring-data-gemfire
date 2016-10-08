@@ -18,12 +18,11 @@ package org.springframework.data.gemfire.function;
 
 import java.lang.reflect.Method;
 
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.pdx.PdxInstance;
 import org.springframework.util.ClassUtils;
-
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.pdx.PdxInstance;
 
 /**
  * The PdxFunctionArgumentResolver class is a Spring Data GemFire FunctionArgumentResolver that automatically resolves
@@ -32,7 +31,7 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.function.DefaultFunctionArgumentResolver
- * @see com.gemstone.gemfire.pdx.PdxInstance
+ * @see org.apache.geode.pdx.PdxInstance
  * @since 1.5.2
  */
 @SuppressWarnings("unused")
@@ -41,7 +40,7 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see com.gemstone.gemfire.cache.execute.FunctionContext
+	 * @see org.apache.geode.cache.execute.FunctionContext
 	 */
 	@Override
 	public Object[] resolveFunctionArguments(final FunctionContext functionContext) {
@@ -79,8 +78,8 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see com.gemstone.gemfire.cache.Cache#getPdxSerializer()
-	 * @see com.gemstone.gemfire.cache.CacheFactory#getAnyInstance()
+	 * @see org.apache.geode.cache.Cache#getPdxSerializer()
+	 * @see org.apache.geode.cache.CacheFactory#getAnyInstance()
 	 */
 	boolean isPdxSerializerConfigured() {
 		try {

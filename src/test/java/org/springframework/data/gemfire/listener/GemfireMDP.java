@@ -16,13 +16,13 @@
 
 package org.springframework.data.gemfire.listener;
 
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.query.CqEvent;
-import com.gemstone.gemfire.cache.query.CqQuery;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqQuery;
 
 /**
  * Simple GemFire-message/event-driven-pojo.
- * 
+ *
  * @author Costin Leau
  */
 public class GemfireMDP {

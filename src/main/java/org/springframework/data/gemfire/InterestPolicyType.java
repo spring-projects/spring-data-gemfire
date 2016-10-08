@@ -15,14 +15,14 @@
  */
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.InterestPolicy;
+import org.apache.geode.cache.InterestPolicy;
 
 /**
  * The InterestPolicyType enum is an enumeration of all the GemFire Subscription, InterestPolicy values.
  *
  * @author Lyndon Adams
  * @author John Blum
- * @see com.gemstone.gemfire.cache.InterestPolicy
+ * @see org.apache.geode.cache.InterestPolicy
  * @since 1.3.0
  */
 @SuppressWarnings("unused")
@@ -38,7 +38,7 @@ public enum InterestPolicyType {
 	 * Constructs an instance of the SubscriptionType enum initialized with the matching GemFire InterestPolicy.
 	 *
 	 * @param interestPolicy a GemFire InterestPolicy corresponding to this SubscriptionType.
-	 * @see com.gemstone.gemfire.cache.InterestPolicy
+	 * @see org.apache.geode.cache.InterestPolicy
 	 */
 	InterestPolicyType(final InterestPolicy interestPolicy) {
 		this.interestPolicy = interestPolicy;
@@ -50,7 +50,7 @@ public enum InterestPolicyType {
 	 * @param interestPolicyType the InterestPolicyType enum from which to extract GemFire's InterestPolicy
 	 * @return a GemFire InterestPolicy for the given InterestPolicyType enumerated value
 	 * or null if InterestPolicyType is null.
-	 * @see com.gemstone.gemfire.cache.InterestPolicy
+	 * @see org.apache.geode.cache.InterestPolicy
 	 */
 	public static InterestPolicy getInterestPolicy(final InterestPolicyType interestPolicyType) {
 		return (interestPolicyType != null ? interestPolicyType.getInterestPolicy() : null);
@@ -62,7 +62,7 @@ public enum InterestPolicyType {
 	 * @param interestPolicy the GemFire InterestPolicy used to lookup and match a SubscriptionType.
 	 * @return a SubscriptionType enumerated value matching the given GemFire InterestPolicy
 	 * or null if no matching value was found.
-	 * @see com.gemstone.gemfire.cache.InterestPolicy
+	 * @see org.apache.geode.cache.InterestPolicy
 	 * @see #getInterestPolicy()
 	 */
 	public static InterestPolicyType valueOf(final InterestPolicy interestPolicy) {
@@ -98,7 +98,7 @@ public enum InterestPolicyType {
 	 * Returns the GemFire InterestPolicy corresponding to this SubscriptionType enumerated value.
 	 *
 	 * @return the GemFire InterestPolicy corresponding to this SubscriptionType.
-	 * @see com.gemstone.gemfire.cache.InterestPolicy
+	 * @see org.apache.geode.cache.InterestPolicy
 	 */
 	public InterestPolicy getInterestPolicy() {
 		return interestPolicy;

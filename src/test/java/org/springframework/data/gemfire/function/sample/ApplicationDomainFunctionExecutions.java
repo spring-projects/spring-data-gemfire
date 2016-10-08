@@ -16,10 +16,9 @@
 
 package org.springframework.data.gemfire.function.sample;
 
+import org.apache.geode.pdx.PdxInstance;
 import org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWithPdxIntegrationTest;
 import org.springframework.data.gemfire.function.annotation.OnServer;
-
-import com.gemstone.gemfire.pdx.PdxInstance;
 
 /**
  * The ApplicationDomainFunctionExecutions class defines a GemFire Client Cache Function execution targeted at a
@@ -28,7 +27,7 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  * @author John Blum
  * @see org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWithPdxIntegrationTest
  * @see org.springframework.data.gemfire.function.annotation.OnServer
- * @see com.gemstone.gemfire.pdx.PdxInstance
+ * @see org.apache.geode.pdx.PdxInstance
  * @since 1.0.0
  */
 @OnServer

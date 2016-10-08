@@ -28,11 +28,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-
+import org.apache.geode.cache.TransactionListener;
+import org.apache.geode.cache.TransactionWriter;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.pdx.PdxSerializer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -67,8 +66,8 @@ import org.springframework.util.StringUtils;
  * {@link org.springframework.context.annotation.Configuration} support.
  *
  * This class encapsulates configuration settings common to both GemFire peer
- * {@link com.gemstone.gemfire.cache.Cache caches} and
- * {@link com.gemstone.gemfire.cache.client.ClientCache client caches}.
+ * {@link org.apache.geode.cache.Cache caches} and
+ * {@link org.apache.geode.cache.client.ClientCache client caches}.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.BeanClassLoaderAware
@@ -183,7 +182,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	 * depending on the type of configuration meta-data applied.
 	 *
 	 * Both 'mcast-port' and 'locators' are to set 0 and empty String respectively, which is necessary
-	 * for {@link com.gemstone.gemfire.cache.client.ClientCache cache client}-based applications.  These values
+	 * for {@link org.apache.geode.cache.client.ClientCache cache client}-based applications.  These values
 	 * can be changed for peer cache and cache server applications.
 	 *
 	 * Finally, GemFire's {@literal log-level} System property defaults to {@literal config}.
@@ -446,7 +445,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	}
 
 	/**
-	 * Determines whether this is a GemFire {@link com.gemstone.gemfire.cache.server.CacheServer} application,
+	 * Determines whether this is a GemFire {@link org.apache.geode.cache.server.CacheServer} application,
 	 * which is indicated by the presence of the {@link CacheServerApplication} annotation on a Spring application
 	 * {@link org.springframework.context.annotation.Configuration @Configuration} class.
 	 *
@@ -461,7 +460,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	}
 
 	/**
-	 * Determines whether this is a GemFire {@link com.gemstone.gemfire.cache.client.ClientCache} application,
+	 * Determines whether this is a GemFire {@link org.apache.geode.cache.client.ClientCache} application,
 	 * which is indicated by the presence of the {@link ClientCacheApplication} annotation on a Spring application
 	 * {@link org.springframework.context.annotation.Configuration @Configuration} class.
 	 *
@@ -476,7 +475,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	}
 
 	/**
-	 * Determines whether this is a GemFire peer {@link com.gemstone.gemfire.cache.Cache} application,
+	 * Determines whether this is a GemFire peer {@link org.apache.geode.cache.Cache} application,
 	 * which is indicated by the presence of the {@link PeerCacheApplication} annotation on a Spring application
 	 * {@link org.springframework.context.annotation.Configuration @Configuration} class.
 	 *
@@ -510,8 +509,8 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	}
 
 	/**
-	 * Determines whether this is a GemFire {@link com.gemstone.gemfire.cache.server.CacheServer} or
-	 * {@link com.gemstone.gemfire.cache.Cache peer cache} application, which is indicated by the presence
+	 * Determines whether this is a GemFire {@link org.apache.geode.cache.server.CacheServer} or
+	 * {@link org.apache.geode.cache.Cache peer cache} application, which is indicated by the presence
 	 * of either the {@link CacheServerApplication} annotation or the {@link PeerCacheApplication} annotation
 	 * on a Spring application {@link org.springframework.context.annotation.Configuration @Configuration} class.
 	 *
@@ -529,8 +528,8 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	}
 
 	/**
-	 * Determine whether this Spring application is a {@link com.gemstone.gemfire.cache.server.CacheServer},
-	 * {@link com.gemstone.gemfire.cache.client.ClientCache} or a {@link com.gemstone.gemfire.cache.Cache} application.
+	 * Determine whether this Spring application is a {@link org.apache.geode.cache.server.CacheServer},
+	 * {@link org.apache.geode.cache.client.ClientCache} or a {@link org.apache.geode.cache.Cache} application.
 	 *
 	 * @param importMetadata {@link AnnotationMetadata} containing application configuration meta-data
 	 * from the class type-level annotations used to configure the Spring application.

@@ -23,25 +23,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.datasource.ConfigProperty;
-import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.GemFireCheckedException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DynamicRegionFactory;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.TransactionListener;
+import org.apache.geode.cache.TransactionWriter;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.datasource.ConfigProperty;
+import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxSerializer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -79,11 +78,11 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.context.Phased
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.CacheFactory
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.distributed.DistributedMember
- * @see com.gemstone.gemfire.distributed.DistributedSystem
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.CacheFactory
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.distributed.DistributedMember
+ * @see org.apache.geode.distributed.DistributedSystem
  */
 @SuppressWarnings("unused")
 public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
@@ -177,6 +176,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("deprecation")
 	Cache init() throws Exception {
 		initBeanFactoryLocator();
 
@@ -231,7 +231,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * if an existing Cache could not be found, then this method proceeds in attempting to create a new Cache instance.
 	 *
 	 * @return the resolved GemFire Cache instance.
-	 * @see com.gemstone.gemfire.cache.Cache
+	 * @see org.apache.geode.cache.Cache
 	 * @see #fetchCache()
 	 * @see #createFactory(java.util.Properties)
 	 * @see #prepareFactory(Object)
@@ -254,9 +254,9 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 *
 	 * @param <T> parameterized Class type extension of GemFireCache.
 	 * @return the existing GemFire Cache instance if available.
-	 * @throws com.gemstone.gemfire.cache.CacheClosedException if an existing GemFire Cache instance does not exist.
-	 * @see com.gemstone.gemfire.cache.GemFireCache
-	 * @see com.gemstone.gemfire.cache.CacheFactory#getAnyInstance()
+	 * @throws org.apache.geode.cache.CacheClosedException if an existing GemFire Cache instance does not exist.
+	 * @see org.apache.geode.cache.GemFireCache
+	 * @see org.apache.geode.cache.CacheFactory#getAnyInstance()
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T fetchCache() {
@@ -280,7 +280,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * @param gemfireProperties a Properties object containing GemFire System properties.
 	 * @return an instance of a GemFire factory used to create a GemFire cache instance.
 	 * @see java.util.Properties
-	 * @see com.gemstone.gemfire.cache.CacheFactory
+	 * @see org.apache.geode.cache.CacheFactory
 	 */
 	protected Object createFactory(Properties gemfireProperties) {
 		return new CacheFactory(gemfireProperties);
@@ -302,7 +302,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * Initialize the PDX settings on the {@link CacheFactory}.
 	 *
 	 * @param cacheFactory the GemFire {@link CacheFactory} used to configure and create a GemFire {@link Cache}.
-	 * @see com.gemstone.gemfire.cache.CacheFactory
+	 * @see org.apache.geode.cache.CacheFactory
 	 */
 	CacheFactory initializePdx(CacheFactory cacheFactory) {
 		if (isPdxOptionsSpecified()) {
@@ -346,8 +346,8 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * @param <T> parameterized Class type extension of GemFireCache.
 	 * @param factory the appropriate GemFire factory used to create a cache instance.
 	 * @return an instance of the GemFire cache.
-	 * @see com.gemstone.gemfire.cache.GemFireCache
-	 * @see com.gemstone.gemfire.cache.CacheFactory#create()
+	 * @see org.apache.geode.cache.GemFireCache
+	 * @see org.apache.geode.cache.CacheFactory#create()
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T createCache(Object factory) {
@@ -362,11 +362,11 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * @param cache the GemFire Cache instance to process.
 	 * @return the GemFire Cache instance after processing.
 	 * @throws IOException if the cache.xml Resource could not be loaded and applied to the Cache instance.
-	 * @see com.gemstone.gemfire.cache.Cache#loadCacheXml(java.io.InputStream)
+	 * @see org.apache.geode.cache.Cache#loadCacheXml(java.io.InputStream)
 	 * @see #getCacheXml()
-	 * @see #setHeapPercentages(com.gemstone.gemfire.cache.GemFireCache)
-	 * @see #registerTransactionListeners(com.gemstone.gemfire.cache.GemFireCache)
-	 * @see #registerTransactionWriter(com.gemstone.gemfire.cache.GemFireCache)
+	 * @see #setHeapPercentages(org.apache.geode.cache.GemFireCache)
+	 * @see #registerTransactionListeners(org.apache.geode.cache.GemFireCache)
+	 * @see #registerTransactionWriter(org.apache.geode.cache.GemFireCache)
 	 * @see #registerJndiDataSources()
 	 */
 	protected <T extends GemFireCache> T postProcess(T cache) throws IOException {
@@ -766,7 +766,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * Requires GemFire 7.0 or higher
 	 * @param gatewayConflictResolver defined as Object in the signature for backward
 	 * compatibility with Gemfire 6 compatibility. This must be an instance of
-	 * {@link com.gemstone.gemfire.cache.util.GatewayConflictResolver}
+	 * {@link org.apache.geode.cache.util.GatewayConflictResolver}
 	 */
 	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
 		this.gatewayConflictResolver = gatewayConflictResolver;
@@ -950,7 +950,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * the transaction is processed (committed, rolled back).
 	 *
 	 * @param transactionListeners the list of GemFire TransactionListeners listening for transaction events.
-	 * @see com.gemstone.gemfire.cache.TransactionListener
+	 * @see org.apache.geode.cache.TransactionListener
 	 */
 	public void setTransactionListeners(List<TransactionListener> transactionListeners) {
 		this.transactionListeners = transactionListeners;
@@ -968,7 +968,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * the transaction or update an external DB before the commit.
 	 *
 	 * @param transactionWriter the GemFire TransactionWriter callback receiving transaction events.
-	 * @see com.gemstone.gemfire.cache.TransactionWriter
+	 * @see org.apache.geode.cache.TransactionWriter
 	 */
 	public void setTransactionWriter(TransactionWriter transactionWriter) {
 		this.transactionWriter = transactionWriter;

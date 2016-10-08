@@ -27,11 +27,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.distributed.DistributedSystem;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 
 /**
  * The GemfireUtilsTest class is a test suite of test cases testing the contract and functionality of the GemfireUtils

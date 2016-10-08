@@ -27,11 +27,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.util.GatewayConflictHelper;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.util.GatewayConflictHelper;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.cache.util.TimestampedEntryEvent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

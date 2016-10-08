@@ -18,6 +18,7 @@
 package org.springframework.data.gemfire.repository.cdi;
 
 import java.util.concurrent.atomic.AtomicLong;
+
 import javax.inject.Inject;
 
 import org.springframework.data.gemfire.repository.sample.Person;

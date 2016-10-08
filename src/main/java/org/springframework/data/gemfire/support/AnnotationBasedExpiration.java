@@ -19,6 +19,10 @@ package org.springframework.data.gemfire.support;
 import java.lang.annotation.Annotation;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -42,11 +46,6 @@ import org.springframework.expression.spel.support.StandardTypeLocator;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * The AnnotationBasedExpiration class is an implementation of GemFire's CustomExpiry interface that determines
  * the Time-To-Live (TTL) or Idle-Timeout (TTI) expiration policy of a Region entry by introspecting the Region
@@ -61,10 +60,10 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.data.gemfire.support.Expiration
  * @see org.springframework.data.gemfire.support.IdleTimeoutExpiration
  * @see org.springframework.data.gemfire.support.TimeToLiveExpiration
- * @see com.gemstone.gemfire.cache.CustomExpiry
- * @see com.gemstone.gemfire.cache.ExpirationAction
- * @see com.gemstone.gemfire.cache.ExpirationAttributes
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.CustomExpiry
+ * @see org.apache.geode.cache.ExpirationAction
+ * @see org.apache.geode.cache.ExpirationAttributes
+ * @see org.apache.geode.cache.Region
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
@@ -90,7 +89,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * expiration policy.
 	 *
 	 * @param defaultExpirationAttributes expiration settings used as the default expiration policy.
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes
+	 * @see org.apache.geode.cache.ExpirationAttributes
 	 */
 	public AnnotationBasedExpiration(ExpirationAttributes defaultExpirationAttributes) {
 		this.defaultExpirationAttributes = defaultExpirationAttributes;
@@ -105,7 +104,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @return an AnnotationBasedExpiration instance to process Idle Timeout Expiration annotated Region Entries.
 	 * @see org.springframework.data.gemfire.support.AnnotationBasedExpiration
 	 * @see org.springframework.data.gemfire.support.IdleTimeoutExpiration
-	 * @see #forIdleTimeout(com.gemstone.gemfire.cache.ExpirationAttributes)
+	 * @see #forIdleTimeout(org.apache.geode.cache.ExpirationAttributes)
 	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forIdleTimeout() {
 		return forIdleTimeout(null);
@@ -141,7 +140,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @return an AnnotationBasedExpiration instance to process Time-To-Live Expiration annotated Region Entries.
 	 * @see org.springframework.data.gemfire.support.AnnotationBasedExpiration
 	 * @see org.springframework.data.gemfire.support.TimeToLiveExpiration
-	 * @see #forTimeToLive(com.gemstone.gemfire.cache.ExpirationAttributes)
+	 * @see #forTimeToLive(org.apache.geode.cache.ExpirationAttributes)
 	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forTimeToLive() {
 		return forTimeToLive(null);
@@ -230,7 +229,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 *
 	 * @param defaultExpirationAttributes expiration settings used as the default expiration policy.
 	 * @see #getDefaultExpirationAttributes()
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes
+	 * @see org.apache.geode.cache.ExpirationAttributes
 	 */
 	public void setDefaultExpirationAttributes(ExpirationAttributes defaultExpirationAttributes) {
 		this.defaultExpirationAttributes = defaultExpirationAttributes;
@@ -241,8 +240,8 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * has been specified.
 	 *
 	 * @return an instance of ExpirationAttributes with expiration settings defining the default expiration policy.
-	 * @see #setDefaultExpirationAttributes(com.gemstone.gemfire.cache.ExpirationAttributes)
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes
+	 * @see #setDefaultExpirationAttributes(org.apache.geode.cache.ExpirationAttributes)
+	 * @see org.apache.geode.cache.ExpirationAttributes
 	 */
 	protected ExpirationAttributes getDefaultExpirationAttributes() {
 		//return (defaultExpirationAttributes != null ? defaultExpirationAttributes : ExpirationAttributes.DEFAULT);
@@ -255,7 +254,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 *
 	 * @param entry the entry to calculate the expiration for.
 	 * @return the expiration to be used, null if the Region's defaults should be used.
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes
+	 * @see org.apache.geode.cache.ExpirationAttributes
 	 */
 	@Override
 	public ExpirationAttributes getExpiry(Region.Entry<K, V> entry) {
@@ -285,7 +284,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * or the default expiration settings if the application domain object has not been annotated with custom
 	 * expiration meta-data.
 	 * @see org.springframework.data.gemfire.support.AnnotationBasedExpiration.ExpirationMetaData
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes
+	 * @see org.apache.geode.cache.ExpirationAttributes
 	 * @see #getDefaultExpirationAttributes()
 	 */
 	protected ExpirationAttributes newExpirationAttributes(ExpirationMetaData expirationMetaData) {
@@ -390,7 +389,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * The ExpirationMetaData class encapsulates the settings constituting the expiration policy including
 	 * the expiration timeout and the action performed when expiration occurs.
 	 *
-	 * @see com.gemstone.gemfire.cache.ExpirationAttributes
+	 * @see org.apache.geode.cache.ExpirationAttributes
 	 */
 	protected static class ExpirationMetaData {
 

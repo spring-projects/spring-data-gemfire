@@ -16,6 +16,8 @@
  */
 package org.springframework.data.gemfire.repository.config;
 
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,13 +34,10 @@ import org.springframework.data.gemfire.test.MockCacheFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * Integration test for {@link GemfireRepositoriesRegistrar} (annotation based
  * repository configuration).
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(SpringJUnit4ClassRunner.class)

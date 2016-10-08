@@ -23,15 +23,14 @@ import static org.junit.Assert.assertTrue;
 
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.Region;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The RegionShortcutsIntegrationTest class is a test suite of test cases testing the use of RegionShortcuts in the
@@ -42,7 +41,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.4.0
  */
 @ContextConfiguration("region-datapolicy-shortcuts.xml")

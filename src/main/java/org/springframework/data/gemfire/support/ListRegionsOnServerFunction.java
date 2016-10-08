@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -15,11 +15,11 @@ package org.springframework.data.gemfire.support;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 
 /**
  * ListRegionsOnServerFunction is a GemFire Function class that returns a List of names for all Regions
@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
  *
  * @author David Turanski
  * @author John Blum
- * @see com.gemstone.gemfire.cache.execute.Function
+ * @see org.apache.geode.cache.execute.Function
  */
 @SuppressWarnings("serial")
 public class ListRegionsOnServerFunction implements Function {
@@ -38,7 +38,7 @@ public class ListRegionsOnServerFunction implements Function {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.Function#execute(com.gemstone.gemfire.cache.execute.FunctionContext)
+	 * @see org.apache.geode.cache.execute.Function#execute(org.apache.geode.cache.execute.FunctionContext)
 	 */
 	@Override
 	public void execute(FunctionContext functionContext) {
@@ -58,7 +58,7 @@ public class ListRegionsOnServerFunction implements Function {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.Function#getId()
+	 * @see org.apache.geode.cache.execute.Function#getId()
 	 */
 	@Override
 	public String getId() {
@@ -67,7 +67,7 @@ public class ListRegionsOnServerFunction implements Function {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.Function#hasResult()
+	 * @see org.apache.geode.cache.execute.Function#hasResult()
 	 */
 	@Override
 	public boolean hasResult() {
@@ -76,7 +76,7 @@ public class ListRegionsOnServerFunction implements Function {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.Function#isHA()
+	 * @see org.apache.geode.cache.execute.Function#isHA()
 	 */
 	@Override
 	public boolean isHA() {
@@ -85,7 +85,7 @@ public class ListRegionsOnServerFunction implements Function {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.Function#optimizeForWrite()
+	 * @see org.apache.geode.cache.execute.Function#optimizeForWrite()
 	 */
 	@Override
 	public boolean optimizeForWrite() {

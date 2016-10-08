@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
+
 import javax.annotation.Resource;
 
 import org.junit.Test;
@@ -33,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Simple TX integration test.
- * 
+ *
  * @author Costin Leau
  */
 @RunWith(SpringJUnit4ClassRunner.class)

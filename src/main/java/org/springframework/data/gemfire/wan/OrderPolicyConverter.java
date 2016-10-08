@@ -16,9 +16,8 @@
 
 package org.springframework.data.gemfire.wan;
 
+import org.apache.geode.cache.wan.GatewaySender;
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
-
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The OrderPolicyConverter class is a Spring Converter and JavaBeans PropertyEditor used to convert a String value
@@ -27,7 +26,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * @author John Blum
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
  * @see org.springframework.data.gemfire.wan.OrderPolicyType
- * @see com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy
+ * @see org.apache.geode.cache.wan.GatewaySender.OrderPolicy
  * @since 1.7.0
  */
 @SuppressWarnings({ "deprecation", "unused" })
@@ -41,7 +40,7 @@ public class OrderPolicyConverter extends AbstractPropertyEditorConverterSupport
 	 * @throws java.lang.IllegalArgumentException if the String is not a valid GemFire Gateway.OrderPolicy.
 	 * @see org.springframework.data.gemfire.wan.OrderPolicyType#getOrderPolicy()
 	 * @see org.springframework.data.gemfire.wan.OrderPolicyType#valueOfIgnoreCase(String)
-	 * @see com.gemstone.gemfire.cache.util.Gateway.OrderPolicy
+	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 */
 	@Override
 	public GatewaySender.OrderPolicy convert(final String source) {

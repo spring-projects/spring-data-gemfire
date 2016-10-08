@@ -49,6 +49,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexInvalidException;
+import org.apache.geode.cache.query.IndexNameConflictException;
+import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.cache.query.QueryService;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,15 +68,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.util.ReflectionUtils;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.cache.query.QueryService;
-
 /**
  * The IndexFactoryBeanTest class is a test suite of test cases testing the contract and functionality
  * of the IndexFactoryBean class.
@@ -76,10 +75,10 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.IndexFactoryBean
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.query.Index
- * @see com.gemstone.gemfire.cache.query.QueryService
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.query.Index
+ * @see org.apache.geode.cache.query.QueryService
  * @since 1.5.2
  */
 public class IndexFactoryBeanTest {
@@ -1021,7 +1020,7 @@ public class IndexFactoryBeanTest {
 		when(mockIndex.getName()).thenReturn("MockIndex");
 		when(mockIndex.getProjectionAttributes()).thenReturn("id");
 		when(mockIndex.getStatistics()).thenReturn(mockIndexStats);
-		when(mockIndex.getType()).thenReturn(com.gemstone.gemfire.cache.query.IndexType.HASH);
+		when(mockIndex.getType()).thenReturn(org.apache.geode.cache.query.IndexType.HASH);
 		when(mockQueryService.getIndexes()).thenReturn(Collections.singletonList(mockIndex));
 
 		IndexFactoryBean.IndexWrapper indexWrapper = new IndexFactoryBean.IndexWrapper(mockQueryService, "MockIndex");
@@ -1041,7 +1040,7 @@ public class IndexFactoryBeanTest {
 		assertEquals("MockIndex", indexWrapper.getName());
 		assertEquals("id", indexWrapper.getProjectionAttributes());
 		assertSame(mockIndexStats, indexWrapper.getStatistics());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.HASH, indexWrapper.getType());
+		assertEquals(org.apache.geode.cache.query.IndexType.HASH, indexWrapper.getType());
 
 		Index sameIndex = indexWrapper.getIndex();
 

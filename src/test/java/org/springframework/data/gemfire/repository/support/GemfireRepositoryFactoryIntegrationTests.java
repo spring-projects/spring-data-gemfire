@@ -15,8 +15,9 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 
@@ -33,7 +34,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Integration test for {@link GemfireRepositoryFactory}.
- * 
+ *
  * @author Oliver Gierke
  */
 @ContextConfiguration("../config/repo-context.xml")

@@ -19,13 +19,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.junit.Test;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-
 /**
- * 
+ *
  * @author David Turanski
  * @author John Blum
  */

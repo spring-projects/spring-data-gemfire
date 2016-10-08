@@ -24,9 +24,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 
 /**
  * The SubscriptionEvictionPolicyTest class is a test suite of test cases testing the contract and functionality

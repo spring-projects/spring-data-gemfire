@@ -19,6 +19,9 @@ import static org.junit.Assert.fail;
 
 import java.util.Map;
 
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,18 +32,14 @@ import org.springframework.stereotype.Repository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class GemfirePersistenceExceptionTranslationTest {
-	@Autowired 
+	@Autowired
 	GemFireRepo1 gemfireRepo1;
 	@Autowired
 	ApplicationContext ctx;
-	 
+
 	@Test
 	public void test() {
 		Map<String, BeanPostProcessor> bpps = ctx.getBeansOfType(BeanPostProcessor.class);
@@ -52,33 +51,33 @@ public class GemfirePersistenceExceptionTranslationTest {
 			gemfireRepo1.doit(new QueryException());
 			fail("should throw a query exception");
 		} catch (GemfireQueryException e){
-			
+
 		}
-		
+
 		try {
 			gemfireRepo1.doit(new FunctionDomainException("test"));
 			fail("should throw a query exception");
 		} catch (GemfireQueryException e) {
-			 
+
 		}
-		
+
 		try {
 			gemfireRepo1.doit(new QueryInvocationTargetException("test"));
 			fail("should throw a query exception");
 		} catch (GemfireQueryException e) {
-			 
+
 		}
 	}
-	
+
 	/**
-	 * Wraps GemfireCheckedExceptions in RuntimeException 
+	 * Wraps GemfireCheckedExceptions in RuntimeException
 	 * @author David Turanski
 	 *
 	 */
-	@Repository 
+	@Repository
 	public static class GemFireRepo1 {
 		public void doit(Exception e)  {
 			throw new RuntimeException(e);
-		}	 
+		}
 	}
 }

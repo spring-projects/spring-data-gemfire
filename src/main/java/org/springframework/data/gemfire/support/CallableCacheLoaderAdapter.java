@@ -19,13 +19,12 @@ package org.springframework.data.gemfire.support;
 
 import java.util.concurrent.Callable;
 
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.TimeoutException;
 
 /**
  * The CallableCacheLoaderAdapter class is a {@link Callable} and GemFire {@link CacheLoader} implementation that
@@ -35,9 +34,9 @@ import com.gemstone.gemfire.cache.TimeoutException;
  *
  * @author John Blum
  * @see java.util.concurrent.Callable
- * @see com.gemstone.gemfire.cache.CacheLoader
- * @see com.gemstone.gemfire.cache.LoaderHelper
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.CacheLoader
+ * @see org.apache.geode.cache.LoaderHelper
+ * @see org.apache.geode.cache.Region
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
@@ -56,7 +55,7 @@ public class CallableCacheLoaderAdapter<K, V> implements Callable<V>, CacheLoade
 	 *
 	 * @param delegate the {@link CacheLoader} delegated to by this adapter.
 	 * @see #CallableCacheLoaderAdapter(CacheLoader, Object, Region, Object)
-	 * @see com.gemstone.gemfire.cache.CacheLoader
+	 * @see org.apache.geode.cache.CacheLoader
 	 */
 	public CallableCacheLoaderAdapter(CacheLoader<K, V> delegate) {
 		this(delegate, null, null, null);
@@ -71,8 +70,8 @@ public class CallableCacheLoaderAdapter<K, V> implements Callable<V>, CacheLoade
 	 * @param key the key for which the value will be loaded.
 	 * @param region the {@link Region} in which the entry (key/value) belongs.
 	 * @see #CallableCacheLoaderAdapter(CacheLoader, Object, Region, Object)
-	 * @see com.gemstone.gemfire.cache.CacheLoader
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.CacheLoader
+	 * @see org.apache.geode.cache.Region
 	 */
 	public CallableCacheLoaderAdapter(CacheLoader<K, V> delegate, K key, Region<K, V> region) {
 		this(delegate, key, region, null);
@@ -89,8 +88,8 @@ public class CallableCacheLoaderAdapter<K, V> implements Callable<V>, CacheLoade
 	 * @param region the {@link Region} in which the entry (key/value) belongs.
 	 * @param argument the Object argument used with the {@link CacheLoader} delegate.
 	 * @see #CallableCacheLoaderAdapter(CacheLoader, Object, Region, Object)
-	 * @see com.gemstone.gemfire.cache.CacheLoader
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.CacheLoader
+	 * @see org.apache.geode.cache.Region
 	 */
 	public CallableCacheLoaderAdapter(CacheLoader<K, V> delegate, K key, Region<K, V> region, Object argument) {
 		Assert.notNull(delegate, "CacheLoader must not be null");
@@ -113,7 +112,7 @@ public class CallableCacheLoaderAdapter<K, V> implements Callable<V>, CacheLoade
 	 * The {@link CacheLoader} delegate used to actually load the cache value for the specified key.
 	 *
 	 * @return a reference to the actual {@link CacheLoader} used when loading the cache value for the specified key.
-	 * @see com.gemstone.gemfire.cache.CacheLoader
+	 * @see org.apache.geode.cache.CacheLoader
 	 */
 	protected CacheLoader<K, V> getCacheLoader() {
 		return cacheLoader;
@@ -132,7 +131,7 @@ public class CallableCacheLoaderAdapter<K, V> implements Callable<V>, CacheLoade
 	 * Returns the Region to which the entry (key/value) belongs.
 	 *
 	 * @return the Region to which the entry belongs.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	protected Region<K, V> getRegion() {
 		return region;
@@ -190,8 +189,8 @@ public class CallableCacheLoaderAdapter<K, V> implements Callable<V>, CacheLoade
 	 * @throws CacheLoaderException if an error occurs during the load operation. This exception, or any other
 	 * Exception thrown by this method will be propagated back to the application from the
 	 * {@link Region#get(Object)} method.
-	 * @see com.gemstone.gemfire.cache.CacheLoader#load(LoaderHelper)
-	 * @see com.gemstone.gemfire.cache.LoaderHelper
+	 * @see org.apache.geode.cache.CacheLoader#load(LoaderHelper)
+	 * @see org.apache.geode.cache.LoaderHelper
 	 * @see #getCacheLoader()
 	 */
 	public V load(LoaderHelper<K, V> loaderHelper) throws CacheLoaderException {

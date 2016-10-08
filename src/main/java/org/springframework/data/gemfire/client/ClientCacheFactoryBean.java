@@ -20,15 +20,14 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.pdx.PdxSerializer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -56,13 +55,13 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.springframework.data.gemfire.support.ConnectionEndpoint
  * @see org.springframework.data.gemfire.support.ConnectionEndpointList
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
- * @see com.gemstone.gemfire.cache.client.Pool
- * @see com.gemstone.gemfire.cache.client.PoolManager
- * @see com.gemstone.gemfire.distributed.DistributedSystem
- * @see com.gemstone.gemfire.pdx.PdxSerializer
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientCacheFactory
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolManager
+ * @see org.apache.geode.distributed.DistributedSystem
+ * @see org.apache.geode.pdx.PdxSerializer
  */
 @SuppressWarnings("unused")
 public class ClientCacheFactoryBean extends CacheFactoryBean implements ApplicationListener<ContextRefreshedEvent> {
@@ -108,10 +107,10 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 *
 	 * @param <T> is Class type extension of GemFireCache.
 	 * @return the existing GemFire ClientCache instance if available.
-	 * @throws com.gemstone.gemfire.cache.CacheClosedException if an existing GemFire Cache instance does not exist.
+	 * @throws org.apache.geode.cache.CacheClosedException if an existing GemFire Cache instance does not exist.
 	 * @throws java.lang.IllegalStateException if the GemFire cache instance is not a ClientCache.
-	 * @see com.gemstone.gemfire.cache.GemFireCache
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#getAnyInstance()
+	 * @see org.apache.geode.cache.GemFireCache
+	 * @see org.apache.geode.cache.client.ClientCacheFactory#getAnyInstance()
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -155,7 +154,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @param gemfireProperties a Properties object containing GemFire System properties.
 	 * @return an instance of a GemFire factory used to create a GemFire cache instance.
 	 * @see java.util.Properties
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+	 * @see org.apache.geode.cache.client.ClientCacheFactory
 	 */
 	@Override
 	protected Object createFactory(Properties gemfireProperties) {
@@ -180,7 +179,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 *
 	 * @param clientCacheFactory the GemFire {@link ClientCacheFactory} used to configure and create
 	 * a GemFire {@link ClientCache}.
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
+	 * @see org.apache.geode.cache.client.ClientCacheFactory
 	 */
 	ClientCacheFactory initializePdx(ClientCacheFactory clientCacheFactory) {
 		if (isPdxOptionsSpecified()) {
@@ -214,8 +213,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 *
 	 * @param clientCacheFactory the GemFire {@link ClientCacheFactory} used to configure and create
 	 * a GemFire {@link ClientCache}.
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
-	 * @see com.gemstone.gemfire.cache.client.Pool
+	 * @see org.apache.geode.cache.client.ClientCacheFactory
+	 * @see org.apache.geode.cache.client.Pool
 	 */
 	ClientCacheFactory initializePool(ClientCacheFactory clientCacheFactory) {
 		DefaultableDelegatingPoolAdapter pool = DefaultableDelegatingPoolAdapter.from(
@@ -270,8 +269,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * the GemFire {@link ClientCache}.
 	 *
 	 * @return the resolved GemFire {@link Pool}.
-	 * @see com.gemstone.gemfire.cache.client.PoolManager#find(String)
-	 * @see com.gemstone.gemfire.cache.client.Pool
+	 * @see org.apache.geode.cache.client.PoolManager#find(String)
+	 * @see org.apache.geode.cache.client.Pool
 	 */
 	Pool resolvePool() {
 		Pool localPool = getPool();
@@ -312,8 +311,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @param name a String indicating the name of the GemFire {@link Pool} to find.
 	 * @return a {@link Pool} instance with the given name registered in GemFire or <code>null</code> if no {@link Pool}
 	 * with name exists.
-	 * @see com.gemstone.gemfire.cache.client.PoolManager#find(String)
-	 * @see com.gemstone.gemfire.cache.client.Pool
+	 * @see org.apache.geode.cache.client.PoolManager#find(String)
+	 * @see org.apache.geode.cache.client.Pool
 	 */
 	Pool findPool(String name) {
 		return PoolManager.find(name);
@@ -325,8 +324,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @param <T> parameterized Class type extension of {@link GemFireCache}.
 	 * @param factory the appropriate GemFire factory used to create a cache instance.
 	 * @return an instance of the GemFire cache.
-	 * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#create()
-	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see org.apache.geode.cache.client.ClientCacheFactory#create()
+	 * @see org.apache.geode.cache.GemFireCache
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -338,7 +337,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * Inform the GemFire cluster that this client cache is ready to receive events iff the client is non-durable.
 	 *
 	 * @param event the ApplicationContextEvent fired when the ApplicationContext is refreshed.
-	 * @see com.gemstone.gemfire.cache.client.ClientCache#readyForEvents()
+	 * @see org.apache.geode.cache.client.ClientCache#readyForEvents()
 	 * @see #getReadyForEvents()
 	 * @see #getObject()
 	 */

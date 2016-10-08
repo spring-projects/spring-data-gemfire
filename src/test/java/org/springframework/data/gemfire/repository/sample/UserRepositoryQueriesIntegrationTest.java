@@ -25,16 +25,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.Region;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The RepositoryQueriesTest class is a test suite of test cases testing the GemFire Query capability of Spring Data

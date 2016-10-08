@@ -18,9 +18,8 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.RegionShortcut;
 
 /**
  * The RegionShortcutConverterTest class is a test suite of test cases testing the contract and functionality of the
@@ -29,7 +28,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.RegionShortcutConverter
- * @see com.gemstone.gemfire.cache.RegionShortcut
+ * @see org.apache.geode.cache.RegionShortcut
  * @since 1.3.4
  */
 public class RegionShortcutConverterTest {

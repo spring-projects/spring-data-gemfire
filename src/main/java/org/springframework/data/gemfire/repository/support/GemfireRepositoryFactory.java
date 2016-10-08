@@ -19,8 +19,7 @@ package org.springframework.data.gemfire.repository.support;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.Region;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
