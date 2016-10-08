@@ -4,7 +4,7 @@ http://projects.spring.io/spring-data-gemfire/
 ==============================================
 
 
-Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M2 (2016-10-05)
+Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M3 (2016-10-05)
 ----------------------------------------------------------------
 * SGF-267 - Backwards Compatibility Testing between Clients and Servers as well as between GemFire Peer Members
 * SGF-484 - NoSuchMethodError with Spring Data Gemfire RC1 version
