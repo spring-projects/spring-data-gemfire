@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.data.gemfire.test.support.AbstractUnitAndIntegrationTestsWithMockSupport;
 
 import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.util.GatewayHub;
@@ -38,14 +39,14 @@ import com.gemstone.gemfire.cache.util.GatewayHub;
  *
  * @author John Blum
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.test.AbstractMockerySupport
+ * @see AbstractUnitAndIntegrationTestsWithMockSupport
  * @see org.springframework.data.gemfire.wan.GatewayHubFactoryBean
  * @see com.gemstone.gemfire.cache.util.Gateway
  * @see com.gemstone.gemfire.cache.util.GatewayHub
  * @since 1.5.3
  */
 @SuppressWarnings({ "deprecation", "unused" })
-public class MockGatewayHubFactory extends AbstractMockerySupport {
+public class MockGatewayHubFactory extends AbstractUnitAndIntegrationTestsWithMockSupport {
 
 	private static final AtomicLong ID_SEQUENCE = new AtomicLong(System.currentTimeMillis());
 

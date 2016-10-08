@@ -73,7 +73,7 @@ public class ProcessWrapper {
 		Assert.notNull(process, "Process must not be null");
 
 		Assert.notNull(processConfiguration, "The context and configuration meta-data providing details about"
-			+ " the environment in which the process is running and how the process was configured must not be null!");
+			+ " the environment in which the process is running and how the process was configured must not be null");
 
 		this.process = process;
 		this.processConfiguration = processConfiguration;
@@ -103,8 +103,8 @@ public class ProcessWrapper {
 						}
 					}
 					catch (IOException ignore) {
-						// ignore IO error and just stop reading from the process input stream
-						// IO error occurred most likely because the process was terminated
+						// Ignore IO error and just stop reading from the process input stream
+						// An IO error occurred most likely because the process was terminated
 					}
 					finally {
 						IOUtils.close(inputReader);
@@ -115,11 +115,14 @@ public class ProcessWrapper {
 	}
 
 	protected Thread newThread(String name, Runnable task) {
-		Assert.isTrue(!StringUtils.isEmpty(name), "Thread name must be specified");
+		Assert.hasText(name, "Thread name must be specified");
 		Assert.notNull(task, "Thread task must not be null");
+
 		Thread thread = new Thread(task, name);
+
 		thread.setDaemon(DEFAULT_DAEMON_THREAD);
 		thread.setPriority(Thread.NORM_PRIORITY);
+
 		return thread;
 	}
 
@@ -175,7 +178,7 @@ public class ProcessWrapper {
 
 	public String readLogFile() throws IOException {
 		File[] logFiles = FileSystemUtils.listFiles(getWorkingDirectory(), new FileFilter() {
-			@Override public boolean accept(final File pathname) {
+			@Override public boolean accept(File pathname) {
 				return (pathname != null && (pathname.isDirectory() || pathname.getAbsolutePath().endsWith(".log")));
 			}
 		});
@@ -185,11 +188,11 @@ public class ProcessWrapper {
 		}
 		else {
 			throw new FileNotFoundException(String.format(
-				"No log files were found in the process's working directory (%1$s)!", getWorkingDirectory()));
+				"No log files found in process's working directory [%s]", getWorkingDirectory()));
 		}
 	}
 
-	public String readLogFile(final File log) throws IOException {
+	public String readLogFile(File log) throws IOException {
 		return FileUtils.read(log);
 	}
 
@@ -210,7 +213,7 @@ public class ProcessWrapper {
 			ProcessUtils.signalStop(process);
 		}
 		catch (IOException e) {
-			log.warning("Failed to signal the process to stop!");
+			log.warning("Failed to signal the process to stop");
 
 			if (log.isLoggable(Level.FINE)) {
 				log.fine(ThrowableUtils.toString(e));
@@ -245,7 +248,7 @@ public class ProcessWrapper {
 				while (!exited.get() && System.currentTimeMillis() < timeout) {
 					try {
 						exitValue = futureExitValue.get(milliseconds, TimeUnit.MILLISECONDS);
-						log.info(String.format("Process [%1$s] has stopped.%n", pid));
+						log.info(String.format("Process [%s] has stopped%n", pid));
 					}
 					catch (InterruptedException ignore) {
 						interrupted = true;
@@ -254,7 +257,7 @@ public class ProcessWrapper {
 			}
 			catch (TimeoutException e) {
 				exitValue = -1;
-				log.warning(String.format("Process [%1$d] did not stop within the allotted timeout of %2$d seconds.%n",
+				log.warning(String.format("Process [%1$d] did not stop within the allotted timeout of %2$d seconds%n",
 					pid, TimeUnit.MILLISECONDS.toSeconds(milliseconds)));
 			}
 			catch (Exception ignore) {
@@ -277,7 +280,7 @@ public class ProcessWrapper {
 
 	public int shutdown() {
 		if (isRunning()) {
-			log.info(String.format("Stopping process [%1$d]...%n", safeGetPid()));
+			log.info(String.format("Stopping process [%d]...%n", safeGetPid()));
 			signalStop();
 			waitFor();
 		}
@@ -300,5 +303,4 @@ public class ProcessWrapper {
 			}
 		});
 	}
-
 }

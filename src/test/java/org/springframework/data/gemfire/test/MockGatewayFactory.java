@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.data.gemfire.test.support.AbstractUnitAndIntegrationTestsWithMockSupport;
 
 import com.gemstone.gemfire.cache.util.Gateway;
 import com.gemstone.gemfire.cache.util.GatewayEventListener;
@@ -46,7 +47,7 @@ import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
  * @since 1.5.3
  */
 @SuppressWarnings({ "deprecation", "unused" })
-public class MockGatewayFactory extends AbstractMockerySupport {
+public class MockGatewayFactory extends AbstractUnitAndIntegrationTestsWithMockSupport {
 
 	private Boolean batchConflation = GatewayQueueAttributes.DEFAULT_BATCH_CONFLATION;
 	private Boolean persistence = GatewayQueueAttributes.DEFAULT_ENABLE_PERSISTENCE;

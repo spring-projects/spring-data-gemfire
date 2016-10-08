@@ -14,39 +14,45 @@
  * limitations under the License.
  */
 
-package org.springframework.data.gemfire.test;
+package org.springframework.data.gemfire.test.support;
 
-import org.springframework.data.gemfire.test.support.IdentifierSequence;
-import org.springframework.data.gemfire.test.support.StackTraceUtils;
+import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.util.StringUtils;
 
 /**
- * The AbstractMockery class is an abstract base class supporting the creation and use of mock objects in unit tests.
+ * {@link AbstractUnitAndIntegrationTestsWithMockSupport} is an abstract base class for test classes
+ * having support for the creation and use of mock objects in test cases, but that may also be ran
+ * as integration tests using actual GemFire components (e.g. Regions, etc).
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @since 1.5.3
  */
 @SuppressWarnings("unused")
-public abstract class AbstractMockerySupport {
+public abstract class AbstractUnitAndIntegrationTestsWithMockSupport {
+
+	protected static final String GEMFIRE_TEST_RUNNER_NO_MOCK =
+		System.getProperty(GemfireTestApplicationContextInitializer.GEMFIRE_TEST_RUNNER_DISABLED, "false");
 
 	protected static final String NOT_IMPLEMENTED = "Not Implemented";
 
+	/* (non-Javadoc) */
 	protected boolean isMocking() {
-		String gemfireTestRunnerNoMock = StringUtils.trimWhitespace(System.getProperty(
-			GemfireTestApplicationContextInitializer.GEMFIRE_TEST_RUNNER_DISABLED, "false"));
+		String gemfireTestRunnerNoMock = StringUtils.trimWhitespace(GEMFIRE_TEST_RUNNER_NO_MOCK);
 
 		return !(Boolean.parseBoolean(gemfireTestRunnerNoMock)
 			|| "yes".equalsIgnoreCase(gemfireTestRunnerNoMock)
 			|| "y".equalsIgnoreCase(gemfireTestRunnerNoMock));
 	}
 
+	/* (non-Javadoc) */
 	protected boolean isNotMocking() {
 		return !isMocking();
 	}
 
+	/* (non-Javadoc) */
 	protected Object getMockId() {
 		StackTraceElement element = StackTraceUtils.getTestCaller();
-		return (element != null ? StackTraceUtils.getCallerSimpleName(element): IdentifierSequence.nextId());
+		return (element != null ? StackTraceUtils.getCallerSimpleName(element) : IdentifierSequence.nextId());
 	}
-
 }
