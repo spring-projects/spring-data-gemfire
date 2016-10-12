@@ -3,17 +3,17 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.springframework.data</groupId>
-	<artifactId>spring-data-gemfire</artifactId>
-	<version>1.8.4.RELEASE</version>
-
-	<name>Spring Data Gemfire</name>
-
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
 		<version>1.8.4.RELEASE</version>
 	</parent>
+
+	<groupId>org.springframework.data</groupId>
+	<artifactId>spring-data-gemfire</artifactId>
+	<version>1.8.4.RELEASE-PATCH01</version>
+
+	<name>Spring Data Gemfire</name>
 
 	<properties>
 		<dist.key>SGF</dist.key>
