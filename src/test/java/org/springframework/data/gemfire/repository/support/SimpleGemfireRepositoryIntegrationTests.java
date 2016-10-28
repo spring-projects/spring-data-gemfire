@@ -143,9 +143,9 @@ public class SimpleGemfireRepositoryIntegrationTests {
 		repository.save(Arrays.asList(johnBlum, jonBloom, juanBlume));
 
 		assertThat(template.getRegion().size()).isEqualTo(3);
-		assertThat(template.get(johnBlum.getId())).isEqualTo(johnBlum);
-		assertThat(template.get(jonBloom.getId())).isEqualTo(jonBloom);
-		assertThat(template.get(juanBlume.getId())).isEqualTo(juanBlume);
+		assertThat(template.<Long, Person>get(johnBlum.getId())).isEqualTo(johnBlum);
+		assertThat(template.<Long, Person>get(jonBloom.getId())).isEqualTo(jonBloom);
+		assertThat(template.<Long, Person>get(juanBlume.getId())).isEqualTo(juanBlume);
 	}
 
 	@SuppressWarnings("rawtypes")

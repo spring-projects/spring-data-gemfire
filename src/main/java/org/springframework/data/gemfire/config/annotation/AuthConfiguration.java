@@ -40,6 +40,18 @@ public class AuthConfiguration extends EmbeddedServiceConfigurationSupport {
 
 	public static final String DEFAULT_SECURITY_LOG_LEVEL = "config";
 
+	protected static final String GEMFIRE_SECURITY_PROPERTY_FILE = "gemfireSecurityPropertyFile";
+	protected static final String SECURITY_CLIENT_ACCESSOR = "security-client-accessor";
+	protected static final String SECURITY_CLIENT_ACCESSOR_POST_PROCESSOR = "security-client-accessor-pp";
+	protected static final String SECURITY_CLIENT_AUTH_INIT = "security-client-auth-init";
+	protected static final String SECURITY_CLIENT_AUTHENTICATOR = "security-client-authenticator";
+	protected static final String SECURITY_CLIENT_DIFFIE_HELLMAN_ALGORITHM = "security-client-dhalgo";
+	protected static final String SECURITY_LOG_FILE = "security-log-file";
+	protected static final String SECURITY_LOG_LEVEL = "security-log-level";
+	protected static final String SECURITY_PEER_AUTH_INIT = "security-peer-auth-init";
+	protected static final String SECURITY_PEER_AUTHENTICATOR = "security-peer-authenticator";
+	protected static final String SECURITY_PEER_VERIFY_MEMBER_TIMEOUT = "security-peer-verifymember-timeout";
+
 	/* (non-Javadoc) */
 	@Override
 	protected Class getAnnotationType() {
@@ -51,32 +63,32 @@ public class AuthConfiguration extends EmbeddedServiceConfigurationSupport {
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
-		gemfireProperties.setProperty("gemfireSecurityPropertyFile", annotationAttributes.get("securityPropertiesFile"));
+		gemfireProperties.setProperty(GEMFIRE_SECURITY_PROPERTY_FILE, annotationAttributes.get("securityPropertiesFile"));
 
-		gemfireProperties.setProperty("security-client-accessor", annotationAttributes.get("clientAccessor"));
+		gemfireProperties.setProperty(SECURITY_CLIENT_ACCESSOR, annotationAttributes.get("clientAccessor"));
 
-		gemfireProperties.setProperty("security-client-accessor-pp",
+		gemfireProperties.setProperty(SECURITY_CLIENT_ACCESSOR_POST_PROCESSOR,
 			annotationAttributes.get("clientAccessPostOperation"));
 
-		gemfireProperties.setProperty("security-client-auth-init",
+		gemfireProperties.setProperty(SECURITY_CLIENT_AUTH_INIT,
 			annotationAttributes.get("clientAuthenticationInitializer"));
 
-		gemfireProperties.setProperty("security-client-authenticator", annotationAttributes.get("clientAuthenticator"));
+		gemfireProperties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, annotationAttributes.get("clientAuthenticator"));
 
-		gemfireProperties.setProperty("security-client-dhalgo",
+		gemfireProperties.setProperty(SECURITY_CLIENT_DIFFIE_HELLMAN_ALGORITHM,
 			annotationAttributes.get("clientDiffieHellmanAlgorithm"));
 
-		gemfireProperties.setProperty("security-peer-auth-init",
+		gemfireProperties.setProperty(SECURITY_PEER_AUTH_INIT,
 			annotationAttributes.get("peerAuthenticationInitializer"));
 
-		gemfireProperties.setProperty("security-peer-authenticator", annotationAttributes.get("peerAuthenticator"));
+		gemfireProperties.setProperty(SECURITY_PEER_AUTHENTICATOR, annotationAttributes.get("peerAuthenticator"));
 
-		gemfireProperties.setPropertyIfNotDefault("security-peer-verifymember-timeout",
+		gemfireProperties.setPropertyIfNotDefault(SECURITY_PEER_VERIFY_MEMBER_TIMEOUT,
 			annotationAttributes.get("peerVerifyMemberTimeout"), DEFAULT_PEER_VERIFY_MEMBER_TIMEOUT);
 
-		gemfireProperties.setProperty("security-log-file", annotationAttributes.get("securityLogFile"));
+		gemfireProperties.setProperty(SECURITY_LOG_FILE, annotationAttributes.get("securityLogFile"));
 
-		gemfireProperties.setPropertyIfNotDefault("security-log-level",
+		gemfireProperties.setPropertyIfNotDefault(SECURITY_LOG_LEVEL,
 			annotationAttributes.get("securityLogLevel"), DEFAULT_SECURITY_LOG_LEVEL);
 
 		return gemfireProperties.build();

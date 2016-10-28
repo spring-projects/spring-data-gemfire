@@ -205,7 +205,7 @@ public class GemfireTemplateIntegrationTests {
 	public void get() {
 		String key = getKey(getUser("imaPigg"));
 
-		assertThat(usersTemplate.get(key)).isEqualTo(users.get(key));
+		assertThat(usersTemplate.<Object, Object>get(key)).isEqualTo(users.get(key));
 		assertNullEquals(users.get("mrT"), usersTemplate.get("mrT"));
 	}
 
@@ -233,11 +233,11 @@ public class GemfireTemplateIntegrationTests {
 		User mandyHandy = users.get(getKey(getUser("mandyHandy")));
 
 		assertThat(mandyHandy).isNotNull();
-		assertThat(usersTemplate.remove(getKey(mandyHandy))).isEqualTo(mandyHandy);
+		assertThat(usersTemplate.<Object, Object>remove(getKey(mandyHandy))).isEqualTo(mandyHandy);
 		assertThat(users.containsKey(getKey(mandyHandy))).isFalse();
 		assertThat(users.containsValue(mandyHandy)).isFalse();
 		assertThat(users.containsKey("loisGriffon")).isFalse();
-		assertThat(usersTemplate.remove("loisGriffon")).isNull();
+		assertThat(usersTemplate.<Object, Object>remove("loisGriffon")).isNull();
 		assertThat(users.containsKey("loisGriffon")).isFalse();
 	}
 

@@ -32,6 +32,7 @@ public abstract class ArrayUtils {
 	 * @param elements variable list of arguments to return as an array.
 	 * @return an arry for the given varargs {@code elements}.
 	 */
+	@SafeVarargs
 	public static <T> T[] asArray(T... elements) {
 		return elements;
 	}
@@ -45,7 +46,7 @@ public abstract class ArrayUtils {
 	 * @return the first element in the array or {@literal null} if the array is null or empty.
 	 * @see #getFirst(Object[], Object)
 	 */
-	public static <T> T getFirst(T... array) {
+	public static <T> T getFirst(T[] array) {
 		return getFirst(array, null);
 	}
 

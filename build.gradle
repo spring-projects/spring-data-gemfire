@@ -32,8 +32,8 @@ description = 'Spring Data Geode'
 group = 'org.springframework.data'
 archivesBaseName = project.name
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 sourceSets {
     main {
@@ -115,6 +115,7 @@ dependencies {
     // Java & 3rd Party Dependencies
     optional "javax.enterprise:cdi-api:$cdiVersion"
     compile "org.aspectj:aspectjweaver:$aspectjVersion"
+    optional "org.apache.shiro:shiro-spring:$shiroVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 

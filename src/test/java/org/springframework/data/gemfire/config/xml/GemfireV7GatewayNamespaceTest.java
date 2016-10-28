@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.config.xml;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -114,11 +115,11 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingSpringApplicationCo
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
-		assertEquals(2, TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean));
-		assertEquals(10, TestUtils.readField("alertThreshold", gatewaySenderFactoryBean));
+		assertThat((Object) TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean)).isEqualTo(2);
+		assertThat((Object) TestUtils.readField("alertThreshold", gatewaySenderFactoryBean)).isEqualTo(10);
 		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
-		assertEquals(11, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
-		assertEquals(12, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
+		assertThat((Object) TestUtils.readField("batchSize", gatewaySenderFactoryBean)).isEqualTo(11);
+		assertThat((Object) TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean)).isEqualTo(12);
 		assertEquals(false, TestUtils.readField("diskSynchronous", gatewaySenderFactoryBean));
 		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
 
@@ -190,10 +191,10 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingSpringApplicationCo
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
-		assertEquals(3, TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean));
+		assertThat((Integer) TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean)).isEqualTo(3);
 		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
-		assertEquals(50, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
-		assertEquals(10, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
+		assertThat((Object) TestUtils.readField("batchSize", gatewaySenderFactoryBean)).isEqualTo(50);
+		assertThat((Object) TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean)).isEqualTo(10);
 		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
 
 		List<GatewayEventFilter> eventFilters = TestUtils.readField("eventFilters", gatewaySenderFactoryBean);

@@ -89,7 +89,8 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	 * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory#getBeanNamesForType(Class)
 	 */
 	private void postProcessPdxDiskStoreDependencies(ConfigurableListableBeanFactory beanFactory,
-			final Class<?>... beanTypes) {
+			Class<?>... beanTypes) {
+
 		for (Class<?> beanType : beanTypes) {
 			for (String beanName : beanFactory.getBeanNamesForType(beanType)) {
 				if (!beanName.equalsIgnoreCase(getPdxDiskStoreName())) {

@@ -16,13 +16,9 @@
 
 package org.springframework.data.gemfire.function.execution;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.isA;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isA;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -95,8 +91,8 @@ public class AbstractFunctionExecutionTest {
 		Iterable<Object> actualResults = functionExecution.setFunction(mockFunction)
 			.setArgs(args).setTimeout(500).execute();
 
-		assertThat(actualResults, is(notNullValue()));
-		assertThat(actualResults, is(equalTo((Iterable<Object>) results)));
+		assertThat(actualResults).isNotNull();
+		assertThat(actualResults).isEqualTo((Iterable<Object>) results);
 
 		verify(mockExecution, times(1)).withArgs(eq(args));
 		verify(mockExecution, never()).withCollector(any(ResultCollector.class));
@@ -122,7 +118,7 @@ public class AbstractFunctionExecutionTest {
 			}
 		};
 
-		assertThat(String.valueOf(functionExecution.executeAndExtract()), is(equalTo("test")));
+		assertThat(functionExecution.<String>executeAndExtract()).isEqualTo("test");
 	}
 
 	@Test
@@ -140,7 +136,7 @@ public class AbstractFunctionExecutionTest {
 			}
 		};
 
-		assertThat(String.valueOf(functionExecution.executeAndExtract()), is(equalTo("one")));
+		assertThat(functionExecution.<String>executeAndExtract()).isEqualTo("one");
 	}
 
 	@Test
@@ -156,7 +152,7 @@ public class AbstractFunctionExecutionTest {
 			}
 		};
 
-		assertThat(functionExecution.executeAndExtract(), is(nullValue()));
+		assertThat((Object) functionExecution.executeAndExtract()).isNull();
 	}
 
 	@Test
@@ -172,7 +168,7 @@ public class AbstractFunctionExecutionTest {
 			}
 		};
 
-		assertThat(functionExecution.executeAndExtract(), is(nullValue()));
+		assertThat((Object) functionExecution.executeAndExtract()).isNull();
 	}
 
 	@Test
@@ -194,5 +190,4 @@ public class AbstractFunctionExecutionTest {
 
 		functionExecution.setFunctionId("TestFunction").executeAndExtract();
 	}
-
 }

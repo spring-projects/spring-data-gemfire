@@ -60,13 +60,13 @@ public class ArrayUtilsUnitTests {
 
 	@Test
 	public void getFirstWithNonNullArray() {
-		assertThat(ArrayUtils.getFirst(1, 2, 3)).isEqualTo(1);
+		assertThat(ArrayUtils.getFirst(ArrayUtils.asArray(1, 2, 3))).isEqualTo(1);
 	}
 
 	@Test
 	public void getFirstWithNullOrEmptyArrayAndNoDefaultReturnsNull() {
-		assertThat(ArrayUtils.getFirst((Object[]) null)).isNull();
-		assertThat(ArrayUtils.getFirst()).isNull();
+		assertThat((Object) ArrayUtils.getFirst(null)).isNull();
+		assertThat((Object) ArrayUtils.getFirst(new Object[0])).isNull();
 	}
 
 	@Test

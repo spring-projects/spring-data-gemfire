@@ -201,8 +201,8 @@ public class AbstractCacheConfigurationUnitTests {
 		MappingPdxSerializer pdxSerializer = cacheConfiguration.newPdxSerializer();
 
 		assertThat(pdxSerializer).isNotNull();
-		assertThat(invokeMethod(pdxSerializer, "getConversionService")).isEqualTo(mockConversionService);
-		assertThat(invokeMethod(pdxSerializer, "getMappingContext")).isEqualTo(mockMappingContext);
+		assertThat((Object) invokeMethod(pdxSerializer, "getConversionService")).isEqualTo(mockConversionService);
+		assertThat((Object) invokeMethod(pdxSerializer, "getMappingContext")).isEqualTo(mockMappingContext);
 
 		verify(mockBeanFactory, times(1)).getConversionService();
 		verifyZeroInteractions(mockConversionService);
@@ -216,8 +216,8 @@ public class AbstractCacheConfigurationUnitTests {
 		MappingPdxSerializer pdxSerializer = cacheConfiguration.newPdxSerializer();
 
 		assertThat(pdxSerializer).isNotNull();
-		assertThat(invokeMethod(pdxSerializer, "getConversionService")).isInstanceOf(ConversionService.class);
-		assertThat(invokeMethod(pdxSerializer, "getMappingContext")).isInstanceOf(GemfireMappingContext.class);
+		assertThat((Object) invokeMethod(pdxSerializer, "getConversionService")).isInstanceOf(ConversionService.class);
+		assertThat((Object) invokeMethod(pdxSerializer, "getMappingContext")).isInstanceOf(GemfireMappingContext.class);
 	}
 
 	protected static class TestCacheConfiguration extends AbstractCacheConfiguration {
