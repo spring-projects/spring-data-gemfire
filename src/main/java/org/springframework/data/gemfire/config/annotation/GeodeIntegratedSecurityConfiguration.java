@@ -20,7 +20,6 @@ package org.springframework.data.gemfire.config.annotation;
 import java.util.Map;
 import java.util.Properties;
 
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
@@ -33,12 +32,13 @@ import org.springframework.data.gemfire.util.PropertiesBuilder;
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
-public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigurationSupport
-		implements BeanFactoryAware {
+public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigurationSupport {
 
 	protected static final String SECURITY_CLIENT_AUTH_INIT = "security-client-auth-init";
-	protected static final String SECURITY_PEER_AUTH_INIT = "security-peer-auth-init";
+	protected static final String SECURITY_CLIENT_AUTHENTICATOR = "security-client-authenticator";
 	protected static final String SECURITY_MANAGER = "security-manager";
+	protected static final String SECURITY_PEER_AUTH_INIT = "security-peer-auth-init";
+	protected static final String SECURITY_PEER_AUTHENTICATOR = "security-peer-authenticator";
 	protected static final String SECURITY_POST_PROCESSOR = "security-post-processor";
 	protected static final String SECURITY_SHIRO_INIT = "security-shiro-init";
 
@@ -77,8 +77,7 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 		gemfireProperties.setProperty(SECURITY_CLIENT_AUTH_INIT,
 			annotationAttributes.get("clientAuthenticationInitializer"));
 
-		gemfireProperties.setProperty(SECURITY_PEER_AUTH_INIT,
-			annotationAttributes.get("peerAuthenticationInitializer"));
+		gemfireProperties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, annotationAttributes.get("clientAuthenticator"));
 
 		if (isShiroSecurityNotConfigured()) {
 			gemfireProperties.setPropertyIfNotDefault(SECURITY_MANAGER,
@@ -88,6 +87,11 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 
 			gemfireProperties.setProperty(SECURITY_SHIRO_INIT, annotationAttributes.get("shiroIniResourcePath"));
 		}
+
+		gemfireProperties.setProperty(SECURITY_PEER_AUTH_INIT,
+			annotationAttributes.get("peerAuthenticationInitializer"));
+
+		gemfireProperties.setProperty(SECURITY_PEER_AUTHENTICATOR, annotationAttributes.get("peerAuthenticator"));
 
 		gemfireProperties.setPropertyIfNotDefault(SECURITY_POST_PROCESSOR,
 			annotationAttributes.get("securityPostProcessorClass"), Void.class);

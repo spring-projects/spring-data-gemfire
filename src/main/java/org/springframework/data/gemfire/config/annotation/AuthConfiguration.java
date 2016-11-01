@@ -52,13 +52,17 @@ public class AuthConfiguration extends EmbeddedServiceConfigurationSupport {
 	protected static final String SECURITY_PEER_AUTHENTICATOR = "security-peer-authenticator";
 	protected static final String SECURITY_PEER_VERIFY_MEMBER_TIMEOUT = "security-peer-verifymember-timeout";
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableAuth.class;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
