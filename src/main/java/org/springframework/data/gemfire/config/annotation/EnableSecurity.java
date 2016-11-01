@@ -25,7 +25,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.apache.geode.security.AuthInitialize;
-import org.apache.geode.security.Authenticator;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -36,7 +35,6 @@ import org.springframework.context.annotation.Import;
  * @author John Blum
  * @see GeodeIntegratedSecurityConfiguration
  * @see org.apache.geode.security.AuthInitialize
- * @see org.apache.geode.security.Authenticator
  * @see org.apache.geode.security.SecurityManager
  * @see org.apache.geode.security.PostProcessor
  * @see org.springframework.context.annotation.Import
@@ -49,7 +47,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import({ ApacheShiroSecurityConfiguration.class, GeodeIntegratedSecurityConfiguration.class })
-@SuppressWarnings({ "deprecation", "unused" })
+@SuppressWarnings({ "unused" })
 public @interface EnableSecurity {
 
 	/**
@@ -61,28 +59,12 @@ public @interface EnableSecurity {
 	String clientAuthenticationInitializer() default "";
 
 	/**
-	 * Used for authentication. Static creation method returning an {@link Authenticator} object,
-	 * which is used by a server to verify the credentials of the connecting client.
-	 *
-	 * Defaults to unset.
-	 */
-	String clientAuthenticator() default "";
-
-	/**
 	 * Used with authentication. Static creation method returning an {@link AuthInitialize} object, which obtains
 	 * credentials for peers in a distributed system.
 	 *
 	 * Defaults to unset.
 	 */
 	String peerAuthenticationInitializer() default "";
-
-	/**
-	 * Used with authentication. Static creation method returning an {@link Authenticator} object, which is used
-	 * by a peer to verify the credentials of the connecting peer.
-	 *
-	 * Defaults to unset.
-	 */
-	String peerAuthenticator() default "";
 
 	/**
 	 * Specifies the application {@link Class} type implementing the Apache Geode
