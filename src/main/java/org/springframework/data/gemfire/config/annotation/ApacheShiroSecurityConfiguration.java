@@ -18,10 +18,10 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.annotation.PostConstruct;
+import java.util.Map;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.security.SecurityService;
@@ -29,15 +29,17 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ConfigurationCondition;
+import org.springframework.core.OrderComparator;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
@@ -52,43 +54,62 @@ import org.springframework.util.ReflectionUtils;
  * @author John Blum
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.internal.security.SecurityService
- * @see org.apache.shiro.mgt.SecurityManager
+ * @see org.apache.shiro.mgt.DefaultSecurityManager
+ * @see org.apache.shiro.realm.Realm
  * @see org.apache.shiro.spring.LifecycleBeanPostProcessor
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.ListableBeanFactory
+ * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Condition
  * @see org.springframework.context.annotation.Conditional
- * @since 1.0.0
+ * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.data.gemfire.config.annotation.ApacheShiroSecurityConfiguration.ApacheShiroPresentCondition
+ * @since 1.9.0
  */
 @Configuration
 @Conditional(ApacheShiroSecurityConfiguration.ApacheShiroPresentCondition.class)
 @SuppressWarnings("unused")
-public class ApacheShiroSecurityConfiguration {
+public class ApacheShiroSecurityConfiguration implements BeanFactoryAware {
 
-	@Autowired(required = false)
-	private List<Realm> realms = Collections.emptyList();
-
-	@Autowired(required = false)
-	private org.apache.shiro.mgt.SecurityManager shiroSecurityManager;
+	private ListableBeanFactory beanFactory;
 
 	/**
-	 * {@link Bean} definition to configure and register an Apache Shiro, Spring {@link LifecycleBeanPostProcessor}
-	 * used to automatically call lifecycle callback methods on Shiro security components during Spring container
-	 * initialization and destruction phases.
+	 * @inheritDoc
+	 */
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
+		this.beanFactory = (ListableBeanFactory) beanFactory;
+	}
+
+	/**
+	 * Returns a reference to the Spring {@link BeanFactory}.
 	 *
-	 * The registration of this {@link Bean} definition is dependent upon whether the user is using Apache Shiro
-	 * to secure Apache Geode, which is determined by the presence of Apache Shiro {@link Realm Realms}
-	 * declared in the Spring {@link org.springframework.context.ApplicationContext}.
+	 * @return a reference to the Spring {@link BeanFactory}.
+	 * @throws IllegalStateException if the Spring {@link BeanFactory} was not properly initialized.
+	 * @see org.springframework.beans.factory.BeanFactory
+	 */
+	protected ListableBeanFactory getBeanFactory() {
+		org.apache.shiro.util.Assert.state(this.beanFactory != null, "BeanFactory was not properly initialized");
+		return this.beanFactory;
+	}
+
+	/**
+	 * {@link Bean} definition to define, configure and register an Apache Shiro Spring
+	 * {@link LifecycleBeanPostProcessor} to automatically call lifecycle callback methods
+	 * on Shiro security components during Spring container initialization and destruction phases.
 	 *
-	 * @return an Apache Shiro, Spring {@link LifecycleBeanPostProcessor} bean.
+	 * @return an instance of the Apache Shiro Spring {@link LifecycleBeanPostProcessor} to handle the lifecycle
+	 * of Apache Shiro security framework components.
 	 * @see org.apache.shiro.spring.LifecycleBeanPostProcessor
 	 */
 	@Bean
-	//@Conditional(ShiroRealmsConfigured.class)
 	public BeanPostProcessor shiroLifecycleBeanPostProcessor() {
 		return new LifecycleBeanPostProcessor();
 	}
 
 	/**
-	 * {@link Bean} definition used to configure and register an Apache Shiro
+	 * {@link Bean} definition to define, configure and register an Apache Shiro
 	 * {@link org.apache.shiro.mgt.SecurityManager} implementation to secure Apache Geode.
 	 *
 	 * The registration of this {@link Bean} definition is dependent upon whether the user is using Apache Shiro
@@ -96,38 +117,63 @@ public class ApacheShiroSecurityConfiguration {
 	 * declared in the Spring {@link org.springframework.context.ApplicationContext}.
 	 *
 	 * This {@link Bean} definition declares a dependency on the Apache Geode {@link GemFireCache} instance
-	 * in order to ensure the Geode cache is created and initialized first, thus evaluating any security configuration
-	 * logic internally in Apache Geode that may potentially overwrite the Spring configuration.
+	 * in order to ensure the Geode cache is created and initialized first.  This ensures that any internal Geode
+	 * security configuration logic is evaluated and processed before SDG attempts to configure Apache Shiro
+	 * as Apache Geode's security provider.
 	 *
+	 * Additionally, this {@link Bean} definition will register the Apache Shiro
+	 * {@link org.apache.geode.security.SecurityManager} with the Apache Shiro security framework
+	 *
+	 * Finally, this method proceeds to enable Apache Geode security.
+
 	 * @return an Apache Shiro {@link org.apache.shiro.mgt.SecurityManager} implementation used to secure Apache Geode.
+	 * @throws IllegalStateException if an Apache Shiro {@link org.apache.shiro.mgt.SecurityManager} was registered
+	 * with the Apache Shiro security framework but Apache Geode security could not be enabled.
 	 * @see org.apache.shiro.mgt.SecurityManager
+	 * @see #registerSecurityManager(org.apache.shiro.mgt.SecurityManager)
+	 * @see #enableApacheGeodeSecurity()
 	 * @see #isRealmsPresent()
 	 * @see #getRealms()
 	 */
 	@Bean
-	//@Conditional(ShiroRealmsConfigured.class)
 	public org.apache.shiro.mgt.SecurityManager shiroSecurityManager(GemFireCache gemfireCache) {
-		return (isRealmsPresent() ? new DefaultSecurityManager(getRealms()) : null);
-	}
+		org.apache.shiro.mgt.SecurityManager shiroSecurityManager = null;
 
-	/**
-	 * Post processes the Apache Shiro security components by registering the Apach Shiro
-	 * {@link org.apache.shiro.mgt.SecurityManager} if present with the Apache Shiro security framework
-	 * and proceeds to enable Apache Geode security.
-	 *
-	 * @throws IllegalStateException if an Apache Shiro {@link org.apache.shiro.mgt.SecurityManager} is present
-	 * and Apache Geode security could not be enabled.
-	 * @see #registerSecurityManager(org.apache.shiro.mgt.SecurityManager)
-	 * @see #enableApacheGeodeSecurity()
-	 */
-	@PostConstruct
-	public void postProcess() {
-		if (this.shiroSecurityManager != null) {
-			registerSecurityManager(this.shiroSecurityManager);
+		List<Realm> realms = resolveRealms();
+
+		if (!realms.isEmpty()) {
+			shiroSecurityManager = registerSecurityManager(new DefaultSecurityManager(realms));
 
 			if (!enableApacheGeodeSecurity()) {
 				throw new IllegalStateException("Failed to enable security services in Apache Geode");
 			}
+		}
+
+		return shiroSecurityManager;
+	}
+
+	/**
+	 * Resolves all the Apache Shiro {@link Realm Realms} declared and configured as Spring managed beans
+	 * in the Spring {@link org.springframework.context.ApplicationContext}.
+	 *
+	 * This method will order the Realms according to priority order to ensure that the Apache Shiro Realms
+	 * are applied in the correct sequence, as declared/configured.
+	 *
+	 * @return a {@link List} of all Apache Shiro {@link Realm Realms} declared and configured as Spring managed beans
+	 * in the Spring {@link org.springframework.context.ApplicationContext}.
+	 * @see org.springframework.beans.factory.ListableBeanFactory#getBeansOfType(Class, boolean, boolean)
+	 * @see org.springframework.core.OrderComparator
+	 * @see org.apache.shiro.realm.Realm
+	 */
+	protected List<Realm> resolveRealms() {
+		try {
+			Map<String, Realm> realmBeans = getBeanFactory().getBeansOfType(Realm.class, false, true);
+			List<Realm> realms = new ArrayList<>(CollectionUtils.nullSafeMap(realmBeans).values());
+			Collections.sort(realms, OrderComparator.INSTANCE);
+			return realms;
+		}
+		catch (Exception ignore) {
+			return Collections.emptyList();
 		}
 	}
 
@@ -178,29 +224,6 @@ public class ApacheShiroSecurityConfiguration {
 	}
 
 	/**
-	 * Returns the {@link List} of Apache Shiro {@link Realm Realms} configured in
-	 * this Spring {@link org.springframework.context.ApplicationContext}.
-	 *
-	 * @return a {@link List} of configured/declared Apache Shiro {@link Realm Realms}.
-	 * @see org.apache.shiro.realm.Realm
-	 */
-	protected List<Realm> getRealms() {
-		return this.realms;
-	}
-
-	/**
-	 * Determines whether any Apache Shiro {@link Realm Realms} were configured in
-	 * this Spring {@link org.springframework.context.ApplicationContext}.
-	 *
-	 * @return a boolean value indicating whether any Apache Shiro {@link Realm Realms} were declared and configured
-	 * in this Spring {@link org.springframework.context.ApplicationContext}.
-	 * @see #getRealms()
-	 */
-	protected boolean isRealmsPresent() {
-		return !CollectionUtils.isEmpty(getRealms());
-	}
-
-	/**
 	 * A Spring {@link Condition} to determine whether the user has included (declared) the 'shiro-spring' dependency
 	 * on their application's classpath, which is necessary for configuring Apache Shiro to secure Apache Geode
 	 * in a Spring context.
@@ -209,7 +232,7 @@ public class ApacheShiroSecurityConfiguration {
 	 */
 	public static class ApacheShiroPresentCondition implements Condition {
 
-		protected static final String APACHE_SHIRO_LIFECYCLE_BEAN_POST_PROCESOR_CLASS_NAME =
+		protected static final String APACHE_SHIRO_LIFECYCLE_BEAN_POST_PROCESSOR_CLASS_NAME =
 			"org.apache.shiro.spring.LifecycleBeanPostProcessor";
 
 		/**
@@ -217,39 +240,8 @@ public class ApacheShiroSecurityConfiguration {
 		 */
 		@Override
 		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-			return ClassUtils.isPresent(APACHE_SHIRO_LIFECYCLE_BEAN_POST_PROCESOR_CLASS_NAME,
+			return ClassUtils.isPresent(APACHE_SHIRO_LIFECYCLE_BEAN_POST_PROCESSOR_CLASS_NAME,
 				context.getClassLoader());
-		}
-	}
-
-	/**
-	 * A Spring {@link Condition} implementation that determines whether the user declared and configured
-	 * any Apache Shiro {@link Realm Realms}, which are necessary to configure the Apache Shiro security framework
-	 * with security meta-data used to secure Apache Geode.
-	 *
-	 * @see org.springframework.context.annotation.ConfigurationCondition
-	 */
-	public static class ShiroRealmsConfigured implements ConfigurationCondition {
-
-		/**
-		 * @inheritDoc
-		 */
-		@Override
-		public ConfigurationPhase getConfigurationPhase() {
-			return ConfigurationPhase.REGISTER_BEAN;
-		}
-
-		/**
-		 * @inheritDoc
-		 */
-		@Override
-		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-			ListableBeanFactory beanFactory = context.getBeanFactory();
-
-			ApacheShiroSecurityConfiguration securityConfiguration =
-				beanFactory.getBean(ApacheShiroSecurityConfiguration.class);
-
-			return (securityConfiguration.isRealmsPresent() || !beanFactory.getBeansOfType(Realm.class).isEmpty());
 		}
 	}
 }

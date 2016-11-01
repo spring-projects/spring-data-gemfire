@@ -20,6 +20,7 @@ package org.springframework.data.gemfire.config.annotation;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
@@ -32,7 +33,8 @@ import org.springframework.data.gemfire.util.PropertiesBuilder;
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
-public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigurationSupport {
+public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigurationSupport
+		implements BeanFactoryAware {
 
 	protected static final String SECURITY_CLIENT_AUTH_INIT = "security-client-auth-init";
 	protected static final String SECURITY_PEER_AUTH_INIT = "security-peer-auth-init";
@@ -50,7 +52,14 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 
 	/* (non-Javadoc) */
 	protected boolean isShiroSecurityConfigured() {
-		return false;
+		try {
+			// NOTE experimental...
+			//return resolveBean(ApacheShiroSecurityConfiguration.class).isRealmsPresent();
+			return false;
+		}
+		catch (Exception ignore) {
+			return false;
+		}
 	}
 
 	/* (non-Javadoc) */
