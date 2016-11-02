@@ -4,6 +4,13 @@ http://projects.spring.io/spring-data-gemfire/
 ==============================================
 
 
+Changes in version 1.0.0.APACHE-GEODE-INCUBATING-RELEASE (2016-11-02)
+---------------------------------------------------------------------
+* SGF-558 - Rename Geode package imports from com.gemstone.gemfire to org.apache.geode.
+* SGF-559 - Configure Geode Integrated Security with annotations.
+* SGF-560 - Release 1.0.0.APACHE-GEODE-INCUBATING-RELEASE.
+
+
 Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M3 (2016-10-05)
 ----------------------------------------------------------------
 * SGF-267 - Backwards Compatibility Testing between Clients and Servers as well as between GemFire Peer Members
