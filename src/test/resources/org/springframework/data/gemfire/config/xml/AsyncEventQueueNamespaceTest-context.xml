@@ -41,7 +41,7 @@
 						   parallel="false"
 						   persistent="true">
 		<gfe:async-event-listener>
-			<bean class="org.springframework.data.gemfire.config.AsyncEventQueueNamespaceTest.TestAsyncEventListener"
+			<bean class="org.springframework.data.gemfire.config.xml.AsyncEventQueueNamespaceTest.TestAsyncEventListener"
 				  c:name="TestAeqListener"/>
 		</gfe:async-event-listener>
 	</gfe:async-event-queue>

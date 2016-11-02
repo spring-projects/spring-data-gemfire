@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.springframework.util.Assert;
 
@@ -53,6 +54,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @param elements array of objects to add to the {@link Set}.
 	 * @return an unmodifiable {@link Set} containing the elements from the given object array.
 	 */
+	@SafeVarargs
 	public static <T> Set<T> asSet(T... elements) {
 		Set<T> set = new HashSet<T>(elements.length);
 		Collections.addAll(set, elements);
@@ -218,5 +220,24 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 		}
 
 		return result;
+	}
+
+	/* (non-Javadoc) */
+	public static String toString(Map<?, ?> map) {
+		StringBuilder builder = new StringBuilder("{\n");
+
+		int count = 0;
+
+		for (Map.Entry<?, ?> entry : new TreeMap<>(map).entrySet()) {
+			builder.append(++count > 1 ? ",\n" : "");
+			builder.append("\t");
+			builder.append(entry.getKey());
+			builder.append(" = ");
+			builder.append(entry.getValue());
+		}
+
+		builder.append("\n}");
+
+		return builder.toString();
 	}
 }

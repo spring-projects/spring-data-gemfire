@@ -1,3 +1,5 @@
+import java.util.stream.Collectors
+
 buildscript {
     repositories {
         maven { url 'https://repo.spring.io/plugins-release' }
@@ -79,6 +81,12 @@ tasks.withType(Test).all {
     systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
     systemProperties['product.name'] = 'Apache Geode'
     systemProperties['spring.profiles.active'] = 'apache-geode'
+    System.getProperties().findAll({ entry ->
+        entry.key.startsWith("gemfire") || entry.key.startsWith("geode") || entry.key.startsWith("sdg")
+    }).each { entry ->
+        systemProperties["$entry.key"] = entry.value
+    }
+    //systemProperties.each { entry -> System.out.println(entry.key + '=' + entry.value)}
 }
 
 repositories {

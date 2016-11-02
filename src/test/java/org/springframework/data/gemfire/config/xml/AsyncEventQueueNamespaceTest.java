@@ -15,7 +15,7 @@
  *
  */
 
-package org.springframework.data.gemfire.config;
+package org.springframework.data.gemfire.config.xml;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;

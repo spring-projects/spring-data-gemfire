@@ -52,7 +52,11 @@ public abstract class FileSystemUtils extends FileUtils {
 			}
 		}
 
-		return ((path == null || path.delete()) && success);
+		return ((!exists(path) || path.delete()) && success);
+	}
+
+	public static boolean exists(File path) {
+		return (path != null && path.exists());
 	}
 
 	// returns sub-directory just below working directory
@@ -124,5 +128,4 @@ public abstract class FileSystemUtils extends FileUtils {
 			return (pathname != null && pathname.isDirectory());
 		}
 	}
-
 }
