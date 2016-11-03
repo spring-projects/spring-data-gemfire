@@ -13,7 +13,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-geode</artifactId>
-	<version>1.0.0.APACHE-GEODE-INCUBATING-SNAPSHOT</version>
+	<version>1.0.0.INCUBATING-RELEASE</version>
 
 	<name>Spring Data Geode</name>
 
