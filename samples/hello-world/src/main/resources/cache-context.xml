@@ -3,10 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xmlns:gfe="http://www.springframework.org/schema/geode"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
-		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+		http://www.springframework.org/schema/geode http://www.springframework.org/schema/geode/spring-geode.xsd">
 
 	<!-- GemFire cache bean -->
 	<gfe:cache properties-ref="props" />
@@ -14,7 +14,7 @@
 
 	<!-- GemFire transaction manager -->
 	<gfe:transaction-manager />
-	
+
 	<!-- hello world region -->
 	<!-- since no name is given, the region will be named after the bean -->
 	<gfe:replicated-region id="myWorld">
@@ -22,7 +22,7 @@
 			<bean class="org.springframework.data.gemfire.samples.helloworld.CacheLogger"/>
 		</gfe:cache-listener>
 	</gfe:replicated-region>
-	
+
 	<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="myWorld"/>
-	
+
 </beans>

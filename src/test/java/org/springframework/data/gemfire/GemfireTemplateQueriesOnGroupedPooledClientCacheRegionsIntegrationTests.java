@@ -183,7 +183,8 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 			serverOnePool.setReadTimeout(Long.valueOf(TimeUnit.SECONDS.toMillis(20)).intValue());
 			serverOnePool.setRetryAttempts(1);
 			serverOnePool.setServerGroup("serverOne");
-			serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
+			//serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
+			serverOnePool.setServers(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 41414)));
 
 			return serverOnePool;
 		}
@@ -197,7 +198,8 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 			serverOnePool.setReadTimeout(Long.valueOf(TimeUnit.SECONDS.toMillis(20)).intValue());
 			serverOnePool.setRetryAttempts(1);
 			serverOnePool.setServerGroup("serverTwo");
-			serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
+			//serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
+			serverOnePool.setServers(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 42424)));
 
 			return serverOnePool;
 		}
@@ -206,7 +208,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		ClientRegionFactoryBean<String, Cat> catsRegion(GemFireCache gemfireCache,
 				@Qualifier("ServerOnePool") Pool serverOnePool) {
 
-			ClientRegionFactoryBean<String, Cat> catsRegion = new ClientRegionFactoryBean<String, Cat>();
+			ClientRegionFactoryBean<String, Cat> catsRegion = new ClientRegionFactoryBean<>();
 
 			catsRegion.setCache(gemfireCache);
 			catsRegion.setClose(false);
@@ -220,7 +222,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		ClientRegionFactoryBean<String, Cat> dogsRegion(GemFireCache gemfireCache,
 				@Qualifier("ServerTwoPool") Pool serverTwoPool) {
 
-			ClientRegionFactoryBean<String, Cat> dogsRegion = new ClientRegionFactoryBean<String, Cat>();
+			ClientRegionFactoryBean<String, Cat> dogsRegion = new ClientRegionFactoryBean<>();
 
 			dogsRegion.setCache(gemfireCache);
 			dogsRegion.setClose(false);
@@ -254,9 +256,10 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 				.setProperty("name", applicationName())
 				.setProperty("mcast-port", "0")
 				.setProperty("log-level", logLevel())
-				.setProperty("locators", "localhost[11235]")
+				//.setProperty("locators", "localhost[11235]")
+				//.setProperty("enable-cluster-configuration", enableClusterConfiguration())
 				.setProperty("groups", groups())
-				.setProperty("start-locator", startLocator())
+				//.setProperty("start-locator", startLocator())
 				.build();
 		}
 
@@ -265,6 +268,10 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		}
 
 		abstract String groups();
+
+		boolean enableClusterConfiguration() {
+			return false;
+		}
 
 		String logLevel() {
 			return System.getProperty("gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
@@ -306,6 +313,11 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 
 		@Resource(name = "Cats")
 		private org.apache.geode.cache.Region<String, Cat> cats;
+
+		@Override
+		boolean enableClusterConfiguration() {
+			return true;
+		}
 
 		Cat save(Cat cat) {
 			cats.put(cat.getName(), cat);
