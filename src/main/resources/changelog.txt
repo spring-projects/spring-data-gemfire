@@ -3,6 +3,13 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.8.5.RELEASE (2016-11-03)
+---------------------------------------------
+* SGF-555 - Repository queries on client Regions associated with a Pool configured for a specific server group can lead to a RegionNotFoundException.
+* SGF-539 - Change GemfireCache.evict(key) to call Region.remove(key).
+* SGF-537 - Release 1.8.5 (Hopper SR5).
+
+
 Changes in version 1.8.4.RELEASE (2016-09-29)
 ---------------------------------------------
 * SGF-535 - Allow both SpEL and property placeholder expressions to be used in the locators/servers attributes of the <gfe:pool> XML namespace element.
