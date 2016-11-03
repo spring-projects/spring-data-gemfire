@@ -183,8 +183,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 			serverOnePool.setReadTimeout(Long.valueOf(TimeUnit.SECONDS.toMillis(20)).intValue());
 			serverOnePool.setRetryAttempts(1);
 			serverOnePool.setServerGroup("serverOne");
-			//serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
-			serverOnePool.setServers(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 41414)));
+			serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
 
 			return serverOnePool;
 		}
@@ -198,8 +197,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 			serverOnePool.setReadTimeout(Long.valueOf(TimeUnit.SECONDS.toMillis(20)).intValue());
 			serverOnePool.setRetryAttempts(1);
 			serverOnePool.setServerGroup("serverTwo");
-			//serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
-			serverOnePool.setServers(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 42424)));
+			serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
 
 			return serverOnePool;
 		}
@@ -256,10 +254,9 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 				.setProperty("name", applicationName())
 				.setProperty("mcast-port", "0")
 				.setProperty("log-level", logLevel())
-				//.setProperty("locators", "localhost[11235]")
-				//.setProperty("enable-cluster-configuration", enableClusterConfiguration())
+				.setProperty("locators", "localhost[11235]")
 				.setProperty("groups", groups())
-				//.setProperty("start-locator", startLocator())
+				.setProperty("start-locator", startLocator())
 				.build();
 		}
 
@@ -268,10 +265,6 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		}
 
 		abstract String groups();
-
-		boolean enableClusterConfiguration() {
-			return false;
-		}
 
 		String logLevel() {
 			return System.getProperty("gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
@@ -313,11 +306,6 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 
 		@Resource(name = "Cats")
 		private org.apache.geode.cache.Region<String, Cat> cats;
-
-		@Override
-		boolean enableClusterConfiguration() {
-			return true;
-		}
 
 		Cat save(Cat cat) {
 			cats.put(cat.getName(), cat);

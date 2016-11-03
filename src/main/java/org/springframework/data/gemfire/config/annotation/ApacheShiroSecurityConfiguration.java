@@ -210,11 +210,11 @@ public class ApacheShiroSecurityConfiguration implements BeanFactoryAware {
 
 		if (securityService != null) {
 			Field isIntegratedSecurity = ReflectionUtils.findField(securityService.getClass(),
-				"isIntegratedSecurity", Boolean.TYPE);
+				"isIntegratedSecurity", Boolean.class);
 
 			if (isIntegratedSecurity != null) {
 				ReflectionUtils.makeAccessible(isIntegratedSecurity);
-				ReflectionUtils.setField(isIntegratedSecurity, securityService, true);
+				ReflectionUtils.setField(isIntegratedSecurity, securityService, Boolean.TRUE);
 
 				return true;
 			}
