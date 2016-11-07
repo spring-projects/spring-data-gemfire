@@ -123,7 +123,7 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	protected BeanFactory getBeanFactory() {
-		org.apache.shiro.util.Assert.state(this.beanFactory != null, "BeanFactory was not properly initialized");
+		Assert.state(this.beanFactory != null, "BeanFactory was not properly initialized");
 		return this.beanFactory;
 	}
 
@@ -132,7 +132,7 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	 */
 	@Override
 	public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
-			BeanDefinitionRegistry registry) {
+		BeanDefinitionRegistry registry) {
 
 		if (isAnnotationPresent(importingClassMetadata)) {
 			Map<String, Object> annotationAttributes = getAnnotationAttributes(importingClassMetadata);
@@ -144,12 +144,12 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 	/* (non-Javadoc) */
 	@SuppressWarnings("unused")
 	protected void registerBeanDefinitions(AnnotationMetadata importingClassMetaData,
-			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+		Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
 	}
 
 	/* (non-Javadoc) */
 	protected void setGemFireProperties(AnnotationMetadata importingClassMetadata,
-			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+		Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
 
 		Properties gemfireProperties = toGemFireProperties(annotationAttributes);
 
@@ -183,7 +183,7 @@ public abstract class EmbeddedServiceConfigurationSupport implements ImportBeanD
 
 	/* (non-Javadoc) */
 	protected void registerGemFirePropertiesBeanPostProcessor(BeanDefinitionRegistry registry,
-			Properties customGemFireProperties) {
+		Properties customGemFireProperties) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
 			GemFirePropertiesBeanPostProcessor.class);

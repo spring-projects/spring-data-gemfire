@@ -299,6 +299,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 
 			setLogLevel((String) cacheMetadataAttributes.get("logLevel"));
 			setName((String) cacheMetadataAttributes.get("name"));
+			setUseBeanFactoryLocator(Boolean.TRUE.equals(cacheMetadataAttributes.get("useBeanFactoryLocator")));
 		}
 	}
 
@@ -507,7 +508,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	 * @see #getAnnotationType()
 	 */
 	protected boolean isTypedCacheApplication(Class<? extends Annotation> annotationType,
-			AnnotationMetadata importMetadata) {
+		AnnotationMetadata importMetadata) {
 
 		return (annotationType.equals(getAnnotationType()) && importMetadata.hasAnnotation(getAnnotationTypeName()));
 	}
