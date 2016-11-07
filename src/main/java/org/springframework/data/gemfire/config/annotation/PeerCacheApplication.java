@@ -26,6 +26,8 @@ import java.lang.annotation.Target;
 
 import com.gemstone.gemfire.cache.control.ResourceManager;
 
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -128,6 +130,15 @@ public @interface PeerCacheApplication {
 	 * Default is {@literal 300} seconds.
 	 */
 	int searchTimeout() default 300;
+
+	/**
+	 * Determines whether the Spring {@link BeanFactoryLocator} should be enabled to lookup
+	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
+	 * created in a non-Spring managed, GemFire context.
+	 *
+	 * Defaults to {@literal false}.
+	 */
+	boolean useBeanFactoryLocator() default false;
 
 	/**
 	 * Configures whether this GemFire cache member node would pull it's configuration meta-data

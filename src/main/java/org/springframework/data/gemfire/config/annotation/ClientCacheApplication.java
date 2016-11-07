@@ -27,6 +27,8 @@ import java.lang.annotation.Target;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.GemfireUtils;
@@ -256,6 +258,15 @@ public @interface ClientCacheApplication {
 	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_THREAD_LOCAL_CONNECTIONS
 	 */
 	boolean threadLocalConnections() default PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
+
+	/**
+	 * Determines whether the Spring {@link BeanFactoryLocator} should be enabled to lookup
+	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
+	 * created in a non-Spring managed, GemFire context.
+	 *
+	 * Defaults to {@literal false}.
+	 */
+	boolean useBeanFactoryLocator() default false;
 
 	@interface Locator {
 

@@ -89,8 +89,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	private static final AtomicBoolean CUSTOM_EDITORS_REGISTERED = new AtomicBoolean(false);
 	private static final AtomicBoolean DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED = new AtomicBoolean(false);
 	private static final AtomicBoolean DISK_STORE_DIRECTORY_BEAN_POST_PROCESSOR_REGISTERED = new AtomicBoolean(false);
-	private static final AtomicBoolean PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED =
-		new AtomicBoolean(false);
+	private static final AtomicBoolean PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED = new AtomicBoolean(false);
 
 	protected static final boolean DEFAULT_CLOSE = true;
 	protected static final boolean DEFAULT_COPY_ON_READ = false;
@@ -271,7 +270,6 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 		registerCustomEditorBeanFactoryPostProcessor(importMetadata);
 		registerDefinedIndexesApplicationListener(importMetadata);
 		registerDiskStoreDirectoryBeanPostProcessor(importMetadata);
-		registerPdxDiskStoreAwareBeanFactoryPostProcessor(importMetadata);
 	}
 
 	/**
@@ -302,6 +300,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 
 			setLogLevel((String) cacheMetadataAttributes.get("logLevel"));
 			setName((String) cacheMetadataAttributes.get("name"));
+			setUseBeanFactoryLocator(Boolean.TRUE.equals(cacheMetadataAttributes.get("useBeanFactoryLocator")));
 		}
 	}
 
@@ -324,6 +323,8 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 			setPdxPersistent(Boolean.TRUE.equals(enablePdxAttributes.get("persistent")));
 			setPdxReadSerialized(Boolean.TRUE.equals(enablePdxAttributes.get("readSerialized")));
 			setPdxSerializer(resolvePdxSerializer((String) enablePdxAttributes.get("serializerBeanName")));
+
+			registerPdxDiskStoreAwareBeanFactoryPostProcessor(importMetadata);
 		}
 	}
 
@@ -384,9 +385,13 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 
 	/* (non-Javadoc) */
 	protected void registerPdxDiskStoreAwareBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
-		if (PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
-			register(BeanDefinitionBuilder.rootBeanDefinition(PdxDiskStoreAwareBeanFactoryPostProcessor.class)
-				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
+		if (StringUtils.hasText(pdxDiskStoreName())) {
+			if (PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
+				register(BeanDefinitionBuilder.rootBeanDefinition(PdxDiskStoreAwareBeanFactoryPostProcessor.class)
+					.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
+					.addConstructorArgValue(pdxDiskStoreName())
+					.getBeanDefinition());
+			}
 		}
 	}
 
@@ -504,7 +509,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	 * @see #getAnnotationType()
 	 */
 	protected boolean isTypedCacheApplication(Class<? extends Annotation> annotationType,
-			AnnotationMetadata importMetadata) {
+		AnnotationMetadata importMetadata) {
 
 		return (annotationType.equals(getAnnotationType()) && importMetadata.hasAnnotation(getAnnotationTypeName()));
 	}

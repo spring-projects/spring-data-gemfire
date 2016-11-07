@@ -28,6 +28,8 @@ import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
@@ -42,7 +44,7 @@ import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
  * @author John Blum
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
- * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.CacheServerConfiguration
  * @see com.gemstone.gemfire.cache.control.ResourceManager
  * @see com.gemstone.gemfire.cache.server.CacheServer
  * @see com.gemstone.gemfire.cache.server.ClientSubscriptionConfig
@@ -233,6 +235,15 @@ public @interface CacheServerApplication {
 	 * Defaults to {@link SubscriptionEvictionPolicy#NONE}.
 	 */
 	SubscriptionEvictionPolicy subscriptionEvictionPolicy() default SubscriptionEvictionPolicy.NONE;
+
+	/**
+	 * Determines whether the Spring {@link BeanFactoryLocator} should be enabled to lookup
+	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
+	 * created in a non-Spring managed, GemFire context.
+	 *
+	 * Defaults to {@literal false}.
+	 */
+	boolean useBeanFactoryLocator() default false;
 
 	/**
 	 * Configures whether this GemFire cache member node would pull it's configuration meta-data
