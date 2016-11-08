@@ -26,7 +26,7 @@ import java.util.Map;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.*;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.springframework.beans.BeansException;
@@ -132,8 +132,9 @@ public class ApacheShiroSecurityConfiguration implements BeanFactoryAware {
 	 * @see org.apache.shiro.mgt.SecurityManager
 	 * @see #registerSecurityManager(org.apache.shiro.mgt.SecurityManager)
 	 * @see #enableApacheGeodeSecurity()
-	 * @see #isRealmsPresent()
-	 * @see #getRealms()
+	 * @see #resolveRealms()
+	 * @see #registerSecurityManager(org.apache.shiro.mgt.SecurityManager)
+	 * @see #enableApacheGeodeSecurity()
 	 */
 	@Bean
 	public org.apache.shiro.mgt.SecurityManager shiroSecurityManager(GemFireCache gemfireCache) {
@@ -209,8 +210,13 @@ public class ApacheShiroSecurityConfiguration implements BeanFactoryAware {
 		SecurityService securityService = SecurityService.getSecurityService();
 
 		if (securityService != null) {
+			String isIntegratedSecurityFieldName = "isIntegratedSecurity";
+
 			Field isIntegratedSecurity = ReflectionUtils.findField(securityService.getClass(),
-				"isIntegratedSecurity", Boolean.class);
+				isIntegratedSecurityFieldName, Boolean.class);
+
+			isIntegratedSecurity = (isIntegratedSecurity != null ? isIntegratedSecurity
+				: ReflectionUtils.findField(securityService.getClass(), isIntegratedSecurityFieldName, Boolean.TYPE));
 
 			if (isIntegratedSecurity != null) {
 				ReflectionUtils.makeAccessible(isIntegratedSecurity);
