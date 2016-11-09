@@ -687,7 +687,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	/* (non-Javadoc) */
 	void setLocators(String locators) {
 		this.locators = locators;
-		setMcastPort(DEFAULT_MCAST_PORT);
+		this.mcastPort = DEFAULT_MCAST_PORT;
 	}
 
 	protected String locators() {
@@ -714,7 +714,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 
 	void setMcastPort(Integer mcastPort) {
 		this.mcastPort = mcastPort;
-		setLocators(DEFAULT_LOCATORS);
+		this.locators = DEFAULT_LOCATORS;
 	}
 
 	protected Integer mcastPort() {
