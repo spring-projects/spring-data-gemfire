@@ -255,6 +255,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 				.setProperty("mcast-port", "0")
 				.setProperty("log-level", logLevel())
 				.setProperty("locators", "localhost[11235]")
+				.setProperty("enable-cluster-configuration", "false")
 				.setProperty("groups", groups())
 				.setProperty("start-locator", startLocator())
 				.build();

@@ -11,6 +11,7 @@ Changes in version 1.0.0.APACHE-GEODE-INCUBATING-RELEASE (2016-11-02)
 * SGF-560 - Release 1.0.0.APACHE-GEODE-INCUBATING-RELEASE.
 * SGF-562 - Include attribute to enable BeanFactoryLocator support in Annotation config.
 * SGF-565 - Stackoverflow error when the 'locators' attribute is specified in any of the XCacheApplication annotations.
+* SGF-566 - Upgrade dependencies... Java 8, Spring Data Commons 1.12.5 and Spring Framework to 4.3.4.
 
 
 Changes in version 1.0.0.APACHE-GEODE-INCUBATING-M3 (2016-10-05)
