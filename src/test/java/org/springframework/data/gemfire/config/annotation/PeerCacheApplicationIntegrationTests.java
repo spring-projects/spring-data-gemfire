@@ -58,7 +58,10 @@ public class PeerCacheApplicationIntegrationTests {
 		assertThat(echo.get("Test")).isEqualTo("Test");
 	}
 
-	@PeerCacheApplication(name = "PeerCacheApplicationIntegrationTests", logLevel = "warn")
+	//@EnableLocator
+	//@PeerCacheApplication(name = "PeerCacheApplicationIntegrationTests",
+	//	logLevel = "warn", locators="localhost[10334]")
+	@PeerCacheApplication(name = "PeerCacheApplicationIntegrationTests", logLevel="warn")
 	static class PeerCacheApplicationConfiguration {
 
 		@Bean("Echo")
