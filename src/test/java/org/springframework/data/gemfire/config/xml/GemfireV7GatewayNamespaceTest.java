@@ -113,11 +113,11 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
-		assertEquals(2, TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean));
-		assertEquals(10, TestUtils.readField("alertThreshold", gatewaySenderFactoryBean));
+		assertEquals(2, TestUtils.<Integer>readField("remoteDistributedSystemId", gatewaySenderFactoryBean).longValue());
+		assertEquals(10, TestUtils.<Integer>readField("alertThreshold", gatewaySenderFactoryBean).longValue());
 		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
-		assertEquals(11, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
-		assertEquals(12, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
+		assertEquals(11, TestUtils.<Integer>readField("batchSize", gatewaySenderFactoryBean).intValue());
+		assertEquals(12, TestUtils.<Integer>readField("dispatcherThreads", gatewaySenderFactoryBean).intValue());
 		assertEquals(false, TestUtils.readField("diskSynchronous", gatewaySenderFactoryBean));
 		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
 
@@ -189,10 +189,10 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
-		assertEquals(3, TestUtils.readField("remoteDistributedSystemId", gatewaySenderFactoryBean));
+		assertEquals(3, TestUtils.<Integer>readField("remoteDistributedSystemId", gatewaySenderFactoryBean).intValue());
 		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
-		assertEquals(50, TestUtils.readField("batchSize", gatewaySenderFactoryBean));
-		assertEquals(10, TestUtils.readField("dispatcherThreads", gatewaySenderFactoryBean));
+		assertEquals(50, TestUtils.<Integer>readField("batchSize", gatewaySenderFactoryBean).intValue());
+		assertEquals(10, TestUtils.<Integer>readField("dispatcherThreads", gatewaySenderFactoryBean).intValue());
 		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
 
 		List<GatewayEventFilter> eventFilters = TestUtils.readField("eventFilters", gatewaySenderFactoryBean);

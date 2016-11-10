@@ -123,7 +123,7 @@ public class AbstractFunctionExecutionTest {
 			}
 		};
 
-		assertThat(String.valueOf(functionExecution.executeAndExtract()), is(equalTo("test")));
+		assertThat(functionExecution.executeAndExtract(), is(equalTo("test")));
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public class AbstractFunctionExecutionTest {
 			}
 		};
 
-		assertThat(String.valueOf(functionExecution.executeAndExtract()), is(equalTo("one")));
+		assertThat(functionExecution.executeAndExtract(), is(equalTo("one")));
 	}
 
 	@Test

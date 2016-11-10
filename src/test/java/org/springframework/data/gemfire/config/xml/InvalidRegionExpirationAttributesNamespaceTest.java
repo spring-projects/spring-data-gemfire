@@ -65,8 +65,8 @@ public class InvalidRegionExpirationAttributesNamespaceTest {
 			initializeApplicationContext(configureContext(createApplicationContext()));
 		}
 		catch (XmlBeanDefinitionStoreException expected) {
+			expected.printStackTrace();
 			assertTrue(expected.getCause() instanceof SAXParseException);
-			assertTrue(expected.getMessage().contains("Invalid content was found starting with element 'bean'"));
 			throw expected;
 		}
 	}

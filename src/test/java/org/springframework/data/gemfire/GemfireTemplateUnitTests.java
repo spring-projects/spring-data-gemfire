@@ -212,7 +212,7 @@ public class GemfireTemplateUnitTests extends AbstractUnitAndIntegrationTestsWit
 		when(mockQuery.execute(eq(expectedParams))).thenReturn(mockSelectResults);
 		when(mockSelectResults.asList()).thenReturn(Collections.singletonList(1));
 
-		assertThat(template.findUnique(expectedQuery, expectedParams)).isEqualTo(1);
+		assertThat(template.<Integer>findUnique(expectedQuery, expectedParams)).isEqualTo(1);
 
 		verify(mockRegion, atLeastOnce()).getRegionService();
 		verify(mockRegionService, times(1)).getQueryService();
@@ -228,7 +228,7 @@ public class GemfireTemplateUnitTests extends AbstractUnitAndIntegrationTestsWit
 
 		when(mockQuery.execute(eq(expectedParams))).thenReturn("test");
 
-		assertThat(template.findUnique(expectedQuery, expectedParams)).isEqualTo("test");
+		assertThat(template.<String>findUnique(expectedQuery, expectedParams)).isEqualTo("test");
 
 		verify(mockRegion, atLeastOnce()).getRegionService();
 		verify(mockRegionService, times(1)).getQueryService();
@@ -247,7 +247,7 @@ public class GemfireTemplateUnitTests extends AbstractUnitAndIntegrationTestsWit
 		when(mockSelectResults.asList()).thenReturn(Arrays.asList(1, 2));
 
 		try {
-			assertThat(template.findUnique(expectedQuery, expectedParams)).isEqualTo(1);
+			assertThat(template.<Integer>findUnique(expectedQuery, expectedParams)).isEqualTo(1);
 		}
 		finally {
 			verify(mockRegion, atLeastOnce()).getRegionService();
