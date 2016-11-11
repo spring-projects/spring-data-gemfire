@@ -32,10 +32,10 @@ import com.gemstone.gemfire.cache.util.Gateway;
 
 import org.junit.Test;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.data.gemfire.EvictionActionConverter;
-import org.springframework.data.gemfire.EvictionPolicyConverter;
-import org.springframework.data.gemfire.EvictionPolicyType;
-import org.springframework.data.gemfire.ExpirationActionConverter;
+import org.springframework.data.gemfire.eviction.EvictionActionConverter;
+import org.springframework.data.gemfire.eviction.EvictionPolicyConverter;
+import org.springframework.data.gemfire.eviction.EvictionPolicyType;
+import org.springframework.data.gemfire.expiration.ExpirationActionConverter;
 import org.springframework.data.gemfire.IndexMaintenancePolicyConverter;
 import org.springframework.data.gemfire.IndexMaintenancePolicyType;
 import org.springframework.data.gemfire.IndexType;

@@ -28,7 +28,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -44,9 +48,6 @@ import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
 
 /**
  * The GemFireDataSourceIntegrationTest class is a test suite of test cases testing the contract and functionality

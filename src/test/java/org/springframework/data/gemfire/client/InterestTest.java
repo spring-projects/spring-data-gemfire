@@ -21,10 +21,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+
 import org.junit.Test;
 import org.springframework.core.ConstantException;
-
-import com.gemstone.gemfire.cache.InterestResultPolicy;
 
 /**
  * The InterestTest class is a test suite of test cases testing the contract and functionality of the Interest class.

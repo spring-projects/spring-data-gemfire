@@ -61,7 +61,7 @@ Since 1.1, Spring Data GemFire provides an implementation of the Spring 3.1 http
   <gfe:cache id="gemfire-cache"/>
 
   <!-- declare GemFire Cache Manager -->
-  <bean id="cacheManager" class="org.springframework.data.gemfire.support.GemfireCacheManager" p:cache-ref="gemfire-cache">
+  <bean id="cacheManager" class="org.springframework.data.gemfire.cache.GemfireCacheManager" p:cache-ref="gemfire-cache">
 </beans>
 ----
 

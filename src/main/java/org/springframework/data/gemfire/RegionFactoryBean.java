@@ -18,17 +18,6 @@ package org.springframework.data.gemfire;
 
 import java.lang.reflect.Field;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.context.SmartLifecycle;
-import org.springframework.core.io.Resource;
-import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.support.RegionShortcutWrapper;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.ReflectionUtils;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
@@ -47,6 +36,16 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Base class for FactoryBeans used to create GemFire {@link Region}s. Will try

@@ -25,12 +25,12 @@ import static org.junit.Assert.assertThat;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 
+import com.gemstone.gemfire.cache.client.PoolFactory;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.data.gemfire.GemfireUtils;
-
-import com.gemstone.gemfire.cache.client.PoolFactory;
 
 /**
  * The FactoryDefaultsPoolAdapterTest class is a test suite of test cases testing the contract and functionality

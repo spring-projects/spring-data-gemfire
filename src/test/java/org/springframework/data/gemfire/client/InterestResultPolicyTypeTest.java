@@ -21,9 +21,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-import org.junit.Test;
-
 import com.gemstone.gemfire.cache.InterestResultPolicy;
+
+import org.junit.Test;
 
 /**
  * The InterestResultPolicyTypeTest class is a test suite of test cases testing the contract and functionality

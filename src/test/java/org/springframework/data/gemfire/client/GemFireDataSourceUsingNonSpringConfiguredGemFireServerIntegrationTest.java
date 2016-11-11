@@ -29,7 +29,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.distributed.ServerLauncher;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,10 +53,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.distributed.ServerLauncher;
 
 /**
  * The GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTest class is a test suite of test cases

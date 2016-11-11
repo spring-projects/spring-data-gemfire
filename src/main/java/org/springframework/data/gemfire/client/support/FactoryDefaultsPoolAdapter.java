@@ -21,11 +21,11 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.gemfire.GemfireUtils;
-import org.springframework.data.gemfire.client.PoolAdapter;
-
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.query.QueryService;
+
+import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.client.PoolAdapter;
 
 /**
  * FactoryDefaultsPoolAdapter is an abstract implementation of GemFire's {@link com.gemstone.gemfire.cache.client.Pool}

@@ -37,14 +37,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
-
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
@@ -56,6 +48,14 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.compression.Compressor;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 /**
  * @author David Turanski

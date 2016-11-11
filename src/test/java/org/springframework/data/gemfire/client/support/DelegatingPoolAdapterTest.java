@@ -32,6 +32,10 @@ import static org.mockito.Mockito.when;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.query.QueryService;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,10 +44,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.gemfire.GemfireUtils;
-
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
  * The DelegatingPoolAdapterTest class is a test suite of test cases testing the contract and functionality

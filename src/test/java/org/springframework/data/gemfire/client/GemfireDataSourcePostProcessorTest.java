@@ -42,14 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.data.gemfire.support.ListRegionsOnServerFunction;
-
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -60,6 +52,14 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.management.internal.cli.domain.RegionInformation;
 import com.gemstone.gemfire.management.internal.cli.functions.GetRegionsFunction;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.data.gemfire.support.ListRegionsOnServerFunction;
 
 /**
  * The GemfireDataSourcePostProcessor class is a test suite of test cases testing the contract and functionality

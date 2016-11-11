@@ -16,9 +16,9 @@
 
 package org.springframework.data.gemfire.client;
 
-import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
-
 import com.gemstone.gemfire.cache.InterestResultPolicy;
+
+import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
 
 /**
  * The InterestResultPolicyConverter class is a Spring Converter and JavaBeans PropertyEditor capable of converting

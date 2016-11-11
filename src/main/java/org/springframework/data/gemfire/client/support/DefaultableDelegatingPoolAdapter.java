@@ -21,11 +21,11 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.data.gemfire.util.SpringUtils;
-import org.springframework.util.Assert;
-
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.query.QueryService;
+
+import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.util.Assert;
 
 /**
  * The DefaultableDelegatingPoolAdapter class is a wrapper class around Pool allowing default configuration property

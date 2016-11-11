@@ -32,6 +32,11 @@ import org.junit.Test;
  */
 public class ArrayUtilsUnitTests {
 
+	@SafeVarargs
+	protected static <T> T[] asArray(T... array) {
+		return array;
+	}
+
 	@Test
 	public void asArrayRetursEmptyArray() {
 		Object[] array = ArrayUtils.asArray();
@@ -60,13 +65,12 @@ public class ArrayUtilsUnitTests {
 
 	@Test
 	public void getFirstWithNonNullArray() {
-		assertThat(ArrayUtils.getFirst(1, 2, 3)).isEqualTo(1);
+		assertThat(ArrayUtils.getFirst(asArray(1, 2, 3))).isEqualTo(1);
 	}
 
 	@Test
 	public void getFirstWithNullOrEmptyArrayAndNoDefaultReturnsNull() {
-		assertThat(ArrayUtils.getFirst((Object[]) null)).isNull();
-		assertThat(ArrayUtils.<Object>getFirst()).isNull();
+		assertThat((Object) ArrayUtils.getFirst(null)).isNull();
 	}
 
 	@Test

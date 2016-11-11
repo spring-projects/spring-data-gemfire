@@ -21,6 +21,9 @@ import static org.junit.Assert.assertThat;
 
 import javax.annotation.Resource;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -28,9 +31,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * @author David Turanski

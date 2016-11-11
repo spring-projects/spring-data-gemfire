@@ -16,14 +16,14 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.LookupRegionFactoryBean;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
-
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * Bean definition parser for the &lt;gfe:lookup-region&gt; SDG XML namespace (XSD) element.
