@@ -13,10 +13,6 @@ buildscript {
     }
 }
 
-configurations {
-    sharedResources
-}
-
 apply plugin: "java"
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -29,8 +25,12 @@ apply plugin: 'org.asciidoctor.gradle.asciidoctor'
 description = 'Spring Data GemFire'
 group = 'org.springframework.data'
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations {
+    sharedResources
+}
 
 sourceSets {
     main {
@@ -102,24 +102,23 @@ dependencies {
     runtime("antlr:antlr:$antlrVersion")
 
     optional "javax.enterprise:cdi-api:$cdiVersion"
-    compile "org.aspectj:aspectjweaver:$aspectjVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    compile "org.aspectj:aspectjweaver:$aspectjVersion"
 
     // Testing
     testCompile("org.springframework:spring-test:$springVersion") {
         exclude group: "commons-logging", module: "commons-logging"
     }
+    testCompile "junit:junit:$junitVersion"
+    testCompile "javax.annotation:jsr250-api:1.0", optional
     testCompile "org.apache.openwebbeans.test:cditest-owb:$openwebbeansVersion"
     testCompile "org.assertj:assertj-core:$assertjVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testCompile "org.projectlombok:lombok:$lombokVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
-    testCompile "junit:junit:$junitVersion"
     testCompile "edu.umd.cs.mtc:multithreadedtc:$multiThreadedtcVersion"
-
-    testCompile "javax.annotation:jsr250-api:1.0", optional
 
     testRuntime "javax.el:el-api:$cdiVersion"
     testRuntime "javax.servlet:servlet-api:$servletApiVersion"
