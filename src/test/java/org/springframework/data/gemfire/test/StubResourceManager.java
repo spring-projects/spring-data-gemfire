@@ -33,7 +33,9 @@ import org.apache.geode.cache.control.ResourceManager;
 public class StubResourceManager implements ResourceManager {
 
 	private float criticalHeapPercentage;
+	private float criticalOffHeapPercentage;
 	private float evictionHeapPercentage;
+	private float evictionOffHeapPercentage;
 
 	@Override
 	public void setCriticalHeapPercentage(final float heapPercentage) {
@@ -65,4 +67,23 @@ public class StubResourceManager implements ResourceManager {
 		return Collections.emptySet();
 	}
 
+	@Override
+	public void setCriticalOffHeapPercentage(float offHeapPercentage) {
+		this.criticalOffHeapPercentage = offHeapPercentage;
+	}
+
+	@Override
+	public float getCriticalOffHeapPercentage() {
+		return this.criticalOffHeapPercentage;
+	}
+
+	@Override
+	public void setEvictionOffHeapPercentage(float offHeapPercentage) {
+		this.evictionOffHeapPercentage = offHeapPercentage;
+	}
+
+	@Override
+	public float getEvictionOffHeapPercentage() {
+		return this.evictionOffHeapPercentage;
+	}
 }

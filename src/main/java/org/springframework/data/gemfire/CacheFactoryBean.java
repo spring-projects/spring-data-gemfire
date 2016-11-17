@@ -52,20 +52,21 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.Phased;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * FactoryBean used to configure a GemFire peer Cache node. Allows either retrieval of an existing, opened Cache
- * or the creation of a new Cache instance.
- * <p>
- * This class implements the {@link org.springframework.dao.support.PersistenceExceptionTranslator}
- * interface, as auto-detected by Spring's
- * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor}, for AOP-based translation
- * of native Exceptions to Spring DataAccessExceptions. Hence, the presence of this class automatically enables
- * a PersistenceExceptionTranslationPostProcessor to translate GemFire Exceptions appropriately.
+ * Spring {@link FactoryBean} used to configure a GemFire peer Cache. This class either looks up an existing, open
+ * {@link Cache} instance already or creates a new {@link Cache} instance.
+ *
+ * This class implements the {@link org.springframework.dao.support.PersistenceExceptionTranslator} interface,
+ * as auto-detected by Spring's {@link PersistenceExceptionTranslationPostProcessor}, for AOP-based translation
+ * of native GemFire Exceptions to Spring {@link DataAccessException}. Hence, the presence of this class
+ * automatically enables a {@link PersistenceExceptionTranslationPostProcessor} to translate GemFire Exceptions
+ * appropriately.
  *
  * @author Costin Leau
  * @author David Turanski
@@ -86,7 +87,7 @@ import org.springframework.util.ObjectUtils;
  */
 @SuppressWarnings("unused")
 public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
-		Phased, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
+		InitializingBean, DisposableBean, PersistenceExceptionTranslator, Phased {
 
 	private boolean close = true;
 	private boolean useBeanFactoryLocator = false;
@@ -1090,5 +1091,4 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 			this.props = props;
 		}
 	}
-
 }

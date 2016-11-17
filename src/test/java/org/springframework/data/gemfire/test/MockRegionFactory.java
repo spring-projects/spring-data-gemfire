@@ -220,14 +220,6 @@ public class MockRegionFactory<K, V> {
 			}
 		});
 
-		when(regionFactory.setEnableGateway(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
-			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-				boolean enableGateway = (Boolean) invocation.getArguments()[0];
-				attributesFactory.setEnableGateway(enableGateway);
-				return regionFactory;
-			}
-		});
-
 		when(regionFactory.setEnableSubscriptionConflation(anyBoolean())).thenAnswer(new Answer<RegionFactory>(){
 			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
 				boolean enableSubscriptionConflation = (Boolean) invocation.getArguments()[0];
@@ -272,14 +264,6 @@ public class MockRegionFactory<K, V> {
 			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
 				EvictionAttributes evictionAttributes = (EvictionAttributes) invocation.getArguments()[0];
 				attributesFactory.setEvictionAttributes(evictionAttributes);
-				return regionFactory;
-			}
-		});
-
-		when(regionFactory.setGatewayHubId(anyString())).thenAnswer(new Answer<RegionFactory>(){
-			@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-				String gatewayHubId = (String) invocation.getArguments()[0];
-				attributesFactory.setGatewayHubId(gatewayHubId);
 				return regionFactory;
 			}
 		});
@@ -500,5 +484,4 @@ public class MockRegionFactory<K, V> {
 	public static QueryService mockQueryService() {
 		return mockQueryService;
 	}
-
 }

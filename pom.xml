@@ -72,6 +72,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>io.pivotal.gemfire</groupId>
+			<artifactId>geode-cq</artifactId>
+			<version>${gemfire.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.pivotal.gemfire</groupId>
+			<artifactId>geode-wan</artifactId>
+			<version>${gemfire.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>antlr</groupId>
 			<artifactId>antlr</artifactId>
 			<version>${antlr.version}</version>

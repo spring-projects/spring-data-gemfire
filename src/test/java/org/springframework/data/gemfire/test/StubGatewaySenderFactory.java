@@ -10,6 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.test;
 
 import static org.mockito.Mockito.doAnswer;
@@ -19,10 +20,10 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.cache.util.Gateway.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.mockito.invocation.InvocationOnMock;
@@ -64,8 +65,8 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 	private String diskStoreName;
 
 	public StubGatewaySenderFactory() {
-		this.eventFilters = new ArrayList<GatewayEventFilter>();
-		this.transportFilters = new ArrayList<GatewayTransportFilter>();
+		this.eventFilters = new ArrayList<>();
+		this.transportFilters = new ArrayList<>();
 	}
 
 	@Override
@@ -225,5 +226,4 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
 		return this;
 	}
-
 }

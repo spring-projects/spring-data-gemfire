@@ -52,7 +52,6 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.snapshot.CacheSnapshotService;
 import org.apache.geode.cache.util.GatewayConflictResolver;
-import org.apache.geode.cache.util.GatewayHub;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -97,8 +96,6 @@ public class StubCache implements Cache, ClientCache {
 
 	private HashMap<String, Region> allRegions;
 
-	private List<GatewayHub> gatewayHubs;
-
 	private LogWriter logWriter;
 	private LogWriter securityLogWriter;
 
@@ -115,8 +112,7 @@ public class StubCache implements Cache, ClientCache {
 	private String name;
 
 	public StubCache(){
-		allRegions = new HashMap<String,Region>();
-		gatewayHubs = new ArrayList<GatewayHub>();
+		allRegions = new HashMap<>();
 		resourceManager = new StubResourceManager();
 	}
 
@@ -280,7 +276,7 @@ public class StubCache implements Cache, ClientCache {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public <K, V> Map<String, RegionAttributes<K, V>> listRegionAttributes() {
-		Map<String, RegionAttributes<K, V>> attributes = new HashMap<String, RegionAttributes<K, V>>();
+		Map<String, RegionAttributes<K, V>> attributes = new HashMap<>();
 		for (Entry<String, Region> entry: allRegions().entrySet()) {
 			attributes.put(entry.getKey(), entry.getValue().getAttributes());
 		}
@@ -380,7 +376,7 @@ public class StubCache implements Cache, ClientCache {
 	 */
 	@Override
 	public Set<Region<?, ?>> rootRegions() {
-		Set<Region<?,?>> rootRegions = new HashSet<Region<?,?>>();
+		Set<Region<?,?>> rootRegions = new HashSet<>();
 		for (String key: allRegions().keySet()) {
 			if (!key.contains("/")) {
 				rootRegions.add(allRegions().get(key));
@@ -390,32 +386,11 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.Cache#addBridgeServer()
-	 */
-	@Override
-	@Deprecated
-	public org.apache.geode.cache.util.BridgeServer addBridgeServer() {
-		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.apache.geode.cache.Cache#addCacheServer()
 	 */
 	@Override
 	public CacheServer addCacheServer() {
 		return mockCacheServer();
-	}
-
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.Cache#addGatewayHub(java.lang.String, int)
-	 */
-	@Override
-	public GatewayHub addGatewayHub(final String id, final int port) {
-		GatewayHub gatewayHub = getGatewayHub(id);
-		gatewayHub = (gatewayHub != null ? gatewayHub : new MockGatewayHubFactory().mockGatewayHub(id, port));
-		gatewayHubs.add(gatewayHub);
-		return gatewayHub;
 	}
 
 	/* (non-Javadoc)
@@ -530,15 +505,6 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.Cache#getBridgeServers()
-	 */
-	@Override
-	@Deprecated
-	public List<CacheServer> getBridgeServers() {
-		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.apache.geode.cache.Cache#getCacheServers()
 	 */
 	@Override
@@ -552,37 +518,6 @@ public class StubCache implements Cache, ClientCache {
 	@Override
 	public GatewayConflictResolver getGatewayConflictResolver() {
 		return this.gatewayConflictResolver;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.Cache#getGatewayHub()
-	 */
-	@Override
-	@Deprecated
-	public GatewayHub getGatewayHub() {
-		return (gatewayHubs.isEmpty() ? null : gatewayHubs.get(0));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.Cache#getGatewayHub(java.lang.String)
-	 */
-	@Override
-	public GatewayHub getGatewayHub(final String id) {
-		for (GatewayHub gatewayHub : gatewayHubs) {
-			if (gatewayHub.getId().equals(id)) {
-				return gatewayHub;
-			}
-		}
-
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.Cache#getGatewayHubs()
-	 */
-	@Override
-	public List<GatewayHub> getGatewayHubs() {
-		return this.gatewayHubs;
 	}
 
 	/* (non-Javadoc)
@@ -706,15 +641,6 @@ public class StubCache implements Cache, ClientCache {
 	@Override
 	public void setGatewayConflictResolver(GatewayConflictResolver arg0) {
 		this.gatewayConflictResolver = arg0;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.Cache#setGatewayHub(java.lang.String, int)
-	 */
-	@Override
-	@Deprecated
-	public GatewayHub setGatewayHub(String arg0, int arg1) {
-		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
@@ -942,5 +868,4 @@ public class StubCache implements Cache, ClientCache {
 	public QueryService getQueryService(final String poolName) {
 		return getQueryService();
 	}
-
 }

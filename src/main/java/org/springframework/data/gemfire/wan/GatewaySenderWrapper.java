@@ -15,7 +15,6 @@ package org.springframework.data.gemfire.wan;
 
 import java.util.List;
 
-import org.apache.geode.cache.util.Gateway;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -175,7 +174,7 @@ public class GatewaySenderWrapper implements GatewaySender {
 
     @Override
 	@SuppressWarnings("deprecation")
-    public Gateway.OrderPolicy getOrderPolicy() {
+    public GatewaySender.OrderPolicy getOrderPolicy() {
         return delegate.getOrderPolicy();
     }
 
@@ -192,5 +191,4 @@ public class GatewaySenderWrapper implements GatewaySender {
 	public String toString() {
 		return this.delegate.toString();
 	}
-
 }

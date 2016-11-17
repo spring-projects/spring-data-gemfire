@@ -98,6 +98,8 @@ dependencies {
 
     // GemFire
     compile("io.pivotal.gemfire:geode-core:$gemfireVersion")
+	compile("io.pivotal.gemfire:geode-cq:$gemfireVersion")
+	compile("io.pivotal.gemfire:geode-wan:$gemfireVersion")
     optional("com.google.code.findbugs:annotations:$googleCodeFindbugsVersion")
     runtime("antlr:antlr:$antlrVersion")
 

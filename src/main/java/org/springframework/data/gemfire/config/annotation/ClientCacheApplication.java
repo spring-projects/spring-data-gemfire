@@ -63,9 +63,9 @@ public @interface ClientCacheApplication {
 	/**
 	 * Configures the percentage of heap at or above which the cache is considered in danger of becoming inoperable.
 	 *
-	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_CRITICAL_HEAP_PERCENTAGE
+	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_CRITICAL_PERCENTAGE
 	 */
-	float criticalHeapPercentage() default ResourceManager.DEFAULT_CRITICAL_HEAP_PERCENTAGE;
+	float criticalHeapPercentage() default ResourceManager.DEFAULT_CRITICAL_PERCENTAGE;
 
 	/**
 	 * Used only for clients in a client/server installation. If set, this indicates that the client is durable
@@ -84,9 +84,9 @@ public @interface ClientCacheApplication {
 	 * Configures the percentage of heap at or above which the eviction should begin on Regions configured
 	 * for HeapLRU eviction.
 	 *
-	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_EVICTION_HEAP_PERCENTAGE
+	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_EVICTION_PERCENTAGE
 	 */
-	float evictionHeapPercentage() default ResourceManager.DEFAULT_EVICTION_HEAP_PERCENTAGE;
+	float evictionHeapPercentage() default ResourceManager.DEFAULT_EVICTION_PERCENTAGE;
 
 	/**
 	 * Configures the free connection timeout for this pool.

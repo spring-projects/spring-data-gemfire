@@ -25,7 +25,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.util.Gateway;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.junit.Test;
@@ -75,7 +74,8 @@ public class GatewaySenderFactoryBeanTest {
 		String orderPolicy = TestUtils.readField("orderPolicy", factoryBean);
 
 		if (orderPolicy != null) {
-			verify(mockGatewaySenderFactory).setOrderPolicy(eq(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase())));
+			verify(mockGatewaySenderFactory).setOrderPolicy(
+				eq(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase())));
 		}
 
 		Integer dispatcherThreads = TestUtils.readField("dispatcherThreads", factoryBean);

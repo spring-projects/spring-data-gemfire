@@ -22,10 +22,10 @@ import java.util.List;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
-import org.apache.geode.cache.util.Gateway.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 
 /**
  * @author David Turanski
@@ -38,6 +38,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 
 	private boolean batchConflationEnabled;
 	private boolean diskSynchronous;
+	private boolean forwardExpirationDestroy;
 	private boolean parallel;
 	private boolean persistent;
 
@@ -50,7 +51,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 
 	private OrderPolicy orderPolicy;
 
-	private List<GatewayEventFilter> gatewayEventFilters = new ArrayList<GatewayEventFilter>();
+	private List<GatewayEventFilter> gatewayEventFilters = new ArrayList<>();
 
 	private String diskStoreName;
 
@@ -70,6 +71,7 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		when(asyncEventQueue.getDispatcherThreads()).thenReturn(this.dispatcherThreads);
 		when(asyncEventQueue.getGatewayEventSubstitutionFilter()).thenReturn(this.gatewayEventSubstitutionFilter);
 		when(asyncEventQueue.getGatewayEventFilters()).thenReturn(Collections.unmodifiableList(gatewayEventFilters));
+		when(asyncEventQueue.isForwardExpirationDestroy()).thenReturn(this.forwardExpirationDestroy);
 
 		return this.asyncEventQueue;
 	}
@@ -145,7 +147,12 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 	@Override
 	public AsyncEventQueueFactory setGatewayEventSubstitutionListener(final GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
 		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
-		return null;
+		return this;
 	}
 
+	@Override
+	public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward) {
+		this.forwardExpirationDestroy = forward;
+		return this;
+	}
 }

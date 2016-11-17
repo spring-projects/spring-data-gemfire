@@ -45,8 +45,6 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
 import org.springframework.data.gemfire.wan.OrderPolicyConverter;
-import org.springframework.data.gemfire.wan.StartupPolicyConverter;
-import org.springframework.data.gemfire.wan.StartupPolicyType;
 
 /**
  * {@link CustomEditorBeanFactoryPostProcessor} is a Spring {@link BeanFactoryPostProcessor} implementation
@@ -78,7 +76,6 @@ public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProc
 		beanFactory.registerCustomEditor(InterestResultPolicy.class, InterestResultPolicyConverter.class);
 		beanFactory.registerCustomEditor(Gateway.OrderPolicy.class, OrderPolicyConverter.class);
 		beanFactory.registerCustomEditor(Scope.class, ScopeConverter.class);
-		beanFactory.registerCustomEditor(StartupPolicyType.class, StartupPolicyConverter.class);
 		beanFactory.registerCustomEditor(SubscriptionEvictionPolicy.class, SubscriptionEvictionPolicyConverter.class);
 	}
 

@@ -347,22 +347,24 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 			try {
 				((ClientCache) fetchCache()).readyForEvents();
 			}
-			catch (IllegalStateException ignore) {
-				// thrown if clientCache.readyForEvents() is called on a non-durable client
-			}
-			catch (CacheClosedException ignore) {
-				// cache is closed or was shutdown so ready-for-events is moot
+			catch (IllegalStateException | CacheClosedException ignore) {
+				// IllegalStateException thrown if clientCache.readyForEvents() is called on a non-durable client
+				// CacheClosedException is throw when cache is closed or was shutdown so ready-for-events is moot
 			}
 		}
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	protected void close(GemFireCache cache) {
 		((ClientCache) cache).close(isKeepAlive());
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public Class<? extends GemFireCache> getObjectType() {
 		ClientCache cache = getCache();
@@ -430,13 +432,17 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		return durableClientTimeout;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public final void setEnableAutoReconnect(final Boolean enableAutoReconnect) {
 		throw new UnsupportedOperationException("Auto-reconnect does not apply to clients.");
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public final Boolean getEnableAutoReconnect() {
 		return Boolean.FALSE;
@@ -769,13 +775,17 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		return threadLocalConnections;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public final void setUseClusterConfiguration(Boolean useClusterConfiguration) {
 		throw new UnsupportedOperationException("Shared, cluster-based configuration is not applicable for clients.");
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public final Boolean getUseClusterConfiguration() {
 		return Boolean.FALSE;

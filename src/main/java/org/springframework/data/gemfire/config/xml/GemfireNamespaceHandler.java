@@ -43,7 +43,6 @@ class GemfireNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("cq-listener-container", new GemfireListenerContainerParser());
 		registerBeanDefinitionParser("disk-store", new DiskStoreParser());
 		registerBeanDefinitionParser("function-service", new FunctionServiceParser());
-		registerBeanDefinitionParser("gateway-hub", new GatewayHubParser());
 		registerBeanDefinitionParser("gateway-receiver", new GatewayReceiverParser());
 		registerBeanDefinitionParser("gateway-sender", new GatewaySenderParser());
 		registerBeanDefinitionParser("index", new IndexParser());

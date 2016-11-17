@@ -17,9 +17,7 @@
 package org.springframework.data.gemfire;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -32,7 +30,6 @@ import java.util.Properties;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.GemFireVersion;
 import org.junit.Test;
 
 /**
@@ -136,39 +133,4 @@ public class GemfireUtilsTest {
 
 		verifyZeroInteractions(mockClientCache);
 	}
-
-	// NOTE implementation is based on a GemFire internal class... org.apache.geode.internal.GemFireVersion.
-	protected int getGemFireVersion() {
-		try {
-			String gemfireVersion = GemFireVersion.getGemFireVersion();
-
-			return Integer.decode(String.valueOf(GemFireVersion.getMajorVersion(gemfireVersion)).concat(
-				String.valueOf(GemFireVersion.getMinorVersion(gemfireVersion))));
-		}
-		catch (NumberFormatException ignore) {
-			return -1;
-		}
-	}
-
-	@Test
-	public void gemfireVersionIs65OrAbove() {
-		int gemfireVersion = getGemFireVersion();
-		assumeTrue(gemfireVersion > -1);
-		assertEquals(getGemFireVersion() >= 65, GemfireUtils.isGemfireVersion65OrAbove());
-	}
-
-	@Test
-	public void gemfireVersionIs7OrAbove() {
-		int gemfireVersion = getGemFireVersion();
-		assumeTrue(gemfireVersion > -1);
-		assertEquals(getGemFireVersion() >= 70, GemfireUtils.isGemfireVersion7OrAbove());
-	}
-
-	@Test
-	public void gemfireVersionIs80rAbove() {
-		int gemfireVersion = getGemFireVersion();
-		assumeTrue(gemfireVersion > -1);
-		assertEquals(getGemFireVersion() >= 80, GemfireUtils.isGemfireVersion8OrAbove());
-	}
-
 }

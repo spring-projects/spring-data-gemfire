@@ -243,8 +243,6 @@ public class TemplateRegionsNamespaceTests {
 		assertNull(region.getAttributes().getCustomEntryIdleTimeout());
 		assertNull(region.getAttributes().getCustomEntryTimeToLive());
 		assertNull(region.getAttributes().getDiskStoreName());
-		assertFalse(region.getAttributes().getEnableGateway());
-		assertNullEmpty(region.getAttributes().getGatewayHubId());
 		assertFalse(region.getAttributes().getMulticastEnabled());
 		assertNullEmpty(region.getAttributes().getPoolName());
 		assertDefaultExpirationAttributes(region.getAttributes().getRegionTimeToLive());
@@ -656,5 +654,4 @@ public class TemplateRegionsNamespaceTests {
 			return name;
 		}
 	}
-
 }

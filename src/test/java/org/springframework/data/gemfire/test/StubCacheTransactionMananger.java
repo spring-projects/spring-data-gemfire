@@ -23,143 +23,127 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
 
-
-/**
- * @author David Turanski
- *
- */
 public class StubCacheTransactionMananger implements CacheTransactionManager {
 
-	private List<TransactionListener> listeners = new ArrayList<TransactionListener>();
+	private boolean distributed = false;
+
+	private List<TransactionListener> listeners = new ArrayList<>();
+
 	private TransactionWriter writer;
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#begin()
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public boolean isSuspended(TransactionId transactionId) {
+		return false;
+	}
+
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public void begin() {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#commit()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public void commit() throws CommitConflictException {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#rollback()
-	 */
-	@Override
-	public void rollback() {
-		// TODO Auto-generated method stub
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#suspend()
-	 */
-	@Override
-	public TransactionId suspend() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#resume(org.apache.geode.cache.TransactionId)
-	 */
-	@Override
-	public void resume(TransactionId transactionId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#isSuspended(org.apache.geode.cache.TransactionId)
-	 */
-	@Override
-	public boolean isSuspended(TransactionId transactionId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(org.apache.geode.cache.TransactionId)
-	 */
-	@Override
-	public boolean tryResume(TransactionId transactionId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(org.apache.geode.cache.TransactionId, long, java.util.concurrent.TimeUnit)
-	 */
-	@Override
-	public boolean tryResume(TransactionId transactionId, long time, TimeUnit unit) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#exists(org.apache.geode.cache.TransactionId)
-	 */
-	@Override
-	public boolean exists(TransactionId transactionId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#exists()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public boolean exists() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#getTransactionId()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
-	public TransactionId getTransactionId() {
-		// TODO Auto-generated method stub
+	public boolean exists(TransactionId transactionId) {
+		return false;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public void resume(TransactionId transactionId) {
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public void rollback() {
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public TransactionId suspend() {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#getListener()
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public boolean tryResume(TransactionId transactionId) {
+		return false;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public boolean tryResume(TransactionId transactionId, long time, TimeUnit unit) {
+		return false;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public TransactionId getTransactionId() {
+		return null;
+	}
+
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	@Deprecated
 	public TransactionListener getListener() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#getListeners()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public TransactionListener[] getListeners() {
 		return listeners.toArray(new TransactionListener[listeners.size()]);
 	}
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#setListener(org.apache.geode.cache.TransactionListener)
+
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	@Deprecated
 	public TransactionListener setListener(TransactionListener newListener) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#addListener(org.apache.geode.cache.TransactionListener)
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public void addListener(TransactionListener aListener) {
@@ -167,16 +151,16 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#removeListener(org.apache.geode.cache.TransactionListener)
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public void removeListener(TransactionListener aListener) {
 		this.listeners.remove(aListener);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#initListeners(org.apache.geode.cache.TransactionListener[])
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public void initListeners(TransactionListener[] newListeners) {
@@ -184,20 +168,35 @@ public class StubCacheTransactionMananger implements CacheTransactionManager {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#setWriter(org.apache.geode.cache.TransactionWriter)
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public void setWriter(TransactionWriter writer) {
 		this.writer = writer;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#getWriter()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public TransactionWriter getWriter() {
 		return this.writer;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public void setDistributed(boolean distributed) {
+		this.distributed = distributed;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public boolean isDistributed() {
+		return this.distributed;
+	}
 }

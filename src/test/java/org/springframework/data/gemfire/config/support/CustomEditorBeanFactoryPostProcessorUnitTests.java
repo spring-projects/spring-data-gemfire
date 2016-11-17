@@ -47,8 +47,6 @@ import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConvert
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
 import org.springframework.data.gemfire.wan.OrderPolicyConverter;
-import org.springframework.data.gemfire.wan.StartupPolicyConverter;
-import org.springframework.data.gemfire.wan.StartupPolicyType;
 import org.springframework.util.StringUtils;
 
 /**
@@ -97,8 +95,6 @@ public class CustomEditorBeanFactoryPostProcessorUnitTests {
 			eq(ScopeConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(Gateway.OrderPolicy.class),
 			eq(OrderPolicyConverter.class));
-		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(StartupPolicyType.class),
-			eq(StartupPolicyConverter.class));
 		verify(mockBeanFactory, times(1)).registerCustomEditor(eq(SubscriptionEvictionPolicy.class),
 			eq(SubscriptionEvictionPolicyConverter.class));
 		verifyNoMoreInteractions(mockBeanFactory);

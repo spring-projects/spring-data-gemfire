@@ -31,7 +31,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
-import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.junit.Test;
 import org.springframework.data.gemfire.TestUtils;
 
@@ -83,7 +83,8 @@ public class AsyncEventQueueFactoryBeanTest {
 		String orderPolicy = TestUtils.readField("orderPolicy", factoryBean);
 
 		if (orderPolicy != null) {
-			verify(mockAsyncEventQueueFactory).setOrderPolicy(eq(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase())));
+			verify(mockAsyncEventQueueFactory).setOrderPolicy(
+				eq(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase())));
 		}
 
 		Integer dispatcherThreads = TestUtils.readField("dispatcherThreads", factoryBean);

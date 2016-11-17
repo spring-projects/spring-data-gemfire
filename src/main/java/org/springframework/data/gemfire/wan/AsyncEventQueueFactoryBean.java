@@ -20,7 +20,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
-import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.springframework.util.Assert;
 
 /**
@@ -123,7 +123,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()), String.format(
 				"The value of Order Policy '$1%s' is invalid.", orderPolicy));
 
-			asyncEventQueueFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
+			asyncEventQueueFactory.setOrderPolicy(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
 
 		if (persistent != null) {

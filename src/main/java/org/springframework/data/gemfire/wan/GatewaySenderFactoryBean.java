@@ -18,7 +18,6 @@ package org.springframework.data.gemfire.wan;
 import java.util.List;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.util.Gateway;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -148,7 +147,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()),
 				String.format("The value for Order Policy '%1$s' is invalid.", orderPolicy));
 
-			gatewaySenderFactory.setOrderPolicy(Gateway.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
+			gatewaySenderFactory.setOrderPolicy(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
 		}
 
 		gatewaySenderFactory.setParallel(isParallelGatewaySender());
@@ -327,5 +326,4 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		stop();
 		callback.run();
 	}
-
 }

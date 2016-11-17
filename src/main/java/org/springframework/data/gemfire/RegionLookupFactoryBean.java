@@ -28,8 +28,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Simple FactoryBean for retrieving generic GemFire {@link Region}s. If lookups are not enabled or the Region
- * does not exist, an exception is thrown.  For declaring and configuring new Regions, see {@link RegionFactoryBean}.
+ * Spring {@link FactoryBean} for looking up generic GemFire {@link Region Regions}. If lookups are not enabled
+ * or the {@link Region} does not exist, an Exception is thrown.
  *
  * @author Costin Leau
  * @author John Blum
@@ -39,7 +39,8 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.Region
  */
 @SuppressWarnings("unused")
-public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Region<K, V>>, InitializingBean, BeanNameAware {
+public abstract class RegionLookupFactoryBean<K, V>
+		implements FactoryBean<Region<K, V>>, InitializingBean, BeanNameAware {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -54,6 +55,7 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	private String name;
 	private String regionName;
 
+	@SuppressWarnings("all")
 	public void afterPropertiesSet() throws Exception {
 		Assert.notNull(cache, "the 'cache' reference property must be set");
 
@@ -198,5 +200,4 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	public Boolean getLookupEnabled() {
 		return lookupEnabled;
 	}
-
 }

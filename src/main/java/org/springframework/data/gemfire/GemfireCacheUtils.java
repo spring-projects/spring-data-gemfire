@@ -293,10 +293,6 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof VersionException) {
 			return new DataAccessResourceFailureException(ex.getMessage(), ex);
 		}
-		// util.version exception (seems quite similar to the exception above)
-		if (ex instanceof org.apache.geode.cache.util.VersionException) {
-			return new DataAccessResourceFailureException(ex.getMessage(), ex);
-		}
 		// admin exception
 		if (ex instanceof org.apache.geode.admin.AdminException) {
 			return new GemfireSystemException(ex);
@@ -347,5 +343,4 @@ public abstract class GemfireCacheUtils {
 	static DataAccessException convertCqInvalidException(RuntimeException ex) {
 		return new GemfireQueryException(ex);
 	}
-
 }
