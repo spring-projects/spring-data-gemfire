@@ -18,26 +18,25 @@ package org.springframework.data.gemfire;
 
 import java.util.Properties;
 
+import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.Declarable;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.access.BeanFactoryReference;
-
-import com.gemstone.gemfire.cache.CacheCallback;
-import com.gemstone.gemfire.cache.Declarable;
 
 /**
  * Convenience class for Spring-aware GemFire Declarable components. Provides a reference to the current
  * Spring ApplicationContext, e.g. for Spring bean lookup or resource loading.
- * 
+ *
  * Note that in most cases, one can just declare the same components as Spring beans, through {@link RegionFactoryBean}
  * which gives access to the full Spring container capabilities and does not enforce the {@link Declarable} interface
  * to be implemented.
- * 
+ *
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.access.BeanFactoryReference
- * @see com.gemstone.gemfire.cache.CacheCallback
- * @see com.gemstone.gemfire.cache.Declarable
+ * @see org.apache.geode.cache.CacheCallback
+ * @see org.apache.geode.cache.Declarable
  */
 @SuppressWarnings("unused")
 public abstract class DeclarableSupport implements CacheCallback, Declarable {
@@ -89,7 +88,7 @@ public abstract class DeclarableSupport implements CacheCallback, Declarable {
 	 * Initialize this Declarable object with the given Properties.
 	 *
 	 * @param props the Properties (parameters) used to initialize this Declarable.
-	 * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
+	 * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
 	 * @see java.util.Properties
 	 * @see #init(Properties)
 	 */

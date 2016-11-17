@@ -30,34 +30,33 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.LossAction;
-import com.gemstone.gemfire.cache.MembershipAttributes;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.ResumptionAction;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.partition.PartitionListener;
-import com.gemstone.gemfire.cache.partition.PartitionListenerAdapter;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.distributed.Role;
-
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.LossAction;
+import org.apache.geode.cache.MembershipAttributes;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.ResumptionAction;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.cache.partition.PartitionListenerAdapter;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.distributed.Role;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
@@ -81,8 +80,8 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.Region
  * @since 1.5.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)

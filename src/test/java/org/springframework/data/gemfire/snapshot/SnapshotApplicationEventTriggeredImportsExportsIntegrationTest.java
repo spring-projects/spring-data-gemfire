@@ -26,8 +26,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.snapshot.SnapshotFilter;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,9 +49,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
-
 /**
  * The SnapshotApplicationEventTriggeredImportsExportsIntegrationTest class is a test suite of test cases testing
  * the effects of the SnapshotServiceFactoryBean using Spring ApplicationEvents to trigger imports and exports
@@ -64,7 +64,7 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
  * @see org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent
  * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean
  * @see org.springframework.data.gemfire.repository.sample.Person
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.7.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)

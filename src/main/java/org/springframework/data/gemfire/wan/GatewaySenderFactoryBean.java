@@ -17,17 +17,16 @@ package org.springframework.data.gemfire.wan;
 
 import java.util.List;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.util.Gateway;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * FactoryBean for creating a parallel or serial GemFire {@link GatewaySender}.
@@ -36,10 +35,10 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @author John Blum
  * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.util.Gateway
- * @see com.gemstone.gemfire.cache.wan.GatewaySender
- * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.util.Gateway
+ * @see org.apache.geode.cache.wan.GatewaySender
+ * @see org.apache.geode.cache.wan.GatewaySenderFactory
  * @since 1.2.2
  */
 @SuppressWarnings("unused")
@@ -78,7 +77,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	 * Constructs an instance of the GatewaySenderFactoryBean class initialized with a reference to the GemFire cache.
 	 *
 	 * @param cache the Gemfire cache reference.
-	 * @see com.gemstone.gemfire.cache.Cache
+	 * @see org.apache.geode.cache.Cache
 	 */
 	public GatewaySenderFactoryBean(final Cache cache) {
 		super(cache);

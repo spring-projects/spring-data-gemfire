@@ -21,8 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Test;
 
 /**
@@ -32,7 +31,7 @@ import org.junit.Test;
  * @author John Blum
  * @see org.junit.Test
  * @see ClientRegionShortcutWrapper
- * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @since 1.4.0
  */
 public class ClientRegionShortcutWrapperTest {

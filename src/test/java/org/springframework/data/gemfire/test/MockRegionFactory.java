@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -23,26 +23,25 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.lang.reflect.Field;
 
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.MembershipAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.query.QueryService;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.util.ReflectionUtils;
-
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.MembershipAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.query.QueryService;
 
 /**
  * @author David Turanski
@@ -55,7 +54,7 @@ public class MockRegionFactory<K, V> {
 
 	protected static QueryService mockQueryService = mock(QueryService.class);
 
-	protected com.gemstone.gemfire.cache.AttributesFactory<K,V> attributesFactory;
+	protected org.apache.geode.cache.AttributesFactory<K,V> attributesFactory;
 
 	protected final StubCache cache;
 
@@ -69,8 +68,8 @@ public class MockRegionFactory<K, V> {
 
 	@SuppressWarnings({ "deprecation", "rawtypes", "unchecked" })
 	public RegionFactory<K, V> createMockRegionFactory(RegionAttributes<K, V> attributes) {
-		attributesFactory = (attributes != null ? new com.gemstone.gemfire.cache.AttributesFactory<K,V>(attributes)
-			: new com.gemstone.gemfire.cache.AttributesFactory<K,V>());
+		attributesFactory = (attributes != null ? new org.apache.geode.cache.AttributesFactory<K,V>(attributes)
+			: new org.apache.geode.cache.AttributesFactory<K,V>());
 
 		// Workaround for GemFire bug???
 		if (attributes != null) {
@@ -187,11 +186,11 @@ public class MockRegionFactory<K, V> {
 			}
 		});
 
-		when(regionFactory.setDiskWriteAttributes(any(com.gemstone.gemfire.cache.DiskWriteAttributes.class)))
+		when(regionFactory.setDiskWriteAttributes(any(org.apache.geode.cache.DiskWriteAttributes.class)))
 			.thenAnswer(new Answer<RegionFactory>() {
 				@Override public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-					com.gemstone.gemfire.cache.DiskWriteAttributes diskWriteAttributes =
-						(com.gemstone.gemfire.cache.DiskWriteAttributes) invocation.getArguments()[0];
+					org.apache.geode.cache.DiskWriteAttributes diskWriteAttributes =
+						(org.apache.geode.cache.DiskWriteAttributes) invocation.getArguments()[0];
 					attributesFactory.setDiskWriteAttributes(diskWriteAttributes);
 					return regionFactory;
 				}

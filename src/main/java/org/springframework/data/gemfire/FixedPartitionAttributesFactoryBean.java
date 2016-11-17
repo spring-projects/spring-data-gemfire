@@ -15,11 +15,10 @@
  */
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.FixedPartitionAttributes;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 
 /**
  * @author David Turanski
@@ -54,7 +53,7 @@ public class FixedPartitionAttributesFactoryBean implements FactoryBean<FixedPar
 		this.numBuckets = numBuckets;
 	}
 
-	
+
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
@@ -85,7 +84,7 @@ public class FixedPartitionAttributesFactoryBean implements FactoryBean<FixedPar
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		Assert.hasText(partitionName,"partitionName cannot be empty or null");
-		
+
 		fixedPartitionAttributes = null;
 		if (primary == null && numBuckets == null){
 			fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(partitionName);
@@ -96,6 +95,6 @@ public class FixedPartitionAttributesFactoryBean implements FactoryBean<FixedPar
 		} else {
 			fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(partitionName,primary,numBuckets);
 		}
-	
+
 	}
 }

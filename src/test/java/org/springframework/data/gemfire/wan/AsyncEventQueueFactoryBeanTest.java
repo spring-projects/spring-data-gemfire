@@ -27,14 +27,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.util.Gateway;
 import org.junit.Test;
 import org.springframework.data.gemfire.TestUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.util.Gateway;
 
 /**
  * The AsyncEventQueueFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -45,10 +44,10 @@ import com.gemstone.gemfire.cache.util.Gateway;
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.TestUtils
  * @see org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener
- * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
- * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventListener
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory
  * @since 1.3.3
  */
 public class AsyncEventQueueFactoryBeanTest {

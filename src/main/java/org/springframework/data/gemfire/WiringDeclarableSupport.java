@@ -18,20 +18,19 @@ package org.springframework.data.gemfire;
 
 import java.util.Properties;
 
+import org.apache.geode.cache.Declarable;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.wiring.BeanConfigurerSupport;
 import org.springframework.beans.factory.wiring.BeanWiringInfo;
 import org.springframework.beans.factory.wiring.BeanWiringInfoResolver;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Declarable;
-
 /**
  * Dedicated {@link Declarable} support class for wiring the declaring instance through the Spring container.
  *
  * <p>This implementation first looks for a 'bean-name' property which will be used to locate a 'template'
  * bean definition.  Autowiring will be performed, based on the settings defined in the Spring container.
- * 
+ *
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.BeanFactory
@@ -39,7 +38,7 @@ import com.gemstone.gemfire.cache.Declarable;
  * @see org.springframework.beans.factory.wiring.BeanWiringInfo
  * @see org.springframework.data.gemfire.DeclarableSupport
  * @see org.springframework.data.gemfire.LazyWiringDeclarableSupport
- * @see com.gemstone.gemfire.cache.Declarable
+ * @see org.apache.geode.cache.Declarable
  * @deprecated please use LazyWiringDeclarableSupport instead.
  */
 @Deprecated

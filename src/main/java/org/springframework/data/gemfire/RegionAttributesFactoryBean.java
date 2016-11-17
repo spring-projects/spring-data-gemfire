@@ -16,11 +16,10 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.RegionAttributes;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * Spring-friendly bean for creating {@link RegionAttributes}. Eliminates the need of using a XML 'factory-method' tag.
@@ -29,8 +28,8 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * @author John Blum
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.gemstone.gemfire.cache.AttributesFactory
- * @see com.gemstone.gemfire.cache.RegionAttributes
+ * @see org.apache.geode.cache.AttributesFactory
+ * @see org.apache.geode.cache.RegionAttributes
  */
 @SuppressWarnings({ "deprecation", "unused" })
 public class RegionAttributesFactoryBean extends AttributesFactory implements FactoryBean<RegionAttributes>,

@@ -34,21 +34,20 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.MembershipAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.MembershipAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.data.gemfire.support.AbstractRegionFactoryBeanTest;
@@ -61,13 +60,13 @@ import org.springframework.data.gemfire.util.ArrayUtils;
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.data.gemfire.RegionFactoryBean
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.DataPolicy
- * @see com.gemstone.gemfire.cache.PartitionAttributes
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.RegionAttributes
- * @see com.gemstone.gemfire.cache.RegionFactory
- * @see com.gemstone.gemfire.cache.RegionShortcut
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.DataPolicy
+ * @see org.apache.geode.cache.PartitionAttributes
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionAttributes
+ * @see org.apache.geode.cache.RegionFactory
+ * @see org.apache.geode.cache.RegionShortcut
  */
 @SuppressWarnings("unchecked")
 public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {

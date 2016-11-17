@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.geode.cache.Region;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
@@ -32,11 +33,9 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * {@link FactoryBean} adapter for {@link GemfireRepositoryFactory}.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  * @see org.springframework.beans.factory.FactoryBean
@@ -49,7 +48,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.data.repository.Repository
  * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport
  * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  */
 public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
 		extends RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
@@ -57,7 +56,7 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	private Iterable<Region<?, ?>> regions;
 
 	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext;
-	
+
 	/**
 	 * Sets a reference to the Spring {@link ApplicationContext} in which this object runs.
 	 *
@@ -71,10 +70,10 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 		Collection<Region> regions = applicationContext.getBeansOfType(Region.class).values();
 		this.regions = (Iterable) Collections.unmodifiableCollection(regions);
 	}
-	
+
 	/**
 	 * Configures the {@link MappingContext} used to perform domain object type to store mappings.
-	 * 
+	 *
 	 * @param mappingContext the {@link MappingContext} to set.
 	 * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
 	 * @see org.springframework.data.mapping.context.MappingContext
@@ -117,8 +116,8 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	protected RepositoryFactorySupport createRepositoryFactory() {
 		return new GemfireRepositoryFactory(getRegions(), getGemfireMappingContext());
 	}
-	
-	/* 
+
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
 	 */

@@ -30,10 +30,9 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.HashMap;
 
-import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
-import com.gemstone.gemfire.cache.query.QueryService;
-
 import org.apache.commons.logging.Log;
+import org.apache.geode.cache.query.MultiIndexCreationException;
+import org.apache.geode.cache.query.QueryService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

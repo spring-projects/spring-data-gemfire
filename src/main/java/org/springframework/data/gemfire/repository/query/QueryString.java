@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.Region;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.repository.query.support.OqlKeyword;
 import org.springframework.util.Assert;
@@ -132,7 +131,7 @@ public class QueryString {
 	 * @param region the GemFire Region in which to query; must not be {@literal null}.
 	 * @return a Query String with the FROM clause in the OQL statement evaluated and replaced with
 	 * the fully-qualified Region to query.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	@SuppressWarnings("unused")
 	public QueryString forRegion(Class<?> domainClass, Region<?, ?> region) {

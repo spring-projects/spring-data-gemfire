@@ -25,14 +25,14 @@ import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
+import org.apache.geode.cache.server.CacheServer;
 
 /**
  * The {@link ClientServerIntegrationTestsSupport} class is a abstract base class encapsulating common functionality
  * to support the implementation of GemFire client/server tests.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.server.CacheServer
+ * @see org.apache.geode.cache.server.CacheServer
  * @see org.springframework.data.gemfire.test.support.SocketUtils
  * @see org.springframework.data.gemfire.test.support.ThreadUtils
  * @since 1.9.0

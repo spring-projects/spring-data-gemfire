@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.snapshot;
 
-import static com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import static org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
 
 import java.io.Closeable;
@@ -34,6 +34,12 @@ import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.snapshot.CacheSnapshotService;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.cache.snapshot.SnapshotFilter;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -46,13 +52,6 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-
 /**
  * The SnapshotServiceFactoryBean class is a Spring FactoryBean used to configure and create an instance
  * of an appropriate GemFire Snapshot Service to perform data import and exports.  A CacheSnapshotService is created
@@ -64,8 +63,8 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.context.ApplicationListener
  * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
- * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
- * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
+ * @see org.apache.geode.cache.snapshot.CacheSnapshotService
+ * @see org.apache.geode.cache.snapshot.RegionSnapshotService
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
@@ -106,7 +105,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 *
 	 * @param cache the GemFire Cache used to create an instance of CacheSnapshotService.
 	 * @throws IllegalArgumentException if the Cache reference is null.
-	 * @see com.gemstone.gemfire.cache.Cache
+	 * @see org.apache.geode.cache.Cache
 	 * @see #getCache()
 	 */
 	public void setCache(Cache cache) {
@@ -119,7 +118,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 *
 	 * @return the GemFire Cache used to create an instance of CacheSnapshotService.
 	 * @throws IllegalStateException if the Cache argument is null.
-	 * @see com.gemstone.gemfire.cache.Cache
+	 * @see org.apache.geode.cache.Cache
 	 * @see #setCache(Cache)
 	 */
 	protected Cache getCache() {
@@ -173,7 +172,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * Sets a reference to the GemFire Region for which the snapshot will be taken.
 	 *
 	 * @param region the GemFire Region used to create an instance of the RegionSnapshotService.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 * @see #getRegion()
 	 */
 	public void setRegion(Region<K, V> region) {
@@ -184,7 +183,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * Gets a reference to the GemFire Region for which the snapshot will be taken.
 	 *
 	 * @return the GemFire Region used to create an instance of the RegionSnapshotService.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 * @see #getRegion()
 	 */
 	protected Region<K, V> getRegion() {
@@ -291,7 +290,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @return a SnapshotServiceAdapter wrapping the GemFire CacheSnapshotService.
 	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter
-	 * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
+	 * @see org.apache.geode.cache.snapshot.CacheSnapshotService
 	 */
 	protected SnapshotServiceAdapter<Object, Object> wrap(CacheSnapshotService cacheSnapshotService) {
 		return new CacheSnapshotServiceAdapter(cacheSnapshotService);
@@ -305,7 +304,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @return a SnapshotServiceAdapter wrapping the GemFire RegionSnapshotService.
 	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
-	 * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
+	 * @see org.apache.geode.cache.snapshot.RegionSnapshotService
 	 */
 	protected SnapshotServiceAdapter<K, V> wrap(RegionSnapshotService<K, V> regionSnapshotService) {
 		return new RegionSnapshotServiceAdapter<K, V>(regionSnapshotService);

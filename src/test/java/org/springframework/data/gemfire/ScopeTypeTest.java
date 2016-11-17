@@ -21,9 +21,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import org.apache.geode.cache.Scope;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The ScopeTypeTest class is a test suite of test cases testing the contract and functionality of the ScopeType enum.
@@ -31,7 +30,7 @@ import com.gemstone.gemfire.cache.Scope;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.ScopeType
- * @see com.gemstone.gemfire.cache.Scope
+ * @see org.apache.geode.cache.Scope
  * @since 1.6.0
  */
 public class ScopeTypeTest {

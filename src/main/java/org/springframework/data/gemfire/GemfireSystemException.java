@@ -16,14 +16,13 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.GemFireCheckedException;
+import org.apache.geode.GemFireException;
 import org.springframework.dao.UncategorizedDataAccessException;
-
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
 
 /**
  * GemFire-specific subclass of UncategorizedDataAccessException, for GemFire system errors that do not match any concrete <code>org.springframework.dao</code> exceptions.
- *  
+ *
  * @author Costin Leau
  */
 @SuppressWarnings("serial")

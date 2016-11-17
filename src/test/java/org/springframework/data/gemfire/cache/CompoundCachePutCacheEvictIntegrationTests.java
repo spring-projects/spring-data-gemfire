@@ -26,8 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-
+import org.apache.geode.cache.GemFireCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,7 +85,7 @@ public class CompoundCachePutCacheEvictIntegrationTests {
 	private PeopleService peopleService;
 
 	@Resource(name = "People")
-	private com.gemstone.gemfire.cache.Region<Long, Person> peopleRegion;
+	private org.apache.geode.cache.Region<Long, Person> peopleRegion;
 
 	protected void assertNoPeopleInDepartment(Department department) {
 		assertPeopleInDepartment(department);
@@ -154,7 +153,7 @@ public class CompoundCachePutCacheEvictIntegrationTests {
 		GemfireCacheManager cacheManager(GemFireCache gemfireCache) {
 			GemfireCacheManager cacheManager = new GemfireCacheManager() {
 				@Override protected org.springframework.cache.Cache decorateCache(org.springframework.cache.Cache cache) {
-					return new GemfireCache((com.gemstone.gemfire.cache.Region<?, ?>) cache.getNativeCache()) {
+					return new GemfireCache((org.apache.geode.cache.Region<?, ?>) cache.getNativeCache()) {
 						@Override public void evict(Object key) {
 							getNativeCache().remove(key);
 						}

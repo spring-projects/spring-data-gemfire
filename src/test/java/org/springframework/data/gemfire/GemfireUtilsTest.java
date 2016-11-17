@@ -29,12 +29,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.GemFireVersion;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.GemFireVersion;
 
 /**
  * The GemfireUtilsTest class is a test suite of test cases testing the contract and functionality of the GemfireUtils
@@ -138,7 +137,7 @@ public class GemfireUtilsTest {
 		verifyZeroInteractions(mockClientCache);
 	}
 
-	// NOTE implementation is based on a GemFire internal class... com.gemstone.gemfire.internal.GemFireVersion.
+	// NOTE implementation is based on a GemFire internal class... org.apache.geode.internal.GemFireVersion.
 	protected int getGemFireVersion() {
 		try {
 			String gemfireVersion = GemFireVersion.getGemFireVersion();

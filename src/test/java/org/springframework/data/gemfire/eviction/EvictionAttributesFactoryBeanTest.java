@@ -23,11 +23,10 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +38,7 @@ import org.junit.Test;
  * @author John Blum
  * @see org.junit.Test
  * @see EvictionAttributesFactoryBean
- * @see com.gemstone.gemfire.cache.EvictionAttributes
+ * @see org.apache.geode.cache.EvictionAttributes
  * @since 1.3.4
  */
 public class EvictionAttributesFactoryBeanTest {

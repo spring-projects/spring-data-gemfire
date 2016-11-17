@@ -34,13 +34,13 @@ import org.springframework.data.gemfire.GemfireCallback;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.stereotype.Component;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.GemFireCheckedException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.cache.Region;
 
 /**
  * Entity processing and interpreting shell commands.
- * 
+ *
  * @author Costin Leau
  */
 @Component

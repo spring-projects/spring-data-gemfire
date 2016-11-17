@@ -18,8 +18,7 @@ package org.springframework.data.gemfire.client;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Test;
 
 /**
@@ -29,7 +28,7 @@ import org.junit.Test;
  * @author John Blum
  * @see org.junit.Test
  * @see ClientRegionShortcutConverter
- * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @since 1.3.4
  */
 public class ClientRegionShortcutConverterTest {

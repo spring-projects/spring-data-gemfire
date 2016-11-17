@@ -29,7 +29,7 @@ import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 
 /**
  * The {@link AddCacheServerConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that registers
- * a {@link CacheServerFactoryBean} definition for the {@link com.gemstone.gemfire.cache.server.CacheServer}
+ * a {@link CacheServerFactoryBean} definition for the {@link org.apache.geode.cache.server.CacheServer}
  * configuration meta-data defined in {@link EnableCacheServer}.
  *
  * @author John Blum

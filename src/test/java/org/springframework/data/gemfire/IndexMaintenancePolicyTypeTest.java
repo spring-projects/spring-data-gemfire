@@ -23,10 +23,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.RegionFactory;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.RegionFactory;
 
 /**
  * The IndexMaintenanceTypeTest class is a test suite of test cases testing the contract and functionality of the

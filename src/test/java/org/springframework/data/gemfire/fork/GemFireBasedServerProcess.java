@@ -18,18 +18,17 @@ package org.springframework.data.gemfire.fork;
 
 import java.io.File;
 
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.springframework.data.gemfire.process.support.ProcessUtils;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
-
-import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
 /**
  * The GemFireBasedServerProcess class is a main Java class used to launch a GemFire Server
  * using GemFire's ServerLauncher API.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.distributed.ServerLauncher
+ * @see org.apache.geode.distributed.ServerLauncher
  * @since 1.7.0
  */
 public class GemFireBasedServerProcess {

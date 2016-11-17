@@ -24,9 +24,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.GemfireUtils;
 
@@ -42,8 +41,8 @@ import org.springframework.data.gemfire.GemfireUtils;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.AddPoolConfiguration
- * @see com.gemstone.gemfire.cache.client.Pool
- * @see com.gemstone.gemfire.cache.client.PoolFactory
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolFactory
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -57,26 +56,26 @@ public @interface EnablePool {
 	/**
 	 * Configures the free connection timeout for this pool.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_FREE_CONNECTION_TIMEOUT
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_FREE_CONNECTION_TIMEOUT
 	 */
 	int freeConnectionTimeout() default PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT;
 
 	/**
 	 * Configures the amount of time a connection can be idle before expiring the connection.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_IDLE_TIMEOUT
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_IDLE_TIMEOUT
 	 */
 	long idleTimeout() default PoolFactory.DEFAULT_IDLE_TIMEOUT;
 
 	/**
 	 * Configures the load conditioning interval for this pool.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_LOAD_CONDITIONING_INTERVAL
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_LOAD_CONDITIONING_INTERVAL
 	 */
 	int loadConditioningInterval() default PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL;
 
 	/**
-	 * Configures the GemFire {@link com.gemstone.gemfire.distributed.Locator Locators} to which
+	 * Configures the GemFire {@link org.apache.geode.distributed.Locator Locators} to which
 	 * this cache client will connect.
 	 */
 	Locator[] locators() default {};
@@ -92,21 +91,21 @@ public @interface EnablePool {
 	/**
 	 * Configures the max number of client to server connections that the pool will create.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_MAX_CONNECTIONS
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_MAX_CONNECTIONS
 	 */
 	int maxConnections() default PoolFactory.DEFAULT_MAX_CONNECTIONS;
 
 	/**
 	 * Configures the minimum number of connections to keep available at all times.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_MIN_CONNECTIONS
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_MIN_CONNECTIONS
 	 */
 	int minConnections() default PoolFactory.DEFAULT_MIN_CONNECTIONS;
 
 	/**
 	 * If set to true then the created pool can be used by multiple users.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_MULTIUSER_AUTHENTICATION
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_MULTIUSER_AUTHENTICATION
 	 */
 	boolean multiUserAuthentication() default PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION;
 
@@ -118,15 +117,15 @@ public @interface EnablePool {
 	/**
 	 * Configures how often to ping servers to verify that they are still alive.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_PING_INTERVAL
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_PING_INTERVAL
 	 */
 	long pingInterval() default PoolFactory.DEFAULT_PING_INTERVAL;
 
 	/**
 	 * By default {@code prSingleHopEnabled} is {@literal true} in which case the client is aware of the location
-	 * of partitions on servers hosting Regions with {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}.
+	 * of partitions on servers hosting Regions with {@link org.apache.geode.cache.DataPolicy#PARTITION}.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_PR_SINGLE_HOP_ENABLED
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_PR_SINGLE_HOP_ENABLED
 	 */
 	boolean prSingleHopEnabled() default PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED;
 
@@ -134,26 +133,26 @@ public @interface EnablePool {
 	 * Configures the number of milliseconds to wait for a response from a server before timing out the operation
 	 * and trying another server (if any are available).
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_READ_TIMEOUT
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_READ_TIMEOUT
 	 */
 	int readTimeout() default PoolFactory.DEFAULT_READ_TIMEOUT;
 
 	/**
 	 * Configures the number of times to retry a request after timeout/exception.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_RETRY_ATTEMPTS
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_RETRY_ATTEMPTS
 	 */
 	int retryAttempts() default PoolFactory.DEFAULT_RETRY_ATTEMPTS;
 
 	/**
 	 * Configures the group that all servers this pool connects to must belong to.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_SERVER_GROUP
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_SERVER_GROUP
 	 */
 	String serverGroup() default PoolFactory.DEFAULT_SERVER_GROUP;
 
 	/**
-	 * Configures the GemFire {@link com.gemstone.gemfire.cache.server.CacheServer CacheServers} to which
+	 * Configures the GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers} to which
 	 * this cache client will connect.
 	 */
 	Server[] servers() default {};
@@ -169,14 +168,14 @@ public @interface EnablePool {
 	/**
 	 * Configures the socket buffer size for each connection made in this pool.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_SOCKET_BUFFER_SIZE
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_SOCKET_BUFFER_SIZE
 	 */
 	int socketBufferSize() default PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE;
 
 	/**
 	 * Configures how often to send client statistics to the server.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_STATISTIC_INTERVAL
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_STATISTIC_INTERVAL
 	 */
 	int statisticInterval() default PoolFactory.DEFAULT_STATISTIC_INTERVAL;
 
@@ -184,14 +183,14 @@ public @interface EnablePool {
 	 * Configures the interval in milliseconds to wait before sending acknowledgements to the cache server
 	 * for events received from the server subscriptions.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_SUBSCRIPTION_ACK_INTERVAL
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_SUBSCRIPTION_ACK_INTERVAL
 	 */
 	int subscriptionAckInterval() default PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
 
 	/**
 	 * If set to true then the created pool will have server-to-client subscriptions enabled.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_SUBSCRIPTION_ENABLED
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_SUBSCRIPTION_ENABLED
 	 */
 	boolean subscriptionEnabled() default PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED;
 
@@ -199,21 +198,21 @@ public @interface EnablePool {
 	 * Configures the messageTrackingTimeout attribute which is the time-to-live period, in milliseconds,
 	 * for subscription events the client has received from the server.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT
 	 */
 	int subscriptionMessageTrackingTimeout() default PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT;
 
 	/**
 	 * Configures the redundancy level for this pools server-to-client subscriptions.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_SUBSCRIPTION_REDUNDANCY
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_SUBSCRIPTION_REDUNDANCY
 	 */
 	int subscriptionRedundancy() default PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
 
 	/**
 	 * Configures the thread local connections policy for this pool.
 	 *
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_THREAD_LOCAL_CONNECTIONS
+	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_THREAD_LOCAL_CONNECTIONS
 	 */
 	boolean threadLocalConnections() default PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
 

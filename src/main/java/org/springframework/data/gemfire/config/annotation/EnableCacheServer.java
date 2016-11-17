@@ -24,9 +24,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 
@@ -43,7 +42,7 @@ import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.AddCacheServerConfiguration
- * @see com.gemstone.gemfire.cache.server.CacheServer
+ * @see org.apache.geode.cache.server.CacheServer
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -64,7 +63,7 @@ public @interface EnableCacheServer {
 	/**
 	 * Configures the ip address or host name that this cache server will listen on.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_BIND_ADDRESS
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_BIND_ADDRESS
 	 */
 	String bindAddress() default CacheServer.DEFAULT_BIND_ADDRESS;
 
@@ -72,70 +71,70 @@ public @interface EnableCacheServer {
 	 * Configures the ip address or host name that server locators will tell clients that this cache server
 	 * is listening on.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_HOSTNAME_FOR_CLIENTS
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_HOSTNAME_FOR_CLIENTS
 	 */
 	String hostnameForClients() default CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
 
 	/**
 	 * Configures the frequency in milliseconds to poll the load probe on this cache server.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_LOAD_POLL_INTERVAL
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_LOAD_POLL_INTERVAL
 	 */
 	long loadPollInterval() default CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
 
 	/**
 	 * Configures the maximum allowed client connections.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_MAX_CONNECTIONS
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MAX_CONNECTIONS
 	 */
 	int maxConnections() default CacheServer.DEFAULT_MAX_CONNECTIONS;
 
 	/**
 	 * Configures he maximum number of messages that can be enqueued in a client-queue.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_MAXIMUM_MESSAGE_COUNT
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MAXIMUM_MESSAGE_COUNT
 	 */
 	int maxMessageCount() default CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
 
 	/**
 	 * Configures the maximum number of threads allowed in this cache server to service client requests.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_MAX_THREADS
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MAX_THREADS
 	 */
 	int maxThreads() default CacheServer.DEFAULT_MAX_THREADS;
 
 	/**
 	 * Configures the maximum amount of time between client pings.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS
 	 */
 	int maxTimeBetweenPings() default CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
 
 	/**
 	 * Configures the time (in seconds ) after which a message in the client queue will expire.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_MESSAGE_TIME_TO_LIVE
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MESSAGE_TIME_TO_LIVE
 	 */
 	int messageTimeToLive() default CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
 
 	/**
 	 * Configures the port on which this cache server listens for clients.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_PORT
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_PORT
 	 */
 	int port() default CacheServer.DEFAULT_PORT;
 
 	/**
 	 * Configures the configured buffer size of the socket connection for this CacheServer.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#DEFAULT_SOCKET_BUFFER_SIZE
+	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_SOCKET_BUFFER_SIZE
 	 */
 	int socketBufferSize() default CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
 
 	/**
 	 * Configures the capacity of the client queue.
 	 *
-	 * @see com.gemstone.gemfire.cache.server.ClientSubscriptionConfig#DEFAULT_CAPACITY
+	 * @see org.apache.geode.cache.server.ClientSubscriptionConfig#DEFAULT_CAPACITY
 	 */
 	int subscriptionCapacity() default ClientSubscriptionConfig.DEFAULT_CAPACITY;
 

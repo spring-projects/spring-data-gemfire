@@ -20,9 +20,8 @@ import static org.junit.Assert.assertEquals;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.Index;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Index;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
@@ -62,7 +61,7 @@ public class IndexNamespaceTest {
 		assertEquals("status", simple.getIndexedExpression());
 		assertEquals(Region.SEPARATOR + TEST_REGION_NAME, simple.getFromClause());
 		assertEquals(TEST_REGION_NAME, simple.getRegion().getName());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, simple.getType());
+		assertEquals(org.apache.geode.cache.query.IndexType.FUNCTIONAL, simple.getType());
 	}
 
 	@Test
@@ -71,7 +70,7 @@ public class IndexNamespaceTest {
 		assertEquals("tsi.name", complex.getIndexedExpression());
 		assertEquals(Region.SEPARATOR + TEST_REGION_NAME + " tsi", complex.getFromClause());
 		assertEquals(TEST_REGION_NAME, complex.getRegion().getName());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.HASH, complex.getType());
+		assertEquals(org.apache.geode.cache.query.IndexType.HASH, complex.getType());
 	}
 
 }

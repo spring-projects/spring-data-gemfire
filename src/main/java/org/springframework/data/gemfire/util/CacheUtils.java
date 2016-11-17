@@ -17,16 +17,15 @@
 
 package org.springframework.data.gemfire.util;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 /**
  * CacheUtils is an abstract utility class encapsulating common operations for working with GemFire Cache
@@ -34,14 +33,14 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.CacheFactory
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.client.ClientCacheFactory
- * @see com.gemstone.gemfire.distributed.DistributedSystem
- * @see com.gemstone.gemfire.internal.cache.GemFireCacheImpl
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.CacheFactory
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientCacheFactory
+ * @see org.apache.geode.distributed.DistributedSystem
+ * @see org.apache.geode.internal.cache.GemFireCacheImpl
  * @since 1.8.0
  */
 @SuppressWarnings("unused")

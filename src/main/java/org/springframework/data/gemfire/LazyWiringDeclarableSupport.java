@@ -19,6 +19,7 @@ package org.springframework.data.gemfire;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.cache.Declarable;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.access.BeanFactoryReference;
@@ -32,8 +33,6 @@ import org.springframework.data.gemfire.support.SpringContextBootstrappingInitia
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Declarable;
 
 /**
  * The LazyWiringDeclarableSupport class is an implementation of the GemFire Declarable interface that enables support
@@ -51,7 +50,7 @@ import com.gemstone.gemfire.cache.Declarable;
  * @see org.springframework.data.gemfire.DeclarableSupport
  * @see org.springframework.data.gemfire.WiringDeclarableSupport
  * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer
- * @see com.gemstone.gemfire.cache.Declarable
+ * @see org.apache.geode.cache.Declarable
  * @since 1.3.4
  */
 @SuppressWarnings("unused")

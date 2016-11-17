@@ -22,12 +22,11 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.dao.support.DaoSupport;
 import org.springframework.stereotype.Repository;
-
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The AutoRegionLookupDao class is a Data Access Object (DAO) encapsulating references to several GemFire Cache Regions
@@ -38,7 +37,7 @@ import com.gemstone.gemfire.cache.Region;
  * @author John Blum
  * @see org.springframework.dao.support.DaoSupport
  * @see org.springframework.stereotype.Repository
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.5.0
  */
 /*

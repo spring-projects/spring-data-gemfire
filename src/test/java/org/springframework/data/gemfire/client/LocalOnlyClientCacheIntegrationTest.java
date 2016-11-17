@@ -27,12 +27,11 @@ import java.util.Properties;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

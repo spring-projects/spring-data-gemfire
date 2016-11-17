@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.serialization;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -24,23 +26,20 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.wiring.BeanConfigurerSupport;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
-
 /**
  * Instantiator that performs instance wiring using the Spring IoC container, allowing common properties
  * to be injected before the object is hydrated/deserialized. The newly created instances can be configured
  * either by relying on an existing bean definition (which acts as a template) or by providing an embedded
  * configuration through annotations.
- * 
+ *
  * Can reuse existing instantiators to optimize instance creation. If one is not provided, it will fallback
  * to reflection invocation.
- * 
+ *
  * By default, on initialization, the class will register itself as an {@link Instantiator} through
- * {@link #register(Instantiator)}. This behaviour can be disabled through {@link #setAutoRegister(boolean)}. 
+ * {@link #register(Instantiator)}. This behaviour can be disabled through {@link #setAutoRegister(boolean)}.
  * Additionally, the instantiator registration is not distributed by default, to allow the application context
  * to be reused. This can be changed through {@link #setDistribute(boolean)}.
- * 
+ *
  * @see org.springframework.beans.factory.wiring.BeanConfigurerSupport
  * @see org.springframework.beans.factory.wiring.BeanWiringInfoResolver
  * @see org.springframework.beans.factory.annotation.Autowired
@@ -108,8 +107,8 @@ public class WiringInstantiator extends Instantiator implements BeanFactoryAware
 
 	/**
 	 * Sets the manager responsible for configuring the newly created instances.
-	 * The given configurer needs to be configured and initialized before-hand. 
-	 * 
+	 * The given configurer needs to be configured and initialized before-hand.
+	 *
 	 * @param configurer the configurer to set
 	 */
 	public void setConfigurer(BeanConfigurerSupport configurer) {
@@ -119,7 +118,7 @@ public class WiringInstantiator extends Instantiator implements BeanFactoryAware
 	/**
 	 * Sets the auto-registration of this {@link Instantiator} during the container startup.
 	 * Default is true, meaning the registration will occur once this factory is initialized.
-	 * 
+	 *
 	 * @see #register(Instantiator)
 	 * @param autoRegister the autoRegister to set
 	 */
@@ -130,7 +129,7 @@ public class WiringInstantiator extends Instantiator implements BeanFactoryAware
 	/**
 	 * Sets the distribution of the region of this {@link Instantiator} during the container startup.
 	 * Default is false, meaning the registration will not be distributed to other clients.
-	 * 
+	 *
 	 * @see #register(Instantiator, boolean)
 	 * @param distribute whether the registration is distributable or not
 	 */

@@ -34,9 +34,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

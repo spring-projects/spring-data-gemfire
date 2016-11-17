@@ -16,13 +16,13 @@
 
 package org.springframework.data.gemfire.client;
 
-import com.gemstone.gemfire.cache.InterestResultPolicy;
+import org.apache.geode.cache.InterestResultPolicy;
 
 /**
  * The InterestResultPolicyType enum is an enumeration of all client Register Interests (result) policy values.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.InterestResultPolicy
+ * @see org.apache.geode.cache.InterestResultPolicy
  * @since 1.6.0
  */
 @SuppressWarnings("unused")

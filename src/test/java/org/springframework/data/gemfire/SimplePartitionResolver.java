@@ -18,8 +18,8 @@ package org.springframework.data.gemfire;
 
 import java.io.Serializable;
 
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.PartitionResolver;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionResolver;
 
 /**
  * @author Costin Leau

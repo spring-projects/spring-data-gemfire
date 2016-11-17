@@ -15,7 +15,7 @@
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<bean id="autoSerializer" class="com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer"/>
+	<bean id="autoSerializer" class="org.apache.geode.pdx.ReflectionBasedAutoSerializer"/>
 
 	<gfe:cache properties-ref="gemfireProperties" pdx-serializer-ref="autoSerializer" pdx-read-serialized="true"
 			   pdx-persistent="true" pdx-disk-store="pdxStore"/>

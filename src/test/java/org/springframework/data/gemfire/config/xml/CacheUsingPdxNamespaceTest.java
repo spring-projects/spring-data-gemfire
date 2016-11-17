@@ -21,8 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.gemstone.gemfire.pdx.PdxSerializer;
-
+import org.apache.geode.pdx.PdxSerializer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -21,12 +21,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.util.GatewayEvent;
-import com.gemstone.gemfire.cache.util.GatewayEventListener;
-import com.gemstone.gemfire.cache.util.GatewayHub;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.GatewayEvent;
+import org.apache.geode.cache.util.GatewayEventListener;
+import org.apache.geode.cache.util.GatewayHub;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

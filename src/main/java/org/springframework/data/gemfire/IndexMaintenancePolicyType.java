@@ -16,16 +16,16 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.RegionFactory;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.RegionFactory;
 
 /**
  * The IndexMaintenanceType enum is a enumerated type of GemFire Index maintenance update options.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.AttributesFactory#setIndexMaintenanceSynchronous(boolean)
- * @see com.gemstone.gemfire.cache.RegionAttributes#getIndexMaintenanceSynchronous()
- * @see com.gemstone.gemfire.cache.RegionFactory#setIndexMaintenanceSynchronous(boolean)
+ * @see org.apache.geode.cache.AttributesFactory#setIndexMaintenanceSynchronous(boolean)
+ * @see org.apache.geode.cache.RegionAttributes#getIndexMaintenanceSynchronous()
+ * @see org.apache.geode.cache.RegionFactory#setIndexMaintenanceSynchronous(boolean)
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
@@ -61,7 +61,7 @@ public enum IndexMaintenancePolicyType {
 	 *
 	 * @param attributesFactory the AttributesFactory instance on which to set the indexMaintenanceProperty.
 	 * @throws java.lang.NullPointerException if the AttributesFactory reference is null.
-	 * @see #setIndexMaintenance(com.gemstone.gemfire.cache.RegionFactory)
+	 * @see #setIndexMaintenance(org.apache.geode.cache.RegionFactory)
 	 */
 	@SuppressWarnings("deprecation")
 	public void setIndexMaintenance(final AttributesFactory attributesFactory) {
@@ -74,7 +74,7 @@ public enum IndexMaintenancePolicyType {
 	 *
 	 * @param regionFactory the RegionFactory instance on which to set the indexMaintenanceProperty.
 	 * @throws java.lang.NullPointerException if the RegionFactory reference is null.
-	 * @see #setIndexMaintenance(com.gemstone.gemfire.cache.AttributesFactory)
+	 * @see #setIndexMaintenance(org.apache.geode.cache.AttributesFactory)
 	 */
 	public void setIndexMaintenance(final RegionFactory regionFactory) {
 		regionFactory.setIndexMaintenanceSynchronous(equals(SYNCHRONOUS));

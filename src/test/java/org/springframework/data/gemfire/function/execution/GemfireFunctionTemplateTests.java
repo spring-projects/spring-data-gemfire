@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -17,20 +17,19 @@ import static org.junit.Assert.assertEquals;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.fork.FunctionCacheServerProcess;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
 
 /**
  * @author David Turanski
@@ -82,19 +81,19 @@ public class GemfireFunctionTemplateTests {
 		}
 		cache = null;
 	}
-	 
-	@Test 
+
+	@Test
 	public void testFunctionTemplates() {
 		 verifyfunctionTemplateExecution( new GemfireOnServerFunctionTemplate(cache));
 		 verifyfunctionTemplateExecution( new GemfireOnServersFunctionTemplate(cache));
-		 verifyfunctionTemplateExecution( new GemfireOnRegionFunctionTemplate(clientRegion)); 
-		 verifyfunctionTemplateExecution( new GemfireOnServerFunctionTemplate(pool)); 
-		 verifyfunctionTemplateExecution( new GemfireOnServersFunctionTemplate(pool)); 		 
-	} 
-	 
+		 verifyfunctionTemplateExecution( new GemfireOnRegionFunctionTemplate(clientRegion));
+		 verifyfunctionTemplateExecution( new GemfireOnServerFunctionTemplate(pool));
+		 verifyfunctionTemplateExecution( new GemfireOnServersFunctionTemplate(pool));
+	}
+
 	private void verifyfunctionTemplateExecution(GemfireFunctionOperations functionTemplate) {
 		Iterable<String> results = functionTemplate.execute("echoFunction","1","2","3");
-		 
+
 		Iterator<String> it = results.iterator();
 		for (int i = 1; i<= 3; i++) {
 			assertEquals(String.valueOf(i),it.next());

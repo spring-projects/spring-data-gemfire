@@ -16,11 +16,10 @@
 
 package org.springframework.data.gemfire.config.support;
 
-import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
-import com.gemstone.gemfire.cache.query.QueryService;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.query.MultiIndexCreationException;
+import org.apache.geode.cache.query.QueryService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -28,14 +27,14 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 /**
  * {@link DefinedIndexesApplicationListener} is a Spring {@link ApplicationListener} used to create all
- * "defined" GemFire {@link com.gemstone.gemfire.cache.query.Index Indexes} by using the {@link QueryService},
+ * "defined" GemFire {@link org.apache.geode.cache.query.Index Indexes} by using the {@link QueryService},
  * {@literal defineXxxIndex(..)} methods.
  *
  * @author John Blum
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ApplicationListener
  * @see org.springframework.context.event.ContextRefreshedEvent
- * @see com.gemstone.gemfire.cache.query.QueryService
+ * @see org.apache.geode.cache.query.QueryService
  * @since 1.7.0
  */
 public class DefinedIndexesApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
@@ -43,13 +42,13 @@ public class DefinedIndexesApplicationListener implements ApplicationListener<Co
 	protected final Log logger = initLogger();
 
 	/**
-	 * Attempts to create all defined {@link com.gemstone.gemfire.cache.query.Index Indexes} using
+	 * Attempts to create all defined {@link org.apache.geode.cache.query.Index Indexes} using
 	 * the {@link QueryService}, {@literal defineXxxIndex(..)} API once the Spring {@link ApplicationContext}
 	 * has been refreshed.
 	 *
 	 * @param event {@link ContextRefreshedEvent} fired when the Spring {@link ApplicationContext} gets refreshed.
 	 * @see org.springframework.context.event.ContextRefreshedEvent
-	 * @see com.gemstone.gemfire.cache.query.QueryService#createDefinedIndexes()
+	 * @see org.apache.geode.cache.query.QueryService#createDefinedIndexes()
 	 * @see #getQueryService(ContextRefreshedEvent)
 	 */
 	@Override

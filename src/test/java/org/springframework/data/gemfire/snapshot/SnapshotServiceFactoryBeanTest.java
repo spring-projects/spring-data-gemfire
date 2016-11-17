@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.snapshot;
 
-import static com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import static org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -49,6 +49,12 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.snapshot.CacheSnapshotService;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.cache.snapshot.SnapshotFilter;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -61,13 +67,6 @@ import org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplication
 import org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-
 /**
  * The SnapshotServiceFactoryBeanTest class is a test suite of test cases testing the contract and functionality
  * of the SnapshotServiceFactoryBean class.
@@ -77,8 +76,8 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean
- * @see com.gemstone.gemfire.cache.snapshot.CacheSnapshotService
- * @see com.gemstone.gemfire.cache.snapshot.RegionSnapshotService
+ * @see org.apache.geode.cache.snapshot.CacheSnapshotService
+ * @see org.apache.geode.cache.snapshot.RegionSnapshotService
  * @since 1.7.0
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

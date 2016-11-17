@@ -44,7 +44,6 @@ import org.springframework.data.gemfire.test.support.IOUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.data.gemfire.test.support.ThrowableUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * The ProcessWrapper class is a wrapper for a Process object representing an OS process and the ProcessBuilder used

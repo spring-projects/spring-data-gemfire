@@ -15,14 +15,13 @@
  */
 package org.springframework.data.gemfire.mapping;
 
+import org.apache.geode.pdx.PdxReader;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-
 /**
  * {@link PropertyValueProvider} to read property values from a {@link PdxReader}.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  */
@@ -32,7 +31,7 @@ class GemfirePropertyValueProvider implements PropertyValueProvider<GemfirePersi
 
 	/**
 	 * Creates a new {@link GemfirePropertyValueProvider} with the given {@link PdxReader}.
-	 * 
+	 *
 	 * @param reader must not be {@literal null}.
 	 */
 	public GemfirePropertyValueProvider(PdxReader reader) {
@@ -40,7 +39,7 @@ class GemfirePropertyValueProvider implements PropertyValueProvider<GemfirePersi
 		this.reader = reader;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
 	 */

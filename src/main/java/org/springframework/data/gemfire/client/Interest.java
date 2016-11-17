@@ -16,8 +16,7 @@
 
 package org.springframework.data.gemfire.client;
 
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-
+import org.apache.geode.cache.InterestResultPolicy;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.Constants;
 import org.springframework.util.Assert;
@@ -28,7 +27,7 @@ import org.springframework.util.Assert;
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.gemstone.gemfire.cache.InterestResultPolicy
+ * @see org.apache.geode.cache.InterestResultPolicy
  * @since 1.0.0
  */
 @SuppressWarnings("unused")

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
+
 import javax.sql.DataSource;
 
 import org.junit.Test;

@@ -26,14 +26,13 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.util.Gateway;
-import com.gemstone.gemfire.cache.util.GatewayEvent;
-import com.gemstone.gemfire.cache.util.GatewayEventListener;
-import com.gemstone.gemfire.cache.util.GatewayHub;
-import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
-
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.util.GatewayEvent;
+import org.apache.geode.cache.util.GatewayEventListener;
+import org.apache.geode.cache.util.GatewayHub;
+import org.apache.geode.cache.util.GatewayQueueAttributes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +52,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.data.gemfire.wan.GatewayProxy
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.util.Gateway
- * @see com.gemstone.gemfire.cache.util.GatewayHub
+ * @see org.apache.geode.cache.util.Gateway
+ * @see org.apache.geode.cache.util.GatewayHub
  * @since 1.5.3
  */
 @RunWith(SpringJUnit4ClassRunner.class)

@@ -24,7 +24,7 @@
 			<xsd:element name="transaction-listener" type="beanDeclarationType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-Registers a bean as a TransactionListener with the CacheTransactionManager. The bean must implement com.gemstone.gemfire.cache.TransactionListener
+Registers a bean as a TransactionListener with the CacheTransactionManager. The bean must implement org.apache.geode.cache.TransactionListener
 and may be nested or referenced.
 			]]></xsd:documentation>
 				</xsd:annotation>
@@ -32,7 +32,7 @@ and may be nested or referenced.
 			<xsd:element name="transaction-writer" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-Registers a bean as a TransactionWriter with the CacheTransactionManager. The bean must implement com.gemstone.gemfire.cache.TransactionWriter
+Registers a bean as a TransactionWriter with the CacheTransactionManager. The bean must implement org.apache.geode.cache.TransactionWriter
 and may be nested or referenced.
 			]]></xsd:documentation>
 				</xsd:annotation>
@@ -40,14 +40,14 @@ and may be nested or referenced.
 			<xsd:element name="gateway-conflict-resolver" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation
-						source="com.gemstone.gemfire.cache.util.GatewayConflictResolver"><![CDATA[
+						source="org.apache.geode.cache.util.GatewayConflictResolver"><![CDATA[
 A gateway conflict resolver for this cache. A gateway conflict resolver handles conflicts in the case of concurrent updates using a WAN gateway. The bean
-must implement com.gemstone.gemfire.cache.util.GatewayConflictResolver. Requires Gemfire version 7.0 or higher.
+must implement org.apache.geode.cache.util.GatewayConflictResolver. Requires Gemfire version 7.0 or higher.
                             ]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation>
 							<tool:exports
-								type="com.gemstone.gemfire.cache.util.GatewayConflictResolver" />
+								type="org.apache.geode.cache.util.GatewayConflictResolver" />
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -170,21 +170,21 @@ or copies of the objects (true).
 		<xsd:attribute name="critical-heap-percentage">
 			<xsd:annotation>
 				<xsd:documentation
-					source="com.gemstone.gemfire.cache.control.ResourceManager"><![CDATA[
+					source="org.apache.geode.cache.control.ResourceManager"><![CDATA[
 Set the percentage of heap at or above which the cache is considered in danger of becoming inoperable
 due to garbage collection pauses or out of memory exceptions. Changing this value can cause a LowMemoryException to
 be thrown during certain cache operation.  This feature requires additional VM flags to perform properly (see the
-JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more information).
+JavaDocs for org.apache.geode.cache.control.ResourceManager for more information).
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="eviction-heap-percentage">
 			<xsd:annotation>
 				<xsd:documentation
-					source="com.gemstone.gemfire.cache.control.ResourceManager"><![CDATA[
+					source="org.apache.geode.cache.control.ResourceManager"><![CDATA[
 Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction.
 This feature requires additional VM flags to perform properly (see the
-JavaDocs for com.gemstone.gemfire.cache.control.ResourceManager for more information).
+JavaDocs for org.apache.geode.cache.control.ResourceManager for more information).
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -249,7 +249,7 @@ Defines a GemFire Cache instance used for creating or retrieving 'regions'.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Cache" />
+					<tool:exports type="org.apache.geode.cache.Cache" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -342,7 +342,7 @@ Defines a GemFire Client Cache instance used for creating or retrieving 'regions
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.client.ClientCache" />
+					<tool:exports type="org.apache.geode.cache.client.ClientCache" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -447,7 +447,7 @@ Defines a lookup Subregion
                     ]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -486,7 +486,7 @@ The name of the region definition.
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -511,7 +511,7 @@ The name of the region definition.]]></xsd:documentation>
 				<xsd:sequence>
 					<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.CacheListener"><![CDATA[
 A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
 various operations on the region). Multiple listeners can be declared in a nested manner.
 
@@ -521,7 +521,7 @@ other thread for accessing the region and not waiting for it to complete its tas
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.CacheListener" />
+									<tool:exports type="org.apache.geode.cache.CacheListener" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -547,13 +547,13 @@ use inner bean declarations.
 					</xsd:element>
 					<xsd:element name="compressor" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.compression.Compressor"><![CDATA[
+							<xsd:documentation source="org.apache.geode.compression.Compressor"><![CDATA[
 The Compressor definition for this Region. A Compressor registers a custom class that implements Compressor
 to support compression on a Region.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.compression.Compressor"/>
+									<tool:exports type="org.apache.geode.compression.Compressor"/>
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -584,7 +584,7 @@ Time to live configuration for the region entries. Default: no expiration.
 							<xsd:annotation>
 								<xsd:appinfo>
 									<tool:annotation>
-										<tool:exports type="com.gemstone.gemfire.cache.CustomExpiry" />
+										<tool:exports type="org.apache.geode.cache.CustomExpiry" />
 									</tool:annotation>
 								</xsd:appinfo>
 								<xsd:documentation><![CDATA[[
@@ -606,7 +606,7 @@ Time to idle (or idle timeout) configuration for the region entries. Default: no
 							<xsd:annotation>
 								<xsd:appinfo>
 									<tool:annotation>
-										<tool:exports type="com.gemstone.gemfire.cache.CustomExpiry" />
+										<tool:exports type="org.apache.geode.cache.CustomExpiry" />
 									</tool:annotation>
 								</xsd:appinfo>
 								<xsd:documentation><![CDATA[[
@@ -796,19 +796,19 @@ The name of the region definition.]]>
 				<xsd:sequence minOccurs="0" maxOccurs="1">
 					<xsd:element name="cache-loader" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.CacheLoader"><![CDATA[
 The cache loader definition for this region. A cache loader allows data to be placed into a region.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.CacheLoader" />
+									<tool:exports type="org.apache.geode.cache.CacheLoader" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
 					<xsd:element name="cache-writer" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.CacheWriter"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.CacheWriter"><![CDATA[
 The cache writer definition for this region. A cache writer acts as a dedicated synchronous listener that is notified
 before a region or an entry is modified. A typical example would be a writer that updates the database.
 
@@ -817,7 +817,7 @@ arbitrarily pick one.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.CacheWriter" />
+									<tool:exports type="org.apache.geode.cache.CacheWriter" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -942,7 +942,7 @@ Defines a template for creating multiple GemFire Regions that all share a common
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+					<tool:exports type="org.apache.geode.cache.Region"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -1020,7 +1020,7 @@ up-to-date copy of the data.
             ]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -1156,7 +1156,7 @@ Defines a template for creating multiple GemFire REPLICATE Regions that all shar
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+					<tool:exports type="org.apache.geode.cache.Region"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -1175,7 +1175,7 @@ in different members, for high availability in case of an application failure.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -1184,13 +1184,13 @@ in different members, for high availability in case of an application failure.
 				<xsd:sequence>
 					<xsd:element name="partition-resolver" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.PartitionResolver"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.PartitionResolver"><![CDATA[
 The partition resolver definition for this region, allowing for custom partitioning. GemFire uses the resolver to
 colocate data based on custom criterias (such as colocating trades by month and year).
 								]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.PartitionResolver" />
+									<tool:exports type="org.apache.geode.cache.PartitionResolver" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -1198,13 +1198,13 @@ colocate data based on custom criterias (such as colocating trades by month and 
 					<xsd:element name="partition-listener" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation
-								source="com.gemstone.gemfire.cache.partition.PartitionListener"><![CDATA[
+								source="org.apache.geode.cache.partition.PartitionListener"><![CDATA[
 The PartitionListener definition for this Region. Defines a callback for Partitioned Regions, invoked when
 a Partition Region is created or any Bucket in a Partitioned Region becomes primary.
                                 ]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.partition.PartitionListener" />
+									<tool:exports type="org.apache.geode.cache.partition.PartitionListener" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -1231,7 +1231,7 @@ use inner bean declarations.
 					<xsd:element name="fixed-partition" minOccurs="0" maxOccurs="unbounded">
 						<xsd:annotation>
 							<xsd:documentation
-								source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
+								source="org.apache.geode.cache.partition.FixedPartitionAttributes"><![CDATA[
  Create a fixed partition with the given attributes. Required for a FixedPartitionResolver.
                     		]]></xsd:documentation>
 						</xsd:annotation>
@@ -1240,7 +1240,7 @@ use inner bean declarations.
 										   use="required">
 								<xsd:annotation>
 									<xsd:documentation
-										source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
+										source="org.apache.geode.cache.partition.FixedPartitionAttributes"><![CDATA[
 Specifies the fixed partition name
                     		]]></xsd:documentation>
 								</xsd:annotation>
@@ -1249,7 +1249,7 @@ Specifies the fixed partition name
 										   default="true">
 								<xsd:annotation>
 									<xsd:documentation
-										source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
+										source="org.apache.geode.cache.partition.FixedPartitionAttributes"><![CDATA[
 Specifies if this member is primary for this partition
                     		]]></xsd:documentation>
 								</xsd:annotation>
@@ -1257,7 +1257,7 @@ Specifies if this member is primary for this partition
 							<xsd:attribute name="num-buckets" use="optional">
 								<xsd:annotation>
 									<xsd:documentation
-										source="com.gemstone.gemfire.cache.partition.FixedPartitionAttributes"><![CDATA[
+										source="org.apache.geode.cache.partition.FixedPartitionAttributes"><![CDATA[
 Specifies the number of buckets to allocate to the fixed partition
                     		]]></xsd:documentation>
 								</xsd:annotation>
@@ -1441,7 +1441,7 @@ Defines a template for creating multiple GemFire PARTITION Regions that all shar
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+					<tool:exports type="org.apache.geode.cache.Region"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -1457,7 +1457,7 @@ Defines a GemFire Local Region instance. Each Local Region is scoped only to the
             ]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+					<tool:exports type="org.apache.geode.cache.Region"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -1563,7 +1563,7 @@ Defines a template for creating multiple GemFire Local Regions that all share a 
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+					<tool:exports type="org.apache.geode.cache.Region"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -1619,7 +1619,7 @@ Entity computing sizes for objects stored into the grid.
 					]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.util.ObjectSizer" />
+							<tool:exports type="org.apache.geode.cache.util.ObjectSizer" />
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -1657,7 +1657,7 @@ Note: the directory must already exist.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.DiskStore" />
+									<tool:exports type="org.apache.geode.cache.DiskStore" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -1783,7 +1783,7 @@ which it receives its data. The client can hold some data locally or forward all
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -1792,19 +1792,19 @@ which it receives its data. The client can hold some data locally or forward all
 				<xsd:sequence>
 					<xsd:element name="cache-loader" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.CacheLoader"><![CDATA[
 The cache loader definition for this region. A cache loader allows data to be placed into a region.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.CacheLoader" />
+									<tool:exports type="org.apache.geode.cache.CacheLoader" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
 					<xsd:element name="cache-writer" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.CacheWriter"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.CacheWriter"><![CDATA[
 The cache writer definition for this region. A cache writer acts as a dedicated synchronous listener that is notified
 before a region or an entry is modified. A typical example would be a writer that updates the database.
 
@@ -1813,7 +1813,7 @@ arbitrarily pick one.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.CacheWriter" />
+									<tool:exports type="org.apache.geode.cache.CacheWriter" />
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -1984,7 +1984,7 @@ Defines a template for creating multiple GemFire Client Regions that all share a
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region"/>
+					<tool:exports type="org.apache.geode.cache.Region"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2052,7 +2052,7 @@ Note that in order to instantiate a pool, a GemFire cache needs to be already st
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.client.Pool" />
+					<tool:exports type="org.apache.geode.cache.client.Pool" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2113,7 +2113,7 @@ Note: In order to instantiate a cacheserver, a GemFire cache needs to be avaialb
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.server.CacheServer" />
+					<tool:exports type="org.apache.geode.cache.server.CacheServer" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2211,7 +2211,7 @@ A reference (by name) to the GemFire Cache bean. Default is "gemfireCache".
 	          		]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
-							<tool:expected-type type="com.gemstone.gemfire.cache.RegionService"/>
+							<tool:expected-type type="org.apache.geode.cache.RegionService"/>
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -2312,7 +2312,7 @@ Defines a GemFire index.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.query.Index" />
+					<tool:exports type="org.apache.geode.cache.query.Index" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2440,12 +2440,12 @@ Specifies the data type if other than java.lang.String.
 	<!-- -->
 	<xsd:complexType name="baseGatewaySenderType">
 		<xsd:annotation>
-			<xsd:documentation source="com.gemstone.gemfire.cache.wan.GatewaySender"><![CDATA[
+			<xsd:documentation source="org.apache.geode.cache.wan.GatewaySender"><![CDATA[
 A gateway sender gateway definition (requires Gemfire 7.0 or later)
                ]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.wan.GatewaySender" />
+					<tool:exports type="org.apache.geode.cache.wan.GatewaySender" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2610,12 +2610,12 @@ Boolean value that determines whether GemFire persists the Gateway Queue or Asyn
 	<!-- -->
 	<xsd:complexType name="gatewayReceiverType">
 		<xsd:annotation>
-			<xsd:documentation source="com.gemstone.gemfire.cache.wan.GatewayReceiver"><![CDATA[
+			<xsd:documentation source="org.apache.geode.cache.wan.GatewayReceiver"><![CDATA[
 A gateway receiver definition (requires Gemfire 7.0 or later)
            ]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.wan.GatewayReceiver" />
+					<tool:exports type="org.apache.geode.cache.wan.GatewayReceiver" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2693,12 +2693,12 @@ Specifies the socket buffer size in bytes
 	<!-- -->
 	<xsd:complexType name="baseAsyncEventQueueType">
 		<xsd:annotation>
-			<xsd:documentation source="com.gemstone.gemfire.cache.wan.AsyncEventQueue"><![CDATA[
+			<xsd:documentation source="org.apache.geode.cache.wan.AsyncEventQueue"><![CDATA[
 An async event queue definition (requires Gemfire 7.0 or later)
            ]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.wan.AsyncEventQueue" />
+					<tool:exports type="org.apache.geode.cache.wan.AsyncEventQueue" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2706,12 +2706,12 @@ An async event queue definition (requires Gemfire 7.0 or later)
 			<xsd:element name="async-event-listener" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation
-						source="com.gemstone.gemfire.cache.wan.AsyncEventListener"><![CDATA[
+						source="org.apache.geode.cache.wan.AsyncEventListener"><![CDATA[
 An AsyncEventListener bean definition for this AsyncEventQueue. (requires Gemfire 7.0)
                             ]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.wan.AsyncEventListener"/>
+							<tool:exports type="org.apache.geode.cache.wan.AsyncEventListener"/>
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -2803,13 +2803,13 @@ The id of the cache - default is gemfireCache
 			<xsd:sequence>
 				<xsd:element name="function" minOccurs="0" maxOccurs="1">
 					<xsd:annotation>
-						<xsd:documentation source="com.gemstone.gemfire.cache.execute.Function"><![CDATA[
+						<xsd:documentation source="org.apache.geode.cache.execute.Function"><![CDATA[
 Declares one or more remote functions for this cache and register's with them the FunctionService. each bean
-must implement com.gemstone.gemfire.cache.execute.Function
+must implement org.apache.geode.cache.execute.Function
                             ]]></xsd:documentation>
 						<xsd:appinfo>
 							<tool:annotation>
-								<tool:exports type="com.gemstone.gemfire.cache.execute.Function" />
+								<tool:exports type="org.apache.geode.cache.execute.Function" />
 							</tool:annotation>
 						</xsd:appinfo>
 					</xsd:annotation>
@@ -2847,12 +2847,12 @@ The id of the function service (optional)
 	<!-- -->
 	<xsd:complexType name="gatewayEventFilterType">
 		<xsd:annotation>
-			<xsd:documentation source="com.gemstone.gemfire.cache.wan.GatewayEventFilter"><![CDATA[
+			<xsd:documentation source="org.apache.geode.cache.wan.GatewayEventFilter"><![CDATA[
 A Gateway Event Filter for this GatewaySender.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.wan.GatewayEventFilter"/>
+					<tool:exports type="org.apache.geode.cache.wan.GatewayEventFilter"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2877,12 +2877,12 @@ Used for convenience. If no reference exists, use inner bean declarations.
 	<!-- -->
 	<xsd:complexType name="gatewayEventSubstitutionFilterType">
 		<xsd:annotation>
-			<xsd:documentation source="com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter"><![CDATA[
+			<xsd:documentation source="org.apache.geode.cache.wan.GatewayEventSubstitutionFilter"><![CDATA[
 A Gateway Event Substitution Filter for this GatewaySender.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter"/>
+					<tool:exports type="org.apache.geode.cache.wan.GatewayEventSubstitutionFilter"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -2907,12 +2907,12 @@ Used for convenience. If no reference exists, use inner bean declarations.
 	<!-- -->
 	<xsd:complexType name="gatewayTransportFilterType">
 		<xsd:annotation>
-			<xsd:documentation source="com.gemstone.gemfire.cache.wan.GatewayTransportFilter"><![CDATA[
+			<xsd:documentation source="org.apache.geode.cache.wan.GatewayTransportFilter"><![CDATA[
 A Gateway Transport Filter for this GatewaySender.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.wan.GatewayTransportFilter"/>
+					<tool:exports type="org.apache.geode.cache.wan.GatewayTransportFilter"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -3092,12 +3092,12 @@ Deprecated as of Gemfire 7
 				<xsd:element name="gateway-listener" minOccurs="1" maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation
-							source="com.gemstone.gemfire.cache.util.GatewayEventListener"><![CDATA[
+							source="org.apache.geode.cache.util.GatewayEventListener"><![CDATA[
 An gateway event listener definition for the gateway
                             ]]></xsd:documentation>
 						<xsd:appinfo>
 							<tool:annotation>
-								<tool:exports type="com.gemstone.gemfire.cache.util.GatewayEventListener"/>
+								<tool:exports type="org.apache.geode.cache.util.GatewayEventListener"/>
 							</tool:annotation>
 						</xsd:appinfo>
 					</xsd:annotation>

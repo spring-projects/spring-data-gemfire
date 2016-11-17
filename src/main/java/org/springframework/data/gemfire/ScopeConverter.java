@@ -16,9 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.Scope;
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
-
-import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The ScopeConverter class is a Spring Converter and JavaBeans PropertyEditor that converts Strings
@@ -26,7 +25,7 @@ import com.gemstone.gemfire.cache.Scope;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
- * @see com.gemstone.gemfire.cache.Scope
+ * @see org.apache.geode.cache.Scope
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
@@ -40,7 +39,7 @@ public class ScopeConverter extends AbstractPropertyEditorConverterSupport<Scope
 	 * @throws java.lang.IllegalArgumentException if the String is not a valid GemFire Scope.
 	 * @see org.springframework.data.gemfire.ScopeType#getScope(ScopeType)
 	 * @see org.springframework.data.gemfire.ScopeType#valueOfIgnoreCase(String)
-	 * @see com.gemstone.gemfire.cache.Scope#fromString(String)
+	 * @see org.apache.geode.cache.Scope#fromString(String)
 	 * @see #assertConverted(String, Object, Class)
 	 */
 	@Override

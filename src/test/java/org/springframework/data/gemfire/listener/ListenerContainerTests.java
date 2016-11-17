@@ -20,17 +20,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.query.CqEvent;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
-
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.query.CqEvent;
 
 /**
  * @author Costin Leau

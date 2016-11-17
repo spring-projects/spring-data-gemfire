@@ -22,8 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.DiskStore;
-
+import org.apache.geode.cache.DiskStore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

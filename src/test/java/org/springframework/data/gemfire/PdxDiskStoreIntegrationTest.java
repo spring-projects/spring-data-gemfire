@@ -22,8 +22,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.Serializable;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.Region;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,8 +35,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * The PdxDiskStoreTest class is a test suite containing tests to reproduce the issue in JIRA SGF-197.

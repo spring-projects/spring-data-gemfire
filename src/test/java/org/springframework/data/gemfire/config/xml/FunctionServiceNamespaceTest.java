@@ -19,10 +19,9 @@ package org.springframework.data.gemfire.config.xml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;

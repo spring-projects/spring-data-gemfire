@@ -18,8 +18,7 @@ package org.springframework.data.gemfire.config.xml;
 
 import java.util.List;
 
-import com.gemstone.gemfire.internal.datasource.ConfigProperty;
-
+import org.apache.geode.internal.datasource.ConfigProperty;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;

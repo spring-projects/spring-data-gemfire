@@ -32,10 +32,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.distributed.ServerLauncher;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.distributed.ServerLauncher;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

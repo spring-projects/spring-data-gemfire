@@ -19,15 +19,14 @@ package org.springframework.data.gemfire.client;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.distributed.DistributedSystem;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -58,9 +57,9 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.data.gemfire.support.ConnectionEndpoint
  * @see org.springframework.data.gemfire.support.ConnectionEndpointList
- * @see com.gemstone.gemfire.cache.client.Pool
- * @see com.gemstone.gemfire.cache.client.PoolFactory
- * @see com.gemstone.gemfire.cache.client.PoolManager
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolFactory
+ * @see org.apache.geode.cache.client.PoolManager
  */
 @SuppressWarnings("unused")
 public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean,
@@ -112,9 +111,9 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	 * Constructs and initializes a GemFire {@link Pool}.
 	 *
 	 * @throws Exception if the {@link Pool} creation and initialization fails.
-	 * @see com.gemstone.gemfire.cache.client.Pool
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory
-	 * @see com.gemstone.gemfire.cache.client.PoolManager
+	 * @see org.apache.geode.cache.client.Pool
+	 * @see org.apache.geode.cache.client.PoolFactory
+	 * @see org.apache.geode.cache.client.PoolManager
 	 * @see #createPoolFactory()
 	 */
 	@Override
@@ -207,11 +206,11 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 	/**
 	 * Attempts to eagerly initialize the GemFire {@link ClientCache} if not already present so that the single
-	 * {@link com.gemstone.gemfire.distributed.DistributedSystem} will exists, which is required to create
+	 * {@link org.apache.geode.distributed.DistributedSystem} will exists, which is required to create
 	 * a {@link Pool} instance.
 	 *
 	 * @see org.springframework.beans.factory.BeanFactory#getBean(Class)
-	 * @see com.gemstone.gemfire.cache.client.ClientCache
+	 * @see org.apache.geode.cache.client.ClientCache
 	 */
 	void eagerlyInitializeClientCacheIfNotPresent() {
 		if (!isDistributedSystemPresent()) {
@@ -225,7 +224,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	 * @return a boolean value indicating whether the single, GemFire DistributedSystem has been created already.
 	 * @see org.springframework.data.gemfire.GemfireUtils#getDistributedSystem()
 	 * @see org.springframework.data.gemfire.GemfireUtils#isConnected(DistributedSystem)
-	 * @see com.gemstone.gemfire.distributed.DistributedSystem
+	 * @see org.apache.geode.distributed.DistributedSystem
 	 */
 	boolean isDistributedSystemPresent() {
 		return GemfireUtils.isConnected(GemfireUtils.getDistributedSystem());
@@ -236,8 +235,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	 * a GemFire {@link Pool}.
 	 *
 	 * @return a {@link PoolFactory} implementation to create a {@link Pool}.
-	 * @see com.gemstone.gemfire.cache.client.PoolManager#createFactory()
-	 * @see com.gemstone.gemfire.cache.client.PoolFactory
+	 * @see org.apache.geode.cache.client.PoolManager#createFactory()
+	 * @see org.apache.geode.cache.client.PoolFactory
 	 */
 	protected PoolFactory createPoolFactory() {
 		return PoolManager.createFactory();

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.geode.pdx.PdxReader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -30,10 +31,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.expression.TypedValue;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-
 /**
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)

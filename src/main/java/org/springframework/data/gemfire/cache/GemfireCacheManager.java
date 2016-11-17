@@ -21,9 +21,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.AbstractCacheManager;
@@ -42,15 +41,15 @@ import org.springframework.util.Assert;
  * @see org.springframework.cache.Cache
  * @see org.springframework.cache.CacheManager
  * @see org.springframework.cache.support.AbstractCacheManager
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
  */
 @SuppressWarnings("unused")
 public class GemfireCacheManager extends AbstractCacheManager {
 
 	private final AtomicBoolean dynamic = new AtomicBoolean(true);
 
-	private com.gemstone.gemfire.cache.GemFireCache gemfireCache;
+	private org.apache.geode.cache.GemFireCache gemfireCache;
 
 	private Set<Region<?, ?>> regions;
 
@@ -142,7 +141,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	 * @param region GemFire {@link Region} to wrap (adapt).
 	 * @return an instance of {@link GemfireCache} initialized with the given GemFire {@link Region}.
 	 * @see GemfireCache
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	protected GemfireCache newGemfireCache(Region<?, ?> region) {
 		return GemfireCache.wrap(region);
@@ -193,9 +192,9 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	 *
 	 * @param gemfireCache the GemFire cache instance used by this {@link CacheManager}
 	 * to manage Spring {@link Cache Caches}.
-	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see org.apache.geode.cache.GemFireCache
 	 */
-	public void setCache(com.gemstone.gemfire.cache.GemFireCache gemfireCache) {
+	public void setCache(org.apache.geode.cache.GemFireCache gemfireCache) {
 		this.gemfireCache = gemfireCache;
 	}
 
@@ -203,9 +202,9 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	 * Returns the {@link GemFireCache} instance backing this {@link CacheManager}.
 	 *
 	 * @return the {@link GemFireCache} instance backing this {@link CacheManager}.
-	 * @see com.gemstone.gemfire.cache.GemFireCache
+	 * @see org.apache.geode.cache.GemFireCache
 	 */
-	protected com.gemstone.gemfire.cache.GemFireCache getCache() {
+	protected org.apache.geode.cache.GemFireCache getCache() {
 		return this.gemfireCache;
 	}
 
@@ -231,7 +230,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	 *
 	 * @param regions {@link Set} of GemFire {@link Region Regions} used by this {@link CacheManager}
 	 * as Spring {@link Cache Caches}.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	public void setRegions(Set<Region<?, ?>> regions) {
 		this.regions = regions;
@@ -243,7 +242,7 @@ public class GemfireCacheManager extends AbstractCacheManager {
 	 *
 	 * @return the set of GemFire {@link Region Regions} functioning as Spring {@link Cache Caches}
 	 * in Spring's caching infrastructure
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	protected Set<Region<?, ?>> getRegions() {
 		return this.regions;

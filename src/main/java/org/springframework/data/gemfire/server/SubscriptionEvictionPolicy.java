@@ -16,12 +16,12 @@
 
 package org.springframework.data.gemfire.server;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
 
 /**
  * Enumeration of the various client subscription policies for {@link CacheServer}.
- * 
+ *
  * @author Costin Leau
  * @author John Blum
  * @since 1.1.0
@@ -62,7 +62,7 @@ public enum SubscriptionEvictionPolicy {
 	 * @param config a GemFire ClientSubscriptionConfig object holding the configuration setting and meta-data
 	 * about the client's subscription configuration.
 	 * @return the ClientSubscriptionConfig object.
-	 * @see com.gemstone.gemfire.cache.server.ClientSubscriptionConfig#setEvictionPolicy(String)
+	 * @see org.apache.geode.cache.server.ClientSubscriptionConfig#setEvictionPolicy(String)
 	 */
 	public ClientSubscriptionConfig setEvictionPolicy(final ClientSubscriptionConfig config) {
 		if (config != null) {

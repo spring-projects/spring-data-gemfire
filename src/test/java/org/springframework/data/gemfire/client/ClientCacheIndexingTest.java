@@ -26,12 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.QueryService;
-
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.QueryService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -57,10 +56,10 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.gemfire.IndexFactoryBean
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.query.Index
- * @see com.gemstone.gemfire.cache.query.QueryService
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.query.Index
+ * @see org.apache.geode.cache.query.QueryService
  * @since 1.5.2
  */
 @RunWith(SpringJUnit4ClassRunner.class)

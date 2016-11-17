@@ -16,7 +16,7 @@
             Namespace support for the Spring GemFire project.
         ]]></xsd:documentation>
     </xsd:annotation>
-    
+
     <xsd:element name="cache">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.CacheFactoryBean"><![CDATA[
@@ -24,7 +24,7 @@ Defines a GemFire Cache instance used for creating or retrieving 'regions'.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Cache" />
+					<tool:exports type="org.apache.geode.cache.Cache" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -82,22 +82,22 @@ While copies imply additional work for every fetch operation, direct references 
 across concurrent threads in the same VM, whether or not transactions are used.
 					]]></xsd:documentation>
 				</xsd:annotation>
-			</xsd:attribute> 
-			 
+			</xsd:attribute>
+
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<!-- nested bean definition -->
 	<xsd:complexType name="beanDeclarationType">
 		<xsd:sequence>
 			<xsd:any namespace="##other" minOccurs="0" maxOccurs="1" processContents="skip">
     			<xsd:annotation>
          			<xsd:documentation><![CDATA[
-Inner bean definition. The nested declaration serves as an alternative to bean references (using 
+Inner bean definition. The nested declaration serves as an alternative to bean references (using
 both in the same definition) is illegal.
 					]]></xsd:documentation>
 				</xsd:annotation>
-         	</xsd:any>						
+         	</xsd:any>
 		</xsd:sequence>
 		<xsd:attribute name="ref" type="xsd:string" use="optional">
 			<xsd:annotation>
@@ -107,12 +107,12 @@ The name of the bean referred by this declaration. If no reference exists, use a
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="basicRegionType">
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -136,17 +136,17 @@ The name of the region definition. If no specified, it will have the value of th
 The name of the bean defining the GemFire cache (by default 'gemfire-cache').
 				]]></xsd:documentation>
 			</xsd:annotation>
-		</xsd:attribute> 
-	</xsd:complexType> 
-	
-	
+		</xsd:attribute>
+	</xsd:complexType>
+
+
 	<xsd:complexType name="readOnlyRegionType" abstract="true">
 		<xsd:complexContent>
 			<xsd:extension base="basicRegionType">
 				<xsd:sequence>
 					<xsd:element name="cache-listener" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.CacheListener"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.CacheListener"><![CDATA[
 A cache listener definition for this region. A cache listener handles region or entry related events (that occur after
 various operations on the region). Multiple listeners can be declared in a nested manner.
 
@@ -156,7 +156,7 @@ other thread for accessing the region and not waiting for it to complete its tas
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.CacheListener"/>
+									<tool:exports type="org.apache.geode.cache.CacheListener"/>
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -168,12 +168,12 @@ other thread for accessing the region and not waiting for it to complete its tas
 Inner bean definition of the cache listener.
 										]]></xsd:documentation>
 									</xsd:annotation>
-					         	</xsd:any>						
+					         	</xsd:any>
 							</xsd:sequence>
 							<xsd:attribute name="ref" type="xsd:string" use="optional">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-The name of the cache listener bean referred by this declaration. Used as a convenience method. If no reference exists, 
+The name of the cache listener bean referred by this declaration. Used as a convenience method. If no reference exists,
 use inner bean declarations.
 									]]></xsd:documentation>
 								</xsd:annotation>
@@ -186,19 +186,19 @@ use inner bean declarations.
 Disk storage configuration for the defined region.
 							]]></xsd:documentation>
 						</xsd:annotation>
-					</xsd:element>							
+					</xsd:element>
 				</xsd:sequence>
 				<xsd:attribute name="persistent" type="xsd:string" default="false">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether the defined region is persistent or not. GemFire ensures that all the data you put into a region that
- is configured for persistence will be written to disk in a way that it can be recovered the next time you create the 
-region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart 
+ is configured for persistence will be written to disk in a way that it can be recovered the next time you create the
+region. This allows data to be recovered after a machine or process failure or after an orderly shutdown and restart
 of GemFire.
 
 Default is false, meaning the regions are not persisted.
 
-Note: Persistence for partitioned regions is supported only from GemFire 6.5 onwards.						
+Note: Persistence for partitioned regions is supported only from GemFire 6.5 onwards.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -206,7 +206,7 @@ Note: Persistence for partitioned regions is supported only from GemFire 6.5 onw
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Indicates whether the defined region should be destroyed or not at shutdown. Destroy cascades to all entries and subregions.
-After the destroy, this region object can not be used any more and any attempt to use this region object will get 
+After the destroy, this region object can not be used any more and any attempt to use this region object will get
 RegionDestroyedException.
 
 Default is false, meaning that regions are not destroyed.
@@ -224,7 +224,7 @@ disk files. Additionally it notifies the listeners and callbacks.
 Default is true, meaning the regions are closed.
 
 Note: Regions are automatically closed when cache closes.
-Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.				
+Note: destroy and close are mutually exclusive. Enabling one will automatically disable the other.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -239,26 +239,26 @@ Default is false, meaning statistics are disabled.
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="regionType">
 		<xsd:complexContent>
 			<xsd:extension base="readOnlyRegionType">
 				<xsd:sequence minOccurs="0" maxOccurs="1">
 					<xsd:element name="cache-loader" minOccurs="0"  maxOccurs="1" type="beanDeclarationType">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.CacheLoader"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.CacheLoader"><![CDATA[
 The cache loader definition for this region. A cache loader allows data to be placed into a region.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.CacheLoader"/>
+									<tool:exports type="org.apache.geode.cache.CacheLoader"/>
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:element>
 					<xsd:element name="cache-writer" minOccurs="0" maxOccurs="1" type="beanDeclarationType">
 						<xsd:annotation>
-							<xsd:documentation source="com.gemstone.gemfire.cache.CacheWriter"><![CDATA[
+							<xsd:documentation source="org.apache.geode.cache.CacheWriter"><![CDATA[
 The cache writer definition for this region. A cache writer acts as a dedicated synchronous listener that is notified
 before a region or an entry is modified. A typical example would be a writer that updates the database.
 
@@ -267,7 +267,7 @@ arbitrarily pick one.
 							]]></xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation>
-									<tool:exports type="com.gemstone.gemfire.cache.CacheWriter"/>
+									<tool:exports type="org.apache.geode.cache.CacheWriter"/>
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -276,18 +276,18 @@ arbitrarily pick one.
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
-	
+
 	<xsd:element name="lookup-region" type="basicRegionType">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[[
-Looks up an existing, working, GemFire region. Typically regions are defined through GemFire own configuration, the 
+Looks up an existing, working, GemFire region. Typically regions are defined through GemFire own configuration, the
 cache.xml. If the region does not exist, an exception will be thrown.
 
 For defining regions, consider the region elements.
 			]]></xsd:documentation>
 		</xsd:annotation>
 	</xsd:element>
-	
+
 	<xsd:element name="replicated-region">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
@@ -297,7 +297,7 @@ up to date copy of the data.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -330,7 +330,7 @@ The action to take when performing eviction.
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="partitioned-region">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.RegionFactoryBean"><![CDATA[
@@ -341,7 +341,7 @@ in different members, for high availability in case of an application failure.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -351,13 +351,13 @@ in different members, for high availability in case of an application failure.
 					<xsd:sequence>
 						<xsd:element name="partition-resolver" minOccurs="0" maxOccurs="1" type="beanDeclarationType">
 							<xsd:annotation>
-								<xsd:documentation source="com.gemstone.gemfire.cache.PartitionResolver"><![CDATA[
+								<xsd:documentation source="org.apache.geode.cache.PartitionResolver"><![CDATA[
 The partition resolver definition for this region, allowing for custom partitioning. GemFire uses the resolver to
 colocate data based on custom criterias (such as colocating trades by month and year).
 								]]></xsd:documentation>
 								<xsd:appinfo>
 									<tool:annotation>
-										<tool:exports type="com.gemstone.gemfire.cache.PartitionResolver"/>
+										<tool:exports type="org.apache.geode.cache.PartitionResolver"/>
 									</tool:annotation>
 								</xsd:appinfo>
 							</xsd:annotation>
@@ -424,14 +424,14 @@ Note: This setting must be the same in all processes using the region.
 					<xsd:attribute name="total-buckets" type="xsd:string" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The total number of hash buckets to be used by the region in all processes. 
+The total number of hash buckets to be used by the region in all processes.
 
 A bucket is the smallest unit of data management in a partitioned region. Entries are stored in buckets and buckets may
  move from one VM to another. Buckets may also have copies, depending on redundancy to provide high availability in the
   face of VM failure.
 The number of buckets should be prime and as a rough guide at the least four times the number of partition VMs. However
 , there is significant overhead to managing a bucket, particularly for higher values of redundancy.
- 
+
 Note: This setting must be the same in all processes using the region.
 							]]></xsd:documentation>
 						</xsd:annotation>
@@ -456,7 +456,7 @@ The delay in milliseconds that new members will wait before satisfying redundanc
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:complexType name="evictionType">
 		<xsd:sequence minOccurs="0" maxOccurs="1">
 			<xsd:element name="object-sizer" type="beanDeclarationType">
@@ -466,7 +466,7 @@ Entity computing sizes for objects stored into the grid.
 					]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation>
-							<tool:exports type="com.gemstone.gemfire.cache.util.ObjectSizer" />
+							<tool:exports type="org.apache.geode.cache.util.ObjectSizer" />
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -508,7 +508,7 @@ performed.
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="evictionActionType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="LOCAL_DESTROY">
@@ -516,21 +516,21 @@ performed.
 					<xsd:documentation><![CDATA[
 The LRU (least-recently-used) region entries is locally destroyed.
 
-Note: this option is not compatible with replicated regions (as it render the replica region incomplete).  
+Note: this option is not compatible with replicated regions (as it render the replica region incomplete).
 							]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="OVERFLOW_TO_DISK">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to 
+The LRU (least-recently-used) region entry values are written to disk and nulled-out in the member to
 reclaim memory.
 							]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:complexType name="diskStoreType">
 		<xsd:sequence>
 			<xsd:element name="disk-dir" minOccurs="0" maxOccurs="unbounded">
@@ -540,14 +540,14 @@ reclaim memory.
 							<xsd:documentation><![CDATA[
 Directory on the file system for storing data.
 
-Note: the directory must already exist.						
+Note: the directory must already exist.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="max-size" type="xsd:string" default="10240">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-The maximum size (in megabytes) of data stored in each directory. Default is 10240 MB (10 gigabytes). 
+The maximum size (in megabytes) of data stored in each directory. Default is 10240 MB (10 gigabytes).
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
@@ -561,7 +561,7 @@ Indicates whether the writing to the disk si synchronous or not. Default is fals
 				]]>
 				</xsd:documentation>
 			</xsd:annotation>
-		</xsd:attribute>		
+		</xsd:attribute>
 		<xsd:attribute name="auto-compact" type="xsd:string" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -570,14 +570,14 @@ Indicates whether or not the operation logs are automatically compacted or not. 
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<!-- 
+		<!--
 		<xsd:attribute name="compaction-threshold" default="50">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Sets the threshold at which an oplog will become compactable. Until it reaches this threshold the oplog will not be 
-compacted. The threshold is a percentage in the range 0..100. When the amount of garbage in an oplog exceeds this 
-percentage then when a compaction is done this garbage will be cleaned up freeing up disk space. Garbage is created 
-by entry destroys, entry updates, and region destroys. 
+Sets the threshold at which an oplog will become compactable. Until it reaches this threshold the oplog will not be
+compacted. The threshold is a percentage in the range 0..100. When the amount of garbage in an oplog exceeds this
+percentage then when a compaction is done this garbage will be cleaned up freeing up disk space. Garbage is created
+by entry destroys, entry updates, and region destroys.
 				]]>
 				</xsd:documentation>
 			</xsd:annotation>
@@ -592,8 +592,8 @@ by entry destroys, entry updates, and region destroys.
 		<xsd:attribute name="max-oplog-size" type="xsd:string" default="1024">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this 
-amount of file space will be immediately reserved. 
+Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an oplog is created this
+amount of file space will be immediately reserved.
 				]]>
 				</xsd:documentation>
 			</xsd:annotation>
@@ -601,8 +601,8 @@ amount of file space will be immediately reserved.
 		<xsd:attribute name="time-interval" type="xsd:string" default="1">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Sets the number of milliseconds that can elapse before unwritten data is written to disk. 
-It is considered only for asynchronous writing. 
+Sets the number of milliseconds that can elapse before unwritten data is written to disk.
+It is considered only for asynchronous writing.
 				]]>
 				</xsd:documentation>
 			</xsd:annotation>
@@ -610,7 +610,7 @@ It is considered only for asynchronous writing.
 		<xsd:attribute name="queue-size" type="xsd:string" default="0">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been 
+The maximum number of operations that can be asynchronously queued. Once this many pending async operations have been
 queued async ops will begin blocking until some of the queued ops have been flushed to disk.
 Considered only for asynchronous writing.
 				]]>
@@ -627,7 +627,7 @@ which it receives its data. The client can hold some data locally or forward all
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -639,9 +639,9 @@ which it receives its data. The client can hold some data locally or forward all
 							<xsd:element name="key-interest">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-Key based interest. If the key is a List, then all the keys in the List will be registered. The key can also be the 
-special token 'ALL_KEYS', which will register interest in all keys in the region. In effect, this will cause an update 
-to any key in this region in the CacheServer to be pushed to the client. 
+Key based interest. If the key is a List, then all the keys in the List will be registered. The key can also be the
+special token 'ALL_KEYS', which will register interest in all keys in the region. In effect, this will cause an update
+to any key in this region in the CacheServer to be pushed to the client.
 									]]></xsd:documentation>
 								</xsd:annotation>
 								<xsd:complexType>
@@ -654,12 +654,12 @@ to any key in this region in the CacheServer to be pushed to the client.
 Inner bean definition of the client key interest.
 														]]></xsd:documentation>
 													</xsd:annotation>
-			         							</xsd:any>						
+			         							</xsd:any>
 											</xsd:sequence>
 											<xsd:attribute name="key-ref" type="xsd:string" use="optional">
 												<xsd:annotation>
 													<xsd:documentation><![CDATA[
-The name of the client key interest bean referred by this declaration. Used as a convenience method. If no reference exists, 
+The name of the client key interest bean referred by this declaration. Used as a convenience method. If no reference exists,
 use the inner bean declaration.
 													]]></xsd:documentation>
 												</xsd:annotation>
@@ -671,7 +671,7 @@ use the inner bean declaration.
 							<xsd:element name="regex-interest">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-Regular expression based interest. If the pattern is '.*' then all keys of any type will be pushed to the client. 
+Regular expression based interest. If the pattern is '.*' then all keys of any type will be pushed to the client.
 									]]></xsd:documentation>
 								</xsd:annotation>
 								<xsd:complexType>
@@ -702,7 +702,7 @@ The action to take when performing eviction.
 									</xsd:extension>
 								</xsd:complexContent>
 							</xsd:complexType>
-						</xsd:element>						
+						</xsd:element>
 					</xsd:sequence>
 					<xsd:attribute name="data-policy" use="optional" default="NORMAL">
 						<xsd:annotation>
@@ -711,10 +711,10 @@ The data policy for this client. Can be either 'EMPTY' or 'NORMAL' (the default)
 configured for this region, this parameter will be ignored.
 
 EMPTY - causes data to never be stored in local memory. The region will always appear empty. It can be used to for zero
- footprint producers that only want to distribute their data to others and for zero footprint consumers that only want 
+ footprint producers that only want to distribute their data to others and for zero footprint consumers that only want
  to see events.
-NORMAL - causes data that this region is interested in to be stored in local memory. It allows the contents in this 
-cache to differ from other caches.  
+NORMAL - causes data that this region is interested in to be stored in local memory. It allows the contents in this
+cache to differ from other caches.
  							]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:simpleType>
@@ -735,24 +735,24 @@ The name of the pool used by this client.
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:complexType name="connectionType">
 		<xsd:attribute name="host" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The host name or ip address of the connection.				
+The host name or ip address of the connection.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="port">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The port number of the connection (between 1 and 65535 inclusive).				
+The port number of the connection (between 1 and 65535 inclusive).
 				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:restriction base="xsd:string"/>
-			</xsd:simpleType>			
+			</xsd:simpleType>
 		</xsd:attribute>
 	</xsd:complexType>
 
@@ -767,7 +767,7 @@ Indicates whether or not the registered interest is durable or not. Default is f
 		<xsd:attribute name="result-policy" default="KEYS_VALUES" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The result policy for this interest. Can be one of 'KEYS' or 'KEYS_VALUES' (the default) or 'NONE'. 
+The result policy for this interest. Can be one of 'KEYS' or 'KEYS_VALUES' (the default) or 'NONE'.
 
 KEYS - Initializes the local cache with the keys satisfying the request.
 KEYS-VALUES - initializes the local cache with the keys and current values satisfying the request.
@@ -783,7 +783,7 @@ NONE -  Does not initialize the local cache.
 			</xsd:simpleType>
 		</xsd:attribute>
 	</xsd:complexType>
-	
+
 	<xsd:element name="pool">
 		<xsd:annotation>
 			<xsd:documentation source="org.springframework.data.gemfire.client.PoolFactoryBean"><![CDATA[
@@ -793,7 +793,7 @@ Note that in order to instantiate a pool, a GemFire cache needs to be already st
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="com.gemstone.gemfire.cache.client.Pool" />
+					<tool:exports type="org.apache.geode.cache.client.Pool" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>

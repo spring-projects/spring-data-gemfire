@@ -21,8 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-
+import org.apache.geode.cache.InterestResultPolicy;
 import org.junit.Test;
 import org.springframework.core.ConstantException;
 

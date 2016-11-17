@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.geode.cache.Region;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,8 +38,6 @@ import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.util.FileCopyUtils;
 
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * The SnapshotServiceImportExportIntegrationTest class is a test suite of test cases testing the import and export
  * of GemFire Cache Region data configured with SDG's Data Namespace &gt;gfe-data:snapshot-service&lt; (XML) element.
@@ -49,7 +48,7 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.springframework.context.support.ClassPathXmlApplicationContext
  * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean
  * @see org.springframework.data.gemfire.repository.sample.Person
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.7.0
  */
 @SuppressWarnings("unused")

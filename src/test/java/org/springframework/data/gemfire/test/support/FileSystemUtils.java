@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gemstone.gemfire.management.internal.cli.util.spring.Assert;
+import org.apache.geode.management.internal.cli.util.spring.Assert;
 
 /**
  * The FileSystemUtils class is a utility class encapsulating functionality to process file system directories

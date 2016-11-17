@@ -17,11 +17,10 @@ package org.springframework.data.gemfire.function;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.CollectionUtils;
@@ -33,8 +32,8 @@ import org.springframework.util.CollectionUtils;
  * @author John Blum
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.gemstone.gemfire.cache.execute.Function
- * @see com.gemstone.gemfire.cache.execute.FunctionService
+ * @see org.apache.geode.cache.execute.Function
+ * @see org.apache.geode.cache.execute.FunctionService
  */
 public class FunctionServiceFactoryBean implements FactoryBean<FunctionService>, InitializingBean {
 

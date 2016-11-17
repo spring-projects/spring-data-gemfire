@@ -28,14 +28,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
 
 /**
  * The SnapshotApplicationEventTest class is a test suite of test cases testing the contract and functionality

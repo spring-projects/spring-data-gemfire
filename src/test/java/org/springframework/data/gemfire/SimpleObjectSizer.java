@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.util.ObjectSizer;
+import org.apache.geode.cache.util.ObjectSizer;
 
 /**
  * @author Costin Leau

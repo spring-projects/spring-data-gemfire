@@ -25,14 +25,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +49,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.CacheLoader
- * @see com.gemstone.gemfire.cache.CacheWriter
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.CacheLoader
+ * @see org.apache.geode.cache.CacheWriter
+ * @see org.apache.geode.cache.Region
  * @since 1.3.3
  */
 @RunWith(SpringJUnit4ClassRunner.class)

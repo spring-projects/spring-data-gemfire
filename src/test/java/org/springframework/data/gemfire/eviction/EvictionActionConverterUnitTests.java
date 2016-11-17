@@ -20,8 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.gemstone.gemfire.cache.EvictionAction;
-
+import org.apache.geode.cache.EvictionAction;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +32,7 @@ import org.junit.rules.ExpectedException;
  * @author John Blum
  * @see org.junit.Test
  * @see EvictionActionConverter
- * @see com.gemstone.gemfire.cache.EvictionAction
+ * @see org.apache.geode.cache.EvictionAction
  * @since 1.6.0
  */
 public class EvictionActionConverterUnitTests {

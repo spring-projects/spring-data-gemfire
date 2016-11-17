@@ -31,8 +31,7 @@ import static org.springframework.data.gemfire.repository.query.QueryString.TRAC
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.Region;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

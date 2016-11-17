@@ -16,8 +16,7 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.RegionShortcut;
-
+import org.apache.geode.cache.RegionShortcut;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -25,7 +24,7 @@ import org.springframework.util.ObjectUtils;
  * with Spring Data GemFire RegionShortcutWrapper enumerated values.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.RegionShortcut
+ * @see org.apache.geode.cache.RegionShortcut
  * @since 1.4.0
  */
 @SuppressWarnings("unused")

@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableCacheServers} annotation enables 1 or more GemFire {@link com.gemstone.gemfire.cache.server.CacheServer CacheServers}
+ * The {@link EnableCacheServers} annotation enables 1 or more GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers}
  * to be defined and used in a GemFire peer cache application configured with Spring (Data GemFire).
  *
  * @author John Blum
@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Import;
 public @interface EnableCacheServers {
 
 	/**
-	 * Enables the definition of multiple GemFire {@link com.gemstone.gemfire.cache.server.CacheServer CacheServers}.
+	 * Enables the definition of multiple GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers}.
 	 */
 	EnableCacheServer[] servers() default {};
 

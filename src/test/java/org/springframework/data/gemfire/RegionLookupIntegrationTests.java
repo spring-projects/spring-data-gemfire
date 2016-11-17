@@ -22,15 +22,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.Scope;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The RegionLookupIntegrationTests class is a test suite of test cases testing the lookup functionality for various
@@ -40,7 +39,7 @@ import com.gemstone.gemfire.cache.Scope;
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.data.gemfire.fork.SpringCacheServerProcess
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.4.0
  * @link https://jira.spring.io/browse/SGF-204
  */

@@ -30,6 +30,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -39,12 +42,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
-
 /**
- * Tests the adaption of the {@link java.util.concurrent.Callable} in to GemFire's {@link com.gemstone.gemfire.cache.CacheLoader} interface.
+ * Tests the adaption of the {@link java.util.concurrent.Callable} in to GemFire's {@link org.apache.geode.cache.CacheLoader} interface.
  *
  * @author John Blum
  * @see org.junit.Rule
@@ -55,9 +54,9 @@ import com.gemstone.gemfire.cache.Region;
  * @see org.mockito.Mockito
  * @see org.mockito.runners.MockitoJUnitRunner
  * @see java.util.concurrent.Callable
- * @see com.gemstone.gemfire.cache.CacheLoader
- * @see com.gemstone.gemfire.cache.LoaderHelper
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.CacheLoader
+ * @see org.apache.geode.cache.LoaderHelper
+ * @see org.apache.geode.cache.Region
  * @since 1.0.0
  */
 @RunWith(MockitoJUnitRunner.class)

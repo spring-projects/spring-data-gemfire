@@ -21,9 +21,9 @@
 	<gfe:replicated-region id="ReplicateExample" persistent="false">
 		<gfe:custom-entry-tti>
 			<bean class="org.springframework.data.gemfire.config.xml.RegionExpirationAttributesNamespaceTest$TestCustomExpiry"
-				  p:name="One" p:timeout="60" p:action="#{T(com.gemstone.gemfire.cache.ExpirationAction).DESTROY}"/>
+				  p:name="One" p:timeout="60" p:action="#{T(org.apache.geode.cache.ExpirationAction).DESTROY}"/>
 			<bean class="org.springframework.data.gemfire.config.xml.RegionExpirationAttributesNamespaceTest$TestCustomExpiry"
-				  p:name="Two" p:timeout="120" p:action="#{T(com.gemstone.gemfire.cache.ExpirationAction).INVALIDATE}"/>
+				  p:name="Two" p:timeout="120" p:action="#{T(org.apache.geode.cache.ExpirationAction).INVALIDATE}"/>
 		</gfe:custom-entry-tti>
 	</gfe:replicated-region>
 

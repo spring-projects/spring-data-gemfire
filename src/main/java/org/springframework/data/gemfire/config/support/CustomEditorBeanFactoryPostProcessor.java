@@ -18,21 +18,16 @@ package org.springframework.data.gemfire.config.support;
 
 import java.beans.PropertyEditorSupport;
 
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.Gateway;
-
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.util.Gateway;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.gemfire.eviction.EvictionActionConverter;
-import org.springframework.data.gemfire.eviction.EvictionPolicyConverter;
-import org.springframework.data.gemfire.eviction.EvictionPolicyType;
-import org.springframework.data.gemfire.expiration.ExpirationActionConverter;
 import org.springframework.data.gemfire.IndexMaintenancePolicyConverter;
 import org.springframework.data.gemfire.IndexMaintenancePolicyType;
 import org.springframework.data.gemfire.IndexType;
@@ -40,6 +35,10 @@ import org.springframework.data.gemfire.IndexTypeConverter;
 import org.springframework.data.gemfire.InterestPolicyConverter;
 import org.springframework.data.gemfire.ScopeConverter;
 import org.springframework.data.gemfire.client.InterestResultPolicyConverter;
+import org.springframework.data.gemfire.eviction.EvictionActionConverter;
+import org.springframework.data.gemfire.eviction.EvictionPolicyConverter;
+import org.springframework.data.gemfire.eviction.EvictionPolicyType;
+import org.springframework.data.gemfire.expiration.ExpirationActionConverter;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicyConverter;
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;

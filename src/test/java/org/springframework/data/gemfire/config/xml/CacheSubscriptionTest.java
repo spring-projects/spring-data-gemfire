@@ -20,10 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.SubscriptionAttributes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

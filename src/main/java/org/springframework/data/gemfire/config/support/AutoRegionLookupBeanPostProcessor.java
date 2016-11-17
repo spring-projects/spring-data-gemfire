@@ -19,9 +19,8 @@ package org.springframework.data.gemfire.config.support;
 import java.util.Collections;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -41,8 +40,8 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.config.BeanPostProcessor
- * @see com.gemstone.gemfire.cache.GemFireCache
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
  * @since 1.5.0
  */
 public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware {

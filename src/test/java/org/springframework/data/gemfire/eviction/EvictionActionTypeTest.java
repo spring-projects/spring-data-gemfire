@@ -20,8 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-import com.gemstone.gemfire.cache.EvictionAction;
-
+import org.apache.geode.cache.EvictionAction;
 import org.junit.Test;
 
 /**
@@ -31,7 +30,7 @@ import org.junit.Test;
  * @author John Blum
  * @see org.junit.Test
  * @see EvictionActionType
- * @see com.gemstone.gemfire.cache.EvictionAction
+ * @see org.apache.geode.cache.EvictionAction
  * @since 1.6.0
  */
 public class EvictionActionTypeTest {

@@ -21,21 +21,20 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.springframework.data.gemfire.process.support.ProcessUtils;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
-
-import com.gemstone.gemfire.distributed.LocatorLauncher;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 
 /**
  * The LocatorProcess class is a main Java class that is used fork and launch a GemFire Locator process using the
  * LocatorLauncher class.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.distributed.LocatorLauncher
+ * @see org.apache.geode.distributed.LocatorLauncher
  * @since 1.5.0
  */
 public class LocatorProcess {

@@ -37,22 +37,22 @@ public class IndexTypeTest {
 
 	@Test
 	public void testGetGemfireIndexType() {
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, IndexType.FUNCTIONAL.getGemfireIndexType());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.HASH, IndexType.HASH.getGemfireIndexType());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY, IndexType.KEY.getGemfireIndexType());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY, IndexType.PRIMARY_KEY.getGemfireIndexType());
+		assertEquals(org.apache.geode.cache.query.IndexType.FUNCTIONAL, IndexType.FUNCTIONAL.getGemfireIndexType());
+		assertEquals(org.apache.geode.cache.query.IndexType.HASH, IndexType.HASH.getGemfireIndexType());
+		assertEquals(org.apache.geode.cache.query.IndexType.PRIMARY_KEY, IndexType.KEY.getGemfireIndexType());
+		assertEquals(org.apache.geode.cache.query.IndexType.PRIMARY_KEY, IndexType.PRIMARY_KEY.getGemfireIndexType());
 	}
 
 	@Test
 	public void testValueOf() {
-		assertEquals(IndexType.FUNCTIONAL, IndexType.valueOf(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL));
-		assertEquals(IndexType.HASH, IndexType.valueOf(com.gemstone.gemfire.cache.query.IndexType.HASH));
-		assertEquals(IndexType.PRIMARY_KEY, IndexType.valueOf(com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY));
+		assertEquals(IndexType.FUNCTIONAL, IndexType.valueOf(org.apache.geode.cache.query.IndexType.FUNCTIONAL));
+		assertEquals(IndexType.HASH, IndexType.valueOf(org.apache.geode.cache.query.IndexType.HASH));
+		assertEquals(IndexType.PRIMARY_KEY, IndexType.valueOf(org.apache.geode.cache.query.IndexType.PRIMARY_KEY));
 	}
 
 	@Test
 	public void testValueOfWithNull() {
-		assertNull(IndexType.valueOf((com.gemstone.gemfire.cache.query.IndexType) null));
+		assertNull(IndexType.valueOf((org.apache.geode.cache.query.IndexType) null));
 	}
 
 	@Test

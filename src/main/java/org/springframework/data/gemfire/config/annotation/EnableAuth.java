@@ -24,10 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.AuthInitialize;
-import com.gemstone.gemfire.security.Authenticator;
-
+import org.apache.geode.security.AccessControl;
+import org.apache.geode.security.AuthInitialize;
+import org.apache.geode.security.Authenticator;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -36,9 +35,9 @@ import org.springframework.context.annotation.Import;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.AuthConfiguration
- * @see com.gemstone.gemfire.security.AccessControl
- * @see com.gemstone.gemfire.security.AuthInitialize
- * @see com.gemstone.gemfire.security.Authenticator
+ * @see org.apache.geode.security.AccessControl
+ * @see org.apache.geode.security.AuthInitialize
+ * @see org.apache.geode.security.Authenticator
  * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/security/authentication_overview.html">Authentication</a>
  * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/security/authorization_overview.html">Authorization</a>
  * @since 1.9.0

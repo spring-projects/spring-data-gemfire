@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -21,20 +21,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.ResultsBag;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.CollectionUtils;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.ResultsBag;
-import com.gemstone.gemfire.pdx.JSONFormatter;
-import com.gemstone.gemfire.pdx.PdxInstance;
 
 /**
  * @author David Turanski
@@ -91,10 +91,10 @@ public class JSONRegionAdvice {
 		this.prettyPrint = prettyPrint;
 	}
 
-	@Around("execution(* com.gemstone.gemfire.cache.Region.put(..)) || "
-		+ "execution(* com.gemstone.gemfire.cache.Region.create(..)) ||"
-		+ "execution(* com.gemstone.gemfire.cache.Region.putIfAbsent(..)) ||"
-		+ "execution(* com.gemstone.gemfire.cache.Region.replace(..))")
+	@Around("execution(* org.apache.geode.cache.Region.put(..)) || "
+		+ "execution(* org.apache.geode.cache.Region.create(..)) ||"
+		+ "execution(* org.apache.geode.cache.Region.putIfAbsent(..)) ||"
+		+ "execution(* org.apache.geode.cache.Region.replace(..))")
 	public Object put(ProceedingJoinPoint pjp) {
 		boolean JSONRegion = isIncludedSONRegion(pjp.getTarget());
 		Object returnValue = null;
@@ -119,7 +119,7 @@ public class JSONRegionAdvice {
 		return returnValue;
 	}
 
-	@Around("execution(* com.gemstone.gemfire.cache.Region.putAll(..))")
+	@Around("execution(* org.apache.geode.cache.Region.putAll(..))")
 	public Object putAll(ProceedingJoinPoint pjp) {
 		boolean JSONRegion = isIncludedSONRegion(pjp.getTarget());
 		Object returnValue = null;
@@ -146,9 +146,9 @@ public class JSONRegionAdvice {
 		return returnValue;
 	}
 
-	@Around("execution(* com.gemstone.gemfire.cache.Region.get(..)) "
-		+ "|| execution(* com.gemstone.gemfire.cache.Region.selectValue(..))"
-		+ "|| execution(* com.gemstone.gemfire.cache.Region.remove(..))")
+	@Around("execution(* org.apache.geode.cache.Region.get(..)) "
+		+ "|| execution(* org.apache.geode.cache.Region.selectValue(..))"
+		+ "|| execution(* org.apache.geode.cache.Region.remove(..))")
 	public Object get(ProceedingJoinPoint pjp) {
 		Object returnValue = null;
 
@@ -170,7 +170,7 @@ public class JSONRegionAdvice {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Around("execution(* com.gemstone.gemfire.cache.Region.getAll(..))")
+	@Around("execution(* org.apache.geode.cache.Region.getAll(..))")
 	public Map<Object, Object> getAll(ProceedingJoinPoint pjp) {
 		Map<Object, Object> result = null;
 
@@ -195,7 +195,7 @@ public class JSONRegionAdvice {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Around("execution(* com.gemstone.gemfire.cache.Region.values(..))")
+	@Around("execution(* org.apache.geode.cache.Region.values(..))")
 	public Collection<Object> values(ProceedingJoinPoint pjp) {
 		Collection<Object> result = null;
 

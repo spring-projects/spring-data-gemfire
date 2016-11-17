@@ -25,8 +25,7 @@ import static org.junit.Assert.assertThat;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 
-import com.gemstone.gemfire.cache.client.PoolFactory;
-
+import org.apache.geode.cache.client.PoolFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,8 +40,8 @@ import org.springframework.data.gemfire.GemfireUtils;
  * @see org.junit.Test
  * @see org.junit.rules.ExpectedException
  * @see FactoryDefaultsPoolAdapter
- * @see com.gemstone.gemfire.cache.client.Pool
- * @see com.gemstone.gemfire.cache.client.PoolFactory
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolFactory
  * @since 1.8.0
  */
 public class FactoryDefaultsPoolAdapterTest {

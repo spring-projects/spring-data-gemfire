@@ -27,6 +27,9 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexExistsException;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
@@ -38,10 +41,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
 
 /**
  * The IndexConflictsIntegrationTest class...

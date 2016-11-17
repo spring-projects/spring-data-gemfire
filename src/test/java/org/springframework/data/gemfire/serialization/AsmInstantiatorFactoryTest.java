@@ -25,11 +25,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
 
 /**
  * @author Costin Leau

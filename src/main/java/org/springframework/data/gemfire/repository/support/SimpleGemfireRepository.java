@@ -22,6 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.SelectResults;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.GemfireCallback;
 import org.springframework.data.gemfire.GemfireTemplate;
@@ -30,12 +35,6 @@ import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.data.gemfire.repository.query.QueryString;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * Basic Repository implementation for GemFire.
@@ -46,8 +45,8 @@ import com.gemstone.gemfire.cache.query.SelectResults;
  * @see java.io.Serializable
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.data.gemfire.repository.GemfireRepository
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.Region
  */
 public class SimpleGemfireRepository<T, ID extends Serializable> implements GemfireRepository<T, ID> {
 
@@ -222,8 +221,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see com.gemstone.gemfire.cache.Region#getAttributes()
-	 * @see com.gemstone.gemfire.cache.RegionAttributes#getDataPolicy()
+	 * @see org.apache.geode.cache.Region#getAttributes()
+	 * @see org.apache.geode.cache.RegionAttributes#getDataPolicy()
 	 */
 	boolean isPartitioned(final Region region) {
 		return (region != null && region.getAttributes() != null
@@ -233,7 +232,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see com.gemstone.gemfire.cache.DataPolicy#withPartitioning()
+	 * @see org.apache.geode.cache.DataPolicy#withPartitioning()
 	 */
 	boolean isPartitioned(final DataPolicy dataPolicy) {
 		return (dataPolicy != null && dataPolicy.withPartitioning());
@@ -242,8 +241,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see com.gemstone.gemfire.cache.Region#getRegionService()
-	 * @see com.gemstone.gemfire.cache.Cache#getCacheTransactionManager()
+	 * @see org.apache.geode.cache.Region#getRegionService()
+	 * @see org.apache.geode.cache.Cache#getCacheTransactionManager()
 	 */
 	boolean isTransactionPresent(final Region region) {
 		return (region.getRegionService() instanceof Cache
@@ -253,7 +252,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see com.gemstone.gemfire.cache.CacheTransactionManager#exists()
+	 * @see org.apache.geode.cache.CacheTransactionManager#exists()
 	 */
 	boolean isTransactionPresent(final CacheTransactionManager cacheTransactionManager) {
 		return (cacheTransactionManager != null && cacheTransactionManager.exists());

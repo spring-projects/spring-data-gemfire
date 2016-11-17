@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.RegionAttributes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +48,6 @@ import org.springframework.data.gemfire.repository.support.GemfireRepositoryFact
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * Test suite of test cases testing that the GemFire-based {@link org.springframework.data.repository.Repository}

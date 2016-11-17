@@ -19,22 +19,21 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.cache.util.Gateway.OrderPolicy;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import com.gemstone.gemfire.cache.util.Gateway.OrderPolicy;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
 /**
  * The StubGatewaySenderFactory class for testing purposes.
  *
  * @author David Turanski
  * @author John Blum
- * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
+ * @see org.apache.geode.cache.wan.GatewaySenderFactory
  */
 @SuppressWarnings({ "deprecation", "unused" })
 public class StubGatewaySenderFactory implements GatewaySenderFactory {

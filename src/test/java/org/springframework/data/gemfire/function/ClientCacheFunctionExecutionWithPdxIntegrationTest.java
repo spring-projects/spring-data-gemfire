@@ -26,6 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.pdx.internal.PdxInstanceEnum;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,14 +48,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxInstanceFactory;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
-
 /**
  * The ClientCacheFunctionExecutionWithPdxIntegrationTest class is a test suite of test cases testing Spring Data
  * GemFire's Function annotation support and interaction between a GemFire client and server Cache
@@ -62,10 +61,10 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
  * @see org.springframework.data.gemfire.function.sample.ApplicationDomainFunctionExecutions
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.pdx.PdxInstance
- * @see com.gemstone.gemfire.pdx.PdxSerializer
- * @see com.gemstone.gemfire.pdx.internal.PdxInstanceEnum
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.pdx.PdxInstance
+ * @see org.apache.geode.pdx.PdxSerializer
+ * @see org.apache.geode.pdx.internal.PdxInstanceEnum
  * @since 1.5.2
  */
 @RunWith(SpringJUnit4ClassRunner.class)

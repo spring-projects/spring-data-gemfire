@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -19,8 +19,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
 
 /**
  * @author David Turanski
@@ -52,7 +52,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setAllowForceCompaction(boolean)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setAllowForceCompaction(boolean)
 	 */
 	@Override
 	public DiskStoreFactory setAllowForceCompaction(boolean allowForceCompaction) {
@@ -61,7 +61,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setAutoCompact(boolean)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setAutoCompact(boolean)
 	 */
 	@Override
 	public DiskStoreFactory setAutoCompact(boolean isAutoCompact) {
@@ -70,7 +70,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setCompactionThreshold(int)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setCompactionThreshold(int)
 	 */
 	@Override
 	public DiskStoreFactory setCompactionThreshold(int compactionThreshold) {
@@ -79,7 +79,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setMaxOplogSize(long)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setMaxOplogSize(long)
 	 */
 	@Override
 	public DiskStoreFactory setMaxOplogSize(long maxOplogSize) {
@@ -88,7 +88,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setTimeInterval(long)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setTimeInterval(long)
 	 */
 	@Override
 	public DiskStoreFactory setTimeInterval(long timeInterval) {
@@ -97,7 +97,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setWriteBufferSize(int)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setWriteBufferSize(int)
 	 */
 	@Override
 	public DiskStoreFactory setWriteBufferSize(int writeBufferSize) {
@@ -106,7 +106,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setQueueSize(int)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setQueueSize(int)
 	 */
 	@Override
 	public DiskStoreFactory setQueueSize(int queueSize) {
@@ -115,7 +115,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setDiskDirs(java.io.File[])
+	 * @see org.apache.geode.cache.DiskStoreFactory#setDiskDirs(java.io.File[])
 	 */
 	@Override
 	public DiskStoreFactory setDiskDirs(File[] diskDirs) {
@@ -124,7 +124,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setDiskDirsAndSizes(java.io.File[], int[])
+	 * @see org.apache.geode.cache.DiskStoreFactory#setDiskDirsAndSizes(java.io.File[], int[])
 	 */
 	@Override
 	public DiskStoreFactory setDiskDirsAndSizes(File[] diskDirs, int[] diskDirSizes) {
@@ -134,7 +134,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setDiskUsageCriticalPercentage(float)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setDiskUsageCriticalPercentage(float)
 	 */
 	@Override
 	public DiskStoreFactory setDiskUsageCriticalPercentage(final float diskUsageCriticalPercentage) {
@@ -143,7 +143,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.DiskStoreFactory#setDiskUsageWarningPercentage(float)
+	 * @see org.apache.geode.cache.DiskStoreFactory#setDiskUsageWarningPercentage(float)
 	 */
 	@Override
 	public DiskStoreFactory setDiskUsageWarningPercentage(final float diskUsageWarningPercentage) {
@@ -152,7 +152,7 @@ public class StubDiskStore implements DiskStoreFactory {
 	}
 
 	/* (non-Javadoc)
-		 * @see com.gemstone.gemfire.cache.DiskStoreFactory#create(java.lang.String)
+		 * @see org.apache.geode.cache.DiskStoreFactory#create(java.lang.String)
 		 */
 	@Override
 	public DiskStore create(final String name) {

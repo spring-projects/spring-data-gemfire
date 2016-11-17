@@ -15,11 +15,10 @@
  */
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.RegionFactory;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.RegionFactory;
 
 /**
  * @author David Turanski

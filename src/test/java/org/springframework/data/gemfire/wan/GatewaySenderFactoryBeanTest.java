@@ -24,23 +24,22 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.junit.Test;
 import org.springframework.data.gemfire.TestUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.util.Gateway;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 
 /**
  * The GatewaySenderFactoryBeanTest class is a test suite of test cases testing the contract and functionality of the
  * GatewaySenderFactoryBean class.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.wan.GatewaySender
- * @see com.gemstone.gemfire.cache.util.Gateway
- * @see com.gemstone.gemfire.cache.wan.GatewaySenderFactory
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.wan.GatewaySender
+ * @see org.apache.geode.cache.util.Gateway
+ * @see org.apache.geode.cache.wan.GatewaySenderFactory
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.wan.GatewaySenderFactoryBean

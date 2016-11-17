@@ -18,11 +18,10 @@ package org.springframework.data.gemfire;
 
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
 import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.util.ClassUtils;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * GemfireUtils is an abstract utility class encapsulating common functionality to access features and capabilities
@@ -30,8 +29,8 @@ import com.gemstone.gemfire.cache.Region;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
- * @see com.gemstone.gemfire.cache.CacheFactory
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.CacheFactory
+ * @see org.apache.geode.cache.Region
  * @since 1.3.3
  */
 @SuppressWarnings("unused")
@@ -64,8 +63,8 @@ public abstract class GemfireUtils extends CacheUtils {
 			return isGemfireVersionGreaterThanEqualTo(7.0);
 		}
 		catch (NumberFormatException e) {
-			// NOTE the com.gemstone.gemfire.distributed.ServerLauncher class only exists in GemFire v 7.0.x or above...
-			return ClassUtils.isPresent("com.gemstone.gemfire.distributed.ServerLauncher",
+			// NOTE the org.apache.geode.distributed.ServerLauncher class only exists in GemFire v 7.0.x or above...
+			return ClassUtils.isPresent("org.apache.geode.distributed.ServerLauncher",
 				Thread.currentThread().getContextClassLoader());
 		}
 	}
@@ -76,9 +75,9 @@ public abstract class GemfireUtils extends CacheUtils {
 			return isGemfireVersionGreaterThanEqualTo(8.0);
 		}
 		catch (NumberFormatException e) {
-			// NOTE the com.gemstone.gemfire.management.internal.web.domain.LinkIndex class only exists
+			// NOTE the org.apache.geode.management.internal.web.domain.LinkIndex class only exists
 			// in GemFire v 8.0.0 or above...
-			return ClassUtils.isPresent("com.gemstone.gemfire.management.internal.web.domain.LinkIndex",
+			return ClassUtils.isPresent("org.apache.geode.management.internal.web.domain.LinkIndex",
 				Thread.currentThread().getContextClassLoader());
 		}
 	}

@@ -24,22 +24,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.gemstone.gemfire.cache.control.ResourceManager;
-
+import org.apache.geode.cache.control.ResourceManager;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link PeerCacheApplication} annotation enables an embedded GemFire peer {@link com.gemstone.gemfire.cache.Cache}
+ * The {@link PeerCacheApplication} annotation enables an embedded GemFire peer {@link org.apache.geode.cache.Cache}
  * instance in a Spring Data GemFire based application.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfiguration
- * @see com.gemstone.gemfire.cache.control.ResourceManager
+ * @see org.apache.geode.cache.control.ResourceManager
  * @since 1.9.0
  */
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.TYPE})
@@ -61,7 +60,7 @@ public @interface PeerCacheApplication {
 	/**
 	 * Configures the percentage of heap at or above which the cache is considered in danger of becoming inoperable.
 	 *
-	 * @see com.gemstone.gemfire.cache.control.ResourceManager#DEFAULT_CRITICAL_HEAP_PERCENTAGE
+	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_CRITICAL_HEAP_PERCENTAGE
 	 */
 	float criticalHeapPercentage() default ResourceManager.DEFAULT_CRITICAL_HEAP_PERCENTAGE;
 
@@ -78,7 +77,7 @@ public @interface PeerCacheApplication {
 	 * Configures the percentage of heap at or above which the eviction should begin on Regions configured
 	 * for HeapLRU eviction.
 	 *
-	 * @see com.gemstone.gemfire.cache.control.ResourceManager#DEFAULT_EVICTION_HEAP_PERCENTAGE
+	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_EVICTION_HEAP_PERCENTAGE
 	 */
 	float evictionHeapPercentage() default ResourceManager.DEFAULT_EVICTION_HEAP_PERCENTAGE;
 

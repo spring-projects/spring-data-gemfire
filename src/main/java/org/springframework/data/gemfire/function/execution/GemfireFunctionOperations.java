@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -13,12 +13,12 @@
 package org.springframework.data.gemfire.function.execution;
 
 
-import com.gemstone.gemfire.cache.execute.Function;
+import org.apache.geode.cache.execute.Function;
 
 /**
- * 
+ *
  * An interface for invoking Gemfire functions
- * 
+ *
  * @author David Turanski
  */
 public interface GemfireFunctionOperations {
@@ -50,7 +50,7 @@ public interface GemfireFunctionOperations {
 	 * @param function the GemFire Function object.
 	 * @param args an array of Object arguments to the Function call.
 	 * @return the first item in the ResultsCollector.
-	 * @see com.gemstone.gemfire.cache.execute.Function
+	 * @see org.apache.geode.cache.execute.Function
      */
 	public abstract <T> T executeAndExtract(Function function, Object... args);
 
@@ -73,7 +73,7 @@ public interface GemfireFunctionOperations {
 	public void executeWithNoResult(String functionId, Object... args);
 
     /**
-     * Execute a GemFire Function using a native GemFire {@link com.gemstone.gemfire.cache.execute.Execution} instance.
+     * Execute a GemFire Function using a native GemFire {@link org.apache.geode.cache.execute.Execution} instance.
 	 *
 	 * @param <T> type parameter specifying the result type of the Function execution.
      * @param callback a callback providing the execution instance.

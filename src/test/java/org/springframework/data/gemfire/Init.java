@@ -16,18 +16,17 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.server.CacheServer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
-
 
 /**
- * Simple bean used to check initialization order 
- * 
+ * Simple bean used to check initialization order
+ *
  * @author Costin Leau
  */
 public class Init implements InitializingBean, BeanFactoryAware {

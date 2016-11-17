@@ -19,15 +19,14 @@ package org.springframework.data.gemfire;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The GenericRegionFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -39,7 +38,7 @@ import com.gemstone.gemfire.cache.Scope;
  */
 public class GenericRegionFactoryBeanTest {
 
-	// as defined in the com.gemstone.gemfire.internal.cache.AbstractRegion class
+	// as defined in the org.apache.geode.internal.cache.AbstractRegion class
 	private static final Scope DEFAULT_SCOPE = Scope.DISTRIBUTED_NO_ACK;
 
 	private static Region<Object, Object> defaultRegion;

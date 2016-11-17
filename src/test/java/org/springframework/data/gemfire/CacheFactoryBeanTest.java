@@ -46,6 +46,19 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.TransactionListener;
+import org.apache.geode.cache.TransactionWriter;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.pdx.PdxSerializer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -53,20 +66,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.core.io.Resource;
 import org.springframework.data.util.ReflectionUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.pdx.PdxSerializer;
 
 /**
  * The CacheFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -78,7 +77,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see org.junit.rules.ExpectedException
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.CacheFactoryBean
- * @see com.gemstone.gemfire.cache.Cache
+ * @see org.apache.geode.cache.Cache
  * @since 1.7.0
  */
 public class CacheFactoryBeanTest {

@@ -18,27 +18,26 @@ package org.springframework.data.gemfire;
 
 import java.lang.reflect.Field;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
@@ -200,10 +199,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 *
 	 * @param cache the GemFire Cache instance.
 	 * @return a RegionFactory used to configure and construct the Region created by this FactoryBean.
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory()
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionAttributes)
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionShortcut)
-	 * @see com.gemstone.gemfire.cache.RegionFactory
+	 * @see org.apache.geode.cache.Cache#createRegionFactory()
+	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionAttributes)
+	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionShortcut)
+	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected RegionFactory<K, V> createRegionFactory(final Cache cache) {
 		if (shortcut != null) {
@@ -229,10 +228,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * (RegionAttributesImpl) rather than the interface type (RegionAttributes)...
 	 * so much for 'programming to interfaces' in GemFire!
 	 *
-	 * @see com.gemstone.gemfire.cache.RegionFactory#attrsFactory
-	 * @see com.gemstone.gemfire.cache.AttributesFactory#regionAttributes
-	 * @see com.gemstone.gemfire.cache.RegionAttributes#getDataPolicy
-	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 * @see org.apache.geode.cache.RegionFactory#attrsFactory
+	 * @see org.apache.geode.cache.AttributesFactory#regionAttributes
+	 * @see org.apache.geode.cache.RegionAttributes#getDataPolicy
+	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	DataPolicy getDataPolicy(final RegionFactory regionFactory) {
@@ -262,10 +261,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @param regionAttributes the RegionAttributes containing the Region configuration settings to merge to the
 	 * RegionFactory.
 	 * @return the RegionFactory with the configuration settings of the RegionAttributes merged.
-	 * @see #isUserSpecifiedEvictionAttributes(com.gemstone.gemfire.cache.RegionAttributes)
-	 * @see #validateRegionAttributes(com.gemstone.gemfire.cache.RegionAttributes)
-	 * @see com.gemstone.gemfire.cache.RegionAttributes
-	 * @see com.gemstone.gemfire.cache.RegionFactory
+	 * @see #isUserSpecifiedEvictionAttributes(org.apache.geode.cache.RegionAttributes)
+	 * @see #validateRegionAttributes(org.apache.geode.cache.RegionAttributes)
+	 * @see org.apache.geode.cache.RegionAttributes
+	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	@SuppressWarnings("unchecked")
 	protected <K, V> RegionFactory<K, V> mergeRegionAttributes(final RegionFactory<K, V> regionFactory,
@@ -347,11 +346,11 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * (non-Javadoc) - This method should not be considered part of the RegionFactoryBean API
 	 * and is strictly for testing purposes!
 	 *
-	 * @see com.gemstone.gemfire.cache.AttributesFactory#validateAttributes(:RegionAttributes)
+	 * @see org.apache.geode.cache.AttributesFactory#validateAttributes(:RegionAttributes)
 	 */
 	@SuppressWarnings("deprecation")
 	void validateRegionAttributes(final RegionAttributes regionAttributes) {
-		com.gemstone.gemfire.cache.AttributesFactory.validateAttributes(regionAttributes);
+		org.apache.geode.cache.AttributesFactory.validateAttributes(regionAttributes);
 	}
 
 	/*
@@ -359,7 +358,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * and is strictly for testing purposes!
 	 *
 	 * NOTE unfortunately, must resort to using a GemFire internal class, ugh!
-	 * @see com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
+	 * @see org.apache.geode.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
 	 */
 	boolean isUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
 		return (regionAttributes instanceof UserSpecifiedRegionAttributes
@@ -424,7 +423,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * meta-data.
 	 * @see #isPersistent()
 	 * @see #isNotPersistent()
-	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	protected void assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy resolvedDataPolicy) {
 		if (resolvedDataPolicy.withPersistence()) {
@@ -444,7 +443,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * is invoked.
 	 *
 	 * @param regionFactory the GemFire RegionFactory used to create the Region for post-processing.
-	 * @see com.gemstone.gemfire.cache.RegionFactory
+	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected void postProcess(RegionFactory<K, V> regionFactory) {
 	}
@@ -454,7 +453,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * already configured and initialized by the factory bean before this method is invoked.
 	 *
 	 * @param region the GemFire Region to post-process.
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	protected void postProcess(Region<K, V> region) {
 	}
@@ -467,9 +466,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @param persistent a boolean value indicating whether the Region should be persistent and persist it's
 	 * data to disk.
 	 * @param dataPolicy the configured Data Policy for the Region.
-	 * @see #resolveDataPolicy(com.gemstone.gemfire.cache.RegionFactory, Boolean, String)
-	 * @see com.gemstone.gemfire.cache.DataPolicy
-	 * @see com.gemstone.gemfire.cache.RegionFactory
+	 * @see #resolveDataPolicy(org.apache.geode.cache.RegionFactory, Boolean, String)
+	 * @see org.apache.geode.cache.DataPolicy
+	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
 		if (dataPolicy != null) {
@@ -489,8 +488,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @param regionFactory the GemFire RegionFactory used to create the desired Region.
 	 * @param persistent a boolean value indicating whether the Region should persist it's data to disk.
 	 * @param dataPolicy requested Data Policy as set by the user in the Spring GemFire configuration meta-data.
-	 * @see com.gemstone.gemfire.cache.DataPolicy
-	 * @see com.gemstone.gemfire.cache.RegionFactory
+	 * @see org.apache.geode.cache.DataPolicy
+	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
 		if (dataPolicy != null) {
@@ -566,7 +565,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * configuration meta-data, or as set with the setAttributes(:Attributes) method.
 	 *
 	 * @return the RegionAttributes used to configure the Region created by this factory.
-	 * @see com.gemstone.gemfire.cache.RegionAttributes
+	 * @see org.apache.geode.cache.RegionAttributes
 	 */
 	public RegionAttributes getAttributes() {
 		Region<K, V> region = getRegion();
@@ -640,7 +639,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * Sets the DataPolicy of the Region as a String.
 	 *
 	 * @param dataPolicyName the name of the DataPolicy (e.g. REPLICATE, PARTITION)
-	 * @see #setDataPolicy(com.gemstone.gemfire.cache.DataPolicy)
+	 * @see #setDataPolicy(org.apache.geode.cache.DataPolicy)
 	 * @deprecated as of 1.4.0, use setDataPolicy(:DataPolicy) instead.
 	 */
 	@Deprecated
@@ -653,7 +652,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * of the Region to be created.
 	 *
 	 * @return the "resolved" Data Policy to be used to create the Region.
-	 * @see com.gemstone.gemfire.cache.DataPolicy
+	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	public DataPolicy getDataPolicy() {
 		Assert.state(dataPolicy != null, "The Data Policy has not been properly resolved yet!");
@@ -706,7 +705,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 *
 	 * @param shortcut the RegionShortcut used to configure pre-defined default for the Region created
 	 * by this FactoryBean.
-	 * @see com.gemstone.gemfire.cache.RegionShortcut
+	 * @see org.apache.geode.cache.RegionShortcut
 	 */
 	public void setShortcut(RegionShortcut shortcut) {
 		this.shortcut = shortcut;

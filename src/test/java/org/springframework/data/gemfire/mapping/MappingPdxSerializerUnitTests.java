@@ -29,10 +29,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.PdxWriter;
-
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.PdxWriter;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,9 +61,9 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
  * @see org.mockito.runners.MockitoJUnitRunner
  * @see org.springframework.core.convert.ConversionService
  * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
- * @see com.gemstone.gemfire.pdx.PdxReader
- * @see com.gemstone.gemfire.pdx.PdxSerializer
- * @see com.gemstone.gemfire.pdx.PdxWriter
+ * @see org.apache.geode.pdx.PdxReader
+ * @see org.apache.geode.pdx.PdxSerializer
+ * @see org.apache.geode.pdx.PdxWriter
  */
 @RunWith(MockitoJUnitRunner.class)
 public class MappingPdxSerializerUnitTests {

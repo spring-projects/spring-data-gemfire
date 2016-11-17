@@ -24,6 +24,16 @@ import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -43,17 +53,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ErrorHandler;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.CqAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributesFactory;
-import com.gemstone.gemfire.cache.query.CqEvent;
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryService;
-
 /**
  * Container providing asynchronous behaviour for GemFire continuous queries.
  *
@@ -65,13 +64,13 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.core.task.SimpleAsyncTaskExecutor
  * @see org.springframework.core.task.TaskExecutor
- * @see com.gemstone.gemfire.cache.RegionService
- * @see com.gemstone.gemfire.cache.client.Pool
- * @see com.gemstone.gemfire.cache.client.PoolManager
- * @see com.gemstone.gemfire.cache.query.CqEvent
- * @see com.gemstone.gemfire.cache.query.CqListener
- * @see com.gemstone.gemfire.cache.query.CqQuery
- * @see com.gemstone.gemfire.cache.query.QueryService
+ * @see org.apache.geode.cache.RegionService
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolManager
+ * @see org.apache.geode.cache.query.CqEvent
+ * @see org.apache.geode.cache.query.CqListener
+ * @see org.apache.geode.cache.query.CqQuery
+ * @see org.apache.geode.cache.query.QueryService
  */
 @SuppressWarnings("unused")
 public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanNameAware,
@@ -354,7 +353,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * Set the underlying RegionService (GemFire Cache) used for registering Queries.
 	 *
 	 * @param cache the RegionService (GemFire Cache) used for registering Queries.
-	 * @see com.gemstone.gemfire.cache.RegionService
+	 * @see org.apache.geode.cache.RegionService
 	 */
 	public void setCache(RegionService cache) {
 		setQueryService(cache.getQueryService());
@@ -413,7 +412,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * Set the GemFire QueryService used by this container to create ContinuousQueries (CQ).
 	 *
 	 * @param service the GemFire QueryService object used by the container to create ContinuousQueries (CQ).
-	 * @see com.gemstone.gemfire.cache.query.QueryService
+	 * @see org.apache.geode.cache.query.QueryService
 	 */
 	public void setQueryService(QueryService service) {
 		this.queryService = service;

@@ -16,18 +16,18 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.GemFireCheckedException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.cache.Region;
 
 /**
  * Callback interface for GemFire code. To be used with {@link GemfireTemplate}'s execution methods, often as anonymous
  * classes within a method implementation. A typical implementation will call Region.get/put/query to perform some
- * operations on stored objects. 
- * 
+ * operations on stored objects.
+ *
  * @author Costin Leau
  * @author John Blum
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  */
 public interface GemfireCallback<T> {
 
@@ -40,13 +40,13 @@ public interface GemfireCallback<T> {
 	 *
 	 * A thrown custom RuntimeException is treated as an application exception: it gets propagated to
 	 * the caller of the template.
-	 *  
+	 *
 	 * @param region the GemFire Cache Region upon which the operation of this callback will be performed.
 	 * @return a result object, or <tt>null</tt> if no result.
 	 * @throws GemFireCheckedException for checked Exceptions occurring in GemFire.
 	 * @throws GemFireException for runtime Exceptions occurring in GemFire.
 	 * @see org.springframework.data.gemfire.GemfireTemplate
-	 * @see com.gemstone.gemfire.cache.Region
+	 * @see org.apache.geode.cache.Region
 	 */
 	T doInGemfire(Region<?,?> region) throws GemFireCheckedException, GemFireException;
 

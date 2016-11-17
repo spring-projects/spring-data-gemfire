@@ -31,10 +31,9 @@ import static org.springframework.data.gemfire.snapshot.filter.ComposableSnapsho
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.cache.snapshot.SnapshotFilter;
 import org.junit.Test;
 import org.springframework.data.gemfire.TestUtils;
-
-import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
 
 /**
  * The ComposableSnapshotFilterTest class is a test suite of test cases testing the contract and functionality
@@ -45,7 +44,7 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.snapshot.filter.ComposableSnapshotFilter
  * @see org.springframework.data.gemfire.snapshot.filter.ComposableSnapshotFilter.Operator
- * @see com.gemstone.gemfire.cache.snapshot.SnapshotFilter
+ * @see org.apache.geode.cache.snapshot.SnapshotFilter
  * @since 1.7.0
  */
 public class ComposableSnapshotFilterTest {

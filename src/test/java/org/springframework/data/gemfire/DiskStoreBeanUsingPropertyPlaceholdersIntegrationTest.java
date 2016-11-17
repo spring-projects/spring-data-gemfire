@@ -20,16 +20,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Map;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.DiskStore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.DiskStore;
 
 /**
  * The DiskStoreBeanUsingPropertyPlaceholdersIntegrationTest class is a test suite of integration tests testing the use
@@ -42,7 +42,7 @@ import com.gemstone.gemfire.cache.DiskStore;
  * @see org.springframework.data.gemfire.DiskStoreFactoryBean
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.DiskStore
+ * @see org.apache.geode.cache.DiskStore
  * @link https://jira.springsource.org/browse/SGF-249
  * @since 1.3.4
  */

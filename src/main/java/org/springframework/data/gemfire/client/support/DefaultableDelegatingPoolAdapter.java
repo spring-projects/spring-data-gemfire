@@ -21,9 +21,8 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.query.QueryService;
-
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.query.QueryService;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 
@@ -32,7 +31,7 @@ import org.springframework.util.Assert;
  * values to be providing in the case that the Pool's setting were null.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.client.Pool
+ * @see org.apache.geode.cache.client.Pool
  * @since 1.8.0
  */
 @SuppressWarnings("unused")

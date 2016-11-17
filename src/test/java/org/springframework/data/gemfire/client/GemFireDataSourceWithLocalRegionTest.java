@@ -14,9 +14,8 @@ package org.springframework.data.gemfire.client;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

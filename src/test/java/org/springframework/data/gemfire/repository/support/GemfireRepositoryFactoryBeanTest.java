@@ -16,12 +16,16 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import java.util.Collections;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,9 +33,6 @@ import org.junit.rules.ExpectedException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.sample.PersonRepository;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * The GemfireRepositoryFactoryBeanTest class is test suite of test cases testing the contract and functionality
@@ -59,32 +60,32 @@ public class GemfireRepositoryFactoryBeanTest {
 
 	@Test
 	public void rejectsMappingContextNotSet() {
-		
+
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("GemfireMappingContext");
-		
+
 		repositoryFactoryBean.afterPropertiesSet();
 	}
-	
+
 	@Test
 	@SuppressWarnings("unchecked")
 	public void initializesWithMappingContext() {
-		
+
 		RegionAttributes<?, ?> attributes = mock(RegionAttributes.class);
 		doReturn(Long.class).when(attributes).getKeyConstraint();
-		
+
 		Region<?, ?> region = mock(Region.class);
 		doReturn("simple").when(region).getName();
 		doReturn(attributes).when(region).getAttributes();
-		
+
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 		doReturn(Collections.singletonMap("simple", region)).when(applicationContext).getBeansOfType(Region.class);
-		
+
 		repositoryFactoryBean.setApplicationContext(applicationContext);
 		repositoryFactoryBean.setRepositoryInterface(PersonRepository.class);
 		repositoryFactoryBean.setGemfireMappingContext(new GemfireMappingContext());
 		repositoryFactoryBean.afterPropertiesSet();
-		
+
 		assertThat(repositoryFactoryBean.getObject(), is(notNullValue()));
 	}
 }

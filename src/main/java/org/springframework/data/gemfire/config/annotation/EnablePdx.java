@@ -59,7 +59,7 @@ public @interface EnablePdx {
 	boolean persistent() default false;
 
 	/**
-	 * Configures the object preference to {@link com.gemstone.gemfire.pdx.PdxInstance} type or {@link Object}.
+	 * Configures the object preference to {@link org.apache.geode.pdx.PdxInstance} type or {@link Object}.
 	 *
 	 * Default is {@literal false}.
 	 */

@@ -33,8 +33,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Callable;
 
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.Region;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -51,7 +50,7 @@ import org.springframework.cache.Cache;
  * @see org.mockito.Mock
  * @see org.mockito.runners.MockitoJUnitRunner
  * @see GemfireCache
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.9.0
  */
 @RunWith(MockitoJUnitRunner.class)

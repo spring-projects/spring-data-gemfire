@@ -20,19 +20,17 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.util.GatewayHub;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.gemfire.test.support.AbstractUnitAndIntegrationTestsWithMockSupport;
-
-import com.gemstone.gemfire.cache.util.Gateway;
-import com.gemstone.gemfire.cache.util.GatewayHub;
 
 /**
  * The MockGatewayHubFactory class is a factory for creating mock GemFire GatewayHubs.
@@ -41,8 +39,8 @@ import com.gemstone.gemfire.cache.util.GatewayHub;
  * @see org.mockito.Mockito
  * @see AbstractUnitAndIntegrationTestsWithMockSupport
  * @see org.springframework.data.gemfire.wan.GatewayHubFactoryBean
- * @see com.gemstone.gemfire.cache.util.Gateway
- * @see com.gemstone.gemfire.cache.util.GatewayHub
+ * @see org.apache.geode.cache.util.Gateway
+ * @see org.apache.geode.cache.util.GatewayHub
  * @since 1.5.3
  */
 @SuppressWarnings({ "deprecation", "unused" })

@@ -33,9 +33,8 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.query.QueryService;
-
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.query.QueryService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

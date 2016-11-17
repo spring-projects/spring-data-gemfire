@@ -21,8 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gemstone.gemfire.cache.RegionShortcut;
-
+import org.apache.geode.cache.RegionShortcut;
 import org.junit.Test;
 
 /**
@@ -32,7 +31,7 @@ import org.junit.Test;
  * @author John Blum
  * @see org.junit.Test
  * @see RegionShortcutWrapper
- * @see com.gemstone.gemfire.cache.RegionShortcut
+ * @see org.apache.geode.cache.RegionShortcut
  * @since 1.4.0
  */
 public class RegionShortcutWrapperTest {

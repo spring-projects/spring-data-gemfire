@@ -23,14 +23,13 @@ import java.io.File;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +46,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  * @link https://jira.spring.io/browse/SGF-384
  * @since 1.6.0
  */

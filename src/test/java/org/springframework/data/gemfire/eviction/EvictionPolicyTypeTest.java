@@ -19,8 +19,7 @@ package org.springframework.data.gemfire.eviction;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-
+import org.apache.geode.cache.EvictionAlgorithm;
 import org.junit.Test;
 
 /**
@@ -30,7 +29,7 @@ import org.junit.Test;
  * @author John Blum
  * @see org.junit.Test
  * @see EvictionPolicyType
- * @see com.gemstone.gemfire.cache.EvictionAlgorithm
+ * @see org.apache.geode.cache.EvictionAlgorithm
  * @since 1.6.0
  */
 public class EvictionPolicyTypeTest {

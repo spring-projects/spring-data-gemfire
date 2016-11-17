@@ -16,8 +16,7 @@
 
 package org.springframework.data.gemfire.client;
 
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-
+import org.apache.geode.cache.InterestResultPolicy;
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
 
 /**
@@ -26,7 +25,7 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
- * @see com.gemstone.gemfire.cache.InterestResultPolicy
+ * @see org.apache.geode.cache.InterestResultPolicy
  * @since 1.6.0
  */
 public class InterestResultPolicyConverter extends AbstractPropertyEditorConverterSupport<InterestResultPolicy> {
@@ -40,7 +39,7 @@ public class InterestResultPolicyConverter extends AbstractPropertyEditorConvert
 	 * @see org.springframework.data.gemfire.client.InterestResultPolicyType#getInterestResultPolicy(InterestResultPolicyType)
 	 * @see org.springframework.data.gemfire.client.InterestResultPolicyType#valueOfIgnoreCase(String)
 	 * @see #assertConverted(String, Object, Class)
-	 * @see com.gemstone.gemfire.cache.InterestResultPolicy
+	 * @see org.apache.geode.cache.InterestResultPolicy
 	 */
 	@Override
 	public InterestResultPolicy convert(final String source) {

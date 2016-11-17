@@ -42,10 +42,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -61,9 +64,6 @@ import org.springframework.data.gemfire.repository.support.GemfireRepositoryFact
 import org.springframework.data.gemfire.repository.support.SimpleGemfireRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryProxyPostProcessor;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * The GemfireRepositoryBeanTest class is a test suite of test cases testing the contract and functionality

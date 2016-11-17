@@ -23,12 +23,11 @@ import static org.mockito.Mockito.mock;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
@@ -46,9 +45,9 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.RegionAttributes
- * @see com.gemstone.gemfire.cache.EvictionAttributes
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionAttributes
+ * @see org.apache.geode.cache.EvictionAttributes
  * @since 1.5.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)

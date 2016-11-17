@@ -24,6 +24,12 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,16 +37,9 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.gemfire.repository.sample.Address;
 import org.springframework.data.gemfire.repository.sample.Person;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-
 /**
  * Integration tests for {@link MappingPdxSerializer}.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  */
@@ -141,16 +140,16 @@ public class MappingPdxSerializerIntegrationTest {
 			super(id, firstname, lastname);
 			this.dsProperty = dsProperty;
 		}
-		
+
 		public DataSerializableProperty getDataSerializableProperty() {
 			return this.dsProperty;
 		}
-		
+
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static class DataSerializableProperty implements DataSerializable {
-		
+
 		static {
 			Instantiator.register(new Instantiator(DataSerializableProperty.class,101) {
 				public DataSerializable newInstance() {
@@ -158,30 +157,30 @@ public class MappingPdxSerializerIntegrationTest {
 				}
 			});
 		}
-		
+
 		private String value;
-		
+
 		public DataSerializableProperty(String value) {
 			this.value = value;
 		}
-		
-		
+
+
 		@Override
 		public void fromData(DataInput dataInput) throws IOException,
 				ClassNotFoundException {
 			value = dataInput.readUTF();
-			
+
 		}
 
 		@Override
 		public void toData(DataOutput dataOutput) throws IOException {
 			dataOutput.writeUTF(value);
 		}
-		
+
 		public String getValue() {
 			return this.value;
 		}
-		
+
 	}
 
 }

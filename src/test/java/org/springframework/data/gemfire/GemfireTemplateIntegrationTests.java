@@ -30,10 +30,9 @@ import java.util.Properties;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.SelectResults;
-
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.SelectResults;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

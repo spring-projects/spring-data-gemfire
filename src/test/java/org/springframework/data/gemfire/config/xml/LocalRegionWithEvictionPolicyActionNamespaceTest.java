@@ -21,11 +21,10 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;

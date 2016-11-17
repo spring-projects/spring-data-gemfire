@@ -16,9 +16,8 @@
 
 package org.springframework.data.gemfire.client;
 
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.core.convert.converter.Converter;
-
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 
 /**
  * The ClientRegionShortcutConverter class is a Spring Converter implementation converting String value Client Region
@@ -26,7 +25,7 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
  *
  * @author John Blum
  * @see org.springframework.core.convert.converter.Converter
- * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @since 1.3.4
  */
 @SuppressWarnings("unused")
@@ -53,7 +52,7 @@ public class ClientRegionShortcutConverter implements Converter<String, ClientRe
 	 * @param source the String representation of the Client Region Shortcut to convert.
 	 * @return a ClientRegionShortcut enumerated value for the String representation.
 	 * @throws IllegalArgumentException if the String source is not a valid ClientRegionShortcut enumerated value.
-	 * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut#valueOf(String)
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut#valueOf(String)
 	 */
 	@Override
 	public ClientRegionShortcut convert(final String source) {

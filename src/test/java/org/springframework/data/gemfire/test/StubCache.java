@@ -17,54 +17,54 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.naming.Context;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.GatewayException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexInvalidException;
+import org.apache.geode.cache.query.IndexNameConflictException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.snapshot.CacheSnapshotService;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.cache.util.GatewayHub;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.PdxSerializer;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.GatewayException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.cache.util.GatewayHub;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxInstanceFactory;
-import com.gemstone.gemfire.pdx.PdxSerializer;
 
 @SuppressWarnings({ "deprecation", "unused" })
 public class StubCache implements Cache, ClientCache {
@@ -119,9 +119,9 @@ public class StubCache implements Cache, ClientCache {
 		gatewayHubs = new ArrayList<GatewayHub>();
 		resourceManager = new StubResourceManager();
 	}
-	
+
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#createDiskStoreFactory()
+	 * @see org.apache.geode.cache.GemFireCache#createDiskStoreFactory()
 	 */
 	@Override
 	public DiskStoreFactory createDiskStoreFactory() {
@@ -129,7 +129,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#findDiskStore(java.lang.String)
+	 * @see org.apache.geode.cache.GemFireCache#findDiskStore(java.lang.String)
 	 */
 	@Override
 	public DiskStore findDiskStore(String name) {
@@ -137,7 +137,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getCacheTransactionManager()
+	 * @see org.apache.geode.cache.GemFireCache#getCacheTransactionManager()
 	 */
 	@Override
 	public CacheTransactionManager getCacheTransactionManager() {
@@ -149,7 +149,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getCopyOnRead()
+	 * @see org.apache.geode.cache.GemFireCache#getCopyOnRead()
 	 */
 	@Override
 	public boolean getCopyOnRead() {
@@ -157,7 +157,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getDistributedSystem()
+	 * @see org.apache.geode.cache.GemFireCache#getDistributedSystem()
 	 */
 	@Override
 	public DistributedSystem getDistributedSystem() {
@@ -170,7 +170,7 @@ public class StubCache implements Cache, ClientCache {
 
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getInitializer()
+	 * @see org.apache.geode.cache.GemFireCache#getInitializer()
 	 */
 	@Override
 	public Declarable getInitializer() {
@@ -178,7 +178,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getInitializerProps()
+	 * @see org.apache.geode.cache.GemFireCache#getInitializerProps()
 	 */
 	@Override
 	public Properties getInitializerProps() {
@@ -186,7 +186,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getJNDIContext()
+	 * @see org.apache.geode.cache.GemFireCache#getJNDIContext()
 	 */
 	@Override
 	public Context getJNDIContext() {
@@ -194,7 +194,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getLogger()
+	 * @see org.apache.geode.cache.GemFireCache#getLogger()
 	 */
 	@Override
 	public LogWriter getLogger() {
@@ -202,7 +202,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getName()
+	 * @see org.apache.geode.cache.GemFireCache#getName()
 	 */
 	@Override
 	public String getName() {
@@ -210,7 +210,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxDiskStore()
+	 * @see org.apache.geode.cache.GemFireCache#getPdxDiskStore()
 	 */
 	@Override
 	public String getPdxDiskStore() {
@@ -218,7 +218,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxIgnoreUnreadFields()
+	 * @see org.apache.geode.cache.GemFireCache#getPdxIgnoreUnreadFields()
 	 */
 	@Override
 	public boolean getPdxIgnoreUnreadFields() {
@@ -226,7 +226,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxPersistent()
+	 * @see org.apache.geode.cache.GemFireCache#getPdxPersistent()
 	 */
 	@Override
 	public boolean getPdxPersistent() {
@@ -234,7 +234,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxReadSerialized()
+	 * @see org.apache.geode.cache.GemFireCache#getPdxReadSerialized()
 	 */
 	@Override
 	public boolean getPdxReadSerialized() {
@@ -242,7 +242,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getPdxSerializer()
+	 * @see org.apache.geode.cache.GemFireCache#getPdxSerializer()
 	 */
 	@Override
 	public PdxSerializer getPdxSerializer() {
@@ -250,7 +250,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getRegionAttributes(java.lang.String)
+	 * @see org.apache.geode.cache.GemFireCache#getRegionAttributes(java.lang.String)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -259,7 +259,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getResourceManager()
+	 * @see org.apache.geode.cache.GemFireCache#getResourceManager()
 	 */
 	@Override
 	public ResourceManager getResourceManager() {
@@ -267,7 +267,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#getSecurityLogger()
+	 * @see org.apache.geode.cache.GemFireCache#getSecurityLogger()
 	 */
 	@Override
 	public LogWriter getSecurityLogger() {
@@ -275,7 +275,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#listRegionAttributes()
+	 * @see org.apache.geode.cache.GemFireCache#listRegionAttributes()
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -288,14 +288,14 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#loadCacheXml(java.io.InputStream)
+	 * @see org.apache.geode.cache.GemFireCache#loadCacheXml(java.io.InputStream)
 	 */
 	@Override
 	public void loadCacheXml(InputStream is) throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#setCopyOnRead(boolean)
+	 * @see org.apache.geode.cache.GemFireCache#setCopyOnRead(boolean)
 	 */
 	@Override
 	public void setCopyOnRead(boolean arg0) {
@@ -303,7 +303,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.GemFireCache#setRegionAttributes(java.lang.String, com.gemstone.gemfire.cache.RegionAttributes)
+	 * @see org.apache.geode.cache.GemFireCache#setRegionAttributes(java.lang.String, org.apache.geode.cache.RegionAttributes)
 	 */
 	@Override
 	public <K, V> void setRegionAttributes(String region, RegionAttributes<K, V> attributes) {
@@ -312,7 +312,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.RegionService#close()
+	 * @see org.apache.geode.cache.RegionService#close()
 	 */
 	@Override
 	public void close() {
@@ -320,7 +320,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.RegionService#createPdxEnum(java.lang.String, java.lang.String, int)
+	 * @see org.apache.geode.cache.RegionService#createPdxEnum(java.lang.String, java.lang.String, int)
 	 */
 	@Override
 	public PdxInstance createPdxEnum(String arg0, String arg1, int arg2) {
@@ -328,7 +328,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.RegionService#createPdxInstanceFactory(java.lang.String)
+	 * @see org.apache.geode.cache.RegionService#createPdxInstanceFactory(java.lang.String)
 	 */
 	@Override
 	public PdxInstanceFactory createPdxInstanceFactory(String arg0) {
@@ -336,7 +336,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.RegionService#getCancelCriterion()
+	 * @see org.apache.geode.cache.RegionService#getCancelCriterion()
 	 */
 	@Override
 	public CancelCriterion getCancelCriterion() {
@@ -344,7 +344,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.RegionService#getQueryService()
+	 * @see org.apache.geode.cache.RegionService#getQueryService()
 	 */
 	@Override
 	public QueryService getQueryService() {
@@ -359,7 +359,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.RegionService#getRegion(java.lang.String)
+	 * @see org.apache.geode.cache.RegionService#getRegion(java.lang.String)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -368,7 +368,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.RegionService#isClosed()
+	 * @see org.apache.geode.cache.RegionService#isClosed()
 	 */
 	@Override
 	public boolean isClosed() {
@@ -376,7 +376,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.RegionService#rootRegions()
+	 * @see org.apache.geode.cache.RegionService#rootRegions()
 	 */
 	@Override
 	public Set<Region<?, ?>> rootRegions() {
@@ -390,16 +390,16 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#addBridgeServer()
+	 * @see org.apache.geode.cache.Cache#addBridgeServer()
 	 */
 	@Override
 	@Deprecated
-	public com.gemstone.gemfire.cache.util.BridgeServer addBridgeServer() {
+	public org.apache.geode.cache.util.BridgeServer addBridgeServer() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#addCacheServer()
+	 * @see org.apache.geode.cache.Cache#addCacheServer()
 	 */
 	@Override
 	public CacheServer addCacheServer() {
@@ -408,7 +408,7 @@ public class StubCache implements Cache, ClientCache {
 
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#addGatewayHub(java.lang.String, int)
+	 * @see org.apache.geode.cache.Cache#addGatewayHub(java.lang.String, int)
 	 */
 	@Override
 	public GatewayHub addGatewayHub(final String id, final int port) {
@@ -419,17 +419,17 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#close(boolean)
+	 * @see org.apache.geode.cache.Cache#close(boolean)
 	 */
 	@Override
 	@Deprecated
 	public void close(boolean arg0) {
 		this.closed = true;
-		
+
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createAsyncEventQueueFactory()
+	 * @see org.apache.geode.cache.Cache#createAsyncEventQueueFactory()
 	 */
 	@Override
 	public AsyncEventQueueFactory createAsyncEventQueueFactory() {
@@ -437,7 +437,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createGatewayReceiverFactory()
+	 * @see org.apache.geode.cache.Cache#createGatewayReceiverFactory()
 	 */
 	@Override
 	public GatewayReceiverFactory createGatewayReceiverFactory() {
@@ -445,7 +445,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createGatewaySenderFactory()
+	 * @see org.apache.geode.cache.Cache#createGatewaySenderFactory()
 	 */
 	@Override
 	public GatewaySenderFactory createGatewaySenderFactory() {
@@ -453,7 +453,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createRegion(java.lang.String, com.gemstone.gemfire.cache.RegionAttributes)
+	 * @see org.apache.geode.cache.Cache#createRegion(java.lang.String, org.apache.geode.cache.RegionAttributes)
 	 */
 	@Override
 	@Deprecated
@@ -462,7 +462,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory()
+	 * @see org.apache.geode.cache.Cache#createRegionFactory()
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -471,7 +471,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionAttributes)
+	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionAttributes)
 	 */
 	@Override
 	public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
@@ -479,7 +479,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionShortcut)
+	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionShortcut)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -488,7 +488,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(java.lang.String)
+	 * @see org.apache.geode.cache.Cache#createRegionFactory(java.lang.String)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -497,7 +497,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#createVMRegion(java.lang.String, com.gemstone.gemfire.cache.RegionAttributes)
+	 * @see org.apache.geode.cache.Cache#createVMRegion(java.lang.String, org.apache.geode.cache.RegionAttributes)
 	 */
 	@Override
 	@Deprecated
@@ -506,7 +506,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getAdminMembers()
+	 * @see org.apache.geode.cache.Cache#getAdminMembers()
 	 */
 	@Override
 	public Set<DistributedMember> getAdminMembers() {
@@ -514,7 +514,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getAsyncEventQueue(java.lang.String)
+	 * @see org.apache.geode.cache.Cache#getAsyncEventQueue(java.lang.String)
 	 */
 	@Override
 	public AsyncEventQueue getAsyncEventQueue(String name) {
@@ -522,7 +522,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getAsyncEventQueues()
+	 * @see org.apache.geode.cache.Cache#getAsyncEventQueues()
 	 */
 	@Override
 	public Set<AsyncEventQueue> getAsyncEventQueues() {
@@ -530,7 +530,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getBridgeServers()
+	 * @see org.apache.geode.cache.Cache#getBridgeServers()
 	 */
 	@Override
 	@Deprecated
@@ -539,7 +539,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getCacheServers()
+	 * @see org.apache.geode.cache.Cache#getCacheServers()
 	 */
 	@Override
 	public List<CacheServer> getCacheServers() {
@@ -547,7 +547,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewayConflictResolver()
+	 * @see org.apache.geode.cache.Cache#getGatewayConflictResolver()
 	 */
 	@Override
 	public GatewayConflictResolver getGatewayConflictResolver() {
@@ -555,7 +555,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHub()
+	 * @see org.apache.geode.cache.Cache#getGatewayHub()
 	 */
 	@Override
 	@Deprecated
@@ -564,7 +564,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHub(java.lang.String)
+	 * @see org.apache.geode.cache.Cache#getGatewayHub(java.lang.String)
 	 */
 	@Override
 	public GatewayHub getGatewayHub(final String id) {
@@ -578,7 +578,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewayHubs()
+	 * @see org.apache.geode.cache.Cache#getGatewayHubs()
 	 */
 	@Override
 	public List<GatewayHub> getGatewayHubs() {
@@ -586,7 +586,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewayReceivers()
+	 * @see org.apache.geode.cache.Cache#getGatewayReceivers()
 	 */
 	@Override
 	public Set<GatewayReceiver> getGatewayReceivers() {
@@ -594,7 +594,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewaySender(java.lang.String)
+	 * @see org.apache.geode.cache.Cache#getGatewaySender(java.lang.String)
 	 */
 	@Override
 	public GatewaySender getGatewaySender(String name) {
@@ -602,7 +602,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getGatewaySenders()
+	 * @see org.apache.geode.cache.Cache#getGatewaySenders()
 	 */
 	@Override
 	public Set<GatewaySender> getGatewaySenders() {
@@ -610,7 +610,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getLockLease()
+	 * @see org.apache.geode.cache.Cache#getLockLease()
 	 */
 	@Override
 	public int getLockLease() {
@@ -618,7 +618,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getLockTimeout()
+	 * @see org.apache.geode.cache.Cache#getLockTimeout()
 	 */
 	@Override
 	public int getLockTimeout() {
@@ -626,7 +626,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getLoggerI18n()
+	 * @see org.apache.geode.cache.Cache#getLoggerI18n()
 	 */
 	@Override
 	@Deprecated
@@ -635,7 +635,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getMembers()
+	 * @see org.apache.geode.cache.Cache#getMembers()
 	 */
 	@Override
 	public Set<DistributedMember> getMembers() {
@@ -643,7 +643,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getMembers(com.gemstone.gemfire.cache.Region)
+	 * @see org.apache.geode.cache.Cache#getMembers(org.apache.geode.cache.Region)
 	 */
 	@SuppressWarnings({"rawtypes"})
 	@Override
@@ -652,7 +652,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getMessageSyncInterval()
+	 * @see org.apache.geode.cache.Cache#getMessageSyncInterval()
 	 */
 	@Override
 	public int getMessageSyncInterval() {
@@ -660,7 +660,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getSearchTimeout()
+	 * @see org.apache.geode.cache.Cache#getSearchTimeout()
 	 */
 	@Override
 	public int getSearchTimeout() {
@@ -668,7 +668,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getSecurityLoggerI18n()
+	 * @see org.apache.geode.cache.Cache#getSecurityLoggerI18n()
 	 */
 	@Override
 	@Deprecated
@@ -677,7 +677,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#getSnapshotService()
+	 * @see org.apache.geode.cache.Cache#getSnapshotService()
 	 */
 	@Override
 	public CacheSnapshotService getSnapshotService() {
@@ -685,7 +685,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#isServer()
+	 * @see org.apache.geode.cache.Cache#isServer()
 	 */
 	@Override
 	public boolean isServer() {
@@ -693,7 +693,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#readyForEvents()
+	 * @see org.apache.geode.cache.Cache#readyForEvents()
 	 */
 	@Override
 	@Deprecated
@@ -701,7 +701,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#setGatewayConflictResolver(com.gemstone.gemfire.cache.util.GatewayConflictResolver)
+	 * @see org.apache.geode.cache.Cache#setGatewayConflictResolver(org.apache.geode.cache.util.GatewayConflictResolver)
 	 */
 	@Override
 	public void setGatewayConflictResolver(GatewayConflictResolver arg0) {
@@ -709,7 +709,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#setGatewayHub(java.lang.String, int)
+	 * @see org.apache.geode.cache.Cache#setGatewayHub(java.lang.String, int)
 	 */
 	@Override
 	@Deprecated
@@ -718,16 +718,16 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#setIsServer(boolean)
+	 * @see org.apache.geode.cache.Cache#setIsServer(boolean)
 	 */
 	@Override
 	public void setIsServer(boolean arg0) {
 		this.server = arg0;
-		
+
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#setLockLease(int)
+	 * @see org.apache.geode.cache.Cache#setLockLease(int)
 	 */
 	@Override
 	public void setLockLease(int arg0) {
@@ -735,7 +735,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#setLockTimeout(int)
+	 * @see org.apache.geode.cache.Cache#setLockTimeout(int)
 	 */
 	@Override
 	public void setLockTimeout(int arg0) {
@@ -743,7 +743,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#setMessageSyncInterval(int)
+	 * @see org.apache.geode.cache.Cache#setMessageSyncInterval(int)
 	 */
 	@Override
 	public void setMessageSyncInterval(int arg0) {
@@ -751,7 +751,7 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.Cache#setSearchTimeout(int)
+	 * @see org.apache.geode.cache.Cache#setSearchTimeout(int)
 	 */
 	@Override
 	public void setSearchTimeout(int arg0) {
@@ -799,7 +799,7 @@ public class StubCache implements Cache, ClientCache {
 				String indexName = (String) invocation.getArguments()[0];
 				String indexedExpression = (String) invocation.getArguments()[1];
 				String fromClause = (String) invocation.getArguments()[2];
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, indexedExpression,
+				return mockIndex(indexName, org.apache.geode.cache.query.IndexType.FUNCTIONAL, indexedExpression,
 					fromClause, null);
 			}
 		});
@@ -811,7 +811,7 @@ public class StubCache implements Cache, ClientCache {
 				String indexedExpression = (String) invocation.getArguments()[1];
 				String fromClause = (String) invocation.getArguments()[2];
 				String imports = (String) invocation.getArguments()[3];
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, indexedExpression,
+				return mockIndex(indexName, org.apache.geode.cache.query.IndexType.FUNCTIONAL, indexedExpression,
 					fromClause, imports);
 			}
 		});
@@ -823,7 +823,7 @@ public class StubCache implements Cache, ClientCache {
 				String indexedExpression = (String) invocation.getArguments()[1];
 				String fromClause = (String) invocation.getArguments()[2];
 
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY, indexedExpression,
+				return mockIndex(indexName, org.apache.geode.cache.query.IndexType.PRIMARY_KEY, indexedExpression,
 					fromClause, null);
 			}
 		});
@@ -835,7 +835,7 @@ public class StubCache implements Cache, ClientCache {
 				String indexedExpression = (String) invocation.getArguments()[1];
 				String fromClause = (String) invocation.getArguments()[2];
 
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.HASH, indexedExpression,
+				return mockIndex(indexName, org.apache.geode.cache.query.IndexType.HASH, indexedExpression,
 					fromClause, null);
 			}
 		});
@@ -848,7 +848,7 @@ public class StubCache implements Cache, ClientCache {
 				String fromClause = (String) invocation.getArguments()[2];
 				String imports = (String) invocation.getArguments()[3];
 
-				return mockIndex(indexName, com.gemstone.gemfire.cache.query.IndexType.HASH, indexedExpression,
+				return mockIndex(indexName, org.apache.geode.cache.query.IndexType.HASH, indexedExpression,
 					fromClause, imports);
 			}
 		});
@@ -857,15 +857,15 @@ public class StubCache implements Cache, ClientCache {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
-	Index mockIndex(String indexName, com.gemstone.gemfire.cache.query.IndexType indexType, String indexedExpression,
+	Index mockIndex(String indexName, org.apache.geode.cache.query.IndexType indexType, String indexedExpression,
 			String fromClause, String imports){
 		Index idx = mock(Index.class);
 		when(idx.getFromClause()).thenReturn(fromClause);
 		when(idx.getIndexedExpression()).thenReturn(indexedExpression);
 		when(idx.getName()).thenReturn(indexName);
 		when(idx.getType()).thenReturn(indexType);
-		
-		
+
+
 		if (fromClause != null && fromClause.length() >= 2) {
 			Region region = mock(Region.class);
 			String name = fromClause.substring(1).split(" ")[0];

@@ -20,25 +20,25 @@ package org.springframework.data.gemfire;
  * The IndexType class is an enumerated type of GemFire Index Types.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.query.IndexType
+ * @see org.apache.geode.cache.query.IndexType
  * @since 1.5.2
  */
 @SuppressWarnings({ "deprecation", "unused" })
 public enum IndexType {
-	FUNCTIONAL(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL),
-	HASH(com.gemstone.gemfire.cache.query.IndexType.HASH),
-	PRIMARY_KEY(com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY),
-	KEY(com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY);
+	FUNCTIONAL(org.apache.geode.cache.query.IndexType.FUNCTIONAL),
+	HASH(org.apache.geode.cache.query.IndexType.HASH),
+	PRIMARY_KEY(org.apache.geode.cache.query.IndexType.PRIMARY_KEY),
+	KEY(org.apache.geode.cache.query.IndexType.PRIMARY_KEY);
 
-	private final com.gemstone.gemfire.cache.query.IndexType gemfireIndexType;
+	private final org.apache.geode.cache.query.IndexType gemfireIndexType;
 
 	/**
 	 * Constructs an instance of the IndexType enum initialized with the given GemFire IndexType.
 	 *
 	 * @param gemfireIndexType the corresponding GemFire IndexType
-	 * @see com.gemstone.gemfire.cache.query.IndexType
+	 * @see org.apache.geode.cache.query.IndexType
 	 */
-	IndexType(final com.gemstone.gemfire.cache.query.IndexType gemfireIndexType) {
+	IndexType(final org.apache.geode.cache.query.IndexType gemfireIndexType) {
 		this.gemfireIndexType = gemfireIndexType;
 	}
 
@@ -82,9 +82,9 @@ public enum IndexType {
 	 * @param gemfireIndexType the GemFire IndexType.
 	 * @return a IndexType matching the GemFire IndexType or null if the GemFire IndexType does not match
 	 * any IndexType in this enumeration.
-	 * @see com.gemstone.gemfire.cache.query.IndexType
+	 * @see org.apache.geode.cache.query.IndexType
 	 */
-	public static IndexType valueOf(final com.gemstone.gemfire.cache.query.IndexType gemfireIndexType) {
+	public static IndexType valueOf(final org.apache.geode.cache.query.IndexType gemfireIndexType) {
 		for (IndexType indexType : values()) {
 			if (indexType.getGemfireIndexType().equals(gemfireIndexType)) {
 				return indexType;
@@ -115,9 +115,9 @@ public enum IndexType {
 	 * Gets the matching GemFire IndexType for this IndexType enumerated value.
 	 *
 	 * @return the matching GemFire IndexType.
-	 * @see com.gemstone.gemfire.cache.query.IndexType
+	 * @see org.apache.geode.cache.query.IndexType
 	 */
-	public com.gemstone.gemfire.cache.query.IndexType getGemfireIndexType() {
+	public org.apache.geode.cache.query.IndexType getGemfireIndexType() {
 		return gemfireIndexType;
 	}
 

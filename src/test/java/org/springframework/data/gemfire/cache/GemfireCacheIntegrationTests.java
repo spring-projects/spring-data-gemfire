@@ -26,9 +26,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,7 +45,7 @@ import org.springframework.data.gemfire.support.AbstractNativeCacheTests;
  * @see edu.umd.cs.mtc.MultithreadedTestCase
  * @see edu.umd.cs.mtc.TestFramework
  * @see org.springframework.cache.Cache
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.Region
  */
 public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Region<Object, Object>> {
 
@@ -67,7 +66,7 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 		gemfireProperties.setProperty("locators", "");
 		gemfireProperties.setProperty("log-level", "warning");
 
-		com.gemstone.gemfire.cache.Cache cache = GemfireUtils.getCache();
+		org.apache.geode.cache.Cache cache = GemfireUtils.getCache();
 
 		cache = (cache != null ? cache : new CacheFactory(gemfireProperties).create());
 

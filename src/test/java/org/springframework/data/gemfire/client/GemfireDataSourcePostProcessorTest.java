@@ -42,17 +42,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.management.internal.cli.domain.RegionInformation;
-import com.gemstone.gemfire.management.internal.cli.functions.GetRegionsFunction;
-
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.management.internal.cli.domain.RegionInformation;
+import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -71,9 +70,9 @@ import org.springframework.data.gemfire.support.ListRegionsOnServerFunction;
  * @see org.mockito.Mockito
  * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
  * @see org.springframework.data.gemfire.client.GemfireDataSourcePostProcessor
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.client.ClientCache
- * @see com.gemstone.gemfire.cache.client.ClientRegionFactory
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientRegionFactory
  * @since 1.7.0
  */
 public class GemfireDataSourcePostProcessorTest {

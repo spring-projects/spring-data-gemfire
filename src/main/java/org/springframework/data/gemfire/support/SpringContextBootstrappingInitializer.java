@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.Declarable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationListener;
@@ -42,8 +43,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Declarable;
-
 /**
  * The SpringContextBootstrappingInitializer class is a GemFire configuration initializer used to bootstrap a Spring
  * ApplicationContext inside a GemFire Server JVM-based process.  This enables a GemFire Cache Server resources to be
@@ -59,7 +58,7 @@ import com.gemstone.gemfire.cache.Declarable;
  * @see org.springframework.context.event.ApplicationContextEvent
  * @see org.springframework.context.event.ApplicationEventMulticaster
  * @see org.springframework.context.support.ClassPathXmlApplicationContext
- * @see com.gemstone.gemfire.cache.Declarable
+ * @see org.apache.geode.cache.Declarable
  * @link http://gemfire.docs.pivotal.io/latest/userguide/index.html#basic_config/the_cache/setting_cache_initializer.html
  * @link https://jira.springsource.org/browse/SGF-248
  * @since 1.4.0

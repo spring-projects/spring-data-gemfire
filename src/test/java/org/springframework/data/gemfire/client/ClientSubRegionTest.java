@@ -22,9 +22,8 @@ import static org.junit.Assert.assertSame;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -24,18 +24,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-
+import org.apache.geode.GemFireCheckedException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.query.IndexInvalidException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.Assert;
@@ -59,10 +58,10 @@ import org.springframework.util.StringUtils;
  * @see java.util.Map
  * @see org.springframework.data.gemfire.GemfireAccessor
  * @see org.springframework.data.gemfire.GemfireOperations
- * @see com.gemstone.gemfire.cache.Region
- * @see com.gemstone.gemfire.cache.query.Query
- * @see com.gemstone.gemfire.cache.query.QueryService
- * @see com.gemstone.gemfire.cache.query.SelectResults
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.query.Query
+ * @see org.apache.geode.cache.query.QueryService
+ * @see org.apache.geode.cache.query.SelectResults
  */
 @SuppressWarnings("unused")
 public class GemfireTemplate extends GemfireAccessor implements GemfireOperations {
@@ -389,10 +388,10 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 *
 	 * @param region {@link Region} used to acquire the {@link QueryService}.
 	 * @return the {@link QueryService} that will perform the query.
-	 * @see com.gemstone.gemfire.cache.Region
-	 * @see com.gemstone.gemfire.cache.Region#getRegionService()
-	 * @see com.gemstone.gemfire.cache.RegionService#getQueryService()
-	 * @see com.gemstone.gemfire.cache.client.ClientCache#getLocalQueryService()
+	 * @see org.apache.geode.cache.Region
+	 * @see org.apache.geode.cache.Region#getRegionService()
+	 * @see org.apache.geode.cache.RegionService#getQueryService()
+	 * @see org.apache.geode.cache.client.ClientCache#getLocalQueryService()
 	 */
 	protected QueryService resolveQueryService(Region<?, ?> region) {
 		return (region.getRegionService() instanceof ClientCache ? resolveClientQueryService(region)
@@ -485,7 +484,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 * @param <V> the Region value class type.
 	 * @param region the GemFire Cache Region to create a proxy for.
 	 * @return the Region proxy implementing all interfaces implemented by the passed-in Region object.
-	 * @see com.gemstone.gemfire.cache.Region#close()
+	 * @see org.apache.geode.cache.Region#close()
 	 * @see #execute(GemfireCallback, boolean)
 	 */
 	@SuppressWarnings("unchecked")
@@ -500,7 +499,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	/**
 	 * InvocationHandler that suppresses close calls on GemFire Cache Regions.
 	 *
-	 * @see com.gemstone.gemfire.cache.Region#close()
+	 * @see org.apache.geode.cache.Region#close()
 	 * @see java.lang.reflect.InvocationHandler
 	 */
 	private static class RegionCloseSuppressingInvocationHandler implements InvocationHandler {

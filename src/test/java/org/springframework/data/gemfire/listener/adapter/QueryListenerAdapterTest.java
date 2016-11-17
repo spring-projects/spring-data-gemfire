@@ -24,14 +24,13 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.internal.CqQueryImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.gemfire.listener.ContinuousQueryListener;
-
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.query.CqEvent;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.internal.CqQueryImpl;
 
 /**
  * @author Costin Leau

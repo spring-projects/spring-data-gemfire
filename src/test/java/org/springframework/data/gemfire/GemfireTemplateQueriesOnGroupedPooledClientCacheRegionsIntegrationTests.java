@@ -27,11 +27,10 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -71,7 +70,7 @@ import lombok.RequiredArgsConstructor;
  * garner high frequency access.
  *
  * Spring Data GemFire's {@link GemfireTemplate} should intelligently employ the right
- * {@link com.gemstone.gemfire.cache.query.QueryService} configured with the {@link Region Region's} {@link Pool}
+ * {@link org.apache.geode.cache.query.QueryService} configured with the {@link Region Region's} {@link Pool}
  * meta-data when executing the query in order to ensure the right servers containing the {@link Region Region's}
  * with the data of interest are targeted.
  *
@@ -306,7 +305,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 	static class GemFireCacheServerOneConfiguration extends AbstractGemFireCacheServerConfiguration {
 
 		@Resource(name = "Cats")
-		private com.gemstone.gemfire.cache.Region<String, Cat> cats;
+		private org.apache.geode.cache.Region<String, Cat> cats;
 
 		Cat save(Cat cat) {
 			cats.put(cat.getName(), cat);
@@ -359,7 +358,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 	static class GemFireCacheServerTwoConfiguration extends AbstractGemFireCacheServerConfiguration {
 
 		@Resource(name = "Dogs")
-		private com.gemstone.gemfire.cache.Region<String, Dog> dogs;
+		private org.apache.geode.cache.Region<String, Dog> dogs;
 
 		Dog save(Dog dog) {
 			dogs.put(dog.getName(), dog);

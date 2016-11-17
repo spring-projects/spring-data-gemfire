@@ -23,13 +23,13 @@ import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
 
 /**
  * Generic Serializer for JDK Enums. The class needs to be registered only once - custom enums
  * will be then understood by the converter by calling {@link #addEnum(Class)}.
- * 
+ *
  * @author Costin Leau
  */
 public class EnumSerializer extends DataSerializer implements Serializable {
@@ -92,7 +92,7 @@ public class EnumSerializer extends DataSerializer implements Serializable {
 
 	/**
 	 * Sets the id for this serializer. Default is 1024;
-	 * 
+	 *
 	 * @param id the id to set
 	 */
 	public void setId(int id) {

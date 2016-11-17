@@ -20,8 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
 
-import com.gemstone.gemfire.cache.client.Pool;
-
+import org.apache.geode.cache.client.Pool;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.data.gemfire.client.PoolFactoryBean
  * @see org.springframework.data.gemfire.config.xml.PoolParser
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
- * @see com.gemstone.gemfire.cache.client.Pool
+ * @see org.apache.geode.cache.client.Pool
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "pool-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)

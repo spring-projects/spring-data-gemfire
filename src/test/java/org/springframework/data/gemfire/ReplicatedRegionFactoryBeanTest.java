@@ -22,10 +22,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.RegionFactory;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.RegionFactory;
 
 /**
  * The ReplicatedRegionFactoryBeanTest class is a test suite of test cases testing the component functionality
@@ -35,8 +34,8 @@ import com.gemstone.gemfire.cache.RegionFactory;
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.ReplicatedRegionFactoryBean
- * @see com.gemstone.gemfire.cache.DataPolicy
- * @see com.gemstone.gemfire.cache.RegionFactory
+ * @see org.apache.geode.cache.DataPolicy
+ * @see org.apache.geode.cache.RegionFactory
  * @since 1.3.3
  */
 @SuppressWarnings("unchecked")

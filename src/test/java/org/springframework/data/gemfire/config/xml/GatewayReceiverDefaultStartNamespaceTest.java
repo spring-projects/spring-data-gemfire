@@ -22,8 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
@@ -46,7 +45,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.test.context.ActiveProfiles
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.wan.GatewayReceiver
+ * @see org.apache.geode.cache.wan.GatewayReceiver
  * @since 1.5.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)

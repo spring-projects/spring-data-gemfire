@@ -20,9 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +43,8 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @see com.gemstone.gemfire.cache.server.CacheServer
- * @see com.gemstone.gemfire.cache.server.ClientSubscriptionConfig
+ * @see org.apache.geode.cache.server.CacheServer
+ * @see org.apache.geode.cache.server.ClientSubscriptionConfig
  */
 @ContextConfiguration(locations="server-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)

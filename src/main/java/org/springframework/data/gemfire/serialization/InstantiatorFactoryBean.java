@@ -21,21 +21,20 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
-
 /**
  * {@link FactoryBean} that eases registration of custom {@link Instantiator} through
- * {@link InstantiatorGenerator}s, inside the Spring container. 
- * 
+ * {@link InstantiatorGenerator}s, inside the Spring container.
+ *
  * By default, the returns {@link Instantiator}s (created through  {@link AsmInstantiatorGenerator} if a custom
  * generator is not specified) are registered at startup with GemFire.
- * 
+ *
  * @author Costin Leau
  */
 public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBean<Collection<Instantiator>>,
@@ -91,7 +90,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 
 	/**
 	 * Sets the custom types and associated user ids for generating the {@link Instantiator}s.
-	 * 
+	 *
 	 * @param types map containing as keys the custom types and values the associated user ids.
 	 */
 	public void setCustomTypes(Map<Class<? extends DataSerializable>, Integer> types) {
@@ -100,7 +99,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 
 	/**
 	 * Sets the generator to use for creating {@link Instantiator}s.
-	 * 
+	 *
 	 * @param generator the generator to set
 	 */
 	public void setGenerator(InstantiatorGenerator generator) {
@@ -110,7 +109,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 	/**
 	 * Sets the auto-registration of this {@link Instantiator} during the container startup.
 	 * Default is true, meaning the registration will occur once this factory is initialized.
-	 * 
+	 *
 	 * @see Instantiator#register(Instantiator)
 	 * @param autoRegister the autoRegister to set
 	 */
@@ -122,7 +121,7 @@ public class InstantiatorFactoryBean implements BeanClassLoaderAware, FactoryBea
 	/**
 	 * Sets the distribution of the region of this {@link Instantiator} during the container startup.
 	 * Default is false, meaning the registration will not be distributed to other clients.
-	 * 
+	 *
 	 * @see Instantiator#register(Instantiator, boolean)
 	 * @param distribute whether the registration is distributable or not
 	 */

@@ -20,8 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.gemstone.gemfire.cache.ExpirationAction;
-
+import org.apache.geode.cache.ExpirationAction;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;

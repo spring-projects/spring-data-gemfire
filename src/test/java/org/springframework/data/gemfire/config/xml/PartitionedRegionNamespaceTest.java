@@ -25,16 +25,15 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.partition.PartitionListener;
-import com.gemstone.gemfire.cache.partition.PartitionListenerAdapter;
-import com.gemstone.gemfire.compression.Compressor;
-
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.cache.partition.PartitionListenerAdapter;
+import org.apache.geode.compression.Compressor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

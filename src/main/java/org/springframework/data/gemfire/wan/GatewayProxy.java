@@ -18,16 +18,16 @@ package org.springframework.data.gemfire.wan;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.util.Gateway;
-import com.gemstone.gemfire.cache.util.GatewayEventListener;
-import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
+import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.util.GatewayEventListener;
+import org.apache.geode.cache.util.GatewayQueueAttributes;
 
 /**
  * The GatewayProxy class used to allow decoupling of 'gateway' parsing from 'gateway-hub' parsing.
- * 
+ *
  * @author David Turanski
  * @author John Blum
- * @since com.gemstone.gemfire.cache.util.Gateway
+ * @since org.apache.geode.cache.util.Gateway
  */
 @SuppressWarnings({ "deprecation", "unused" })
 public class GatewayProxy {

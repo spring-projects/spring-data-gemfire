@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
+import org.apache.geode.cache.util.CacheWriterAdapter;
 
 /**
  * @author Costin Leau

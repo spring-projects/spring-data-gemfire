@@ -16,13 +16,13 @@
 
 package org.springframework.data.gemfire.wan;
 
-import com.gemstone.gemfire.cache.util.GatewayHub;
+import org.apache.geode.cache.util.GatewayHub;
 
 /**
  * The StartupPolicyType class is an enumeration of GemFire GatewayHub Startup Policies.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.util.GatewayHub
+ * @see org.apache.geode.cache.util.GatewayHub
  * @since 1.7.0
  */
 @SuppressWarnings({"deprecation", "unused" })

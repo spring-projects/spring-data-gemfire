@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -15,12 +15,12 @@ package org.springframework.data.gemfire.test;
 import java.io.IOException;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.ClientSession;
-import com.gemstone.gemfire.cache.InterestRegistrationListener;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.ClientSession;
+import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.cache.server.ServerLoadProbe;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * @author David Turanski
@@ -56,7 +56,7 @@ public class StubCacheServer implements CacheServer {
 	private String[] groups;
 
 		/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getPort()
+	 * @see org.apache.geode.cache.server.CacheServer#getPort()
 	 */
 	@Override
 	public int getPort() {
@@ -64,7 +64,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setPort(int)
+	 * @see org.apache.geode.cache.server.CacheServer#setPort(int)
 	 */
 	@Override
 	public void setPort(int port) {
@@ -72,7 +72,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getBindAddress()
+	 * @see org.apache.geode.cache.server.CacheServer#getBindAddress()
 	 */
 	@Override
 	public String getBindAddress() {
@@ -80,7 +80,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setBindAddress(java.lang.String)
+	 * @see org.apache.geode.cache.server.CacheServer#setBindAddress(java.lang.String)
 	 */
 	@Override
 	public void setBindAddress(String address) {
@@ -88,7 +88,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getHostnameForClients()
+	 * @see org.apache.geode.cache.server.CacheServer#getHostnameForClients()
 	 */
 	@Override
 	public String getHostnameForClients() {
@@ -96,7 +96,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setHostnameForClients(java.lang.String)
+	 * @see org.apache.geode.cache.server.CacheServer#setHostnameForClients(java.lang.String)
 	 */
 	@Override
 	public void setHostnameForClients(String name) {
@@ -104,7 +104,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setNotifyBySubscription(boolean)
+	 * @see org.apache.geode.cache.server.CacheServer#setNotifyBySubscription(boolean)
 	 */
 	@Override
 	@Deprecated
@@ -113,7 +113,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getNotifyBySubscription()
+	 * @see org.apache.geode.cache.server.CacheServer#getNotifyBySubscription()
 	 */
 	@Override
 	@Deprecated
@@ -122,7 +122,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setSocketBufferSize(int)
+	 * @see org.apache.geode.cache.server.CacheServer#setSocketBufferSize(int)
 	 */
 	@Override
 	public void setSocketBufferSize(int socketBufferSize) {
@@ -130,7 +130,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getSocketBufferSize()
+	 * @see org.apache.geode.cache.server.CacheServer#getSocketBufferSize()
 	 */
 	@Override
 	public int getSocketBufferSize() {
@@ -138,7 +138,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setMaximumTimeBetweenPings(int)
+	 * @see org.apache.geode.cache.server.CacheServer#setMaximumTimeBetweenPings(int)
 	 */
 	@Override
 	public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) {
@@ -146,7 +146,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getMaximumTimeBetweenPings()
+	 * @see org.apache.geode.cache.server.CacheServer#getMaximumTimeBetweenPings()
 	 */
 	@Override
 	public int getMaximumTimeBetweenPings() {
@@ -154,16 +154,16 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#start()
+	 * @see org.apache.geode.cache.server.CacheServer#start()
 	 */
 	@Override
 	public void start() throws IOException {
 		isRunning = true;
-		
+
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#isRunning()
+	 * @see org.apache.geode.cache.server.CacheServer#isRunning()
 	 */
 	@Override
 	public boolean isRunning() {
@@ -171,7 +171,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#stop()
+	 * @see org.apache.geode.cache.server.CacheServer#stop()
 	 */
 	@Override
 	public void stop() {
@@ -179,7 +179,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getMaxConnections()
+	 * @see org.apache.geode.cache.server.CacheServer#getMaxConnections()
 	 */
 	@Override
 	public int getMaxConnections() {
@@ -187,7 +187,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setMaxConnections(int)
+	 * @see org.apache.geode.cache.server.CacheServer#setMaxConnections(int)
 	 */
 	@Override
 	public void setMaxConnections(int maxCons) {
@@ -195,7 +195,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getMaxThreads()
+	 * @see org.apache.geode.cache.server.CacheServer#getMaxThreads()
 	 */
 	@Override
 	public int getMaxThreads() {
@@ -203,7 +203,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setMaxThreads(int)
+	 * @see org.apache.geode.cache.server.CacheServer#setMaxThreads(int)
 	 */
 	@Override
 	public void setMaxThreads(int maxThreads) {
@@ -211,7 +211,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getMaximumMessageCount()
+	 * @see org.apache.geode.cache.server.CacheServer#getMaximumMessageCount()
 	 */
 	@Override
 	public int getMaximumMessageCount() {
@@ -219,7 +219,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setMaximumMessageCount(int)
+	 * @see org.apache.geode.cache.server.CacheServer#setMaximumMessageCount(int)
 	 */
 	@Override
 	public void setMaximumMessageCount(int maxMessageCount) {
@@ -227,7 +227,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getMessageTimeToLive()
+	 * @see org.apache.geode.cache.server.CacheServer#getMessageTimeToLive()
 	 */
 	@Override
 	public int getMessageTimeToLive() {
@@ -235,16 +235,16 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setMessageTimeToLive(int)
+	 * @see org.apache.geode.cache.server.CacheServer#setMessageTimeToLive(int)
 	 */
 	@Override
 	public void setMessageTimeToLive(int messageTimeToLive) {
 		this.messageTimeToLive = messageTimeToLive;
-		
+
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setGroups(java.lang.String[])
+	 * @see org.apache.geode.cache.server.CacheServer#setGroups(java.lang.String[])
 	 */
 	@Override
 	public void setGroups(String[] groups) {
@@ -252,7 +252,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getGroups()
+	 * @see org.apache.geode.cache.server.CacheServer#getGroups()
 	 */
 	@Override
 	public String[] getGroups() {
@@ -260,7 +260,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getLoadProbe()
+	 * @see org.apache.geode.cache.server.CacheServer#getLoadProbe()
 	 */
 	@Override
 	public ServerLoadProbe getLoadProbe() {
@@ -268,7 +268,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setLoadProbe(com.gemstone.gemfire.cache.server.ServerLoadProbe)
+	 * @see org.apache.geode.cache.server.CacheServer#setLoadProbe(org.apache.geode.cache.server.ServerLoadProbe)
 	 */
 	@Override
 	public void setLoadProbe(ServerLoadProbe loadProbe) {
@@ -276,7 +276,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getLoadPollInterval()
+	 * @see org.apache.geode.cache.server.CacheServer#getLoadPollInterval()
 	 */
 	@Override
 	public long getLoadPollInterval() {
@@ -284,7 +284,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setLoadPollInterval(long)
+	 * @see org.apache.geode.cache.server.CacheServer#setLoadPollInterval(long)
 	 */
 	@Override
 	public void setLoadPollInterval(long loadPollInterval) {
@@ -292,7 +292,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getClientSubscriptionConfig()
+	 * @see org.apache.geode.cache.server.CacheServer#getClientSubscriptionConfig()
 	 */
 	@Override
 	public ClientSubscriptionConfig getClientSubscriptionConfig() {
@@ -300,7 +300,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getClientSession(com.gemstone.gemfire.distributed.DistributedMember)
+	 * @see org.apache.geode.cache.server.CacheServer#getClientSession(org.apache.geode.distributed.DistributedMember)
 	 */
 	@Override
 	public ClientSession getClientSession(DistributedMember member) {
@@ -308,7 +308,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getClientSession(java.lang.String)
+	 * @see org.apache.geode.cache.server.CacheServer#getClientSession(java.lang.String)
 	 */
 	@Override
 	public ClientSession getClientSession(String durableClientId) {
@@ -316,7 +316,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getAllClientSessions()
+	 * @see org.apache.geode.cache.server.CacheServer#getAllClientSessions()
 	 */
 	@Override
 	public Set<ClientSession> getAllClientSessions() {
@@ -324,25 +324,25 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#registerInterestRegistrationListener(com.gemstone.gemfire.cache.InterestRegistrationListener)
+	 * @see org.apache.geode.cache.server.CacheServer#registerInterestRegistrationListener(org.apache.geode.cache.InterestRegistrationListener)
 	 */
 	@Override
 	public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#unregisterInterestRegistrationListener(com.gemstone.gemfire.cache.InterestRegistrationListener)
+	 * @see org.apache.geode.cache.server.CacheServer#unregisterInterestRegistrationListener(org.apache.geode.cache.InterestRegistrationListener)
 	 */
 	@Override
 	public void unregisterInterestRegistrationListener(InterestRegistrationListener listener) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getInterestRegistrationListeners()
+	 * @see org.apache.geode.cache.server.CacheServer#getInterestRegistrationListeners()
 	 */
 	@Override
 	public Set<InterestRegistrationListener> getInterestRegistrationListeners() {
@@ -351,7 +351,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#getTcpNoDelay()
+	 * @see org.apache.geode.cache.server.CacheServer#getTcpNoDelay()
 	 */
 	@Override
 	public boolean getTcpNoDelay() {
@@ -359,7 +359,7 @@ public class StubCacheServer implements CacheServer {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.server.CacheServer#setTcpNoDelay(boolean)
+	 * @see org.apache.geode.cache.server.CacheServer#setTcpNoDelay(boolean)
 	 */
 	@Override
 	public void setTcpNoDelay(final boolean tcpNoDelay) {

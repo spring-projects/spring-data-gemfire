@@ -27,13 +27,12 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.util.GatewayEventListener;
+import org.apache.geode.cache.util.GatewayQueueAttributes;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.gemfire.test.support.AbstractUnitAndIntegrationTestsWithMockSupport;
-
-import com.gemstone.gemfire.cache.util.Gateway;
-import com.gemstone.gemfire.cache.util.GatewayEventListener;
-import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
 
 /**
  * The MockGatewayFactory class is a factory for creating mock GemFire Gateways, GatewayQueueAttributes
@@ -42,8 +41,8 @@ import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
  * @author John Blum
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.wan.GatewayHubFactoryBean
- * @see com.gemstone.gemfire.cache.util.Gateway
- * @see com.gemstone.gemfire.cache.util.GatewayHub
+ * @see org.apache.geode.cache.util.Gateway
+ * @see org.apache.geode.cache.util.GatewayHub
  * @since 1.5.3
  */
 @SuppressWarnings({ "deprecation", "unused" })

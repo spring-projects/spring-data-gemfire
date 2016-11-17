@@ -18,6 +18,7 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.geode.cache.Cache;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,14 +27,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.Cache;
-
 /**
  * Integration test trying various basic configurations of GemFire through
  * Spring.
- * 
+ *
  * Made abstract to avoid multiple caches running at the same time.
- * 
+ *
  * @author Costin Leau
  * @author John Blum
  */
@@ -68,7 +67,7 @@ public class CacheIntegrationTest {
 	public void testCacheWithXml() throws Exception {
 		ctx.getBean("cache-with-xml", Cache.class);
 	}
-	
+
 	@After
 	public void tearDown() {
 		if (cache!=null) cache.close();

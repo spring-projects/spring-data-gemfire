@@ -31,14 +31,13 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.util.GatewayEventListener;
+import org.apache.geode.cache.util.GatewayHub;
+import org.apache.geode.cache.util.GatewayQueueAttributes;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.util.Gateway;
-import com.gemstone.gemfire.cache.util.GatewayEventListener;
-import com.gemstone.gemfire.cache.util.GatewayHub;
-import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
 
 /**
  * The GatewayHubFactoryBeanTest class is a test suite of test cases testing the contract and functionality

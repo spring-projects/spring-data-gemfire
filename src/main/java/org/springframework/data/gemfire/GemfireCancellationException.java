@@ -16,13 +16,12 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.CancelException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
-
-import com.gemstone.gemfire.CancelException;
 
 /**
  * GemFire-specific class for exceptions caused by system cancellations.
- * 
+ *
  * @author Costin Leau
  */
 @SuppressWarnings("serial")

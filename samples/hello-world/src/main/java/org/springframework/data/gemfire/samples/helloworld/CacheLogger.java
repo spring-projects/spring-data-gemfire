@@ -19,12 +19,12 @@ package org.springframework.data.gemfire.samples.helloworld;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 
 /**
  * Listener that logs entry operations to the configured logger.
- * 
+ *
  * @author Costin Leau
  */
 public class CacheLogger extends CacheListenerAdapter<Object, Object> {

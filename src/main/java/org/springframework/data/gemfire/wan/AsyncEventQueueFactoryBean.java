@@ -15,18 +15,17 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.util.Gateway;
 import org.springframework.util.Assert;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.util.Gateway;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
- * 
+ *
  * @author David Turanski
  * @author John Blum
  */
@@ -52,9 +51,9 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
-	 * 
+	 *
 	 * @param cache the GemFire Cache reference.
-	 * @see #AsyncEventQueueFactoryBean(com.gemstone.gemfire.cache.Cache, com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener)
+	 * @see #AsyncEventQueueFactoryBean(org.apache.geode.cache.Cache, org.apache.geode.cache.asyncqueue.AsyncEventListener)
 	 */
 	public AsyncEventQueueFactoryBean(final Cache cache) {
 		this(cache, null);
@@ -62,7 +61,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
-	 * 
+	 *
 	 * @param cache the GemFire Cache reference.
 	 * @param asyncEventListener required {@link AsyncEventListener}
 	 */

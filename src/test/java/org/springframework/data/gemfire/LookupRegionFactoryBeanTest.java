@@ -27,20 +27,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.EvictionAttributesMutator;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.junit.Test;
-
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.EvictionAttributesMutator;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The LookupRegionFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -50,10 +49,10 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.LookupRegionFactoryBean
- * @see com.gemstone.gemfire.cache.AttributesMutator
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.EvictionAttributesMutator
- * @see com.gemstone.gemfire.cache.Region
+ * @see org.apache.geode.cache.AttributesMutator
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.EvictionAttributesMutator
+ * @see org.apache.geode.cache.Region
  * @since 1.7.0
  */
 public class LookupRegionFactoryBeanTest {

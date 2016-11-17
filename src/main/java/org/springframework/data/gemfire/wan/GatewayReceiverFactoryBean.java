@@ -18,26 +18,25 @@ package org.springframework.data.gemfire.wan;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-
 /**
  * Spring FactoryBean for creating a GemFire {@link GatewayReceiver}.
- * 
+ *
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.wan.GatewayReceiver
- * @see com.gemstone.gemfire.cache.wan.GatewayReceiverFactory
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.wan.GatewayReceiver
+ * @see org.apache.geode.cache.wan.GatewayReceiverFactory
  * @since 1.2.2
  */
 @SuppressWarnings("unused")

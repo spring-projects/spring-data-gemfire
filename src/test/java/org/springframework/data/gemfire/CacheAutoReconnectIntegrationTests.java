@@ -23,13 +23,12 @@ import static org.junit.Assume.assumeNotNull;
 
 import java.io.File;
 
+import org.apache.geode.cache.Cache;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
-
-import com.gemstone.gemfire.cache.Cache;
 
 /**
  * The CacheAutoReconnectIntegrationTests class is a tests suite of test cases testing Spring Data GemFire's support

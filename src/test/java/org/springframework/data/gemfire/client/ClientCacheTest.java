@@ -21,9 +21,8 @@ import static org.junit.Assert.assertThat;
 
 import javax.annotation.Resource;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.ConfigurableApplicationContext;

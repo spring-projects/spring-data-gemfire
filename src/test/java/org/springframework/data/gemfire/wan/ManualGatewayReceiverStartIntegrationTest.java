@@ -22,15 +22,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 
 /**
  * The ManualGatewayReceiverStartIntegrationTest class is a test suite of test cases testing the manual start capability

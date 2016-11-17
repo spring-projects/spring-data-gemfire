@@ -16,15 +16,14 @@
 
 package org.springframework.data.gemfire;
 
+import org.apache.geode.cache.Scope;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Scope;
 
 /**
  * The ScopeType enum is an enumeration of GemFire Scopes.
  *
  * @author John Blum
- * @see com.gemstone.gemfire.cache.Scope
+ * @see org.apache.geode.cache.Scope
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
@@ -40,7 +39,7 @@ public enum ScopeType {
 	 * Constructs an instance of the ScopeType initialized with a matching GemFire Scope.
 	 *
 	 * @param gemfireScope the GemFire Scope paired with this enumerated value.
-	 * @see com.gemstone.gemfire.cache.Scope
+	 * @see org.apache.geode.cache.Scope
 	 */
 	ScopeType(final Scope gemfireScope) {
 		this.gemfireScope = gemfireScope;
@@ -52,7 +51,7 @@ public enum ScopeType {
 	 *
 	 * @param scopeType the ScopeType enumerated value from which to extract the GemFire Scope.
 	 * @return the paired GemFire Scope from the given ScopeType or null if scopeType is null.
-	 * @see com.gemstone.gemfire.cache.Scope
+	 * @see org.apache.geode.cache.Scope
 	 * @see #getScope()
 	 */
 	public static Scope getScope(final ScopeType scopeType) {
@@ -64,7 +63,7 @@ public enum ScopeType {
 	 *
 	 * @param scope the GemFire Scope used to lookup and match the appropriate ScopeType.
 	 * @return a ScopeType for the given GemFire Scope or null if no match was found.
-	 * @see com.gemstone.gemfire.cache.Scope
+	 * @see org.apache.geode.cache.Scope
 	 * @see #getScope()
 	 * @see #values()
 	 */
@@ -116,7 +115,7 @@ public enum ScopeType {
 	 * Gets the matching GemFire Scope for this enumerated value.
 	 *
 	 * @return a GemFire Scope for this enumerated value.
-	 * @see com.gemstone.gemfire.cache.Scope
+	 * @see org.apache.geode.cache.Scope
 	 */
 	public Scope getScope() {
 		return gemfireScope;

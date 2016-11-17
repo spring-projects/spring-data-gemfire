@@ -21,6 +21,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.query.CqQuery;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,10 +34,6 @@ import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.query.CqQuery;
 
 /**
  * @author Costin Leau

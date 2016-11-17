@@ -15,10 +15,9 @@
  */
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
 import org.springframework.util.Assert;
 
 /**
@@ -69,15 +68,15 @@ public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	/**
 	 * Resolves the Data Policy used by this "local" GemFire Region (i.e. locally Scoped; Scope.LOCAL) based on the
-	 * enumerated value from com.gemstone.gemfire.cache.RegionShortcuts (LOCAL, LOCAL_PERSISTENT, LOCAL_HEAP_LRU,
+	 * enumerated value from org.apache.geode.cache.RegionShortcuts (LOCAL, LOCAL_PERSISTENT, LOCAL_HEAP_LRU,
 	 * LOCAL_OVERFLOW, and LOCAL_PERSISTENT_OVERFLOW), but without consideration of the Eviction settings.
 	 *
 	 * @param regionFactory the GemFire RegionFactory used to created the Local Region.
 	 * @param persistent a boolean value indicating whether the Local Region should persist it's data.
 	 * @param dataPolicy requested Data Policy as set by the user in the Spring GemFire configuration meta-data.
-	 * @see com.gemstone.gemfire.cache.DataPolicy
-	 * @see com.gemstone.gemfire.cache.RegionFactory
-	 * @see com.gemstone.gemfire.cache.RegionShortcut
+	 * @see org.apache.geode.cache.DataPolicy
+	 * @see org.apache.geode.cache.RegionFactory
+	 * @see org.apache.geode.cache.RegionShortcut
 	 */
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {

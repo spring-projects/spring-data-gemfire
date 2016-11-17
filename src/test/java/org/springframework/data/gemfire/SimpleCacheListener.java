@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire;
 
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 
 /**
  * @author Costin Leau

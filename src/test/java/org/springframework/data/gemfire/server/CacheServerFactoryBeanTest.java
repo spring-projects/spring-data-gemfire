@@ -34,15 +34,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.cache.server.ServerLoadProbe;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.InterestRegistrationListener;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 
 /**
  * The CacheServerFactoryBeanTest class is a test suite of test cases testing the contract and functionality

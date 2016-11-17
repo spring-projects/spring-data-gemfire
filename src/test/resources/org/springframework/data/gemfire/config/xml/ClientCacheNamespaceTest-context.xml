@@ -15,7 +15,7 @@
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<bean id="reflectionPdxSerializer" class="com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer"/>
+	<bean id="reflectionPdxSerializer" class="org.apache.geode.pdx.ReflectionBasedAutoSerializer"/>
 
 	<gfe:client-cache cache-xml-location="empty-client-cache.xml" properties-ref="gemfireProperties"
 					  durable-client-id="TestDurableClientId" durable-client-timeout="600"

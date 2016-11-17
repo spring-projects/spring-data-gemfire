@@ -25,19 +25,18 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.compression.Compressor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.compression.Compressor;
 
 /**
  * The MockClientRegionFactory class...
@@ -59,7 +58,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public ClientRegionFactory<K, V> mockClientRegionFactory(ClientRegionShortcut clientRegionShortcut) {
-		attributesFactory = new com.gemstone.gemfire.cache.AttributesFactory<K,V>();
+		attributesFactory = new org.apache.geode.cache.AttributesFactory<K,V>();
 		attributesFactory.setDataPolicy(resolveDataPolicy(clientRegionShortcut));
 
 		final ClientRegionFactory<K, V> mockClientRegionFactory = mock(ClientRegionFactory.class, "MockClientRegionFactory");

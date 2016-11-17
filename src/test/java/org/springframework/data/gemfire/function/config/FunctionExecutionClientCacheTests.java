@@ -1,11 +1,11 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -17,6 +17,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +33,6 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.gemfire.function.execution.GemfireOnServerFunctionTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
 
 /**
  * @author David Turanski
@@ -81,28 +80,28 @@ class TestClientCacheConfig {
 class MyResultCollector implements ResultCollector {
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, java.lang.Object)
+	 * @see org.apache.geode.cache.execute.ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, java.lang.Object)
 	 */
 	@Override
 	public void addResult(DistributedMember arg0, Object arg1) {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#clearResults()
+	 * @see org.apache.geode.cache.execute.ResultCollector#clearResults()
 	 */
 	@Override
 	public void clearResults() {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#endResults()
+	 * @see org.apache.geode.cache.execute.ResultCollector#endResults()
 	 */
 	@Override
 	public void endResults() {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#getResult()
+	 * @see org.apache.geode.cache.execute.ResultCollector#getResult()
 	 */
 	@Override
 	public Object getResult() throws FunctionException {
@@ -110,7 +109,7 @@ class MyResultCollector implements ResultCollector {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.gemstone.gemfire.cache.execute.ResultCollector#getResult(long, java.util.concurrent.TimeUnit)
+	 * @see org.apache.geode.cache.execute.ResultCollector#getResult(long, java.util.concurrent.TimeUnit)
 	 */
 	@Override
 	public Object getResult(long arg0, TimeUnit arg1) throws FunctionException, InterruptedException {

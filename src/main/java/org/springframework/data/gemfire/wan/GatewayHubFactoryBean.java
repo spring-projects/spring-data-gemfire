@@ -19,15 +19,14 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.util.GatewayEventListener;
+import org.apache.geode.cache.util.GatewayHub;
+import org.apache.geode.cache.util.GatewayQueueAttributes;
 import org.springframework.data.gemfire.wan.GatewayProxy.GatewayQueue;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.util.Gateway;
-import com.gemstone.gemfire.cache.util.GatewayEventListener;
-import com.gemstone.gemfire.cache.util.GatewayHub;
-import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
 
 /**
  * FactoryBean for creating a GemFire {@link GatewayHub} (deprecated in Gemfire 7).
@@ -35,11 +34,11 @@ import com.gemstone.gemfire.cache.util.GatewayQueueAttributes;
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.util.Gateway
- * @see com.gemstone.gemfire.cache.util.GatewayHub
- * @see com.gemstone.gemfire.cache.util.GatewayEventListener
- * @see com.gemstone.gemfire.cache.util.GatewayQueueAttributes
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.util.Gateway
+ * @see org.apache.geode.cache.util.GatewayHub
+ * @see org.apache.geode.cache.util.GatewayEventListener
+ * @see org.apache.geode.cache.util.GatewayQueueAttributes
  */
 @SuppressWarnings({"deprecation", "unused" })
 public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<GatewayHub> {
@@ -64,7 +63,7 @@ public class GatewayHubFactoryBean extends AbstractWANComponentFactoryBean<Gatew
 	 * with the specified GemFire Cache.
 	 *
 	 * @param cache a reference to the Gemfire Cache.
-	 * @see com.gemstone.gemfire.cache.Cache
+	 * @see org.apache.geode.cache.Cache
 	 */
 	public GatewayHubFactoryBean(final Cache cache) {
 		super(cache);
