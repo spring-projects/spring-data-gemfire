@@ -46,6 +46,8 @@ public abstract class DistributedSystemUtils extends SpringUtils {
 
 	public static final String DURABLE_CLIENT_ID_PROPERTY_NAME = DistributionConfig.DURABLE_CLIENT_ID_NAME;
 	public static final String DURABLE_CLIENT_TIMEOUT_PROPERTY_NAME = DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME;
+	public static final String GEMFIRE_PREFIX = DistributionConfig.GEMFIRE_PREFIX;
+	public static final String NAME_PROPERTY_NAME = DistributionConfig.NAME_NAME;
 
 	/* (non-Javadoc) */
 	public static Properties configureDurableClient(Properties gemfireProperties,
@@ -85,5 +87,4 @@ public abstract class DistributedSystemUtils extends SpringUtils {
 	public static <T extends DistributedSystem> T getDistributedSystem(GemFireCache gemfireCache) {
 		return (gemfireCache != null ? (T) gemfireCache.getDistributedSystem() : null);
 	}
-
 }

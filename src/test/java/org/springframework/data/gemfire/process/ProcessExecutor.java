@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.util.Assert;
@@ -31,6 +32,7 @@ import org.springframework.util.StringUtils;
  * The {@link ProcessExecutor} class is a utility class for launching and running Java processes.
  *
  * @author John Blum
+ * @see java.io.File
  * @see java.lang.Process
  * @see java.lang.ProcessBuilder
  * @see java.lang.System
@@ -67,11 +69,7 @@ public abstract class ProcessExecutor {
 
 		ProcessWrapper processWrapper = new ProcessWrapper(process, ProcessConfiguration.create(processBuilder));
 
-		processWrapper.register(new ProcessInputStreamListener() {
-			@Override public void onInput(final String input) {
-				System.err.printf("[FORK-OUT] - %s%n", input);
-			}
-		});
+		processWrapper.register((input) -> System.err.printf("[FORK] - %s%n", input));
 
 		return processWrapper;
 	}
@@ -79,7 +77,7 @@ public abstract class ProcessExecutor {
 	protected static String[] buildCommand(String classpath, Class<?> type, String... args) {
 		Assert.notNull(type, "The main Java class to launch must not be null");
 
-		List<String> command = new ArrayList<String>();
+		List<String> command = new ArrayList<>();
 		List<String> programArgs = Collections.emptyList();
 
 		command.add(JAVA_EXE.getAbsolutePath());
@@ -90,7 +88,7 @@ public abstract class ProcessExecutor {
 		command.addAll(getSpringGemFireSystemProperties());
 
 		if (args != null) {
-			programArgs = new ArrayList<String>(args.length);
+			programArgs = new ArrayList<>(args.length);
 
 			for (String arg : args) {
 				if (isJvmOption(arg)) {
@@ -109,15 +107,10 @@ public abstract class ProcessExecutor {
 	}
 
 	protected static Collection<? extends String> getSpringGemFireSystemProperties() {
-		List<String> springGemfireSystemProperties = new ArrayList<String>();
-
-		for (String property : System.getProperties().stringPropertyNames()) {
-			if (property.startsWith(SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX)) {
-				springGemfireSystemProperties.add(String.format("-D%1$s=%2$s", property, System.getProperty(property)));
-			}
-		}
-
-		return springGemfireSystemProperties;
+		return System.getProperties().stringPropertyNames().stream()
+			.filter(property -> property.startsWith(SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX))
+			.map(property -> String.format("-D%1$s=%2$s", property, System.getProperty(property)))
+			.collect(Collectors.toList());
 	}
 
 	protected static boolean isJvmOption(String option) {

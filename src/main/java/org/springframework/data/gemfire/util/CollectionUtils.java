@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.springframework.util.Assert;
 
@@ -53,8 +53,9 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @param elements array of objects to add to the {@link Set}.
 	 * @return an unmodifiable {@link Set} containing the elements from the given object array.
 	 */
+	@SafeVarargs
 	public static <T> Set<T> asSet(T... elements) {
-		Set<T> set = new HashSet<T>(elements.length);
+		Set<T> set = new HashSet<>(elements.length);
 		Collections.addAll(set, elements);
 		return Collections.unmodifiableSet(set);
 	}
@@ -68,12 +69,8 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.lang.Iterable
 	 * @see java.util.Enumeration
 	 */
-	public static <T> Iterable<T> iterable(final Enumeration<T> enumeration) {
-		return new Iterable<T>() {
-			@Override public Iterator<T> iterator() {
-				return org.springframework.util.CollectionUtils.toIterator(enumeration);
-			}
-		};
+	public static <T> Iterable<T> iterable(Enumeration<T> enumeration) {
+		return () -> org.springframework.util.CollectionUtils.toIterator(enumeration);
 	}
 
 	/**
@@ -85,12 +82,8 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.lang.Iterable
 	 * @see java.util.Iterator
 	 */
-	public static <T> Iterable<T> iterable(final Iterator<T> iterator) {
-		return new Iterable<T>() {
-			@Override public Iterator<T> iterator() {
-				return iterator;
-			}
-		};
+	public static <T> Iterable<T> iterable(Iterator<T> iterator) {
+		return () -> iterator;
 	}
 
 	/**
@@ -105,7 +98,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Collection
 	 */
 	public static <T> Collection<T> nullSafeCollection(Collection<T> collection) {
-		return (collection != null ? collection : Collections.<T>emptyList());
+		return (collection != null ? collection : Collections.emptyList());
 	}
 
 	/**
@@ -119,23 +112,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Iterator
 	 */
 	public static <T> Iterable<T> nullSafeIterable(Iterable<T> iterable) {
-		return (iterable != null ? iterable : new Iterable<T>() {
-			@Override public Iterator<T> iterator() {
-				return new Iterator<T>() {
-					@Override public boolean hasNext() {
-						return false;
-					}
-
-					@Override public T next() {
-						throw new NoSuchElementException("No more elements");
-					}
-
-					@Override  public void remove() {
-						throw new UnsupportedOperationException("Operation not supported");
-					}
-				};
-			}
-		});
+		return (iterable != null ? iterable : Collections::emptyIterator);
 	}
 
 	/**
@@ -149,7 +126,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.List
 	 */
 	public static <T> List<T> nullSafeList(List<T> list) {
-		return (list != null ? list : Collections.<T>emptyList());
+		return (list != null ? list : Collections.emptyList());
 	}
 
 	/**
@@ -164,7 +141,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Map
 	 */
 	public static <K, V> Map<K, V> nullSafeMap(Map<K, V> map) {
-		return (map != null ? map : Collections.<K, V>emptyMap());
+		return (map != null ? map : Collections.emptyMap());
 	}
 
 	/**
@@ -178,7 +155,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Set
 	 */
 	public static <T> Set<T> nullSafeSet(Set<T> set) {
-		return (set != null ? set : Collections.<T>emptySet());
+		return (set != null ? set : Collections.emptySet());
 	}
 
 	/**
@@ -211,12 +188,31 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	public static <T> List<T> subList(List<T> source, int... indices) {
 		Assert.notNull(source, "List must not be null");
 
-		List<T> result = new ArrayList<T>(indices.length);
+		List<T> result = new ArrayList<>(indices.length);
 
 		for (int index : indices) {
 			result.add(source.get(index));
 		}
 
 		return result;
+	}
+
+	/* (non-Javadoc) */
+	public static String toString(Map<?, ?> map) {
+		StringBuilder builder = new StringBuilder("{\n");
+
+		int count = 0;
+
+		for (Map.Entry<?, ?> entry : new TreeMap<>(map).entrySet()) {
+			builder.append(++count > 1 ? ",\n" : "");
+			builder.append("\t");
+			builder.append(entry.getKey());
+			builder.append(" = ");
+			builder.append(entry.getValue());
+		}
+
+		builder.append("\n}");
+
+		return builder.toString();
 	}
 }

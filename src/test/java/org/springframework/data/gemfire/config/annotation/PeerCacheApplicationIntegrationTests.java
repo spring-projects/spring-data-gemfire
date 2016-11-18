@@ -17,9 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.annotation.Resource;
 
@@ -33,21 +31,20 @@ import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Test suite of test case testing the contract and functionality of the {@link PeerCacheApplication} SDG annotation
- * for configuring and bootstrapping a GemFire peer cache instance.
+ * Integration tests for {@link PeerCacheApplication} SDG annotation.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.apache.geode.cache.Cache
  * @since 1.9.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = PeerCacheApplicationIntegrationTests.PeerCacheApplicationConfiguration.class)
 @SuppressWarnings("all")
 public class PeerCacheApplicationIntegrationTests {
@@ -57,8 +54,8 @@ public class PeerCacheApplicationIntegrationTests {
 
 	@Test
 	public void echoPartitionRegionEchoesKeysAsValues() {
-		assertThat(echo.get("Hello"), is(equalTo("Hello")));
-		assertThat(echo.get("Test"), is(equalTo("Test")));
+		assertThat(echo.get("Hello")).isEqualTo("Hello");
+		assertThat(echo.get("Test")).isEqualTo("Test");
 	}
 
 	//@EnableLocator
@@ -67,7 +64,7 @@ public class PeerCacheApplicationIntegrationTests {
 	@PeerCacheApplication(name = "PeerCacheApplicationIntegrationTests", logLevel="warn")
 	static class PeerCacheApplicationConfiguration {
 
-		@Bean(name = "Echo")
+		@Bean("Echo")
 		PartitionedRegionFactoryBean<String, String> echoRegion(Cache gemfireCache) {
 			PartitionedRegionFactoryBean<String, String> echoRegion =
 				new PartitionedRegionFactoryBean<String, String>();

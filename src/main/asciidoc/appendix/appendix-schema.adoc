@@ -7,13 +7,13 @@
 
 [source,xml]
 ----
-include::{resourcesDir}/org/springframework/data/gemfire/config/spring-gemfire-1.8.xsd[]
+include::{resourcesDir}/org/springframework/data/gemfire/config/spring-gemfire-2.0.xsd[]
 ----
 
 == Spring Data GemFire Data Access Schema (gfe-data)
 
 [source,xml]
 ----
-include::{resourcesDir}/org/springframework/data/gemfire/config/spring-data-gemfire-1.8.xsd[]
+include::{resourcesDir}/org/springframework/data/gemfire/config/spring-data-gemfire-2.0.xsd[]
 ----
 

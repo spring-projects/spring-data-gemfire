@@ -102,9 +102,9 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 	@BeforeClass
 	public static void setupGemFireCluster() throws Exception {
 		serverOne = ProcessExecutor.launch(createDirectory("serverOne"), GemFireCacheServerOneConfiguration.class);
-		waitForCacheServerToStart("localhost", 41414);
+		waitForServerToStart("localhost", 41414);
 		serverTwo = ProcessExecutor.launch(createDirectory("serverTwo"), GemFireCacheServerTwoConfiguration.class);
-		waitForCacheServerToStart("localhost", 42424);
+		waitForServerToStart("localhost", 42424);
 	}
 
 	@AfterClass

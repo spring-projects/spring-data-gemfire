@@ -17,17 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.annotation.Resource;
 
@@ -43,18 +33,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.process.ProcessExecutor;
 import org.springframework.data.gemfire.process.ProcessWrapper;
-import org.springframework.data.gemfire.test.support.FileSystemUtils;
-import org.springframework.data.gemfire.test.support.IOUtils;
-import org.springframework.data.gemfire.test.support.ThreadUtils;
+import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.Assert;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Test suite of test cases testing the contract and functionality of the {@link CacheServerApplication}
@@ -66,15 +51,15 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.server.CacheServer
  * @since 1.9.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ClientServerCacheApplicationIntegrationTests.ClientCacheApplicationConfiguration.class)
 @SuppressWarnings("all")
-public class ClientServerCacheApplicationIntegrationTests {
+public class ClientServerCacheApplicationIntegrationTests extends ClientServerIntegrationTestsSupport {
 
 	private static final int PORT = 12480;
 
@@ -82,56 +67,15 @@ public class ClientServerCacheApplicationIntegrationTests {
 
 	@BeforeClass
 	public static void setupGemFireServer() throws Exception {
-		String serverName = ClientServerCacheApplicationIntegrationTests.class.getSimpleName();
+		gemfireServerProcess = run(CacheServerApplicationConfiguration.class, String.format("-Dgemfire.name=%1$s",
+			asApplicationName(ClientServerCacheApplicationIntegrationTests.class)));
 
-		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
-
-		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs());
-
-		List<String> arguments = new ArrayList<String>();
-
-		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
-
-		gemfireServerProcess = ProcessExecutor.launch(serverWorkingDirectory,
-			CacheServerApplicationConfiguration.class,
-				arguments.toArray(new String[arguments.size()]));
-
-		waitForServerStart(TimeUnit.SECONDS.toMillis(20));
-
-		System.out.println("GemFire Cache Server Process for Client/Server cache application should be running...");
-	}
-
-	private static void waitForServerStart(final long milliseconds) {
-		ThreadUtils.timedWait(milliseconds, TimeUnit.SECONDS.toMillis(1), new ThreadUtils.WaitCondition() {
-			AtomicBoolean connected = new AtomicBoolean(false);
-
-			public boolean waiting() {
-				Socket socket = null;
-
-				try {
-					if (!connected.get()) {
-						socket = new Socket("localhost", PORT);
-						connected.set(true);
-					}
-				}
-				catch (IOException ignore) {
-				}
-				finally {
-					IOUtils.close(socket);
-				}
-
-				return !connected.get();
-			}
-		});
+		waitForServerToStart("localhost", PORT);
 	}
 
 	@AfterClass
 	public static void tearDownGemFireServer() {
-		gemfireServerProcess.shutdown();
-
-		if (Boolean.valueOf(System.getProperty("spring.data.gemfire.fork.clean", Boolean.TRUE.toString()))) {
-			org.springframework.util.FileSystemUtils.deleteRecursively(gemfireServerProcess.getWorkingDirectory());
-		}
+		stop(gemfireServerProcess);
 	}
 
 	@Autowired
@@ -141,22 +85,19 @@ public class ClientServerCacheApplicationIntegrationTests {
 	private Region<String, String> echo;
 
 	@Test
-	public void clientEchoProxyRegionEchoesKeysForValues() {
-		assertThat(echo.get("Hello"), is(equalTo("Hello")));
-		assertThat(echo.get("Test"), is(equalTo("Test")));
+	public void echoClientProxyRegionEchoesKeysForValues() {
+		assertThat(echo.get("Hello")).isEqualTo("Hello");
+		assertThat(echo.get("Test")).isEqualTo("Test");
 	}
 
-	@CacheServerApplication(name = "ClientServerCacheApplicationIntegrationTests", logLevel = "warn", port = 12480)
+	@CacheServerApplication(name = "ClientServerCacheApplicationIntegrationTests", logLevel = "warn", port = PORT)
 	public static class CacheServerApplicationConfiguration {
 
 		public static void main(String[] args) {
-			AnnotationConfigApplicationContext applicationContext =
-				new AnnotationConfigApplicationContext(CacheServerApplicationConfiguration.class);
-
-			applicationContext.registerShutdownHook();
+			runSpringApplication(CacheServerApplicationConfiguration.class, args);
 		}
 
-		@Bean(name = "Echo")
+		@Bean("Echo")
 		public PartitionedRegionFactoryBean<String, String> echoRegion(Cache gemfireCache) {
 			PartitionedRegionFactoryBean<String, String> echoRegion =
 				new PartitionedRegionFactoryBean<String, String>();
@@ -183,7 +124,7 @@ public class ClientServerCacheApplicationIntegrationTests {
 		}
 	}
 
-	@ClientCacheApplication(logLevel = "warn", servers = { @ClientCacheApplication.Server(port = 12480)})
+	@ClientCacheApplication(logLevel = "warn", servers = { @ClientCacheApplication.Server(port = PORT)})
 	static class ClientCacheApplicationConfiguration {
 
 		@Bean(name = "Echo")

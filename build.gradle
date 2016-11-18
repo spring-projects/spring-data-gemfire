@@ -17,7 +17,7 @@ apply plugin: "java"
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply from: "$rootDir/maven.gradle"
-apply plugin: 'bundlor'
+//apply plugin: 'bundlor'
 apply plugin: 'propdeps'
 apply plugin: 'docbook-reference'
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
@@ -101,6 +101,7 @@ dependencies {
 	compile("io.pivotal.gemfire:geode-cq:$gemfireVersion")
 	compile("io.pivotal.gemfire:geode-wan:$gemfireVersion")
     optional("com.google.code.findbugs:annotations:$googleCodeFindbugsVersion")
+    optional("org.apache.shiro:shiro-spring:$shiroVersion")
     runtime("antlr:antlr:$antlrVersion")
 
     optional "javax.enterprise:cdi-api:$cdiVersion"
@@ -112,8 +113,8 @@ dependencies {
     testCompile("org.springframework:spring-test:$springVersion") {
         exclude group: "commons-logging", module: "commons-logging"
     }
-    testCompile "junit:junit:$junitVersion"
     testCompile "javax.annotation:jsr250-api:1.0", optional
+    testCompile "junit:junit:$junitVersion"
     testCompile "org.apache.openwebbeans.test:cditest-owb:$openwebbeansVersion"
     testCompile "org.assertj:assertj-core:$assertjVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
@@ -132,9 +133,11 @@ dependencies {
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
 }
 
+/*
 bundlor {
     manifestTemplate = file("template.mf").text
 }
+*/
 
 jar {
     manifest.attributes['Implementation-Title'] = project.name

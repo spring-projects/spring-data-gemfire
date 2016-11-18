@@ -34,10 +34,11 @@ import org.springframework.context.annotation.Import;
  * annotated class to configure and enable GemFire/Geode's Authentication and Authorization framework services.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.AuthConfiguration
  * @see org.apache.geode.security.AccessControl
  * @see org.apache.geode.security.AuthInitialize
  * @see org.apache.geode.security.Authenticator
+ * @see org.springframework.context.annotation.Import
+ * @see org.springframework.data.gemfire.config.annotation.AuthConfiguration
  * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/security/authentication_overview.html">Authentication</a>
  * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/security/authorization_overview.html">Authorization</a>
  * @since 1.9.0
