@@ -48,7 +48,6 @@ import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.shiro.util.Assert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -69,6 +68,7 @@ import org.springframework.data.gemfire.test.support.ClientServerIntegrationTest
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import lombok.EqualsAndHashCode;
