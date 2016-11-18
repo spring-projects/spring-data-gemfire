@@ -23,6 +23,7 @@
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
 		<springdata.commons>2.0.0.BUILD-SNAPSHOT</springdata.commons>
+		<spring-shell.version>1.2.0.RELEASE</spring-shell.version>
 	</properties>
 
 	<repositories>
@@ -95,6 +96,14 @@
 			<artifactId>annotations</artifactId>
 			<version>${google-code-findbugs.version}</version>
 			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.shell</groupId>
+			<artifactId>spring-shell</artifactId>
+			<version>${spring-shell.version}</version>
+			<optional>true</optional>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
