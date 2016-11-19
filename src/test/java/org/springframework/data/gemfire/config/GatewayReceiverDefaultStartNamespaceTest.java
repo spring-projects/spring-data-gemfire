@@ -63,7 +63,6 @@ public class GatewayReceiverDefaultStartNamespaceTest {
 	public void testDefault() throws Exception {
 		assertNotNull("The 'Default' GatewayReceiverFactoryBean was not properly configured and initialized!",
 			defaultGatewayReceiverFactory);
-		assertTrue(defaultGatewayReceiverFactory.isAutoStartup());
 
 		GatewayReceiver defaultGatewayReceiver = defaultGatewayReceiverFactory.getObject();
 
