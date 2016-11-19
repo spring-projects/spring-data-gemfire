@@ -141,6 +141,7 @@ public class StubGatewayReceiverFactory implements GatewayReceiverFactory {
 	@Override
 	public GatewayReceiverFactory setManualStart(final boolean manualStart) {
 		this.manualStart = manualStart;
+		this.running = !manualStart;
 		return this;
 	}
 

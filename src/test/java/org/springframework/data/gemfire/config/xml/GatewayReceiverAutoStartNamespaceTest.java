@@ -62,7 +62,6 @@ public class GatewayReceiverAutoStartNamespaceTest {
 	public void testAuto() throws Exception {
 		assertNotNull("The 'Auto' GatewayReceiverFactoryBean was not properly configured and initialized!",
 			autoGatewayReceiverFactory);
-		assertTrue(autoGatewayReceiverFactory.isAutoStartup());
 
 		GatewayReceiver autoGatewayReceiver = autoGatewayReceiverFactory.getObject();
 

@@ -61,7 +61,6 @@ public class GatewayReceiverManualStartNamespaceTest {
 	public void testManual() throws Exception {
 		assertNotNull("The 'Manual' GatewayReceiverFactoryBean was not properly configured and initialized!",
 			manualGatewayReceiverFactory);
-		assertFalse(manualGatewayReceiverFactory.isAutoStartup());
 
 		GatewayReceiver manualGatewayReceiver = manualGatewayReceiverFactory.getObject();
 
@@ -74,5 +73,4 @@ public class GatewayReceiverManualStartNamespaceTest {
 		assertFalse(manualGatewayReceiver.isRunning());
 		assertEquals(8192, manualGatewayReceiver.getSocketBufferSize());
 	}
-
 }
