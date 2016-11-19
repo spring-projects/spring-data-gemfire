@@ -23,16 +23,15 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.springframework.context.SmartLifecycle;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 /**
- * FactoryBean for creating a parallel or serial GemFire {@link GatewaySender}.
+ * Spring {@link FactoryBean} for creating a parallel or serial GemFire {@link GatewaySender}.
  *
  * @author David Turanski
  * @author John Blum
- * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.wan.GatewaySender
@@ -40,8 +39,7 @@ import org.springframework.util.CollectionUtils;
  * @since 1.2.2
  */
 @SuppressWarnings("unused")
-public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender>
-		implements SmartLifecycle {
+public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<GatewaySender> {
 
 	private boolean manualStart = false;
 
@@ -73,25 +71,19 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	private String diskStoreReference;
 
 	/**
-	 * Constructs an instance of the GatewaySenderFactoryBean class initialized with a reference to the GemFire cache.
+	 * Constructs an instance of the {@link GatewaySenderFactoryBean} class initialized with a reference to
+	 * the GemFire {@link Cache} used to configured and initialized a GemFire {@link GatewaySender}.
 	 *
-	 * @param cache the Gemfire cache reference.
+	 * @param cache reference to the GemFire {@link Cache} used to create the GemFire {@link GatewaySender}.
 	 * @see org.apache.geode.cache.Cache
 	 */
-	public GatewaySenderFactoryBean(final Cache cache) {
+	public GatewaySenderFactoryBean(Cache cache) {
 		super(cache);
 	}
 
-	@Override
-	public GatewaySender getObject() throws Exception {
-		return gatewaySender;
-	}
-
-	@Override
-	public Class<?> getObjectType() {
-		return (gatewaySender != null ? gatewaySender.getClass() : GatewaySender.class);
-	}
-
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	protected void doInit() {
 		GatewaySenderFactory gatewaySenderFactory = (this.factory != null ? (GatewaySenderFactory) factory
@@ -125,17 +117,15 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
 		}
 
-		if (!CollectionUtils.isEmpty(eventFilters)) {
-			for (GatewayEventFilter eventFilter : eventFilters) {
-				gatewaySenderFactory.addGatewayEventFilter(eventFilter);
-			}
+		for (GatewayEventFilter eventFilter : CollectionUtils.nullSafeList(eventFilters)) {
+			gatewaySenderFactory.addGatewayEventFilter(eventFilter);
 		}
 
 		if (eventSubstitutionFilter != null) {
 			gatewaySenderFactory.setGatewayEventSubstitutionFilter(eventSubstitutionFilter);
 		}
 
-		gatewaySenderFactory.setManualStart(true);
+		gatewaySenderFactory.setManualStart(manualStart);
 
 		if (maximumQueueMemory != null) {
 			gatewaySenderFactory.setMaximumQueueMemory(maximumQueueMemory);
@@ -157,10 +147,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			gatewaySenderFactory.setSocketReadTimeout(socketReadTimeout);
 		}
 
-		if (!CollectionUtils.isEmpty(transportFilters)) {
-			for (GatewayTransportFilter transportFilter : transportFilters) {
-				gatewaySenderFactory.addGatewayTransportFilter(transportFilter);
-			}
+		for (GatewayTransportFilter transportFilter : CollectionUtils.nullSafeList(transportFilters)) {
+			gatewaySenderFactory.addGatewayTransportFilter(transportFilter);
 		}
 
 		GatewaySenderWrapper wrapper = new GatewaySenderWrapper(gatewaySenderFactory.create(getName(),
@@ -168,6 +156,22 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
         wrapper.setManualStart(manualStart);
         gatewaySender = wrapper;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public GatewaySender getObject() throws Exception {
+		return gatewaySender;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public Class<?> getObjectType() {
+		return (gatewaySender != null ? gatewaySender.getClass() : GatewaySender.class);
 	}
 
 	public void setAlertThreshold(Integer alertThreshold) {
@@ -278,64 +282,4 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	public void setTransportFilters(List<GatewayTransportFilter> gatewayTransportFilters) {
 		this.transportFilters = gatewayTransportFilters;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.SmartLifecycle#isAutoStartup()
-	 */
-	@Override
-	public boolean isAutoStartup() {
-		return !manualStart;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Phased#getPhase()
-	 */
-	@Override
-	public int getPhase() {
-		return Integer.MAX_VALUE;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#isRunning()
-	 */
-	@Override
-	public boolean isRunning() {
-		return gatewaySender.isRunning();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#start()
-	 */
-	@Override
-	public synchronized void start() {
-		Assert.notNull(gatewaySender, "The GatewaySender was not properly configured and initialized!");
-
-		if (!isRunning()){
-			gatewaySender.start();
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#stop()
-	 */
-	@Override
-	public void stop() {
-		gatewaySender.stop();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.SmartLifecycle#stop(java.lang.Runnable)
-	 */
-	@Override
-	public void stop(Runnable callback) {
-		stop();
-		callback.run();
-	}
-
 }
