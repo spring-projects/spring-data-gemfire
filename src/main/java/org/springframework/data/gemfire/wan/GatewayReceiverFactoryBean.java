@@ -15,22 +15,20 @@
  */
 package org.springframework.data.gemfire.wan;
 
-import java.io.IOException;
 import java.util.List;
-
-import org.springframework.context.SmartLifecycle;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 
+import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
 /**
  * Spring FactoryBean for creating a GemFire {@link GatewayReceiver}.
- * 
+ *
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.context.SmartLifecycle
@@ -41,8 +39,7 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
  * @since 1.2.2
  */
 @SuppressWarnings("unused")
-public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<GatewayReceiver>
-		implements SmartLifecycle {
+public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<GatewayReceiver> {
 
 	private boolean manualStart = false;
 
@@ -59,34 +56,38 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	private String hostnameForSenders;
 
 	/**
-	 * Constructs an instance of the GatewayReceiverFactoryBean class for configuring an initializing
-	 * a GemFire Gateway Receiver.
+	 * Constructs an instance of the {@link GatewayReceiverFactoryBean} class for configuring and initializing
+	 * a GemFire {@link GatewayReceiver}.
 	 *
-	 * @param cache a reference to the GemFire Cache used to setup the Gateway Receiver.
+	 * @param cache reference to the GemFire {@link Cache} used to create the {@link GatewayReceiver}.
+	 * @see com.gemstone.gemfire.cache.Cache
 	 */
 	public GatewayReceiverFactoryBean(Cache cache) {
 		super(cache);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public GatewayReceiver getObject() throws Exception {
 		return gatewayReceiver;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public Class<?> getObjectType() {
 		return (gatewayReceiver != null ? gatewayReceiver.getClass() : GatewayReceiver.class);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	protected void doInit() throws Exception {
 		GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
-
-		if (!CollectionUtils.isEmpty(transportFilters)) {
-			for (GatewayTransportFilter transportFilter : transportFilters) {
-				gatewayReceiverFactory.addGatewayTransportFilter(transportFilter);
-			}
-		}
 
 		if (StringUtils.hasText(bindAddress)) {
 			gatewayReceiverFactory.setBindAddress(bindAddress);
@@ -96,28 +97,36 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 			gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
 		}
 
-		if (maximumTimeBetweenPings != null) {
-			gatewayReceiverFactory.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
-		}
+		int localStartPort = defaultPort(startPort, GatewayReceiver.DEFAULT_START_PORT);
+		int localEndPort = defaultPort(endPort, GatewayReceiver.DEFAULT_END_PORT);
 
-		int localStartPort = (startPort != null ? startPort : GatewayReceiver.DEFAULT_START_PORT);
-		int localEndPort = (endPort != null ? endPort : GatewayReceiver.DEFAULT_END_PORT);
-
-		Assert.isTrue(localStartPort <= localEndPort, String.format("'startPort' must be less than or equal to %1$d.",
-			localEndPort));
+		Assert.isTrue(localStartPort <= localEndPort,
+			String.format("'startPort' must be less than or equal to %d.", localEndPort));
 
 		gatewayReceiverFactory.setStartPort(localStartPort);
 		gatewayReceiverFactory.setEndPort(localEndPort);
-		gatewayReceiverFactory.setManualStart(true);
+		gatewayReceiverFactory.setManualStart(manualStart);
+
+		if (maximumTimeBetweenPings != null) {
+			gatewayReceiverFactory.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
+		}
 
 		if (socketBufferSize != null) {
 			gatewayReceiverFactory.setSocketBufferSize(socketBufferSize);
 		}
 
+		for (GatewayTransportFilter transportFilter : CollectionUtils.nullSafeList(transportFilters)) {
+			gatewayReceiverFactory.addGatewayTransportFilter(transportFilter);
+		}
+
 		gatewayReceiver = gatewayReceiverFactory.create();
 	}
 
-	public void setGatewayReceiver(final GatewayReceiver gatewayReceiver) {
+	protected int defaultPort(Integer port, int defaultPort) {
+		return (port != null ? port : defaultPort);
+	}
+
+	public void setGatewayReceiver(GatewayReceiver gatewayReceiver) {
 		this.gatewayReceiver = gatewayReceiver;
 	}
 
@@ -152,45 +161,4 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	public void setTransportFilters(List<GatewayTransportFilter> transportFilters) {
 		this.transportFilters = transportFilters;
 	}
-
-	@Override
-	public boolean isAutoStartup() {
-		return !manualStart;
-	}
-
-	@Override
-	public int getPhase() {
-		return Integer.MAX_VALUE;
-	}
-
-	@Override
-	public boolean isRunning() {
-		return gatewayReceiver.isRunning();
-	}
-
-	@Override
-	public void start() {
-		Assert.state(gatewayReceiver != null, "The GatewayReceiver was not properly configured and initialized!");
-
-		if (!isRunning()) {
-			try {
-				gatewayReceiver.start();
-			}
-			catch (IOException e) {
-				throw new RuntimeException("Failed to start Gateway Receiver due to I/O error.", e);
-			}
-		}
-	}
-
-	@Override
-	public void stop() {
-		gatewayReceiver.stop();
-	}
-
-	@Override
-	public void stop(final Runnable callback) {
-		stop();
-		callback.run();
-	}
-
 }
