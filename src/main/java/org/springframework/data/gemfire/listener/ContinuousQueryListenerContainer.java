@@ -77,7 +77,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		InitializingBean, DisposableBean, SmartLifecycle {
 
 	// Default Thread name prefix is "ContinuousQueryListenerContainer-".
-	public static final String DEFAULT_THREAD_NAME_PREFIX = String.format("%1$s-", ClassUtils.getShortName(
+	public static final String DEFAULT_THREAD_NAME_PREFIX = String.format("%s-", ClassUtils.getShortName(
 		ContinuousQueryListenerContainer.class));
 
 	private boolean autoStartup = true;
@@ -96,11 +96,11 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private Queue<CqQuery> continuousQueries = new ConcurrentLinkedQueue<CqQuery>();
+	private Queue<CqQuery> continuousQueries = new ConcurrentLinkedQueue<>();
 
 	private QueryService queryService;
 
-	private Set<ContinuousQueryDefinition> continuousQueryDefinitions = new LinkedHashSet<ContinuousQueryDefinition>();
+	private Set<ContinuousQueryDefinition> continuousQueryDefinitions = new LinkedHashSet<>();
 
 	private String beanName;
 	private String poolName;
@@ -113,10 +113,6 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		Assert.state(queryService != null, "QueryService was not properly initialized");
 
 		initialized = true;
-
-		if (isAutoStartup()) {
-			start();
-		}
 	}
 
 	/* (non-Javadoc) */
@@ -140,7 +136,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 			}
 		}
 		catch (BeansException ignore) {
-			Assert.notNull(PoolManager.find(poolName), String.format("No GemFire Pool with name [%1$s] was found",
+			Assert.notNull(PoolManager.find(poolName), String.format("No GemFire Pool with name [%s] was found",
 				poolName));
 		}
 
@@ -176,7 +172,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @see org.springframework.core.task.SimpleAsyncTaskExecutor#SimpleAsyncTaskExecutor(String)
 	 */
 	protected TaskExecutor createDefaultTaskExecutor() {
-		return new SimpleAsyncTaskExecutor(beanName != null ? String.format("%1$s-", beanName)
+		return new SimpleAsyncTaskExecutor(beanName != null ? String.format("%s-", beanName)
 			: DEFAULT_THREAD_NAME_PREFIX);
 	}
 
@@ -216,16 +212,19 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		try {
 			cq.execute();
 		}
-		catch (QueryException ex) {
+		catch (QueryException e) {
 			throw new GemfireQueryException(String.format("Could not execute query [%1$s]; state is [%2$s].",
-				cq.getName(), cq.getState()), ex);
-		}
-		catch (RuntimeException ex) {
-			throw new GemfireQueryException(String.format("Could not execute query [%1$s]; state is [%2$s].",
-				cq.getName(), cq.getState()), ex);
+				cq.getName(), cq.getState()), e);
 		}
 	}
 
+	@Override
+	public void stop(Runnable callback) {
+		stop();
+		callback.run();
+	}
+
+	@Override
 	public synchronized void stop() {
 		if (isRunning()) {
 			doStop();
@@ -235,11 +234,6 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		if (logger.isDebugEnabled()) {
 			logger.debug("Stopped ContinuousQueryListenerContainer");
 		}
-	}
-
-	public void stop(final Runnable callback) {
-		stop();
-		callback.run();
 	}
 
 	private void doStop() {
@@ -253,6 +247,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		}
 	}
 
+	@Override
 	public void destroy() throws Exception {
 		stop();
 		closeQueries();
@@ -313,6 +308,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @return a boolean value indicating whether this CQ listener container automatically starts.
 	 * @see org.springframework.context.SmartLifecycle#isAutoStartup()
 	 */
+	@Override
 	public boolean isAutoStartup() {
 		return autoStartup;
 	}
@@ -345,6 +341,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 *
 	 * @param name the name of the bean in the factory.
 	 */
+	@Override
 	public void setBeanName(String name) {
 		this.beanName = name;
 	}
@@ -467,11 +464,8 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 
 			return cq;
 		}
-		catch (RuntimeException ex) {
-			throw new GemfireQueryException("Cannot create query ", ex);
-		}
-		catch (QueryException ex) {
-			throw new GemfireQueryException("Cannot create query ", ex);
+		catch (QueryException e) {
+			throw new GemfireQueryException("Cannot create query ", e);
 		}
 	}
 
@@ -553,5 +547,4 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		public void close() {
 		}
 	}
-
 }

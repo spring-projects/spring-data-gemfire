@@ -50,21 +50,17 @@ import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 /**
- * The ContinuousQueryListenerContainerTest class is a test suite of test cases testing the contract and functionality
- * of the {@link ContinuousQueryListenerContainer} class.
+ * Unit tests for {@link ContinuousQueryListenerContainer}.
  *
  * @author John Blum
  * @see org.junit.Rule
  * @see org.junit.Test
  * @see org.junit.rules.ExpectedException
- * @see org.junit.runner.RunWith
- * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
  * @since 1.8.0
  */
-public class ContinuousQueryListenerContainerTest {
+public class ContinuousQueryListenerContainerTests {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -77,7 +73,7 @@ public class ContinuousQueryListenerContainerTest {
 	}
 
 	@Test
-	public void afterPropertiesSetAutoStarts() throws Exception {
+	public void afterPropertiesSetIsAutoStart() throws Exception {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 		Pool mockPool = mock(Pool.class);
 		QueryService mockQueryService = mock(QueryService.class);
@@ -96,11 +92,11 @@ public class ContinuousQueryListenerContainerTest {
 		}
 		finally {
 			assertThat(PoolManagerImpl.getPMI().unregister(mockPool), is(true));
-			assertThat(listenerContainer.isAutoStartup(), is(true));
-			assertThat((QueryService) TestUtils.readField("queryService", listenerContainer), is(equalTo(mockQueryService)));
-			assertThat(TestUtils.readField("taskExecutor", listenerContainer), is(instanceOf(Executor.class)));
 			assertThat(listenerContainer.isActive(), is(true));
-			assertThat(listenerContainer.isRunning(), is(true));
+			assertThat(listenerContainer.isAutoStartup(), is(true));
+			assertThat(listenerContainer.isRunning(), is(false));
+			assertThat(TestUtils.readField("queryService", listenerContainer), is(equalTo(mockQueryService)));
+			assertThat(TestUtils.readField("taskExecutor", listenerContainer), is(instanceOf(Executor.class)));
 
 			verify(mockBeanFactory, times(1)).containsBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 			verify(mockBeanFactory, times(1)).isTypeMatch(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME), eq(Pool.class));
@@ -112,7 +108,7 @@ public class ContinuousQueryListenerContainerTest {
 	}
 
 	@Test
-	public void afterPropertiesSetStartsManually() {
+	public void afterPropertiesSetIsManualStart() {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 		QueryService mockQueryService = mock(QueryService.class);
 
@@ -130,6 +126,7 @@ public class ContinuousQueryListenerContainerTest {
 		assertThat(listenerContainer.isAutoStartup(), is(false));
 		assertThat(listenerContainer.isRunning(), is(false));
 
+		verify(mockBeanFactory, never()).containsBean(eq("TestPool"));
 		verify(mockBeanFactory, times(1)).isTypeMatch(eq("TestPool"), eq(Pool.class));
 		verify(mockBeanFactory, times(1)).getBean(eq("TestPool"), eq(Pool.class));
 		verify(poolManagerSpy, never()).find(anyString());
@@ -361,5 +358,4 @@ public class ContinuousQueryListenerContainerTest {
 
 		assertThat(listenerContainer.isAutoStartup(), is(true));
 	}
-
 }
