@@ -3,6 +3,15 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.0.M1 (2016-11-23)
+----------------------------------------
+* SGF-571 - Remove explicit call to start() in ContinuousQueryListenerContainer.afterPropertiesSet().
+* SGF-570 - Respect manual-start on Gateway Senders/Receivers but no longer couple the start/stop lifecycle to the Spring container.
+* SGF-569 - Move Off-Heap, Redis Adapter and Security Annotation config from apache-geode to SDG 2.0.x.
+* SGF-564 - Setup 2.0 development.
+* SGF-563 - Release 2.0 M1 (Kay).
+
+
 Changes in version 1.8.5.RELEASE (2016-11-03)
 ---------------------------------------------
 * SGF-555 - Repository queries on client Regions associated with a Pool configured for a specific server group can lead to a RegionNotFoundException.
