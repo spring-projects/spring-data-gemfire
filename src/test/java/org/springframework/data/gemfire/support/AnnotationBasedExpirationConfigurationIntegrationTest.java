@@ -184,7 +184,7 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 	public void invalidExpirationAction() {
 		expectedException.expect(EvaluationException.class);
 		expectedException.expectCause(isA(IllegalArgumentException.class));
-		expectedException.expectMessage(String.format("'%1$s' is not resolvable as a valid ExpirationAction(Type)",
+		expectedException.expectMessage(String.format("[%s] is not resolvable as an ExpirationAction(Type)",
 			"@expirationProperties['gemfire.region.entry.expiration.invalid.action.string']"));
 		genericExpiration.getExpiry(mockRegionEntry(new RegionEntryWithInvalidExpirationAction()));
 	}
@@ -236,5 +236,4 @@ public class AnnotationBasedExpirationConfigurationIntegrationTest {
 		action = "@expirationProperties['gemfire.region.entry.expiration.action.spring.type']")
 	protected static class RegionEntryWithInvalidExpirationTimeout {
 	}
-
 }

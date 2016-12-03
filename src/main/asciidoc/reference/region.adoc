@@ -728,9 +728,9 @@ Expiration attributes on the `AnnotationBasedExpiration` bean by doing the follo
 
 [source,xml]
 ----
-<bean id="defaultExpirationAttributes" class="com.gemstone.gemfire.cache.ExpirationAttributes">
+<bean id="defaultExpirationAttributes" class="org.apache.geode.cache.ExpirationAttributes">
     <constructor-arg value="600"/>
-    <constructor-arg value="#{T(com.gemstone.gemfire.cache.ExpirationAction).DESTROY}"/>
+    <constructor-arg value="#{T(org.apache.geode.cache.ExpirationAction).DESTROY}"/>
 </bean>
 
 <bean id="ttiExpiration" class="org.springframework.data.gemfire.support.AnnotationBasedExpiration"
@@ -787,7 +787,7 @@ can be strongly typed.  For example (building on the example above)...
 <util:properties id="expirationSettings">
   <prop key="gemfire.region.entry.expiration.ttl.timeout">600</prop>
   <prop key="gemfire.region.entry.expiration.ttl.action">#{T(org.springframework.data.gemfire.ExpirationActionType).DESTROY}</prop>
-  <prop key="gemfire.region.entry.expiration.tti.action">#{T(com.gemstone.gemfire.cache.ExpirationAction).INVALIDATE}</prop>
+  <prop key="gemfire.region.entry.expiration.tti.action">#{T(org.apache.geode.cache.ExpirationAction).INVALIDATE}</prop>
   ...
 </util:properties>
 
