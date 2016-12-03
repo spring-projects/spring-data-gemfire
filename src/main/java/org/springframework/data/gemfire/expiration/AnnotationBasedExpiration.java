@@ -45,29 +45,31 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The AnnotationBasedExpiration class is an implementation of GemFire's CustomExpiry interface that determines
- * the Time-To-Live (TTL) or Idle-Timeout (TTI) expiration policy of a Region entry by introspecting the Region
- * entry's class type and reflecting on any Region entries annotated with Spring Data GemFire's Expiration-based
- * Annotations.
+ * The {@link AnnotationBasedExpiration} class is an implementation of the {@link CustomExpiry} interface
+ * that determines the Time-To-Live (TTL) or Idle-Timeout (TTI) expiration policy of a {@link Region} entry
+ * by introspecting the {@link Region} entry's class type and reflecting on any {@link Region} entries annotated
+ * with SDG's Expiration-based Annotations.
  *
  * @author John Blum
  * @see java.lang.annotation.Annotation
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
- * @see ExpirationActionType
- * @see Expiration
- * @see IdleTimeoutExpiration
- * @see TimeToLiveExpiration
+ * @see org.springframework.data.gemfire.expiration.Expiration
+ * @see org.springframework.data.gemfire.expiration.ExpirationActionType
+ * @see org.springframework.data.gemfire.expiration.IdleTimeoutExpiration
+ * @see org.springframework.data.gemfire.expiration.TimeToLiveExpiration
  * @see org.apache.geode.cache.CustomExpiry
  * @see org.apache.geode.cache.ExpirationAction
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.Region
+ * @see <a href="http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:region:expiration:annotation">Annotation-based Data Expiration</a>
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
 public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, CustomExpiry<K, V> {
 
-	protected static final AtomicReference<BeanFactory> BEAN_FACTORY_REFERENCE = new AtomicReference<BeanFactory>(null);
+	protected static final AtomicReference<BeanFactory> BEAN_FACTORY_REFERENCE =
+		new AtomicReference<BeanFactory>(null);
 
 	protected static final AtomicReference<StandardEvaluationContext> EVALUATION_CONTEXT_REFERENCE
 		= new AtomicReference<StandardEvaluationContext>(null);
@@ -83,7 +85,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	}
 
 	/**
-	 * Constructs a new instance of the AnnotationBasedExpiration class initialized with a specific, default
+	 * Constructs a new instance of {@link AnnotationBasedExpiration} initialized with a specific, default
 	 * expiration policy.
 	 *
 	 * @param defaultExpirationAttributes expiration settings used as the default expiration policy.
@@ -94,14 +96,16 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	}
 
 	/**
-	 * Constructs an AnnotationBasedExpiration instance with no default ExpirationAttributes to process
-	 * Idle Timeout (TTI) Expiration annotated Region Entries.
+	 * Factory method used to construct an instance of {@link AnnotationBasedExpiration} having no default
+	 * {@link ExpirationAttributes} to process expired annotated {@link Region} entries
+	 * using Idle Timeout (TTI) Expiration.
 	 *
-	 * @param <K> the class type of the Region Entry Key.
-	 * @param <V> the class type of the Region Entry Value.
-	 * @return an AnnotationBasedExpiration instance to process Idle Timeout Expiration annotated Region Entries.
-	 * @see AnnotationBasedExpiration
-	 * @see IdleTimeoutExpiration
+	 * @param <K> {@link Class} type of the {@link Region} entry key.
+	 * @param <V> {@link Class} type of the {@link Region} entry value.
+	 * @return an {@link AnnotationBasedExpiration} instance to process expired annotated {@link Region} entries
+	 * using Idle Timeout expiration.
+	 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration
+	 * @see org.springframework.data.gemfire.expiration.IdleTimeoutExpiration
 	 * @see #forIdleTimeout(org.apache.geode.cache.ExpirationAttributes)
 	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forIdleTimeout() {
@@ -109,20 +113,23 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	}
 
 	/**
-	 * Constructs an AnnotationBasedExpiration instance with default ExpirationAttributes to process
-	 * Idle Timeout (TTI) Expiration annotated Region Entries.
+	 * Factory method used to construct an instance of {@link AnnotationBasedExpiration} initialized with
+	 * default {@link ExpirationAttributes} to process expired annotated {@link Region} entries
+	 * using Idle Timeout (TTI) expiration.
 	 *
-	 * @param <K> the class type of the Region Entry Key.
-	 * @param <V> the class type of the Region Entry Value.
-	 * @param defaultExpirationAttributes ExpirationAttributes used by default if no Expiration policy was specified
-	 * on the Region Entry.
-	 * @return an AnnotationBasedExpiration instance to process Idle Timeout Expiration annotated Region Entries.
-	 * @see AnnotationBasedExpiration
-	 * @see IdleTimeoutExpiration
+	 * @param <K> {@link Class} type of the {@link Region} entry key.
+	 * @param <V> {@link Class} type of the {@link Region} entry value.
+	 * @param defaultExpirationAttributes {@link ExpirationAttributes} used by default if no expiration policy
+	 * was specified on the {@link Region}.
+	 * @return an {@link AnnotationBasedExpiration} instance to process expired annotated {@link Region} entries
+	 * using Idle Timeout expiration.
+	 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration
+	 * @see org.springframework.data.gemfire.expiration.IdleTimeoutExpiration
+	 * @see #AnnotationBasedExpiration(ExpirationAttributes)
 	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forIdleTimeout(ExpirationAttributes defaultExpirationAttributes) {
 		return new AnnotationBasedExpiration<K, V>(defaultExpirationAttributes) {
-			@Override protected ExpirationMetaData getExpirationMetaData(final Region.Entry<K, V> entry) {
+			@Override protected ExpirationMetaData getExpirationMetaData(Region.Entry<K, V> entry) {
 				return (isIdleTimeoutConfigured(entry) ? ExpirationMetaData.from(getIdleTimeout(entry))
 					: super.getExpirationMetaData(entry));
 			}
@@ -130,42 +137,50 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	}
 
 	/**
-	 * Constructs an AnnotationBasedExpiration instance with no default ExpirationAttributes to process
-	 * Time-To-Live (TTL) Expiration annotated Region Entries.
+	 * Factory method used to construct an instance of {@link AnnotationBasedExpiration} having no default
+	 * {@link ExpirationAttributes} to process expired annotated {@link Region} entries
+	 * using Time-To-Live (TTL) Expiration.
 	 *
-	 * @param <K> the class type of the Region Entry Key.
-	 * @param <V> the class type of the Region Entry Value.
-	 * @return an AnnotationBasedExpiration instance to process Time-To-Live Expiration annotated Region Entries.
-	 * @see AnnotationBasedExpiration
-	 * @see TimeToLiveExpiration
-	 * @see #forTimeToLive(org.apache.geode.cache.ExpirationAttributes)
+	 * @param <K> {@link Class} type of the {@link Region} entry key.
+	 * @param <V> {@link Class} type of the {@link Region} entry value.
+	 * @return an {@link AnnotationBasedExpiration} instance to process expired annotated {@link Region} entries
+	 * using Time-To-Live expiration.
+	 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration
+	 * @see org.springframework.data.gemfire.expiration.TimeToLiveExpiration
+	 * @see #forTimeToLive(ExpirationAttributes)
 	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forTimeToLive() {
 		return forTimeToLive(null);
 	}
 
 	/**
-	 * Constructs an AnnotationBasedExpiration instance with default ExpirationAttributes to process
-	 * Time-To-Live (TTL) Expiration annotated Region Entries.
+	 * Factory method used to construct an instance of {@link AnnotationBasedExpiration} initialized with
+	 * default {@link ExpirationAttributes} to process expired annotated {@link Region} entries
+	 * using Time-To-Live (TTL) expiration.
 	 *
-	 * @param <K> the class type of the Region Entry Key.
-	 * @param <V> the class type of the Region Entry Value.
-	 * @param defaultExpirationAttributes ExpirationAttributes used by default if no Expiration policy was specified
-	 * on the Region Entry.
-	 * @return an AnnotationBasedExpiration instance to process Time-To-Live Expiration annotated Region Entries.
-	 * @see AnnotationBasedExpiration
-	 * @see TimeToLiveExpiration
+	 * @param <K> {@link Class} type of the {@link Region} entry key.
+	 * @param <V> {@link Class} type of the {@link Region} entry value.
+	 * @param defaultExpirationAttributes {@link ExpirationAttributes} used by default if no expiration policy
+	 * was specified on the {@link Region}.
+	 * @return an {@link AnnotationBasedExpiration} instance to process expired annotated {@link Region} entries
+	 * using Time-To-Live expiration.
+	 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration
+	 * @see org.springframework.data.gemfire.expiration.TimeToLiveExpiration
+	 * @see #AnnotationBasedExpiration(ExpirationAttributes)
 	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forTimeToLive(ExpirationAttributes defaultExpirationAttributes) {
 		return new AnnotationBasedExpiration<K, V>(defaultExpirationAttributes) {
-			@Override protected ExpirationMetaData getExpirationMetaData(final Region.Entry<K, V> entry) {
+			@Override protected ExpirationMetaData getExpirationMetaData(Region.Entry<K, V> entry) {
 				return (isTimeToLiveConfigured(entry) ? ExpirationMetaData.from(getTimeToLive(entry))
 					: super.getExpirationMetaData(entry));
 			}
 		};
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Initializes the Spring Expression Language (SpEL) {@link EvaluationContext} used to parse property placeholder
+	 * and SpEL expressions in the Expiration annotation attribute values.
+	 */
 	protected void initEvaluationContext() {
 		BeanFactory beanFactory = getBeanFactory();
 
@@ -179,9 +194,11 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			if (beanFactory instanceof ConfigurableBeanFactory) {
 				ConfigurableBeanFactory configurableBeanFactory = (ConfigurableBeanFactory) beanFactory;
 				ConversionService conversionService = configurableBeanFactory.getConversionService();
+
 				if (conversionService != null) {
 					evaluationContext.setTypeConverter(new StandardTypeConverter(conversionService));
 				}
+
 				evaluationContext.setTypeLocator(new StandardTypeLocator(configurableBeanFactory.getBeanClassLoader()));
 			}
 		}
@@ -195,10 +212,10 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	}
 
 	/**
-	 * Sets the BeanFactory managing this AnnotationBasedExpiration bean in the Spring context.
+	 * Sets the {@link BeanFactory} managing this {@link AnnotationBasedExpiration} bean in the Spring context.
 	 *
-	 * @param beanFactory the Spring BeanFactory to which this bean belongs.
-	 * @throws BeansException if the BeanFactory reference cannot be initialized.
+	 * @param beanFactory the Spring {@link BeanFactory} to which this bean belongs.
+	 * @throws BeansException if the {@link BeanFactory} reference cannot be initialized.
 	 * @see org.springframework.beans.factory.BeanFactory
 	 * @see #initEvaluationContext()
 	 */
@@ -209,10 +226,11 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	}
 
 	/**
-	 * Gets a reference to the BeanFactory in which this AnnotationBasedExpiration Bean belongs.
+	 * Gets a reference to the Spring {@link BeanFactory} in which this {@link AnnotationBasedExpiration} bean
+	 * is managed.
 	 *
-	 * @return a reference to the Spring BeanFactory.
-	 * @throws java.lang.IllegalStateException if the BeanFactory reference was not properly initialized.
+	 * @return a reference to the Spring {@link BeanFactory}.
+	 * @throws java.lang.IllegalStateException if the {@link BeanFactory} reference was not properly initialized.
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	protected BeanFactory getBeanFactory() {
@@ -247,12 +265,16 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	}
 
 	/**
-	 * Calculate the expiration for a given entry. Returning null indicates that the default for the Region
-	 * should be used. The entry parameter should not be used after this method invocation completes.
+	 * Calculate the expiration for a given entry. Returning {@literal null} indicates that the default
+	 * for the {@link Region} should be used. The entry parameter should not be used after this method
+	 * invocation completes.
 	 *
-	 * @param entry the entry to calculate the expiration for.
-	 * @return the expiration to be used, null if the Region's defaults should be used.
+	 * @param entry the entry used to determine the appropriate expiration policy.
+	 * @return the expiration configuration to be used or {@literal null} if the Region's defaults should be used.
 	 * @see org.apache.geode.cache.ExpirationAttributes
+	 * @see org.apache.geode.cache.Region
+	 * @see #getExpirationMetaData(Region.Entry)
+	 * @see #newExpirationAttributes(ExpirationMetaData)
 	 */
 	@Override
 	public ExpirationAttributes getExpiry(Region.Entry<K, V> entry) {
@@ -260,28 +282,28 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	}
 
 	/**
-	 * Gets custom expiration (Annotation-based) meta-data for the given Region entry.
+	 * Gets custom expiration (Annotation-based) policy meta-data for the given {@link Region} entry.
 	 *
-	 * @param entry the Region entry used as the source of the expiration meta-data.
-	 * @return ExpirationMetaData extracted from the Region entry.
-	 * @throws NullPointerException if the Region.Entry, Region or the Region's attributes are null.
-	 * @see AnnotationBasedExpiration.ExpirationMetaData
+	 * @param entry {@link Region} entry used as the source of the expiration policy meta-data.
+	 * @return {@link ExpirationMetaData} extracted from the {@link Region} entry or {@literal null}
+	 * if the expiration policy meta-data could not be determined from the {@link Region} entry.
+	 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration.ExpirationMetaData
 	 */
 	protected ExpirationMetaData getExpirationMetaData(Region.Entry<K, V> entry) {
 		return (isExpirationConfigured(entry) ? ExpirationMetaData.from(getExpiration(entry)) : null);
 	}
 
 	/**
-	 * Constructs a new instance of ExpirationAttributes configured with the application domain object specific
-	 * expiration policy.  If the application domain object type has not been annotated with custom expiration
-	 * meta-data, then the default expiration settings are used.
+	 * Constructs a new instance of {@link ExpirationAttributes} configured with the application domain object
+	 * specific expiration policy.  If the application domain object type has not been annotated with
+	 * custom expiration meta-data, then the default expiration settings are used.
 	 *
 	 * @param expirationMetaData application domain object specific expiration policy meta-data used to construct
-	 * the ExpirationAttributes.
-	 * @return a custom ExpirationAttributes configured with the application domain object specific expiration policy
-	 * or the default expiration settings if the application domain object has not been annotated with custom
-	 * expiration meta-data.
-	 * @see AnnotationBasedExpiration.ExpirationMetaData
+	 * the {@link ExpirationAttributes}.
+	 * @return custom {@link ExpirationAttributes} configured from the application domain object specific
+	 * expiration policy or the default expiration settings if the application domain object has not been
+	 * annotated with custom expiration meta-data.
+	 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration.ExpirationMetaData
 	 * @see org.apache.geode.cache.ExpirationAttributes
 	 * @see #getDefaultExpirationAttributes()
 	 */
@@ -299,7 +321,12 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #isAnnotationPresent(Object, Class)
 	 */
 	protected boolean isExpirationConfigured(Region.Entry<K, V> entry) {
-		return isAnnotationPresent(entry.getValue(), Expiration.class);
+		return (entry != null && isExpirationConfigured(entry.getValue()));
+	}
+
+	/* (non-Javadoc) */
+	private boolean isExpirationConfigured(Object obj) {
+		return isAnnotationPresent(obj, Expiration.class);
 	}
 
 	/**
@@ -312,7 +339,12 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #getAnnotation(Object, Class)
 	 */
 	protected Expiration getExpiration(Region.Entry<K, V> entry) {
-		return getAnnotation(entry.getValue(), Expiration.class);
+		return getExpiration(entry.getValue());
+	}
+
+	/* (non-Javadoc) */
+	private Expiration getExpiration(Object obj) {
+		return getAnnotation(obj, Expiration.class);
 	}
 
 	/**
@@ -324,7 +356,12 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #isAnnotationPresent(Object, Class)
 	 */
 	protected boolean isIdleTimeoutConfigured(Region.Entry<K, V> entry) {
-		return isAnnotationPresent(entry.getValue(), IdleTimeoutExpiration.class);
+		return (entry != null && isIdleTimeoutConfigured(entry.getValue()));
+	}
+
+	/* (non-Javadoc) */
+	private boolean isIdleTimeoutConfigured(Object obj) {
+		return isAnnotationPresent(obj, IdleTimeoutExpiration.class);
 	}
 
 	/**
@@ -337,7 +374,12 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #getAnnotation(Object, Class)
 	 */
 	protected IdleTimeoutExpiration getIdleTimeout(Region.Entry<K, V> entry) {
-		return getAnnotation(entry.getValue(), IdleTimeoutExpiration.class);
+		return getIdleTimeout(entry.getValue());
+	}
+
+	/* (non-Javadoc) */
+	private IdleTimeoutExpiration getIdleTimeout(Object obj) {
+		return getAnnotation(obj, IdleTimeoutExpiration.class);
 	}
 
 	/**
@@ -349,7 +391,12 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #isAnnotationPresent(Object, Class)
 	 */
 	protected boolean isTimeToLiveConfigured(Region.Entry<K, V> entry) {
-		return isAnnotationPresent(entry.getValue(), TimeToLiveExpiration.class);
+		return (entry != null && isTimeToLiveConfigured(entry.getValue()));
+	}
+
+	/* (non-Javadoc) */
+	private boolean isTimeToLiveConfigured(Object value) {
+		return isAnnotationPresent(value, TimeToLiveExpiration.class);
 	}
 
 	/**
@@ -362,7 +409,12 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #getAnnotation(Object, Class)
 	 */
 	protected TimeToLiveExpiration getTimeToLive(Region.Entry<K, V> entry) {
-		return getAnnotation(entry.getValue(), TimeToLiveExpiration.class);
+		return getTimeToLive(entry.getValue());
+	}
+
+	/* (non-Javadoc) */
+	private TimeToLiveExpiration getTimeToLive(Object obj) {
+		return getAnnotation(obj, TimeToLiveExpiration.class);
 	}
 
 	/* (non-Javadoc) */
@@ -397,32 +449,39 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 
 		private final ExpirationActionType action;
 
+		/* (non-Javadoc) */
 		protected ExpirationMetaData(int timeout, ExpirationActionType action) {
 			this.timeout = timeout;
 			this.action = action;
 		}
 
+		/* (non-Javadoc) */
 		protected static ExpirationMetaData from(ExpirationAttributes expirationAttributes) {
 			return new ExpirationMetaData(expirationAttributes.getTimeout(), ExpirationActionType.valueOf(
 				expirationAttributes.getAction()));
 		}
 
+		/* (non-Javadoc) */
 		protected static ExpirationMetaData from(Expiration expiration) {
 			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
+		/* (non-Javadoc) */
 		protected static ExpirationMetaData from(IdleTimeoutExpiration expiration) {
 			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
+		/* (non-Javadoc) */
 		protected static ExpirationMetaData from(TimeToLiveExpiration expiration) {
 			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
+		/* (non-Javadoc) */
 		public ExpirationAttributes toExpirationAttributes() {
 			return new ExpirationAttributes(timeout(), expirationAction());
 		}
 
+		/* (non-Javadoc) */
 		protected static int parseTimeout(String timeout) {
 			try {
 				return Integer.parseInt(timeout);
@@ -445,6 +504,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			}
 		}
 
+		/* (non-Javadoc) */
 		protected static ExpirationActionType parseAction(String action) {
 			try {
 				return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER.convert(action));
@@ -452,7 +512,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			catch (IllegalArgumentException cause) {
 				// Next, try to parse the 'action' as a Spring Expression using SpEL.
 				EvaluationException evaluationException = new EvaluationException(String.format(
-					"'%1$s' is not resolvable as a valid ExpirationAction(Type)", action), cause);
+					"[%s] is not resolvable as an ExpirationAction(Type)", action), cause);
 
 				EvaluationContext evaluationContext = EVALUATION_CONTEXT_REFERENCE.get();
 
@@ -491,18 +551,24 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			}
 		}
 
+		/* (non-Javadoc) */
 		public ExpirationActionType action() {
 			return action;
 		}
 
+		/* (non-Javadoc) */
 		public ExpirationAction expirationAction() {
 			return action().getExpirationAction();
 		}
 
+		/* (non-Javadoc) */
 		public int timeout() {
 			return timeout;
 		}
 
+		/**
+		 * @inheritDoc
+		 */
 		@Override
 		public boolean equals(final Object obj) {
 			if (obj == this) {
@@ -519,6 +585,9 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 				&& ObjectUtils.nullSafeEquals(this.action(), that.action()));
 		}
 
+		/**
+		 * @inheritDoc
+		 */
 		@Override
 		public int hashCode() {
 			int hashValue = 17;
@@ -527,11 +596,13 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			return hashValue;
 		}
 
+		/**
+		 * @inheritDoc
+		 */
 		@Override
 		public String toString() {
 			return String.format("{ @type = %1$s, timeout = %2$d, action = %3$s }", getClass().getName(),
 				timeout(), action());
 		}
 	}
-
 }
