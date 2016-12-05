@@ -16,6 +16,9 @@
 
 package org.springframework.data.gemfire;
 
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.Region;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -24,9 +27,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
 
 /**
  * Simple FactoryBean for retrieving generic GemFire {@link Region}s. If lookups are not enabled or the Region
@@ -49,33 +49,37 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	private GemFireCache cache;
 
 	private Region<?, ?> parent;
+
 	private volatile Region<K, V> region;
 
 	private String beanName;
 	private String name;
 	private String regionName;
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	@SuppressWarnings("all")
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(cache, "the 'cache' reference property must be set");
+		Assert.notNull(this.cache, "A 'Cache' reference must be set");
 
-		String regionName = (StringUtils.hasText(this.regionName) ? this.regionName
-			: (StringUtils.hasText(name) ? name : beanName));
+		String regionName = resolveRegionName();
 
 		Assert.hasText(regionName, "'regionName', 'name' or 'beanName' property must be set");
 
-		synchronized (cache) {
-			//region = (getParent() != null ? getParent().getSubregion(regionName) : cache.getRegion(regionName));
+		synchronized (this.cache) {
 			if (isLookupEnabled()) {
 				if (getParent() != null) {
-					region = getParent().getSubregion(regionName);
+					this.region = getParent().getSubregion(regionName);
 				}
 				else {
-					region = cache.getRegion(regionName);
+					this.region = this.cache.getRegion(regionName);
 				}
 			}
 
 			if (region != null) {
-				log.info(String.format("found Region (%1$s) in Cache (%2$s)", regionName, cache.getName()));
+				log.info(String.format("Found Region [%1$s] in Cache [%2$s]", regionName, cache.getName()));
 			}
 			else {
 				region = lookupFallback(cache, regionName);
@@ -84,36 +88,69 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	}
 
 	/**
-	 * Fallback method in case the named Region does not exist.  By default, this implementation throws an exception.
-	 * 
-	 * @param cache a reference to the GemFire Cache.
-	 * @param regionName the name of the GemFire Cache Region.
-	 * @return the Region in the GemFire Cache with the given name.
-	 * @throws Exception if the lookup operation fails.
+	 * @deprecated call {@link #lookupRegion(GemFireCache, String)} instead.
 	 */
+	@Deprecated
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
-		throw new BeanInitializationException(String.format("Cannot find Region [%1$s] in Cache [%2$s].",
-			regionName, cache));
+		return lookupRegion(cache, regionName);
 	}
 
+	/**
+	 * Method to perform a lookup when the named {@link Region} does not exist.  By default, this implementation
+	 * throws an exception.
+	 *
+	 * @param cache reference to the GemFire cache.
+	 * @param regionName name of the GemFire {@link Region}.
+	 * @return the {@link Region} in the GemFire cache with the given name.
+	 * @throws BeanInitializationException if the lookup operation fails.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	protected Region<K, V> lookupRegion(GemFireCache cache, String regionName) throws Exception {
+		throw new BeanInitializationException(String.format(
+			"Region [%1$s] in Cache [%2$s] not found", regionName, cache));
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
 	public Region<K, V> getObject() throws Exception {
 		return getRegion();
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
 	public Class<?> getObjectType() {
-		Region localRegion = getRegion();
-		return (localRegion != null ? localRegion.getClass() : Region.class);
+		Region region = getRegion();
+		return (region != null ? region.getClass() : Region.class);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
 	/**
-	 * Sets the name of the Cache Region based on the bean 'id' attribute.  If no Region is found for the given name,
-	 * a new one will be created.
+	 * Resolves the name of the GemFire {@link Region}.
 	 *
-	 * @param name the name of this bean (Region) in the application context (bean factory).
+	 * @return a {@link String} indicating the name of the GemFire {@link Region}.
+	 * @see com.gemstone.gemfire.cache.Region#getName()
+	 */
+	public String resolveRegionName() {
+		return (StringUtils.hasText(this.regionName) ? this.regionName
+			: (StringUtils.hasText(this.name) ? this.name : this.beanName));
+	}
+
+	/**
+	 * Sets the name of the {@link Region} based on the bean 'id' attribute.  If no {@link Region} is found
+	 * with the given name, a new one will be created.
+	 *
+	 * @param name name of this {@link Region} bean in the Spring {@link org.springframework.context.ApplicationContext}.
 	 * @see org.springframework.beans.factory.BeanNameAware#setBeanName(String)
 	 */
 	public void setBeanName(String name) {
@@ -121,68 +158,14 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 	}
 
 	/**
-	 * Sets a reference to the Cache used to create the Region.
+	 * Sets a reference to the {@link GemFireCache} used to create the {@link Region}.
 	 *
-	 * @param cache a reference to the Cache.
+	 * @param cache reference to the {@link GemFireCache}.
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
 	 * @see com.gemstone.gemfire.cache.GemFireCache
 	 */
 	public void setCache(GemFireCache cache) {
 		this.cache = cache;
-	}
-
-	/**
-	 * Sets the name of the Cache Region based on the bean 'name' attribute.  If no Region is found with the given name,
-	 * a new one will be created.  If no name is given, the value of the 'beanName' property will be used.
-	 *
-	 * @param name the region name
-	 * @see #setBeanName(String)
-	 * @see com.gemstone.gemfire.cache.Region#getFullPath()
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 * Sets a reference to the parent Region if this FactoryBean represents a GemFire Cache Sub-Region.
-	 *
-	 * @param parent a reference to the parent Region if this Region is a Sub-Region.
-	 * @see com.gemstone.gemfire.cache.Region
-	 */
-	public void setParent(Region<?, ?> parent) {
-		this.parent = parent;
-	}
-
-	/**
-	 * Gets a reference to the parent Region if this FactoryBean represents a GemFire Cache Sub-Region.
-	 *
-	 * @return a reference to the parent Region or null if this Region is not a Sub-Region.
-	 * @see com.gemstone.gemfire.cache.Region
-	 */
-	protected Region<?, ?> getParent() {
-		return parent;
-	}
-
-	/**
-	 * Gets the reference to the GemFire Region obtained by this Spring FactoryBean during the lookup operation.
-	 *
-	 * @return a reference to the GemFire Region found during lookup.
-	 * @see com.gemstone.gemfire.cache.Region
-	 */
-	protected Region<K, V> getRegion() {
-		return region;
-	}
-
-	/**
-	 * Sets the name of the Cache Region as expected by GemFire.  If no Region is found with the given name, a new one
-	 * will be created.  If no name is given, the value of the 'name' property will be used.
-	 *
-	 * @param regionName a String indicating the name of the Region in GemFire.
-	 * @see #setName(String)
-	 * @see com.gemstone.gemfire.cache.Region#getName()
-	 */
-	public void setRegionName(String regionName) {
-		this.regionName = regionName;
 	}
 
 	/* (non-Javadoc) */
@@ -200,4 +183,60 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 		return lookupEnabled;
 	}
 
+	/**
+	 * Sets the name of the cache {@link Region} based on the bean 'name' attribute.  If no {@link Region} is found
+	 * with the given name, a new one will be created.  If no name is given, the value of the 'beanName' property
+	 * will be used.
+	 *
+	 * @param name {@link Region} name.
+	 * @see #setBeanName(String)
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * Sets a reference to the parent {@link Region} to indicated this {@link FactoryBean} represents a GemFire cache
+	 * {@link Region Sub-Region}.
+	 *
+	 * @param parent reference to the parent {@link Region}.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	public void setParent(Region<?, ?> parent) {
+		this.parent = parent;
+	}
+
+	/**
+	 * Returns a reference to the parent {@link Region} indicating this {@link FactoryBean} represents a GemFire cache
+	 * {@link Region Sub-Region}.
+	 *
+	 * @return a reference to the parent {@link Region} or {@literal null} if this {@link Region}
+	 * is not a {@link Region Sub-Region}.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	protected Region<?, ?> getParent() {
+		return this.parent;
+	}
+
+	/**
+	 * Returns a reference to the GemFire {@link Region} resolved by this Spring {@link FactoryBean}
+	 * during the lookup operation; maybe a new {@link Region}.
+	 *
+	 * @return a reference to the GemFire {@link Region} resolved during lookup.
+	 * @see com.gemstone.gemfire.cache.Region
+	 */
+	protected Region<K, V> getRegion() {
+		return this.region;
+	}
+
+	/**
+	 * Sets the name of the cache {@link Region}.  If no {@link Region} is found with the given name,
+	 * a new one will be created.  If no name is given, the value of the 'name' property will be used.
+	 *
+	 * @param regionName name of the {@link Region}.
+	 * @see #setName(String)
+	 */
+	public void setRegionName(String regionName) {
+		this.regionName = regionName;
+	}
 }

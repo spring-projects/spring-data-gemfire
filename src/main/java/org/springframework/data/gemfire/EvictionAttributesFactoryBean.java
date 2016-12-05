@@ -16,14 +16,14 @@
 
 package org.springframework.data.gemfire;
 
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.internal.cache.lru.LRUCapacityController;
 import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
+
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Simple utility class used for defining nested factory-method like definitions w/o polluting the container with useless beans.
@@ -53,6 +53,9 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 
 	private ObjectSizer objectSizer = null;
 
+	/**
+	 * @inheritDoc
+	 */
 	public void afterPropertiesSet() {
 		evictionAttributes = createAttributes();
 	}
@@ -75,17 +78,23 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 		}
 	}
 
-	/* non-Javadoc */
+	/**
+	 * @inheritDoc
+	 */
 	public EvictionAttributes getObject() {
 		return evictionAttributes;
 	}
 
-	/* non-Javadoc */
+	/**
+	 * @inheritDoc
+	 */
 	public Class<?> getObjectType() {
 		return (evictionAttributes != null ? evictionAttributes.getClass() : EvictionAttributes.class);
 	}
 
-	/* non-Javadoc */
+	/**
+	 * @inheritDoc
+	 */
 	public boolean isSingleton() {
 		return true;
 	}
@@ -169,5 +178,4 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 	public EvictionPolicyType getType() {
 		return type;
 	}
-
 }

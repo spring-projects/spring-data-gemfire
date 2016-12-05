@@ -18,17 +18,6 @@ package org.springframework.data.gemfire;
 
 import java.lang.reflect.Field;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.context.SmartLifecycle;
-import org.springframework.core.io.Resource;
-import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.support.RegionShortcutWrapper;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.ReflectionUtils;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
@@ -36,6 +25,7 @@ import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
@@ -47,6 +37,18 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.support.RegionShortcutWrapper;
+import org.springframework.data.gemfire.util.ArrayUtils;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Base class for FactoryBeans used to create GemFire {@link Region}s. Will try
@@ -74,6 +76,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	private Boolean enableGateway;
 	private Boolean persistent;
 
+	private AsyncEventQueue[] asyncEventQueues;
+
 	private CacheListener<K, V>[] cacheListeners;
 
 	private CacheLoader<K, V> cacheLoader;
@@ -82,8 +86,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private DataPolicy dataPolicy;
 
-	private Object[] asyncEventQueues;
-	private Object[] gatewaySenders;
+	private EvictionAttributes evictionAttributes;
+
+	private GatewaySender[] gatewaySenders;
 
 	private RegionAttributes<K, V> attributes;
 
@@ -96,14 +101,20 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	private String diskStoreName;
 	private String hubId;
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
 		postProcess(getRegion());
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "unchecked" })
 	protected Region<K, V> lookupFallback(GemFireCache gemfireCache, String regionName) throws Exception {
 		Assert.isTrue(gemfireCache instanceof Cache, String.format("Unable to create Regions from '%1$s'.",
 			gemfireCache));
@@ -134,16 +145,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			}
 		}
 
-		if (!ObjectUtils.isEmpty(asyncEventQueues)) {
-			for (Object asyncEventQueue : asyncEventQueues) {
-				regionFactory.addAsyncEventQueueId(((AsyncEventQueue) asyncEventQueue).getId());
-			}
+		for (AsyncEventQueue asyncEventQueue : ArrayUtils.nullSafeArray(asyncEventQueues, AsyncEventQueue.class)) {
+			regionFactory.addAsyncEventQueueId(asyncEventQueue.getId());
 		}
 
-		if (!ObjectUtils.isEmpty(cacheListeners)) {
-			for (CacheListener<K, V> listener : cacheListeners) {
-				regionFactory.addCacheListener(listener);
-			}
+		for (CacheListener<K, V> listener : ArrayUtils.nullSafeArray(cacheListeners, CacheListener.class)) {
+			regionFactory.addCacheListener(listener);
 		}
 
 		if (cacheLoader != null) {
@@ -158,6 +165,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		if (isDiskStoreConfigurationAllowed()) {
 			regionFactory.setDiskStoreName(diskStoreName);
+		}
+
+		if (evictionAttributes != null) {
+			regionFactory.setEvictionAttributes(evictionAttributes);
 		}
 
 		if (scope != null) {
@@ -206,7 +217,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see com.gemstone.gemfire.cache.Cache#createRegionFactory(com.gemstone.gemfire.cache.RegionShortcut)
 	 * @see com.gemstone.gemfire.cache.RegionFactory
 	 */
-	protected RegionFactory<K, V> createRegionFactory(final Cache cache) {
+	protected RegionFactory<K, V> createRegionFactory(Cache cache) {
 		if (shortcut != null) {
 			RegionFactory<K, V> regionFactory = mergeRegionAttributes(
 				cache.<K, V>createRegionFactory(shortcut), attributes);
@@ -236,14 +247,14 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see com.gemstone.gemfire.cache.DataPolicy
 	 */
 	@SuppressWarnings({ "deprecation", "unchecked" })
-	DataPolicy getDataPolicy(final RegionFactory regionFactory) {
+	DataPolicy getDataPolicy(RegionFactory regionFactory) {
 		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory", AttributesFactory.class),
 			"regionAttributes", null)).getDataPolicy();
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
-	private <T> T getFieldValue(final Object source, final String fieldName, final Class<T> targetType) {
+	private <T> T getFieldValue(Object source, String fieldName, Class<T> targetType) {
 		Field field = ReflectionUtils.findField(source.getClass(), fieldName, targetType);
 		ReflectionUtils.makeAccessible(field);
 		return (T) ReflectionUtils.getField(field, source);
@@ -269,8 +280,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see com.gemstone.gemfire.cache.RegionFactory
 	 */
 	@SuppressWarnings("unchecked")
-	protected <K, V> RegionFactory<K, V> mergeRegionAttributes(final RegionFactory<K, V> regionFactory,
-			final RegionAttributes<K, V> regionAttributes) {
+	protected <K, V> RegionFactory<K, V> mergeRegionAttributes(RegionFactory<K, V> regionFactory,
+			RegionAttributes<K, V> regionAttributes) {
 
 		if (regionAttributes != null) {
 			// NOTE this validation may not be strictly required depending on how the RegionAttributes were "created",
@@ -314,6 +325,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		return regionFactory;
 	}
 
+	/* (non-Javadoc) */
 	protected <K, V> void mergePartitionAttributes(final RegionFactory<K, V> regionFactory,
 			final RegionAttributes<K, V> regionAttributes) {
 
@@ -351,7 +363,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see com.gemstone.gemfire.cache.AttributesFactory#validateAttributes(:RegionAttributes)
 	 */
 	@SuppressWarnings("deprecation")
-	void validateRegionAttributes(final RegionAttributes regionAttributes) {
+	void validateRegionAttributes(RegionAttributes regionAttributes) {
 		com.gemstone.gemfire.cache.AttributesFactory.validateAttributes(regionAttributes);
 	}
 
@@ -447,7 +459,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @param regionFactory the GemFire RegionFactory used to create the Region for post-processing.
 	 * @see com.gemstone.gemfire.cache.RegionFactory
 	 */
-	protected void postProcess(RegionFactory<K, V> regionFactory) {
+	protected RegionFactory<K, V> postProcess(RegionFactory<K, V> regionFactory) {
+		return regionFactory;
 	}
 
 	/**
@@ -457,7 +470,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @param region the GemFire Region to post-process.
 	 * @see com.gemstone.gemfire.cache.Region
 	 */
-	protected void postProcess(Region<K, V> region) {
+	protected Region<K, V> postProcess(Region<K, V> region) {
+		return region;
 	}
 
 	/**
@@ -547,7 +561,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 *
 	 * @param asyncEventQueues defined as Object for backwards compatibility with Gemfire 6.
 	 */
-	public void setAsyncEventQueues(Object[] asyncEventQueues) {
+	public void setAsyncEventQueues(AsyncEventQueue[] asyncEventQueues) {
 		this.asyncEventQueues = asyncEventQueues;
 	}
 
@@ -674,12 +688,16 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.enableGateway = enableGateway;
 	}
 
+	public void setEvictionAttributes(EvictionAttributes evictionAttributes) {
+		this.evictionAttributes = evictionAttributes;
+	}
+
 	/**
 	 *
 	 * @param gatewaySenders defined as Object for backward compatibility with
 	 * Gemfire 6
 	 */
-	public void setGatewaySenders(Object[] gatewaySenders) {
+	public void setGatewaySenders(GatewaySender[] gatewaySenders) {
 		this.gatewaySenders = gatewaySenders;
 	}
 
@@ -730,11 +748,11 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.snapshot = snapshot;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#start()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void start() {
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			synchronized (gatewaySenders) {
@@ -750,9 +768,17 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.running = true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#stop()
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public void stop(Runnable callback) {
+		stop();
+		callback.run();
+	}
+
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public void stop() {
@@ -767,41 +793,27 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.running = false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Lifecycle#isRunning()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public boolean isRunning() {
 		return this.running;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Phased#getPhase()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public int getPhase() {
 		return Integer.MAX_VALUE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.SmartLifecycle#isAutoStartup()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public boolean isAutoStartup() {
 		return true;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.SmartLifecycle#stop(java.lang.Runnable)
-	 */
-	@Override
-	public void stop(Runnable callback) {
-		stop();
-		callback.run();
-	}
-
 }

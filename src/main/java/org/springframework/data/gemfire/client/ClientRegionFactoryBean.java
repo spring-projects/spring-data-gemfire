@@ -16,25 +16,11 @@
 
 package org.springframework.data.gemfire.client;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.core.io.Resource;
-import org.springframework.data.gemfire.DataPolicyConverter;
-import org.springframework.data.gemfire.GemfireUtils;
-import org.springframework.data.gemfire.RegionLookupFactoryBean;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
@@ -43,8 +29,25 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.DataPolicyConverter;
+import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.util.ArrayUtils;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 /**
- * Client extension for GemFire Regions.
+ * Spring {@link FactoryBean} used to create a GemFire client {@link Region}.
  *
  * @author Costin Leau
  * @author David Turanski
@@ -53,9 +56,6 @@ import com.gemstone.gemfire.cache.client.Pool;
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.data.gemfire.RegionLookupFactoryBean
- * @see com.gemstone.gemfire.cache.CacheListener
- * @see com.gemstone.gemfire.cache.CacheLoader
- * @see com.gemstone.gemfire.cache.CacheWriter
  * @see com.gemstone.gemfire.cache.DataPolicy
  * @see com.gemstone.gemfire.cache.GemFireCache
  * @see com.gemstone.gemfire.cache.Region
@@ -87,6 +87,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	private DataPolicy dataPolicy;
 
+	private EvictionAttributes evictionAttributes;
+
 	private Interest<K>[] interests;
 
 	private RegionAttributes<K, V> attributes;
@@ -96,75 +98,61 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	private String diskStoreName;
 	private String poolName;
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
 		postProcess(getRegion());
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
-	@SuppressWarnings("all")
 	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
 		Assert.isTrue(GemfireUtils.isClient(cache), "A ClientCache is required to create a client Region");
 
-		ClientRegionFactory<K, V> clientRegionFactory = ((ClientCache) cache).createClientRegionFactory(
-			resolveClientRegionShortcut());
+		ClientRegionFactory<K, V> clientRegionFactory =
+			((ClientCache) cache).createClientRegionFactory(resolveClientRegionShortcut());
 
-		if (attributes != null) {
-			clientRegionFactory.setCloningEnabled(attributes.getCloningEnabled());
-			clientRegionFactory.setCompressor(attributes.getCompressor());
-			clientRegionFactory.setConcurrencyChecksEnabled(attributes.getConcurrencyChecksEnabled());
-			clientRegionFactory.setConcurrencyLevel(attributes.getConcurrencyLevel());
-			clientRegionFactory.setCustomEntryIdleTimeout(attributes.getCustomEntryIdleTimeout());
-			clientRegionFactory.setCustomEntryTimeToLive(attributes.getCustomEntryTimeToLive());
-			clientRegionFactory.setDiskStoreName(attributes.getDiskStoreName());
-			clientRegionFactory.setDiskSynchronous(attributes.isDiskSynchronous());
-			clientRegionFactory.setEntryIdleTimeout(attributes.getEntryIdleTimeout());
-			clientRegionFactory.setEntryTimeToLive(attributes.getEntryTimeToLive());
-			clientRegionFactory.setEvictionAttributes(attributes.getEvictionAttributes());
-			clientRegionFactory.setInitialCapacity(attributes.getInitialCapacity());
-			clientRegionFactory.setKeyConstraint(attributes.getKeyConstraint());
-			clientRegionFactory.setLoadFactor(attributes.getLoadFactor());
-			clientRegionFactory.setPoolName(attributes.getPoolName());
-			clientRegionFactory.setRegionIdleTimeout(attributes.getRegionIdleTimeout());
-			clientRegionFactory.setRegionTimeToLive(attributes.getRegionTimeToLive());
-			clientRegionFactory.setStatisticsEnabled(attributes.getStatisticsEnabled());
-			clientRegionFactory.setValueConstraint(attributes.getValueConstraint());
-		}
-
-		String poolName = resolvePoolName();
-
-		if (StringUtils.hasText(poolName)) {
-			clientRegionFactory.setPoolName(eagerlyInitializePool(poolName));
-		}
-
+		setAttributes(clientRegionFactory);
 		addCacheListeners(clientRegionFactory);
+		setDiskStoreName(clientRegionFactory);
+		setEvictionAttributes(clientRegionFactory);
+		setPoolName(clientRegionFactory);
 
-		if (diskStoreName != null) {
-			clientRegionFactory.setDiskStoreName(diskStoreName);
-		}
-
-		Region<K, V> clientRegion = (getParent() != null ? clientRegionFactory.createSubregion(getParent(), regionName)
-			: clientRegionFactory.create(regionName));
-
-		if (log.isInfoEnabled()) {
-			if (getParent() != null) {
-				log.info(String.format("Created new Client Cache sub-Region [%1$s] under parent Region [%2$s].",
-					regionName, getParent().getName()));
-			}
-			else {
-				log.info(String.format("Created new Client Cache Region [%1$s].", regionName));
-			}
-		}
-
-		if (snapshot != null) {
-			clientRegion.loadSnapshot(snapshot.getInputStream());
-		}
-
-		return clientRegion;
+		return logCreateRegionEvent(create(clientRegionFactory, regionName));
 	}
 
 	/* (non-Javadoc) */
+	private Region<K, V> create(ClientRegionFactory<K, V> clientRegionFactory, String regionName) {
+		return (getParent() != null ? clientRegionFactory.createSubregion(getParent(), regionName)
+			: clientRegionFactory.create(regionName));
+	}
+
+	/* (non-Javadoc) */
+	private Region<K, V> logCreateRegionEvent(Region<K, V> region) {
+		if (log.isInfoEnabled()) {
+			if (getParent() != null) {
+				log.info(String.format("Created new client cache Sub-Region [%1$s] under parent Region [%2$s].",
+					region.getName(), getParent().getName()));
+			}
+			else {
+				log.info(String.format("Created new client cache Region [%s].", region.getName()));
+			}
+		}
+
+		return region;
+	}
+
+	/**
+	 * Resolves the {@link ClientRegionShortcut} used to configure the data policy of the client {@link Region}.
+	 *
+	 * @return a {@link ClientRegionShortcut} used to configure the data policy of the client {@link Region}.
+	 * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
+	 */
 	ClientRegionShortcut resolveClientRegionShortcut() {
 		ClientRegionShortcut resolvedShortcut = this.shortcut;
 
@@ -182,10 +170,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 					resolvedShortcut = ClientRegionShortcut.LOCAL_PERSISTENT;
 				}
 				else {
-					// NOTE the Data Policy validation is based on the ClientRegionShortcut initialization logic
+					// NOTE the DataPolicy validation is based on the ClientRegionShortcut initialization logic
 					// in com.gemstone.gemfire.internal.cache.GemFireCacheImpl.initializeClientRegionShortcuts
-					throw new IllegalArgumentException(String.format(
-						"Data Policy '%1$s' is invalid for Client Regions.", this.dataPolicy));
+					throw new IllegalArgumentException(String.format("Data Policy '%s' is invalid for Client Regions",
+						this.dataPolicy));
 				}
 			}
 			else {
@@ -194,41 +182,11 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			}
 		}
 
-		// NOTE the ClientRegionShortcut and Persistent attribute will be compatible if the shortcut was derived from
-		// the Data Policy.
+		// NOTE the ClientRegionShortcut and Persistent attribute will be compatible if the shortcut
+		// was derived from the Data Policy.
 		assertClientRegionShortcutAndPersistentAttributeAreCompatible(resolvedShortcut);
 
 		return resolvedShortcut;
-	}
-
-	/* (non-Javadoc) */
-	String resolvePoolName() {
-		String poolName = this.poolName;
-
-		if (!StringUtils.hasText(poolName)) {
-			String defaultPoolName = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
-			poolName = (beanFactory.containsBean(defaultPoolName) ? defaultPoolName : poolName);
-		}
-
-		return poolName;
-	}
-
-	/* (non-Javadoc) */
-	String eagerlyInitializePool(String poolName) {
-		try {
-			if (beanFactory.isTypeMatch(poolName, Pool.class)) {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("Found bean definition for Pool [%1$s]; Eagerly initializing...", poolName));
-				}
-
-				beanFactory.getBean(poolName, Pool.class);
-			}
-		}
-		catch (BeansException ignore) {
-			log.warn(ignore.getMessage());
-		}
-
-		return poolName;
 	}
 
 	/**
@@ -241,17 +199,17 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * @see #isNotPersistent()
 	 * @see com.gemstone.gemfire.cache.client.ClientRegionShortcut
 	 */
-	protected void assertClientRegionShortcutAndPersistentAttributeAreCompatible(final ClientRegionShortcut resolvedShortcut) {
+	private void assertClientRegionShortcutAndPersistentAttributeAreCompatible(ClientRegionShortcut resolvedShortcut) {
 		final boolean persistentNotSpecified = (this.persistent == null);
 
 		if (ClientRegionShortcut.LOCAL_PERSISTENT.equals(resolvedShortcut)
-				|| ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW.equals(resolvedShortcut)) {
+			|| ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW.equals(resolvedShortcut)) {
 			Assert.isTrue(persistentNotSpecified || isPersistent(), String.format(
-				"Client Region Shortcut '%1$s' is invalid when persistent is false.", resolvedShortcut));
+				"Client Region Shortcut '%s' is invalid when persistent is false", resolvedShortcut));
 		}
 		else {
 			Assert.isTrue(persistentNotSpecified || isNotPersistent(), String.format(
-				"Client Region Shortcut '%1$s' is invalid when persistent is true.", resolvedShortcut));
+				"Client Region Shortcut '%s' is invalid when persistent is true", resolvedShortcut));
 		}
 	}
 
@@ -265,43 +223,147 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * @see #isNotPersistent()
 	 * @see com.gemstone.gemfire.cache.DataPolicy
 	 */
-	protected void assertDataPolicyAndPersistentAttributeAreCompatible(final DataPolicy resolvedDataPolicy) {
+	private void assertDataPolicyAndPersistentAttributeAreCompatible(DataPolicy resolvedDataPolicy) {
 		if (resolvedDataPolicy.withPersistence()) {
 			Assert.isTrue(isPersistentUnspecified() || isPersistent(), String.format(
-				"Data Policy '%1$s' is invalid when persistent is false.", resolvedDataPolicy));
+				"Data Policy '%s' is invalid when persistent is false", resolvedDataPolicy));
 		}
 		else {
 			// NOTE otherwise, the Data Policy is without persistence, so...
 			Assert.isTrue(isPersistentUnspecified() || isNotPersistent(), String.format(
-				"Data Policy '%1$s' is invalid when persistent is true.", resolvedDataPolicy));
+				"Data Policy '%s' is invalid when persistent is true", resolvedDataPolicy));
 		}
 	}
 
-	private void addCacheListeners(ClientRegionFactory<K, V> factory) {
-		if (attributes != null) {
-			CacheListener<K, V>[] cacheListeners = attributes.getCacheListeners();
+	/* (non-Javadoc) */
+	private ClientRegionFactory<K, V> setAttributes(ClientRegionFactory<K, V> clientRegionFactory) {
+		RegionAttributes<K, V> localAttributes = this.attributes;
 
-			if (!ObjectUtils.isEmpty(cacheListeners)) {
-				for (CacheListener<K, V> cacheListener : cacheListeners) {
-					factory.addCacheListener(cacheListener);
+		if (localAttributes != null) {
+			clientRegionFactory.setCloningEnabled(localAttributes.getCloningEnabled());
+			clientRegionFactory.setCompressor(localAttributes.getCompressor());
+			clientRegionFactory.setConcurrencyChecksEnabled(localAttributes.getConcurrencyChecksEnabled());
+			clientRegionFactory.setConcurrencyLevel(localAttributes.getConcurrencyLevel());
+			clientRegionFactory.setCustomEntryIdleTimeout(localAttributes.getCustomEntryIdleTimeout());
+			clientRegionFactory.setCustomEntryTimeToLive(localAttributes.getCustomEntryTimeToLive());
+			clientRegionFactory.setDiskStoreName(localAttributes.getDiskStoreName());
+			clientRegionFactory.setDiskSynchronous(localAttributes.isDiskSynchronous());
+			clientRegionFactory.setEntryIdleTimeout(localAttributes.getEntryIdleTimeout());
+			clientRegionFactory.setEntryTimeToLive(localAttributes.getEntryTimeToLive());
+			clientRegionFactory.setEvictionAttributes(localAttributes.getEvictionAttributes());
+			clientRegionFactory.setInitialCapacity(localAttributes.getInitialCapacity());
+			clientRegionFactory.setKeyConstraint(localAttributes.getKeyConstraint());
+			clientRegionFactory.setLoadFactor(localAttributes.getLoadFactor());
+			clientRegionFactory.setPoolName(localAttributes.getPoolName());
+			clientRegionFactory.setRegionIdleTimeout(localAttributes.getRegionIdleTimeout());
+			clientRegionFactory.setRegionTimeToLive(localAttributes.getRegionTimeToLive());
+			clientRegionFactory.setStatisticsEnabled(localAttributes.getStatisticsEnabled());
+			clientRegionFactory.setValueConstraint(localAttributes.getValueConstraint());
+		}
+
+		return clientRegionFactory;
+	}
+
+	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
+	private ClientRegionFactory<K, V> addCacheListeners(ClientRegionFactory<K, V> clientRegionFactory) {
+		for (CacheListener<K, V> cacheListener : this.<K, V>attributesCacheListeners()) {
+			clientRegionFactory.addCacheListener(cacheListener);
+		}
+
+		for (CacheListener<K, V> cacheListener : ArrayUtils.nullSafeArray(this.cacheListeners, CacheListener.class)) {
+			clientRegionFactory.addCacheListener(cacheListener);
+		}
+
+		return clientRegionFactory;
+	}
+
+	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
+	private <K, V> CacheListener<K, V>[] attributesCacheListeners() {
+		return (this.attributes != null
+			? ArrayUtils.nullSafeArray(this.attributes.getCacheListeners(), CacheListener.class)
+				: new CacheListener[0]);
+	}
+
+	/* (non-Javadoc) */
+	private ClientRegionFactory<K, V> setDiskStoreName(ClientRegionFactory<K, V> clientRegionFactory) {
+		if (StringUtils.hasText(this.diskStoreName)) {
+			clientRegionFactory.setDiskStoreName(this.diskStoreName);
+		}
+
+		return clientRegionFactory;
+	}
+
+	/* (non-Javadoc) */
+	private ClientRegionFactory<K, V> setEvictionAttributes(ClientRegionFactory<K, V> clientRegionFactory) {
+		if (this.evictionAttributes != null) {
+			clientRegionFactory.setEvictionAttributes(this.evictionAttributes);
+		}
+
+		return clientRegionFactory;
+	}
+
+	/* (non-Javadoc) */
+	private ClientRegionFactory<K, V> setPoolName(ClientRegionFactory<K, V> clientRegionFactory) {
+		String poolName = resolvePoolName();
+
+		if (StringUtils.hasText(poolName)) {
+			clientRegionFactory.setPoolName(eagerlyInitializePool(poolName));
+		}
+
+		return clientRegionFactory;
+	}
+
+	/* (non-Javadoc) */
+	private String resolvePoolName() {
+		String poolName = this.poolName;
+
+		if (!StringUtils.hasText(poolName)) {
+			String defaultPoolName = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
+			poolName = (this.beanFactory.containsBean(defaultPoolName) ? defaultPoolName : poolName);
+		}
+
+		return poolName;
+	}
+
+	/* (non-Javadoc) */
+	private String eagerlyInitializePool(String poolName) {
+		try {
+			if (this.beanFactory.isTypeMatch(poolName, Pool.class)) {
+				if (log.isDebugEnabled()) {
+					log.debug(String.format("Found bean definition for Pool [%1$s]; Eagerly initializing...", poolName));
 				}
+
+				this.beanFactory.getBean(poolName, Pool.class);
 			}
+		}
+		catch (BeansException ignore) {
+			log.warn(ignore.getMessage());
 		}
 
-		if (!ObjectUtils.isEmpty(cacheListeners)) {
-			for (CacheListener<K, V> cacheListener : cacheListeners) {
-				factory.addCacheListener(cacheListener);
-			}
-		}
+		return poolName;
 	}
 
-	protected void postProcess(final Region<K, V> region) {
+	/* (non-Javadoc) */
+	protected void postProcess(Region<K, V> region) throws Exception {
+		loadSnapshot(region);
 		registerInterests(region);
 		setCacheLoader(region);
 		setCacheWriter(region);
 	}
 
-	private void registerInterests(final Region<K, V> region) {
+	/* (non-Javadoc) */
+	private Region<K, V> loadSnapshot(Region<K, V> region) throws Exception {
+		if (snapshot != null) {
+			region.loadSnapshot(snapshot.getInputStream());
+		}
+
+		return region;
+	}
+
+	/* (non-Javadoc) */
+	private Region<K, V> registerInterests(Region<K, V> region) {
 		if (!ObjectUtils.isEmpty(interests)) {
 			for (Interest<K> interest : interests) {
 				if (interest instanceof RegexInterest) {
@@ -314,20 +376,31 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				}
 			}
 		}
+
+		return region;
 	}
 
-	private void setCacheLoader(final Region<K, V> region) {
+	/* (non-Javadoc) */
+	private Region<K, V> setCacheLoader(Region<K, V> region) {
 		if (cacheLoader != null) {
 			region.getAttributesMutator().setCacheLoader(this.cacheLoader);
 		}
+
+		return region;
 	}
 
-	private void setCacheWriter(final Region<K, V> region) {
+	/* (non-Javadoc) */
+	private Region<K, V> setCacheWriter(Region<K, V> region) {
 		if (cacheWriter != null) {
 			region.getAttributesMutator().setCacheWriter(this.cacheWriter);
 		}
+
+		return region;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void destroy() throws Exception {
 		Region<K, V> region = getObject();
@@ -368,43 +441,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		this.beanFactory = beanFactory;
 	}
 
-	/**
-	 * Set the interests for this client region. Both key and regex interest are
-	 * supported.
-	 *
-	 * @param interests the interests to set
-	 */
-	public void setInterests(Interest<K>[] interests) {
-		this.interests = interests;
-	}
-
-	/**
-	 * @return the interests
-	 */
-	Interest<K>[] getInterests() {
-		return interests;
-	}
-
-	/**
-	 * Sets the pool used by this client.
-	 *
-	 * @param pool the GemFire client pool.
-	 */
-	public void setPool(Pool pool) {
-		Assert.notNull(pool, "pool cannot be null");
-		setPoolName(pool.getName());
-	}
-
-	/**
-	 * Sets the pool name used by this client.
-	 *
-	 * @param poolName a String specify the name of the GemFire client pool.
-	 */
-	public void setPoolName(String poolName) {
-		Assert.hasText(poolName, "pool name is required");
-		this.poolName = poolName;
-	}
-
+	/* (non-Javadoc) */
 	final boolean isClose() {
 		return close;
 	}
@@ -420,23 +457,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	public void setClose(boolean close) {
 		this.close = close;
 		this.destroy = (this.destroy && !close); // retain previous value iff close is false.
-	}
-
-	final boolean isDestroy() {
-		return destroy;
-	}
-
-	/**
-	 * Indicates whether the region referred by this factory bean will be
-	 * destroyed on shutdown (default false). Note: destroy and close are
-	 * mutually exclusive. Enabling one will automatically disable the other.
-	 *
-	 * @param destroy whether or not to destroy the region
-	 * @see #setClose(boolean)
-	 */
-	public void setDestroy(boolean destroy) {
-		this.destroy = destroy;
-		this.close = (this.close && !destroy); // retain previous value iff destroy is false;
 	}
 
 	/**
@@ -495,6 +515,24 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		setDataPolicy(resolvedDataPolicy);
 	}
 
+	/* (non-Javadoc) */
+	final boolean isDestroy() {
+		return destroy;
+	}
+
+	/**
+	 * Indicates whether the region referred by this factory bean will be
+	 * destroyed on shutdown (default false). Note: destroy and close are
+	 * mutually exclusive. Enabling one will automatically disable the other.
+	 *
+	 * @param destroy whether or not to destroy the region
+	 * @see #setClose(boolean)
+	 */
+	public void setDestroy(boolean destroy) {
+		this.destroy = destroy;
+		this.close = (this.close && !destroy); // retain previous value iff destroy is false;
+	}
+
 	/**
 	 * Sets the name of disk store to use for overflow and persistence
 	 *
@@ -502,6 +540,25 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 */
 	public void setDiskStoreName(String diskStoreName) {
 		this.diskStoreName = diskStoreName;
+	}
+
+	public void setEvictionAttributes(EvictionAttributes evictionAttributes) {
+		this.evictionAttributes = evictionAttributes;
+	}
+
+	/**
+	 * Set the interests for this client region. Both key and regex interest are
+	 * supported.
+	 *
+	 * @param interests the interests to set
+	 */
+	public void setInterests(Interest<K>[] interests) {
+		this.interests = interests;
+	}
+
+	/* (non-Javadoc) */
+	Interest<K>[] getInterests() {
+		return this.interests;
 	}
 
 	protected boolean isPersistentUnspecified() {
@@ -521,26 +578,44 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Initializes the client using a GemFire {@link ClientRegionShortcut}. The
-	 * recommended way for creating clients since it covers all the major
-	 * scenarios with minimal configuration.
+	 * Sets the {@link Pool} used by this client {@link Region}.
 	 *
-	 * @param shortcut the ClientRegionShortcut to use.
+	 * @param pool GemFire client {@link Pool}.
+	 * @see com.gemstone.gemfire.cache.client.Pool
+	 */
+	public void setPool(Pool pool) {
+		Assert.notNull(pool, "Pool cannot be null");
+		setPoolName(pool.getName());
+	}
+
+	/**
+	 * Sets the {@link Pool} name used by this client {@link Region}.
+	 *
+	 * @param poolName String specifying the name of the GemFire client {@link Pool}.
+	 */
+	public void setPoolName(String poolName) {
+		Assert.hasText(poolName, "Pool name is required");
+		this.poolName = poolName;
+	}
+
+	/**
+	 * Initializes the client {@link Region} using a GemFire {@link ClientRegionShortcut}.
+	 *
+	 * @param shortcut {@link ClientRegionShortcut} used to initialize this client {@link Region}.
 	 */
 	public void setShortcut(ClientRegionShortcut shortcut) {
 		this.shortcut = shortcut;
 	}
 
 	/**
-	 * Sets the snapshots used for loading a newly <i>created</i> region. That
-	 * is, the snapshot will be used <i>only</i> when a new region is created -
-	 * if the region already exists, no loading will be performed.
+	 * Specifies the data snapshots used for loading a newly <i>created</i> {@link Region}.
+	 * The snapshot will be used <i>only</i> when a new {@link Region} is created.
+	 * If the {@link Region} already exists, no loading will be performed.
 	 *
-	 * @param snapshot the snapshot to set
-	 * @see #setName(String)
+	 * @param snapshot {@link Resource} referencing the snapshot used to load the {@link Region} with data.
+	 * @see org.springframework.core.io.Resource
 	 */
 	public void setSnapshot(Resource snapshot) {
 		this.snapshot = snapshot;
 	}
-
 }

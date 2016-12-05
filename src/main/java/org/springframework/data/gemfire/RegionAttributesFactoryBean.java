@@ -16,11 +16,11 @@
 
 package org.springframework.data.gemfire;
 
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
+
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Spring-friendly bean for creating {@link RegionAttributes}. Eliminates the need of using a XML 'factory-method' tag.
@@ -32,22 +32,39 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * @see com.gemstone.gemfire.cache.AttributesFactory
  * @see com.gemstone.gemfire.cache.RegionAttributes
  */
-@SuppressWarnings({ "deprecation", "unused" })
-public class RegionAttributesFactoryBean extends AttributesFactory implements FactoryBean<RegionAttributes>,
-		InitializingBean {
+@SuppressWarnings({ "unused" })
+public class RegionAttributesFactoryBean extends AttributesFactory
+		implements FactoryBean<RegionAttributes>, InitializingBean {
 
 	private RegionAttributes attributes;
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		attributes = super.create();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public RegionAttributes getObject() throws Exception {
 		return attributes;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public Class<?> getObjectType() {
 		return (attributes != null ? attributes.getClass() : RegionAttributes.class);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public boolean isSingleton() {
 		return true;
@@ -56,10 +73,4 @@ public class RegionAttributesFactoryBean extends AttributesFactory implements Fa
 	public void setIndexUpdateType(final IndexMaintenancePolicyType indexUpdateType) {
 		indexUpdateType.setIndexMaintenance(this);
 	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		attributes = super.create();
-	}
-
 }

@@ -15,9 +15,9 @@
  */
 package org.springframework.data.gemfire.client;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -37,14 +37,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
-
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
@@ -56,6 +48,14 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.compression.Compressor;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 /**
  * @author David Turanski
@@ -79,7 +79,7 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void testLookupFallbackUsingDefaultShortcut() throws Exception {
-		final String testRegionName = "TestRegion";
+		String testRegionName = "TestRegion";
 
 		ClientCache mockClientCache = mock(ClientCache.class);
 		ClientRegionFactory mockClientRegionFactory = mock(ClientRegionFactory.class);
@@ -119,9 +119,12 @@ public class ClientRegionFactoryBeanTest {
 		when(mockPool.getName()).thenReturn("TestPoolTwo");
 		when(mockSnapshot.getInputStream()).thenReturn(mock(InputStream.class));
 
+		EvictionAttributes evictionAttributes = EvictionAttributes.createLRUEntryAttributes();
+
 		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setDiskStoreName("TestDiskStoreTwo");
+		factoryBean.setEvictionAttributes(evictionAttributes);
 		factoryBean.setPersistent(false);
 		factoryBean.setPoolName("TestPoolTwo");
 		factoryBean.setSnapshot(mockSnapshot);
@@ -142,7 +145,7 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientRegionFactory, times(1)).setDiskSynchronous(eq(false));
 		verify(mockClientRegionFactory, times(1)).setEntryIdleTimeout(any(ExpirationAttributes.class));
 		verify(mockClientRegionFactory, times(1)).setEntryTimeToLive(any(ExpirationAttributes.class));
-		verify(mockClientRegionFactory, times(1)).setEvictionAttributes(any(EvictionAttributes.class));
+		verify(mockClientRegionFactory, times(1)).setEvictionAttributes(eq(evictionAttributes));
 		verify(mockClientRegionFactory, times(1)).setInitialCapacity(eq(101));
 		verify(mockClientRegionFactory, times(1)).setKeyConstraint(eq(Long.class));
 		verify(mockClientRegionFactory, times(1)).setLoadFactor(eq(0.75f));
@@ -154,7 +157,7 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolTwo"));
 		verify(mockClientRegionFactory, times(1)).setDiskStoreName(eq("TestDiskStoreTwo"));
 		verify(mockClientRegionFactory, times(1)).create(eq(testRegionName));
-		verify(mockRegion, times(1)).loadSnapshot(any(InputStream.class));
+		verify(mockRegion, never()).loadSnapshot(any(InputStream.class));
 	}
 
 	@Test
@@ -430,7 +433,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Client Region Shortcut 'CACHING_PROXY' is invalid when persistent is true.",
+			assertEquals("Client Region Shortcut 'CACHING_PROXY' is invalid when persistent is true",
 				expected.getMessage());
 			throw expected;
 		}
@@ -457,7 +460,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Client Region Shortcut 'LOCAL_PERSISTENT' is invalid when persistent is false.",
+			assertEquals("Client Region Shortcut 'LOCAL_PERSISTENT' is invalid when persistent is false",
 				expected.getMessage());
 			throw expected;
 		}
@@ -504,7 +507,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'NORMAL' is invalid when persistent is true.", expected.getMessage());
+			assertEquals("Data Policy 'NORMAL' is invalid when persistent is true", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -530,7 +533,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is invalid when persistent is false.", expected.getMessage());
+			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is invalid when persistent is false", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -686,5 +689,4 @@ public class ClientRegionFactoryBeanTest {
 
 		clientRegionFactoryBean.destroy();
 	}
-
 }
