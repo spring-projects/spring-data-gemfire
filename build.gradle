@@ -1,5 +1,3 @@
-import java.util.stream.Collectors
-
 buildscript {
     repositories {
         maven { url 'https://repo.spring.io/plugins-release' }
@@ -12,13 +10,7 @@ buildscript {
         classpath 'org.asciidoctor:asciidoctorj:1.5.0'
         classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.3'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.6'
-        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
-        classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
     }
-}
-
-configurations {
-    sharedResources
 }
 
 apply plugin: "java"
@@ -36,6 +28,10 @@ archivesBaseName = project.name
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+configurations {
+    sharedResources
+}
 
 sourceSets {
     main {
@@ -96,6 +92,9 @@ repositories {
 }
 
 dependencies {
+    // Core/Enterprise Java dependencies
+    optional "javax.enterprise:cdi-api:$cdiVersion"
+
     // Spring Framework
     compile("org.springframework:spring-context-support:$springVersion") {
         exclude group: "commons-logging", module: "commons-logging"
@@ -117,13 +116,12 @@ dependencies {
     }
     compile("org.apache.geode:geode-cq:$gemfireVersion")
     compile("org.apache.geode:geode-wan:$gemfireVersion")
+    optional "org.apache.shiro:shiro-spring:$shiroVersion"
     optional("com.google.code.findbugs:annotations:$googleCodeFindbugsVersion")
     runtime("antlr:antlr:$antlrVersion")
 
-    // Java & 3rd Party Dependencies
-    optional "javax.enterprise:cdi-api:$cdiVersion"
+    // 3rd Party Dependencies
     compile "org.aspectj:aspectjweaver:$aspectjVersion"
-    optional "org.apache.shiro:shiro-spring:$shiroVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
@@ -141,13 +139,9 @@ dependencies {
     testCompile "junit:junit:$junitVersion"
     testCompile "edu.umd.cs.mtc:multithreadedtc:$multiThreadedtcVersion"
 
-    testCompile "javax.annotation:jsr250-api:1.0", optional
-
     testRuntime "javax.el:el-api:$cdiVersion"
     testRuntime "javax.servlet:servlet-api:$servletApiVersion"
-    testRuntime "log4j:log4j:$log4jVersion"
     testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
-    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
     testRuntime ("org.springframework.shell:spring-shell:$springShellVersion") {
         exclude group: "com.google.guava", module: "guava"
     }
