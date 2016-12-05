@@ -46,7 +46,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.gemfire.fork.LocatorProcess;
 import org.springframework.data.gemfire.process.ProcessExecutor;
-import org.springframework.data.gemfire.process.ProcessInputStreamListener;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.FileUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
@@ -81,15 +80,15 @@ public class CacheClusterConfigurationIntegrationTest {
 	@Rule
 	public TestRule watchman = new TestWatcher() {
 		@Override
-		protected void failed(final Throwable t, final Description description) {
+		protected void failed(Throwable throwable, Description description) {
 			System.err.println(String.format("Test '%1$s' failed...", description.getDisplayName()));
-			System.err.println(ThrowableUtils.toString(t));
+			System.err.println(ThrowableUtils.toString(throwable));
 			System.err.println("Locator process log file contents were...");
 			System.err.println(getLocatorProcessOutput(description));
 		}
 
 		@Override
-		protected void finished(final Description description) {
+		protected void finished(Description description) {
 			if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
 				try {
 					FileUtils.write(new File(locatorWorkingDirectory.getParent(),
@@ -102,7 +101,7 @@ public class CacheClusterConfigurationIntegrationTest {
 			}
 		}
 
-		private String getLocatorProcessOutput(final Description description) {
+		private String getLocatorProcessOutput(Description description) {
 			try {
 				String locatorProcessOutputString = StringUtils.collectionToDelimitedString(locatorProcessOutput,
 					FileUtils.LINE_SEPARATOR, String.format("[%1$s] - ", description.getMethodName()), "");
@@ -128,20 +127,18 @@ public class CacheClusterConfigurationIntegrationTest {
 
 		ZipUtils.unzip(new ClassPathResource("/cluster_config.zip"), locatorWorkingDirectory);
 
-		List<String> arguments = new ArrayList<String>();
+		List<String> arguments = new ArrayList<>();
 
 		arguments.add("-Dgemfire.name=" + locatorName);
+		arguments.add("-Dgemfire.mcast-port=0");
+		arguments.add("-Dgemfire.log-level=error");
 		arguments.add("-Dspring.gemfire.enable-cluster-configuration=true");
 		arguments.add("-Dspring.gemfire.load-cluster-configuration=true");
 
 		locatorProcess = ProcessExecutor.launch(locatorWorkingDirectory, LocatorProcess.class,
 			arguments.toArray(new String[arguments.size()]));
 
-		locatorProcess.register(new ProcessInputStreamListener() {
-			@Override public void onInput(final String input) {
-				locatorProcessOutput.add(input);
-			}
-		});
+		locatorProcess.register(input -> locatorProcessOutput.add(input));
 
 		locatorProcess.registerShutdownHook();
 
@@ -191,11 +188,11 @@ public class CacheClusterConfigurationIntegrationTest {
 		return baseLocation.concat(File.separator).concat(configLocation);
 	}
 
-	protected Region getRegion(final ConfigurableApplicationContext applicationContext, final String regionBeanName) {
+	protected Region getRegion(ConfigurableApplicationContext applicationContext, String regionBeanName) {
 		return applicationContext.getBean(regionBeanName, Region.class);
 	}
 
-	protected ConfigurableApplicationContext newApplicationContext(final String... configLocations) {
+	protected ConfigurableApplicationContext newApplicationContext(String... configLocations) {
 		ConfigurableApplicationContext applicationContext = new ClassPathXmlApplicationContext(configLocations);
 		applicationContext.registerShutdownHook();
 		return applicationContext;
@@ -204,7 +201,7 @@ public class CacheClusterConfigurationIntegrationTest {
 	@Test
 	@Ignore
 	// TODO re-enable the test once the GemFire Cluster Configuration Service race condition has been properly fixed!
-	public void testClusterConfiguration() {
+	public void clusterConfigurationTest() {
 		ConfigurableApplicationContext applicationContext = newApplicationContext(
 			getLocation("cacheUsingClusterConfigurationIntegrationTest.xml"));
 
@@ -225,17 +222,18 @@ public class CacheClusterConfigurationIntegrationTest {
 	}
 
 	@Test
-	public void testLocalOnlyConfiguration() {
+	public void localConfigurationTest() {
 		try {
 			newApplicationContext(getLocation("cacheUsingLocalOnlyConfigurationIntegrationTest.xml"));
+
 			fail("Loading the 'cacheUsingLocalOnlyConfigurationIntegrationTest.xml' Spring ApplicationContext"
 				+ " configuration file should have resulted in an Exception due to the Region lookup on"
 				+ " 'ClusterConfigRegion' when GemFire Cluster Configuration is disabled!");
 		}
 		catch (BeanCreationException expected) {
 			assertTrue(expected.getCause() instanceof BeanInitializationException);
-			assertTrue(expected.getCause().getMessage().contains("Cannot find Region [ClusterConfigRegion] in Cache"));
+			assertTrue(expected.getCause().getMessage().matches(
+				"Region \\[ClusterConfigRegion\\] in Cache \\[.*\\] not found"));
 		}
 	}
-
 }

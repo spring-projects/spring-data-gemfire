@@ -52,6 +52,9 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 
 	private ObjectSizer objectSizer = null;
 
+	/**
+	 * @inheritDoc
+	 */
 	public void afterPropertiesSet() {
 		evictionAttributes = createAttributes();
 	}
@@ -74,17 +77,23 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 		}
 	}
 
-	/* non-Javadoc */
+	/**
+	 * @inheritDoc
+	 */
 	public EvictionAttributes getObject() {
 		return evictionAttributes;
 	}
 
-	/* non-Javadoc */
+	/**
+	 * @inheritDoc
+	 */
 	public Class<?> getObjectType() {
 		return (evictionAttributes != null ? evictionAttributes.getClass() : EvictionAttributes.class);
 	}
 
-	/* non-Javadoc */
+	/**
+	 * @inheritDoc
+	 */
 	public boolean isSingleton() {
 		return true;
 	}
@@ -168,5 +177,4 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 	public EvictionPolicyType getType() {
 		return type;
 	}
-
 }
