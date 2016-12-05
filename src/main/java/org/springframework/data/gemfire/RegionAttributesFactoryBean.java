@@ -31,22 +31,39 @@ import org.springframework.beans.factory.InitializingBean;
  * @see org.apache.geode.cache.AttributesFactory
  * @see org.apache.geode.cache.RegionAttributes
  */
-@SuppressWarnings({ "deprecation", "unused" })
-public class RegionAttributesFactoryBean extends AttributesFactory implements FactoryBean<RegionAttributes>,
-		InitializingBean {
+@SuppressWarnings({ "unused" })
+public class RegionAttributesFactoryBean extends AttributesFactory
+		implements FactoryBean<RegionAttributes>, InitializingBean {
 
 	private RegionAttributes attributes;
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		attributes = super.create();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public RegionAttributes getObject() throws Exception {
 		return attributes;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public Class<?> getObjectType() {
 		return (attributes != null ? attributes.getClass() : RegionAttributes.class);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public boolean isSingleton() {
 		return true;
@@ -55,10 +72,4 @@ public class RegionAttributesFactoryBean extends AttributesFactory implements Fa
 	public void setIndexUpdateType(final IndexMaintenancePolicyType indexUpdateType) {
 		indexUpdateType.setIndexMaintenance(this);
 	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		attributes = super.create();
-	}
-
 }

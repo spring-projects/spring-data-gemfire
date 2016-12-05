@@ -156,7 +156,7 @@ no harm in setting this value to false.
 The example above includes a number of attributes related to GemFire's enhanced serialization framework, PDX.
 While a complete discussion of PDX is beyond the scope of this reference guide, it is important to note that PDX
 is enabled by registering a PDX serializer which is done via the `pdx-serializer` attribute. GemFire provides
-an implementation class `com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer`, however it is common for developers
+an implementation class `org.apache.geode.pdx.ReflectionBasedAutoSerializer`, however it is common for developers
 to provide their own implementation. The value of the attribute is simply a reference to a Spring bean that implements
 the required interface. More information on serialization support can be found in <<serialization>>
 

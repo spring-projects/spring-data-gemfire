@@ -15,9 +15,9 @@
  */
 package org.springframework.data.gemfire.client;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -55,6 +55,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
  * @author David Turanski
@@ -78,7 +79,7 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void testLookupFallbackUsingDefaultShortcut() throws Exception {
-		final String testRegionName = "TestRegion";
+		String testRegionName = "TestRegion";
 
 		ClientCache mockClientCache = mock(ClientCache.class);
 		ClientRegionFactory mockClientRegionFactory = mock(ClientRegionFactory.class);
@@ -118,15 +119,18 @@ public class ClientRegionFactoryBeanTest {
 		when(mockPool.getName()).thenReturn("TestPoolTwo");
 		when(mockSnapshot.getInputStream()).thenReturn(mock(InputStream.class));
 
+		EvictionAttributes evictionAttributes = EvictionAttributes.createLRUEntryAttributes();
+
 		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setDiskStoreName("TestDiskStoreTwo");
+		factoryBean.setEvictionAttributes(evictionAttributes);
 		factoryBean.setPersistent(false);
 		factoryBean.setPoolName("TestPoolTwo");
 		factoryBean.setSnapshot(mockSnapshot);
 		factoryBean.setShortcut(null);
 
-		Region actualRegion = factoryBean.lookupFallback(mockClientCache, testRegionName);
+		Region actualRegion = factoryBean.lookupRegion(mockClientCache, testRegionName);
 
 		assertSame(mockRegion, actualRegion);
 
@@ -141,7 +145,7 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientRegionFactory, times(1)).setDiskSynchronous(eq(false));
 		verify(mockClientRegionFactory, times(1)).setEntryIdleTimeout(any(ExpirationAttributes.class));
 		verify(mockClientRegionFactory, times(1)).setEntryTimeToLive(any(ExpirationAttributes.class));
-		verify(mockClientRegionFactory, times(1)).setEvictionAttributes(any(EvictionAttributes.class));
+		verify(mockClientRegionFactory, times(1)).setEvictionAttributes(eq(evictionAttributes));
 		verify(mockClientRegionFactory, times(1)).setInitialCapacity(eq(101));
 		verify(mockClientRegionFactory, times(1)).setKeyConstraint(eq(Long.class));
 		verify(mockClientRegionFactory, times(1)).setLoadFactor(eq(0.75f));
@@ -153,7 +157,7 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolTwo"));
 		verify(mockClientRegionFactory, times(1)).setDiskStoreName(eq("TestDiskStoreTwo"));
 		verify(mockClientRegionFactory, times(1)).create(eq(testRegionName));
-		verify(mockRegion, times(1)).loadSnapshot(any(InputStream.class));
+		verify(mockRegion, never()).loadSnapshot(any(InputStream.class));
 	}
 
 	@Test
@@ -176,7 +180,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setPoolName("TestPool");
 		factoryBean.setShortcut(null);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
@@ -204,7 +208,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setShortcut(ClientRegionShortcut.CACHING_PROXY);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
@@ -232,7 +236,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setParent(mockRegion);
 		factoryBean.setShortcut(ClientRegionShortcut.PROXY);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestSubRegion");
+		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestSubRegion");
 
 		assertSame(mockSubRegion, actualRegion);
 
@@ -259,7 +263,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setShortcut(ClientRegionShortcut.LOCAL_HEAP_LRU);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
@@ -323,7 +327,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testCloseDestroySettings() {
-		final ClientRegionFactoryBean<Object, Object> factory = new ClientRegionFactoryBean<Object, Object>();
+		final ClientRegionFactoryBean<Object, Object> factory = new ClientRegionFactoryBean<>();
 
 		assertNotNull(factory);
 		assertFalse(factory.isClose());
@@ -429,7 +433,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Client Region Shortcut 'CACHING_PROXY' is invalid when persistent is true.",
+			assertEquals("Client Region Shortcut 'CACHING_PROXY' is invalid when persistent is true",
 				expected.getMessage());
 			throw expected;
 		}
@@ -456,7 +460,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Client Region Shortcut 'LOCAL_PERSISTENT' is invalid when persistent is false.",
+			assertEquals("Client Region Shortcut 'LOCAL_PERSISTENT' is invalid when persistent is false",
 				expected.getMessage());
 			throw expected;
 		}
@@ -503,7 +507,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'NORMAL' is invalid when persistent is true.", expected.getMessage());
+			assertEquals("Data Policy 'NORMAL' is invalid when persistent is true", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -529,7 +533,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is invalid when persistent is false.", expected.getMessage());
+			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is invalid when persistent is false", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -546,10 +550,6 @@ public class ClientRegionFactoryBeanTest {
 
 	protected <K> Interest<K> newInterest(K key) {
 		return new Interest<K>(key);
-	}
-
-	protected <K> Interest<K>[] toArray(Interest<K>... interests) {
-		return interests;
 	}
 
 	@Test
@@ -569,7 +569,7 @@ public class ClientRegionFactoryBeanTest {
 		};
 
 		clientRegionFactoryBean.setClose(true);
-		clientRegionFactoryBean.setInterests(toArray(newInterest("test")));
+		clientRegionFactoryBean.setInterests(ArrayUtils.asArray(newInterest("test")));
 
 		assertThat(clientRegionFactoryBean.isClose(), is(true));
 		assertThat(clientRegionFactoryBean.isDestroy(), is(false));
@@ -604,7 +604,7 @@ public class ClientRegionFactoryBeanTest {
 
 		clientRegionFactoryBean.setClose(false);
 		clientRegionFactoryBean.setDestroy(true);
-		clientRegionFactoryBean.setInterests(toArray(newInterest("test")));
+		clientRegionFactoryBean.setInterests(ArrayUtils.asArray(newInterest("test")));
 
 		assertThat(clientRegionFactoryBean.isClose(), is(false));
 		assertThat(clientRegionFactoryBean.isDestroy(), is(true));
@@ -638,7 +638,7 @@ public class ClientRegionFactoryBeanTest {
 		};
 
 		clientRegionFactoryBean.setClose(true);
-		clientRegionFactoryBean.setInterests(toArray(newInterest("test")));
+		clientRegionFactoryBean.setInterests(ArrayUtils.asArray(newInterest("test")));
 
 		assertThat(clientRegionFactoryBean.isClose(), is(true));
 		assertThat(clientRegionFactoryBean.isDestroy(), is(false));
@@ -685,5 +685,4 @@ public class ClientRegionFactoryBeanTest {
 
 		clientRegionFactoryBean.destroy();
 	}
-
 }

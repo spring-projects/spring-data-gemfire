@@ -27,6 +27,7 @@ import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -79,6 +80,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private DataPolicy dataPolicy;
 
+	private EvictionAttributes evictionAttributes;
+
 	private GatewaySender[] gatewaySenders;
 
 	private RegionAttributes<K, V> attributes;
@@ -91,15 +94,21 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private String diskStoreName;
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
 		postProcess(getRegion());
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
-	@SuppressWarnings("all")
-	protected Region<K, V> lookupFallback(GemFireCache gemfireCache, String regionName) throws Exception {
+	@SuppressWarnings({ "unchecked" })
+	protected Region<K, V> lookupRegion(GemFireCache gemfireCache, String regionName) throws Exception {
 		Assert.isTrue(gemfireCache instanceof Cache, String.format("Unable to create Regions from '%1$s'.",
 			gemfireCache));
 
@@ -131,6 +140,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		if (isDiskStoreConfigurationAllowed()) {
 			regionFactory.setDiskStoreName(diskStoreName);
+		}
+
+		if (evictionAttributes != null) {
+			regionFactory.setEvictionAttributes(evictionAttributes);
 		}
 
 		if (scope != null) {
@@ -179,7 +192,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionShortcut)
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
-	protected RegionFactory<K, V> createRegionFactory(final Cache cache) {
+	protected RegionFactory<K, V> createRegionFactory(Cache cache) {
 		if (shortcut != null) {
 			RegionFactory<K, V> regionFactory = mergeRegionAttributes(cache.createRegionFactory(shortcut), attributes);
 			setDataPolicy(getDataPolicy(regionFactory));
@@ -208,14 +221,14 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	@SuppressWarnings({ "deprecation", "unchecked" })
-	DataPolicy getDataPolicy(final RegionFactory regionFactory) {
+	DataPolicy getDataPolicy(RegionFactory regionFactory) {
 		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory", AttributesFactory.class),
 			"regionAttributes", null)).getDataPolicy();
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
-	private <T> T getFieldValue(final Object source, final String fieldName, final Class<T> targetType) {
+	private <T> T getFieldValue(Object source, String fieldName, Class<T> targetType) {
 		Field field = ReflectionUtils.findField(source.getClass(), fieldName, targetType);
 		ReflectionUtils.makeAccessible(field);
 		return (T) ReflectionUtils.getField(field, source);
@@ -240,9 +253,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.RegionAttributes
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
-	@SuppressWarnings({ "deprecation", "unchecked" })
-	protected <K, V> RegionFactory<K, V> mergeRegionAttributes(final RegionFactory<K, V> regionFactory,
-			final RegionAttributes<K, V> regionAttributes) {
+	@SuppressWarnings("unchecked")
+	protected <K, V> RegionFactory<K, V> mergeRegionAttributes(RegionFactory<K, V> regionFactory,
+			RegionAttributes<K, V> regionAttributes) {
 
 		if (regionAttributes != null) {
 			// NOTE this validation may not be strictly required depending on how the RegionAttributes were "created",
@@ -286,6 +299,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		return regionFactory;
 	}
 
+	/* (non-Javadoc) */
 	protected <K, V> void mergePartitionAttributes(final RegionFactory<K, V> regionFactory,
 			RegionAttributes<K, V> regionAttributes) {
 
@@ -323,7 +337,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.AttributesFactory#validateAttributes(:RegionAttributes)
 	 */
 	@SuppressWarnings("deprecation")
-	void validateRegionAttributes(final RegionAttributes regionAttributes) {
+	void validateRegionAttributes(RegionAttributes regionAttributes) {
 		org.apache.geode.cache.AttributesFactory.validateAttributes(regionAttributes);
 	}
 
@@ -419,7 +433,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @param regionFactory the GemFire RegionFactory used to create the Region for post-processing.
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
-	protected void postProcess(RegionFactory<K, V> regionFactory) {
+	protected RegionFactory<K, V> postProcess(RegionFactory<K, V> regionFactory) {
+		return regionFactory;
 	}
 
 	/**
@@ -429,7 +444,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @param region the GemFire Region to post-process.
 	 * @see org.apache.geode.cache.Region
 	 */
-	protected void postProcess(Region<K, V> region) {
+	protected Region<K, V> postProcess(Region<K, V> region) {
+		return region;
 	}
 
 	/**
@@ -642,6 +658,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.diskStoreName = diskStoreName;
 	}
 
+	public void setEvictionAttributes(EvictionAttributes evictionAttributes) {
+		this.evictionAttributes = evictionAttributes;
+	}
+
 	/**
 	 *
 	 * @param gatewaySenders defined as Object for backward compatibility with
@@ -694,13 +714,51 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.snapshot = snapshot;
 	}
 
-
 	/**
 	 * @inheritDoc
 	 */
 	@Override
-	public boolean isAutoStartup() {
-		return true;
+	@SuppressWarnings("all")
+	public void start() {
+		if (!ObjectUtils.isEmpty(gatewaySenders)) {
+			synchronized (gatewaySenders) {
+				for (GatewaySender gatewaySender: gatewaySenders) {
+					if (!(gatewaySender.isManualStart() || gatewaySender.isRunning())) {
+						gatewaySender.start();
+					}
+				}
+			}
+		}
+
+		this.running = true;
+	}
+
+	/**
+	 * @inheritDoc
+<<<<<<< HEAD
+=======
+	 */
+	@Override
+	public void stop(Runnable callback) {
+		stop();
+		callback.run();
+	}
+
+	/**
+	 * @inheritDoc
+>>>>>>> fffb2b0... SGF-547 - Configure Eviction with annotations.
+	 */
+	@Override
+	public void stop() {
+		if (!ObjectUtils.isEmpty(gatewaySenders)) {
+			synchronized (gatewaySenders) {
+				for (GatewaySender gatewaySender : gatewaySenders) {
+					gatewaySender.stop();
+				}
+			}
+		}
+
+		this.running = false;
 	}
 
 	/**
@@ -723,42 +781,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @inheritDoc
 	 */
 	@Override
-	public void start() {
-		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			synchronized (gatewaySenders) {
-				for (GatewaySender gatewaySender: gatewaySenders) {
-					if (!(gatewaySender.isManualStart() || gatewaySender.isRunning())) {
-						gatewaySender.start();
-					}
-				}
-			}
-		}
-
-		this.running = true;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public void stop() {
-		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			synchronized (gatewaySenders) {
-				for (GatewaySender gatewaySender : gatewaySenders) {
-					gatewaySender.stop();
-				}
-			}
-		}
-
-		this.running = false;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public void stop(Runnable callback) {
-		stop();
-		callback.run();
+	public boolean isAutoStartup() {
+		return true;
 	}
 }
