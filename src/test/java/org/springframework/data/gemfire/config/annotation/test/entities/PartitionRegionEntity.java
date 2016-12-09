@@ -18,6 +18,8 @@
 package org.springframework.data.gemfire.config.annotation.test.entities;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.gemfire.IndexType;
+import org.springframework.data.gemfire.mapping.annotation.Indexed;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 
 /**
@@ -38,7 +40,10 @@ public class PartitionRegionEntity {
 	@Id
 	private Long id;
 
+	@Indexed(expression = "first_name", from = "/LoyalCustomers", type = IndexType.FUNCTIONAL)
 	private String firstName;
+
+	@Indexed(name = "LastNameIdx")
 	private String lastName;
 
 }
