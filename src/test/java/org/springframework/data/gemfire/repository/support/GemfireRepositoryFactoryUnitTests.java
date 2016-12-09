@@ -314,7 +314,7 @@ public class GemfireRepositoryFactoryUnitTests {
 	interface SampleCustomGemfireRepository extends GemfireRepository<Person, Long>, SampleCustomRepository<Person> {
 	}
 
-	@org.springframework.data.gemfire.mapping.Region("People")
+	@org.springframework.data.gemfire.mapping.annotation.Region("People")
 	interface PersonRepository extends GemfireRepository<Person, Long> {
 	}
 }

@@ -24,7 +24,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
@@ -57,7 +57,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	 */
 	@Override
 	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return Collections.<Class<? extends Annotation>>singleton(Region.class);
+		return Region.REGION_ANNOTATION_TYPES;
 	}
 
 	/*

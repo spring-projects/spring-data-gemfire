@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,27 +12,26 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
-package org.springframework.data.gemfire.repository.sample;
 
+package org.springframework.data.gemfire.config.annotation.test.entities;
+
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.annotation.Region;
+import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 
 /**
+ * {@link ClientRegionEntity} persistent entity stored in the "Users" {@link org.apache.geode.cache.DataPolicy#NORMAL},
+ * client {@link org.apache.geode.cache.Region}.
  *
- * @author Oliver Gierke
+ * @author John Blum
+ * @since 1.9.0
  */
-@Region("address")
-public class Address {
+@ClientRegion(name = "Sessions", shortcut = ClientRegionShortcut.CACHING_PROXY)
+public class ClientRegionEntity {
 
 	@Id
-	public String zipCode;
-
-	public String city;
-
-	@Override
-	public String toString() {
-		return String.format("%1$s, %2$s", city, zipCode);
-	}
+	private String id;
 
 }

@@ -17,7 +17,7 @@
 
 package org.springframework.data.gemfire.repository.cdi;
 
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.sample.Person;
 

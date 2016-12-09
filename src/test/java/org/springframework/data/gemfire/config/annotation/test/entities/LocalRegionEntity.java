@@ -1,36 +1,36 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.springframework.data.gemfire.repository.sample;
+package org.springframework.data.gemfire.config.annotation.test.entities;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.annotation.Region;
+import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 
 /**
- * The Algorithm interface define abstract data type modeling a computer algorithm.
+ * {@link LocalRegionEntity} persistent entity stored in the "LocalRegionEntity" {@link org.apache.geode.cache.DataPolicy#NORMAL},
+ * {@link org.apache.geode.cache.Scope#LOCAL} {@link org.apache.geode.cache.Region}.
  *
  * @author John Blum
- * @see org.springframework.data.annotation.Id
- * @see Region
- * @since 1.4.0
+ * @since 1.9.0
  */
-@Region("Algorithms")
-@SuppressWarnings("unused")
-public interface Algorithm {
+@LocalRegion
+public class LocalRegionEntity {
 
-	@Id String getName();
+	@Id
+	private String id;
 
 }

@@ -16,14 +16,14 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.util.StringUtils;
 
 /**
  * The Programmer class is a User representing/modeling a software engineer/developer.
  *
  * @author John J. Blum
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see Region
  * @see org.springframework.data.gemfire.repository.sample.User
  * @since 1.4.0
  */

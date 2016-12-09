@@ -26,7 +26,7 @@ import java.util.Map;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.*;
+import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.springframework.beans.BeansException;

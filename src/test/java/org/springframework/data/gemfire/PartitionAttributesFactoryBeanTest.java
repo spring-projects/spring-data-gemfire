@@ -26,8 +26,7 @@ import org.apache.geode.cache.PartitionResolver;
 import org.junit.Test;
 
 /**
- * The PartitionAttributesFactoryBeanTest class is test suite of test cases testing the contract and functionality of
- * the PartitionAttributesFactoryBean class.
+ * Unit tests for {@link PartitionAttributesFactoryBean}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -52,11 +51,12 @@ public class PartitionAttributesFactoryBeanTest {
 		partitionAttributesFactoryBean.setColocatedWith("mockColocatedRegion");
 		partitionAttributesFactoryBean.setLocalMaxMemory(1024);
 		partitionAttributesFactoryBean.setPartitionResolver(createMockPartitionResolver("mockPartitionResolver"));
-		partitionAttributesFactoryBean.setRecoveryDelay(1000l);
+		partitionAttributesFactoryBean.setRecoveryDelay(1000L);
 		partitionAttributesFactoryBean.setRedundantCopies(1);
-		partitionAttributesFactoryBean.setStartupRecoveryDelay(60000l);
-		partitionAttributesFactoryBean.setTotalMaxMemory(8192l);
+		partitionAttributesFactoryBean.setStartupRecoveryDelay(60000L);
+		partitionAttributesFactoryBean.setTotalMaxMemory(8192L);
 		partitionAttributesFactoryBean.setTotalNumBuckets(42);
+		partitionAttributesFactoryBean.afterPropertiesSet();
 
 		PartitionAttributes partitionAttributes = partitionAttributesFactoryBean.getObject();
 
@@ -65,10 +65,10 @@ public class PartitionAttributesFactoryBeanTest {
 		assertEquals(1024, partitionAttributes.getLocalMaxMemory());
 		assertNotNull(partitionAttributes.getPartitionResolver());
 		assertEquals("mockPartitionResolver", partitionAttributes.getPartitionResolver().getName());
-		assertEquals(1000l, partitionAttributes.getRecoveryDelay());
+		assertEquals(1000L, partitionAttributes.getRecoveryDelay());
 		assertEquals(1, partitionAttributes.getRedundantCopies());
-		assertEquals(60000l, partitionAttributes.getStartupRecoveryDelay());
-		assertEquals(8192l, partitionAttributes.getTotalMaxMemory());
+		assertEquals(60000L, partitionAttributes.getStartupRecoveryDelay());
+		assertEquals(8192L, partitionAttributes.getTotalMaxMemory());
 		assertEquals(42, partitionAttributes.getTotalNumBuckets());
 	}
 
@@ -76,14 +76,13 @@ public class PartitionAttributesFactoryBeanTest {
 	public void testValidationOnRedundantCopiesWhenExceedsBound() throws Exception {
 		PartitionAttributesFactoryBean partitionAttributesFactoryBean = new PartitionAttributesFactoryBean();
 		partitionAttributesFactoryBean.setRedundantCopies(4);
-		partitionAttributesFactoryBean.getObject();
+		partitionAttributesFactoryBean.afterPropertiesSet();
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testValidationOnRedundantCopiesWhenPrecedesBound() throws Exception {
 		PartitionAttributesFactoryBean partitionAttributesFactoryBean = new PartitionAttributesFactoryBean();
 		partitionAttributesFactoryBean.setRedundantCopies(-1);
-		partitionAttributesFactoryBean.getObject();
+		partitionAttributesFactoryBean.afterPropertiesSet();
 	}
-
 }

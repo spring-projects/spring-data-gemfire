@@ -24,12 +24,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.junit.Test;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link GemfirePersistentEntity}.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  */

@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.support;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionShortcut;
 import org.springframework.util.ObjectUtils;
 
@@ -29,38 +30,41 @@ import org.springframework.util.ObjectUtils;
  */
 @SuppressWarnings("unused")
 public enum RegionShortcutWrapper {
-	LOCAL(RegionShortcut.LOCAL),
-	LOCAL_HEAP_LRU(RegionShortcut.LOCAL_HEAP_LRU),
-	LOCAL_OVERFLOW(RegionShortcut.LOCAL_OVERFLOW),
-	LOCAL_PERSISTENT(RegionShortcut.LOCAL_PERSISTENT),
-	LOCAL_PERSISTENT_OVERFLOW(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW),
-	PARTITION(RegionShortcut.PARTITION),
-	PARTITION_HEAP_LRU(RegionShortcut.PARTITION_HEAP_LRU),
-	PARTITION_OVERFLOW(RegionShortcut.PARTITION_OVERFLOW),
-	PARTITION_PERSISTENT(RegionShortcut.PARTITION_PERSISTENT),
-	PARTITION_PERSISTENT_OVERFLOW(RegionShortcut.PARTITION_PERSISTENT_OVERFLOW),
-	PARTITION_PROXY(RegionShortcut.PARTITION_PROXY),
-	PARTITION_PROXY_REDUNDANT(RegionShortcut.PARTITION_PROXY_REDUNDANT),
-	PARTITION_REDUNDANT(RegionShortcut.PARTITION_REDUNDANT),
-	PARTITION_REDUNDANT_HEAP_LRU(RegionShortcut.PARTITION_REDUNDANT_HEAP_LRU),
-	PARTITION_REDUNDANT_OVERFLOW(RegionShortcut.PARTITION_REDUNDANT_OVERFLOW),
-	PARTITION_REDUNDANT_PERSISTENT(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT),
-	PARTITION_REDUNDANT_PERSISTENT_OVERFLOW(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW),
-	REPLICATE(RegionShortcut.REPLICATE),
-	REPLICATE_HEAP_LRU(RegionShortcut.REPLICATE_HEAP_LRU),
-	REPLICATE_OVERFLOW(RegionShortcut.REPLICATE_OVERFLOW),
-	REPLICATE_PERSISTENT(RegionShortcut.REPLICATE_PERSISTENT),
-	REPLICATE_PERSISTENT_OVERFLOW(RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW),
-	REPLICATE_PROXY(RegionShortcut.REPLICATE_PROXY),
-	UNSPECIFIED(null);
+	LOCAL(RegionShortcut.LOCAL, DataPolicy.NORMAL),
+	LOCAL_HEAP_LRU(RegionShortcut.LOCAL_HEAP_LRU, DataPolicy.NORMAL),
+	LOCAL_OVERFLOW(RegionShortcut.LOCAL_OVERFLOW, DataPolicy.NORMAL),
+	LOCAL_PERSISTENT(RegionShortcut.LOCAL_PERSISTENT, DataPolicy.NORMAL),
+	LOCAL_PERSISTENT_OVERFLOW(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW, DataPolicy.PERSISTENT_REPLICATE),
+	PARTITION(RegionShortcut.PARTITION, DataPolicy.PARTITION),
+	PARTITION_HEAP_LRU(RegionShortcut.PARTITION_HEAP_LRU, DataPolicy.PARTITION),
+	PARTITION_OVERFLOW(RegionShortcut.PARTITION_OVERFLOW, DataPolicy.PARTITION),
+	PARTITION_PERSISTENT(RegionShortcut.PARTITION_PERSISTENT, DataPolicy.PERSISTENT_PARTITION),
+	PARTITION_PERSISTENT_OVERFLOW(RegionShortcut.PARTITION_PERSISTENT_OVERFLOW, DataPolicy.PERSISTENT_PARTITION),
+	PARTITION_PROXY(RegionShortcut.PARTITION_PROXY, DataPolicy.PARTITION),
+	PARTITION_PROXY_REDUNDANT(RegionShortcut.PARTITION_PROXY_REDUNDANT, DataPolicy.PARTITION),
+	PARTITION_REDUNDANT(RegionShortcut.PARTITION_REDUNDANT, DataPolicy.PARTITION),
+	PARTITION_REDUNDANT_HEAP_LRU(RegionShortcut.PARTITION_REDUNDANT_HEAP_LRU, DataPolicy.PARTITION),
+	PARTITION_REDUNDANT_OVERFLOW(RegionShortcut.PARTITION_REDUNDANT_OVERFLOW, DataPolicy.PARTITION),
+	PARTITION_REDUNDANT_PERSISTENT(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT, DataPolicy.PERSISTENT_PARTITION),
+	PARTITION_REDUNDANT_PERSISTENT_OVERFLOW(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW, DataPolicy.PERSISTENT_PARTITION),
+	REPLICATE(RegionShortcut.REPLICATE, DataPolicy.REPLICATE),
+	REPLICATE_HEAP_LRU(RegionShortcut.REPLICATE_HEAP_LRU, DataPolicy.REPLICATE),
+	REPLICATE_OVERFLOW(RegionShortcut.REPLICATE_OVERFLOW, DataPolicy.REPLICATE),
+	REPLICATE_PERSISTENT(RegionShortcut.REPLICATE_PERSISTENT, DataPolicy.PERSISTENT_REPLICATE),
+	REPLICATE_PERSISTENT_OVERFLOW(RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW, DataPolicy.PERSISTENT_REPLICATE),
+	REPLICATE_PROXY(RegionShortcut.REPLICATE_PROXY, DataPolicy.EMPTY),
+	UNSPECIFIED(null, null);
+
+	private final DataPolicy dataPolicy;
 
 	private final RegionShortcut regionShortcut;
 
-	RegionShortcutWrapper(final RegionShortcut regionShortcut) {
+	RegionShortcutWrapper(RegionShortcut regionShortcut, DataPolicy dataPolicy) {
 		this.regionShortcut = regionShortcut;
+		this.dataPolicy = dataPolicy;
 	}
 
-	public static RegionShortcutWrapper valueOf(final RegionShortcut regionShortcut) {
+	public static RegionShortcutWrapper valueOf(RegionShortcut regionShortcut) {
 		for (RegionShortcutWrapper wrapper : values()) {
 			if (ObjectUtils.nullSafeEquals(wrapper.getRegionShortcut(), regionShortcut)) {
 				return wrapper;
@@ -68,6 +72,14 @@ public enum RegionShortcutWrapper {
 		}
 
 		return RegionShortcutWrapper.UNSPECIFIED;
+	}
+
+	public DataPolicy getDataPolicy() {
+		return this.dataPolicy;
+	}
+
+	public RegionShortcut getRegionShortcut() {
+		return this.regionShortcut;
 	}
 
 	public boolean isHeapLru() {
@@ -105,9 +117,4 @@ public enum RegionShortcutWrapper {
 	public boolean isReplicate() {
 		return name().contains("REPLICATE");
 	}
-
-	public RegionShortcut getRegionShortcut() {
-		return regionShortcut;
-	}
-
 }

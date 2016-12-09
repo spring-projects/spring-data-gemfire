@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
@@ -21,14 +22,93 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 /**
- * @author David Turanski
+ * Spring {@link FactoryBean} to create a instance of the {@link FixedPartitionAttributes}.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.apache.geode.cache.FixedPartitionAttributes
  */
+@SuppressWarnings("unused")
 public class FixedPartitionAttributesFactoryBean implements FactoryBean<FixedPartitionAttributes>, InitializingBean {
+
 	private Boolean primary;
-	private String partitionName;
-	private Integer numBuckets;
+
 	private FixedPartitionAttributes fixedPartitionAttributes;
+
+	private Integer numBuckets;
+
+	private String partitionName;
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	@SuppressWarnings("all")
+	public void afterPropertiesSet() throws Exception {
+		Assert.hasText(this.partitionName, "partitionName must be specified");
+
+		if (this.primary == null && this.numBuckets == null){
+			this.fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(this.partitionName);
+		}
+		else if (this.primary == null && this.numBuckets != null){
+			this.fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(
+				this.partitionName, this.numBuckets);
+		}
+		else if (this.primary != null && this.numBuckets == null) {
+			this.fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(
+				this.partitionName, this.primary);
+		}
+		else {
+			this.fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(
+				this.partitionName, this.primary, this.numBuckets);
+		}
+
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public FixedPartitionAttributes getObject() throws Exception {
+		return this.fixedPartitionAttributes;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public Class<?> getObjectType() {
+		return (this.fixedPartitionAttributes != null ? this.fixedPartitionAttributes.getClass()
+			: FixedPartitionAttributes.class);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public boolean isSingleton() {
+		return true;
+	}
+
+	/**
+	 * Set the number of buckets in the Partition Region.
+	 *
+	 * @param numBuckets integer value indicating the number of buckets in the Partition Region.
+	 */
+	public void setNumBuckets(Integer numBuckets) {
+		this.numBuckets = numBuckets;
+	}
+
+	/**
+	 * Set the name of the partition in the Partition Region.
+	 *
+	 * @param partitionName name of the partition.
+	 */
+	public void setPartitionName(String partitionName) {
+		this.partitionName = partitionName;
+	}
 
 	/**
 	 * Sets whether this particular PARTITION Region is the primary (i.e. not secondary).
@@ -37,64 +117,5 @@ public class FixedPartitionAttributesFactoryBean implements FactoryBean<FixedPar
 	 */
 	public void setPrimary(boolean primary) {
 		this.primary = primary;
-	}
-
-	/**
-	 * @param partitionName the partitionName to set
-	 */
-	public void setPartitionName(String partitionName) {
-		this.partitionName = partitionName;
-	}
-
-	/**
-	 * @param numBuckets the numBuckets to set
-	 */
-	public void setNumBuckets(Integer numBuckets) {
-		this.numBuckets = numBuckets;
-	}
-
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
-	@Override
-	public FixedPartitionAttributes getObject() throws Exception {
-		return fixedPartitionAttributes;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
-	@Override
-	public Class<?> getObjectType() {
-		return FixedPartitionAttributes.class;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		Assert.hasText(partitionName,"partitionName cannot be empty or null");
-
-		fixedPartitionAttributes = null;
-		if (primary == null && numBuckets == null){
-			fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(partitionName);
-		} else if (primary == null && numBuckets != null){
-			fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(partitionName, numBuckets);
-		} else if (primary != null && numBuckets == null) {
-			fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(partitionName, primary);
-		} else {
-			fixedPartitionAttributes = FixedPartitionAttributes.createFixedPartition(partitionName,primary,numBuckets);
-		}
-
 	}
 }

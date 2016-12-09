@@ -28,6 +28,7 @@ import java.math.BigInteger;
 
 import org.junit.Test;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.mapping.model.GemfireSimpleTypeHolder;
 import org.springframework.data.mapping.PersistentEntity;
 

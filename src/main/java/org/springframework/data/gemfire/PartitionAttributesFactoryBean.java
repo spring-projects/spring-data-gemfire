@@ -20,49 +20,84 @@ import java.util.List;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.gemfire.util.CollectionUtils;
 
 /**
- * Spring-friendly bean for creating {@link PartitionAttributes}. Eliminates the need of using
- * a XML 'factory-method' tag and allows the attributes properties to be set directly.
+ * Spring {@link FactoryBean} for creating {@link PartitionAttributes}.
+ *
+ * Eliminates the need to use a XML 'factory-method' tag and allows the attributes properties to be set directly.
  *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.apache.geode.cache.FixedPartitionAttributes
+ * @see org.apache.geode.cache.PartitionAttributes
+ * @see org.apache.geode.cache.PartitionAttributesFactory
+ * @see org.apache.geode.cache.PartitionResolver
+ * @see org.apache.geode.cache.partition.PartitionListener
  */
 @SuppressWarnings({ "rawtypes", "unchecked", "unused" })
-public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttributes>, InitializingBean {
+public class PartitionAttributesFactoryBean<K, V> implements FactoryBean<PartitionAttributes<K, V>>, InitializingBean {
 
-	private final org.apache.geode.cache.PartitionAttributesFactory partitionAttributesFactory =
-		new org.apache.geode.cache.PartitionAttributesFactory();
+	private List<PartitionListener> partitionListeners;
 
-	private List<PartitionListener> listeners;
+	private PartitionAttributes<K, V> partitionAttributes;
 
+	private final PartitionAttributesFactory<K, V> partitionAttributesFactory =
+		new PartitionAttributesFactory<K, V>();
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		for (PartitionListener listener : CollectionUtils.nullSafeList(partitionListeners)) {
+			partitionAttributesFactory.addPartitionListener(listener);
+		}
+
+		this.partitionAttributes = partitionAttributesFactory.create();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public PartitionAttributes getObject() throws Exception {
-		return partitionAttributesFactory.create();
+		return this.partitionAttributes;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public Class<?> getObjectType() {
-		return PartitionAttributes.class;
+		return (this.partitionAttributes != null ? this.partitionAttributes.getClass() : PartitionAttributes.class);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public boolean isSingleton() {
 		return false;
 	}
 
-	public void setColocatedWith(String colocatedRegionFullPath) {
-		partitionAttributesFactory.setColocatedWith(colocatedRegionFullPath);
+	public void setColocatedWith(String collocatedWith) {
+		partitionAttributesFactory.setColocatedWith(collocatedWith);
 	}
 
 	public void setFixedPartitionAttributes(List<FixedPartitionAttributes> fixedPartitionAttributes) {
-		for (FixedPartitionAttributes fpa : fixedPartitionAttributes) {
-			partitionAttributesFactory.addFixedPartitionAttributes(fpa);
+		for (FixedPartitionAttributes fixedPartitionAttributesElement :
+				CollectionUtils.nullSafeList(fixedPartitionAttributes)) {
+
+			partitionAttributesFactory.addFixedPartitionAttributes(fixedPartitionAttributesElement);
 		}
 	}
 
@@ -70,12 +105,12 @@ public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttr
 		partitionAttributesFactory.setLocalMaxMemory(mb);
 	}
 
-	public void setPartitionResolver(PartitionResolver resolver) {
-		partitionAttributesFactory.setPartitionResolver(resolver);
+	public void setPartitionListeners(List<PartitionListener> partitionListeners) {
+		this.partitionListeners = partitionListeners;
 	}
 
-	public void setPartitionListeners(List<PartitionListener> listeners) {
-		this.listeners = listeners;
+	public void setPartitionResolver(PartitionResolver resolver) {
+		partitionAttributesFactory.setPartitionResolver(resolver);
 	}
 
 	public void setRecoveryDelay(long recoveryDelay) {
@@ -97,15 +132,4 @@ public class PartitionAttributesFactoryBean implements FactoryBean<PartitionAttr
 	public void setTotalNumBuckets(int numBuckets) {
 		partitionAttributesFactory.setTotalNumBuckets(numBuckets);
 	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (listeners != null) {
-			for (PartitionListener listener : listeners) {
-				partitionAttributesFactory.addPartitionListener(listener);
-			}
-		}
-
-	}
-
 }

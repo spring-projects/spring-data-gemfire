@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.support;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.util.ObjectUtils;
 
@@ -29,24 +30,27 @@ import org.springframework.util.ObjectUtils;
  */
 @SuppressWarnings("unused")
 public enum ClientRegionShortcutWrapper {
-	CACHING_PROXY(ClientRegionShortcut.CACHING_PROXY),
-	CACHING_PROXY_HEAP_LRU(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU),
-	CACHING_PROXY_OVERFLOW(ClientRegionShortcut.CACHING_PROXY_OVERFLOW),
-	LOCAL(ClientRegionShortcut.LOCAL),
-	LOCAL_HEAP_LRU(ClientRegionShortcut.LOCAL_HEAP_LRU),
-	LOCAL_OVERFLOW(ClientRegionShortcut.LOCAL_OVERFLOW),
-	LOCAL_PERSISTENT(ClientRegionShortcut.LOCAL_PERSISTENT),
-	LOCAL_PERSISTENT_OVERFLOW(ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW),
-	PROXY(ClientRegionShortcut.PROXY),
-	UNSPECIFIED(null);
+	CACHING_PROXY(ClientRegionShortcut.CACHING_PROXY, DataPolicy.NORMAL),
+	CACHING_PROXY_HEAP_LRU(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU, DataPolicy.NORMAL),
+	CACHING_PROXY_OVERFLOW(ClientRegionShortcut.CACHING_PROXY_OVERFLOW, DataPolicy.NORMAL),
+	LOCAL(ClientRegionShortcut.LOCAL, DataPolicy.NORMAL),
+	LOCAL_HEAP_LRU(ClientRegionShortcut.LOCAL_HEAP_LRU, DataPolicy.NORMAL),
+	LOCAL_OVERFLOW(ClientRegionShortcut.LOCAL_OVERFLOW, DataPolicy.NORMAL),
+	LOCAL_PERSISTENT(ClientRegionShortcut.LOCAL_PERSISTENT, DataPolicy.PERSISTENT_REPLICATE),
+	LOCAL_PERSISTENT_OVERFLOW(ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW, DataPolicy.PERSISTENT_REPLICATE),
+	PROXY(ClientRegionShortcut.PROXY, DataPolicy.EMPTY),
+	UNSPECIFIED(null, null);
 
 	private final ClientRegionShortcut clientRegionShortcut;
 
-	ClientRegionShortcutWrapper(final ClientRegionShortcut clientRegionShortcut) {
+	private final DataPolicy dataPolicy;
+
+	ClientRegionShortcutWrapper(ClientRegionShortcut clientRegionShortcut, DataPolicy dataPolicy) {
 		this.clientRegionShortcut = clientRegionShortcut;
+		this.dataPolicy = dataPolicy;
 	}
 
-	public static ClientRegionShortcutWrapper valueOf(final ClientRegionShortcut clientRegionShortcut) {
+	public static ClientRegionShortcutWrapper valueOf(ClientRegionShortcut clientRegionShortcut) {
 		for (ClientRegionShortcutWrapper wrapper : values()) {
 			if (ObjectUtils.nullSafeEquals(wrapper.getClientRegionShortcut(), clientRegionShortcut)) {
 				return wrapper;
@@ -57,7 +61,11 @@ public enum ClientRegionShortcutWrapper {
 	}
 
 	public ClientRegionShortcut getClientRegionShortcut() {
-		return clientRegionShortcut;
+		return this.clientRegionShortcut;
+	}
+
+	public DataPolicy getDataPolicy() {
+		return this.dataPolicy;
 	}
 
 	public boolean isCaching() {
@@ -87,5 +95,4 @@ public enum ClientRegionShortcutWrapper {
 	public boolean isProxy() {
 		return name().contains("PROXY");
 	}
-
 }

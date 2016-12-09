@@ -16,6 +16,8 @@ package org.springframework.data.gemfire.util;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
+import org.springframework.util.ObjectUtils;
+
 /**
  * The ArrayUtils class is a utility class for working with Object arrays.
  *
@@ -35,6 +37,18 @@ public abstract class ArrayUtils {
 	@SafeVarargs
 	public static <T> T[] asArray(T... elements) {
 		return elements;
+	}
+
+	/**
+	 * Returns the given {@code array} if not {@literal null} or empty, otherwise returns the {@code defaultArray}.
+	 *
+	 * @param <T> {@link Class} type of the array elements.
+	 * @param array array to evaluate.
+	 * @param defaultArray array to return if the given {@code array} is {@literal null} or empty.
+	 * @return the given {@code array} if not {@literal null} or empty otherwise return the {@code defaultArray}.
+	 */
+	public static <T> T[] defaultIfEmpty(T[] array, T[] defaultArray) {
+		return (!ObjectUtils.isEmpty(array) ? array : defaultArray);
 	}
 
 	/**

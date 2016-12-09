@@ -48,6 +48,28 @@ import org.springframework.util.Assert;
 public abstract class CollectionUtils extends org.springframework.util.CollectionUtils {
 
 	/**
+	 * Adds all elements from the given {@link Iterable} to the {@link Collection}.
+	 *
+	 * @param <E> {@link Class} type of the elements in the {@link Collection} and {@link Iterable}.
+	 * @param <T> concrete {@link Class} type of the {@link Collection}.
+	 * @param collection {@link Collection} in which to add the elements from the {@link Iterable}.
+	 * @param iterable {@link Iterable} containing the elements to add to the {@link Collection}.
+	 * @return the given {@link Collection}.
+	 * @throws IllegalArgumentException if {@link Collection} is {@literal null}.
+	 * @see java.lang.Iterable
+	 * @see java.util.Collection
+	 */
+	public static <E, T extends Collection<E>> T addAll(T collection, Iterable<E> iterable) {
+		Assert.notNull(collection, "Collection must not be null");
+
+		for (E element : nullSafeIterable(iterable)) {
+			collection.add(element);
+		}
+
+		return collection;
+	}
+
+	/**
 	 * Returns an unmodifiable {@link Set} containing the elements from the given object array.
 	 *
 	 * @param <T> Class type of the elements.
@@ -59,6 +81,32 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 		Set<T> set = new HashSet<T>(elements.length);
 		Collections.addAll(set, elements);
 		return Collections.unmodifiableSet(set);
+	}
+
+	/**
+	 * Returns the given {@link Iterable} if not {@literal null} or empty, otherwise returns the {@code defaultIterable}.
+	 *
+	 * @param <T> concrete {@link Class} type of the {@link Iterable}.
+	 * @param <E> {@link Class} type of the elements in the {@link Iterable Iterables}.
+	 * @param iterable {@link Iterable} to evaluate.
+	 * @param defaultIterable {@link Iterable} to return if the given {@code iterable} is {@literal null} or empty.
+	 * @return {@code iterable} if not {@literal null} or empty otherwise return {@code defaultIterable}.
+	 * @see java.lang.Iterable
+	 */
+	public static <E, T extends Iterable<E>> T defaultIfEmpty(T iterable, T defaultIterable) {
+		return (iterable != null && iterable.iterator().hasNext() ? iterable : defaultIterable);
+	}
+
+	/**
+	 * Returns an empty {@link Iterable} object.
+	 *
+	 * @param <T> {@link Class} type of the elements in the {@link Iterable}.
+	 * @return an empty {@link Iterable}.
+	 * @see java.lang.Iterable
+	 * @see #nullSafeIterable(Iterable)
+	 */
+	public static <T> Iterable<T> emptyIterable() {
+		return nullSafeIterable(null);
 	}
 
 	/**
@@ -124,15 +172,18 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 		return (iterable != null ? iterable : new Iterable<T>() {
 			@Override public Iterator<T> iterator() {
 				return new Iterator<T>() {
-					@Override public boolean hasNext() {
+					@Override
+					public boolean hasNext() {
 						return false;
 					}
 
-					@Override public T next() {
+					@Override
+					public T next() {
 						throw new NoSuchElementException("No more elements");
 					}
 
-					@Override  public void remove() {
+					@Override
+					public void remove() {
 						throw new UnsupportedOperationException("Operation not supported");
 					}
 				};
@@ -165,6 +216,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Collections#emptyMap()
 	 * @see java.util.Map
 	 */
+	@SuppressWarnings("all")
 	public static <K, V> Map<K, V> nullSafeMap(Map<K, V> map) {
 		return (map != null ? map : Collections.<K, V>emptyMap());
 	}

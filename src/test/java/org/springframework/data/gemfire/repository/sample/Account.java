@@ -17,17 +17,18 @@
 package org.springframework.data.gemfire.repository.sample;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
+import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
 import org.springframework.util.Assert;
 
 /**
  * The Account class is an abstract data type (ADT) for modeling customer accounts.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see Region
  * @since 1.0.0
  */
-@Region("Accounts")
+@ReplicateRegion("Accounts")
 @SuppressWarnings("unused")
 public class Account {
 
