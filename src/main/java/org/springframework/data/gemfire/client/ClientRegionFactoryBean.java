@@ -83,6 +83,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	private CacheWriter<K, V> cacheWriter;
 
+	private Class<K> keyConstraint;
+	private Class<V> valueConstraint;
+
 	private ClientRegionShortcut shortcut = null;
 
 	private DataPolicy dataPolicy;
@@ -111,7 +114,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * @inheritDoc
 	 */
 	@Override
-	protected Region<K, V> lookupFallback(GemFireCache cache, String regionName) throws Exception {
+	protected Region<K, V> lookupRegion(GemFireCache cache, String regionName) throws Exception {
 		Assert.isTrue(GemfireUtils.isClient(cache), "A ClientCache is required to create a client Region");
 
 		ClientRegionFactory<K, V> clientRegionFactory =
@@ -122,6 +125,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		setDiskStoreName(clientRegionFactory);
 		setEvictionAttributes(clientRegionFactory);
 		setPoolName(clientRegionFactory);
+
+		if (keyConstraint != null) {
+			clientRegionFactory.setKeyConstraint(keyConstraint);
+		}
+
+		if (valueConstraint != null) {
+			clientRegionFactory.setValueConstraint(valueConstraint);
+		}
 
 		return logCreateRegionEvent(create(clientRegionFactory, regionName));
 	}
@@ -561,6 +572,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		return this.interests;
 	}
 
+	public void setKeyConstraint(Class<K> keyConstraint) {
+		this.keyConstraint = keyConstraint;
+	}
+
 	protected boolean isPersistentUnspecified() {
 		return (persistent == null);
 	}
@@ -617,5 +632,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 */
 	public void setSnapshot(Resource snapshot) {
 		this.snapshot = snapshot;
+	}
+
+	public void setValueConstraint(Class<V> valueConstraint) {
+		this.valueConstraint = valueConstraint;
 	}
 }

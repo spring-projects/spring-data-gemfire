@@ -130,7 +130,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setSnapshot(mockSnapshot);
 		factoryBean.setShortcut(null);
 
-		Region actualRegion = factoryBean.lookupFallback(mockClientCache, testRegionName);
+		Region actualRegion = factoryBean.lookupRegion(mockClientCache, testRegionName);
 
 		assertSame(mockRegion, actualRegion);
 
@@ -180,7 +180,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setPoolName("TestPool");
 		factoryBean.setShortcut(null);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
@@ -208,7 +208,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setShortcut(ClientRegionShortcut.CACHING_PROXY);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
@@ -236,7 +236,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setParent(mockRegion);
 		factoryBean.setShortcut(ClientRegionShortcut.PROXY);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestSubRegion");
+		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestSubRegion");
 
 		assertSame(mockSubRegion, actualRegion);
 
@@ -263,7 +263,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setShortcut(ClientRegionShortcut.LOCAL_HEAP_LRU);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupFallback(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 

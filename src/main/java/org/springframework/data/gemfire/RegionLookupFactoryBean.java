@@ -70,18 +70,16 @@ public abstract class RegionLookupFactoryBean<K, V> implements FactoryBean<Regio
 
 		synchronized (this.cache) {
 			if (isLookupEnabled()) {
-				if (getParent() != null) {
-					this.region = getParent().getSubregion(regionName);
-				}
-				else {
-					this.region = this.cache.getRegion(regionName);
-				}
+				this.region = (getParent() != null ? getParent().<K, V>getSubregion(regionName)
+					: this.cache.<K, V>getRegion(regionName));
 			}
 
 			if (region != null) {
 				log.info(String.format("Found Region [%1$s] in Cache [%2$s]", regionName, cache.getName()));
 			}
 			else {
+				log.info(String.format("Falling back to creating Region [%1$s] in Cache [%2$s]",
+					regionName, cache.getName()));
 				region = lookupFallback(cache, regionName);
 			}
 		}

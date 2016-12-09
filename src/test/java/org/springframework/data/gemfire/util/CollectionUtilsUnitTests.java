@@ -27,7 +27,9 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,61 @@ public class CollectionUtilsUnitTests {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
+
+	@Test
+	public void addAllIterableElementsToList() {
+		List<Integer> target = new ArrayList<Integer>(Arrays.asList(1, 2, 3));
+		Set<Integer> source = new HashSet<Integer>(Arrays.asList(1, 2, 3));
+
+		target = CollectionUtils.addAll(target, source);
+
+		assertThat(target).isNotNull();
+		assertThat(target.size()).isEqualTo(6);
+		assertThat(target).isEqualTo(Arrays.asList(1, 2, 3, 1, 2, 3));
+	}
+
+	@Test
+	public void addAllIterableElementsToSet() {
+		Set<Integer> target = new HashSet<Integer>(Arrays.asList(1, 2, 3));
+		Set<Integer> source = new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+
+		target = CollectionUtils.addAll(target, source);
+
+		assertThat(target).isNotNull();
+		assertThat(target.size()).isEqualTo(5);
+		assertThat(target).contains(1, 2, 3, 4, 5);
+	}
+
+	@Test
+	public void addIterableToNullCollection() {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("Collection must not be null");
+
+		CollectionUtils.addAll(null, Collections.emptySet());
+	}
+
+	@Test
+	public void addEmptyIterableToCollection() {
+		Collection<Integer> target = new ArrayList<Integer>(Arrays.asList(1, 2, 3));
+
+		target = CollectionUtils.addAll(target, Collections.<Integer>emptyList());
+
+		assertThat(target).isNotNull();
+		assertThat(target.size()).isEqualTo(3);
+		assertThat(target).contains(1, 2, 3);
+	}
+
+	@Test
+	public void addNullIterableToCollection() {
+		Collection<Integer> target = new ArrayList<Integer>(Arrays.asList(1, 2, 3));
+
+		target = CollectionUtils.addAll(target, null);
+
+		assertThat(target).isNotNull();
+		assertThat(target.size()).isEqualTo(3);
+		assertThat(target).contains(1, 2, 3);
+	}
 
 	@Test
 	public void asSetContainsAllArrayElements() {
@@ -97,6 +154,43 @@ public class CollectionUtilsUnitTests {
 			assertThat(set.size()).isEqualTo(3);
 			throw e;
 		}
+	}
+
+	@Test
+	public void defaultIfEmptyWithNonNullNonEmptyIterableReturnsIterable() {
+		Iterable<Object> iterable = Collections.<Object>singleton(1);
+		Iterable<Object> defaultIterable = Collections.<Object>singleton(2);
+
+		assertThat(CollectionUtils.defaultIfEmpty(iterable, defaultIterable)).isSameAs(iterable);
+	}
+
+	@Test
+	public void defaultIfEmptyWithEmptyIterableReturnsDefault() {
+		Iterable<Object> iterable = Collections.emptySet();
+		Iterable<Object> defaultIterable = Collections.<Object>singleton(2);
+
+		assertThat(CollectionUtils.defaultIfEmpty(iterable, defaultIterable)).isSameAs(defaultIterable);
+	}
+
+	@Test
+	public void defaultIfEmptyWithNullIterableReturnsDefault() {
+		Iterable<?> defaultIterable = Collections.singleton(2);
+
+		assertThat(CollectionUtils.defaultIfEmpty(null, defaultIterable)).isSameAs(defaultIterable);
+	}
+
+	@Test
+	public void defaultIfEmptyWithNullIterableAndNullDefaultReturnsNull() {
+		assertThat(CollectionUtils.defaultIfEmpty(null, null)).isNull();
+	}
+
+	@Test
+	public void emptyIterableReturnsEmptyIterable() {
+		Iterable<?> iterable = CollectionUtils.emptyIterable();
+
+		assertThat(iterable).isNotNull();
+		assertThat(iterable.iterator()).isNotNull();
+		assertThat(iterable.iterator().hasNext()).isFalse();
 	}
 
 	@Test

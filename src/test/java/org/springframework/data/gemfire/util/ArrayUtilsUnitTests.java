@@ -33,7 +33,7 @@ import org.junit.Test;
 public class ArrayUtilsUnitTests {
 
 	@Test
-	public void asArrayRetursEmptyArray() {
+	public void asArrayReturnsEmptyArray() {
 		Object[] array = ArrayUtils.asArray();
 
 		assertThat(array).isNotNull();
@@ -56,6 +56,34 @@ public class ArrayUtilsUnitTests {
 		assertThat(array).isNotNull();
 		assertThat(array.length).isEqualTo(1);
 		assertThat(array).isEqualTo(new Object[] { 1 });
+	}
+
+	@Test
+	public void defaultIfEmptyWithNonNullNonEmptyArrayReturnsArray() {
+		Object[] array = { "test" };
+		Object[] defaultArray = { "tested" };
+
+		assertThat(ArrayUtils.defaultIfEmpty(array, defaultArray)).isSameAs(array);
+	}
+
+	@Test
+	public void defaultIfEmptyWithEmptyArrayReturnsDefaultArray() {
+		Object[] array = {};
+		Object[] defaultArray = { "tested" };
+
+		assertThat(ArrayUtils.defaultIfEmpty(array, defaultArray)).isSameAs(defaultArray);
+	}
+
+	@Test
+	public void defaultIfEmptyWithNullArrayReturnsDefaultArray() {
+		Object[] defaultArray = { "tested" };
+
+		assertThat(ArrayUtils.defaultIfEmpty(null, defaultArray)).isSameAs(defaultArray);
+	}
+
+	@Test
+	public void defaultIfEmptyWithNullArrayAndNullDefaultArrayReturnsNull() {
+		assertThat(ArrayUtils.defaultIfEmpty(null, null)).isNull();
 	}
 
 	@Test
@@ -187,6 +215,7 @@ public class ArrayUtilsUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void sortIsSuccessful() {
 		Comparable[] array = new Comparable[] { 2, 3, 1 };
 		Comparable[] sortedArray = ArrayUtils.sort(array);

@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.repository.sample;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.ReplicateRegion;
 import org.springframework.util.Assert;
 
 /**
@@ -27,7 +28,7 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.gemfire.mapping.Region
  * @since 1.0.0
  */
-@Region("Accounts")
+@ReplicateRegion("Accounts")
 @SuppressWarnings("unused")
 public class Account {
 
