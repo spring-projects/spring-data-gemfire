@@ -37,9 +37,12 @@ import org.springframework.core.annotation.AliasFor;
  *
  * @author John Blum
  * @see org.springframework.context.annotation.ComponentScan
+ * @see org.springframework.context.annotation.ComponentScan.Filter
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.core.annotation.AliasFor
+ * @see org.springframework.data.gemfire.config.annotation.EnableIndexes
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration
  * @see com.gemstone.gemfire.cache.Region
  * @since 1.9.0
  */
@@ -47,7 +50,7 @@ import org.springframework.core.annotation.AliasFor;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(EntityDefinedRegionsConfiguration.class)
+@Import(IndexConfiguration.class)
 @SuppressWarnings({ "unused" })
 public @interface EnableEntityDefinedRegions {
 

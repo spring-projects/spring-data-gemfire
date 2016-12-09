@@ -76,10 +76,32 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * The EntityDefinedRegionsConfiguration class...
+ * The {@link EntityDefinedRegionsConfiguration} class is Spring {@link ImportBeanDefinitionRegistrar} used in
+ * the {@link EnableEntityDefinedRegions} annotation to dynamically create GemFire/Geode {@link Region Regions}
+ * based on the application persistent entity classes.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.config.BeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
+ * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+ * @see org.springframework.data.gemfire.LocalRegionFactoryBean
+ * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
+ * @see org.springframework.data.gemfire.ReplicatedRegionFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.support.GemFireComponentClassTypeScanner
+ * @see org.springframework.data.gemfire.mapping.ClientRegion
+ * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
+ * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
+ * @see org.springframework.data.gemfire.mapping.LocalRegion
+ * @see org.springframework.data.gemfire.mapping.PartitionRegion
+ * @see org.springframework.data.gemfire.mapping.ReplicateRegion
+ * @see org.springframework.data.gemfire.mapping.Region
+ * @since 1.9.0
  */
 public class EntityDefinedRegionsConfiguration
 		implements BeanClassLoaderAware, BeanFactoryAware, ImportBeanDefinitionRegistrar {
@@ -155,6 +177,7 @@ public class EntityDefinedRegionsConfiguration
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("unused")
 	protected ClassLoader getBeanClassLoader() {
 		return this.beanClassLoader;
 	}
@@ -229,7 +252,7 @@ public class EntityDefinedRegionsConfiguration
 				GemfirePersistentEntity persistentEntity = getPersistentEntity(persistentEntityClass);
 
 				registerRegionBeanDefinition(persistentEntity, strict, registry);
-				postProcess(persistentEntity);
+				postProcess(importingClassMetadata, registry, persistentEntity);
 			}
 		}
 	}
@@ -594,11 +617,17 @@ public class EntityDefinedRegionsConfiguration
 	 * Performs addition post processing on the {@link GemfirePersistentEntity} to offer additional feature support
 	 * (e.g. dynamic Index creation).
 	 *
+	 * @param importingClassMetadata {@link AnnotationMetadata} for the importing application class.
+	 * @param registry {@link BeanDefinitionRegistry} used to register Spring bean definitions.
 	 * @param persistentEntity {@link GemfirePersistentEntity} to process.
 	 * @return the given {@link GemfirePersistentEntity}.
+	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
+	 * @see org.springframework.core.type.AnnotationMetadata
 	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
 	 */
-	protected GemfirePersistentEntity<?> postProcess(GemfirePersistentEntity<?> persistentEntity) {
+	protected GemfirePersistentEntity<?> postProcess(AnnotationMetadata importingClassMetadata,
+			BeanDefinitionRegistry registry, GemfirePersistentEntity<?> persistentEntity) {
+
 		return persistentEntity;
 	}
 }
