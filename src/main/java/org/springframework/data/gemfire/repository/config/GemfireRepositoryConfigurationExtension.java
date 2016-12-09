@@ -57,7 +57,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	 */
 	@Override
 	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return Collections.<Class<? extends Annotation>>singleton(Region.class);
+		return Region.REGION_ANNOTATION_TYPES;
 	}
 
 	/*

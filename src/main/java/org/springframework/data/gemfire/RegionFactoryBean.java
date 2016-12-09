@@ -78,6 +78,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private CacheWriter<K, V> cacheWriter;
 
+	private Class<K> keyConstraint;
+	private Class<V> valueConstraint;
+
 	private DataPolicy dataPolicy;
 
 	private EvictionAttributes evictionAttributes;
@@ -146,8 +149,16 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			regionFactory.setEvictionAttributes(evictionAttributes);
 		}
 
+		if (keyConstraint != null) {
+			regionFactory.setKeyConstraint(keyConstraint);
+		}
+
 		if (scope != null) {
 			regionFactory.setScope(scope);
+		}
+
+		if (valueConstraint != null) {
+			regionFactory.setValueConstraint(valueConstraint);
 		}
 
 		if (attributes != null) {
@@ -671,6 +682,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.gatewaySenders = gatewaySenders;
 	}
 
+	public void setKeyConstraint(Class<K> keyConstraint) {
+		this.keyConstraint = keyConstraint;
+	}
+
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
 	}
@@ -712,6 +727,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 */
 	public void setSnapshot(Resource snapshot) {
 		this.snapshot = snapshot;
+	}
+
+	public void setValueConstraint(Class<V> valueConstraint) {
+		this.valueConstraint = valueConstraint;
 	}
 
 	/**

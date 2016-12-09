@@ -16,42 +16,109 @@
 
 package org.springframework.data.gemfire.mapping;
 
+import static org.springframework.data.gemfire.util.SpringUtils.defaultIfEmpty;
+
+import java.lang.annotation.Annotation;
+
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.util.StringUtils;
 
 /**
- * {@link PersistentEntity} implementation adding custom Gemfire related metadata, such as the region the entity is
- * mapped to etc.
- * 
+ * {@link PersistentEntity} implementation adding custom GemFire persistent entity related metadata, such as the
+ * {@link org.apache.geode.cache.Region} to which the entity is mapped, etc.
+ *
  * @author Oliver Gierke
  * @author John Blum
+ * @see org.springframework.data.gemfire.mapping.GemfirePersistentProperty
+ * @see org.springframework.data.mapping.model.BasicPersistentEntity
  */
+@SuppressWarnings("unused")
 public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, GemfirePersistentProperty> {
+
+	private final Annotation regionAnnotation;
 
 	private final String regionName;
 
-	/**
-	 * Creates a new {@link GemfirePersistentEntity} for the given {@link TypeInformation}.
-	 * 
-	 * @param information must not be {@literal null}.
-	 */
-	public GemfirePersistentEntity(TypeInformation<T> information) {
+	/* (non-Javadoc) */
+	protected static Annotation resolveRegionAnnotation(Class<?> persistentEntityType) {
 
-		super(information);
+		for (Class<? extends Annotation> regionAnnotationType : Region.REGION_ANNOTATION_TYPES) {
+			Annotation regionAnnotation = AnnotatedElementUtils.getMergedAnnotation(
+				persistentEntityType, regionAnnotationType);
 
-		Class<T> rawType = information.getType();
-		Region region = rawType.getAnnotation(Region.class);
-		String defaultRegionName = rawType.getSimpleName();
+			if (regionAnnotation != null) {
+				return regionAnnotation;
+			}
+		}
 
-		this.regionName = (region != null && StringUtils.hasText(region.value()) ? region.value() : defaultRegionName);
+		return null;
+	}
+
+	/* (non-Javadoc) */
+	protected static String resolveRegionName(Class<?> persistentEntityType, Annotation regionAnnotation) {
+
+		String regionName = (regionAnnotation != null ? AnnotationAttributes.fromMap(
+			AnnotationUtils.getAnnotationAttributes(regionAnnotation)).getString("value") : null);
+
+		return defaultIfEmpty(regionName, persistentEntityType.getSimpleName());
 	}
 
 	/**
-	 * Returns the name of the region the entity shall be stored in.
-	 * 
-	 * @return the name of the region the entity shall be stored in.
+	 * Creates a new {@link GemfirePersistentEntity} for the given {@link TypeInformation}.
+	 *
+	 * @param information must not be {@literal null}.
+	 */
+	public GemfirePersistentEntity(TypeInformation<T> information) {
+		super(information);
+
+		Class<T> rawType = information.getType();
+
+		this.regionAnnotation = resolveRegionAnnotation(rawType);
+		this.regionName = resolveRegionName(rawType, this.regionAnnotation);
+	}
+
+	/**
+	 * Returns the {@link Region} annotation used to annotate this {@link PersistentEntity} or {@literal null}
+	 * if this {@link PersistentEntity} was not annotated with a {@link Region} annotation.
+	 *
+	 * @param <T> concrete {@link Class} type of the Region {@link Annotation}.
+	 * @return the {@link Region} annotation used to annotate this {@link PersistentEntity} or {@literal null}
+	 * if this {@link PersistentEntity} was not annotated with a {@link Region} annotation.
+	 * @see org.springframework.data.gemfire.mapping.ClientRegion
+	 * @see org.springframework.data.gemfire.mapping.LocalRegion
+	 * @see org.springframework.data.gemfire.mapping.PartitionRegion
+	 * @see org.springframework.data.gemfire.mapping.ReplicateRegion
+	 * @see org.springframework.data.gemfire.mapping.Region
+	 * @see java.lang.annotation.Annotation
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends Annotation> T getRegionAnnotation() {
+		return (T) this.regionAnnotation;
+	}
+
+	/**
+	 * Returns the {@link Class} type of the Region {@link Annotation} or {@literal null}
+	 * if this {@link PersistentEntity} was not annotated with a Region {@link Annotation}.
+	 *
+	 * @return the {@link Class} type of the Region {@link Annotation} or {@literal null}
+	 * if this {@link PersistentEntity} was not annotated with a Region {@link Annotation}.
+	 * @see java.lang.annotation.Annotation#annotationType()
+	 * @see #getRegionAnnotation()
+	 */
+	public Class<? extends Annotation> getRegionAnnotationType() {
+		Annotation regionAnnotation = getRegionAnnotation();
+		return (regionAnnotation != null ? regionAnnotation.annotationType() : null);
+	}
+
+	/**
+	 * Returns the name of the {@link Region} in which this {@link PersistentEntity} will be stored.
+	 *
+	 * @return the name of the {@link Region} in which this {@link PersistentEntity} will be stored.
+	 * @see org.apache.geode.cache.Region#getName()
 	 */
 	public String getRegionName() {
 		return this.regionName;

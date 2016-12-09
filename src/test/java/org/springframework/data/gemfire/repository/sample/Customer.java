@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.repository.sample;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.ReplicateRegion;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -28,8 +29,8 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.mapping.Region
  * @since 1.0.0
  */
+@ReplicateRegion("Customers")
 @SuppressWarnings("unused")
-@Region("Customers")
 public class Customer {
 
 	@Id
