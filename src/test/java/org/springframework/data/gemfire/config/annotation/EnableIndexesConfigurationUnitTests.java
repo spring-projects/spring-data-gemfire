@@ -23,6 +23,8 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
@@ -100,6 +102,16 @@ public class EnableIndexesConfigurationUnitTests {
 		Index lastNameIdx = applicationContext.getBean("LastNameIdx", Index.class);
 
 		assertIndex(lastNameIdx, "LastNameIdx", "lastName", "Customers", IndexType.HASH);
+	}
+
+	@Test
+	public void noIndexesCreatedForIndexedPersistentEntities() {
+		applicationContext = newApplicationContext(NoIndexesCreatedForIndexedPersistentEntityConfiguration.class);
+
+		Map<String, Index> indexes = applicationContext.getBeansOfType(Index.class);
+
+		assertThat(indexes).isNotNull();
+		assertThat(indexes.isEmpty()).isTrue();
 	}
 
 	@Configuration
@@ -184,6 +196,14 @@ public class EnableIndexesConfigurationUnitTests {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
 	static class IndexedPersistentEntityConfiguration extends CacheConfiguration {
+
+	}
+
+	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
+			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
+			LocalRegionEntity.class, ReplicateRegionEntity.class }))
+	static class NoIndexesCreatedForIndexedPersistentEntityConfiguration extends CacheConfiguration {
 
 	}
 }
