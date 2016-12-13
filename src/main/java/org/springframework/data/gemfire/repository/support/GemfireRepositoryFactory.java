@@ -126,8 +126,8 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 	String getRepositoryRegionName(Class<?> repositoryInterface) {
-		return (repositoryInterface.isAnnotationPresent(org.springframework.data.gemfire.mapping.Region.class) ?
-			repositoryInterface.getAnnotation(org.springframework.data.gemfire.mapping.Region.class).value() : null);
+		return (repositoryInterface.isAnnotationPresent(org.springframework.data.gemfire.mapping.annotation.Region.class) ?
+			repositoryInterface.getAnnotation(org.springframework.data.gemfire.mapping.annotation.Region.class).value() : null);
 	}
 
 	/*

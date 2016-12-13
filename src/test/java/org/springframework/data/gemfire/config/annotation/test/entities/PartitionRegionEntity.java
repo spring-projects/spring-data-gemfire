@@ -19,8 +19,8 @@ package org.springframework.data.gemfire.config.annotation.test.entities;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.IndexType;
-import org.springframework.data.gemfire.mapping.Indexed;
-import org.springframework.data.gemfire.mapping.PartitionRegion;
+import org.springframework.data.gemfire.mapping.annotation.Indexed;
+import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 
 /**
  * {@link PartitionRegionEntity} persistent entity stored in the "Customers"

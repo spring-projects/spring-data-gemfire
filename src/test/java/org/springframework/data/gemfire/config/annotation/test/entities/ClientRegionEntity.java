@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.config.annotation.test.entities;
 
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.ClientRegion;
+import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 
 /**
  * {@link ClientRegionEntity} persistent entity stored in the "Users" {@link org.apache.geode.cache.DataPolicy#NORMAL},

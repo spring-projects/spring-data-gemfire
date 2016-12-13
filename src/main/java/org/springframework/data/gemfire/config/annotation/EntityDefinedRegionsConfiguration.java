@@ -61,12 +61,12 @@ import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.GemFireComponentClassTypeScanner;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
-import org.springframework.data.gemfire.mapping.ClientRegion;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
-import org.springframework.data.gemfire.mapping.LocalRegion;
-import org.springframework.data.gemfire.mapping.PartitionRegion;
-import org.springframework.data.gemfire.mapping.ReplicateRegion;
+import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
+import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
+import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
+import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
@@ -93,13 +93,13 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.support.GemFireComponentClassTypeScanner
- * @see org.springframework.data.gemfire.mapping.ClientRegion
+ * @see ClientRegion
  * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
  * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
- * @see org.springframework.data.gemfire.mapping.LocalRegion
- * @see org.springframework.data.gemfire.mapping.PartitionRegion
- * @see org.springframework.data.gemfire.mapping.ReplicateRegion
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see LocalRegion
+ * @see PartitionRegion
+ * @see ReplicateRegion
+ * @see org.springframework.data.gemfire.mapping.annotation.Region
  * @since 1.9.0
  */
 public class EntityDefinedRegionsConfiguration
@@ -116,7 +116,7 @@ public class EntityDefinedRegionsConfiguration
 		regionAnnotationToRegionFactoryBeanClass.put(LocalRegion.class, LocalRegionFactoryBean.class);
 		regionAnnotationToRegionFactoryBeanClass.put(PartitionRegion.class, PartitionedRegionFactoryBean.class);
 		regionAnnotationToRegionFactoryBeanClass.put(ReplicateRegion.class, ReplicatedRegionFactoryBean.class);
-		regionAnnotationToRegionFactoryBeanClass.put(org.springframework.data.gemfire.mapping.Region.class,
+		regionAnnotationToRegionFactoryBeanClass.put(org.springframework.data.gemfire.mapping.annotation.Region.class,
 			DEFAULT_REGION_FACTORY_BEAN_CLASS);
 	}
 
@@ -386,7 +386,7 @@ public class EntityDefinedRegionsConfiguration
 		Set<TypeFilter> regionAnnotatedPersistentEntityTypeFilters = new HashSet<>();
 
 		for (Class<? extends Annotation> annotationType :
-				org.springframework.data.gemfire.mapping.Region.REGION_ANNOTATION_TYPES) {
+				org.springframework.data.gemfire.mapping.annotation.Region.REGION_ANNOTATION_TYPES) {
 
 			regionAnnotatedPersistentEntityTypeFilters.add(new AnnotationTypeFilter(annotationType));
 		}

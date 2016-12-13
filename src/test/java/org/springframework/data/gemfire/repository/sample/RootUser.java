@@ -16,13 +16,13 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 
 /**
  * The RootUser class represents an authorized administrative user of a service or computer system, etc.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see Region
  * @see org.springframework.data.gemfire.repository.sample.User
  * @since 1.4.0
  */

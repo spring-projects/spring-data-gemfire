@@ -15,7 +15,7 @@
  *
  */
 
-package org.springframework.data.gemfire.mapping;
+package org.springframework.data.gemfire.mapping.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -26,13 +26,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.core.annotation.AliasFor;
-import org.springframework.data.gemfire.ScopeType;
 
 /**
- * {@link Annotation} defining the Replicate {@link Region} in which the application persistent entity will be stored.
+ * {@link Annotation} defining the Local {@link Region} in which the application persistent entity will be stored.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see Region
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -41,7 +40,7 @@ import org.springframework.data.gemfire.ScopeType;
 @Documented
 @Region
 @SuppressWarnings("unused")
-public @interface ReplicateRegion {
+public @interface LocalRegion {
 
 	/**
 	 * Name, or fully-qualified bean name of the {@link org.apache.geode.cache.Region}
@@ -108,14 +107,5 @@ public @interface ReplicateRegion {
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	boolean persistent() default false;
-
-	/**
-	 * Defines the {@link org.apache.geode.cache.Scope} used by this persistent entity's
-	 * {@link org.apache.geode.cache.DataPolicy#REPLICATE} {@link org.apache.geode.cache.Region} to
-	 * acknowledge messages sent between peers.
-	 *
-	 * Defaults to {@link ScopeType#DISTRIBUTED_NO_ACK}
-	 */
-	ScopeType scope() default ScopeType.DISTRIBUTED_NO_ACK;
 
 }

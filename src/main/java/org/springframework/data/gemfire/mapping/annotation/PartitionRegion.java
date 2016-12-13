@@ -15,7 +15,7 @@
  *
  */
 
-package org.springframework.data.gemfire.mapping;
+package org.springframework.data.gemfire.mapping.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -31,7 +31,7 @@ import org.springframework.core.annotation.AliasFor;
  * {@link Annotation} defining the Partition {@link Region} in which the application persistent entity will be stored.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see Region
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)

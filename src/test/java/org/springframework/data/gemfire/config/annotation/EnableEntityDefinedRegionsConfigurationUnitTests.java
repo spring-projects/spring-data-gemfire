@@ -58,10 +58,10 @@ import org.springframework.data.gemfire.config.annotation.test.entities.Collocat
 import org.springframework.data.gemfire.config.annotation.test.entities.GenericRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.NonEntity;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
-import org.springframework.data.gemfire.mapping.ClientRegion;
-import org.springframework.data.gemfire.mapping.LocalRegion;
-import org.springframework.data.gemfire.mapping.PartitionRegion;
-import org.springframework.data.gemfire.mapping.ReplicateRegion;
+import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
+import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
+import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
+import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
 import org.springframework.data.gemfire.util.CollectionUtils;
 
 /**

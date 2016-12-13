@@ -17,14 +17,14 @@
 package org.springframework.data.gemfire.repository.sample;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 
 /**
  * The Algorithm interface define abstract data type modeling a computer algorithm.
  *
  * @author John Blum
  * @see org.springframework.data.annotation.Id
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see Region
  * @since 1.4.0
  */
 @Region("Algorithms")

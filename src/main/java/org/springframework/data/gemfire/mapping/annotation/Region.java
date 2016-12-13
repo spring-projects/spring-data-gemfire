@@ -15,7 +15,7 @@
  *
  */
 
-package org.springframework.data.gemfire.mapping;
+package org.springframework.data.gemfire.mapping.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -24,23 +24,28 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.core.annotation.AliasFor;
 
 /**
- * {@link Annotation} defining the Local {@link Region} in which the application persistent entity will be stored.
+ * {@link Annotation} defining the {@link Region} in which the application persistent entity will be stored.
  *
+ * @author Oliver Gierke
  * @author John Blum
- * @see org.springframework.data.gemfire.mapping.Region
- * @since 1.9.0
+ * @see org.apache.geode.cache.Region
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Region
 @SuppressWarnings("unused")
-public @interface LocalRegion {
+public @interface Region {
+
+	@SuppressWarnings("unchecked")
+	List<Class<? extends Annotation>> REGION_ANNOTATION_TYPES = Arrays.asList(
+		ClientRegion.class, LocalRegion.class, PartitionRegion.class, ReplicateRegion.class, Region.class);
 
 	/**
 	 * Name, or fully-qualified bean name of the {@link org.apache.geode.cache.Region}
@@ -51,7 +56,7 @@ public @interface LocalRegion {
 	 * @return the name or fully-qualified path of the {@link Region} in which the application persistent entity
 	 * will be stored.
 	 */
-	@AliasFor(annotation = Region.class, attribute = "name")
+	@AliasFor(attribute = "value")
 	String name() default "";
 
 	/**
@@ -63,49 +68,7 @@ public @interface LocalRegion {
 	 * @return the name or fully-qualified path of the {@link Region} in which the application persistent entity
 	 * will be stored.
 	 */
-	@AliasFor(annotation = Region.class, attribute = "value")
+	@AliasFor(attribute = "name")
 	String value() default "";
-
-	/**
-	 * Name of the {@link org.apache.geode.cache.DiskStore} in which this persistent entity's data is overflowed
-	 * and/or persisted.
-	 *
-	 * Maybe the name of a Spring bean defined in the Spring context.
-	 *
-	 * Defaults to unset.
-	 */
-	String diskStoreName() default "";
-
-	/**
-	 * Determines whether disk-based operations (used in overflow and persistent) are synchronous or asynchronous.
-	 *
-	 * Defaults to {@literal synchronous}.
-	 */
-	boolean diskSynchronous() default true;
-
-	/**
-	 * Determines whether this {@link org.apache.geode.cache.Region Region's} data access operations participates in
-	 * any existing, Global JTA transaction in progress.
-	 *
-	 * Defaults to {@literal false} (will NOT ignore JTA).
-	 */
-	boolean ignoreJta() default false;
-
-	/**
-	 * Determines whether this persistent entity's {@link org.apache.geode.cache.Region} is persistent,
-	 * storing data to disk.
-	 *
-	 * Note, this setting independent of whether or not the {@link org.apache.geode.cache.Region} associated
-	 * with this persistent entity overflows data to disk during eviction due to entry/heap/memory constraints.
-	 *
-	 * A {@link org.apache.geode.cache.Region} can also be persistent without an explicit
-	 * {@link org.apache.geode.cache.DiskStore} defined; in that case, GemFire/Geode writes to the "DEFAULT"
-	 * {@link org.apache.geode.cache.DiskStore}.
-	 *
-	 * Defaults to {@literal false}.
-	 *
-	 * @see org.apache.geode.cache.DataPolicy
-	 */
-	boolean persistent() default false;
 
 }

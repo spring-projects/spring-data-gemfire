@@ -31,7 +31,7 @@ import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
-import org.springframework.data.gemfire.mapping.Indexed;
+import org.springframework.data.gemfire.mapping.annotation.Indexed;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.StringUtils;
 
@@ -51,7 +51,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
  * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
  * @see org.springframework.data.gemfire.mapping.GemfirePersistentProperty
- * @see org.springframework.data.gemfire.mapping.Indexed
+ * @see Indexed
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.query.Index
  * @since 1.9.0

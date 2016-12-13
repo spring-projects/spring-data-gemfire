@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Query;
 
@@ -25,7 +25,7 @@ import org.springframework.data.gemfire.repository.Query;
  * from/to an underlying data store (GemFire).
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see Region
  * @see org.springframework.data.gemfire.repository.GemfireRepository
  * @see org.springframework.data.gemfire.repository.Query
  * @since 1.4.0

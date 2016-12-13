@@ -63,7 +63,7 @@ public @interface EnableEntityDefinedRegions {
 	String[] value() default {};
 
 	/**
-	 * Base packages to scan for {@link org.springframework.data.gemfire.mapping.Region @Region} annotated
+	 * Base packages to scan for {@link org.springframework.data.gemfire.mapping.annotation.Region @Region} annotated
 	 * application persistent entities.  {@link #value()} is an alias for this attribute.
 	 * Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
 	 *
@@ -75,7 +75,7 @@ public @interface EnableEntityDefinedRegions {
 
 	/**
 	 * Type-safe alternative to {@link #basePackages()} for specifying the packages to scan for
-	 * {@link org.springframework.data.gemfire.mapping.Region @Region} annotated application persistent entities.
+	 * {@link org.springframework.data.gemfire.mapping.annotation.Region @Region} annotated application persistent entities.
 	 * The package of each class specified will be scanned.  Consider creating a special no-op marker class or interface
 	 * in each package that serves no other purpose than being referenced by this attribute.
 	 *

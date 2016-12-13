@@ -15,7 +15,7 @@
  *
  */
 
-package org.springframework.data.gemfire.mapping;
+package org.springframework.data.gemfire.mapping.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -27,6 +27,8 @@ import java.lang.annotation.Target;
 import org.apache.geode.cache.query.Index;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.gemfire.IndexType;
+import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
+import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
 
 /**
  * The {@link Indexed} annotation is used to index a {@link GemfirePersistentEntity} {@link GemfirePersistentProperty},

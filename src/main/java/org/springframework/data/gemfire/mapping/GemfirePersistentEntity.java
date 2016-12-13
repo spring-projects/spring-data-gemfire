@@ -23,6 +23,11 @@ import java.lang.annotation.Annotation;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
+import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
+import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
+import org.springframework.data.gemfire.mapping.annotation.Region;
+import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
@@ -88,11 +93,11 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	 * @param <T> concrete {@link Class} type of the Region {@link Annotation}.
 	 * @return the {@link Region} annotation used to annotate this {@link PersistentEntity} or {@literal null}
 	 * if this {@link PersistentEntity} was not annotated with a {@link Region} annotation.
-	 * @see org.springframework.data.gemfire.mapping.ClientRegion
-	 * @see org.springframework.data.gemfire.mapping.LocalRegion
-	 * @see org.springframework.data.gemfire.mapping.PartitionRegion
-	 * @see org.springframework.data.gemfire.mapping.ReplicateRegion
-	 * @see org.springframework.data.gemfire.mapping.Region
+	 * @see ClientRegion
+	 * @see LocalRegion
+	 * @see PartitionRegion
+	 * @see ReplicateRegion
+	 * @see Region
 	 * @see java.lang.annotation.Annotation
 	 */
 	@SuppressWarnings("unchecked")

@@ -17,7 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation.test.entities;
 
-import org.springframework.data.gemfire.mapping.PartitionRegion;
+import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 
 /**
  * {@link CollocatedPartitionRegionEntity} persistent entity stored in the "ContactEvents"

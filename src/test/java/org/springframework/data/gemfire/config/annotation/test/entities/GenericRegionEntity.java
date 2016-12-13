@@ -18,7 +18,7 @@
 package org.springframework.data.gemfire.config.annotation.test.entities;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 
 /**
  * {@link GenericRegionEntity} persistent entity stored in the "GenericRegionEntity"

@@ -16,10 +16,10 @@
 package org.springframework.data.gemfire.repository.sample;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 
 /**
- * 
+ *
  * @author Oliver Gierke
  */
 @Region("address")

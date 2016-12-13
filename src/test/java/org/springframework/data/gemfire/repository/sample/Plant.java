@@ -17,7 +17,7 @@
 package org.springframework.data.gemfire.repository.sample;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -25,7 +25,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author John Blum
  * @see org.springframework.data.annotation.Id
- * @see org.springframework.data.gemfire.mapping.Region
+ * @see Region
  * @since 1.4.0
  */
 @Region("Plants")

@@ -196,7 +196,7 @@ As an example, suppose you have a `Customers` application domain type and corres
 package ...;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 ...
 
 @Region("Customers")

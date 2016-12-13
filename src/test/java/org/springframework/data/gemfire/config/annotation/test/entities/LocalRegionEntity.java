@@ -18,7 +18,7 @@
 package org.springframework.data.gemfire.config.annotation.test.entities;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.LocalRegion;
+import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 
 /**
  * {@link LocalRegionEntity} persistent entity stored in the "LocalRegionEntity" {@link org.apache.geode.cache.DataPolicy#NORMAL},

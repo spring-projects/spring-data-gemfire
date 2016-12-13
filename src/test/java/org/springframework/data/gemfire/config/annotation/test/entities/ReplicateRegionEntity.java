@@ -18,7 +18,7 @@
 package org.springframework.data.gemfire.config.annotation.test.entities;
 
 import org.springframework.data.gemfire.ScopeType;
-import org.springframework.data.gemfire.mapping.ReplicateRegion;
+import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
 
 /**
  * {@link ReplicateRegionEntity} persistent entity stored in the "Accounts"
