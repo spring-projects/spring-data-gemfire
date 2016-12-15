@@ -55,7 +55,7 @@ public class GemfireRepositoryFactoryBeanTest {
 
 	@Before
 	public void setup() {
-		repositoryFactoryBean = new GemfireRepositoryFactoryBean();
+		repositoryFactoryBean = new GemfireRepositoryFactoryBean(PersonRepository.class);
 	}
 
 	@Test
@@ -82,7 +82,6 @@ public class GemfireRepositoryFactoryBeanTest {
 		doReturn(Collections.singletonMap("simple", region)).when(applicationContext).getBeansOfType(Region.class);
 
 		repositoryFactoryBean.setApplicationContext(applicationContext);
-		repositoryFactoryBean.setRepositoryInterface(PersonRepository.class);
 		repositoryFactoryBean.setGemfireMappingContext(new GemfireMappingContext());
 		repositoryFactoryBean.afterPropertiesSet();
 

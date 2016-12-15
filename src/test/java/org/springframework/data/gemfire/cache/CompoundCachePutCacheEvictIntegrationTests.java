@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,11 @@
 
 package org.springframework.data.gemfire.cache;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
@@ -50,10 +54,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Integration tests testing the contractual behavior and combination of using Spring'a {@link CachePut} annotation
@@ -182,10 +182,9 @@ public class CompoundCachePutCacheEvictIntegrationTests {
 		@Bean
 		GemfireRepositoryFactoryBean<PersonRepository, Person, Long> personRepository() {
 			GemfireRepositoryFactoryBean<PersonRepository, Person, Long> personRepository =
-				new GemfireRepositoryFactoryBean<PersonRepository, Person, Long>();
+				new GemfireRepositoryFactoryBean<PersonRepository, Person, Long>(PersonRepository.class);
 
 			personRepository.setGemfireMappingContext(new GemfireMappingContext());
-			personRepository.setRepositoryInterface(PersonRepository.class);
 
 			return personRepository;
 		}
