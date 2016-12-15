@@ -17,7 +17,11 @@
 
 package org.springframework.data.gemfire.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
@@ -25,8 +29,6 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Resource;
-
-import com.gemstone.gemfire.cache.GemFireCache;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,9 +54,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import com.gemstone.gemfire.cache.GemFireCache;
 
 /**
  * Integration tests testing the contractual behavior and combination of using Spring'a {@link CachePut} annotation
@@ -183,10 +183,9 @@ public class CompoundCachePutCacheEvictIntegrationTests {
 		@Bean
 		GemfireRepositoryFactoryBean<PersonRepository, Person, Long> personRepository() {
 			GemfireRepositoryFactoryBean<PersonRepository, Person, Long> personRepository =
-				new GemfireRepositoryFactoryBean<PersonRepository, Person, Long>();
+				new GemfireRepositoryFactoryBean<PersonRepository, Person, Long>(PersonRepository.class);
 
 			personRepository.setGemfireMappingContext(new GemfireMappingContext());
-			personRepository.setRepositoryInterface(PersonRepository.class);
 
 			return personRepository;
 		}
