@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.8.6.RELEASE (2016-12-21)
+---------------------------------------------
+* SGF-577 - Late initialization of GemfireBeanFactoryLocator causes IllegalStateException.
+* SGF-570 - Respect manual-start on Gateway Senders/Receivers but no longer couple the start/stop lifecycle to the Spring container.
+* SGF-561 - Release 1.8.6 (Hopper SR6).
+* SGF-526 - Add Maven Profile with Repository Declaration to resolve the GemFire artifact for Spring Boot.
+
+
 Changes in version 1.9.0.RC1 (2016-12-21)
 -----------------------------------------
 * SGF-576 - Adapt API in RepositoryFactoryBeanSupport implementation.
