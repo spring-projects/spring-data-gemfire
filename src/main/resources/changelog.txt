@@ -3,6 +3,42 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.0.RC1 (2016-12-21)
+-----------------------------------------
+* SGF-576 - Adapt API in RepositoryFactoryBeanSupport implementation.
+* SGF-574 - Register repository factory in spring.factories for multi-store support.
+* SGF-571 - Remove explicit call to start() in ContinuousQueryListenerContainer.afterPropertiesSet().
+* SGF-570 - Respect manual-start on Gateway Senders/Receivers but no longer couple the start/stop lifecycle to the Spring container.
+* SGF-568 - Upgrade to GemFire 8.2.2.
+* SGF-562 - Include attribute to enable BeanFactoryLocator support in Annotation config.
+* SGF-555 - Repository queries on client Regions associated with a Pool configured for a specific server group can lead to a RegionNotFoundException.
+* SGF-553 - Use SDG's MappingPdxSerializer as the default PdxSerializer when PDX is configured with @EnablePdx.
+* SGF-552 - Unset 'mcast-port' when 'locators' are specified and unset 'locators' when @EnableMcast is used.
+* SGF-549 - Configure DiskStores with annotations.
+* SGF-548 - Configure Regions with annotations.
+* SGF-547 - Configure Eviction with annotations.
+* SGF-546 - Configure Auto Region Lookup using annotations.
+* SGF-545 - Register the ClientRegionPoolBeanFactoryPostProcessor for the new Annotation config model.
+* SGF-544 - Register the PdxDiskStoreAwareBeanFactoryPostProcessor for the new Annotation config model.
+* SGF-543 - Register the DiskStoreDirectoryBeanPostProcessor for the new Annotation config model.
+* SGF-542 - Register the DefinedIndexesApplicationListener for the new Annotation config model.
+* SGF-541 - Register the CustomEditorBeanFactoryPostProcessor for the Annotation config model.
+* SGF-540 - Configure additional Pools using annotations.
+* SGF-539 - Change GemfireCache.evict(key) to call Region.remove(key).
+* SGF-538 - Reorganize the XML configuration classes and support in SDG.
+* SGF-535 - Allow both SpEL and property placeholder expressions to be used in the locators/servers attributes of the <gfe:pool> XML namespace element.
+* SGF-534 - Fix ordered GemfireRepository.findAll(Sort) queries.
+* SGF-528 - Enable GemfireCacheManager to explicitly specify Cache names referring to Regions that will be used in Spring's Caching Infrastructure.
+* SGF-527 - Allow extension of the ClientRegionAndPoolBeanFactoryPostProcessor.
+* SGF-526 - Add Maven Profile with Repository Declaration to resolve the GemFire artifact for Spring Boot.
+* SGF-522 - There are a few broken links in SDG documentation.
+* SGF-516 - Configure Expiration with annotations.
+* SGF-509 - Release 1.9 RC1 (Ingalls).
+* SGF-508 - Fix embedded Locator and Manager service configuration using Java-based configuration meta-data with @Enabled annotations.
+* SGF-250 - @EnableGemfireRegions for @Region.
+* SGF-106 - Add annotation support for creating Indexes.
+
+
 Changes in version 2.0.0.M1 (2016-11-23)
 ----------------------------------------
 * SGF-571 - Remove explicit call to start() in ContinuousQueryListenerContainer.afterPropertiesSet().
