@@ -60,18 +60,10 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.support.Expiration
  * @see org.springframework.data.gemfire.support.IdleTimeoutExpiration
  * @see org.springframework.data.gemfire.support.TimeToLiveExpiration
-<<<<<<< HEAD
  * @see org.apache.geode.cache.CustomExpiry
  * @see org.apache.geode.cache.ExpirationAction
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.Region
-=======
- * @see org.apache.geode.cache.CustomExpiry
- * @see org.apache.geode.cache.ExpirationAction
- * @see org.apache.geode.cache.ExpirationAttributes
- * @see org.apache.geode.cache.Region
- * @see <a href="http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:region:expiration:annotation">Annotation-based Data Expiration</a>
->>>>>>> bfb3347... SGF-516 - Configure Expiration with annotations.
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
