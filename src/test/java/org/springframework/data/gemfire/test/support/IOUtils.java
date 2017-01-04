@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2010-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * The IOUtils class is an utility class working with IO operations.
+ * The {@link IOUtils} class is an abstract utility class for working with IO operations.
  *
  * @author John Blum
+ * @see java.io.Closeable
  * @since 1.5.0
  */
 @SuppressWarnings("unused")
@@ -32,6 +33,7 @@ public abstract class IOUtils {
 
 	protected static final Logger log = Logger.getLogger(IOUtils.class.getName());
 
+	/* (non-Javadoc) */
 	public static boolean close(Closeable closeable) {
 		if (closeable != null) {
 			try {
@@ -48,5 +50,4 @@ public abstract class IOUtils {
 
 		return false;
 	}
-
 }

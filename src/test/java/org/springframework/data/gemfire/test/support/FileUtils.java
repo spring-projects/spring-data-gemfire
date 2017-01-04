@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2010-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The FileUtils class is a utility class for processing files, working with java.io.File objects.
+ * The {@link FileUtils} class is an abstract utility class for processing file system files
+ * by working with {@link File} objects.
  *
  * @author John Blum
  * @see java.io.File
@@ -39,20 +40,33 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public abstract class FileUtils extends IOUtils {
 
+	public static final String FILE_SEPARATOR = System.getProperty("file.separator");
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-	public static boolean isDirectory(final File path) {
+	/* (non-Javadoc) */
+	public static boolean isDirectory(File path) {
 		return (path != null && path.isDirectory());
 	}
 
-	public static boolean isFile(final File path) {
+	/* (non-Javadoc) */
+	public static boolean isFile(File path) {
 		return (path != null && path.isFile());
 	}
 
+	/* (non-Javadoc) */
+	public static File newFile(String pathname) {
+		return new File(pathname);
+	}
+
+	/* (non-Javadoc) */
+	public static File newFile(File parent, String pathname) {
+		return new File(parent, pathname);
+	}
+
+	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static String read(File file) throws IOException {
-		Assert.isTrue(isFile(file), String.format(
-			"File [%1$s], from which to read the contents of, does not refer to a valid file", file));
+		Assert.isTrue(isFile(file), String.format("The file [%s] to read the contents from is not a valid file", file));
 
 		BufferedReader fileReader = new BufferedReader(new FileReader(file));
 
@@ -71,8 +85,9 @@ public abstract class FileUtils extends IOUtils {
 		}
 	}
 
+	/* (non-Javadoc) */
 	public static void write(File file, String contents) throws IOException {
-		Assert.notNull(file, "File must not be null!");
+		Assert.notNull(file, "File must not be null");
 
 		Assert.isTrue(StringUtils.hasText(contents), String.format(
 			"The contents for File [%1$s] cannot be null or empty", file));
@@ -88,5 +103,4 @@ public abstract class FileUtils extends IOUtils {
 			IOUtils.close(fileWriter);
 		}
 	}
-
 }

@@ -18,10 +18,15 @@ package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.springframework.data.gemfire.test.support.FileSystemUtils.FileExtensionFilter.newFileExtensionFilter;
+
+import java.io.FileFilter;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.data.gemfire.test.support.FileSystemUtils;
+import org.springframework.data.gemfire.util.CacheUtils;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -30,16 +35,16 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
 
 /**
- * The GenericRegionFactoryBeanTest class is a test suite of test cases testing the contract and functionality
- * of the GenericRegionFactoryBean class.
+ * Unit tests for {@link GenericRegionFactoryBean}.
  *
  * @author John Blum
+ * @see org.junit.Test
  * @see org.springframework.data.gemfire.GenericRegionFactoryBean
  * @since 1.7.0
  */
 public class GenericRegionFactoryBeanTest {
 
-	// as defined in the com.gemstone.gemfire.internal.cache.AbstractRegion class
+	// As defined in com.gemstone.gemfire.internal.cache.AbstractRegion
 	private static final Scope DEFAULT_SCOPE = Scope.DISTRIBUTED_NO_ACK;
 
 	private static Region<Object, Object> defaultRegion;
@@ -121,21 +126,25 @@ public class GenericRegionFactoryBeanTest {
 
 	@AfterClass
 	public static void tearDown() {
-		try {
-			CacheFactory.getAnyInstance().close();
-		}
-		catch (Exception ignore) {
-		}
+		CacheUtils.closeCache();
+
+		FileFilter fileFilter = FileSystemUtils.CompositeFileFilter.or(
+			newFileExtensionFilter(".if"), newFileExtensionFilter(".crf"), newFileExtensionFilter(".drf"),
+				newFileExtensionFilter(".log"));
+
+		FileSystemUtils.deleteRecursive(FileSystemUtils.WORKING_DIRECTORY, fileFilter);
 	}
 
 	protected void assertRegionAttributes(Region<?, ?> region, String expectedRegionName, DataPolicy expectedDataPolicy,
 			Scope expectedScope) {
+
 		assertRegionAttributes(region, expectedRegionName, String.format("%1$s%2$s", Region.SEPARATOR, expectedRegionName),
 			expectedDataPolicy, expectedScope);
 	}
 
 	protected void assertRegionAttributes(Region<?, ?> region, String expectedRegionName, String expectedRegionPath,
 			DataPolicy expectedDataPolicy, Scope expectedScope) {
+
 		assertNotNull("The GemFire Cache Region must not be null!", region);
 		assertEquals(expectedRegionName, region.getName());
 		assertEquals(expectedRegionPath, region.getFullPath());
@@ -179,5 +188,4 @@ public class GenericRegionFactoryBeanTest {
 	public void replicateRegionAttributes() {
 		assertRegionAttributes(replicateRegion, "ReplicateRegion", DataPolicy.REPLICATE, Scope.GLOBAL);
 	}
-
 }
