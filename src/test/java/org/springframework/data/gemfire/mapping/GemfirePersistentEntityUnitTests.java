@@ -23,13 +23,17 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
 
+import lombok.Data;
+
 /**
  * Unit tests for {@link GemfirePersistentEntity}.
- * 
+ *
  * @author Oliver Gierke
  * @author John Blum
  */
@@ -37,6 +41,36 @@ public class GemfirePersistentEntityUnitTests {
 
 	protected MappingContext<GemfirePersistentEntity<?>, GemfirePersistentProperty> getMappingContext() {
 		return new GemfireMappingContext();
+	}
+
+	/**
+	 * JIRA ticket SGF-582
+	 *
+	 * Used an object's getId method if the @Id does not exists
+	 */
+	@Test
+	public void supportsGetId() {
+
+		GemfirePersistentEntity<UnannotatedRegion> unnamedRegionEntity = new GemfirePersistentEntity<UnannotatedRegion>(
+				ClassTypeInformation.from(UnannotatedRegion.class));
+
+		IdentifierAccessor accessor = unnamedRegionEntity.getIdentifierAccessor(new UnannotatedRegion());
+		Assert.assertNull(accessor.getIdentifier());
+
+		GemfirePersistentEntity<NotAnnotationIdRegion> entity = new GemfirePersistentEntity<NotAnnotationIdRegion>(
+				ClassTypeInformation.from(NotAnnotationIdRegion.class));
+
+		NotAnnotationIdRegion region = new NotAnnotationIdRegion();
+
+		region.setId("id");
+		region.setValue("value");
+
+		accessor = entity.getIdentifierAccessor(region);
+
+		Assert.assertNotNull(accessor.getIdentifier());
+
+		Assert.assertEquals("id", accessor.getIdentifier());
+
 	}
 
 	@Test
@@ -64,8 +98,8 @@ public class GemfirePersistentEntityUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void bigDecimalPersistentPropertyIsNotEntity() {
-		GemfirePersistentEntity<ExampleDomainObject> entity = (GemfirePersistentEntity<ExampleDomainObject>)
-			getMappingContext().getPersistentEntity(ExampleDomainObject.class);
+		GemfirePersistentEntity<ExampleDomainObject> entity = (GemfirePersistentEntity<ExampleDomainObject>) getMappingContext()
+				.getPersistentEntity(ExampleDomainObject.class);
 
 		assertThat(entity.getRegionName(), is(equalTo("Example")));
 
@@ -78,8 +112,8 @@ public class GemfirePersistentEntityUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void bigIntegerPersistentPropertyIsNotEntity() {
-		GemfirePersistentEntity<ExampleDomainObject> entity = (GemfirePersistentEntity<ExampleDomainObject>)
-			getMappingContext().getPersistentEntity(ExampleDomainObject.class);
+		GemfirePersistentEntity<ExampleDomainObject> entity = (GemfirePersistentEntity<ExampleDomainObject>) getMappingContext()
+				.getPersistentEntity(ExampleDomainObject.class);
 
 		assertThat(entity.getRegionName(), is(equalTo("Example")));
 
@@ -89,15 +123,18 @@ public class GemfirePersistentEntityUnitTests {
 		assertThat(bigNumber.isEntity(), is(false));
 	}
 
-	static class UnannotatedRegion {
-	}
+	static class UnannotatedRegion {}
 
 	@Region("Foo")
-	static class AnnotatedRegion {
-	}
+	static class AnnotatedRegion {}
 
 	@Region
-	static class UnnamedRegion {
+	static class UnnamedRegion {}
+
+	static @Data class NotAnnotationIdRegion {
+
+		private String value;
+		private String id;
 	}
 
 	@Region("Example")
