@@ -19,6 +19,8 @@ package org.springframework.data.gemfire.mapping;
 import static org.springframework.data.gemfire.util.SpringUtils.defaultIfEmpty;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -28,9 +30,12 @@ import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
+import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.IdPropertyIdentifierAccessor;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.Assert;
 
 /**
  * {@link PersistentEntity} implementation adding custom GemFire persistent entity related metadata, such as the
@@ -38,6 +43,7 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  * @author John Blum
+ * @author Gregory Green
  * @see org.springframework.data.gemfire.mapping.GemfirePersistentProperty
  * @see org.springframework.data.mapping.model.BasicPersistentEntity
  */
@@ -48,12 +54,61 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 
 	private final String regionName;
 
+	/**
+	 * GET_ID_METHOD_NAME = "getId" Used to support getting the region key when the @Id annotation does not exist.
+	 */
+	private static final String GET_ID_METHOD_NAME = "getId";
+
+	/**
+	 * Get the identifier access strategy object that determines the region key to use
+	 * 
+	 * @return implementation of the Identifier access strategy with support to use the getId bean method.
+	 */
+
+	@Override
+	public IdentifierAccessor getIdentifierAccessor(Object bean) {
+
+		Assert.notNull(bean, "Target bean must not be null!");
+		Assert.isTrue(getType().isInstance(bean), "Target bean is not of type of the persistent entity!");
+
+		// Check if @Id access
+		if (hasIdProperty()) {
+			return new IdPropertyIdentifierAccessor(this, bean);
+		}
+
+		// use getId() method via a lamba function implementation of IdentifierAccessor
+		IdentifierAccessor getIdAccessor = () -> {
+
+			try {
+				Method getMethod = bean.getClass().getMethod(GET_ID_METHOD_NAME);
+
+				if (getMethod == null)
+					return null; // getId method not found
+
+				return getMethod.invoke(bean);
+			} catch (NoSuchMethodException e) {
+				return null;
+			} catch (SecurityException e) {
+				return null;
+			} catch (IllegalAccessException e) {
+				return null;
+			} catch (IllegalArgumentException e) {
+				return null;
+			} catch (InvocationTargetException e) {
+				return null;
+			}
+
+		};
+
+		return getIdAccessor;
+	}
+
 	/* (non-Javadoc) */
 	protected static Annotation resolveRegionAnnotation(Class<?> persistentEntityType) {
 
 		for (Class<? extends Annotation> regionAnnotationType : Region.REGION_ANNOTATION_TYPES) {
-			Annotation regionAnnotation = AnnotatedElementUtils.getMergedAnnotation(
-				persistentEntityType, regionAnnotationType);
+			Annotation regionAnnotation = AnnotatedElementUtils.getMergedAnnotation(persistentEntityType,
+					regionAnnotationType);
 
 			if (regionAnnotation != null) {
 				return regionAnnotation;
@@ -66,8 +121,9 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	/* (non-Javadoc) */
 	protected static String resolveRegionName(Class<?> persistentEntityType, Annotation regionAnnotation) {
 
-		String regionName = (regionAnnotation != null ? AnnotationAttributes.fromMap(
-			AnnotationUtils.getAnnotationAttributes(regionAnnotation)).getString("value") : null);
+		String regionName = (regionAnnotation != null
+				? AnnotationAttributes.fromMap(AnnotationUtils.getAnnotationAttributes(regionAnnotation)).getString("value")
+				: null);
 
 		return defaultIfEmpty(regionName, persistentEntityType.getSimpleName());
 	}
@@ -87,12 +143,12 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	}
 
 	/**
-	 * Returns the {@link Region} annotation used to annotate this {@link PersistentEntity} or {@literal null}
-	 * if this {@link PersistentEntity} was not annotated with a {@link Region} annotation.
+	 * Returns the {@link Region} annotation used to annotate this {@link PersistentEntity} or {@literal null} if this
+	 * {@link PersistentEntity} was not annotated with a {@link Region} annotation.
 	 *
 	 * @param <T> concrete {@link Class} type of the Region {@link Annotation}.
-	 * @return the {@link Region} annotation used to annotate this {@link PersistentEntity} or {@literal null}
-	 * if this {@link PersistentEntity} was not annotated with a {@link Region} annotation.
+	 * @return the {@link Region} annotation used to annotate this {@link PersistentEntity} or {@literal null} if this
+	 *         {@link PersistentEntity} was not annotated with a {@link Region} annotation.
 	 * @see ClientRegion
 	 * @see LocalRegion
 	 * @see PartitionRegion
@@ -106,11 +162,11 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	}
 
 	/**
-	 * Returns the {@link Class} type of the Region {@link Annotation} or {@literal null}
-	 * if this {@link PersistentEntity} was not annotated with a Region {@link Annotation}.
+	 * Returns the {@link Class} type of the Region {@link Annotation} or {@literal null} if this {@link PersistentEntity}
+	 * was not annotated with a Region {@link Annotation}.
 	 *
-	 * @return the {@link Class} type of the Region {@link Annotation} or {@literal null}
-	 * if this {@link PersistentEntity} was not annotated with a Region {@link Annotation}.
+	 * @return the {@link Class} type of the Region {@link Annotation} or {@literal null} if this {@link PersistentEntity}
+	 *         was not annotated with a Region {@link Annotation}.
 	 * @see java.lang.annotation.Annotation#annotationType()
 	 * @see #getRegionAnnotation()
 	 */
