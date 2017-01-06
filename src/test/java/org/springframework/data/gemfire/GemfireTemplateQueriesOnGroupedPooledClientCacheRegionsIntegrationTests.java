@@ -180,7 +180,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 
 			serverOnePool.setMaxConnections(2);
 			serverOnePool.setPingInterval(TimeUnit.SECONDS.toMillis(5));
-			serverOnePool.setReadTimeout(Long.valueOf(TimeUnit.SECONDS.toMillis(20)).intValue());
+			serverOnePool.setReadTimeout(Long.valueOf(TimeUnit.SECONDS.toMillis(30)).intValue());
 			serverOnePool.setRetryAttempts(1);
 			serverOnePool.setServerGroup("serverOne");
 			serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));
@@ -194,7 +194,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 
 			serverOnePool.setMaxConnections(2);
 			serverOnePool.setPingInterval(TimeUnit.SECONDS.toMillis(5));
-			serverOnePool.setReadTimeout(Long.valueOf(TimeUnit.SECONDS.toMillis(20)).intValue());
+			serverOnePool.setReadTimeout(Long.valueOf(TimeUnit.SECONDS.toMillis(30)).intValue());
 			serverOnePool.setRetryAttempts(1);
 			serverOnePool.setServerGroup("serverTwo");
 			serverOnePool.setLocators(ConnectionEndpointList.from(newConnectionEndpoint("localhost", 11235)));

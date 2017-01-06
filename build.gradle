@@ -84,7 +84,7 @@ tasks.withType(Test).all {
 }
 
 repositories {
-    maven { url "https://repo.spring.io/libs-release" }
+    maven { url "https://repo.spring.io/libs-milestone" }
     maven { url "https://repo.spring.io/plugins-release"}
     maven { url "https://repository.apache.org/content/repositories/snapshots" }
 }
@@ -114,8 +114,7 @@ dependencies {
     }
     compile("org.apache.geode:geode-cq:$gemfireVersion")
     compile("org.apache.geode:geode-wan:$gemfireVersion")
-    optional "org.apache.shiro:shiro-spring:$shiroVersion"
-    optional("com.google.code.findbugs:annotations:$googleCodeFindbugsVersion")
+    optional"org.apache.shiro:shiro-spring:$shiroVersion"
     runtime("antlr:antlr:$antlrVersion")
 
     // 3rd Party Dependencies
