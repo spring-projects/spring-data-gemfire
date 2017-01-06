@@ -275,7 +275,7 @@ public class CollectionUtilsUnitTests {
 		assertThat(iterable.iterator().hasNext()).isFalse();
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = IllegalStateException.class)
 	public void nullSafeIterableIterator() {
 		Iterable<Object> iterable = CollectionUtils.nullSafeIterable(null);
 
@@ -290,16 +290,10 @@ public class CollectionUtilsUnitTests {
 			iterator.next();
 		}
 		catch (NoSuchElementException ignore) {
-			assertThat(ignore.getMessage()).isEqualTo("No more elements");
-			assertThat(ignore.getCause()).isNull();
-
 			try {
 				iterator.remove();
 			}
-			catch (UnsupportedOperationException expected) {
-				assertThat(expected.getMessage()).isEqualTo("Operation not supported");
-				assertThat(expected.getCause()).isNull();
-
+			catch (IllegalStateException expected) {
 				throw expected;
 			}
 		}
