@@ -260,11 +260,11 @@ public class ClientRegionNamespaceTest {
 	public void testClientRegionWithRegisteredInterests() throws Exception {
 		assertTrue(context.containsBean("client-with-interests"));
 
-		ClientRegionFactoryBean factory = context.getBean("&client-with-interests", ClientRegionFactoryBean.class);
+		ClientRegionFactoryBean factoryBean = context.getBean("&client-with-interests", ClientRegionFactoryBean.class);
 
-		assertNotNull(factory);
+		assertNotNull(factoryBean);
 
-		Interest<?>[] interests = TestUtils.readField("interests", factory);
+		Interest<?>[] interests = TestUtils.readField("interests", factoryBean);
 
 		assertNotNull(interests);
 		assertEquals(2, interests.length);

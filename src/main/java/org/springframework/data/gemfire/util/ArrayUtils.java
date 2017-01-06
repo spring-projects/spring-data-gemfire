@@ -24,6 +24,7 @@ import org.springframework.util.ObjectUtils;
  * @author David Turanski
  * @author John Blum
  * @see java.lang.reflect.Array
+ * @see java.util.Arrays
  */
 public abstract class ArrayUtils {
 

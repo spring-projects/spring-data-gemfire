@@ -17,6 +17,8 @@
 
 package org.springframework.data.gemfire.util;
 
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,11 +39,9 @@ public abstract class SpringUtils {
 
 	/* (non-Javadoc) */
 	public static BeanDefinition addDependsOn(BeanDefinition bean, String beanName) {
-		String[] dependsOn = bean.getDependsOn();
-		List<String> dependsOnList = new ArrayList<String>();
+		List<String> dependsOnList = new ArrayList<>();
 
-		Collections.addAll(dependsOnList, ArrayUtils.nullSafeArray(dependsOn, String.class));
-
+		Collections.addAll(dependsOnList, nullSafeArray(bean.getDependsOn(), String.class));
 		dependsOnList.add(beanName);
 		bean.setDependsOn(dependsOnList.toArray(new String[dependsOnList.size()]));
 

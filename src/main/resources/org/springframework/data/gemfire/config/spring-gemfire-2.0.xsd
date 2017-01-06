@@ -1238,7 +1238,7 @@ Regular expression based interest. If the pattern is '.*' then all keys of any t
 							<xsd:complexType>
 								<xsd:complexContent>
 									<xsd:extension base="interestType">
-										<xsd:attribute name="pattern" type="xsd:string" />
+										<xsd:attribute name="pattern" type="xsd:string" use="required"/>
 									</xsd:extension>
 								</xsd:complexContent>
 							</xsd:complexType>

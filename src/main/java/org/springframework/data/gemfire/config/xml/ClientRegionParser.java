@@ -24,7 +24,9 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.Interest;
+import org.springframework.data.gemfire.client.KeyInterest;
 import org.springframework.data.gemfire.client.RegexInterest;
+import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -139,17 +141,18 @@ class ClientRegionParser extends AbstractRegionParser {
 	/* (non-Javadoc) */
 	private void parseCommonInterestAttributes(Element element, BeanDefinitionBuilder builder) {
 		ParsingUtils.setPropertyValue(element, builder, "durable", "durable");
-		ParsingUtils.setPropertyValue(element, builder, "result-policy", "policy");
 		ParsingUtils.setPropertyValue(element, builder, "receive-values", "receiveValues");
+		ParsingUtils.setPropertyValue(element, builder, "result-policy", "policy");
 	}
 
 	/* (non-Javadoc) */
 	private Object parseKeyInterest(Element keyInterestElement, ParserContext parserContext) {
-		BeanDefinitionBuilder keyInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(Interest.class);
+		BeanDefinitionBuilder keyInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(KeyInterest.class);
 
-		parseCommonInterestAttributes(keyInterestElement, keyInterestBuilder);
 		keyInterestBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext,
 			keyInterestElement, keyInterestBuilder, "key-ref"));
+
+		parseCommonInterestAttributes(keyInterestElement, keyInterestBuilder);
 
 		return keyInterestBuilder.getBeanDefinition();
 	}
@@ -158,8 +161,9 @@ class ClientRegionParser extends AbstractRegionParser {
 	private Object parseRegexInterest(Element regexInterestElement) {
 		BeanDefinitionBuilder regexInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegexInterest.class);
 
+		regexInterestBuilder.addConstructorArgValue(regexInterestElement.getAttribute("pattern"));
+
 		parseCommonInterestAttributes(regexInterestElement, regexInterestBuilder);
-		ParsingUtils.setPropertyValue(regexInterestElement, regexInterestBuilder, "pattern", "key");
 
 		return regexInterestBuilder.getBeanDefinition();
 	}

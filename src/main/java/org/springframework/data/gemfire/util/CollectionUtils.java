@@ -118,7 +118,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Enumeration
 	 */
 	public static <T> Iterable<T> iterable(Enumeration<T> enumeration) {
-		return () -> org.springframework.util.CollectionUtils.toIterator(enumeration);
+		return () -> toIterator(enumeration);
 	}
 
 	/**

@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.client;
 
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.CacheListener;
@@ -40,13 +42,11 @@ import org.springframework.data.gemfire.DataPolicyConverter;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
-import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Spring {@link FactoryBean} used to create a GemFire client {@link Region}.
+ * Spring {@link FactoryBean} used to create a GemFire client cache {@link Region}.
  *
  * @author Costin Leau
  * @author David Turanski
@@ -55,16 +55,15 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.data.gemfire.RegionLookupFactoryBean
- * @see org.apache.geode.cache.CacheListener
- * @see org.apache.geode.cache.CacheLoader
- * @see org.apache.geode.cache.CacheWriter
  * @see org.apache.geode.cache.DataPolicy
+ * @see org.apache.geode.cache.EvictionAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.ClientRegionFactory
  * @see org.apache.geode.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.client.Pool
  */
 @SuppressWarnings("unused")
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
@@ -284,7 +283,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			clientRegionFactory.addCacheListener(cacheListener);
 		}
 
-		for (CacheListener<K, V> cacheListener : ArrayUtils.nullSafeArray(this.cacheListeners, CacheListener.class)) {
+		for (CacheListener<K, V> cacheListener : nullSafeArray(this.cacheListeners, CacheListener.class)) {
 			clientRegionFactory.addCacheListener(cacheListener);
 		}
 
@@ -295,7 +294,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	@SuppressWarnings("unchecked")
 	private <K, V> CacheListener<K, V>[] attributesCacheListeners() {
 		CacheListener[] cacheListeners = (this.attributes != null ? this.attributes.getCacheListeners() : null);
-		return ArrayUtils.nullSafeArray(cacheListeners, CacheListener.class);
+		return nullSafeArray(cacheListeners, CacheListener.class);
 	}
 
 	/* (non-Javadoc) */
@@ -375,17 +374,16 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
 	private Region<K, V> registerInterests(Region<K, V> region) {
-		if (!ObjectUtils.isEmpty(interests)) {
-			for (Interest<K> interest : interests) {
-				if (interest instanceof RegexInterest) {
-					region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(),
-						interest.isDurable(), interest.isReceiveValues());
-				}
-				else {
-					region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable(),
-						interest.isReceiveValues());
-				}
+		for (Interest<K> interest : nullSafeArray(interests, Interest.class)) {
+			if (interest.isRegexType()) {
+				region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(),
+					interest.isDurable(), interest.isReceiveValues());
+			}
+			else {
+				region.registerInterest(interest.getKey(), interest.getPolicy(), interest.isDurable(),
+					interest.isReceiveValues());
 			}
 		}
 
