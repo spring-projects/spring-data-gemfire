@@ -63,8 +63,8 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void addAllIterableElementsToList() {
-		List<Integer> target = new ArrayList<Integer>(Arrays.asList(1, 2, 3));
-		Set<Integer> source = new HashSet<Integer>(Arrays.asList(1, 2, 3));
+		List<Integer> target = new ArrayList<>(Arrays.asList(1, 2, 3));
+		Set<Integer> source = new HashSet<>(Arrays.asList(1, 2, 3));
 
 		target = CollectionUtils.addAll(target, source);
 
@@ -75,8 +75,8 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void addAllIterableElementsToSet() {
-		Set<Integer> target = new HashSet<Integer>(Arrays.asList(1, 2, 3));
-		Set<Integer> source = new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+		Set<Integer> target = new HashSet<>(Arrays.asList(1, 2, 3));
+		Set<Integer> source = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5));
 
 		target = CollectionUtils.addAll(target, source);
 
@@ -96,9 +96,9 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void addEmptyIterableToCollection() {
-		Collection<Integer> target = new ArrayList<Integer>(Arrays.asList(1, 2, 3));
+		Collection<Integer> target = new ArrayList<>(Arrays.asList(1, 2, 3));
 
-		target = CollectionUtils.addAll(target, Collections.<Integer>emptyList());
+		target = CollectionUtils.addAll(target, Collections.emptyList());
 
 		assertThat(target).isNotNull();
 		assertThat(target.size()).isEqualTo(3);
@@ -107,7 +107,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void addNullIterableToCollection() {
-		Collection<Integer> target = new ArrayList<Integer>(Arrays.asList(1, 2, 3));
+		Collection<Integer> target = new ArrayList<>(Arrays.asList(1, 2, 3));
 
 		target = CollectionUtils.addAll(target, null);
 
@@ -157,9 +157,29 @@ public class CollectionUtilsUnitTests {
 	}
 
 	@Test
+	public void containsAnyWithCollectionAndArrayIsTrue() {
+		assertThat(CollectionUtils.containsAny(Arrays.asList(1, 2, 3), 1, 2)).isTrue();
+	}
+
+	@Test
+	public void containsAnyWithCollectionAndArrayIsFalse() {
+		assertThat(CollectionUtils.containsAny(Arrays.asList(1, 2, 3), 4)).isFalse();
+	}
+
+	@Test
+	public void containsAnyWithCollectionAndNullArrayIsFalse() {
+		assertThat(CollectionUtils.containsAny(Arrays.asList(1, 2, 3), (Object[]) null));
+	}
+
+	@Test
+	public void containsAnyWithNullCollectionAndArrayIsFalse() {
+		assertThat(CollectionUtils.containsAny(null, 1)).isFalse();
+	}
+
+	@Test
 	public void defaultIfEmptyWithNonNullNonEmptyIterableReturnsIterable() {
-		Iterable<Object> iterable = Collections.<Object>singleton(1);
-		Iterable<Object> defaultIterable = Collections.<Object>singleton(2);
+		Iterable<Object> iterable = Collections.singleton(1);
+		Iterable<Object> defaultIterable = Collections.singleton(2);
 
 		assertThat(CollectionUtils.defaultIfEmpty(iterable, defaultIterable)).isSameAs(iterable);
 	}
@@ -167,7 +187,7 @@ public class CollectionUtilsUnitTests {
 	@Test
 	public void defaultIfEmptyWithEmptyIterableReturnsDefault() {
 		Iterable<Object> iterable = Collections.emptySet();
-		Iterable<Object> defaultIterable = Collections.<Object>singleton(2);
+		Iterable<Object> defaultIterable = Collections.singleton(2);
 
 		assertThat(CollectionUtils.defaultIfEmpty(iterable, defaultIterable)).isSameAs(defaultIterable);
 	}

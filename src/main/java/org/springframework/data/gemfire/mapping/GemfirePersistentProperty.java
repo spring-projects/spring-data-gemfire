@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.mapping;
+
+import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Set;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.model.GemfireSimpleTypeHolder;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -27,10 +32,12 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
  * {@link PersistentProperty} implementation to for Gemfire related metadata.
- * 
+ *
  * @author Oliver Gierke
  */
 public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty<GemfirePersistentProperty> {
+
+	protected static final Set<String> SUPPORTED_IDENTIFIER_NAMES = asSet("id");
 
 	/* (non-Javadoc) */
 	private static SimpleTypeHolder resolveSimpleTypeHolder(SimpleTypeHolder source) {
@@ -39,26 +46,59 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 	}
 
 	/**
-	 * Constructs an instance of the GemfirePersistentProperty with entity information.
+	 * Constructs an instance of the {@link GemfirePersistentProperty} initialized with entity
+	 * persistent property information (meta-data).
 	 *
-	 * @param field the entity field corresponding to the persistent property.
-	 * @param propertyDescriptor PropertyDescriptor for the entity's persistent property.
-	 * @param owner the entity owning the persistent property.
-	 * @param simpleTypeHolder type holder for primitive types.
+	 * @param field entity {@link Field} corresponding to the persistent property.
+	 * @param propertyDescriptor {@link PropertyDescriptor} for the entity's persistent property.
+	 * @param owner entity owning the persistent property.
+	 * @param simpleTypeHolder {@link SimpleTypeHolder} used to handle primitive types.
+	 * @see org.springframework.data.mapping.model.SimpleTypeHolder
+	 * @see org.springframework.data.mapping.PersistentEntity
+	 * @see java.beans.PropertyDescriptor
+	 * @see java.lang.reflect.Field
 	 */
 	public GemfirePersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			PersistentEntity<?, GemfirePersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
+
 		super(field, propertyDescriptor, owner, resolveSimpleTypeHolder(simpleTypeHolder));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#
-	 * createAssociation()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	protected Association<GemfirePersistentProperty> createAssociation() {
-		return new Association<GemfirePersistentProperty>(this, null);
+		return new Association<>(this, null);
+	}
+
+	/**
+	 * Determines whether this {@link GemfirePersistentProperty} explicitly identifies an entity property identifier,
+	 * one in which the user explicitly annotated a entity class member (field or getter/setter).
+	 *
+	 * @return a boolean value indicating whether this {@link GemfirePersistentProperty} explicitly identifies
+	 * an entity property identifier.
+	 * @see org.springframework.data.annotation.Id
+	 * @see #isAnnotationPresent(Class)
+	 */
+	public boolean isExplicitIdProperty() {
+		return isAnnotationPresent(Id.class);
+	}
+
+	/**
+	 * @inheritDoc
+	 * @see org.springframework.data.mapping.model.AnnotationBasedPersistentProperty#isIdProperty()
+	 */
+	@Override
+	public boolean isIdProperty() {
+		return (super.isIdProperty() || SUPPORTED_IDENTIFIER_NAMES.contains(getName()));
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public boolean usePropertyAccess() {
+		return (super.usePropertyAccess() || (getField() == null && this.propertyDescriptor != null));
 	}
 }

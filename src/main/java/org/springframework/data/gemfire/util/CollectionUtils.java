@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.util;
 
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -80,6 +82,26 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 		Set<T> set = new HashSet<>(elements.length);
 		Collections.addAll(set, elements);
 		return Collections.unmodifiableSet(set);
+	}
+
+	/**
+	 * Null-safe method to determines whether the given {@link Collection} contains any elements from the given array.
+	 *
+	 * @param collection {@link Collection} to evaluate
+	 * @param elements array of elements to evaluate.
+	 * @return a boolean value indicating whether the collection contains at least 1 element from the given array.
+	 * @see java.util.Collection#contains(Object)
+	 */
+	public static boolean containsAny(Collection<?> collection, Object... elements) {
+		if (collection != null) {
+			for (Object element : nullSafeArray(elements, Object.class)) {
+				if (collection.contains(element)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

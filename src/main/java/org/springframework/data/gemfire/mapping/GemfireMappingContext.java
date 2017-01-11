@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.mapping;
 
 import java.beans.PropertyDescriptor;
@@ -24,9 +25,12 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
+ * Spring Data {@link AbstractMappingContext} implementation defining entity mapping meta-data
+ * for GemFire persistent entities.
  *
  * @author Oliver Gierke
  * @author John Blum
+ * @see org.springframework.data.mapping.context.AbstractMappingContext
  */
 public class GemfireMappingContext extends AbstractMappingContext<GemfirePersistentEntity<?>, GemfirePersistentProperty> {
 
@@ -42,23 +46,23 @@ public class GemfireMappingContext extends AbstractMappingContext<GemfirePersist
 		setSimpleTypeHolder(new GemfireSimpleTypeHolder());
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * @inheritDoc
 	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
 	 */
 	@Override
 	protected <T> GemfirePersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
-		return new GemfirePersistentEntity<T>(typeInformation);
+		return new GemfirePersistentEntity<>(typeInformation);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * @inheritDoc
 	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(java.lang.reflect.Field, java.beans.PropertyDescriptor, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
 	 */
 	@Override
-	protected GemfirePersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
+	protected GemfirePersistentProperty createPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			GemfirePersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
 
-		return new GemfirePersistentProperty(field, descriptor, owner, simpleTypeHolder);
+		return new GemfirePersistentProperty(field, propertyDescriptor, owner, simpleTypeHolder);
 	}
 }
