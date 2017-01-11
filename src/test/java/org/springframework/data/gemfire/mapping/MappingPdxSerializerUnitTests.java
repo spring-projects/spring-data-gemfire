@@ -155,8 +155,8 @@ public class MappingPdxSerializerUnitTests {
 		when(mockInstantiator.createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class)))
 			.thenReturn(person);
 
-		serializer.setGemfireInstantiators(Collections.<Class<?>, EntityInstantiator>singletonMap(
-			Person.class, mockInstantiator));
+		serializer.setGemfireInstantiators(Collections.<Class<?>,
+			EntityInstantiator>singletonMap(Person.class, mockInstantiator));
 
 		serializer.fromData(Person.class, mockReader);
 
@@ -259,7 +259,7 @@ public class MappingPdxSerializerUnitTests {
 			expectedException.expect(MappingException.class);
 			expectedException.expectCause(isA(IllegalArgumentException.class));
 			expectedException.expectMessage(String.format(
-				"while serializing value [Portland, 12345] of property [address] for entity of type [%1$s] to PDX",
+				"Error while serializing entity property [address] value [Portland, 12345] of type [%s] to PDX",
 					Person.class));
 
 			new MappingPdxSerializer(context, conversionService).toData(jonDoe, mockWriter);

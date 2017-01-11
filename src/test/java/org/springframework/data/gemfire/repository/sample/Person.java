@@ -17,12 +17,13 @@ package org.springframework.data.gemfire.repository.sample;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.gemfire.mapping.Region;
 import org.springframework.util.ObjectUtils;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * The Person class models a person.
@@ -107,11 +108,12 @@ public class Person implements Serializable {
 	 * @see #getFirstname()
 	 * @see #getLastname()
 	 */
+	@Transient
 	public String getName() {
 		return String.format("%1$s %2$s", getFirstname(), getLastname());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -130,7 +132,7 @@ public class Person implements Serializable {
 		return (this.id != null && this.id.equals(that.id));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -143,5 +145,4 @@ public class Person implements Serializable {
 	public String toString() {
 		return String.format("{ @type = %1$s, id = %2$d, name = %3$s }", getClass().getName(), id, getName());
 	}
-
 }

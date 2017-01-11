@@ -13,128 +13,203 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.mapping;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.IdentifierAccessor;
-import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
-
-import lombok.Data;
 
 /**
  * Unit tests for {@link GemfirePersistentEntity}.
  *
  * @author Oliver Gierke
  * @author John Blum
+ * @author Gregory Green
+ * @see org.junit.Rule
+ * @see org.junit.Test
+ * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
  */
 public class GemfirePersistentEntityUnitTests {
 
-	protected MappingContext<GemfirePersistentEntity<?>, GemfirePersistentProperty> getMappingContext() {
-		return new GemfireMappingContext();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
+	private GemfireMappingContext mappingContext = new GemfireMappingContext();
+
+	protected IdentifierAccessor getIdentifierAccessor(Object domainObject) {
+		return getMappingContextPersistentEntity(domainObject).getIdentifierAccessor(domainObject);
 	}
 
-	/**
-	 * JIRA ticket SGF-582
-	 *
-	 * Used an object's getId method if the @Id does not exists
-	 */
-	@Test
-	public void supportsGetId() {
+	@SuppressWarnings("unchecked")
+	protected <T> GemfirePersistentEntity<T> getMappingContextPersistentEntity(Object domainObject) {
+		return this.<T>getMappingContextPersistentEntity((Class<T>) domainObject.getClass());
+	}
 
-		GemfirePersistentEntity<UnannotatedRegion> unnamedRegionEntity = new GemfirePersistentEntity<UnannotatedRegion>(
-				ClassTypeInformation.from(UnannotatedRegion.class));
+	@SuppressWarnings("unchecked")
+	protected <T> GemfirePersistentEntity<T> getMappingContextPersistentEntity(Class<T> type) {
+		return (GemfirePersistentEntity<T>) this.mappingContext.getPersistentEntity(type);
+	}
 
-		IdentifierAccessor accessor = unnamedRegionEntity.getIdentifierAccessor(new UnannotatedRegion());
-		Assert.assertNull(accessor.getIdentifier());
-
-		GemfirePersistentEntity<NotAnnotationIdRegion> entity = new GemfirePersistentEntity<NotAnnotationIdRegion>(
-				ClassTypeInformation.from(NotAnnotationIdRegion.class));
-
-		NotAnnotationIdRegion region = new NotAnnotationIdRegion();
-
-		region.setId("id");
-		region.setValue("value");
-
-		accessor = entity.getIdentifierAccessor(region);
-
-		Assert.assertNotNull(accessor.getIdentifier());
-
-		Assert.assertEquals("id", accessor.getIdentifier());
-
+	protected <T> GemfirePersistentEntity<T> newPersistentEntity(Class<T> type) {
+		return new GemfirePersistentEntity<T>(ClassTypeInformation.from(type));
 	}
 
 	@Test
-	public void defaultsRegionNameToClassName() {
-		GemfirePersistentEntity<UnannotatedRegion> entity = new GemfirePersistentEntity<UnannotatedRegion>(
-				ClassTypeInformation.from(UnannotatedRegion.class));
-		assertThat(entity.getRegionName(), is(UnannotatedRegion.class.getSimpleName()));
+	public void defaultsRegionNameForNonRegionAnnotatedEntityToClassName() {
+		assertThat(newPersistentEntity(NonRegionAnnotatedEntity.class).getRegionName())
+			.isEqualTo(NonRegionAnnotatedEntity.class.getSimpleName());
 	}
 
 	@Test
-	public void defaultsAnnotatedRegionToCLassName() {
-		GemfirePersistentEntity<UnnamedRegion> entity = new GemfirePersistentEntity<UnnamedRegion>(
-				ClassTypeInformation.from(UnnamedRegion.class));
-		assertThat(entity.getRegionName(), is(UnnamedRegion.class.getSimpleName()));
+	public void defaultsRegionNameForUnnamedRegionAnnotatedEntityToClassName() {
+		assertThat(newPersistentEntity(UnnamedRegionAnnotatedEntity.class).getRegionName())
+			.isEqualTo(UnnamedRegionAnnotatedEntity.class.getSimpleName());
 	}
 
 	@Test
-	public void readsRegionNameFromAnnotation() {
-
-		GemfirePersistentEntity<AnnotatedRegion> entity = new GemfirePersistentEntity<AnnotatedRegion>(
-				ClassTypeInformation.from(AnnotatedRegion.class));
-		assertThat(entity.getRegionName(), is("Foo"));
+	public void returnsGivenNameForNamedRegionAnnotatedEntityAsRegionName() {
+		assertThat(newPersistentEntity(NamedRegionAnnotatedEntity.class).getRegionName()).isEqualTo("Foo");
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void bigDecimalPersistentPropertyIsNotEntity() {
-		GemfirePersistentEntity<ExampleDomainObject> entity = (GemfirePersistentEntity<ExampleDomainObject>) getMappingContext()
-				.getPersistentEntity(ExampleDomainObject.class);
+	public void bigDecimalPersistentPropertyIsNotAnEntity() {
+		GemfirePersistentEntity<ExampleDomainObject> entity =
+			getMappingContextPersistentEntity(ExampleDomainObject.class);
 
-		assertThat(entity.getRegionName(), is(equalTo("Example")));
+		assertThat(entity).isNotNull();
+		assertThat(entity.getRegionName()).isEqualTo("Example");
 
 		GemfirePersistentProperty currency = entity.getPersistentProperty("currency");
 
-		assertThat(currency, is(notNullValue()));
-		assertThat(currency.isEntity(), is(false));
+		assertThat(currency).isNotNull();
+		assertThat(currency.isEntity()).isFalse();
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void bigIntegerPersistentPropertyIsNotEntity() {
-		GemfirePersistentEntity<ExampleDomainObject> entity = (GemfirePersistentEntity<ExampleDomainObject>) getMappingContext()
-				.getPersistentEntity(ExampleDomainObject.class);
+	public void bigIntegerPersistentPropertyIsNotAnEntity() {
+		GemfirePersistentEntity<ExampleDomainObject> entity =
+			getMappingContextPersistentEntity(ExampleDomainObject.class);
 
-		assertThat(entity.getRegionName(), is(equalTo("Example")));
+		assertThat(entity).isNotNull();
+		assertThat(entity.getRegionName()).isEqualTo("Example");
 
 		GemfirePersistentProperty bigNumber = entity.getPersistentProperty("bigNumber");
 
-		assertThat(bigNumber, is(notNullValue()));
-		assertThat(bigNumber.isEntity(), is(false));
+		assertThat(bigNumber).isNotNull();
+		assertThat(bigNumber.isEntity()).isFalse();
 	}
 
-	static class UnannotatedRegion {}
+	/**
+	 * <a href="https://jira.spring.io/browse/SGF-582">SGF-582</a>
+	 */
+	@Test
+	public void identifierForNonIdAnnotatedEntityWithNoIdFieldOrPropertyIsNull() {
+		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonRegionAnnotatedEntity());
+
+		assertThat(identifierAccessor).isNotNull();
+		assertThat(identifierAccessor.getIdentifier()).isNull();
+	}
+
+	/**
+	 * <a href="https://jira.spring.io/browse/SGF-582">SGF-582</a>
+	 */
+	@Test
+	public void identifierForNonIdAnnotatedEntityWithIdFieldIsNotNull() {
+		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonIdAnnotatedIdFieldEntity());
+
+		assertThat(identifierAccessor.getIdentifier()).isNotNull();
+		assertThat(identifierAccessor.getIdentifier()).isEqualTo(123L);
+	}
+
+	/**
+	 * <a href="https://jira.spring.io/browse/SGF-582">SGF-582</a>
+	 */
+	@Test
+	public void identifierForNonIdAnnotatedEntityWithIdPropertyIsNotNull() {
+		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonIdAnnotatedIdGetterEntity());
+
+		assertThat(identifierAccessor).isNotNull();
+		assertThat(identifierAccessor.getIdentifier()).isEqualTo(456L);
+	}
+
+	@Test
+	public void identifierForIdAnnotatedFieldAndPropertyEntityShouldNotConflict() {
+		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new IdAnnotatedFieldAndPropertyEntity());
+
+		assertThat(identifierAccessor).isNotNull();
+		assertThat(identifierAccessor.getIdentifier()).isEqualTo(1L);
+	}
+
+	@Test
+	public void identifierForAmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntityThrowsMappingException() {
+		AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity entity
+			= new AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity();
+
+		String expectedMessage = String.format("Attempt to add explicit id property [ssn] but already have id property [id] registered as explicit;"
+			+ " Please check your object [%s] mapping configuration", entity.getClass().getName());
+
+		exception.expect(MappingException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage(expectedMessage);
+
+		getIdentifierAccessor(new AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity());
+	}
+
+	static class AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity {
+
+		@Id
+		private Long id = 1L;
+
+		@Id
+		public String getSsn() {
+			return "123456789";
+		}
+	}
+
+	static class IdAnnotatedFieldAndPropertyEntity {
+
+		@Id
+		private Long id = 1L;
+
+		@Id
+		public Long getId() {
+			return this.id;
+		}
+	}
+
+	static class NonIdAnnotatedIdFieldEntity {
+		private Long id = 123L;
+	}
+
+	static class NonIdAnnotatedIdGetterEntity {
+		public Long getId() {
+			return 456L;
+		}
+	}
+
+	static class NonRegionAnnotatedEntity {
+	}
 
 	@Region("Foo")
-	static class AnnotatedRegion {}
+	static class NamedRegionAnnotatedEntity {
+	}
 
 	@Region
-	static class UnnamedRegion {}
-
-	static @Data class NotAnnotationIdRegion {
-
-		private String value;
-		private String id;
+	static class UnnamedRegionAnnotatedEntity {
 	}
 
 	@Region("Example")
@@ -153,5 +228,4 @@ public class GemfirePersistentEntityUnitTests {
 			return bigNumber;
 		}
 	}
-
 }

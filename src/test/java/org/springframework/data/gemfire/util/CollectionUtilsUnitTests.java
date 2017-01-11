@@ -157,6 +157,26 @@ public class CollectionUtilsUnitTests {
 	}
 
 	@Test
+	public void containsAnyWithCollectionAndArrayIsTrue() {
+		assertThat(CollectionUtils.containsAny(Arrays.asList(1, 2, 3), 1, 2)).isTrue();
+	}
+
+	@Test
+	public void containsAnyWithCollectionAndArrayIsFalse() {
+		assertThat(CollectionUtils.containsAny(Arrays.asList(1, 2, 3), 4)).isFalse();
+	}
+
+	@Test
+	public void containsAnyWithCollectionAndNullArrayIsFalse() {
+		assertThat(CollectionUtils.containsAny(Arrays.asList(1, 2, 3), (Object[]) null));
+	}
+
+	@Test
+	public void containsAnyWithNullCollectionAndArrayIsFalse() {
+		assertThat(CollectionUtils.containsAny(null, 1)).isFalse();
+	}
+
+	@Test
 	public void defaultIfEmptyWithNonNullNonEmptyIterableReturnsIterable() {
 		Iterable<Object> iterable = Collections.<Object>singleton(1);
 		Iterable<Object> defaultIterable = Collections.<Object>singleton(2);
