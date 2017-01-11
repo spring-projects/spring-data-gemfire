@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.util.ObjectUtils;
 
@@ -107,6 +108,7 @@ public class Person implements Serializable {
 	 * @see #getFirstname()
 	 * @see #getLastname()
 	 */
+	@Transient
 	public String getName() {
 		return String.format("%1$s %2$s", getFirstname(), getLastname());
 	}
