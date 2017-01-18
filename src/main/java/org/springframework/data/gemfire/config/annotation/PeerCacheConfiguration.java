@@ -17,22 +17,31 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import java.util.Map;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.apache.geode.cache.Cache;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 
 /**
- * Spring {@link Configuration} class used to configure, construct and initialize
- * a GemFire peer {@link org.apache.geode.cache.Cache} instance in a Spring application context.
+ * Spring {@link Configuration} class used to construct, configure and initialize a peer {@link Cache} instance
+ * in a Spring application context.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.Cache
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
- * @see org.apache.geode.cache.Cache
  * @since 1.9.0
  */
 @Configuration
@@ -52,14 +61,28 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
     private Integer messageSyncInterval;
     private Integer searchTimeout;
 
+    @Autowired(required = false)
+    private List<PeerCacheConfigurer> peerCacheConfigurers = Collections.emptyList();
+
+    /**
+     * Bean declaration for a single, peer {@link Cache} instance.
+     *
+     * @return a new instance of a peer {@link Cache}.
+     * @see org.springframework.data.gemfire.CacheFactoryBean
+     * @see org.apache.geode.cache.GemFireCache
+     * @see org.apache.geode.cache.Cache
+     * @see #constructCacheFactoryBean()
+     */
     @Bean
     public CacheFactoryBean gemfireCache() {
+
         CacheFactoryBean gemfireCache = constructCacheFactoryBean();
 
         gemfireCache.setEnableAutoReconnect(enableAutoReconnect());
         gemfireCache.setLockLease(lockLease());
         gemfireCache.setLockTimeout(lockTimeout());
         gemfireCache.setMessageSyncInterval(messageSyncInterval());
+        gemfireCache.setPeerCacheConfigurers(resolvePeerCacheConfigurers());
         gemfireCache.setSearchTimeout(searchTimeout());
         gemfireCache.setUseBeanFactoryLocator(useBeanFactoryLocator());
         gemfireCache.setUseClusterConfiguration(useClusterConfiguration());
@@ -67,8 +90,30 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return gemfireCache;
     }
 
+    /* (non-Javadoc) */
+    private List<PeerCacheConfigurer> resolvePeerCacheConfigurers() {
+
+        return Optional.ofNullable(this.peerCacheConfigurers)
+            .filter(peerCacheConfigurers -> !peerCacheConfigurers.isEmpty())
+            .orElseGet(() ->
+                Optional.of(this.beanFactory())
+                    .filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
+                    .map(beanFactory -> {
+                        Map<String, PeerCacheConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
+                            .getBeansOfType(PeerCacheConfigurer.class, true, true);
+
+                        return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+                    })
+                    .orElseGet(Collections::emptyList)
+            );
+    }
+
     /**
-     * {@inheritDoc}
+     * Constructs a new instance of {@link CacheFactoryBean} used to create a peer {@link Cache}.
+     *
+     * @param <T> {@link Class} sub-type of {@link CacheFactoryBean}.
+     * @return a new instance of {@link CacheFactoryBean}.
+     * @see org.springframework.data.gemfire.CacheFactoryBean
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -77,18 +122,20 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
     }
 
     /**
-     * Configures GemFire peer {@link org.apache.geode.cache.Cache} specific settings.
+     * Configures peer {@link Cache} specific settings.
      *
-     * @param importMetadata {@link AnnotationMetadata} containing peer cache meta-data used to configure
-     * the GemFire peer {@link org.apache.geode.cache.Cache}.
+     * @param importMetadata {@link AnnotationMetadata} containing peer cache meta-data used to
+     * configure the peer {@link Cache}.
      * @see org.springframework.core.type.AnnotationMetadata
      * @see #isCacheServerOrPeerCacheApplication(AnnotationMetadata)
      */
     @Override
     protected void configureCache(AnnotationMetadata importMetadata) {
+
         super.configureCache(importMetadata);
 
         if (isCacheServerOrPeerCacheApplication(importMetadata)) {
+
             Map<String, Object> peerCacheApplicationAttributes =
                 importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
@@ -99,11 +146,9 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
             setSearchTimeout((Integer) peerCacheApplicationAttributes.get("searchTimeout"));
             setUseClusterConfiguration(Boolean.TRUE.equals(peerCacheApplicationAttributes.get("useClusterConfiguration")));
 
-            String locators = (String) peerCacheApplicationAttributes.get("locators");
-
-            if (hasValue(locators)) {
-                setLocators(locators);
-            }
+            Optional.ofNullable((String) peerCacheApplicationAttributes.get("locators"))
+                .filter(PeerCacheConfiguration::hasValue)
+                .ifPresent(this::setLocators);
         }
     }
 

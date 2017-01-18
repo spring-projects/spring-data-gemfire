@@ -130,7 +130,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setSnapshot(mockSnapshot);
 		factoryBean.setShortcut(null);
 
-		Region actualRegion = factoryBean.lookupRegion(mockClientCache, testRegionName);
+		Region actualRegion = factoryBean.createRegion(mockClientCache, testRegionName);
 
 		assertSame(mockRegion, actualRegion);
 
@@ -180,7 +180,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setPoolName("TestPool");
 		factoryBean.setShortcut(null);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.createRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
@@ -208,7 +208,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setShortcut(ClientRegionShortcut.CACHING_PROXY);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.createRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
@@ -235,7 +235,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setParent(mockRegion);
 		factoryBean.setShortcut(ClientRegionShortcut.PROXY);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestSubRegion");
+		Region<Object, Object> actualRegion = factoryBean.createRegion(mockClientCache, "TestSubRegion");
 
 		assertSame(mockSubRegion, actualRegion);
 
@@ -260,7 +260,7 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setShortcut(ClientRegionShortcut.LOCAL_HEAP_LRU);
 
-		Region<Object, Object> actualRegion = factoryBean.lookupRegion(mockClientCache, "TestRegion");
+		Region<Object, Object> actualRegion = factoryBean.createRegion(mockClientCache, "TestRegion");
 
 		assertSame(mockRegion, actualRegion);
 
@@ -284,7 +284,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.setDataPolicyName("INVALID");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'INVALID' is invalid.", expected.getMessage());
+			assertEquals("Data Policy [INVALID] is not valid", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -429,7 +429,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Client Region Shortcut 'CACHING_PROXY' is invalid when persistent is true",
+			assertEquals("Client Region Shortcut [CACHING_PROXY] is not valid when persistent is true",
 				expected.getMessage());
 			throw expected;
 		}
@@ -456,7 +456,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Client Region Shortcut 'LOCAL_PERSISTENT' is invalid when persistent is false",
+			assertEquals("Client Region Shortcut [LOCAL_PERSISTENT] is not valid when persistent is false",
 				expected.getMessage());
 			throw expected;
 		}
@@ -503,7 +503,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'NORMAL' is invalid when persistent is true", expected.getMessage());
+			assertEquals("Data Policy [NORMAL] is not valid when persistent is true", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -529,7 +529,7 @@ public class ClientRegionFactoryBeanTest {
 			factoryBean.resolveClientRegionShortcut();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is invalid when persistent is false", expected.getMessage());
+			assertEquals("Data Policy [PERSISTENT_REPLICATE] is not valid when persistent is false", expected.getMessage());
 			throw expected;
 		}
 	}

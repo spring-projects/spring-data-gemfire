@@ -32,44 +32,45 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.gemfire.function.execution.GemfireOnServerFunctionTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author David Turanski
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { TestClientCacheConfig.class })
 public class FunctionExecutionClientCacheTests {
 
 	@Autowired
-	ApplicationContext context;
+	ApplicationContext applicationContext;
 
 	@Test
 	public void contextCreated() throws Exception {
-		ClientCache cache = context.getBean("gemfireCache", ClientCache.class);
-		Pool pool = context.getBean("gemfirePool", Pool.class);
+
+		ClientCache cache = applicationContext.getBean("gemfireCache", ClientCache.class);
+		Pool pool = applicationContext.getBean("gemfirePool", Pool.class);
 
 		assertEquals("gemfirePool", pool.getName());
 		assertTrue(cache.getDefaultPool().getLocators().isEmpty());
 		assertEquals(1, cache.getDefaultPool().getServers().size());
 		assertEquals(pool.getServers().get(0), cache.getDefaultPool().getServers().get(0));
 
-		Region region = context.getBean("r1", Region.class);
+		Region region = applicationContext.getBean("r1", Region.class);
 
 		assertEquals("gemfirePool", region.getAttributes().getPoolName());
 
-		GemfireOnServerFunctionTemplate template = context.getBean(GemfireOnServerFunctionTemplate.class);
+		GemfireOnServerFunctionTemplate template = applicationContext.getBean(GemfireOnServerFunctionTemplate.class);
 
 		assertTrue(template.getResultCollector() instanceof MyResultCollector);
 	}
-
 }
 
 @Configuration
 @ImportResource("/org/springframework/data/gemfire/function/config/FunctionExecutionCacheClientTests-context.xml")
 @EnableGemfireFunctionExecutions(basePackages = "org.springframework.data.gemfire.function.config.three")
 class TestClientCacheConfig {
+
 	@Bean
 	MyResultCollector myResultCollector() {
 		return new MyResultCollector();
@@ -115,5 +116,4 @@ class MyResultCollector implements ResultCollector {
 	public Object getResult(long arg0, TimeUnit arg1) throws FunctionException, InterruptedException {
 		return null;
 	}
-
 }

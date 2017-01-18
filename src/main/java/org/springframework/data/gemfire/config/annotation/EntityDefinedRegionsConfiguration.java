@@ -20,15 +20,20 @@ package org.springframework.data.gemfire.config.annotation;
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.defaultIfEmpty;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -37,6 +42,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -82,7 +89,9 @@ import org.springframework.util.StringUtils;
  * based on the application persistent entity classes.
  *
  * @author John Blum
+ * @see java.lang.ClassLoader
  * @see java.lang.annotation.Annotation
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.beans.factory.BeanClassLoaderAware
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
@@ -106,7 +115,6 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.mapping.annotation.PartitionRegion
  * @see org.springframework.data.gemfire.mapping.annotation.ReplicateRegion
  * @see org.springframework.data.gemfire.mapping.annotation.Region
- * @see org.apache.geode.cache.Region
  * @since 1.9.0
  */
 public class EntityDefinedRegionsConfiguration
@@ -132,6 +140,9 @@ public class EntityDefinedRegionsConfiguration
 	private ClassLoader beanClassLoader;
 
 	private GemfireMappingContext mappingContext;
+
+	@Autowired(required = false)
+	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
 
 	/**
 	 * Returns the {@link Annotation} {@link Class type} that configures and creates {@link Region Regions}
@@ -230,9 +241,9 @@ public class EntityDefinedRegionsConfiguration
 
 	/* (non-Javadoc) */
 	protected GemfirePersistentEntity<?> getPersistentEntity(Class<?> persistentEntityType) {
+
 		return resolveMappingContext().getPersistentEntity(persistentEntityType).orElseThrow(
-			() -> new IllegalStateException(String.format("PersistentEntity for type [%s] not found",
-				persistentEntityType)));
+			() -> newIllegalStateException("PersistentEntity for type [%s] not found", persistentEntityType));
 	}
 
 	/* (non-Javadoc) */
@@ -254,19 +265,21 @@ public class EntityDefinedRegionsConfiguration
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+
 		if (isAnnotationPresent(importingClassMetadata)) {
+
 			AnnotationAttributes enableEntityDefinedRegionsAttributes = getAnnotationAttributes(importingClassMetadata);
 
 			boolean strict = enableEntityDefinedRegionsAttributes.getBoolean("strict");
 
-			for (Class<?> persistentEntityClass : newGemFireComponentClassTypeScanner(
-					importingClassMetadata, enableEntityDefinedRegionsAttributes).scan()) {
+			newGemFireComponentClassTypeScanner(importingClassMetadata, enableEntityDefinedRegionsAttributes).scan()
+				.forEach(persistentEntityClass -> {
 
-				GemfirePersistentEntity persistentEntity = getPersistentEntity(persistentEntityClass);
+					GemfirePersistentEntity persistentEntity = getPersistentEntity(persistentEntityClass);
 
-				registerRegionBeanDefinition(persistentEntity, strict, registry);
-				postProcess(importingClassMetadata, registry, persistentEntity);
-			}
+					registerRegionBeanDefinition(persistentEntity, strict, registry);
+					postProcess(importingClassMetadata, registry, persistentEntity);
+				});
 		}
 	}
 
@@ -274,8 +287,8 @@ public class EntityDefinedRegionsConfiguration
 	protected GemFireComponentClassTypeScanner newGemFireComponentClassTypeScanner(
 			AnnotationMetadata importingClassMetadata, AnnotationAttributes enableEntityDefinedRegionsAttributes) {
 
-		Set<String> resolvedBasePackages = resolveBasePackages(importingClassMetadata,
-			enableEntityDefinedRegionsAttributes);
+		Set<String> resolvedBasePackages =
+			resolveBasePackages(importingClassMetadata, enableEntityDefinedRegionsAttributes);
 
 		return GemFireComponentClassTypeScanner.from(resolvedBasePackages).with(resolveBeanClassLoader())
 			.withExcludes(resolveExcludes(enableEntityDefinedRegionsAttributes))
@@ -323,6 +336,7 @@ public class EntityDefinedRegionsConfiguration
 
 	/* (non-Javadoc) */
 	private Iterable<TypeFilter> parseFilters(AnnotationAttributes[] componentScanFilterAttributes) {
+
 		Set<TypeFilter> typeFilters = new HashSet<>();
 
 		stream(nullSafeArray(componentScanFilterAttributes, AnnotationAttributes.class))
@@ -334,43 +348,45 @@ public class EntityDefinedRegionsConfiguration
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	private Iterable<TypeFilter> typeFiltersFor(AnnotationAttributes filterAttributes) {
+
 		Set<TypeFilter> typeFilters = new HashSet<>();
 		FilterType filterType = filterAttributes.getEnum("type");
 
-		for (Class<?> filterClass : nullSafeArray(filterAttributes.getClassArray("value"), Class.class)) {
-			switch (filterType) {
-				case ANNOTATION:
-					Assert.isAssignable(Annotation.class, filterClass,
-						String.format("@ComponentScan.Filter class [%s] must be an Annotation", filterClass));
-					typeFilters.add(new AnnotationTypeFilter((Class<Annotation>) filterClass));
-					break;
-				case ASSIGNABLE_TYPE:
-					typeFilters.add(new AssignableTypeFilter(filterClass));
-					break;
-				case CUSTOM:
-					Assert.isAssignable(TypeFilter.class, filterClass,
-						String.format("@ComponentScan.Filter class [%s] must be a TypeFilter", filterClass));
-					typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
-					break;
-				default:
-					throw new IllegalArgumentException(String.format(
-						"Illegal filter type [%s] when 'value' or 'classes' are specified", filterType));
-			}
-
-			for (String pattern : nullSafeGetPatterns(filterAttributes)) {
+		stream(nullSafeArray(filterAttributes.getClassArray("value"), Class.class))
+			.forEach(filterClass -> {
 				switch (filterType) {
-					case ASPECTJ:
-						typeFilters.add(new AspectJTypeFilter(pattern, resolveBeanClassLoader()));
+					case ANNOTATION:
+						Assert.isAssignable(Annotation.class, filterClass,
+							String.format("@ComponentScan.Filter class [%s] must be an Annotation", filterClass));
+						typeFilters.add(new AnnotationTypeFilter((Class<Annotation>) filterClass));
 						break;
-					case REGEX:
-						typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(pattern)));
+					case ASSIGNABLE_TYPE:
+						typeFilters.add(new AssignableTypeFilter(filterClass));
+						break;
+					case CUSTOM:
+						Assert.isAssignable(TypeFilter.class, filterClass,
+							String.format("@ComponentScan.Filter class [%s] must be a TypeFilter", filterClass));
+						typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
 						break;
 					default:
-						throw new IllegalArgumentException(String.format(
-							"Illegal filter type [%s] when 'patterns' are specified", filterType));
+						throw newIllegalArgumentException(
+							"Illegal filter type [%s] when 'value' or 'classes' are specified", filterType);
 				}
-			}
-		}
+
+				for (String pattern : nullSafeGetPatterns(filterAttributes)) {
+					switch (filterType) {
+						case ASPECTJ:
+							typeFilters.add(new AspectJTypeFilter(pattern, resolveBeanClassLoader()));
+							break;
+						case REGEX:
+							typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(pattern)));
+							break;
+						default:
+							throw newIllegalArgumentException(
+								"Illegal filter type [%s] when 'patterns' are specified", filterType);
+					}
+				}
+		});
 
 		return typeFilters;
 	}
@@ -394,6 +410,7 @@ public class EntityDefinedRegionsConfiguration
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	protected Iterable<TypeFilter> regionAnnotatedPersistentEntityTypeFilters() {
+
 		Set<TypeFilter> regionAnnotatedPersistentEntityTypeFilters = new HashSet<>();
 
 		org.springframework.data.gemfire.mapping.annotation.Region.REGION_ANNOTATION_TYPES.forEach(
@@ -409,12 +426,31 @@ public class EntityDefinedRegionsConfiguration
 		BeanDefinitionBuilder regionFactoryBeanBuilder =
 			BeanDefinitionBuilder.genericBeanDefinition(resolveRegionFactoryBeanClass(persistentEntity))
 				.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME)
+				.addPropertyValue("regionConfigurers", resolveRegionConfigurers())
 				.addPropertyValue("close", false);
 
 		setRegionAttributes(persistentEntity, regionFactoryBeanBuilder, strict);
 
 		registry.registerBeanDefinition(persistentEntity.getRegionName(),
 			regionFactoryBeanBuilder.getBeanDefinition());
+	}
+
+	/* (non-Javadoc) */
+	private List<RegionConfigurer> resolveRegionConfigurers() {
+
+		return Optional.ofNullable(this.regionConfigurers)
+			.filter(regionConfigurers -> !regionConfigurers.isEmpty())
+			.orElseGet(() ->
+				Optional.ofNullable(this.beanFactory)
+					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
+					.map(beanFactory -> {
+						Map<String, RegionConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
+							.getBeansOfType(RegionConfigurer.class, true, true);
+
+						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+					})
+					.orElseGet(Collections::emptyList)
+			);
 	}
 
 	/* (non-Javadoc) */
@@ -492,9 +528,10 @@ public class EntityDefinedRegionsConfiguration
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	protected Class<?> resolveIdType(GemfirePersistentEntity persistentEntity) {
+
 		return (Class<?>) persistentEntity.getIdProperty()
 			.map(idProperty -> ((GemfirePersistentProperty) idProperty).getActualType())
-				.orElse(Object.class);
+			.orElse(Object.class);
 	}
 
 	/* (non-Javadoc) */
@@ -570,6 +607,7 @@ public class EntityDefinedRegionsConfiguration
 			"fixedPartitions", PartitionRegion.FixedPartition.class), PartitionRegion.FixedPartition.class);
 
 		if (!ObjectUtils.isEmpty(fixedPartitions)) {
+
 			ManagedList<BeanDefinition> fixedPartitionAttributesFactoryBeans =
 				new ManagedList<BeanDefinition>(fixedPartitions.length);
 

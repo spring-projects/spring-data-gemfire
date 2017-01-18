@@ -16,7 +16,19 @@
 
 package org.springframework.data.gemfire;
 
+import static java.util.Arrays.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,20 +55,52 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
-import org.springframework.data.gemfire.util.ArrayUtils;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
+<<<<<<< HEAD
  * Abstract base class and Spring {@link FactoryBean} for constructing and initializing a GemFire {@link Region}.
+=======
+ * Abstract Spring {@link FactoryBean} base class extended by other SDG {@link FactoryBean FactoryBeans} used to
+ * construct, configure and initialize peer {@link Region Regions}.
+ *
+ * This {@link FactoryBean} allows for very easy and flexible creation of peer {@link Region}.
+ * For client {@link Region Regions}, however, see the {@link ClientRegionFactoryBean}.
+>>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
  *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+<<<<<<< HEAD
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+=======
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.CacheListener
+ * @see org.apache.geode.cache.CacheLoader
+ * @see org.apache.geode.cache.CacheWriter
+ * @see org.apache.geode.cache.DataPolicy
+ * @see org.apache.geode.cache.EvictionAttributes
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.PartitionAttributes
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionAttributes
+ * @see org.apache.geode.cache.RegionFactory
+ * @see org.apache.geode.cache.RegionShortcut
+ * @see org.apache.geode.cache.Scope
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.context.SmartLifecycle
+ * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+>>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
  */
 @SuppressWarnings("unused")
 public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
@@ -68,6 +112,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	private boolean destroy = false;
 	private boolean running;
 
+	private Boolean offHeap;
 	private Boolean persistent;
 
 	private AsyncEventQueue[] asyncEventQueues;
@@ -87,7 +132,18 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private GatewaySender[] gatewaySenders;
 
+	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
+
 	private RegionAttributes<K, V> attributes;
+
+	private RegionConfigurer compositeRegionConfigurer = new RegionConfigurer() {
+
+		@Override
+		public void configure(String beanName, RegionFactoryBean<?, ?> bean) {
+			nullSafeCollection(regionConfigurers)
+				.forEach(regionConfigurer -> regionConfigurer.configure(beanName, bean));
+		}
+	};
 
 	private RegionShortcut shortcut;
 
@@ -98,128 +154,215 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	private String diskStoreName;
 
 	/**
-	 * @inheritDoc
+	 * Creates a new {@link Region} with the given {@link String name}.
+	 *
+	 * @param gemfireCache reference to the {@link GemFireCache}.
+	 * @param regionName {@link String name} of the new {@link Region}.
+	 * @return a new {@link Region} with the given {@link String name}.
+	 * @see org.apache.geode.cache.GemFireCache
+	 * @see org.apache.geode.cache.Region
 	 */
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		super.afterPropertiesSet();
-		postProcess(getRegion());
+	protected Region<K, V> createRegion(GemFireCache gemfireCache, String regionName) throws Exception {
+
+		applyRegionConfigurers(regionName);
+
+		verifyLockGrantorEligibility(getAttributes(), getScope());
+
+		Cache cache = resolveCache(gemfireCache);
+
+		RegionFactory<K, V> regionFactory = postProcess(configure(createRegionFactory(cache)));
+
+		Region<K, V> region = newRegion(regionFactory, getParent(), regionName);
+
+		return enableAsLockGrantor(region);
+	}
+
+	/* (non-Javadoc) */
+	private void applyRegionConfigurers(String regionName) {
+		applyRegionConfigurers(regionName, getCompositeRegionConfigurer());
 	}
 
 	/**
-	 * @inheritDoc
+	 * Null-safe operation to apply the given array of {@link RegionConfigurer RegionConfigurers}
+	 * to this {@link RegionFactoryBean}.
+	 *
+	 * @param regionName {@link String} containing the name of the {@link Region}.
+	 * @param regionConfigurers array of {@link RegionConfigurer RegionConfigurers} applied
+	 * to this {@link RegionFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 * @see #applyRegionConfigurers(String, Iterable)
 	 */
-	@Override
-	@SuppressWarnings({ "unchecked" })
-	protected Region<K, V> lookupRegion(GemFireCache gemfireCache, String regionName) throws Exception {
-		Assert.isTrue(gemfireCache instanceof Cache, String.format("Unable to create Regions from '%1$s'.",
-			gemfireCache));
+	protected void applyRegionConfigurers(String regionName, RegionConfigurer... regionConfigurers) {
+		applyRegionConfigurers(regionName, Arrays.asList(nullSafeArray(regionConfigurers, RegionConfigurer.class)));
+	}
 
-		Cache cache = (Cache) gemfireCache;
+	/**
+	 * Null-safe operation to apply the given {@link Iterable} of {@link RegionConfigurer RegionConfigurers}
+	 * to this {@link RegionFactoryBean}.
+	 *
+	 * @param regionName {@link String} containing the name of the {@link Region}.
+	 * @param regionConfigurers {@link Iterable} of {@link RegionConfigurer RegionConfigurers} applied
+	 * to this {@link RegionFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 */
+	protected void applyRegionConfigurers(String regionName, Iterable<RegionConfigurer> regionConfigurers) {
+		StreamSupport.stream(nullSafeIterable(regionConfigurers).spliterator(), false)
+			.forEach(regionConfigurer -> regionConfigurer.configure(regionName, this));
+	}
 
-		RegionFactory<K, V> regionFactory = createRegionFactory(cache);
+	/* (non-Javadoc) */
+	private Region<K, V> enableAsLockGrantor(Region<K, V> region) {
 
-		for (AsyncEventQueue asyncEventQueue : ArrayUtils.nullSafeArray(asyncEventQueues, AsyncEventQueue.class)) {
-			regionFactory.addAsyncEventQueueId(asyncEventQueue.getId());
-		}
-
-		for (CacheListener<K, V> listener : ArrayUtils.nullSafeArray(cacheListeners, CacheListener.class)) {
-			regionFactory.addCacheListener(listener);
-		}
-
-		if (cacheLoader != null) {
-			regionFactory.setCacheLoader(cacheLoader);
-		}
-
-		if (cacheWriter != null) {
-			regionFactory.setCacheWriter(cacheWriter);
-		}
-
-		for (GatewaySender gatewaySender : ArrayUtils.nullSafeArray(gatewaySenders, GatewaySender.class)) {
-			regionFactory.addGatewaySenderId(gatewaySender.getId());
-		}
-
-		resolveDataPolicy(regionFactory, persistent, dataPolicy);
-
-		if (isDiskStoreConfigurationAllowed()) {
-			regionFactory.setDiskStoreName(diskStoreName);
-		}
-
-		if (evictionAttributes != null) {
-			regionFactory.setEvictionAttributes(evictionAttributes);
-		}
-
-		if (keyConstraint != null) {
-			regionFactory.setKeyConstraint(keyConstraint);
-		}
-
-		if (scope != null) {
-			regionFactory.setScope(scope);
-		}
-
-		if (valueConstraint != null) {
-			regionFactory.setValueConstraint(valueConstraint);
-		}
-
-		if (attributes != null) {
-			Assert.state(!attributes.isLockGrantor() || (scope == null) || scope.isGlobal(),
-				"Lock Grantor only applies to a 'GLOBAL' scoped Region.");
-		}
-
-		postProcess(regionFactory);
-
-		Region<K, V> region = (getParent() != null ? regionFactory.createSubregion(getParent(), regionName)
-			: regionFactory.create(regionName));
-
-		if (log.isInfoEnabled()) {
-			if (getParent() != null) {
-				log.info(String.format("Created new Cache sub-Region [%1$s] under parent Region [%2$s].",
-					regionName, getParent().getName()));
-			}
-			else {
-				log.info(String.format("Created new Cache Region [%1$s].", regionName));
-			}
-		}
-
-		if (snapshot != null) {
-			region.loadSnapshot(snapshot.getInputStream());
-		}
-
-		if (attributes != null && attributes.isLockGrantor()) {
-			region.becomeLockGrantor();
-		}
+		Optional.ofNullable(region)
+			.filter(it -> it.getAttributes().isLockGrantor())
+			.ifPresent(Region::becomeLockGrantor);
 
 		return region;
 	}
 
+	/* (non-Javadoc) */
+	private Region<K, V> newRegion(RegionFactory<K, V> regionFactory, Region<?, ?> parentRegion, String regionName) {
+
+		return Optional.ofNullable(parentRegion)
+			.map(parent -> {
+				logInfo("Creating Subregion [%1$s] with parent Region [%2$s]",
+					regionName, parent.getName());
+
+				return regionFactory.<K, V>createSubregion(parent, regionName);
+			})
+			.orElseGet(() -> {
+				logInfo("Created Region [%1$s]", regionName);
+
+				return regionFactory.create(regionName);
+			});
+	}
+
+	/* (non-Javadoc) */
+	private Cache resolveCache(GemFireCache gemfireCache) {
+
+		return Optional.ofNullable(gemfireCache)
+			.filter(cache -> cache instanceof Cache)
+			.map(cache -> (Cache) cache)
+			.orElseThrow(() -> newIllegalArgumentException("Peer Cache is required"));
+	}
+
+	/* (non-Javadoc) */
+	private RegionAttributes<K, V> verifyLockGrantorEligibility(RegionAttributes<K, V> regionAttributes, Scope scope) {
+
+		Optional.ofNullable(regionAttributes).ifPresent(attributes ->
+			Assert.state(!attributes.isLockGrantor() || verifyScope(scope),
+				"Lock Grantor only applies to GLOBAL Scoped Regions"));
+
+		return regionAttributes;
+	}
+
+	/* (non-Javadoc) */
+	private boolean verifyScope(Scope scope) {
+		return (scope == null || Scope.GLOBAL.equals(scope));
+	}
+
 	/**
-	 * Creates an instance of RegionFactory using the given Cache instance used to configure and construct the Region
-	 * created by this FactoryBean.
+	 * Creates an instance of {@link RegionFactory} with the given {@link Cache} which is then used to construct,
+	 * configure and initialize the {@link Region} specified by this {@link RegionFactoryBean}.
 	 *
-	 * @param cache the GemFire Cache instance.
-	 * @return a RegionFactory used to configure and construct the Region created by this FactoryBean.
-	 * @see org.apache.geode.cache.Cache#createRegionFactory()
-	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionAttributes)
+	 * @param cache reference to the {@link Cache}.
+	 * @return a {@link RegionFactory} used to construct, configure and initialized the {@link Region} specified by
+	 * this {@link RegionFactoryBean}.
 	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionShortcut)
+	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionAttributes)
+	 * @see org.apache.geode.cache.Cache#createRegionFactory()
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected RegionFactory<K, V> createRegionFactory(Cache cache) {
-		if (shortcut != null) {
-			RegionFactory<K, V> regionFactory = mergeRegionAttributes(cache.createRegionFactory(shortcut), attributes);
+
+		if (this.shortcut != null) {
+			RegionFactory<K, V> regionFactory =
+				mergeRegionAttributes(cache.createRegionFactory(this.shortcut), this.attributes);
+
 			setDataPolicy(getDataPolicy(regionFactory));
+
 			return regionFactory;
 		}
-		else if (attributes != null) {
-			return cache.createRegionFactory(attributes);
+		else if (this.attributes != null) {
+			return cache.createRegionFactory(this.attributes);
 		}
 		else {
 			return cache.createRegionFactory();
 		}
 	}
 
+	/**
+	 * Configures the {@link RegionFactory} based on the configuration settings of this {@link RegionFactoryBean}.
+	 *
+	 * @param regionFactory {@link RegionFactory} to configure
+	 * @return the given {@link RegionFactory}.
+	 * @see org.apache.geode.cache.RegionFactory
+	 */
+	protected RegionFactory<K, V> configure(RegionFactory<K, V> regionFactory) {
+
+		stream(nullSafeArray(this.asyncEventQueues, AsyncEventQueue.class))
+			.forEach(asyncEventQueue -> regionFactory.addAsyncEventQueueId(asyncEventQueue.getId()));
+
+		stream(nullSafeArray(this.cacheListeners, CacheListener.class)).forEach(regionFactory::addCacheListener);
+
+		Optional.ofNullable(this.cacheLoader).ifPresent(regionFactory::setCacheLoader);
+
+		Optional.ofNullable(this.cacheWriter).ifPresent(regionFactory::setCacheWriter);
+
+		resolveDataPolicy(regionFactory, persistent, dataPolicy);
+
+		Optional.ofNullable(this.diskStoreName)
+			.filter(name -> isDiskStoreConfigurationAllowed())
+			.ifPresent(regionFactory::setDiskStoreName);
+
+		Optional.ofNullable(this.evictionAttributes).ifPresent(regionFactory::setEvictionAttributes);
+
+		stream(nullSafeArray(this.gatewaySenders, GatewaySender.class))
+			.forEach(gatewaySender -> regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId()));
+
+		Optional.ofNullable(this.keyConstraint).ifPresent(regionFactory::setKeyConstraint);
+
+		Optional.ofNullable(this.scope).ifPresent(regionFactory::setScope);
+
+		Optional.ofNullable(this.valueConstraint).ifPresent(regionFactory::setValueConstraint);
+
+		return regionFactory;
+	}
+
+	/**
+	 * Post-process the {@link RegionFactory} used to create the {@link Region} specified by
+	 * this {@link RegionFactoryBean} during initialization.
+	 *
+	 * The {@link RegionFactory} has been already constructed, configured and initialized by
+	 * this {@link RegionFactoryBean} before this method gets invoked.
+	 *
+	 * @param regionFactory {@link RegionFactory} used to create the {@link Region}.
+	 * @return the given {@link RegionFactory}.
+	 * @see org.apache.geode.cache.RegionFactory
+	 */
+	protected RegionFactory<K, V> postProcess(RegionFactory<K, V> regionFactory) {
+
+		regionFactory.setOffHeap(Boolean.TRUE.equals(this.offHeap));
+
+		return regionFactory;
+	}
+
+	/**
+	 * Returns a reference to the Composite {@link RegionConfigurer} used to apply additional configuration
+	 * to this {@link RegionFactoryBean} on Spring container initialization.
+	 *
+	 * @return the Composite {@link RegionConfigurer}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 */
+	protected RegionConfigurer getCompositeRegionConfigurer() {
+		return this.compositeRegionConfigurer;
+	}
+
 	/*
-	 * (non-Javadoc) - This method should not be considered part of the RegionFactoryBean API
-	 * and is strictly for testing purposes!
+	 * (non-Javadoc)
+	 *
+	 * This method is not considered part of the RegionFactoryBean API and is strictly used for testing purposes!
 	 *
 	 * NOTE cannot pass RegionAttributes.class as the "targetType" in the second invocation of getFieldValue(..)
 	 * since the "regionAttributes" field is naively declared as a instance of the implementation class type
@@ -233,8 +376,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 */
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	DataPolicy getDataPolicy(RegionFactory regionFactory) {
-		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory", AttributesFactory.class),
-			"regionAttributes", null)).getDataPolicy();
+		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory",
+			AttributesFactory.class), "regionAttributes", null)).getDataPolicy();
 	}
 
 	/* (non-Javadoc) */
@@ -298,7 +441,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			regionFactory.setLockGrantor(regionAttributes.isLockGrantor());
 			regionFactory.setMembershipAttributes(regionAttributes.getMembershipAttributes());
 			regionFactory.setMulticastEnabled(regionAttributes.getMulticastEnabled());
+			regionFactory.setOffHeap(regionAttributes.getOffHeap());
+
 			mergePartitionAttributes(regionFactory, regionAttributes);
+
 			regionFactory.setPoolName(regionAttributes.getPoolName());
 			regionFactory.setRegionIdleTimeout(regionAttributes.getRegionIdleTimeout());
 			regionFactory.setRegionTimeToLive(regionAttributes.getRegionTimeToLive());
@@ -310,8 +456,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		return regionFactory;
 	}
 
-	/* (non-Javadoc) */
-	protected <K, V> void mergePartitionAttributes(final RegionFactory<K, V> regionFactory,
+	/**
+	 *
+	 * @param regionFactory
+	 * @param regionAttributes
+	 */
+	protected <K, V> void mergePartitionAttributes(RegionFactory<K, V> regionFactory,
 			RegionAttributes<K, V> regionAttributes) {
 
 		// NOTE PartitionAttributes are created by certain RegionShortcuts; need the null check since RegionAttributes
@@ -342,8 +492,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/*
-	 * (non-Javadoc) - This method should not be considered part of the RegionFactoryBean API
-	 * and is strictly for testing purposes!
+	 * (non-Javadoc)
+	 *
+	 * This method is not part of the RegionFactoryBean API and is strictly used for testing purposes!
 	 *
 	 * @see org.apache.geode.cache.AttributesFactory#validateAttributes(:RegionAttributes)
 	 */
@@ -353,10 +504,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/*
-	 * (non-Javadoc) - This method should not be considered part of the RegionFactoryBean API
-	 * and is strictly for testing purposes!
+	 * (non-Javadoc)
+	 *
+	 * This method is not part of the RegionFactoryBean API and is strictly used for testing purposes!
 	 *
 	 * NOTE unfortunately, must resort to using a GemFire internal class, ugh!
+	 *
 	 * @see org.apache.geode.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
 	 */
 	boolean isUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
@@ -366,7 +519,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	/* (non-Javadoc) */
 	private boolean isDiskStoreConfigurationAllowed() {
-		boolean allow = (diskStoreName != null);
+
+		boolean allow = StringUtils.hasText(this.diskStoreName);
 
 		allow &= (getDataPolicy().withPersistence() || (getAttributes() != null
 			&& getAttributes().getEvictionAttributes() != null
@@ -425,41 +579,21 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	protected void assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy resolvedDataPolicy) {
+
 		if (resolvedDataPolicy.withPersistence()) {
 			Assert.isTrue(isPersistentUnspecified() || isPersistent(), String.format(
-				"Data Policy '%1$s' is invalid when persistent is false.", resolvedDataPolicy));
+				"Data Policy [%1$s] is invalid when persistent is false.", resolvedDataPolicy));
 		}
 		else {
 			// NOTE otherwise, the Data Policy is not persistent, so...
 			Assert.isTrue(isPersistentUnspecified() || isNotPersistent(), String.format(
-				"Data Policy '%1$s' is invalid when persistent is true.", resolvedDataPolicy));
+				"Data Policy [%1$s] is invalid when persistent is true.", resolvedDataPolicy));
 		}
 	}
 
 	/**
-	 * Post-process the RegionFactory used to create the GemFire Region for this factory bean during the initialization
-	 * process.  The RegionFactory is already configured and initialized by the factory bean before this method
-	 * is invoked.
-	 *
-	 * @param regionFactory the GemFire RegionFactory used to create the Region for post-processing.
-	 * @see org.apache.geode.cache.RegionFactory
-	 */
-	protected RegionFactory<K, V> postProcess(RegionFactory<K, V> regionFactory) {
-		return regionFactory;
-	}
-
-	/**
-	 * Post-process the Region for this factory bean during the initialization process. The Region is
-	 * already configured and initialized by the factory bean before this method is invoked.
-	 *
-	 * @param region the GemFire Region to post-process.
-	 * @see org.apache.geode.cache.Region
-	 */
-	protected Region<K, V> postProcess(Region<K, V> region) {
-		return region;
-	}
-
-	/**
+=======
+>>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
 	 * Validates and sets the Data Policy on the RegionFactory used to create and configure the Region from this
 	 * FactoryBean.
 	 *
@@ -472,6 +606,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
+
 		if (dataPolicy != null) {
 			assertDataPolicyAndPersistentAttributesAreCompatible(dataPolicy);
 			regionFactory.setDataPolicy(dataPolicy);
@@ -493,10 +628,11 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+
 		if (dataPolicy != null) {
 			DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
 
-			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy [%1$s] is invalid.", dataPolicy));
 			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
 
 			regionFactory.setDataPolicy(resolvedDataPolicy);
@@ -515,16 +651,21 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/* (non-Javadoc) */
-	private DataPolicy getDataPolicy(final RegionAttributes regionAttributes, final DataPolicy defaultDataPolicy) {
-		return (regionAttributes != null ? regionAttributes.getDataPolicy() : defaultDataPolicy);
+	private DataPolicy getDataPolicy(RegionAttributes regionAttributes, DataPolicy defaultDataPolicy) {
+		return Optional.ofNullable(regionAttributes).map(RegionAttributes::getDataPolicy).orElse(defaultDataPolicy);
 	}
 
+	/**
+	 * Closes and destroys the {@link Region}.
+	 *
+	 * @throws Exception if destroy fails.
+	 * @see org.springframework.beans.factory.DisposableBean
+	 */
 	@Override
 	public void destroy() throws Exception {
-		Region<K, V> region = getObject();
 
-		if (region != null) {
-			if (close) {
+		Optional.ofNullable(getObject()).ifPresent(region -> {
+			if (this.close) {
 				if (!region.getRegionService().isClosed()) {
 					try {
 						region.close();
@@ -535,10 +676,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 			}
 
-			if (destroy) {
+			if (this.destroy) {
 				region.destroyRegion();
 			}
-		}
+		});
 	}
 
 	/**
@@ -568,9 +709,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @return the RegionAttributes used to configure the Region created by this factory.
 	 * @see org.apache.geode.cache.RegionAttributes
 	 */
-	public RegionAttributes getAttributes() {
-		Region<K, V> region = getRegion();
-		return (region != null ? region.getAttributes() : attributes);
+	public RegionAttributes<K, V> getAttributes() {
+		return Optional.ofNullable(getRegion()).map(Region::getAttributes).orElse(this.attributes);
 	}
 
 	/**
@@ -656,8 +796,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	public DataPolicy getDataPolicy() {
-		Assert.state(dataPolicy != null, "The Data Policy has not been properly resolved yet!");
-		return dataPolicy;
+		return Optional.ofNullable(this.dataPolicy)
+			.orElseThrow(() -> newIllegalStateException("Data Policy has not been properly resolved yet"));
 	}
 
 	/**
@@ -682,12 +822,72 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.gatewaySenders = gatewaySenders;
 	}
 
+	/**
+	 * Sets whether to enable this {@link Region} to store it's data in off-heap memory.
+	 *
+	 * @param offHeap Boolean value indicating whether to enable off-heap memory for this Region.
+	 * @see org.apache.geode.cache.RegionFactory#setOffHeap(boolean)
+	 */
+	public void setOffHeap(Boolean offHeap) {
+		this.offHeap = offHeap;
+	}
+
+	/**
+	 * Returns a {@link Boolean} value indicating whether off-heap memory was enabled for this {@link Region}.
+	 * Off-heap will be enabled if this method returns a non-{@literal null} {@link Boolean} value that evaluates
+	 * to {@literal true}.
+	 *
+	 * @return a {@link Boolean} value indicating whether off-heap is enabled for this {@link Region}.
+	 */
+	public Boolean getOffHeap() {
+		return this.offHeap;
+	}
+
+	/**
+	 * Returns a boolean value indicating whether off-heap has been enabled for this {@link Region}.
+	 *
+	 * @return a {@literal boolean} value indicating whether off-heap has been enabled for this {@link Region}.
+	 * @see #getOffHeap()
+	 */
+	public boolean isOffHeap() {
+		return Boolean.TRUE.equals(getOffHeap());
+	}
+
 	public void setKeyConstraint(Class<K> keyConstraint) {
 		this.keyConstraint = keyConstraint;
 	}
 
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
+	}
+
+	/**
+	 * Null-safe operation to set an array of {@link RegionConfigurer RegionConfigurers} used to apply
+	 * additional configuration to this {@link RegionFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param regionConfigurers array of {@link RegionConfigurer RegionConfigurers} used to apply
+	 * additional configuration to this {@link RegionFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 * @see #setRegionConfigurers(List)
+	 */
+	public void setRegionConfigurers(RegionConfigurer... regionConfigurers) {
+		setRegionConfigurers(Arrays.asList(nullSafeArray(regionConfigurers, RegionConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to set an {@link Iterable} of {@link RegionConfigurer RegionConfigurers} used to apply
+	 * additional configuration to this {@link RegionFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param regionConfigurers {@link Iterable} of {@link RegionConfigurer RegionConfigurers} used to apply
+	 * additional configuration to this {@link RegionFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 */
+	public void setRegionConfigurers(List<RegionConfigurer> regionConfigurers) {
+		this.regionConfigurers = Optional.ofNullable(regionConfigurers).orElseGet(Collections::emptyList);
+	}
+
+	public Scope getScope() {
+		return this.scope;
 	}
 
 	/**
@@ -712,21 +912,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.shortcut = shortcut;
 	}
 
-	/* (non-Javadoc) */
 	protected final RegionShortcut getShortcut() {
 		return shortcut;
-	}
-
-	/**
-	 * Sets the snapshots used for loading a newly <i>created</i> region. That
-	 * is, the snapshot will be used <i>only</i> when a new region is created -
-	 * if the region already exists, no loading will be performed.
-	 *
-	 * @see #setName(String)
-	 * @param snapshot the snapshot to set
-	 */
-	public void setSnapshot(Resource snapshot) {
-		this.snapshot = snapshot;
 	}
 
 	public void setValueConstraint(Class<V> valueConstraint) {
@@ -739,6 +926,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	@Override
 	@SuppressWarnings("all")
 	public void start() {
+
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			synchronized (gatewaySenders) {
 				for (GatewaySender gatewaySender: gatewaySenders) {
@@ -769,6 +957,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 */
 	@Override
 	public void stop() {
+
 		if (!ObjectUtils.isEmpty(gatewaySenders)) {
 			synchronized (gatewaySenders) {
 				for (GatewaySender gatewaySender : gatewaySenders) {

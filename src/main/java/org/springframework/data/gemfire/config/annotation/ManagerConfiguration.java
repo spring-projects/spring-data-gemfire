@@ -44,7 +44,7 @@ public class ManagerConfiguration extends EmbeddedServiceConfigurationSupport {
 
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		PropertiesBuilder gemfireProperties = new PropertiesBuilder();
+		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
 		gemfireProperties.setProperty("jmx-manager", Boolean.TRUE.toString());
 		gemfireProperties.setProperty("jmx-manager-access-file", annotationAttributes.get("accessFile"));

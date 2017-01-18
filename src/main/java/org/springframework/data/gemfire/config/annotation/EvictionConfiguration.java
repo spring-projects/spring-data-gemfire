@@ -18,17 +18,24 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.config.annotation.EnableEviction.EvictionPolicy;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.shiro.util.Assert;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
@@ -44,14 +51,11 @@ import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.eviction.EvictionActionType;
 import org.springframework.data.gemfire.eviction.EvictionAttributesFactoryBean;
 import org.springframework.data.gemfire.eviction.EvictionPolicyType;
-import org.springframework.data.gemfire.util.ArrayUtils;
-import org.springframework.data.gemfire.util.CollectionUtils;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
  * The {@link EvictionConfiguration} class is a Spring {@link Configuration @Configuration} annotated class to enable
- * Eviction policy configuration on GemFire/Geode {@link Region Regions}.
+ * Eviction policy configuration on cache {@link Region Regions}.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.config.BeanPostProcessor
@@ -75,19 +79,6 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 	private ApplicationContext applicationContext;
 
 	private EvictionPolicyConfigurer evictionPolicyConfigurer;
-
-	/**
-	 * Determines whether the Spring bean is an instance of {@link RegionFactoryBean}
-	 * or {@link ClientRegionFactoryBean}.
-	 *
-	 * @param bean Spring bean to evaluate.
-	 * @return a boolean value indicating whether the Spring bean is an instance of {@link RegionFactoryBean}.
-	 * @see org.springframework.data.gemfire.RegionFactoryBean
-	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
-	 */
-	protected static boolean isRegionFactoryBean(Object bean) {
-		return (bean instanceof RegionFactoryBean || bean instanceof ClientRegionFactoryBean);
-	}
 
 	/**
 	 * Returns the {@link Annotation} {@link Class type} that enables and configures Eviction.
@@ -124,7 +115,12 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 	}
 
 	/**
-	 * @inheritDoc
+	 * Sets a reference to the Spring {@link ApplicationContext}.
+	 *
+	 * @param applicationContext Spring {@link ApplicationContext} in use.
+	 * @throws BeansException if an error occurs while storing a reference to the Spring {@link ApplicationContext}.
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(ApplicationContext)
+	 * @see org.springframework.context.ApplicationContext
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -132,26 +128,39 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 	}
 
 	/**
+	 * Determines whether the Spring bean is an instance of {@link RegionFactoryBean}
+	 * or {@link ClientRegionFactoryBean}.
+	 *
+	 * @param bean Spring bean to evaluate.
+	 * @return a boolean value indicating whether the Spring bean is an instance of {@link RegionFactoryBean}
+	 * or the {@link ClientRegionFactoryBean}.
+	 * @see org.springframework.data.gemfire.RegionFactoryBean
+	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+	 */
+	protected static boolean isRegionFactoryBean(Object bean) {
+		return (bean instanceof RegionFactoryBean || bean instanceof ClientRegionFactoryBean);
+	}
+
+	/**
 	 * @inheritDoc
 	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
+
 		if (importMetadata.hasAnnotation(getAnnotationTypeName())) {
 			Map<String, Object> enableEvictionAttributes =
 				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
 			AnnotationAttributes[] policies = (AnnotationAttributes[]) enableEvictionAttributes.get("policies");
 
-			for (AnnotationAttributes evictionPolicyAttributes
-					: ArrayUtils.nullSafeArray(policies, AnnotationAttributes.class)) {
-
+			for (AnnotationAttributes evictionPolicyAttributes : nullSafeArray(policies, AnnotationAttributes.class)) {
 				this.evictionPolicyConfigurer = ComposableEvictionPolicyConfigurer.compose(
 					this.evictionPolicyConfigurer, EvictionPolicyMetaData.from(evictionPolicyAttributes,
 						this.applicationContext));
 			}
 
-			this.evictionPolicyConfigurer = (this.evictionPolicyConfigurer != null ? this.evictionPolicyConfigurer
-				: EvictionPolicyMetaData.fromDefaults());
+			this.evictionPolicyConfigurer = Optional.ofNullable(this.evictionPolicyConfigurer)
+				.orElseGet(EvictionPolicyMetaData::fromDefaults);
 		}
 	}
 
@@ -163,16 +172,16 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 	 * @see org.springframework.data.gemfire.config.annotation.EvictionConfiguration.EvictionPolicyConfigurer
 	 */
 	protected EvictionPolicyConfigurer getEvictionPolicyConfigurer() {
-		Assert.state(this.evictionPolicyConfigurer != null,
-			"EvictionPolicyConfigurer was not properly configured and initialized");
-
-		return this.evictionPolicyConfigurer;
+		return Optional.ofNullable(this.evictionPolicyConfigurer).orElseThrow(() ->
+			newIllegalStateException("EvictionPolicyConfigurer was not properly configured and initialized"));
 	}
 
 	@Bean
 	@SuppressWarnings("unused")
 	public BeanPostProcessor evictionBeanPostProcessor() {
+
 		return new BeanPostProcessor() {
+
 			@Override
 			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 				return (isRegionFactoryBean(bean) ? getEvictionPolicyConfigurer().configure(bean) : bean);
@@ -228,7 +237,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 */
 		@SuppressWarnings("unused")
 		protected static EvictionPolicyConfigurer compose(EvictionPolicyConfigurer[] array) {
-			return compose(Arrays.asList(ArrayUtils.nullSafeArray(array, EvictionPolicyConfigurer.class)));
+			return compose(Arrays.asList(nullSafeArray(array, EvictionPolicyConfigurer.class)));
 		}
 
 		/**
@@ -242,9 +251,10 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @see #compose(EvictionPolicyConfigurer, EvictionPolicyConfigurer)
 		 */
 		protected static EvictionPolicyConfigurer compose(Iterable<EvictionPolicyConfigurer> iterable) {
+
 			EvictionPolicyConfigurer current = null;
 
-			for (EvictionPolicyConfigurer evictionPolicyConfigurer : CollectionUtils.nullSafeIterable(iterable)) {
+			for (EvictionPolicyConfigurer evictionPolicyConfigurer : nullSafeIterable(iterable)) {
 				current = compose(current, evictionPolicyConfigurer);
 			}
 
@@ -291,26 +301,28 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 
 		private final EvictionAttributes evictionAttributes;
 
-		private final Set<String> regionNames = new HashSet<String>();
+		private final Set<String> regionNames = new HashSet<>();
 
 		protected static EvictionPolicyMetaData from(AnnotationAttributes evictionPolicyAttributes,
 				ApplicationContext applicationContext) {
 
-			return from((Integer) evictionPolicyAttributes.get("maximum"),
-				evictionPolicyAttributes.<EvictionPolicyType>getEnum("type"),
-					evictionPolicyAttributes.<EvictionActionType>getEnum("action"),
-						resolveObjectSizer(evictionPolicyAttributes.getString("objectSizerName"), applicationContext),
-							evictionPolicyAttributes.getStringArray("regionNames"));
+			Assert.isAssignable(EvictionPolicy.class, evictionPolicyAttributes.annotationType());
+
+			return from(evictionPolicyAttributes.getEnum("type"),
+				(Integer) evictionPolicyAttributes.get("maximum"),
+				evictionPolicyAttributes.getEnum("action"),
+				resolveObjectSizer(evictionPolicyAttributes.getString("objectSizerName"), applicationContext),
+				evictionPolicyAttributes.getStringArray("regionNames"));
 		}
 
 		protected static EvictionPolicyMetaData from(EvictionPolicy evictionPolicy,
 				ApplicationContext applicationContext) {
 
-			return from(evictionPolicy.maximum(), evictionPolicy.type(), evictionPolicy.action(),
+			return from(evictionPolicy.type(), evictionPolicy.maximum(), evictionPolicy.action(),
 				resolveObjectSizer(evictionPolicy.objectSizerName(), applicationContext), evictionPolicy.regionNames());
 		}
 
-		protected static EvictionPolicyMetaData from(int maximum, EvictionPolicyType type, EvictionActionType action,
+		protected static EvictionPolicyMetaData from(EvictionPolicyType type, int maximum, EvictionActionType action,
 				ObjectSizer objectSizer, String... regionNames) {
 
 			EvictionAttributesFactoryBean factoryBean = new EvictionAttributesFactoryBean();
@@ -329,6 +341,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		}
 
 		protected static ObjectSizer resolveObjectSizer(String objectSizerName, ApplicationContext applicationContext) {
+
 			boolean resolvable = StringUtils.hasText(objectSizerName)
 				&& applicationContext.containsBean(objectSizerName);
 
@@ -374,10 +387,11 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @see org.apache.geode.cache.EvictionAttributes
 		 */
 		protected EvictionPolicyMetaData(EvictionAttributes evictionAttributes, String[] regionNames) {
-			Assert.notNull(evictionAttributes, "EvictionAttributes must not be null");
 
-			this.evictionAttributes = evictionAttributes;
-			Collections.addAll(this.regionNames, ArrayUtils.nullSafeArray(regionNames, String.class));
+			this.evictionAttributes = Optional.ofNullable(evictionAttributes)
+				.orElseThrow(() -> newIllegalArgumentException("EvictionAttributes are required"));
+
+			Collections.addAll(this.regionNames, nullSafeArray(regionNames, String.class));
 		}
 
 		/**
@@ -390,10 +404,8 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @see org.apache.geode.cache.EvictionAttributes
 		 */
 		protected EvictionAttributes getEvictionAttributes() {
-			Assert.state(this.evictionAttributes != null,
-				"EvictionAttributes was not properly configured and initialized");
-
-			return this.evictionAttributes;
+			return Optional.ofNullable(this.evictionAttributes).orElseThrow(() ->
+				newIllegalStateException("EvictionAttributes was not properly configured and initialized"));
 		}
 
 		/**
@@ -403,10 +415,10 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @return a boolean value indicating whether the {@link Object} is accepted for Eviction policy configuration.
 		 * @see #isRegionFactoryBean(Object)
 		 * @see #resolveRegionName(Object)
-		 * @see #accepts(String)
+		 * @see #accepts(Supplier)
 		 */
 		protected boolean accepts(Object regionFactoryBean) {
-			return (isRegionFactoryBean(regionFactoryBean) && accepts(resolveRegionName(regionFactoryBean)));
+			return (isRegionFactoryBean(regionFactoryBean) && accepts(() -> resolveRegionName(regionFactoryBean)));
 		}
 
 		/**
@@ -415,8 +427,8 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @param regionName name of the {@link Region} targeted for Eviction policy configuration.
 		 * @return a boolean value if the named {@link Region} is accepted for Eviction policy configuration.
 		 */
-		protected boolean accepts(String regionName) {
-			return (this.regionNames.isEmpty() || this.regionNames.contains(regionName));
+		protected boolean accepts(Supplier<String> regionName) {
+			return (this.regionNames.isEmpty() || this.regionNames.contains(regionName.get()));
 		}
 
 		/**
@@ -444,6 +456,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @see #getEvictionAttributes()
 		 */
 		protected Object setEvictionAttributes(Object regionFactoryBean) {
+
 			if (regionFactoryBean instanceof RegionFactoryBean) {
 				((RegionFactoryBean) regionFactoryBean).setEvictionAttributes(getEvictionAttributes());
 			}

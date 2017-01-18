@@ -17,32 +17,47 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeSet;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
-import org.springframework.data.gemfire.util.CollectionUtils;
-import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.util.StringUtils;
 
 /**
- * Spring {@link Configuration} class used to configure, construct and initialize and GemFire {@link CacheServer}
- * instance in a Spring application context.
+ * Spring {@link Configuration} class used to construct, configure and initialize a {@link CacheServer} instance
+ * in a Spring application context.
  *
  * @author John Blum
- * @see org.springframework.context.annotation.Bean
- * @see org.springframework.context.annotation.Configuration
- * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfiguration
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.server.CacheServer
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.data.gemfire.config.annotation.AddCacheServerConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.AddCacheServersConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.CacheServerConfigurer
+ * @see org.springframework.data.gemfire.config.annotation.EnableCacheServer
+ * @see org.springframework.data.gemfire.config.annotation.EnableCacheServers
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfiguration
+ * @see org.springframework.data.gemfire.server.CacheServerFactoryBean
  * @since 1.9.0
  */
 @Configuration
@@ -64,6 +79,9 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	private Integer socketBufferSize;
 	private Integer subscriptionCapacity;
 
+	@Autowired(required = false)
+	private List<CacheServerConfigurer> cacheServerConfigurers = Collections.emptyList();
+
 	private Long loadPollInterval;
 
 	private ServerLoadProbe serverLoadProbe;
@@ -76,11 +94,23 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 
 	private SubscriptionEvictionPolicy subscriptionEvictionPolicy;
 
+	/**
+	 * Bean declaration for a single, {@link CacheServer} to serve {@link ClientCache cache client} applications.
+	 *
+	 * @param gemfireCache peer {@link Cache} instance in which to add the {@link CacheServer}.
+	 * @return a {@link CacheServerFactoryBean} used to construct, configure and initialize
+	 * the {@link CacheServer} instance.
+	 * @see org.springframework.data.gemfire.server.CacheServerFactoryBean
+	 * @see org.apache.geode.cache.server.CacheServer
+	 * @see org.apache.geode.cache.Cache
+	 */
 	@Bean
 	public CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache) {
+
 		CacheServerFactoryBean gemfireCacheServer = new CacheServerFactoryBean();
 
 		gemfireCacheServer.setCache(gemfireCache);
+		gemfireCacheServer.setCacheServerConfigurers(resolveCacheServerConfigurers());
 		gemfireCacheServer.setAutoStartup(autoStartup());
 		gemfireCacheServer.setBindAddress(bindAddress());
 		gemfireCacheServer.setHostNameForClients(hostnameForClients());
@@ -101,18 +131,40 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return gemfireCacheServer;
 	}
 
+	/* (non-Javadoc) */
+	private List<CacheServerConfigurer> resolveCacheServerConfigurers() {
+
+		return Optional.ofNullable(this.cacheServerConfigurers)
+			.filter(cacheServerConfigurers -> !cacheServerConfigurers.isEmpty())
+			.orElseGet(() ->
+				Optional.of(this.beanFactory())
+					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
+					.map(beanFactory -> {
+						Map<String, CacheServerConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
+							.getBeansOfType(CacheServerConfigurer.class, true, true);
+
+						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+					})
+					.orElseGet(Collections::emptyList)
+			);
+
+	}
+
 	/**
-	 * Configures GemFire {@link CacheServer} specific settings.
+	 * Configures {@link CacheServer} specific settings.
 	 *
-	 * @param importMetadata {@link AnnotationMetadata} containing cache server meta-data used to configure
-	 * the GemFire {@link CacheServer}.
+	 * @param importMetadata {@link AnnotationMetadata} containing cache server meta-data used to
+	 * configure the {@link CacheServer}.
 	 * @see org.springframework.core.type.AnnotationMetadata
+	 * @see org.apache.geode.cache.server.CacheServer
 	 */
 	@Override
-	protected void configureOther(AnnotationMetadata importMetadata) {
+	protected void configureTheRest(AnnotationMetadata importMetadata) {
+
 		super.configureCache(importMetadata);
 
 		if (isCacheServerApplication(importMetadata)) {
+
 			Map<String, Object> cacheServerApplicationMetadata =
 				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
@@ -129,8 +181,8 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 			setSocketBufferSize((Integer) cacheServerApplicationMetadata.get("socketBufferSize"));
 			setSubscriptionCapacity((Integer) cacheServerApplicationMetadata.get("subscriptionCapacity"));
 			setSubscriptionDiskStoreName((String) cacheServerApplicationMetadata.get("subscriptionDiskStoreName"));
-			setSubscriptionEvictionPolicy((SubscriptionEvictionPolicy) cacheServerApplicationMetadata.get(
-				"subscriptionEvictionPolicy"));
+			setSubscriptionEvictionPolicy((SubscriptionEvictionPolicy)
+				cacheServerApplicationMetadata.get("subscriptionEvictionPolicy"));
 		}
 	}
 
@@ -157,7 +209,8 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected String bindAddress() {
-		return SpringUtils.defaultIfNull(this.bindAddress, CacheServer.DEFAULT_BIND_ADDRESS);
+		return Optional.ofNullable(this.bindAddress).filter(StringUtils::hasText)
+			.orElse(CacheServer.DEFAULT_BIND_ADDRESS);
 	}
 
 	/* (non-Javadoc) */
@@ -166,7 +219,8 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected String hostnameForClients() {
-		return SpringUtils.defaultIfNull(this.hostnameForClients, CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS);
+		return Optional.ofNullable(this.hostnameForClients).filter(StringUtils::hasText)
+			.orElse(CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS);
 	}
 
 	/* (non-Javadoc) */
@@ -175,7 +229,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Set<InterestRegistrationListener> interestRegistrationListeners() {
-		return CollectionUtils.nullSafeSet(this.interestRegistrationListeners);
+		return nullSafeSet(this.interestRegistrationListeners);
 	}
 
 	/* (non-Javadoc) */
@@ -184,7 +238,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Long loadPollInterval() {
-		return SpringUtils.defaultIfNull(this.loadPollInterval, CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
+		return Optional.ofNullable(this.loadPollInterval).orElse(CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
 	}
 
 	/* (non-Javadoc) */
@@ -193,7 +247,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer maxConnections() {
-		return SpringUtils.defaultIfNull(this.maxConnections, CacheServer.DEFAULT_MAX_CONNECTIONS);
+		return Optional.ofNullable(this.maxConnections).orElse(CacheServer.DEFAULT_MAX_CONNECTIONS);
 	}
 
 	/* (non-Javadoc) */
@@ -202,7 +256,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer maxMessageCount() {
-		return SpringUtils.defaultIfNull(this.maxMessageCount, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT);
+		return Optional.ofNullable(this.maxMessageCount).orElse(CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT);
 	}
 
 	/* (non-Javadoc) */
@@ -211,7 +265,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer maxThreads() {
-		return SpringUtils.defaultIfNull(this.maxThreads, CacheServer.DEFAULT_MAX_THREADS);
+		return Optional.ofNullable(this.maxThreads).orElse(CacheServer.DEFAULT_MAX_THREADS);
 	}
 
 	/* (non-Javadoc) */
@@ -220,7 +274,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer maxTimeBetweenPings() {
-		return SpringUtils.defaultIfNull(this.maxTimeBetweenPings, CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
+		return Optional.ofNullable(this.maxTimeBetweenPings).orElse(CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
 	}
 
 	/* (non-Javadoc) */
@@ -229,7 +283,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer messageTimeToLive() {
-		return SpringUtils.defaultIfNull(this.messageTimeToLive, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE);
+		return Optional.ofNullable(this.messageTimeToLive).orElse(CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE);
 	}
 
 	/* (non-Javadoc) */
@@ -238,7 +292,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer port() {
-		return SpringUtils.defaultIfNull(this.port, CacheServer.DEFAULT_PORT);
+		return Optional.ofNullable(this.port).orElse(CacheServer.DEFAULT_PORT);
 	}
 
 	/* (non-Javadoc) */
@@ -247,7 +301,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected ServerLoadProbe serverLoadProbe() {
-		return SpringUtils.defaultIfNull(this.serverLoadProbe, CacheServer.DEFAULT_LOAD_PROBE);
+		return Optional.ofNullable(this.serverLoadProbe).orElse(CacheServer.DEFAULT_LOAD_PROBE);
 	}
 
 	/* (non-Javadoc) */
@@ -256,7 +310,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer socketBufferSize() {
-		return SpringUtils.defaultIfNull(this.socketBufferSize, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE);
+		return Optional.ofNullable(this.socketBufferSize).orElse(CacheServer.DEFAULT_SOCKET_BUFFER_SIZE);
 	}
 
 	/* (non-Javadoc) */
@@ -265,7 +319,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected Integer subscriptionCapacity() {
-		return SpringUtils.defaultIfNull(this.subscriptionCapacity, ClientSubscriptionConfig.DEFAULT_CAPACITY);
+		return Optional.ofNullable(this.subscriptionCapacity).orElse(ClientSubscriptionConfig.DEFAULT_CAPACITY);
 	}
 
 	/* (non-Javadoc) */
@@ -283,7 +337,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	}
 
 	protected SubscriptionEvictionPolicy subscriptionEvictionPolicy() {
-		return SpringUtils.defaultIfNull(this.subscriptionEvictionPolicy, SubscriptionEvictionPolicy.DEFAULT);
+		return Optional.ofNullable(this.subscriptionEvictionPolicy).orElse(SubscriptionEvictionPolicy.DEFAULT);
 	}
 
 	@Override

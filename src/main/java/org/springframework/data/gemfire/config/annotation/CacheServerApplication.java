@@ -43,6 +43,8 @@ import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.CacheServerConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.EnableCacheServers
+ * @see org.springframework.data.gemfire.config.annotation.EnableCacheServer
  * @see org.apache.geode.cache.control.ResourceManager
  * @see org.apache.geode.cache.server.CacheServer
  * @see org.apache.geode.cache.server.ClientSubscriptionConfig

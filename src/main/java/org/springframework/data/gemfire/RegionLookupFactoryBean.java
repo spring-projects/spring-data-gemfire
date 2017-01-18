@@ -16,35 +16,39 @@
 
 package org.springframework.data.gemfire;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
+
+import java.io.InputStream;
 import java.util.Optional;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Spring {@link FactoryBean} for looking up generic GemFire {@link Region Regions}. If lookups are not enabled
- * or the {@link Region} does not exist, an Exception is thrown.
+ * Spring {@link FactoryBean} for looking up {@link Region Regions}.
+ *
+ * If lookups are disabled or the {@link Region} does not exist, an exception is thrown.
+ *
+ * For declaring and configuring new Regions, see {@link RegionFactoryBean}.
  *
  * @author Costin Leau
  * @author John Blum
- * @see org.springframework.beans.factory.BeanNameAware
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
- * @see org.apache.geode.cache.Region
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  */
 @SuppressWarnings("unused")
-public abstract class RegionLookupFactoryBean<K, V>
-		implements FactoryBean<Region<K, V>>, InitializingBean, BeanNameAware {
-
-	protected final Log log = LogFactory.getLog(getClass());
+public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanSupport<Region<K, V>>
+		implements InitializingBean {
 
 	private Boolean lookupEnabled = false;
 
@@ -52,60 +56,109 @@ public abstract class RegionLookupFactoryBean<K, V>
 
 	private Region<?, ?> parent;
 
+	private Resource snapshot;
+
 	private volatile Region<K, V> region;
 
-	private String beanName;
 	private String name;
 	private String regionName;
 
 	/**
-	 * @inheritDoc
+	 * Initializes this {@link RegionLookupFactoryBean} after properties have been set by the Spring container.
+	 *
+	 * @throws Exception if initialization fails.
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 * @see #createRegion(GemFireCache, String)
 	 */
 	@Override
 	@SuppressWarnings("all")
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(this.cache, "A 'Cache' reference must be set");
+
+		GemFireCache cache = getCache();
+
+		Assert.notNull(cache, "Cache is required");
 
 		String regionName = resolveRegionName();
 
-		Assert.hasText(regionName, "'regionName', 'name' or 'beanName' property must be set");
+		Assert.hasText(regionName, "regionName, name or beanName property must be set");
 
-		synchronized (this.cache) {
-			if (isLookupEnabled()) {
-				this.region = Optional.ofNullable(getParent())
+		synchronized (cache) {
+			setRegion(isLookupEnabled()
+				? Optional.ofNullable(getParent())
 					.map(parentRegion -> parentRegion.<K, V>getSubregion(regionName))
-					.orElseGet(() -> this.cache.<K, V>getRegion(regionName));
-			}
+					.orElseGet(() -> cache.<K, V>getRegion(regionName))
+				: null);
 
-			if (region != null) {
-				log.info(String.format("Found Region [%1$s] in Cache [%2$s]", regionName, cache.getName()));
+			if (getRegion() != null) {
+				logInfo("Found Region [%1$s] in Cache [%2$s]", regionName, cache.getName());
 			}
 			else {
-				log.info(String.format("Falling back to creating Region [%1$s] in Cache [%2$s]",
-					regionName, cache.getName()));
+				logInfo("Falling back to creating Region [%1$s] in Cache [%2$s]",
+					regionName, cache.getName());
 
-				region = lookupRegion(cache, regionName);
+				setRegion(postProcess(loadSnapshot(createRegion(cache, regionName))));
 			}
 		}
 	}
 
 	/**
-	 * Method to perform a lookup when the named {@link Region} does not exist.  By default, this implementation
-	 * throws an exception.
+	 * Creates a new {@link Region} with the given {@link String name}.
 	 *
-	 * @param cache reference to the GemFire cache.
-	 * @param regionName name of the GemFire {@link Region}.
-	 * @return the {@link Region} in the GemFire cache with the given name.
-	 * @throws BeanInitializationException if the lookup operation fails.
+	 * This method gets called when a {@link Region} with the specified {@link String name} does not already exist.
+	 * By default, this method implementation throws a {@link BeanInitializationException} and it is expected
+	 * that {@link Class subclasses} will override this method.
+	 *
+	 * @param cache reference to the {@link GemFireCache}.
+	 * @param regionName {@link String name} of the new {@link Region}.
+	 * @return a new {@link Region} with the given {@link String name}.
+	 * @throws BeanInitializationException by default unless a {@link Class subclass} overrides this method.
+	 * @see org.apache.geode.cache.GemFireCache
 	 * @see org.apache.geode.cache.Region
 	 */
-	protected Region<K, V> lookupRegion(GemFireCache cache, String regionName) throws Exception {
-		throw new BeanInitializationException(String.format(
-			"Region [%1$s] in Cache [%2$s] not found", regionName, cache));
+	protected Region<K, V> createRegion(GemFireCache cache, String regionName) throws Exception {
+		throw new BeanInitializationException(
+			String.format("Region [%1$s] in Cache [%2$s] not found", regionName, cache));
 	}
 
 	/**
-	 * @inheritDoc
+	 * Loads the configured data {@link Resource snapshot} into the given {@link Region}.
+	 *
+	 * @param region {@link Region} to load.
+	 * @return the given {@link Region}.
+	 * @throws RuntimeException if the snapshot load fails.
+	 * @see org.apache.geode.cache.Region#loadSnapshot(InputStream)
+	 */
+	protected Region<K, V> loadSnapshot(Region<K, V> region) {
+
+		Optional.ofNullable(this.snapshot).ifPresent(snapshot -> {
+			try {
+				region.loadSnapshot(snapshot.getInputStream());
+			}
+			catch (Exception e) {
+				throw newRuntimeException(e, "Failed to load snapshot [%s]", snapshot);
+			}
+		});
+
+		return region;
+	}
+
+	/**
+	 * Post-process the {@link Region} created by this {@link RegionFactoryBean}.
+	 *
+	 * @param region {@link Region} to process.
+	 * @see org.apache.geode.cache.Region
+	 */
+	protected Region<K, V> postProcess(Region<K, V> region) {
+		return region;
+	}
+
+	/**
+	 * Returns an object reference to the {@link Region} created by this {@link RegionLookupFactoryBean}.
+	 *
+	 * @return an object reference to the {@link Region} created by this {@link RegionLookupFactoryBean}.
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 * @see org.apache.geode.cache.Region
+	 * @see #getRegion()
 	 */
 	@Override
 	public Region<K, V> getObject() throws Exception {
@@ -113,49 +166,42 @@ public abstract class RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public Class<?> getObjectType() {
-		Region region = getRegion();
-		return (region != null ? region.getClass() : Region.class);
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
-
-	/**
-	 * Resolves the name of the GemFire {@link Region}.
+	 * Returns the {@link Class} type of the {@link Region} produced by this {@link RegionLookupFactoryBean}.
 	 *
-	 * @return a {@link String} indicating the name of the GemFire {@link Region}.
+	 * @return the {@link Class} type of the {@link Region} produced by this {@link RegionLookupFactoryBean}.
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public Class<?> getObjectType() {
+		return Optional.ofNullable(getRegion()).map(Region::getClass).orElse((Class) Region.class);
+	}
+
+	/**
+	 * Resolves the {@link String name} of the {@link Region}.
+	 *
+	 * @return a {@link String} containing the name of the {@link Region}.
 	 * @see org.apache.geode.cache.Region#getName()
 	 */
 	public String resolveRegionName() {
 		return (StringUtils.hasText(this.regionName) ? this.regionName
-			: (StringUtils.hasText(this.name) ? this.name : this.beanName));
+			: (StringUtils.hasText(this.name) ? this.name : getBeanName()));
 	}
 
 	/**
-	 * Sets the name of the {@link Region} based on the bean 'id' attribute.  If no {@link Region} is found
-	 * with the given name, a new one will be created.
+	 * Returns a reference to the {@link GemFireCache} used to create the {@link Region}.
 	 *
-	 * @param name name of this {@link Region} bean in the Spring {@link org.springframework.context.ApplicationContext}.
-	 * @see org.springframework.beans.factory.BeanNameAware#setBeanName(String)
+	 * @return a reference to the {@link GemFireCache} used to create the {@link Region}..
+	 * @see org.apache.geode.cache.GemFireCache
 	 */
-	public void setBeanName(String name) {
-		this.beanName = name;
+	public GemFireCache getCache() {
+		return this.cache;
 	}
 
 	/**
 	 * Sets a reference to the {@link GemFireCache} used to create the {@link Region}.
 	 *
 	 * @param cache reference to the {@link GemFireCache}.
-	 * @see org.springframework.data.gemfire.CacheFactoryBean
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
 	public void setCache(GemFireCache cache) {
@@ -174,7 +220,7 @@ public abstract class RegionLookupFactoryBean<K, V>
 
 	/* (non-Javadoc) */
 	public Boolean getLookupEnabled() {
-		return lookupEnabled;
+		return this.lookupEnabled;
 	}
 
 	/**
@@ -213,13 +259,23 @@ public abstract class RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns a reference to the GemFire {@link Region} resolved by this Spring {@link FactoryBean}
-	 * during the lookup operation; maybe a new {@link Region}.
+	 * Sets a reference to the {@link Region} to be resolved by this Spring {@link FactoryBean}.
 	 *
-	 * @return a reference to the GemFire {@link Region} resolved during lookup.
+	 * @param region reference to the resolvable {@link Region}.
 	 * @see org.apache.geode.cache.Region
 	 */
-	protected Region<K, V> getRegion() {
+	protected void setRegion(Region<K, V> region) {
+		this.region = region;
+	}
+
+	/**
+	 * Returns a reference to the {@link Region} resolved by this Spring {@link FactoryBean}
+	 * during the lookup operation; maybe a new {@link Region}.
+	 *
+	 * @return a reference to the {@link Region} resolved during lookup.
+	 * @see org.apache.geode.cache.Region
+	 */
+	public Region<K, V> getRegion() {
 		return this.region;
 	}
 
@@ -232,5 +288,17 @@ public abstract class RegionLookupFactoryBean<K, V>
 	 */
 	public void setRegionName(String regionName) {
 		this.regionName = regionName;
+	}
+
+	/**
+	 * Sets the snapshots used for loading a newly <i>created</i> region. That
+	 * is, the snapshot will be used <i>only</i> when a new region is created -
+	 * if the region already exists, no loading will be performed.
+	 *
+	 * @see #setName(String)
+	 * @param snapshot the snapshot to set
+	 */
+	public void setSnapshot(Resource snapshot) {
+		this.snapshot = snapshot;
 	}
 }

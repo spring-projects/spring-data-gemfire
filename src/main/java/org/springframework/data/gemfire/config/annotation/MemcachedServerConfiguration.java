@@ -44,8 +44,9 @@ public class MemcachedServerConfiguration extends EmbeddedServiceConfigurationSu
 
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		return new PropertiesBuilder()
-			.setProperty("memcached-port", resolvePort((Integer) annotationAttributes.get("port"), DEFAULT_MEMCACHED_SERVER_PORT))
+		return PropertiesBuilder.create()
+			.setProperty("memcached-port", resolvePort((Integer) annotationAttributes.get("port"),
+				DEFAULT_MEMCACHED_SERVER_PORT))
 			.setProperty("memcached-protocol", annotationAttributes.get("protocol"))
 			.build();
 	}

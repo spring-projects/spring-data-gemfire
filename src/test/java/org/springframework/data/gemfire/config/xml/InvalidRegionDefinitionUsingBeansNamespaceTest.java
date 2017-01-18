@@ -37,15 +37,18 @@ import org.springframework.data.gemfire.RegionFactoryBean;
  */
 public class InvalidRegionDefinitionUsingBeansNamespaceTest {
 
+	private static final String CONFIG_LOCATION =
+		"org/springframework/data/gemfire/config/xml/InvalidDataPolicyPersistentAttributeSettingsBeansNamespaceTest.xml";
+
 	@Test(expected = IllegalArgumentException.class)
 	public void testInvalidDataPolicyPersistentAttributeSettings() {
 		try {
-			new ClassPathXmlApplicationContext(
-				"org/springframework/data/gemfire/config/xml/InvalidDataPolicyPersistentAttributeSettingsBeansNamespaceTest.xml");
+			new ClassPathXmlApplicationContext(CONFIG_LOCATION);
 		}
 		catch (BeanCreationException expected) {
 			assertTrue(expected.getCause() instanceof IllegalArgumentException);
-			assertEquals("Data Policy 'REPLICATE' is invalid when persistent is true.", expected.getCause().getMessage());
+			assertEquals("Data Policy [REPLICATE] is invalid when persistent is true.", expected.getCause().getMessage());
+
 			throw (IllegalArgumentException) expected.getCause();
 		}
 	}
@@ -53,5 +56,4 @@ public class InvalidRegionDefinitionUsingBeansNamespaceTest {
 	@SuppressWarnings("unused")
 	public static final class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	}
-
 }

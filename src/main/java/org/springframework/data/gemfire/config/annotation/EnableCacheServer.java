@@ -41,8 +41,10 @@ import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
  * the {@link EnableCacheServers} annotation.
 
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.AddCacheServerConfiguration
  * @see org.apache.geode.cache.server.CacheServer
+ * @see org.springframework.data.gemfire.config.annotation.AddCacheServerConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.CacheServerConfigurer
+ * @see org.springframework.data.gemfire.config.annotation.EnableCacheServers
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -116,6 +118,13 @@ public @interface EnableCacheServer {
 	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MESSAGE_TIME_TO_LIVE
 	 */
 	int messageTimeToLive() default CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
+
+	/**
+	 * Configures the name of the Spring bean defined in the Spring application context.
+	 *
+	 * Defaults to empty.
+	 */
+	String name() default "";
 
 	/**
 	 * Configures the port on which this cache server listens for clients.

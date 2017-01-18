@@ -34,12 +34,13 @@ import org.springframework.core.annotation.AliasFor;
  * {@link org.apache.geode.cache.Region Regions}
  *
  * @author John Blum
+ * @see org.apache.geode.cache.DiskStore
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.core.annotation.AliasFor
  * @see org.springframework.data.gemfire.config.annotation.DiskStoreConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.DiskStoreConfigurer
  * @see org.springframework.data.gemfire.config.annotation.EnableDiskStores
- * @see org.apache.geode.cache.DiskStore
- * @see org.apache.geode.cache.Region
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)

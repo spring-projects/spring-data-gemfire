@@ -16,72 +16,67 @@
 
 package org.springframework.data.gemfire.client;
 
-import java.net.InetSocketAddress;
-import java.util.List;
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.config.annotation.PoolConfigurer;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * FactoryBean for easy declaration and configuration of a GemFire {@link Pool}. If a new {@link Pool} is created,
- * its lifecycle is bound to that of this declaring factory.
+ * Spring {@link FactoryBean} to construct, configure and initialize a {@link Pool}.
  *
- * Note, if a {@link Pool} having the configured name already exists, then the existing {@link Pool} will be returned
- * as is without any modifications and its lifecycle will be unaffected by this factory.
+ * If a new {@link Pool} is created, its lifecycle is bound to that of this declaring {@link FactoryBean}
+ * and indirectly, the Spring container.
+ *
+ * If a {@link Pool} having the configured {@link String name} already exists, then the existing {@link Pool}
+ * will be returned as is without any modifications and its lifecycle will be unaffected by this {@link FactoryBean}.
  *
  * @author Costin Leau
  * @author John Blum
  * @see java.net.InetSocketAddress
- * @see org.springframework.beans.factory.BeanNameAware
- * @see org.springframework.beans.factory.DisposableBean
- * @see org.springframework.beans.factory.FactoryBean
- * @see org.springframework.beans.factory.InitializingBean
- * @see org.springframework.data.gemfire.support.ConnectionEndpoint
- * @see org.springframework.data.gemfire.support.ConnectionEndpointList
+ * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.Pool
  * @see org.apache.geode.cache.client.PoolFactory
  * @see org.apache.geode.cache.client.PoolManager
+ * @see org.apache.geode.distributed.DistributedSystem
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
+ * @see org.springframework.data.gemfire.support.ConnectionEndpoint
+ * @see org.springframework.data.gemfire.support.ConnectionEndpointList
  */
 @SuppressWarnings("unused")
-public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, DisposableBean,
-		BeanNameAware, BeanFactoryAware {
+public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements DisposableBean, InitializingBean {
 
 	protected static final int DEFAULT_LOCATOR_PORT = DistributedSystemUtils.DEFAULT_LOCATOR_PORT;
 	protected static final int DEFAULT_SERVER_PORT = DistributedSystemUtils.DEFAULT_CACHE_SERVER_PORT;
 
-	private static final Log log = LogFactory.getLog(PoolFactoryBean.class);
-
 	// indicates whether the Pool has been created internally (by this FactoryBean) or not
 	volatile boolean springBasedPool = true;
-
-	private BeanFactory beanFactory;
-
-	private ConnectionEndpointList locators = new ConnectionEndpointList();
-	private ConnectionEndpointList servers = new ConnectionEndpointList();
-
-	private volatile Pool pool;
-
-	private String beanName;
-	private String name;
 
 	// GemFire Pool Configuration Settings
 	private boolean keepAlive = false;
@@ -105,109 +100,150 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	private long idleTimeout = PoolFactory.DEFAULT_IDLE_TIMEOUT;
 	private long pingInterval = PoolFactory.DEFAULT_PING_INTERVAL;
 
+	private ConnectionEndpointList locators = new ConnectionEndpointList();
+	private ConnectionEndpointList servers = new ConnectionEndpointList();
+
+	private List<PoolConfigurer> poolConfigurers = Collections.emptyList();
+
+	private volatile Pool pool;
+
+	private PoolConfigurer compositePoolConfigurer = (beanName, bean) ->
+		nullSafeCollection(poolConfigurers).forEach(poolConfigurer ->  poolConfigurer.configure(beanName, bean));
+
+	private String name;
 	private String serverGroup = PoolFactory.DEFAULT_SERVER_GROUP;
 
 	/**
-	 * Constructs and initializes a GemFire {@link Pool}.
+	 * Prepares the construction, configuration and initialization of a new {@link Pool}.
 	 *
-	 * @throws Exception if the {@link Pool} creation and initialization fails.
-	 * @see org.apache.geode.cache.client.Pool
-	 * @see org.apache.geode.cache.client.PoolFactory
+	 * @throws Exception if {@link Pool} initialization fails.
 	 * @see org.apache.geode.cache.client.PoolManager
-	 * @see #createPoolFactory()
+	 * @see org.apache.geode.cache.client.PoolFactory
+	 * @see org.apache.geode.cache.client.Pool
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if (!StringUtils.hasText(name)) {
-			Assert.hasText(beanName, "Pool 'name' is required");
-			this.name = beanName;
-		}
-
-		// check for an existing, configured Pool with name first
-		Pool existingPool = PoolManager.find(name);
-
-		if (existingPool != null) {
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("A Pool with name [%1$s] already exists; using existing Pool.", name));
-			}
-
-			this.springBasedPool = false;
-			this.pool = existingPool;
-		}
-		else {
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("No Pool with name [%1$s] was found. Creating new Pool.", name));
-			}
-
-			this.springBasedPool = true;
-		}
+		init(Optional.ofNullable(PoolManager.find(validatePoolName())));
 	}
 
-	/**
-	 * Destroys the GemFire {@link Pool} if created by this {@link PoolFactoryBean} and releases all system resources
-	 * used by the {@link Pool}.
-	 *
-	 * @throws Exception if the {@link Pool} destruction caused an error.
-	 * @see DisposableBean#destroy()
-	 */
-	@Override
-	public void destroy() throws Exception {
-		if (springBasedPool && pool != null && !pool.isDestroyed()) {
-			pool.releaseThreadLocalConnection();
-			pool.destroy(keepAlive);
-			pool = null;
+	/* (non-Javadoc) */
+	@SuppressWarnings("all")
+	private void init(Optional<Pool> existingPool) {
 
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Destroyed Pool [%1$s]", name));
-			}
+		if (existingPool.isPresent()) {
+			this.pool = existingPool.get();
+			this.springBasedPool = false;
+
+			logDebug(() -> String.format(
+				"Pool with name [%s] already exists; Using existing Pool; Pool Configurers [%d] will not be applied",
+				existingPool.get().getName(), this.poolConfigurers.size()));
+		}
+		else {
+			this.springBasedPool = true;
+			applyPoolConfigurers();
+
+			logDebug("No Pool with name [%s] was found; Creating new Pool", getName());
 		}
 	}
 
 	/* (non-Javadoc) */
-	@Override
-	public Pool getObject() throws Exception {
-		if (this.pool == null) {
-			eagerlyInitializeClientCacheIfNotPresent();
-
-			PoolFactory poolFactory = createPoolFactory();
-
-			poolFactory.setFreeConnectionTimeout(freeConnectionTimeout);
-			poolFactory.setIdleTimeout(idleTimeout);
-			poolFactory.setLoadConditioningInterval(loadConditioningInterval);
-			poolFactory.setMaxConnections(maxConnections);
-			poolFactory.setMinConnections(minConnections);
-			poolFactory.setMultiuserAuthentication(multiUserAuthentication);
-			poolFactory.setPingInterval(pingInterval);
-			poolFactory.setPRSingleHopEnabled(prSingleHopEnabled);
-			poolFactory.setReadTimeout(readTimeout);
-			poolFactory.setRetryAttempts(retryAttempts);
-			poolFactory.setServerGroup(serverGroup);
-			poolFactory.setSocketBufferSize(socketBufferSize);
-			poolFactory.setStatisticInterval(statisticInterval);
-			poolFactory.setSubscriptionAckInterval(subscriptionAckInterval);
-			poolFactory.setSubscriptionEnabled(subscriptionEnabled);
-			poolFactory.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
-			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
-			poolFactory.setThreadLocalConnections(threadLocalConnections);
-
-			for (ConnectionEndpoint locator : this.locators) {
-				poolFactory.addLocator(locator.getHost(), locator.getPort());
-			}
-
-			for (ConnectionEndpoint server : this.servers) {
-				poolFactory.addServer(server.getHost(), server.getPort());
-			}
-
-			pool = poolFactory.create(name);
-		}
-
-		return pool;
+	private void applyPoolConfigurers() {
+		applyPoolConfigurers(getCompositePoolConfigurer());
 	}
 
 	/**
-	 * Determines whether the GemFire DistributedSystem exists yet or not.
+	 * Null-safe operation to apply the given array of {@link PoolConfigurer PoolConfigurers}
+	 * to this {@link PoolFactoryBean}.
 	 *
-	 * @return a boolean value indicating whether the single, GemFire DistributedSystem has been created already.
+	 * @param poolConfigurers array of {@link PoolConfigurer PoolConfigurers} applied to this {@link PoolFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
+	 * @see #applyPoolConfigurers(Iterable)
+	 */
+	protected void applyPoolConfigurers(PoolConfigurer... poolConfigurers) {
+		applyPoolConfigurers(Arrays.asList(nullSafeArray(poolConfigurers, PoolConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to apply the given {@link Iterable} of {@link PoolConfigurer PoolConfigurers}
+	 * to this {@link PoolFactoryBean}.
+	 *
+	 * @param poolConfigurers {@link Iterable} of {@link PoolConfigurer PoolConfigurers}
+	 * applied to this {@link PoolFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
+	 */
+	protected void applyPoolConfigurers(Iterable<PoolConfigurer> poolConfigurers) {
+		stream(nullSafeIterable(poolConfigurers).spliterator(), false)
+			.forEach(poolConfigurer -> poolConfigurer.configure(getName(), this));
+	}
+
+	/* (non-Javadoc) */
+	private String validatePoolName() {
+
+		if (!StringUtils.hasText(getName())) {
+			setName(Optional.ofNullable(getBeanName()).filter(StringUtils::hasText)
+				.orElseThrow(() -> newIllegalArgumentException("Pool name is required")));
+		}
+
+		return getName();
+	}
+
+	/**
+	 * Releases all system resources and destroys the {@link Pool} when created by this {@link PoolFactoryBean}.
+	 *
+	 * @throws Exception if the {@link Pool} destruction caused an error.
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
+	@Override
+	public void destroy() throws Exception {
+
+		Optional.ofNullable(this.pool)
+			.filter(pool -> this.springBasedPool)
+			.filter(pool -> !pool.isDestroyed())
+			.ifPresent(pool -> {
+				pool.releaseThreadLocalConnection();
+				pool.destroy(this.keepAlive);
+				setPool(null);
+				logDebug("Destroyed Pool [%s]", pool.getName());
+			});
+	}
+
+	/**
+	 * Returns a reference to the Composite {@link PoolConfigurer} used to apply additional configuration
+	 * to this {@link PoolFactoryBean} on Spring container initialization.
+	 *
+	 * @return the Composite {@link PoolConfigurer}.
+	 * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
+	 */
+	protected PoolConfigurer getCompositePoolConfigurer() {
+		return this.compositePoolConfigurer;
+	}
+
+	/**
+	 * Returns an object reference to the {@link Pool} created by this {@link PoolFactoryBean}.
+	 *
+	 * @return an object reference to the {@link Pool} created by this {@link PoolFactoryBean}.
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 * @see org.apache.geode.cache.client.Pool
+	 */
+	@Override
+	public Pool getObject() throws Exception {
+
+		return Optional.ofNullable(this.pool).orElseGet(() -> {
+
+			eagerlyInitializeClientCacheIfNotPresent();
+
+			PoolFactory poolFactory = configure(createPoolFactory());
+
+			this.pool = create(poolFactory, getName());
+
+			return this.pool;
+		});
+	}
+
+	/**
+	 * Determines whether the {@link DistributedSystem} exists yet or not.
+	 *
+	 * @return a boolean value indicating whether the single, {@link DistributedSystem} has already been created.
 	 * @see org.springframework.data.gemfire.GemfireUtils#getDistributedSystem()
 	 * @see org.springframework.data.gemfire.GemfireUtils#isConnected(DistributedSystem)
 	 * @see org.apache.geode.distributed.DistributedSystem
@@ -217,22 +253,22 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * Attempts to eagerly initialize the GemFire {@link ClientCache} if not already present so that the single
-	 * {@link org.apache.geode.distributed.DistributedSystem} will exists, which is required to create
-	 * a {@link Pool} instance.
+	 * Attempts to eagerly initialize the {@link ClientCache} if not already present so that a single
+	 * {@link DistributedSystem} will exist, which is required to create a {@link Pool} instance.
 	 *
 	 * @see org.springframework.beans.factory.BeanFactory#getBean(Class)
 	 * @see org.apache.geode.cache.client.ClientCache
+	 * @see org.apache.geode.distributed.DistributedSystem
+	 * @see #isDistributedSystemPresent()
 	 */
-	void eagerlyInitializeClientCacheIfNotPresent() {
+	private void eagerlyInitializeClientCacheIfNotPresent() {
 		if (!isDistributedSystemPresent()) {
 			getBeanFactory().getBean(ClientCache.class);
 		}
 	}
 
 	/**
-	 * Creates an instance of the GemFire {@link PoolFactory} interface to construct, configure and initialize
-	 * a GemFire {@link Pool}.
+	 * Creates an instance of the {@link PoolFactory} interface to construct, configure and initialize a {@link Pool}.
 	 *
 	 * @return a {@link PoolFactory} implementation to create a {@link Pool}.
 	 * @see org.apache.geode.cache.client.PoolManager#createFactory()
@@ -242,16 +278,68 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		return PoolManager.createFactory();
 	}
 
-	/* (non-Javadoc) */
-	@Override
-	public Class<?> getObjectType() {
-		return (this.pool != null ? this.pool.getClass() : Pool.class);
+	/**
+	 * Configures the given {@link PoolFactory} from this {@link PoolFactoryBean}.
+	 *
+	 * @param poolFactory {@link PoolFactory} to configure.
+	 * @return the given {@link PoolFactory}.
+	 * @see org.apache.geode.cache.client.PoolFactory
+	 */
+	protected PoolFactory configure(PoolFactory poolFactory) {
+
+		Optional.ofNullable(poolFactory).ifPresent(it -> {
+			it.setFreeConnectionTimeout(this.freeConnectionTimeout);
+			it.setIdleTimeout(this.idleTimeout);
+			it.setLoadConditioningInterval(this.loadConditioningInterval);
+			it.setMaxConnections(this.maxConnections);
+			it.setMinConnections(this.minConnections);
+			it.setMultiuserAuthentication(this.multiUserAuthentication);
+			it.setPingInterval(this.pingInterval);
+			it.setPRSingleHopEnabled(this.prSingleHopEnabled);
+			it.setReadTimeout(this.readTimeout);
+			it.setRetryAttempts(this.retryAttempts);
+			it.setServerGroup(this.serverGroup);
+			it.setSocketBufferSize(this.socketBufferSize);
+			it.setStatisticInterval(this.statisticInterval);
+			it.setSubscriptionAckInterval(this.subscriptionAckInterval);
+			it.setSubscriptionEnabled(this.subscriptionEnabled);
+			it.setSubscriptionMessageTrackingTimeout(this.subscriptionMessageTrackingTimeout);
+			it.setSubscriptionRedundancy(this.subscriptionRedundancy);
+			it.setThreadLocalConnections(this.threadLocalConnections);
+
+			nullSafeCollection(this.locators).forEach(locator ->
+				it.addLocator(locator.getHost(), locator.getPort()));
+
+			nullSafeCollection(this.servers).forEach(server ->
+				it.addServer(server.getHost(), server.getPort()));
+		});
+
+		return poolFactory;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Creates a {@link Pool} with the given {@link String name} using the provided {@link PoolFactory}.
+	 *
+	 * @param poolFactory {@link PoolFactory} used to create the {@link Pool}.
+	 * @param poolName {@link String name} of the new {@link Pool}.
+	 * @return a new instance of {@link Pool} with the given {@link String name}.
+	 * @see org.apache.geode.cache.client.PoolFactory#create(String)
+	 * @see org.apache.geode.cache.client.Pool
+	 */
+	protected Pool create(PoolFactory poolFactory, String poolName) {
+		return poolFactory.create(poolName);
+	}
+
+	/**
+	 * Returns the {@link Class} type of the {@link Pool} produced by this {@link PoolFactoryBean}.
+	 *
+	 * @return the {@link Class} type of the {@link Pool} produced by this {@link PoolFactoryBean}.
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
 	@Override
-	public boolean isSingleton() {
-		return true;
+	@SuppressWarnings("unchecked")
+	public Class<?> getObjectType() {
+		return Optional.ofNullable(this.pool).map(Pool::getClass).orElse((Class) Pool.class);
 	}
 
 	/* (non-Javadoc) */
@@ -275,28 +363,13 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/* (non-Javadoc) */
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	/* (non-Javadoc) */
-	protected BeanFactory getBeanFactory() {
-		return beanFactory;
-	}
-
-	/* (non-Javadoc) */
-	public void setBeanName(String name) {
-		this.beanName = name;
-	}
-
-	/* (non-Javadoc) */
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/* (non-Javadoc) */
-	String getName() {
-		return name;
+	protected String getName() {
+		return this.name;
 	}
 
 	/* (non-Javadoc) */
@@ -350,9 +423,8 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 
 			@Override
 			public String getName() {
-				String name = PoolFactoryBean.this.name;
-				name = (StringUtils.hasText(name) ? name : PoolFactoryBean.this.beanName);
-				return name;
+				return Optional.ofNullable(PoolFactoryBean.this.getName()).filter(StringUtils::hasText)
+					.orElseGet(PoolFactoryBean.this::getBeanName);
 			}
 
 			@Override
@@ -525,6 +597,31 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		this.pingInterval = pingInterval;
 	}
 
+	/**
+	 * Null-safe operation to set an array of {@link PoolConfigurer PoolConfigurers} used to apply
+	 * additional configuration to this {@link PoolFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param poolConfigurers array of {@link PoolConfigurer PoolConfigurers} used to apply
+	 * additional configuration to this {@link PoolFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
+	 * @see #setPoolConfigurers(List)
+	 */
+	public void setPoolConfigurers(PoolConfigurer... poolConfigurers) {
+		setPoolConfigurers(Arrays.asList(nullSafeArray(poolConfigurers, PoolConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to set an {@link Iterable} of {@link PoolConfigurer PoolConfigurers} used to apply
+	 * additional configuration to this {@link PoolFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param poolConfigurers {@link Iterable} of {@link PoolConfigurer PoolConfigurers} used to apply
+	 * additional configuration to this {@link PoolFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
+	 */
+	public void setPoolConfigurers(List<PoolConfigurer> poolConfigurers) {
+		this.poolConfigurers = Optional.ofNullable(poolConfigurers).orElseGet(Collections::emptyList);
+	}
+
 	/* (non-Javadoc) */
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
@@ -596,11 +693,17 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		this.threadLocalConnections = threadLocalConnections;
 	}
 
-	/* (non-Javadoc; internal framework use only) */
+	/*
+	 * (non-Javadoc)
+	 * internal framework use only
+	 */
 	public final void setLocatorsConfiguration(Object locatorsConfiguration) {
 	}
 
-	/* (non-Javadoc; internal framework use only) */
+	/*
+	 * (non-Javadoc)
+	 * internal framework use only
+	 */
 	public final void setServersConfiguration(Object serversConfiguration) {
 	}
 }

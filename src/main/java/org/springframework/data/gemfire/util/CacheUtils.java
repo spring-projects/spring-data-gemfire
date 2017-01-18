@@ -17,6 +17,8 @@
 
 package org.springframework.data.gemfire.util;
 
+import java.util.Optional;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -29,11 +31,10 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.springframework.util.StringUtils;
 
 /**
- * CacheUtils is an abstract utility class encapsulating common operations for working with GemFire Cache
- * and ClientCache instances.
+ * {@link CacheUtils} is an abstract utility class encapsulating common operations for working with
+ * {@link Cache} and {@link ClientCache} instances.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.util.DistributedSystemUtils
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.CacheFactory
  * @see org.apache.geode.cache.GemFireCache
@@ -42,6 +43,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.client.ClientCacheFactory
  * @see org.apache.geode.distributed.DistributedSystem
  * @see org.apache.geode.internal.cache.GemFireCacheImpl
+ * @see org.springframework.data.gemfire.util.DistributedSystemUtils
  * @since 1.8.0
  */
 @SuppressWarnings("unused")
@@ -52,6 +54,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static boolean isClient(GemFireCache cache) {
+
 		boolean client = (cache instanceof ClientCache);
 
 		if (cache instanceof GemFireCacheImpl) {
@@ -63,6 +66,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 
 	/* (non-Javadoc) */
 	public static boolean isDurable(ClientCache clientCache) {
+
 		DistributedSystem distributedSystem = getDistributedSystem(clientCache);
 
 		// NOTE technically the following code snippet would be more useful/valuable but is not "testable"!
@@ -75,6 +79,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static boolean isPeer(GemFireCache cache) {
+
 		boolean peer = (cache instanceof Cache);
 
 		if (cache instanceof GemFireCacheImpl) {
@@ -128,7 +133,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 
 	/* (non-Javadoc) */
 	public static GemFireCache resolveGemFireCache() {
-		return defaultIfNull(getCache(), CacheUtils::getClientCache);
+		return Optional.<GemFireCache>ofNullable(getCache()).orElseGet(CacheUtils::getClientCache);
 	}
 
 	/* (non-Javadoc) */

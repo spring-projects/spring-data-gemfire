@@ -23,14 +23,12 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.gemfire.repository.sample.PersonRepository;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
-import org.springframework.data.gemfire.test.MockCacheFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -39,29 +37,24 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * repository configuration).
  *
  * @author Oliver Gierke
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(initializers=GemfireTestApplicationContextInitializer.class)
 public class GemfireRepositoriesRegistrarIntegrationTest {
 
-	@Configuration
+	@PeerCacheApplication
 	@EnableGemfireRepositories(value = "org.springframework.data.gemfire.repository.sample",
 		includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
 			value = org.springframework.data.gemfire.repository.sample.PersonRepository.class))
 	static class Config {
 
 		@Bean
-		public GemFireCache cache() throws Exception {
+		public Region<Long, Person> simple(GemFireCache gemfireCache) throws Exception {
 
-			CacheFactoryBean factory = new MockCacheFactoryBean();
-			return factory.getObject();
-		}
+			LocalRegionFactoryBean<Long, Person> factory = new LocalRegionFactoryBean<>();
 
-		@Bean
-		public Region<Long, Person> simple() throws Exception {
-
-			LocalRegionFactoryBean<Long, Person> factory = new LocalRegionFactoryBean<Long, Person>();
-			factory.setCache(cache());
+			factory.setCache(gemfireCache);
 			factory.setName("simple");
 			factory.afterPropertiesSet();
 
@@ -75,5 +68,4 @@ public class GemfireRepositoriesRegistrarIntegrationTest {
 	@Test
 	public void bootstrapsRepositoriesCorrectly() {
 	}
-
 }

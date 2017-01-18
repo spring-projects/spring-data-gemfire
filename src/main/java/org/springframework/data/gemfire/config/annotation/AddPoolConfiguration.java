@@ -17,8 +17,19 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import java.util.Map;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -32,25 +43,42 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The {@link AddCacheServerConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that registers
+ * The {@link AddPoolConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that registers
  * a {@link PoolFactoryBean} definition for the {@link org.apache.geode.cache.client.Pool}
- * configuration meta-data defined in {@link EnablePool}.
+ * configuration meta-data defined in {@link EnablePool} annotations.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+ * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.client.PoolFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.AddPoolsConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
+ * @see org.springframework.data.gemfire.config.annotation.EnablePools
  * @see org.springframework.data.gemfire.config.annotation.EnablePool
  * @since 1.9.0
  */
-public class AddPoolConfiguration implements ImportBeanDefinitionRegistrar {
+public class AddPoolConfiguration implements BeanFactoryAware, ImportBeanDefinitionRegistrar {
+
+	private BeanFactory beanFactory;
+
+	@Autowired(required = false)
+	private List<PoolConfigurer> poolConfigurers = Collections.emptyList();
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+
 		if (importingClassMetadata.hasAnnotation(EnablePool.class.getName())) {
-			Map<String, Object> enablePoolAttributes = importingClassMetadata.getAnnotationAttributes(
-				EnablePool.class.getName());
+
+			Map<String, Object> enablePoolAttributes =
+				importingClassMetadata.getAnnotationAttributes(EnablePool.class.getName());
 
 			registerPoolFactoryBeanDefinition(enablePoolAttributes, registry);
 		}
@@ -61,7 +89,7 @@ public class AddPoolConfiguration implements ImportBeanDefinitionRegistrar {
 	 * the {@link EnablePool} annotation meta-data.
 	 *
 	 * @param enablePoolAttributes {@link EnablePool} annotation attributes.
-	 * @param registry Spring {@link BeanDefinitionRegistry used to register the {@link PoolFactoryBean} definition.
+	 * @param registry Spring {@link BeanDefinitionRegistry} used to register the {@link PoolFactoryBean} definition.
 	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 * @see org.springframework.data.gemfire.client.PoolFactoryBean
 	 * @see org.springframework.data.gemfire.config.annotation.EnablePool
@@ -81,6 +109,7 @@ public class AddPoolConfiguration implements ImportBeanDefinitionRegistrar {
 		poolFactoryBean.addPropertyValue("minConnections", enablePoolAttributes.get("minConnections"));
 		poolFactoryBean.addPropertyValue("multiUserAuthentication", enablePoolAttributes.get("multiUserAuthentication"));
 		poolFactoryBean.addPropertyValue("pingInterval", enablePoolAttributes.get("pingInterval"));
+		poolFactoryBean.addPropertyValue("poolConfigurers", resolvePoolConfigurers());
 		poolFactoryBean.addPropertyValue("prSingleHopEnabled", enablePoolAttributes.get("prSingleHopEnabled"));
 		poolFactoryBean.addPropertyValue("readTimeout", enablePoolAttributes.get("readTimeout"));
 		poolFactoryBean.addPropertyValue("retryAttempts", enablePoolAttributes.get("retryAttempts"));
@@ -98,9 +127,27 @@ public class AddPoolConfiguration implements ImportBeanDefinitionRegistrar {
 		registry.registerBeanDefinition(poolName, poolFactoryBean.getBeanDefinition());
 	}
 
+	/* (non-Javadoc) */
+	private List<PoolConfigurer> resolvePoolConfigurers() {
+
+		return Optional.ofNullable(this.poolConfigurers)
+			.filter(poolConfigurers -> !poolConfigurers.isEmpty())
+			.orElseGet(() ->
+				Optional.of(this.beanFactory)
+					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
+					.map(beanFactory -> {
+						Map<String, PoolConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
+							.getBeansOfType(PoolConfigurer.class, true, true);
+
+						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+					})
+					.orElseGet(Collections::emptyList)
+			);
+	}
+
 	protected String getAndValidatePoolName(Map<String, Object> enablePoolAttributes) {
 		String poolName = (String) enablePoolAttributes.get("name");
-		Assert.hasText(poolName, "Pool name must be specified");
+		Assert.hasText(poolName, "Pool name is required");
 		return poolName;
 	}
 
@@ -165,5 +212,10 @@ public class AddPoolConfiguration implements ImportBeanDefinitionRegistrar {
 
 	protected ConnectionEndpoint newConnectionEndpoint(String host, Integer port) {
 		return new ConnectionEndpoint(host, port);
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
 	}
 }

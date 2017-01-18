@@ -29,6 +29,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * the {@link EnablePools} annotation on a GemFire client cache application class.
 
  * @author John Blum
+ * @see org.apache.geode.cache.client.Pool
  * @see org.springframework.data.gemfire.config.annotation.AddPoolConfiguration
  * @see org.springframework.data.gemfire.config.annotation.EnablePool
  * @see org.springframework.data.gemfire.config.annotation.EnablePools

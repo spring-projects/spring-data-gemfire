@@ -17,9 +17,19 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.Pool;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.annotation.Bean;
@@ -33,14 +43,24 @@ import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
 
 /**
- * Spring {@link Configuration} class used to configure, construct and initialize
- * a GemFire {@link org.apache.geode.cache.client.ClientCache} instance in a Spring application context.
+ * Spring {@link Configuration} class used to construct, configure and initialize
+ * a {@link org.apache.geode.cache.client.ClientCache} instance in a Spring application context.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.springframework.beans.factory.config.BeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
- * @see org.apache.geode.cache.client.ClientCache
+ * @see org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer
+ * @see org.springframework.data.gemfire.config.support.ClientRegionPoolBeanFactoryPostProcessor
+ * @see org.springframework.data.gemfire.support.ConnectionEndpoint
+ * @see org.springframework.data.gemfire.support.ConnectionEndpointList
  * @since 1.0.0
  */
 @Configuration
@@ -78,16 +98,30 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	private Iterable<ConnectionEndpoint> locators;
 	private Iterable<ConnectionEndpoint> servers;
 
+	@Autowired(required = false)
+	private List<ClientCacheConfigurer> clientCacheConfigurers = Collections.emptyList();
+
 	private Long idleTimeout;
 	private Long pingInterval;
 
 	private String durableClientId;
 	private String serverGroup;
 
+	/**
+	 * Bean declaration for a single, peer {@link ClientCache} instance.
+	 *
+	 * @return a new instance of a peer {@link ClientCache}.
+	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+	 * @see org.apache.geode.cache.client.ClientCache
+	 * @see org.apache.geode.cache.GemFireCache
+	 * @see #constructCacheFactoryBean()
+	 */
 	@Bean
 	public ClientCacheFactoryBean gemfireCache() {
+
 		ClientCacheFactoryBean gemfireCache = constructCacheFactoryBean();
 
+		gemfireCache.setClientCacheConfigurers(resolveClientCacheConfigurers());
 		gemfireCache.setDurableClientId(durableClientId());
 		gemfireCache.setDurableClientTimeout(durableClientTimeout());
 		gemfireCache.setFreeConnectionTimeout(freeConnectionTimeout());
@@ -116,8 +150,30 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return gemfireCache;
 	}
 
+	/* (non-Javadoc) */
+	private List<ClientCacheConfigurer> resolveClientCacheConfigurers() {
+
+		return Optional.ofNullable(this.clientCacheConfigurers)
+			.filter(clientCacheConfigurers -> !clientCacheConfigurers.isEmpty())
+			.orElseGet(() ->
+				Optional.of(this.beanFactory())
+					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
+					.map(beanFactory -> {
+						Map<String, ClientCacheConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
+							.getBeansOfType(ClientCacheConfigurer.class, true, true);
+
+						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+					})
+					.orElseGet(Collections::emptyList)
+			);
+	}
+
 	/**
-	 * {@inheritDoc}
+	 * Constructs a new instance of {@link ClientCacheFactoryBean} used to create a peer {@link ClientCache}.
+	 *
+	 * @param <T> {@link Class} sub-type of {@link CacheFactoryBean}.
+	 * @return a new instance of {@link ClientCacheFactoryBean}.
+	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -126,16 +182,27 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Configures Spring container infrastructure components and beans used by Spring Data GemFire
+	 * to enable Pivotal GemFire or Apache Geode to function properly inside a Spring context.
+	 *
+	 * This overridden method configures and registers additional Spring components and bean applicable to
+	 * {@link ClientCache ClientCaches}.
+	 *
+	 * @param importMetadata {@link AnnotationMetadata} containing annotation meta-data
+	 * for the Spring Data GemFire cache application class.
+	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
 	@Override
 	protected void configureInfrastructure(AnnotationMetadata importMetadata) {
+
 		super.configureInfrastructure(importMetadata);
+
 		registerClientRegionPoolBeanFactoryPostProcessor(importMetadata);
 	}
 
 	/* (non-Javadoc) */
-	protected void registerClientRegionPoolBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
+	private void registerClientRegionPoolBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
+
 		if (CLIENT_REGION_POOL_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
 			register(BeanDefinitionBuilder.rootBeanDefinition(ClientRegionPoolBeanFactoryPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
@@ -143,17 +210,20 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	}
 
 	/**
-	 * Configures GemFire {@link org.apache.geode.cache.client.ClientCache} specific settings.
+	 * Configures {@link ClientCache} specific settings.
 	 *
-	 * @param importMetadata {@link AnnotationMetadata} containing client cache meta-data used to configure
-	 * the GemFire {@link org.apache.geode.cache.client.ClientCache}.
+	 * @param importMetadata {@link AnnotationMetadata} containing client cache meta-data used to
+	 * configure the {@link ClientCache}.
 	 * @see org.springframework.core.type.AnnotationMetadata
+	 * @see #configureLocatorsAndServers(Map)
 	 */
 	@Override
 	protected void configureCache(AnnotationMetadata importMetadata) {
+
 		super.configureCache(importMetadata);
 
 		if (isClientCacheApplication(importMetadata)) {
+
 			Map<String, Object> clientCacheApplicationAttributes =
 				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
@@ -185,16 +255,16 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	}
 
 	/**
-	 * Uses the list of GemFire Locator and Server connection endpoint definitions and meta-data to configure
-	 * the GemFire client {@link org.apache.geode.cache.client.Pool} used to communicate with the servers
-	 * in the GemFire cluster.
+	 * Uses the list of Pivotal GemFire/Apache Geode Locator and Server connection endpoint definitions and meta-data
+	 * to configure the client {@link Pool} used to communicate with the servers in the cluster.
 	 *
-	 * @param clientCacheApplicationAttributes {@link ClientCacheApplication} annotation containing
-	 * {@link org.apache.geode.cache.client.Pool} Locator/Server connection endpoint meta-data.
+	 * @param clientCacheApplicationAttributes {@link ClientCacheApplication} annotation containing {@link Pool}
+	 * Locator/Server connection endpoint meta-data.
 	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
 	 * @see java.util.Map
 	 */
-	protected void configureLocatorsAndServers(Map<String, Object> clientCacheApplicationAttributes) {
+	private void configureLocatorsAndServers(Map<String, Object> clientCacheApplicationAttributes) {
+
 		ConnectionEndpointList poolLocators = new ConnectionEndpointList();
 
 		AnnotationAttributes[] locators = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("locators");

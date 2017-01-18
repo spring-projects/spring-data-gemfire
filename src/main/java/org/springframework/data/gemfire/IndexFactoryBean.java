@@ -16,7 +16,16 @@
 
 package org.springframework.data.gemfire;
 
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
@@ -27,51 +36,59 @@ import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.cache.query.QueryService;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.data.gemfire.config.annotation.IndexConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Spring FactoryBean for easy declarative creation of GemFire Indexes.
+ * Spring {@link FactoryBean} used to construct, configure and initialize {@link Index Indexes}
+ * using a declarative approach.
  *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
- * @see org.springframework.beans.factory.BeanFactoryAware
- * @see org.springframework.beans.factory.BeanNameAware
- * @see org.springframework.beans.factory.FactoryBean
- * @see org.springframework.beans.factory.InitializingBean
- * @see org.springframework.data.gemfire.IndexFactoryBean.IndexWrapper
+ * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.RegionService
  * @see org.apache.geode.cache.query.Index
  * @see org.apache.geode.cache.query.QueryService
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.IndexFactoryBean.IndexWrapper
+ * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  * @since 1.0.0
  */
-public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, BeanNameAware, BeanFactoryAware {
+public class IndexFactoryBean extends AbstractFactoryBeanSupport<Index> implements InitializingBean {
 
 	private boolean define = false;
 	private boolean override = true;
-
-	private BeanFactory beanFactory;
 
 	private Index index;
 
 	private IndexType indexType;
 
+	//@Autowired(required = false)
+	private List<IndexConfigurer> indexConfigurers = Collections.emptyList();
+
+	private IndexConfigurer compositeIndexConfigurer = new IndexConfigurer() {
+
+		@Override
+		public void configure(String beanName, IndexFactoryBean bean) {
+			nullSafeCollection(indexConfigurers).forEach(indexConfigurer -> indexConfigurer.configure(beanName, bean));
+		}
+	};
+
 	private QueryService queryService;
 
 	private RegionService cache;
 
-	private String beanName;
 	private String expression;
 	private String from;
 	private String imports;
@@ -83,29 +100,66 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(cache, "The GemFire Cache reference must not be null!");
 
-		queryService = lookupQueryService();
+		this.indexName = Optional.ofNullable(this.name).filter(StringUtils::hasText).orElse(getBeanName());
+
+		Assert.hasText(this.indexName, "Index name is required");
+
+		applyIndexConfigurers(this.indexName);
+
+		Assert.notNull(cache, "Cache is required");
+
+		this.queryService = lookupQueryService();
 
 		Assert.notNull(queryService, "QueryService is required to create an Index");
-		Assert.hasText(expression, "Index 'expression' is required");
-		Assert.hasText(from, "Index 'from clause' is required");
+		Assert.hasText(expression, "Index expression is required");
+		Assert.hasText(from, "Index from clause is required");
 
 		if (IndexType.isKey(indexType)) {
-			Assert.isNull(imports, "'imports' are not supported with a KEY Index");
+			Assert.isNull(imports, "imports are not supported with a KEY Index");
 		}
 
-		indexName = (StringUtils.hasText(name) ? name : beanName);
+		this.index = createIndex(queryService, indexName);
+	}
 
-		Assert.hasText(indexName, "Index 'name' is required");
+	/* (non-Javadoc) */
+	private void applyIndexConfigurers(String indexName) {
+		applyIndexConfigurers(indexName, getCompositeRegionConfigurer());
+	}
 
-		index = createIndex(queryService, indexName);
+	/**
+	 * Null-safe operation to apply the given array of {@link IndexConfigurer IndexConfigurers}
+	 * to this {@link IndexFactoryBean}.
+	 *
+	 * @param indexName {@link String} containing the name of the {@link Index}.
+	 * @param indexConfigurers array of {@link IndexConfigurer IndexConfigurers} applied
+	 * to this {@link IndexFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 * @see #applyIndexConfigurers(String, Iterable)
+	 */
+	protected void applyIndexConfigurers(String indexName, IndexConfigurer... indexConfigurers) {
+		applyIndexConfigurers(indexName, Arrays.asList(nullSafeArray(indexConfigurers, IndexConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to apply the given {@link Iterable} of {@link IndexConfigurer IndexConfigurers}
+	 * to this {@link IndexFactoryBean}.
+	 *
+	 * @param indexName {@link String} containing the name of the {@link Index}.
+	 * @param indexConfigurers {@link Iterable} of {@link IndexConfigurer IndexConfigurers} applied
+	 * to this {@link IndexFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 */
+	protected void applyIndexConfigurers(String indexName, Iterable<IndexConfigurer> indexConfigurers) {
+		stream(nullSafeIterable(indexConfigurers).spliterator(), false)
+			.forEach(indexConfigurer -> indexConfigurer.configure(indexName, this));
 	}
 
 	/* (non-Javadoc) */
 	QueryService doLookupQueryService() {
-		return (queryService != null ? queryService
-			: (cache instanceof ClientCache ? ((ClientCache) cache).getLocalQueryService() : cache.getQueryService()));
+		return Optional.ofNullable(this.queryService).orElseGet(() ->
+			(this.cache instanceof ClientCache ? ((ClientCache) this.cache).getLocalQueryService()
+				: this.cache.getQueryService()));
 	}
 
 	/* (non-Javadoc) */
@@ -131,6 +185,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 	/* (non-Javadoc) */
 	Index createIndex(QueryService queryService, String indexName) throws Exception {
+
 		Index existingIndex = getExistingIndex(queryService, indexName);
 
 		if (existingIndex != null) {
@@ -183,6 +238,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 	/* (non-Javadoc) */
 	Index createKeyIndex(QueryService queryService, String indexName, String expression, String from) throws Exception {
+
 		if (isDefine()) {
 			queryService.defineKeyIndex(indexName, expression, from);
 			return new IndexWrapper(queryService, indexName);
@@ -194,7 +250,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 	/* (non-Javadoc) */
 	Index createHashIndex(QueryService queryService, String indexName, String expression, String from,
-		String imports) throws Exception {
+			String imports) throws Exception {
 
 		boolean hasImports = StringUtils.hasText(imports);
 
@@ -246,7 +302,8 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 	/* (non-Javadoc) */
 	Index getExistingIndex(QueryService queryService, String indexName) {
-		for (Index index : CollectionUtils.nullSafeCollection(queryService.getIndexes())) {
+
+		for (Index index : nullSafeCollection(queryService.getIndexes())) {
 			if (index.getName().equalsIgnoreCase(indexName)) {
 				return index;
 			}
@@ -256,28 +313,32 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 	}
 
 	/**
+	 * Returns a reference to the Composite {@link IndexConfigurer} used to apply additional configuration
+	 * to this {@link IndexFactoryBean} on Spring container initialization.
+	 *
+	 * @return the Composite {@link IndexConfigurer}.
+	 * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
+	 */
+	protected IndexConfigurer getCompositeRegionConfigurer() {
+		return this.compositeIndexConfigurer;
+	}
+
+	/**
 	 * @inheritDoc
 	 */
 	@Override
 	public Index getObject() {
-		index = (index != null ? index : getExistingIndex(queryService, indexName));
-		return index;
+		return Optional.ofNullable(this.index)
+			.orElseGet(() -> this.index = getExistingIndex(queryService, indexName));
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public Class<?> getObjectType() {
-		return (index != null ? index.getClass() : Index.class);
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
+		return Optional.ofNullable(this.index).map(Index::getClass).orElse((Class) Index.class);
 	}
 
 	/**
@@ -296,24 +357,6 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 	 */
 	public void setQueryService(QueryService service) {
 		this.queryService = service;
-	}
-
-	/* (non-Javadoc) */
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	/* (non-Javadoc) */
-	protected BeanFactory getBeanFactory() {
-		Assert.state(beanFactory != null, "'beanFactory' was not properly initialized");
-		return beanFactory;
-	}
-
-	/* (non-Javadoc) */
-	@Override
-	public void setBeanName(String name) {
-		this.beanName = name;
 	}
 
 	/**
@@ -361,6 +404,31 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 	 */
 	public void setImports(String imports) {
 		this.imports = imports;
+	}
+
+	/**
+	 * Null-safe operation to set an array of {@link IndexConfigurer IndexConfigurers} used to apply
+	 * additional configuration to this {@link IndexFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param indexConfigurers array of {@link IndexConfigurer IndexConfigurers} used to apply
+	 * additional configuration to this {@link IndexFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
+	 * @see #setIndexConfigurers(List)
+	 */
+	public void setIndexConfigurers(IndexConfigurer... indexConfigurers) {
+		setIndexConfigurers(Arrays.asList(nullSafeArray(indexConfigurers, IndexConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to set an {@link Iterable} of {@link IndexConfigurer IndexConfigurers} used to apply
+	 * additional configuration to this {@link IndexFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param indexConfigurers {@link Iterable } of {@link IndexConfigurer IndexConfigurers} used to apply
+	 * additional configuration to this {@link IndexFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
+	 */
+	public void setIndexConfigurers(List<IndexConfigurer> indexConfigurers) {
+		this.indexConfigurers = Optional.ofNullable(indexConfigurers).orElseGet(Collections::emptyList);
 	}
 
 	/**

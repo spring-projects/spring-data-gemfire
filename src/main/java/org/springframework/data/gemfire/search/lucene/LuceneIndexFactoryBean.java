@@ -17,7 +17,10 @@
 
 package org.springframework.data.gemfire.search.lucene;
 
+import static java.util.stream.StreamSupport.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -27,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
@@ -35,42 +39,52 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.lucene.analysis.Analyzer;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.gemfire.config.annotation.IndexConfigurer;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Spring {@link FactoryBean} used to construct {@link LuceneIndex Lucene Indexes} on application domain object fields.
+ * Spring {@link FactoryBean} used to construct, configure and initialize {@link LuceneIndex Lucene Indexes}
+ * on application domain object fields.
  *
  * @author John Blum
- * @see org.springframework.beans.factory.BeanNameAware
- * @see org.springframework.beans.factory.DisposableBean
- * @see org.springframework.beans.factory.FactoryBean
- * @see org.springframework.beans.factory.InitializingBean
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.lucene.LuceneIndex
  * @see org.apache.geode.cache.lucene.LuceneService
  * @see org.apache.geode.cache.lucene.LuceneServiceProvider
+ * @see org.apache.lucene.analysis.Analyzer
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  * @since 1.1.0
  */
 @SuppressWarnings("unused")
-public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
-		BeanFactoryAware, BeanNameAware, InitializingBean, DisposableBean {
+public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneIndex>
+		implements DisposableBean, InitializingBean {
 
 	protected static final boolean DEFAULT_DESTROY = false;
 
 	private boolean destroy = DEFAULT_DESTROY;
 
-	private BeanFactory beanFactory;
-
 	private GemFireCache gemfireCache;
+
+	private List<IndexConfigurer> indexConfigurers = Collections.emptyList();
+
+	private IndexConfigurer compositeIndexConfigurer = new IndexConfigurer() {
+
+		@Override
+		public void configure(String beanName, LuceneIndexFactoryBean bean) {
+			nullSafeCollection(indexConfigurers).forEach(indexConfigurer -> indexConfigurer.configure(beanName, bean));
+		}
+	};
 
 	private List<String> fields;
 
@@ -90,13 +104,72 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
+
 		String indexName = getIndexName();
+
+		applyIndexConfigurers(indexName);
 
 		this.gemfireCache = resolveCache();
 		this.luceneService = resolveLuceneService();
 		this.regionPath = resolveRegionPath();
 
-		setLuceneIndex(createIndex(indexName, getRegionPath()));
+		setLuceneIndex(resolveLuceneIndex(indexName, getRegionPath()));
+	}
+
+	/* (non-Javadoc) */
+	private void applyIndexConfigurers(String indexName) {
+		applyIndexConfigurers(indexName, getCompositeRegionConfigurer());
+	}
+
+	/**
+	 * Null-safe operation to apply the given array of {@link IndexConfigurer IndexConfigurers}
+	 * to this {@link LuceneIndexFactoryBean}.
+	 *
+	 * @param indexName {@link String} containing the name of the {@link LuceneIndex}.
+	 * @param indexConfigurers array of {@link IndexConfigurer IndexConfigurers} applied
+	 * to this {@link LuceneIndexFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 * @see #applyIndexConfigurers(String, Iterable)
+	 */
+	protected void applyIndexConfigurers(String indexName, IndexConfigurer... indexConfigurers) {
+		applyIndexConfigurers(indexName, Arrays.asList(nullSafeArray(indexConfigurers, IndexConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to apply the given {@link Iterable} of {@link IndexConfigurer IndexConfigurers}
+	 * to this {@link LuceneIndexFactoryBean}.
+	 *
+	 * @param indexName {@link String} containing the name of the {@link LuceneIndex}.
+	 * @param indexConfigurers {@link Iterable} of {@link IndexConfigurer IndexConfigurers} applied
+	 * to this {@link LuceneIndexFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 */
+	protected void applyIndexConfigurers(String indexName, Iterable<IndexConfigurer> indexConfigurers) {
+		stream(nullSafeIterable(indexConfigurers).spliterator(), false)
+			.forEach(indexConfigurer -> indexConfigurer.configure(indexName, this));
+	}
+
+	/**
+	 * Attempts to resolve a {@link LuceneIndex} by the given {@link String indexName} first then attempts to create
+	 * the {@link LuceneIndex} with the given {@link Region#getFullPath() Region path}.
+	 *
+	 * @param indexName {@link String name} of the {@link LuceneIndex} to resolve.
+	 * @param regionPath {@link Region#getFullPath() Region path} on which the {@link LuceneIndex} is applied.
+	 * @return the resolved {@link LuceneIndex} by the given {@link String indexName} or the created {@link LuceneIndex}
+	 * with the given {@link Region#getFullPath() Region path} if the {@link LuceneIndex} could not be resolved by
+	 * {@link String indexName}.
+	 * @see org.apache.geode.cache.lucene.LuceneService#getIndex(String, String)
+	 * @see #createLuceneIndex(String, String)
+	 * @see #getLuceneIndex()
+	 */
+	protected LuceneIndex resolveLuceneIndex(String indexName, String regionPath) {
+
+		Supplier<LuceneIndex> luceneIndexSupplier = () ->
+			Optional.ofNullable(resolveLuceneService())
+				.map(luceneService -> luceneService.getIndex(indexName, regionPath))
+				.orElseGet(() -> createLuceneIndex(indexName, regionPath));
+
+		return getLuceneIndex().orElseGet(luceneIndexSupplier);
 	}
 
 	/**
@@ -115,7 +188,8 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	 * @see #getFields()
 	 * @see #resolveFields(List)
 	 */
-	protected LuceneIndex createIndex(String indexName, String regionPath) {
+	protected LuceneIndex createLuceneIndex(String indexName, String regionPath) {
+
 		LuceneService luceneService = resolveLuceneService();
 
 		Map<String, Analyzer> fieldAnalyzers = getFieldAnalyzers();
@@ -147,6 +221,7 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	@Override
 	@SuppressWarnings("deprecation")
 	public void destroy() throws Exception {
+
 		LuceneIndex luceneIndex = getObject();
 
 		if (isLuceneIndexDestroyable(luceneIndex)) {
@@ -172,6 +247,7 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	 */
 	@Override
 	public LuceneIndex getObject() throws Exception {
+
 		if (this.luceneIndex == null) {
 			setLuceneIndex(Optional.ofNullable(resolveLuceneService())
 				.map((luceneService) -> luceneService.getIndex(getIndexName(), resolveRegionPath()))
@@ -187,14 +263,6 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	@Override
 	public Class<?> getObjectType() {
 		return Optional.ofNullable(this.luceneIndex).<Class<?>>map(LuceneIndex::getClass).orElse(LuceneIndex.class);
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
 	}
 
 	/**
@@ -231,6 +299,7 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	 * @see #resolveLuceneService(GemFireCache)
 	 */
 	protected LuceneService resolveLuceneService() {
+
 		return Optional.ofNullable(getLuceneService()).orElseGet(() ->
 			Optional.ofNullable(getBeanFactory()).map(beanFactory -> {
 				try {
@@ -267,6 +336,7 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	 * @see #getRegionPath()
 	 */
 	protected Region<?, ?> resolveRegion() {
+
 		return Optional.ofNullable(getRegion()).orElseGet(() -> {
 			GemFireCache cache = resolveCache();
 			String regionPath = getRegionPath();
@@ -286,6 +356,7 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	 * @see #getRegionPath()
 	 */
 	protected String resolveRegionPath() {
+
 		String regionPath = Optional.ofNullable(resolveRegion())
 			.map(Region::getFullPath).orElseGet(this::getRegionPath);
 
@@ -298,25 +369,8 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	 * @inheritDoc
 	 */
 	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	/**
-	 * Returns a reference to the containing Spring {@link BeanFactory} if set.
-	 *
-	 * @return a reference to the containing Spring {@link BeanFactory} if set.
-	 * @see org.springframework.beans.factory.BeanFactory
-	 */
-	protected BeanFactory getBeanFactory() {
-		return this.beanFactory;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
 	public void setBeanName(String name) {
+		super.setBeanName(name);
 		setIndexName(name);
 	}
 
@@ -339,6 +393,17 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	 */
 	protected GemFireCache getCache() {
 		return this.gemfireCache;
+	}
+
+	/**
+	 * Returns a reference to the Composite {@link IndexConfigurer} used to apply additional configuration
+	 * to this {@link LuceneIndexFactoryBean} on Spring container initialization.
+	 *
+	 * @return the Composite {@link IndexConfigurer}.
+	 * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
+	 */
+	protected IndexConfigurer getCompositeRegionConfigurer() {
+		return this.compositeIndexConfigurer;
 	}
 
 	/**
@@ -416,6 +481,31 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	}
 
 	/**
+	 * Null-safe operation to set an array of {@link IndexConfigurer IndexConfigurers} used to apply
+	 * additional configuration to this {@link LuceneIndexFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param indexConfigurers array of {@link IndexConfigurer IndexConfigurers} used to apply
+	 * additional configuration to this {@link LuceneIndexFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
+	 * @see #setIndexConfigurers(List)
+	 */
+	public void setIndexConfigurers(IndexConfigurer... indexConfigurers) {
+		setIndexConfigurers(Arrays.asList(nullSafeArray(indexConfigurers, IndexConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to set an {@link Iterable} of {@link IndexConfigurer IndexConfigurers} used to apply
+	 * additional configuration to this {@link LuceneIndexFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param indexConfigurers {@link Iterable } of {@link IndexConfigurer IndexConfigurers} used to apply
+	 * additional configuration to this {@link LuceneIndexFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
+	 */
+	public void setIndexConfigurers(List<IndexConfigurer> indexConfigurers) {
+		this.indexConfigurers = Optional.ofNullable(indexConfigurers).orElseGet(Collections::emptyList);
+	}
+
+	/**
 	 * Sets the name of the {@link LuceneIndex} as identified in the {@link GemFireCache}.
 	 *
 	 * @param indexName {@link String} containing the name of the {@link LuceneIndex}.
@@ -437,16 +527,27 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	}
 
 	/**
-	 * Sets the {@link LuceneIndex} as the index created by this {@link FactoryBean}.
+	 * Returns an {@link Optional} reference to the {@link LuceneIndex} created by this {@link LuceneIndexFactoryBean}.
 	 *
-	 * This method is for testing purposes only!
+	 * @return an {@link Optional} reference to the {@link LuceneIndex} created by this {@link LuceneIndexFactoryBean}.
+	 * @see org.apache.geode.cache.lucene.LuceneIndex
+	 * @see java.util.Optional
+	 */
+	public Optional<LuceneIndex> getLuceneIndex() {
+		return Optional.ofNullable(this.luceneIndex);
+	}
+
+	/**
+	 * Sets the given {@link LuceneIndex} as the index created by this {@link FactoryBean}.
+	 *
+	 * This method is generally used for testing purposes only.
 	 *
 	 * @param luceneIndex {@link LuceneIndex} created by this {@link FactoryBean}.
 	 * @return this {@link LuceneIndexFactoryBean}.
 	 * @see org.springframework.data.gemfire.search.lucene.LuceneIndexFactoryBean
 	 * @see org.apache.geode.cache.lucene.LuceneIndex
 	 */
-	protected LuceneIndexFactoryBean setLuceneIndex(LuceneIndex luceneIndex) {
+	public LuceneIndexFactoryBean setLuceneIndex(LuceneIndex luceneIndex) {
 		this.luceneIndex = luceneIndex;
 		return this;
 	}

@@ -52,19 +52,15 @@ import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.util.ReflectionUtils;
 
 /**
- * The PoolFactoryBeanTest class is a test suite of test cases testing the contract and functionality
- * of the PoolFactoryBean class.
+ * Unit tests for {@link PoolFactoryBean}.
  *
  * @author John Blum
  * @see org.junit.Rule
  * @see org.junit.Test
  * @see org.junit.rules.ExpectedException
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.client.PoolFactoryBean
- * @see org.springframework.data.gemfire.support.ConnectionEndpoint
- * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.client.Pool
- * @see org.apache.geode.cache.client.PoolFactory
+ * @see org.springframework.data.gemfire.client.PoolFactoryBean
  * @since 1.7.0
  */
 public class PoolFactoryBeanTest {
@@ -164,7 +160,7 @@ public class PoolFactoryBeanTest {
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Pool 'name' is required");
+		exception.expectMessage("Pool name is required");
 
 		poolFactoryBean.afterPropertiesSet();
 	}

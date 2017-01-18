@@ -33,11 +33,12 @@ import org.springframework.context.annotation.Import;
  * {@link org.apache.geode.cache.Region Regions}
  *
  * @author John Blum
- * @see org.springframework.context.annotation.Import
- * @see org.springframework.data.gemfire.config.annotation.DiskStoresConfiguration
- * @see org.springframework.data.gemfire.config.annotation.EnableDiskStore
  * @see org.apache.geode.cache.DiskStore
  * @see org.apache.geode.cache.Region
+ * @see org.springframework.context.annotation.Import
+ * @see org.springframework.data.gemfire.config.annotation.DiskStoresConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.DiskStoreConfigurer
+ * @see org.springframework.data.gemfire.config.annotation.EnableDiskStore
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)

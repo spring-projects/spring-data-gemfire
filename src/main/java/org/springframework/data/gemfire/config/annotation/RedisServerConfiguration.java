@@ -44,7 +44,7 @@ public class RedisServerConfiguration extends EmbeddedServiceConfigurationSuppor
 
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		return new PropertiesBuilder()
+		return PropertiesBuilder.create()
 			.setProperty("redis-bind-address", annotationAttributes.get("bindAddress"))
 			.setProperty("redis-port", resolvePort((Integer)annotationAttributes.get("port"), DEFAULT_REDIS_PORT))
 			.build();

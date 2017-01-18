@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.eviction.EvictionActionType;
 import org.springframework.data.gemfire.eviction.EvictionPolicyType;
@@ -72,7 +73,7 @@ public @interface EnableEviction {
 		 *
 		 * Defaults to {@link EvictionActionType#LOCAL_DESTROY}.
 		 *
-		 * @see org.springframework.data.gemfire.EvictionActionType
+		 * @see org.springframework.data.gemfire.eviction.EvictionActionType
 		 */
 		EvictionActionType action() default EvictionActionType.LOCAL_DESTROY;
 
@@ -84,8 +85,8 @@ public @interface EnableEviction {
 		int maximum() default EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM;
 
 		/**
-		 * Name of a Spring bean of type {@link ObjectSizer} defined in the Spring context used
-		 * to size {@link Region} entry values.
+		 * Name of a Spring bean of type {@link ObjectSizer} defined in the Spring application context
+		 * used to size {@link Region} entry values.
 		 *
 		 * Defaults to empty.
 		 *
@@ -94,14 +95,14 @@ public @interface EnableEviction {
 		String objectSizerName() default "";
 
 		/**
-		 * Names of {@link Region Regions} for which this Eviction policy applies.
+		 * Names of all the {@link Region Regions} in which this Eviction policy will be applied.
 		 *
 		 * Defaults to empty.
 		 */
 		String[] regionNames() default {};
 
 		/**
-		 * Eviction alorithm used during Eviction.
+		 * Eviction algorithm used during Eviction.
 		 *
 		 * Defaults to {@link EvictionPolicyType#ENTRY_COUNT}.
 		 *

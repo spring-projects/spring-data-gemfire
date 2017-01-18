@@ -17,8 +17,12 @@
 
 package org.springframework.data.gemfire.config.annotation.support;
 
-import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
-import static org.springframework.data.gemfire.util.SpringUtils.defaultIfEmpty;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
@@ -26,16 +30,14 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.GenericRegionFactoryBean;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
-import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * The {@link GemFireCacheTypeAwareRegionFactoryBean} class is a smart Spring {@link FactoryBean} that knows how to
@@ -43,21 +45,20 @@ import org.springframework.util.Assert;
  * a {@link org.apache.geode.cache.client.ClientCache} or a peer {@link org.apache.geode.cache.Cache}.
  *
  * @author John Blum
- * @see org.springframework.beans.factory.BeanFactory
- * @see org.springframework.beans.factory.BeanFactoryAware
- * @see org.springframework.beans.factory.FactoryBean
- * @see org.springframework.data.gemfire.RegionLookupFactoryBean
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.data.gemfire.GenericRegionFactoryBean
+ * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  * @since 1.9.0
  */
 @SuppressWarnings("unused")
-public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
-		implements BeanFactoryAware {
+public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> {
 
 	private GemFireCache gemfireCache;
-
-	private BeanFactory beanFactory;
 
 	private Boolean close = false;
 
@@ -67,6 +68,8 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 	private ClientRegionShortcut clientRegionShortcut = ClientRegionShortcut.PROXY;
 
 	private DataPolicy dataPolicy = DataPolicy.DEFAULT;
+
+	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
 
 	private RegionAttributes<K, V> regionAttributes;
 
@@ -79,7 +82,8 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 	 * @inheritDoc
 	 */
 	@Override
-	public Region<K, V> lookupRegion(GemFireCache gemfireCache, String regionName) throws Exception {
+	public Region<K, V> createRegion(GemFireCache gemfireCache, String regionName) throws Exception {
+
 		return (GemfireUtils.isClient(gemfireCache) ? newClientRegion(gemfireCache, regionName)
 			: newServerRegion(gemfireCache, regionName));
 	}
@@ -97,20 +101,23 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 	 * @see org.apache.geode.cache.Region
 	 */
 	protected Region<K, V> newClientRegion(GemFireCache gemfireCache, String regionName) throws Exception {
-		ClientRegionFactoryBean<K, V> clientRegion = new ClientRegionFactoryBean<K, V>();
 
-		clientRegion.setAttributes(getRegionAttributes());
-		clientRegion.setBeanFactory(getBeanFactory());
-		clientRegion.setCache(gemfireCache);
-		clientRegion.setClose(isClose());
-		clientRegion.setKeyConstraint(getKeyConstraint());
-		clientRegion.setPoolName(getPoolName());
-		clientRegion.setRegionName(regionName);
-		clientRegion.setShortcut(getClientRegionShortcut());
-		clientRegion.setValueConstraint(getValueConstraint());
-		clientRegion.afterPropertiesSet();
+		ClientRegionFactoryBean<K, V> clientRegionFactory = new ClientRegionFactoryBean<>();
 
-		return clientRegion.getObject();
+		clientRegionFactory.setAttributes(getRegionAttributes());
+		clientRegionFactory.setBeanFactory(getBeanFactory());
+		clientRegionFactory.setCache(gemfireCache);
+		clientRegionFactory.setClose(isClose());
+		clientRegionFactory.setKeyConstraint(getKeyConstraint());
+		clientRegionFactory.setPoolName(getPoolName());
+		clientRegionFactory.setRegionConfigurers(this.regionConfigurers);
+		clientRegionFactory.setRegionName(regionName);
+		clientRegionFactory.setShortcut(getClientRegionShortcut());
+		clientRegionFactory.setValueConstraint(getValueConstraint());
+
+		clientRegionFactory.afterPropertiesSet();
+
+		return clientRegionFactory.getObject();
 	}
 
 	/**
@@ -126,19 +133,22 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 	 * @see org.apache.geode.cache.Region
 	 */
 	protected Region<K, V> newServerRegion(GemFireCache gemfireCache, String regionName) throws Exception {
-		GenericRegionFactoryBean<K, V> serverRegion = new GenericRegionFactoryBean<K, V>();
 
-		serverRegion.setAttributes(getRegionAttributes());
-		serverRegion.setCache(gemfireCache);
-		serverRegion.setClose(isClose());
-		serverRegion.setDataPolicy(getDataPolicy());
-		serverRegion.setKeyConstraint(getKeyConstraint());
-		serverRegion.setRegionName(regionName);
-		serverRegion.setShortcut(getServerRegionShortcut());
-		serverRegion.setValueConstraint(getValueConstraint());
-		serverRegion.afterPropertiesSet();
+		GenericRegionFactoryBean<K, V> serverRegionFactory = new GenericRegionFactoryBean<>();
 
-		return serverRegion.getObject();
+		serverRegionFactory.setAttributes(getRegionAttributes());
+		serverRegionFactory.setCache(gemfireCache);
+		serverRegionFactory.setClose(isClose());
+		serverRegionFactory.setDataPolicy(getDataPolicy());
+		serverRegionFactory.setKeyConstraint(getKeyConstraint());
+		serverRegionFactory.setRegionConfigurers(this.regionConfigurers);
+		serverRegionFactory.setRegionName(regionName);
+		serverRegionFactory.setShortcut(getServerRegionShortcut());
+		serverRegionFactory.setValueConstraint(getValueConstraint());
+
+		serverRegionFactory.afterPropertiesSet();
+
+		return serverRegionFactory.getObject();
 	}
 
 	public void setAttributes(RegionAttributes<K, V> regionAttributes) {
@@ -149,25 +159,12 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 		return this.regionAttributes;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	protected BeanFactory getBeanFactory() {
-		Assert.state(this.beanFactory != null, "BeanFactory was not properly initialized");
-		return this.beanFactory;
-	}
-
 	public void setClientRegionShortcut(ClientRegionShortcut clientRegionShortcut) {
 		this.clientRegionShortcut = clientRegionShortcut;
 	}
 
 	protected ClientRegionShortcut getClientRegionShortcut() {
-		return defaultIfNull(this.clientRegionShortcut, ClientRegionShortcut.PROXY);
+		return Optional.ofNullable(this.clientRegionShortcut).orElse(ClientRegionShortcut.PROXY);
 	}
 
 	public void setClose(Boolean close) {
@@ -187,7 +184,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 	}
 
 	protected DataPolicy getDataPolicy() {
-		return defaultIfNull(this.dataPolicy, DataPolicy.DEFAULT);
+		return Optional.ofNullable(this.dataPolicy).orElse(DataPolicy.DEFAULT);
 	}
 
 	public void setKeyConstraint(Class<K> keyConstraint) {
@@ -203,7 +200,33 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 	}
 
 	protected String getPoolName() {
-		return defaultIfEmpty(this.poolName, GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText)
+			.orElse(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+	}
+
+	/**
+	 * Null-safe operation used to set an array of {@link RegionConfigurer RegionConfigurers} used to apply
+	 * additional configuration to this {@link RegionLookupFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param regionConfigurers array of {@link RegionConfigurer RegionConfigurers} used to apply
+	 * additional configuration to this {@link RegionLookupFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 * @see #setRegionConfigurers(List)
+	 */
+	public void setRegionConfigurers(RegionConfigurer... regionConfigurers) {
+		setRegionConfigurers(Arrays.asList(nullSafeArray(regionConfigurers, RegionConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation used to set an {@link Iterable} of {@link RegionConfigurer RegionConfigurers} used to apply
+	 * additional configuration to this {@link RegionLookupFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param regionConfigurers {@link Iterable} of {@link RegionConfigurer RegionConfigurers} used to apply
+	 * additional configuration to this {@link RegionLookupFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+	 */
+	public void setRegionConfigurers(List<RegionConfigurer> regionConfigurers) {
+		this.regionConfigurers = Optional.ofNullable(regionConfigurers).orElseGet(Collections::emptyList);
 	}
 
 	public void setServerRegionShortcut(RegionShortcut shortcut) {

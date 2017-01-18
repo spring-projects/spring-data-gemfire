@@ -169,7 +169,7 @@ public class PartitionedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, "PARTITION");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'PARTITION' is invalid when persistent is true.", e.getMessage());
+			assertEquals("Data Policy [PARTITION] is invalid when persistent is true.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -195,7 +195,7 @@ public class PartitionedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, false, "PERSISTENT_PARTITION");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'PERSISTENT_PARTITION' is invalid when persistent is false.", e.getMessage());
+			assertEquals("Data Policy [PERSISTENT_PARTITION] is invalid when persistent is false.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -212,5 +212,4 @@ public class PartitionedRegionFactoryBeanTest {
 		factoryBean.resolveDataPolicy(mockRegionFactory, true, "PERSISTENT_PARTITION");
 		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PERSISTENT_PARTITION));
 	}
-
 }

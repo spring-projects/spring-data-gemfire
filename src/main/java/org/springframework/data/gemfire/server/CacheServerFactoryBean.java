@@ -15,12 +15,22 @@
  */
 package org.springframework.data.gemfire.server;
 
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
@@ -29,18 +39,28 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.SmartLifecycle;
-import org.springframework.util.Assert;
+import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.util.StringUtils;
 
 /**
- * FactoryBean for easy creation and configuration of GemFire {@link CacheServer} instances.
+ * Spring {@link FactoryBean} used to construct, configure and initialize a {@link CacheServer}.
  *
  * @author Costin Leau
  * @author John Blum
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.server.CacheServer
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.context.SmartLifecycle
+ * @see org.springframework.data.gemfire.config.annotation.CacheServerConfigurer
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  */
 @SuppressWarnings("unused")
-public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
-		InitializingBean, DisposableBean, SmartLifecycle {
+public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServer>
+		implements DisposableBean, InitializingBean, SmartLifecycle {
 
 	private boolean autoStartup = true;
 	private boolean notifyBySubscription = CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION;
@@ -60,6 +80,12 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 
 	private CacheServer cacheServer;
 
+	private List<CacheServerConfigurer> cacheServerConfigurers = Collections.emptyList();
+
+	private CacheServerConfigurer compositeCacheServerConfigurer = (beanName, bean) ->
+		nullSafeCollection(cacheServerConfigurers).forEach(cacheServerConfigurer ->
+			cacheServerConfigurer.configure(beanName, bean));
+
 	private ServerLoadProbe serverLoadProbe = CacheServer.DEFAULT_LOAD_PROBE;
 
 	private Set<InterestRegistrationListener> listeners = Collections.emptySet();
@@ -75,68 +101,149 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	@SuppressWarnings("deprecation")
 	public void afterPropertiesSet() throws IOException {
-		Assert.notNull(cache, "A GemFire Cache is required.");
 
-		cacheServer = cache.addCacheServer();
-		cacheServer.setBindAddress(bindAddress);
-		cacheServer.setGroups(serverGroups);
-		cacheServer.setHostnameForClients(hostNameForClients);
-		cacheServer.setLoadPollInterval(loadPollInterval);
-		cacheServer.setLoadProbe(serverLoadProbe);
-		cacheServer.setMaxConnections(maxConnections);
-		cacheServer.setMaximumMessageCount(maxMessageCount);
-		cacheServer.setMaximumTimeBetweenPings(maxTimeBetweenPings);
-		cacheServer.setMaxThreads(maxThreads);
-		cacheServer.setMessageTimeToLive(messageTimeToLive);
-		cacheServer.setNotifyBySubscription(notifyBySubscription);
-		cacheServer.setPort(port);
-		cacheServer.setSocketBufferSize(socketBufferSize);
+		applyCacheServerConfigurers();
 
-		for (InterestRegistrationListener listener : listeners) {
-			cacheServer.registerInterestRegistrationListener(listener);
-		}
+		Cache cache = resolveCache();
 
-		ClientSubscriptionConfig config = cacheServer.getClientSubscriptionConfig();
+		this.cacheServer = postProcess(configure(addCacheServer(cache)));
+	}
 
-		config.setCapacity(subscriptionCapacity);
-		getSubscriptionEvictionPolicy().setEvictionPolicy(config);
-
-		if (StringUtils.hasText(subscriptionDiskStore)) {
-			config.setDiskStoreName(subscriptionDiskStore);
-		}
+	/* (non-Javadoc) */
+	private void applyCacheServerConfigurers() {
+		applyCacheServerConfigurers(getCompositeCacheServerConfigurer());
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Null-safe operation to apply the given array of {@link CacheServerConfigurer CacheServerConfigurers}
+	 * to this {@link CacheServerFactoryBean}.
+	 *
+	 * @param cacheServerConfigurers array of {@link CacheServerConfigurer CacheServerConfigurers} applied to
+	 * this {@link CacheServerFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.CacheServerConfigurer
+	 * @see #applyCacheServerConfigurers(Iterable)
 	 */
-	public CacheServer getObject() {
+	protected void applyCacheServerConfigurers(CacheServerConfigurer... cacheServerConfigurers) {
+		applyCacheServerConfigurers(Arrays.asList(nullSafeArray(cacheServerConfigurers, CacheServerConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to apply the given {@link Iterable} of {@link CacheServerConfigurer CacheServerConfigurers}
+	 * to this {@link CacheServerFactoryBean}.
+	 *
+	 * @param cacheServerConfigurers {@link Iterable} of {@link CacheServerConfigurer CacheServerConfigurers} applied to
+	 * this {@link CacheServerFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.CacheServerConfigurer
+	 */
+	protected void applyCacheServerConfigurers(Iterable<CacheServerConfigurer> cacheServerConfigurers) {
+		stream(nullSafeIterable(cacheServerConfigurers).spliterator(), false)
+			.forEach(cacheServerConfigurer -> cacheServerConfigurer.configure(getBeanName(), this));
+	}
+
+	/* (non-Javadoc) */
+	private Cache resolveCache() {
+		return Optional.ofNullable(this.cache)
+			.orElseThrow(() -> newIllegalArgumentException("Cache is required"));
+	}
+
+	/**
+	 * Adds a {@link CacheServer} to the given {@link Cache} for server {@link ClientCache cache clients}.
+	 *
+	 * @param cache {@link Cache} used to add a {@link CacheServer}.
+	 * @return the newly added {@link CacheServer}.
+	 * @see org.apache.geode.cache.Cache#addCacheServer()
+	 * @see org.apache.geode.cache.server.CacheServer
+	 */
+	protected CacheServer addCacheServer(Cache cache) {
+		return cache.addCacheServer();
+	}
+
+	/**
+	 * Configures the provided {@link CacheServer} with any custom, application-specific configuration.
+	 *
+	 * @param cacheServer {@link CacheServer} to configure.
+	 * @return the given {@link CacheServer}.
+	 * @see org.apache.geode.cache.server.CacheServer
+	 */
+	protected CacheServer configure(CacheServer cacheServer) {
+
+		cacheServer.setBindAddress(this.bindAddress);
+		cacheServer.setGroups(this.serverGroups);
+		cacheServer.setHostnameForClients(this.hostNameForClients);
+		cacheServer.setLoadPollInterval(this.loadPollInterval);
+		cacheServer.setLoadProbe(this.serverLoadProbe);
+		cacheServer.setMaxConnections(this.maxConnections);
+		cacheServer.setMaximumMessageCount(this.maxMessageCount);
+		cacheServer.setMaximumTimeBetweenPings(this.maxTimeBetweenPings);
+		cacheServer.setMaxThreads(this.maxThreads);
+		cacheServer.setMessageTimeToLive(this.messageTimeToLive);
+		cacheServer.setNotifyBySubscription(this.notifyBySubscription);
+		cacheServer.setPort(this.port);
+		cacheServer.setSocketBufferSize(this.socketBufferSize);
+
+		nullSafeCollection(this.listeners).forEach(cacheServer::registerInterestRegistrationListener);
+
+		ClientSubscriptionConfig config = cacheServer.getClientSubscriptionConfig();
+
+		config.setCapacity(this.subscriptionCapacity);
+		getSubscriptionEvictionPolicy().setEvictionPolicy(config);
+
+		Optional.ofNullable(this.subscriptionDiskStore).filter(StringUtils::hasText)
+			.ifPresent(config::setDiskStoreName);
+
 		return cacheServer;
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Post-process the {@link CacheServer} with any necessary follow-up actions.
+	 *
+	 * @param cacheServer {@link CacheServer} to process.
+	 * @return the given {@link CacheServer}.
+	 * @see org.apache.geode.cache.server.CacheServer
 	 */
-	public Class<?> getObjectType() {
-		return (this.cacheServer != null ? cacheServer.getClass() : CacheServer.class);
+	protected CacheServer postProcess(CacheServer cacheServer) {
+		return cacheServer;
+	}
+
+	/**
+	 * Returns a reference to the Composite {@link CacheServerConfigurer} used to apply additional configuration
+	 * to this {@link CacheServerFactoryBean} on Spring container initialization.
+	 *
+	 * @return the Composite {@link CacheServerConfigurer}.
+	 * @see org.springframework.data.gemfire.config.annotation.CacheServerConfigurer
+	 */
+	protected CacheServerConfigurer getCompositeCacheServerConfigurer() {
+		return this.compositeCacheServerConfigurer;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isSingleton() {
-		return true;
+	@Override
+	public CacheServer getObject() {
+		return this.cacheServer;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public Class<?> getObjectType() {
+		return Optional.ofNullable(this.cacheServer).map(CacheServer::getClass).orElse((Class) CacheServer.class);
 	}
 
 	/* (non-Javadoc) */
 	public boolean isRunning() {
-		return (cacheServer != null && cacheServer.isRunning());
+		return Optional.ofNullable(this.cacheServer).map(CacheServer::isRunning).orElse(false);
 	}
 
 	/* (non-Javadoc) */
 	public boolean isAutoStartup() {
-		return autoStartup;
+		return this.autoStartup;
 	}
 
 	/**
@@ -149,10 +256,11 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 	/* (non-Javadoc) */
 	public void destroy() {
 		stop();
-		cacheServer = null;
+		this.cacheServer = null;
 	}
 
 	/* (non-Javadoc) */
+	@Override
 	public void start() {
 		try {
 			cacheServer.start();
@@ -163,16 +271,15 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 	}
 
 	/* (non-Javadoc) */
-	public void stop(final Runnable callback) {
+	@Override
+	public void stop(Runnable callback) {
 		stop();
 		callback.run();
 	}
 
 	/* (non-Javadoc) */
 	public void stop() {
-		if (cacheServer != null) {
-			cacheServer.stop();
-		}
+		Optional.ofNullable(this.cacheServer).ifPresent(CacheServer::stop);
 	}
 
 	/* (non-Javadoc) */
@@ -196,6 +303,32 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 	 */
 	void setCacheServer(CacheServer cacheServer) {
 		this.cacheServer = cacheServer;
+	}
+
+	/**
+	 * Null-safe operation to set an array of {@link CacheServerConfigurer CacheServerConfigurers} used to apply
+	 * additional configuration to this {@link CacheServerFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param cacheServerConfigurers array of {@link CacheServerConfigurer CacheServerConfigurers} used to apply
+	 * additional configuration to this {@link CacheServerFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+	 * @see #setCacheServerConfigurers(List)
+	 */
+	public void setCacheServerConfigurers(CacheServerConfigurer... cacheServerConfigurers) {
+		setCacheServerConfigurers(Arrays.asList(nullSafeArray(cacheServerConfigurers, CacheServerConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to set an {@link Iterable} of {@link CacheServerConfigurer CacheServerConfigurers}
+	 * used to apply additional configuration to this {@link CacheServerFactoryBean} when using
+	 * Annotation-based configuration.
+	 *
+	 * @param cacheServerConfigurers {@literal Iterable} of {@link CacheServerConfigurer CacheServerConfigurers}
+	 * used to apply additional configuration to this {@link CacheServerFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+	 */
+	public void setCacheServerConfigurers(List<CacheServerConfigurer> cacheServerConfigurers) {
+		this.cacheServerConfigurers = Optional.ofNullable(cacheServerConfigurers).orElseGet(Collections::emptyList);
 	}
 
 	/* (non-Javadoc) */
@@ -275,7 +408,7 @@ public class CacheServerFactoryBean implements FactoryBean<CacheServer>,
 
 	/* (non-Javadoc) */
 	SubscriptionEvictionPolicy getSubscriptionEvictionPolicy() {
-		return (subscriptionEvictionPolicy != null ? subscriptionEvictionPolicy : SubscriptionEvictionPolicy.DEFAULT);
+		return Optional.ofNullable(this.subscriptionEvictionPolicy).orElse(SubscriptionEvictionPolicy.DEFAULT);
 	}
 
 	/* (non-Javadoc) */

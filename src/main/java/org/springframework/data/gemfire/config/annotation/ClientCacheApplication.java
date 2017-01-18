@@ -37,11 +37,11 @@ import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
  * a GemFire cache client (i.e. {@link org.apache.geode.cache.client.ClientCache}).
  *
  * @author John Blum
+ * @see org.apache.geode.cache.client.PoolFactory
+ * @see org.apache.geode.cache.control.ResourceManager
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheConfiguration
- * @see org.apache.geode.cache.client.PoolFactory
- * @see org.apache.geode.cache.control.ResourceManager
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -195,7 +195,7 @@ public @interface ClientCacheApplication {
 	int retryAttempts() default PoolFactory.DEFAULT_RETRY_ATTEMPTS;
 
 	/**
-	 * Configures the group that all servers this pool connects to must belong to.
+	 * Configures the group that all servers in which this pool connects to must belong to.
 	 *
 	 * @see org.apache.geode.cache.client.PoolFactory#DEFAULT_SERVER_GROUP
 	 */

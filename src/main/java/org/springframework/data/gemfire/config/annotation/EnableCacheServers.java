@@ -24,14 +24,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.geode.cache.server.CacheServer;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableCacheServers} annotation enables 1 or more GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers}
- * to be defined and used in a GemFire peer cache application configured with Spring (Data GemFire).
+ * The {@link EnableCacheServers} annotation enables 1 or more {@link CacheServer CacheServers}
+ * to be defined and used in a peer cache application configured with Spring (Data GemFire/Geode).
  *
  * @author John Blum
+ * @see org.apache.geode.cache.server.CacheServer
  * @see org.springframework.data.gemfire.config.annotation.AddCacheServersConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.CacheServerConfigurer
  * @see org.springframework.data.gemfire.config.annotation.EnableCacheServer
  * @since 1.9.0
  */

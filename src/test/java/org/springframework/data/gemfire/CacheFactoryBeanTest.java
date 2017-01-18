@@ -16,12 +16,10 @@
 
 package org.springframework.data.gemfire;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -58,11 +56,13 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.util.GatewayConflictResolver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.Role;
 import org.apache.geode.pdx.PdxSerializer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
@@ -74,12 +74,26 @@ import org.springframework.data.util.ReflectionUtils;
  * @author John Blum
  * @see org.junit.Rule
  * @see org.junit.Test
+ * @see org.junit.runner.RunWith
+ * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.CacheFactory
+ * @see org.apache.geode.cache.CacheTransactionManager
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.distributed.DistributedMember
+ * @see org.apache.geode.distributed.DistributedSystem
+ * @see org.apache.geode.pdx.PdxSerializer
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.data.gemfire.CacheFactoryBean
  * @since 1.7.0
  */
+@RunWith(MockitoJUnitRunner.class)
 public class CacheFactoryBeanTest {
+
+	@Mock
+	private Cache mockCache;
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -90,7 +104,9 @@ public class CacheFactoryBeanTest {
 		final Properties gemfireProperties = new Properties();
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
-			@Override protected void postProcessBeforeCacheInitialization(Properties actualGemfireProperties) {
+
+			@Override
+			protected void postProcessBeforeCacheInitialization(Properties actualGemfireProperties) {
 				assertThat(actualGemfireProperties, is(sameInstance(gemfireProperties)));
 				postProcessBeforeCacheInitializationCalled.set(true);
 			}
@@ -178,7 +194,7 @@ public class CacheFactoryBeanTest {
 		final AtomicBoolean initCalled = new AtomicBoolean(false);
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
-			@Override Cache init() throws Exception {
+			@Override Cache init() {
 				initCalled.set(true);
 				return mockCache;
 			}
@@ -203,6 +219,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void init() throws Exception {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 		Cache mockCache = mock(Cache.class);
@@ -227,8 +244,8 @@ public class CacheFactoryBeanTest {
 		when(mockDistributedSystem.getDistributedMember()).thenReturn(mockDistributedMember);
 		when(mockDistributedSystem.getName()).thenReturn("MockDistributedSystem");
 		when(mockDistributedMember.getId()).thenReturn("MockDistributedMember");
-		when(mockDistributedMember.getGroups()).thenReturn(Collections.<String>emptyList());
-		when(mockDistributedMember.getRoles()).thenReturn(Collections.<Role>emptySet());
+		when(mockDistributedMember.getGroups()).thenReturn(Collections.emptyList());
+		when(mockDistributedMember.getRoles()).thenReturn(Collections.emptySet());
 		when(mockDistributedMember.getHost()).thenReturn("skullbox");
 		when(mockDistributedMember.getProcessId()).thenReturn(12345);
 
@@ -401,8 +418,7 @@ public class CacheFactoryBeanTest {
 	public void prepareFactoryWithUnspecifiedPdxOptions() {
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
-		assertThat((CacheFactory) new CacheFactoryBean().prepareFactory(mockCacheFactory),
-			is(sameInstance(mockCacheFactory)));
+		assertThat(new CacheFactoryBean().prepareFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
 
 		verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
 		verify(mockCacheFactory, never()).setPdxIgnoreUnreadFields(any(Boolean.class));
@@ -421,8 +437,7 @@ public class CacheFactoryBeanTest {
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
-		assertThat((CacheFactory) cacheFactoryBean.prepareFactory(mockCacheFactory),
-			is(sameInstance(mockCacheFactory)));
+		assertThat(cacheFactoryBean.prepareFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
 
 		verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
 		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
@@ -443,8 +458,7 @@ public class CacheFactoryBeanTest {
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
-		assertThat((CacheFactory) cacheFactoryBean.prepareFactory(mockCacheFactory),
-			is(sameInstance(mockCacheFactory)));
+		assertThat(cacheFactoryBean.prepareFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
 
 		verify(mockCacheFactory, times(1)).setPdxDiskStore(eq("testPdxDiskStoreName"));
 		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
@@ -454,51 +468,24 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void prepareFactoryWithInvalidTypeForPdxSerializer() {
-		CacheFactory mockCacheFactory = mock(CacheFactory.class);
-
-		Object pdxSerializer = new Object();
-
-		try {
-			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
-
-			cacheFactoryBean.setPdxSerializer(pdxSerializer);
-			cacheFactoryBean.setPdxIgnoreUnreadFields(false);
-			cacheFactoryBean.setPdxReadSerialized(true);
-
-			exception.expect(IllegalArgumentException.class);
-			exception.expectCause(is(nullValue(Throwable.class)));
-			exception.expectMessage(containsString(String.format(
-				"[%1$s] of type [java.lang.Object] is not a PdxSerializer", pdxSerializer)));
-
-			cacheFactoryBean.prepareFactory(mockCacheFactory);
-		}
-		finally {
-			verify(mockCacheFactory, never()).setPdxSerializer(any(PdxSerializer.class));
-			verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
-			verify(mockCacheFactory, never()).setPdxIgnoreUnreadFields(any(Boolean.class));
-			verify(mockCacheFactory, never()).setPdxPersistent(any(Boolean.class));
-			verify(mockCacheFactory, never()).setPdxReadSerialized(any(Boolean.class));
-		}
-	}
-
-	@Test
 	public void createCacheWithExistingCache() throws Exception {
-		Cache mockCache = mock(Cache.class);
+		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
 		cacheFactoryBean.setCache(mockCache);
 
-		Cache actualCache = cacheFactoryBean.createCache(null);
+		assertThat(cacheFactoryBean.getCache(), is(sameInstance(mockCache)));
+
+		Cache actualCache = cacheFactoryBean.createCache(mockCacheFactory);
 
 		assertThat(actualCache, is(sameInstance(mockCache)));
 
+		verify(mockCacheFactory, never()).create();
 		verifyZeroInteractions(mockCache);
 	}
 
 	@Test
 	public void createCacheWithNoExistingCache() {
-		Cache mockCache = mock(Cache.class);
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
 		when(mockCacheFactory.create()).thenReturn(mockCache);
@@ -519,12 +506,16 @@ public class CacheFactoryBeanTest {
 			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
 			cacheFactoryBean.setCriticalHeapPercentage(200.0f);
-			cacheFactoryBean.postProcess(null);
+			cacheFactoryBean.postProcess(mockCache);
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("'criticalHeapPercentage' (200.0) is invalid; must be > 0.0 and <= 100.0",
+			assertEquals("criticalHeapPercentage [200.0] is not valid; must be > 0.0 and <= 100.0",
 				expected.getMessage());
+
 			throw expected;
+		}
+		finally {
+			verifyZeroInteractions(mockCache);
 		}
 	}
 
@@ -534,19 +525,23 @@ public class CacheFactoryBeanTest {
 			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
 			cacheFactoryBean.setEvictionHeapPercentage(-75.0f);
-			cacheFactoryBean.postProcess(null);
+			cacheFactoryBean.postProcess(mockCache);
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("'evictionHeapPercentage' (-75.0) is invalid; must be > 0.0 and <= 100.0",
+			assertEquals("evictionHeapPercentage [-75.0] is not valid; must be > 0.0 and <= 100.0",
 				expected.getMessage());
+
 			throw expected;
+		}
+		finally {
+			verifyZeroInteractions(mockCache);
 		}
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getObjectType() {
-		assertThat((Class<Cache>) new CacheFactoryBean().getObjectType(), is(equalTo(Cache.class)));
+		assertThat(new CacheFactoryBean().getObjectType(), is(equalTo(Cache.class)));
 	}
 
 	@Test
@@ -695,10 +690,10 @@ public class CacheFactoryBeanTest {
 		assertTrue(Boolean.FALSE.equals(TestUtils.readField("useBeanFactoryLocator", cacheFactoryBean)));
 		assertTrue(Boolean.FALSE.equals(TestUtils.readField("close", cacheFactoryBean)));
 		assertTrue(cacheFactoryBean.getCopyOnRead());
-		assertEquals(0.95f, cacheFactoryBean.getCriticalHeapPercentage().floatValue(), 0.0f);
+		assertEquals(0.95f, cacheFactoryBean.getCriticalHeapPercentage(), 0.0f);
 		assertNotNull(cacheFactoryBean.getDynamicRegionSupport());
 		assertTrue(cacheFactoryBean.getEnableAutoReconnect());
-		assertEquals(0.70f, cacheFactoryBean.getEvictionHeapPercentage().floatValue(), 0.0f);
+		assertEquals(0.70f, cacheFactoryBean.getEvictionHeapPercentage(), 0.0f);
 		assertSame(mockGatewayConflictResolver, cacheFactoryBean.getGatewayConflictResolver());
 		assertNotNull(cacheFactoryBean.getJndiDataSources());
 		assertEquals(1, cacheFactoryBean.getJndiDataSources().size());

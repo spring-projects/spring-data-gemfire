@@ -22,10 +22,24 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,16 +69,14 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.util.ReflectionUtils;
 
 /**
- * The IndexFactoryBeanTest class is a test suite of test cases testing the contract and functionality
- * of the IndexFactoryBean class.
+ * Unit tests for {@link IndexFactoryBean}.
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.IndexFactoryBean
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.Index
- * @see org.apache.geode.cache.query.QueryService
+ * @see org.springframework.data.gemfire.IndexFactoryBean
  * @since 1.5.2
  */
 public class IndexFactoryBeanTest {
@@ -136,10 +148,12 @@ public class IndexFactoryBeanTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void afterPropertiesSetWithNullCache() throws Exception {
 		try {
-			new IndexFactoryBean().afterPropertiesSet();
+			IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
+			indexFactoryBean.setName("TestIndex");
+			indexFactoryBean.afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("The GemFire Cache reference must not be null!", expected.getMessage());
+			assertEquals("Cache is required", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -154,6 +168,7 @@ public class IndexFactoryBeanTest {
 			};
 
 			indexFactoryBean.setCache(mockCache);
+			indexFactoryBean.setName("TestIndex");
 			indexFactoryBean.afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
@@ -165,10 +180,12 @@ public class IndexFactoryBeanTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void afterPropertiesSetWithUnspecifiedExpression() throws Exception {
 		try {
-			newIndexFactoryBean().afterPropertiesSet();
+			IndexFactoryBean indexFactoryBean = newIndexFactoryBean();
+			indexFactoryBean.setName("TestIndex");
+			indexFactoryBean.afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Index 'expression' is required", expected.getMessage());
+			assertEquals("Index expression is required", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -177,11 +194,12 @@ public class IndexFactoryBeanTest {
 	public void afterPropertiesSetWithUnspecifiedFromClause() throws Exception {
 		expectedException.expect(IllegalArgumentException.class);
 		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("Index 'from clause' is required");
+		expectedException.expectMessage("Index from clause is required");
 
 		IndexFactoryBean indexFactoryBean = newIndexFactoryBean();
 
 		indexFactoryBean.setExpression("id");
+		indexFactoryBean.setName("TestIndex");
 		indexFactoryBean.afterPropertiesSet();
 	}
 
@@ -194,7 +212,7 @@ public class IndexFactoryBeanTest {
 			indexFactoryBean.afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Index 'name' is required", expected.getMessage());
+			assertEquals("Index name is required", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -211,7 +229,7 @@ public class IndexFactoryBeanTest {
 			indexFactoryBean.afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("'imports' are not supported with a KEY Index", expected.getMessage());
+			assertEquals("imports are not supported with a KEY Index", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -1076,5 +1094,4 @@ public class IndexFactoryBeanTest {
 			throw expected;
 		}
 	}
-
 }

@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.GemFireVersion;
 import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.util.ClassUtils;
 
@@ -36,7 +37,30 @@ import org.springframework.util.ClassUtils;
 @SuppressWarnings("unused")
 public abstract class GemfireUtils extends CacheUtils {
 
-	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
+	public final static String APACHE_GEODE_NAME = "Aache Geode";
+	public final static String GEMFIRE_NAME = apacheGeodeProductName();
+	public final static String GEMFIRE_VERSION = apacheGeodeVersion();
+	public final static String UNKNOWN = "unknown";
+
+	/* (non-Javadoc) */
+	public static String apacheGeodeProductName() {
+		try {
+			return GemFireVersion.getProductName();
+		}
+		catch (Throwable ignore) {
+			return APACHE_GEODE_NAME;
+		}
+	}
+
+	/* (non-Javadoc) */
+	public static String apacheGeodeVersion() {
+		try {
+			return CacheFactory.getVersion();
+		}
+		catch (Throwable ignore) {
+			return UNKNOWN;
+		}
+	}
 
 	/* (non-Javadoc) */
 	public static boolean isGemfireVersionGreaterThanEqualTo(double expectedVersion) {
@@ -87,5 +111,4 @@ public abstract class GemfireUtils extends CacheUtils {
 		//System.out.printf("Is GemFire Version 6.5 of Above? %1$s%n", isGemfireVersion65OrAbove());
 		//System.out.printf("Is GemFire Version 7.0 of Above? %1$s%n", isGemfireVersion7OrAbove());
 	}
-
 }

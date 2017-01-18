@@ -133,6 +133,7 @@ public @interface EnableExpiration {
 	 * @see <a href="http://geode.incubator.apache.org/docs/guide/developing/expiration/chapter_overview.html">Geode Expiration</a>
 	 */
 	enum ExpirationType {
+
 		IDLE_TIMEOUT("TTI"),
 		TIME_TO_LIVE("TTL");
 

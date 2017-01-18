@@ -22,11 +22,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * The DiskStoreFactoryBeanTest class is a test suite of test cases testing the contract and functionality of the
- * DiskStoreFactoryBean class.
+ * Unit tests for {@link DiskStoreFactoryBean}.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.apache.geode.cache.DiskStore
  * @see org.springframework.data.gemfire.DiskStoreFactoryBean
  * @since 1.3.4
  */
@@ -58,7 +58,7 @@ public class DiskStoreFactoryBeanTest {
 		}
 		catch (IllegalArgumentException expected) {
 			assertEquals(String.format("The DiskStore's (%1$s) compaction threshold (%2$d) must be an integer value between 0 and 100 inclusive.",
-				factoryBean.getName(), -1), expected.getMessage());
+				factoryBean.resolveDiskStoreName(), -1), expected.getMessage());
 			throw expected;
 		}
 	}
@@ -70,7 +70,7 @@ public class DiskStoreFactoryBeanTest {
 		}
 		catch (IllegalArgumentException expected) {
 			assertEquals(String.format("The DiskStore's (%1$s) compaction threshold (%2$d) must be an integer value between 0 and 100 inclusive.",
-				factoryBean.getName(), 101), expected.getMessage());
+				factoryBean.resolveDiskStoreName(), 101), expected.getMessage());
 			throw expected;
 		}
 	}
@@ -88,7 +88,7 @@ public class DiskStoreFactoryBeanTest {
 		catch (IllegalArgumentException expected) {
 			assertEquals(String.format(
 				"The DiskStore's (%1$s) compaction threshold (%2$d) must be an integer value between 0 and 100 inclusive.",
-				factoryBean.getName(), 200), expected.getMessage());
+				factoryBean.resolveDiskStoreName(), 200), expected.getMessage());
 			throw expected;
 		}
 	}
@@ -99,9 +99,8 @@ public class DiskStoreFactoryBeanTest {
 			factoryBean.afterPropertiesSet();
 		}
 		catch (IllegalStateException expected) {
-			assertEquals("A reference to the GemFire Cache must be set for Disk Store 'testDiskStore'.", expected.getMessage());
+			assertEquals("Cache is required to create DiskStore [testDiskStore]", expected.getMessage());
 			throw expected;
 		}
 	}
-
 }

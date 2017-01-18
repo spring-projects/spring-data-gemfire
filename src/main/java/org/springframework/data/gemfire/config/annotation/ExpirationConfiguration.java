@@ -19,11 +19,15 @@ package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.config.annotation.EnableExpiration.ExpirationPolicy;
 import static org.springframework.data.gemfire.config.annotation.EnableExpiration.ExpirationType;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.AttributesMutator;
@@ -39,9 +43,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.expiration.AnnotationBasedExpiration;
 import org.springframework.data.gemfire.expiration.ExpirationActionType;
-import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
-import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -70,7 +72,7 @@ public class ExpirationConfiguration implements ImportAware {
 	/**
 	 * Returns the {@link Annotation} {@link Class type} that enables and configures Expiration.
 	 *
-	 * @return {@link Annotation} {@link Class type} that enables and configures Expiration.
+	 * @return the {@link Annotation} {@link Class type} that enables and configures Expiration.
 	 * @see java.lang.annotation.Annotation
 	 * @see java.lang.Class
 	 */
@@ -106,22 +108,22 @@ public class ExpirationConfiguration implements ImportAware {
 	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
+
 		if (importMetadata.hasAnnotation(getAnnotationTypeName())) {
 			Map<String, Object> enableExpirationAttributes =
 				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
-			AnnotationAttributes[] policies =
-				(AnnotationAttributes[]) enableExpirationAttributes.get("policies");
+			AnnotationAttributes[] policies = (AnnotationAttributes[]) enableExpirationAttributes.get("policies");
 
 			for (AnnotationAttributes expirationPolicyAttributes :
-					ArrayUtils.nullSafeArray(policies, AnnotationAttributes.class)) {
+					nullSafeArray(policies, AnnotationAttributes.class)) {
 
 				this.expirationPolicyConfigurer = ComposableExpirationPolicyConfigurer.compose(
 					this.expirationPolicyConfigurer, ExpirationPolicyMetaData.from(expirationPolicyAttributes));
 			}
 
-			this.expirationPolicyConfigurer = (this.expirationPolicyConfigurer != null ? this.expirationPolicyConfigurer
-				: ExpirationPolicyMetaData.fromDefaults());
+			this.expirationPolicyConfigurer = Optional.ofNullable(this.expirationPolicyConfigurer)
+				.orElseGet(ExpirationPolicyMetaData::fromDefaults);
 		}
 	}
 
@@ -137,16 +139,16 @@ public class ExpirationConfiguration implements ImportAware {
 	}
 
 	protected ExpirationPolicyConfigurer getExpirationPolicyConfigurer() {
-		Assert.state(this.expirationPolicyConfigurer != null,
-			"ExpirationPolicyConfigurer was not properly configured and initialized");
-
-		return expirationPolicyConfigurer;
+		return Optional.ofNullable(this.expirationPolicyConfigurer).orElseThrow(() ->
+			newIllegalStateException("ExpirationPolicyConfigurer was not properly configured and initialized"));
 	}
 
 	@Bean
 	@SuppressWarnings("unused")
 	public BeanPostProcessor expirationBeanPostProcessor() {
+
 		return new BeanPostProcessor() {
+
 			@Override
 			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 				return bean;
@@ -158,7 +160,6 @@ public class ExpirationConfiguration implements ImportAware {
 				return (isRegion(bean) ? getExpirationPolicyConfigurer().configure((Region<Object, Object>) bean)
 					: bean);
 			}
-
 		};
 	}
 
@@ -170,13 +171,11 @@ public class ExpirationConfiguration implements ImportAware {
 		/**
 		 * Configures the expiration policy for the given {@link Region}.
 		 *
-		 * @param <K> {@link Class type} of the {@link Region} keys.
-		 * @param <V> {@link Class type} of the {@link Region} values.
-		 * @param region {@link Region} who's expiration policy will be configured.
-		 * @return the given {@link Region}.
+		 * @param region {@link Region} object who's expiration policy will be configured.
+		 * @return the given {@link Region} object.
 		 * @see org.apache.geode.cache.Region
 		 */
-		<K, V> Region<K, V> configure(Region<K, V> region);
+		Object configure(Object region);
 
 	}
 
@@ -202,7 +201,7 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @see #compose(Iterable)
 		 */
 		protected static ExpirationPolicyConfigurer compose(ExpirationPolicyConfigurer[] array) {
-			return compose(Arrays.asList(ArrayUtils.nullSafeArray(array, ExpirationPolicyConfigurer.class)));
+			return compose(Arrays.asList(nullSafeArray(array, ExpirationPolicyConfigurer.class)));
 		}
 
 		/**
@@ -214,9 +213,10 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @see #compose(ExpirationPolicyConfigurer, ExpirationPolicyConfigurer)
 		 */
 		protected static ExpirationPolicyConfigurer compose(Iterable<ExpirationPolicyConfigurer> iterable) {
+
 			ExpirationPolicyConfigurer current = null;
 
-			for (ExpirationPolicyConfigurer configurer : CollectionUtils.nullSafeIterable(iterable)) {
+			for (ExpirationPolicyConfigurer configurer : nullSafeIterable(iterable)) {
 				current = compose(current, configurer);
 			}
 
@@ -255,7 +255,7 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @inheritDoc
 		 */
 		@Override
-		public <K, V> Region<K, V> configure(Region<K, V> region) {
+		public Object configure(Object region) {
 			return this.two.configure(this.one.configure(region));
 		}
 	}
@@ -276,9 +276,9 @@ public class ExpirationConfiguration implements ImportAware {
 
 		private final ExpirationAttributes defaultExpirationAttributes;
 
-		private final Set<String> regionNames = new HashSet<String>();
+		private final Set<String> regionNames = new HashSet<>();
 
-		private final Set<ExpirationType> types = new HashSet<ExpirationType>();
+		private final Set<ExpirationType> types = new HashSet<>();
 
 		/**
 		 * Factory method to construct an instance of {@link ExpirationPolicyMetaData} initialized with
@@ -294,12 +294,13 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @see org.springframework.core.annotation.AnnotationAttributes
 		 */
 		protected static ExpirationPolicyMetaData from(AnnotationAttributes expirationPolicyAttributes) {
+
 			Assert.isAssignable(ExpirationPolicy.class, expirationPolicyAttributes.annotationType());
 
 			return newExpirationPolicyMetaData((Integer) expirationPolicyAttributes.get("timeout"),
-				expirationPolicyAttributes.<ExpirationActionType>getEnum("action"),
-					expirationPolicyAttributes.getStringArray("regionNames"),
-						(ExpirationType[]) expirationPolicyAttributes.get("types"));
+				expirationPolicyAttributes.getEnum("action"),
+				expirationPolicyAttributes.getStringArray("regionNames"),
+				(ExpirationType[]) expirationPolicyAttributes.get("types"));
 		}
 
 		/**
@@ -378,8 +379,8 @@ public class ExpirationConfiguration implements ImportAware {
 				String[] regionNames, ExpirationType[] types) {
 
 			return new ExpirationPolicyMetaData(newExpirationAttributes(timeout, action),
-				CollectionUtils.asSet(ArrayUtils.nullSafeArray(regionNames, String.class)),
-					CollectionUtils.asSet(ArrayUtils.nullSafeArray(types, ExpirationType.class)));
+				CollectionUtils.asSet(nullSafeArray(regionNames, String.class)),
+				CollectionUtils.asSet(nullSafeArray(types, ExpirationType.class)));
 		}
 
 		/**
@@ -391,7 +392,7 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @see org.springframework.data.gemfire.ExpirationActionType
 		 */
 		protected static ExpirationActionType resolveAction(ExpirationActionType action) {
-			return SpringUtils.defaultIfNull(action, DEFAULT_ACTION);
+			return Optional.ofNullable(action).orElse(DEFAULT_ACTION);
 		}
 
 		/**
@@ -421,6 +422,7 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @see #resolveAction(ExpirationActionType)
 		 * @see #resolveTimeout(int)
 		 */
+		@SuppressWarnings("unused")
 		protected ExpirationPolicyMetaData(int timeout, ExpirationActionType action, Set<String> regionNames,
 				Set<ExpirationType> types) {
 
@@ -442,7 +444,7 @@ public class ExpirationConfiguration implements ImportAware {
 		protected ExpirationPolicyMetaData(ExpirationAttributes expirationAttributes, Set<String> regionNames,
 				Set<ExpirationType> types) {
 
-			Assert.notEmpty(types, "At least one ExpirationPolicy type [TTI, TTL] must be specified");
+			Assert.notEmpty(types, "At least one ExpirationPolicy type [TTI, TTL] is required");
 
 			this.defaultExpirationAttributes = expirationAttributes;
 			this.regionNames.addAll(CollectionUtils.nullSafeSet(regionNames));
@@ -457,8 +459,8 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @see org.apache.geode.cache.Region
 		 * @see #accepts(String)
 		 */
-		protected boolean accepts(Region region) {
-			return (region != null && accepts(region.getName()));
+		protected boolean accepts(Object region) {
+			return (region instanceof Region && accepts(((Region) region).getName()));
 		}
 
 		/**
@@ -496,24 +498,27 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @inheritDoc
 		 */
 		@Override
-		public <K, V> Region<K, V> configure(Region<K, V> region) {
-			if (accepts(region)) {
-				AttributesMutator<K, V> regionAttributesMutator = region.getAttributesMutator();
+		public Object configure(Object regionObject) {
+
+			if (accepts(regionObject)) {
+				Region<?, ?> region = (Region<?, ?>) regionObject;
+
+				AttributesMutator<?, ?> regionAttributesMutator = region.getAttributesMutator();
 
 				ExpirationAttributes defaultExpirationAttributes = defaultExpirationAttributes();
 
 				if (isIdleTimeout()) {
 					regionAttributesMutator.setCustomEntryIdleTimeout(
-						AnnotationBasedExpiration.<K, V>forIdleTimeout(defaultExpirationAttributes));
+						AnnotationBasedExpiration.forIdleTimeout(defaultExpirationAttributes));
 				}
 
 				if (isTimeToLive()) {
 					regionAttributesMutator.setCustomEntryTimeToLive(
-						AnnotationBasedExpiration.<K, V>forTimeToLive(defaultExpirationAttributes));
+						AnnotationBasedExpiration.forTimeToLive(defaultExpirationAttributes));
 				}
 			}
 
-			return region;
+			return regionObject;
 		}
 
 		/**

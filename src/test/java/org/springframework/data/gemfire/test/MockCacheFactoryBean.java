@@ -13,6 +13,8 @@
 
 package org.springframework.data.gemfire.test;
 
+import java.util.Optional;
+
 import org.apache.geode.cache.GemFireCache;
 import org.springframework.data.gemfire.CacheFactoryBean;
 
@@ -27,36 +29,39 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 	}
 
 	public MockCacheFactoryBean(CacheFactoryBean cacheFactoryBean) {
+
 		setUseBeanFactoryLocator(false);
 
-		if (cacheFactoryBean != null) {
-			setBeanClassLoader(cacheFactoryBean.getBeanClassLoader());
-			setBeanFactory(cacheFactoryBean.getBeanFactory());
-			setBeanName(cacheFactoryBean.getBeanName());
-			setCacheXml(cacheFactoryBean.getCacheXml());
-			setPhase(cacheFactoryBean.getPhase());
-			setProperties(cacheFactoryBean.getProperties());
-			setClose(cacheFactoryBean.getClose());
-			setCopyOnRead(cacheFactoryBean.getCopyOnRead());
-			setCriticalHeapPercentage(cacheFactoryBean.getCriticalHeapPercentage());
-			setDynamicRegionSupport(cacheFactoryBean.getDynamicRegionSupport());
-			setEnableAutoReconnect(cacheFactoryBean.getEnableAutoReconnect());
-			setEvictionHeapPercentage(cacheFactoryBean.getEvictionHeapPercentage());
-			setGatewayConflictResolver(cacheFactoryBean.getGatewayConflictResolver());
-			setJndiDataSources(cacheFactoryBean.getJndiDataSources());
-			setLockLease(cacheFactoryBean.getLockLease());
-			setLockTimeout(cacheFactoryBean.getLockTimeout());
-			setMessageSyncInterval(cacheFactoryBean.getMessageSyncInterval());
-			setPdxDiskStoreName(cacheFactoryBean.getPdxDiskStoreName());
-			setPdxIgnoreUnreadFields(cacheFactoryBean.getPdxIgnoreUnreadFields());
-			setPdxPersistent(cacheFactoryBean.getPdxPersistent());
-			setPdxReadSerialized(cacheFactoryBean.getPdxReadSerialized());
-			setPdxSerializer(cacheFactoryBean.getPdxSerializer());
-			setSearchTimeout(cacheFactoryBean.getSearchTimeout());
-			setTransactionListeners(cacheFactoryBean.getTransactionListeners());
-			setTransactionWriter(cacheFactoryBean.getTransactionWriter());
-			setUseBeanFactoryLocator(cacheFactoryBean.isUseBeanFactoryLocator());
-		}
+		Optional.ofNullable(cacheFactoryBean).ifPresent(it -> {
+			setBeanClassLoader(it.getBeanClassLoader());
+			setBeanFactory(it.getBeanFactory());
+			setBeanName(it.getBeanName());
+			setCacheXml(it.getCacheXml());
+			setPhase(it.getPhase());
+			setProperties(it.getProperties());
+			setClose(it.isClose());
+			setCopyOnRead(it.getCopyOnRead());
+			setCriticalHeapPercentage(it.getCriticalHeapPercentage());
+			setDynamicRegionSupport(it.getDynamicRegionSupport());
+			setEnableAutoReconnect(it.getEnableAutoReconnect());
+			setEvictionHeapPercentage(it.getEvictionHeapPercentage());
+			setGatewayConflictResolver(it.getGatewayConflictResolver());
+			setJndiDataSources(it.getJndiDataSources());
+			setLockLease(it.getLockLease());
+			setLockTimeout(it.getLockTimeout());
+			setMessageSyncInterval(it.getMessageSyncInterval());
+			setPdxDiskStoreName(it.getPdxDiskStoreName());
+			setPdxIgnoreUnreadFields(it.getPdxIgnoreUnreadFields());
+			setPdxPersistent(it.getPdxPersistent());
+			setPdxReadSerialized(it.getPdxReadSerialized());
+			setPdxSerializer(it.getPdxSerializer());
+			setSearchTimeout(it.getSearchTimeout());
+			setTransactionListeners(it.getTransactionListeners());
+			setTransactionWriter(it.getTransactionWriter());
+			setUseBeanFactoryLocator(it.isUseBeanFactoryLocator());
+		});
+
+		applyPeerCacheConfigurers(cacheFactoryBean.getCompositePeerCacheConfigurer());
 	}
 
 	@Override
@@ -66,5 +71,4 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 		stubCache.setProperties(getProperties());
 		return (T) stubCache;
 	}
-
 }

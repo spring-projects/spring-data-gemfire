@@ -44,9 +44,9 @@ public class SubRegionWithInvalidDataPolicyTest {
 				"/org/springframework/data/gemfire/config/xml/subregion-with-invalid-datapolicy.xml");
 		}
 		catch (XmlBeanDefinitionStoreException expected) {
-			//expected.printStackTrace(System.err);
 			assertTrue(expected.getCause() instanceof SAXParseException);
 			assertTrue(expected.getCause().getMessage().contains("PERSISTENT_PARTITION"));
+
 			throw expected;
 		}
 	}
@@ -58,13 +58,12 @@ public class SubRegionWithInvalidDataPolicyTest {
 				"/org/springframework/data/gemfire/config/xml/subregion-with-inconsistent-datapolicy-persistent-settings.xml");
 		}
 		catch (BeanCreationException expected) {
-			//expected.printStackTrace(System.err);
 			assertTrue(expected.getMessage().contains("Error creating bean with name '/Parent/Child'"));
 			assertTrue(expected.getCause() instanceof IllegalArgumentException);
-			assertEquals("Data Policy 'REPLICATE' is invalid when persistent is true.",
+			assertEquals("Data Policy [REPLICATE] is invalid when persistent is true.",
 				expected.getCause().getMessage());
+
 			throw expected;
 		}
 	}
-
 }

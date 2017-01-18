@@ -168,7 +168,7 @@ public class ReplicatedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, "empty");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'EMPTY' is invalid when persistent is true.", e.getMessage());
+			assertEquals("Data Policy [EMPTY] is invalid when persistent is true.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -202,7 +202,7 @@ public class ReplicatedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, "REPLICATE");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'REPLICATE' is invalid when persistent is true.", e.getMessage());
+			assertEquals("Data Policy [REPLICATE] is invalid when persistent is true.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -228,7 +228,7 @@ public class ReplicatedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, false, "PERSISTENT_REPLICATE");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is invalid when persistent is false.", e.getMessage());
+			assertEquals("Data Policy [PERSISTENT_REPLICATE] is invalid when persistent is false.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -245,5 +245,4 @@ public class ReplicatedRegionFactoryBeanTest {
 		factoryBean.resolveDataPolicy(mockRegionFactory, true, "PERSISTENT_REPLICATE");
 		verify(mockRegionFactory).setDataPolicy(eq(DataPolicy.PERSISTENT_REPLICATE));
 	}
-
 }

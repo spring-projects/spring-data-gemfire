@@ -40,9 +40,11 @@ import org.springframework.data.gemfire.GemfireUtils;
  * annotation.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.AddPoolConfiguration
  * @see org.apache.geode.cache.client.Pool
  * @see org.apache.geode.cache.client.PoolFactory
+ * @see org.springframework.data.gemfire.config.annotation.AddPoolConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.EnablePools
+ * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)

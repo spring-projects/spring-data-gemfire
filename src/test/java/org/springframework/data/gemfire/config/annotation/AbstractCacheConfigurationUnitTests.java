@@ -18,6 +18,7 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -53,9 +54,11 @@ import org.springframework.util.MethodInvoker;
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.Spy
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
  * @since 1.9.0
  */
@@ -174,7 +177,7 @@ public class AbstractCacheConfigurationUnitTests {
 		MappingPdxSerializer mockPdxSerializer = mock(MappingPdxSerializer.class);
 
 		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
-		doReturn(mockPdxSerializer).when(cacheConfigurationSpy).newPdxSerializer();
+		doReturn(mockPdxSerializer).when(cacheConfigurationSpy).newPdxSerializer(any(BeanFactory.class));
 
 		cacheConfigurationSpy.setBeanFactory(mockBeanFactory);
 
@@ -184,7 +187,7 @@ public class AbstractCacheConfigurationUnitTests {
 
 		verify(mockBeanFactory, times(1)).containsBean(eq("TestPdxSerializer"));
 		verify(mockBeanFactory, never()).getBean(anyString(), eq(PdxSerializer.class));
-		verify(cacheConfigurationSpy, times(1)).newPdxSerializer();
+		verify(cacheConfigurationSpy, times(1)).newPdxSerializer(eq(mockBeanFactory));
 	}
 
 	@Test

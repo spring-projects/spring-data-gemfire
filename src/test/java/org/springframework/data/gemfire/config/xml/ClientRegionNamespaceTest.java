@@ -16,21 +16,23 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import static java.util.Arrays.stream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.cache.CacheListener;
@@ -46,6 +48,7 @@ import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.compression.Compressor;
@@ -66,12 +69,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The ClientRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
- * of GemFire Client Region namespace support in SDG.
+ * Unit tests for Spring Data GemFire's XML namespace support for client {@link Region Regions}.
  *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.xml.ClientRegionParser
  */
@@ -81,35 +85,29 @@ import org.springframework.util.ObjectUtils;
 public class ClientRegionNamespaceTest {
 
 	@Autowired
-	private ApplicationContext context;
+	private ApplicationContext applicationContext;
 
 	@AfterClass
 	public static void tearDown() {
-		for (String name : new File(".").list(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.startsWith("BACKUP");
-			}
-		})) {
-			new File(name).delete();
-		}
+		stream(nullSafeArray(new File(".").list((dir, name) -> name.startsWith("BACKUP")), String.class))
+			.forEach(fileName -> new File(fileName).delete());
 	}
 
 	@Test
 	public void testBeanNames() throws Exception {
-		assertTrue(context.containsBean("SimpleRegion"));
-		assertTrue(context.containsBean("Publisher"));
-		assertTrue(context.containsBean("ComplexRegion"));
-		assertTrue(context.containsBean("PersistentRegion"));
-		assertTrue(context.containsBean("OverflowRegion"));
-		assertTrue(context.containsBean("Compressed"));
+		assertTrue(applicationContext.containsBean("SimpleRegion"));
+		assertTrue(applicationContext.containsBean("Publisher"));
+		assertTrue(applicationContext.containsBean("ComplexRegion"));
+		assertTrue(applicationContext.containsBean("PersistentRegion"));
+		assertTrue(applicationContext.containsBean("OverflowRegion"));
+		assertTrue(applicationContext.containsBean("Compressed"));
 	}
 
 	@Test
 	public void testSimpleClientRegion() throws Exception {
-		assertTrue(context.containsBean("simple"));
+		assertTrue(applicationContext.containsBean("simple"));
 
-		Region<?, ?> simple = context.getBean("simple", Region.class);
+		Region<?, ?> simple = applicationContext.getBean("simple", Region.class);
 
 		assertNotNull("The 'SimpleRegion' Client Region was not properly configured and initialized!", simple);
 		assertEquals("SimpleRegion", simple.getName());
@@ -121,9 +119,10 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testPublishingClientRegion() throws Exception {
-		assertTrue(context.containsBean("empty"));
+		assertTrue(applicationContext.containsBean("empty"));
 
-		ClientRegionFactoryBean emptyClientRegionFactoryBean = context.getBean("&empty", ClientRegionFactoryBean.class);
+		ClientRegionFactoryBean emptyClientRegionFactoryBean = applicationContext
+			.getBean("&empty", ClientRegionFactoryBean.class);
 
 		assertNotNull(emptyClientRegionFactoryBean);
 		assertEquals(DataPolicy.EMPTY, TestUtils.readField("dataPolicy", emptyClientRegionFactoryBean));
@@ -135,9 +134,10 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testComplexClientRegion() throws Exception {
-		assertTrue(context.containsBean("complex"));
+		assertTrue(applicationContext.containsBean("complex"));
 
-		ClientRegionFactoryBean complexClientRegionFactoryBean = context.getBean("&complex", ClientRegionFactoryBean.class);
+		ClientRegionFactoryBean complexClientRegionFactoryBean = applicationContext
+			.getBean("&complex", ClientRegionFactoryBean.class);
 
 		assertNotNull(complexClientRegionFactoryBean);
 
@@ -145,7 +145,7 @@ public class ClientRegionNamespaceTest {
 
 		assertFalse(ObjectUtils.isEmpty(cacheListeners));
 		assertEquals(2, cacheListeners.length);
-		assertSame(cacheListeners[0], context.getBean("c-listener"));
+		assertSame(cacheListeners[0], applicationContext.getBean("c-listener"));
 		assertTrue(cacheListeners[1] instanceof SimpleCacheListener);
 		assertNotSame(cacheListeners[0], cacheListeners[1]);
 
@@ -161,9 +161,9 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings({ "deprecation", "rawtypes" })
 	public void testPersistentClientRegion() throws Exception {
-		assertTrue(context.containsBean("persistent"));
+		assertTrue(applicationContext.containsBean("persistent"));
 
-		Region persistent = context.getBean("persistent", Region.class);
+		Region persistent = applicationContext.getBean("persistent", Region.class);
 
 		assertNotNull("The 'PersistentRegion' Region was not properly configured and initialized!", persistent);
 		assertEquals("PersistentRegion", persistent.getName());
@@ -179,9 +179,10 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testOverflowClientRegion() throws Exception {
-		assertTrue(context.containsBean("overflow"));
+		assertTrue(applicationContext.containsBean("overflow"));
 
-		ClientRegionFactoryBean overflowClientRegionFactoryBean = context.getBean("&overflow", ClientRegionFactoryBean.class);
+		ClientRegionFactoryBean overflowClientRegionFactoryBean = applicationContext
+			.getBean("&overflow", ClientRegionFactoryBean.class);
 
 		assertNotNull(overflowClientRegionFactoryBean);
 		assertEquals("diskStore", TestUtils.readField("diskStoreName", overflowClientRegionFactoryBean));
@@ -203,9 +204,9 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testClientRegionWithCacheLoaderAndCacheWriter() throws Exception {
-		assertTrue(context.containsBean("loadWithWrite"));
+		assertTrue(applicationContext.containsBean("loadWithWrite"));
 
-		ClientRegionFactoryBean factory = context.getBean("&loadWithWrite", ClientRegionFactoryBean.class);
+		ClientRegionFactoryBean factory = applicationContext.getBean("&loadWithWrite", ClientRegionFactoryBean.class);
 
 		assertNotNull(factory);
 		assertEquals("LoadedFullOfWrites", TestUtils.readField("name", factory));
@@ -216,9 +217,9 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testCompressedReplicateRegion() {
-		assertTrue(context.containsBean("Compressed"));
+		assertTrue(applicationContext.containsBean("Compressed"));
 
-		Region<?, ?> compressed = context.getBean("Compressed", Region.class);
+		Region<?, ?> compressed = applicationContext.getBean("Compressed", Region.class);
 
 		assertNotNull("The 'Compressed' Client Region was not properly configured and initialized!", compressed);
 		assertEquals("Compressed", compressed.getName());
@@ -235,9 +236,9 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testClientRegionWithAttributes() {
-		assertTrue(context.containsBean("client-with-attributes"));
+		assertTrue(applicationContext.containsBean("client-with-attributes"));
 
-		Region<Long, String> clientRegion = context.getBean("client-with-attributes", Region.class);
+		Region<Long, String> clientRegion = applicationContext.getBean("client-with-attributes", Region.class);
 
 		assertNotNull("The 'client-with-attributes' Client Region was not properly configured and initialized!", clientRegion);
 		assertEquals("client-with-attributes", clientRegion.getName());
@@ -258,9 +259,11 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testClientRegionWithRegisteredInterests() throws Exception {
-		assertTrue(context.containsBean("client-with-interests"));
 
-		ClientRegionFactoryBean factoryBean = context.getBean("&client-with-interests", ClientRegionFactoryBean.class);
+		assertTrue(applicationContext.containsBean("client-with-interests"));
+
+		ClientRegionFactoryBean factoryBean =
+			applicationContext.getBean("&client-with-interests", ClientRegionFactoryBean.class);
 
 		assertNotNull(factoryBean);
 
@@ -276,10 +279,11 @@ public class ClientRegionNamespaceTest {
 
 		assertNotNull(mockClientRegion);
 
-		verify(mockClientRegion, times(1)).registerInterest(eq(".*"), eq(InterestResultPolicy.KEYS),
-			eq(true), eq(false));
-		verify(mockClientRegion, times(1)).registerInterestRegex(eq("keyPrefix.*"), eq(InterestResultPolicy.KEYS_VALUES),
-			eq(true), eq(false));
+		verify(mockClientRegion, times(1)).registerInterest(eq(".*"),
+			eq(InterestResultPolicy.KEYS), eq(true), eq(false));
+
+		verify(mockClientRegion, times(1)).registerInterestRegex(eq("keyPrefix.*"),
+			eq(InterestResultPolicy.KEYS_VALUES), eq(true), eq(false));
 	}
 
 	protected void assertInterest(final boolean expectedDurable, final boolean expectedReceiveValues,
@@ -300,37 +304,40 @@ public class ClientRegionNamespaceTest {
 		return null;
 	}
 
-	public static final class MockCacheFactoryBean implements FactoryBean<ClientCache>, InitializingBean {
+	static final class MockCacheFactoryBean implements FactoryBean<ClientCache>, InitializingBean {
 
-		protected static final AtomicReference<Region> MOCK_REGION_REF = new AtomicReference<Region>(null);
+		static final AtomicReference<Region> MOCK_REGION_REF = new AtomicReference<Region>(null);
 
 		private ClientCache mockClientCache;
 
 		@Override
 		@SuppressWarnings("unchecked")
 		public void afterPropertiesSet() throws Exception {
-			mockClientCache = mock(ClientCache.class, ClientRegionNamespaceTest.class.getSimpleName()
-				.concat(".MockClientCache"));
+			this.mockClientCache = mock(ClientCache.class,
+				ClientRegionNamespaceTest.class.getSimpleName().concat(".MockClientCache"));
 
-			MOCK_REGION_REF.compareAndSet(null, mock(Region.class, ClientRegionNamespaceTest.class.getSimpleName()
-				.concat(".MockClientRegion")));
+			ClientRegionFactory mockClientRegionFactory = mock(ClientRegionFactory.class,
+				ClientRegionNamespaceTest.class.getSimpleName().concat("MockClientRegionFactory"));
 
-			when(mockClientCache.getRegion(anyString())).thenReturn(MOCK_REGION_REF.get());
+			when(this.mockClientCache.createClientRegionFactory(any(ClientRegionShortcut.class)))
+				.thenReturn(mockClientRegionFactory);
+
+			Region mockRegion = mock(Region.class,
+				ClientRegionNamespaceTest.class.getSimpleName().concat(".MockClientRegion"));
+
+			when(mockClientRegionFactory.create(anyString())).thenReturn(mockRegion);
+
+			MOCK_REGION_REF.compareAndSet(null, mockRegion);
 		}
 
 		@Override
 		public ClientCache getObject() throws Exception {
-			return mockClientCache;
+			return this.mockClientCache;
 		}
 
 		@Override
 		public Class<?> getObjectType() {
 			return ClientCache.class;
-		}
-
-		@Override
-		public boolean isSingleton() {
-			return true;
 		}
 	}
 
@@ -371,6 +378,5 @@ public class ClientRegionNamespaceTest {
 		public String toString() {
 			return this.name;
 		}
-
 	}
 }

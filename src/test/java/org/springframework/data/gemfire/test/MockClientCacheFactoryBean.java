@@ -12,6 +12,8 @@
  */
 package org.springframework.data.gemfire.test;
 
+import java.util.Optional;
+
 import org.apache.geode.cache.GemFireCache;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 
@@ -22,38 +24,41 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 
 	public MockClientCacheFactoryBean(ClientCacheFactoryBean clientCacheFactoryBean) {
+
 		setUseBeanFactoryLocator(false);
 
-		if (clientCacheFactoryBean != null) {
-			this.beanFactoryLocator = clientCacheFactoryBean.getBeanFactoryLocator();
-			setBeanClassLoader(clientCacheFactoryBean.getBeanClassLoader());
-			setBeanFactory(clientCacheFactoryBean.getBeanFactory());
-			setBeanName(clientCacheFactoryBean.getBeanName());
-			setCacheXml(clientCacheFactoryBean.getCacheXml());
-			setCopyOnRead(clientCacheFactoryBean.getCopyOnRead());
-			setCriticalHeapPercentage(clientCacheFactoryBean.getCriticalHeapPercentage());
-			setDurableClientId(clientCacheFactoryBean.getDurableClientId());
-			setDurableClientTimeout(clientCacheFactoryBean.getDurableClientTimeout());
-			setDynamicRegionSupport(clientCacheFactoryBean.getDynamicRegionSupport());
-			setEvictionHeapPercentage(clientCacheFactoryBean.getEvictionHeapPercentage());
-			setGatewayConflictResolver(clientCacheFactoryBean.getGatewayConflictResolver());
-			setJndiDataSources(clientCacheFactoryBean.getJndiDataSources());
-			setKeepAlive(clientCacheFactoryBean.isKeepAlive());
-			setLockLease(clientCacheFactoryBean.getLockLease());
-			setLockTimeout(clientCacheFactoryBean.getLockTimeout());
-			setMessageSyncInterval(clientCacheFactoryBean.getMessageSyncInterval());
-			setPdxDiskStoreName(clientCacheFactoryBean.getPdxDiskStoreName());
-			setPdxIgnoreUnreadFields(clientCacheFactoryBean.getPdxIgnoreUnreadFields());
-			setPdxPersistent(clientCacheFactoryBean.getPdxPersistent());
-			setPdxReadSerialized(clientCacheFactoryBean.getPdxReadSerialized());
-			setPdxSerializer(clientCacheFactoryBean.getPdxSerializer());
-			setPoolName(clientCacheFactoryBean.getPoolName());
-			setProperties(clientCacheFactoryBean.getProperties());
-			setReadyForEvents(clientCacheFactoryBean.getReadyForEvents());
-			setSearchTimeout(clientCacheFactoryBean.getSearchTimeout());
-			setTransactionListeners(clientCacheFactoryBean.getTransactionListeners());
-			setTransactionWriter(clientCacheFactoryBean.getTransactionWriter());
-		}
+		Optional.ofNullable(clientCacheFactoryBean).ifPresent(it -> {
+			this.beanFactoryLocator = it.getBeanFactoryLocator();
+			setBeanClassLoader(it.getBeanClassLoader());
+			setBeanFactory(it.getBeanFactory());
+			setBeanName(it.getBeanName());
+			setCacheXml(it.getCacheXml());
+			setCopyOnRead(it.getCopyOnRead());
+			setCriticalHeapPercentage(it.getCriticalHeapPercentage());
+			setDurableClientId(it.getDurableClientId());
+			setDurableClientTimeout(it.getDurableClientTimeout());
+			setDynamicRegionSupport(it.getDynamicRegionSupport());
+			setEvictionHeapPercentage(it.getEvictionHeapPercentage());
+			setGatewayConflictResolver(it.getGatewayConflictResolver());
+			setJndiDataSources(it.getJndiDataSources());
+			setKeepAlive(it.isKeepAlive());
+			setLockLease(it.getLockLease());
+			setLockTimeout(it.getLockTimeout());
+			setMessageSyncInterval(it.getMessageSyncInterval());
+			setPdxDiskStoreName(it.getPdxDiskStoreName());
+			setPdxIgnoreUnreadFields(it.getPdxIgnoreUnreadFields());
+			setPdxPersistent(it.getPdxPersistent());
+			setPdxReadSerialized(it.getPdxReadSerialized());
+			setPdxSerializer(it.getPdxSerializer());
+			setPoolName(it.getPoolName());
+			setProperties(it.getProperties());
+			setReadyForEvents(it.getReadyForEvents());
+			setSearchTimeout(it.getSearchTimeout());
+			setTransactionListeners(it.getTransactionListeners());
+			setTransactionWriter(it.getTransactionWriter());
+		});
+
+		applyClientCacheConfigurers(clientCacheFactoryBean.getCompositeClientCacheConfigurer());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -62,6 +67,4 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 		stubCache.setProperties(getProperties());
 		return (T) stubCache;
 	}
-
-
 }

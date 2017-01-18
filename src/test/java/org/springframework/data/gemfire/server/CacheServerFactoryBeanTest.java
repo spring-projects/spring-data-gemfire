@@ -44,11 +44,12 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /**
- * The CacheServerFactoryBeanTest class is a test suite of test cases testing the contract and functionality
- * of the CacheServerFactoryBean class.
+ * Unit tests for {@link CacheServerFactoryBean}.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.server.CacheServer
  * @see org.springframework.data.gemfire.server.CacheServerFactoryBean
  * @since 1.6.0
  */
@@ -146,7 +147,7 @@ public class CacheServerFactoryBeanTest {
 			new CacheServerFactoryBean().afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("A GemFire Cache is required.", expected.getMessage());
+			assertEquals("Cache is required", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -228,5 +229,4 @@ public class CacheServerFactoryBeanTest {
 		assertFalse(factoryBean.isRunning());
 		assertTrue(called.get());
 	}
-
 }

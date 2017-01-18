@@ -84,6 +84,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 	@BeforeClass
 	public static void startGemFireServer() throws Exception {
+
 		int availablePort = findAvailablePort();
 
 		gemfireServer = run(ServerProcess.class,
@@ -101,8 +102,10 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		stop(gemfireServer);
 	}
 
-	protected PdxInstance toPdxInstance(final Map<String, Object> pdxData) {
-		PdxInstanceFactory pdxInstanceFactory = gemfireClientCache.createPdxInstanceFactory(pdxData.get("@type").toString());
+	private PdxInstance toPdxInstance(Map<String, Object> pdxData) {
+
+		PdxInstanceFactory pdxInstanceFactory =
+			gemfireClientCache.createPdxInstanceFactory(pdxData.get("@type").toString());
 
 		for (Map.Entry<String, Object> entry : pdxData.entrySet()) {
 			pdxInstanceFactory.writeObject(entry.getKey(), entry.getValue());
@@ -112,9 +115,10 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 	}
 
 	@Test
-	public void testConvertedFunctionArgumentTypes() {
-		Class[] argumentTypes = functionExecutions.captureConvertedArgumentTypes("test", 1, Boolean.TRUE,
-			new Person("Jon", "Doe"), Gender.MALE);
+	public void convertedFunctionArgumentTypes() {
+
+		Class[] argumentTypes = functionExecutions.captureConvertedArgumentTypes("test", 1,
+			Boolean.TRUE, new Person("Jon", "Doe"), Gender.MALE);
 
 		assertNotNull(argumentTypes);
 		assertEquals(5, argumentTypes.length);
@@ -126,9 +130,10 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 	}
 
 	@Test
-	public void testUnconvertedFunctionArgumentTypes() {
-		Class[] argumentTypes = functionExecutions.captureUnconvertedArgumentTypes("test", 2, Boolean.FALSE,
-			new Person("Jane", "Doe"), Gender.FEMALE);
+	public void unconvertedFunctionArgumentTypes() {
+
+		Class[] argumentTypes = functionExecutions.captureUnconvertedArgumentTypes("test", 2,
+			Boolean.FALSE, new Person("Jane", "Doe"), Gender.FEMALE);
 
 		assertNotNull(argumentTypes);
 		assertEquals(5, argumentTypes.length);
@@ -140,13 +145,14 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 	}
 
 	@Test
-	public void testGetAddressFieldValue() {
+	public void getAddressFieldValue() {
 		assertEquals("Portland", functionExecutions.getAddressField(new Address(
 			"100 Main St.", "Portland", "OR", "97205"), "city"));
 	}
 
 	@Test
-	public void testPdxDataFieldValue() {
+	public void pdxDataFieldValue() {
+
 		Map<String, Object> pdxData = new HashMap<String, Object>(3);
 
 		pdxData.put("@type", "x.y.z.domain.MyApplicationDomainType");
@@ -162,6 +168,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 	public static class ApplicationDomainFunctions {
 
 		private Class[] getArgumentTypes(final Object... arguments) {
+
 			Class[] argumentTypes = new Class[arguments.length];
 			int index = 0;
 
@@ -174,25 +181,27 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		}
 
 		@GemfireFunction
-		public Class[] captureConvertedArgumentTypes(final String stringValue, final Integer integerValue,
-				final Boolean booleanValue, final Person person, final Gender gender) {
+		public Class[] captureConvertedArgumentTypes(String stringValue, Integer integerValue, Boolean booleanValue,
+				Person person, Gender gender) {
+
 			return getArgumentTypes(stringValue, integerValue, booleanValue, person, gender);
 		}
 
 		@GemfireFunction
-		public Class[] captureUnconvertedArgumentTypes(final String stringValue, final Integer integerValue,
-				final Boolean booleanValue, final Object domainObject, final Object enumValue) {
+		public Class[] captureUnconvertedArgumentTypes(String stringValue, Integer integerValue, Boolean booleanValue,
+				Object domainObject, Object enumValue) {
+
 			return getArgumentTypes(stringValue, integerValue, booleanValue, domainObject, enumValue);
 		}
 
 		@GemfireFunction
-		public String getAddressField(final PdxInstance address, final String fieldName) {
-			Assert.isTrue(Address.class.getName().equals(address.getClassName()));
+		public String getAddressField(PdxInstance address, String fieldName) {
+			Assert.isTrue(Address.class.getName().equals(address.getClassName()), "Address is not the correct type");
 			return String.valueOf(address.getField(fieldName));
 		}
 
 		@GemfireFunction
-		public Object getDataField(final PdxInstance data, final String fieldName) {
+		public Object getDataField(PdxInstance data, String fieldName) {
 			return data.getField(fieldName);
 		}
 	}
@@ -204,11 +213,12 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		private final String state; // refactor; use Enum!
 		private final String zipCode;
 
-		public Address(final String street, final String city, final String state, final String zipCode) {
+		public Address(String street, String city, String state, String zipCode) {
 			Assert.hasText("The Address 'street' must be specified", street);
 			Assert.hasText("The Address 'city' must be specified", city);
 			Assert.hasText("The Address 'state' must be specified", state);
 			Assert.hasText("The Address 'zipCode' must be specified", zipCode);
+
 			this.street = street;
 			this.city = city;
 			this.state = state;
@@ -233,6 +243,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		@Override
 		public boolean equals(final Object obj) {
+
 			if (obj == this) {
 				return true;
 			}
@@ -251,11 +262,14 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		@Override
 		public int hashCode() {
+
 			int hashValue = 17;
+
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getStreet());
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getCity());
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getState());
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getZipCode());
+
 			return hashValue;
 		}
 
@@ -275,9 +289,10 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		private final String firstName;
 		private final String lastName;
 
-		public Person(final String firstName, final String lastName) {
+		public Person(String firstName, String lastName) {
 			Assert.hasText(firstName, "The person's first name must be specified!");
 			Assert.hasText(lastName, "The person's last name must be specified!");
+
 			this.firstName = firstName;
 			this.lastName = lastName;
 		}
@@ -292,6 +307,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		@Override
 		public boolean equals(final Object obj) {
+
 			if (obj == this) {
 				return true;
 			}
@@ -308,9 +324,12 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		@Override
 		public int hashCode() {
+
 			int hashValue = 17;
+
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getFirstName());
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getLastName());
+
 			return hashValue;
 		}
 
@@ -324,18 +343,18 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		private final PdxSerializer[] pdxSerializers;
 
-		private ComposablePdxSerializer(final PdxSerializer[] pdxSerializers) {
+		private ComposablePdxSerializer(PdxSerializer[] pdxSerializers) {
 			this.pdxSerializers = pdxSerializers;
 		}
 
-		public static PdxSerializer compose(final PdxSerializer... pdxSerializers) {
+		public static PdxSerializer compose(PdxSerializer... pdxSerializers) {
 			return (pdxSerializers == null ? null : (pdxSerializers.length == 1 ? pdxSerializers[0]
 				: new ComposablePdxSerializer(pdxSerializers)));
 		}
 
 		@Override
-		public boolean toData(final Object obj, final PdxWriter out) {
-			for (PdxSerializer pdxSerializer : pdxSerializers) {
+		public boolean toData(Object obj, PdxWriter out) {
+			for (PdxSerializer pdxSerializer : this.pdxSerializers) {
 				if (pdxSerializer.toData(obj, out)) {
 					return true;
 				}
@@ -345,8 +364,8 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		}
 
 		@Override
-		public Object fromData(final Class<?> type, final PdxReader in) {
-			for (PdxSerializer pdxSerializer : pdxSerializers) {
+		public Object fromData(Class<?> type, final PdxReader in) {
+			for (PdxSerializer pdxSerializer : this.pdxSerializers) {
 				Object obj = pdxSerializer.fromData(type, in);
 
 				if (obj != null) {
@@ -393,7 +412,8 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 	public static class AddressPdxSerializer implements PdxSerializer {
 
 		@Override
-		public boolean toData(final Object obj, final PdxWriter out) {
+		public boolean toData(Object obj, PdxWriter out) {
+
 			if (obj instanceof Address) {
 				Address address = (Address) obj;
 				out.writeString("street", address.getStreet());
@@ -407,7 +427,8 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		}
 
 		@Override
-		public Object fromData(final Class<?> type, final PdxReader in) {
+		public Object fromData(Class<?> type, PdxReader in) {
+
 			if (Address.class.isAssignableFrom(type)) {
 				return new Address(in.readString("street"), in.readString("city"), in.readString("state"),
 					in.readString("zipCode"));
@@ -419,7 +440,8 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 	public static class PersonPdxSerializer implements PdxSerializer {
 
 		@Override
-		public boolean toData(final Object obj, final PdxWriter out) {
+		public boolean toData(Object obj, PdxWriter out) {
+
 			if (obj instanceof Person) {
 				Person person = (Person) obj;
 				out.writeString("firstName", person.getFirstName());
@@ -431,7 +453,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		}
 
 		@Override
-		public Object fromData(final Class<?> type, final PdxReader in) {
+		public Object fromData(Class<?> type, PdxReader in) {
 			if (Person.class.isAssignableFrom(type)) {
 				return new Person(in.readString("firstName"), in.readString("lastName"));
 			}

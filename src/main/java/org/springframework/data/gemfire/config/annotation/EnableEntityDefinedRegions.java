@@ -26,21 +26,26 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.Region;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AliasFor;
 
 /**
- * The {@link EnableEntityDefinedRegions} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * The {@link EnableEntityDefinedRegions} annotation marks a Spring {@link Configuration @Configuration} application
  * annotated class to enable the creation of the GemFire/Geode {@link Region Regions} based on
- * the application domain model object entities.
+ * the application persistent entities.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.context.annotation.ComponentScan
  * @see org.springframework.context.annotation.ComponentScan.Filter
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.core.annotation.AliasFor
+ * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
- * @see org.apache.geode.cache.Region
+ * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -62,7 +67,10 @@ public @interface EnableEntityDefinedRegions {
 
 	/**
 	 * Base packages to scan for {@link org.springframework.data.gemfire.mapping.annotation.Region @Region} annotated
-	 * application persistent entities.  {@link #value()} is an alias for this attribute.
+	 * application persistent entities.
+	 *
+	 * The {@link #value()} attribute is an alias for this attribute.
+	 *
 	 * Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
 	 *
 	 * @return a {@link String} array specifying the packages to search for application persistent entities.
@@ -72,10 +80,13 @@ public @interface EnableEntityDefinedRegions {
 	String[] basePackages() default {};
 
 	/**
-	 * Type-safe alternative to {@link #basePackages()} for specifying the packages to scan for
+	 * Type-safe alternative to the {@link #basePackages()} attribute for specifying the packages to scan for
 	 * {@link org.springframework.data.gemfire.mapping.annotation.Region @Region} annotated application persistent entities.
-	 * The package of each class specified will be scanned.  Consider creating a special no-op marker class or interface
-	 * in each package that serves no other purpose than being referenced by this attribute.
+	 *
+	 * The package of each class specified will be scanned.
+	 *
+	 * Consider creating a special no-op marker class or interface in each package that serves no other purpose
+	 * than being referenced by this attribute.
 	 *
 	 * @return an array of {@link Class classes} used to determine the packages to scan
 	 * for application persistent entities.
@@ -91,12 +102,13 @@ public @interface EnableEntityDefinedRegions {
 	ComponentScan.Filter[] excludeFilters() default {};
 
 	/**
-	 * Specifies which types are eligible for component scanning.  Further narrows the set of candidate components
-	 * from everything in {@link #basePackages()} to everything in the base packages that matches the given filter
-	 * or filters.
+	 * Specifies which types are eligible for component scanning.
 	 *
-	 * @return an array {@link org.springframework.context.annotation.ComponentScan.Filter} of Filters used to
-	 * specify application persistent entities to be included during the component scan.
+	 * Further narrows the set of candidate components from everything in {@link #basePackages()}
+	 * or {@link #basePackageClasses()} to everything in the base packages that matches the given filter or filters.
+	 *
+	 * @return an array {@link ComponentScan.Filter} of Filters used to specify application persistent entities
+	 * to be included during the component scan.
 	 */
 	ComponentScan.Filter[] includeFilters() default {};
 

@@ -16,17 +16,26 @@
 
 package org.springframework.data.gemfire;
 
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.data.gemfire.GemfireUtils.apacheGeodeProductName;
+import static org.springframework.data.gemfire.GemfireUtils.apacheGeodeVersion;
 import static org.springframework.data.gemfire.support.GemfireBeanFactoryLocator.newBeanFactoryLocator;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.GemFireCheckedException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.cache.Cache;
@@ -34,72 +43,72 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.util.GatewayConflictResolver;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializer;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.Phased;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
-import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
- * Spring {@link FactoryBean} used to configure a GemFire peer Cache. This class either looks up an existing, open
- * {@link Cache} instance already or creates a new {@link Cache} instance.
+ * Spring {@link FactoryBean} used to construct, configure and initialize a Pivotal GemFire/Apache Geode
+ * {@link Cache peer cache).
  *
- * This class implements the {@link org.springframework.dao.support.PersistenceExceptionTranslator} interface,
- * as auto-detected by Spring's {@link PersistenceExceptionTranslationPostProcessor}, for AOP-based translation
- * of native GemFire Exceptions to Spring {@link DataAccessException}. Hence, the presence of this class
- * automatically enables a {@link PersistenceExceptionTranslationPostProcessor} to translate GemFire Exceptions
- * appropriately.
+ * Allows either retrieval of an existing, opened {@link Cache} or creation of a new {@link Cache}.
+ *
+ * This class implements the {@link PersistenceExceptionTranslator} interface and is auto-detected by Spring's
+ * {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor} for AOP-based translation
+ * of native persistent store exceptions to Spring's {@link DataAccessException} hierarchy. Therefore, the presence
+ * of this class automatically enables a {@link org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor}
+ * to translate Pivotal GemFire/Apache Geode exceptions appropriately.
  *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
- * @see org.springframework.beans.factory.BeanClassLoaderAware
- * @see org.springframework.beans.factory.BeanFactoryAware
- * @see org.springframework.beans.factory.BeanNameAware
- * @see org.springframework.beans.factory.FactoryBean
- * @see org.springframework.beans.factory.InitializingBean
- * @see org.springframework.beans.factory.DisposableBean
- * @see org.springframework.context.Phased
- * @see org.springframework.dao.support.PersistenceExceptionTranslator
+ * @see java.util.Properties
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.CacheFactory
  * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.DynamicRegionFactory
+ * @see org.apache.geode.cache.RegionService
  * @see org.apache.geode.distributed.DistributedMember
  * @see org.apache.geode.distributed.DistributedSystem
+ * @see org.apache.geode.cache.pdx.PdxSerializer
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.context.Phased
+ * @see org.springframework.core.io.Resource
+ * @see org.springframework.dao.support.PersistenceExceptionTranslator
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
+ * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
  */
 @SuppressWarnings("unused")
-public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, FactoryBean<Cache>,
-		InitializingBean, DisposableBean, PersistenceExceptionTranslator, Phased {
+public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
+		implements DisposableBean, InitializingBean, PersistenceExceptionTranslator, Phased {
 
 	private boolean close = true;
 	private boolean useBeanFactoryLocator = false;
 
 	private int phase = -1;
-
-	protected final Log log = LogFactory.getLog(getClass());
-
-	private BeanFactory beanFactory;
 
 	private Boolean copyOnRead;
 	private Boolean enableAutoReconnect;
@@ -110,12 +119,12 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	private Cache cache;
 
-	private ClassLoader beanClassLoader;
-
 	private DynamicRegionSupport dynamicRegionSupport;
 
 	private Float criticalHeapPercentage;
 	private Float evictionHeapPercentage;
+
+	private GatewayConflictResolver gatewayConflictResolver;
 
 	protected GemfireBeanFactoryLocator beanFactoryLocator;
 
@@ -124,27 +133,34 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	private Integer messageSyncInterval;
 	private Integer searchTimeout;
 
+	private List<PeerCacheConfigurer> peerCacheConfigurers = Collections.emptyList();
+
 	private List<JndiDataSource> jndiDataSources;
 
 	private List<TransactionListener> transactionListeners;
 
-	// Declared with type 'Object' for backward compatibility
-	private Object gatewayConflictResolver;
-	private Object pdxSerializer;
+	private PdxSerializer pdxSerializer;
+
+	private PeerCacheConfigurer compositePeerCacheConfigurer = (beanName, bean) ->
+		nullSafeList(peerCacheConfigurers).forEach(peerCacheConfigurer ->
+			peerCacheConfigurer.configure(beanName, bean));
 
 	private Properties properties;
 
 	private Resource cacheXml;
 
-	private String beanName;
 	private String cacheResolutionMessagePrefix;
 	private String pdxDiskStoreName;
 
 	private TransactionWriter transactionWriter;
 
 	/**
-	 * @inheritDoc
+	 * Initializes this {@link CacheFactoryBean} after properties have been set by the Spring container.
+	 *
+	 * @throws Exception if initialization fails.
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 * @see #initBeanFactoryLocator()
+	 * @see #postProcessBeforeCacheInitialization(Properties)
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -152,66 +168,110 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		postProcessBeforeCacheInitialization(resolveProperties());
 	}
 
-	/* (non-Javadoc) */
-	private void initBeanFactoryLocator() {
-		if (useBeanFactoryLocator && beanFactoryLocator == null) {
-			beanFactoryLocator = newBeanFactoryLocator(this.beanFactory, this.beanName);
-		}
-	}
-
-	/* (non-Javadoc) */
-	protected void postProcessBeforeCacheInitialization(Properties gemfireProperties) {
-		if (GemfireUtils.isGemfireVersion8OrAbove()) {
-			gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
-				!Boolean.TRUE.equals(getEnableAutoReconnect())));
-			gemfireProperties.setProperty("use-cluster-configuration", String.valueOf(
-				Boolean.TRUE.equals(getUseClusterConfiguration())));
-		}
-	}
-
-	/* (non-Javadoc) */
-	protected void setCache(Cache cache) {
-		this.cache = cache;
-	}
-
-	/* (non-Javadoc) */
-	@SuppressWarnings("unchecked")
-	protected <T extends GemFireCache> T getCache() {
-		return (T) cache;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	/**
+	 * Initializes the {@link GemfireBeanFactoryLocator} if {@link #isUseBeanFactoryLocator()} returns {@literal true}
+	 * and an existing {@link #getBeanFactoryLocator()} is not already present.
+	 *
+	 * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator#newBeanFactoryLocator(BeanFactory, String)
+	 * @see #isUseBeanFactoryLocator()
+	 * @see #getBeanFactoryLocator()
+	 * @see #getBeanFactory()
+	 * @see #getBeanName()
 	 */
-	@Override
-	public Cache getObject() throws Exception {
-		return (cache != null ? cache : init());
+	private void initBeanFactoryLocator() {
+		if (isUseBeanFactoryLocator() && getBeanFactoryLocator() == null) {
+			this.beanFactoryLocator = newBeanFactoryLocator(getBeanFactory(), getBeanName());
+		}
+	}
+
+	/**
+	 * Post processes this {@link CacheFactoryBean} before cache initialization.
+	 *
+	 * This is also the point at which any configured {@link PeerCacheConfigurer} beans are called.
+	 *
+	 * @param gemfireProperties {@link Properties} used to configure Pivotal GemFire/Apache Geode.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+	 * @see java.util.Properties
+	 */
+	protected void postProcessBeforeCacheInitialization(Properties gemfireProperties) {
+
+		gemfireProperties.setProperty("disable-auto-reconnect", String.valueOf(
+			!Boolean.TRUE.equals(getEnableAutoReconnect())));
+
+		gemfireProperties.setProperty("use-cluster-configuration", String.valueOf(
+			Boolean.TRUE.equals(getUseClusterConfiguration())));
+
+		applyPeerCacheConfigurers();
 	}
 
 	/* (non-Javadoc) */
-	Cache init() throws Exception {
+	private void applyPeerCacheConfigurers() {
+		applyPeerCacheConfigurers(getCompositePeerCacheConfigurer());
+	}
+
+	/**
+	 * Null-safe operation to apply the given array of {@link PeerCacheConfigurer PeerCacheConfigurers}
+	 * to this {@link CacheFactoryBean}.
+	 *
+	 * @param peerCacheConfigurers array of {@link PeerCacheConfigurer PeerCacheConfigurers} applied to
+	 * this {@link CacheFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+	 * @see #applyPeerCacheConfigurers(Iterable)
+	 */
+	protected void applyPeerCacheConfigurers(PeerCacheConfigurer... peerCacheConfigurers) {
+		applyPeerCacheConfigurers(Arrays.asList(nullSafeArray(peerCacheConfigurers, PeerCacheConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to apply the given {@link Iterable} of {@link PeerCacheConfigurer PeerCacheConfigurers}
+	 * to this {@link CacheFactoryBean}.
+	 *
+	 * @param peerCacheConfigurers {@link Iterable} of {@link PeerCacheConfigurer PeerCacheConfigurers}
+	 * applied to this {@link CacheFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+	 * @see java.lang.Iterable
+	 */
+	protected void applyPeerCacheConfigurers(Iterable<PeerCacheConfigurer> peerCacheConfigurers) {
+		stream(nullSafeIterable(peerCacheConfigurers).spliterator(), false)
+			.forEach(clientCacheConfigurer -> clientCacheConfigurer.configure(getBeanName(), this));
+	}
+
+	/**
+	 * Initializes the {@link Cache}.
+	 *
+	 * @return a reference to the initialized {@link Cache}.
+	 * @see org.apache.geode.cache.Cache
+	 * @see #resolveCache()
+	 * @see #postProcess(GemFireCache)
+	 * @see #setCache(Cache)
+	 */
+	@SuppressWarnings("deprecation")
+	Cache init() {
+
 		ClassLoader currentThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
 		try {
-			// use bean ClassLoader to load Spring configured, GemFire Declarable classes
-			Thread.currentThread().setContextClassLoader(beanClassLoader);
+			// use bean ClassLoader to load Spring configured, Pivotal GemFire/Apache Geode classes
+			Thread.currentThread().setContextClassLoader(getBeanClassLoader());
 
-			cache = postProcess(resolveCache());
+			setCache(postProcess(resolveCache()));
 
-			DistributedSystem system = cache.getDistributedSystem();
+			Optional.ofNullable(this.<Cache>getCache()).ifPresent(cache -> {
+				Optional.ofNullable(cache.getDistributedSystem()).map(DistributedSystem::getDistributedMember)
+					.ifPresent(member ->
+						logInfo(() -> String.format("Connected to Distributed System [%1$s] as Member [%2$s]"
+								.concat(" in Group(s) [%3$s] with Role(s) [%4$s] on Host [%5$s] having PID [%6$d]"),
+							cache.getDistributedSystem().getName(), member.getId(), member.getGroups(),
+							member.getRoles(), member.getHost(), member.getProcessId())));
 
-			DistributedMember member = system.getDistributedMember();
+				logInfo(() -> String.format("%1$s %2$s version [%3$s] Cache [%4$s]", this.cacheResolutionMessagePrefix,
+					apacheGeodeProductName(), apacheGeodeVersion(), cache.getName()));
+			});
 
-			log.info(String.format("Connected to Distributed System [%1$s] as Member [%2$s]"
-				.concat("in Group(s) [%3$s] with Role(s) [%4$s] on Host [%5$s] having PID [%6$d]."),
-					system.getName(), member.getId(), member.getGroups(), member.getRoles(), member.getHost(),
-						member.getProcessId()));
-
-			log.info(String.format("%1$s GemFire v.%2$s Cache [%3$s].", cacheResolutionMessagePrefix,
-				CacheFactory.getVersion(), cache.getName()));
-
-			return cache;
+			return getCache();
+		}
+		catch (Exception e) {
+			throw newRuntimeException(e, "Error occurred when initializing peer cache");
 		}
 		finally {
 			Thread.currentThread().setContextClassLoader(currentThreadContextClassLoader);
@@ -219,189 +279,167 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
-	 * If Dynamic Regions are enabled, create and initialize a DynamicRegionFactory before creating the Cache.
-	 */
-	private void initDynamicRegionFactory() {
-		if (dynamicRegionSupport != null) {
-			dynamicRegionSupport.initializeDynamicRegionFactory();
-		}
-	}
-
-	/**
-	 * Resolves the GemFire Cache by first attempting to lookup and find an existing Cache instance in the VM;
-	 * if an existing Cache could not be found, then this method proceeds in attempting to create a new Cache instance.
+	 * Resolves the {@link Cache} by first attempting to lookup an existing {@link Cache} instance in the JVM.
+	 * If an existing {@link Cache} could not be found, then this method proceeds in attempting to create
+	 * a new {@link Cache} instance.
 	 *
-	 * @return the resolved GemFire Cache instance.
+	 * @return the resolved {@link Cache} instance.
 	 * @see org.apache.geode.cache.Cache
 	 * @see #fetchCache()
+	 * @see #resolveProperties()
 	 * @see #createFactory(java.util.Properties)
 	 * @see #prepareFactory(Object)
 	 * @see #createCache(Object)
 	 */
 	protected Cache resolveCache() {
 		try {
-			cacheResolutionMessagePrefix = "Found existing";
+			this.cacheResolutionMessagePrefix = "Found existing";
 			return (Cache) fetchCache();
 		}
 		catch (CacheClosedException ex) {
-			cacheResolutionMessagePrefix = "Created new";
+			this.cacheResolutionMessagePrefix = "Created new";
 			initDynamicRegionFactory();
 			return (Cache) createCache(prepareFactory(createFactory(resolveProperties())));
 		}
 	}
 
 	/**
-	 * Fetches an existing GemFire Cache instance from the CacheFactory.
+	 * Fetches an existing {@link Cache} instance from the {@link CacheFactory}.
 	 *
-	 * @param <T> parameterized Class type extension of GemFireCache.
-	 * @return the existing GemFire Cache instance if available.
-	 * @throws org.apache.geode.cache.CacheClosedException if an existing GemFire Cache instance does not exist.
-	 * @see org.apache.geode.cache.GemFireCache
+	 * @param <T> parameterized {@link Class} type extension of {@link GemFireCache}.
+	 * @return an existing {@link Cache} instance if available.
+	 * @throws org.apache.geode.cache.CacheClosedException if an existing {@link Cache} instance does not exist.
 	 * @see org.apache.geode.cache.CacheFactory#getAnyInstance()
+	 * @see org.apache.geode.cache.GemFireCache
+	 * @see #getCache()
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T fetchCache() {
-		return (T) (cache != null ? cache : CacheFactory.getAnyInstance());
+		return (T) Optional.ofNullable(getCache()).orElseGet(CacheFactory::getAnyInstance);
 	}
 
 	/**
-	 * Resolves the GemFire System properties used to configure the GemFire Cache instance.
+	 * If Pivotal GemFire/Apache Geode Dynamic Regions are enabled, create and initialize a {@link DynamicRegionFactory}
+	 * before creating the {@link Cache}.
 	 *
-	 * @return a Properties object containing GemFire System properties used to configure the GemFire Cache instance.
+	 * @see org.springframework.data.gemfire.CacheFactoryBean.DynamicRegionSupport#initDynamicRegionFactory()
+	 * @see #getDynamicRegionSupport()
+	 */
+	private void initDynamicRegionFactory() {
+		Optional.ofNullable(getDynamicRegionSupport()).ifPresent(DynamicRegionSupport::initializeDynamicRegionFactory);
+	}
+
+	/**
+	 * Resolves the Pivotal GemFire/Apache Geode {@link Properties} used to configure the {@link Cache}.
+	 *
+	 * @return the resolved Pivotal GemFire/Apache Geode {@link Properties} used to configure the {@link Cache}.
+	 * @see #setAndGetProperties(Properties)
 	 * @see #getProperties()
 	 */
 	protected Properties resolveProperties() {
-		return (properties != null ? properties : (properties = new Properties()));
+		return Optional.ofNullable(getProperties()).orElseGet(() -> setAndGetProperties(new Properties()));
 	}
 
 	/**
-	 * Creates an instance of GemFire factory initialized with the given GemFire System Properties
-	 * to create an instance of a GemFire cache.
+	 * Constructs a new instance of {@link CacheFactory} initialized with the given Pivotal GemFire/Apache Geode
+	 * {@link Properties} used to create an instance of a {@link Cache}.
 	 *
-	 * @param gemfireProperties a Properties object containing GemFire System properties.
-	 * @return an instance of a GemFire factory used to create a GemFire cache instance.
-	 * @see java.util.Properties
+	 * @param gemfireProperties {@link Properties} used by the {@link CacheFactory} to configure the {@link Cache}.
+	 * @return a new instance of {@link CacheFactory} initialized with the given Pivotal GemFire/Apache Geode
+	 * {@link Properties}.
 	 * @see org.apache.geode.cache.CacheFactory
+	 * @see java.util.Properties
 	 */
 	protected Object createFactory(Properties gemfireProperties) {
 		return new CacheFactory(gemfireProperties);
 	}
 
 	/**
-	 * Initializes the GemFire factory used to create the GemFire cache instance.  Sets PDX options
-	 * specified by the user.
+	 * Prepares and initializes the {@link CacheFactory} used to create the {@link Cache}.
 	 *
-	 * @param factory the GemFire factory used to create an instance of the GemFire cache.
-	 * @return the initialized GemFire cache factory.
-	 * @see #isPdxOptionsSpecified()
+	 * Sets PDX options specified by the user.
+	 *
+	 * @param factory {@link CacheFactory} used to create the {@link Cache}.
+	 * @return the prepared and initialized {@link CacheFactory}.
+	 * @see #initializePdx(CacheFactory)
 	 */
 	protected Object prepareFactory(Object factory) {
 		return initializePdx((CacheFactory) factory);
 	}
 
 	/**
-	 * Initialize the PDX settings on the {@link CacheFactory}.
+	 * Configure PDX for the given {@link CacheFactory}.
 	 *
-	 * @param cacheFactory the GemFire {@link CacheFactory} used to configure and create a GemFire {@link Cache}.
+	 * @param cacheFactory {@link CacheFactory} used to configure PDX.
+	 * @return the given {@link CacheFactory}.
 	 * @see org.apache.geode.cache.CacheFactory
 	 */
-	CacheFactory initializePdx(CacheFactory cacheFactory) {
-		if (isPdxOptionsSpecified()) {
-			if (pdxSerializer != null) {
-				Assert.isInstanceOf(PdxSerializer.class, pdxSerializer,
-					String.format("[%1$s] of type [%2$s] is not a PdxSerializer", pdxSerializer,
-						ObjectUtils.nullSafeClassName(pdxSerializer)));
+	private CacheFactory initializePdx(CacheFactory cacheFactory) {
 
-				cacheFactory.setPdxSerializer((PdxSerializer) pdxSerializer);
-			}
-			if (pdxDiskStoreName != null) {
-				cacheFactory.setPdxDiskStore(pdxDiskStoreName);
-			}
-			if (pdxIgnoreUnreadFields != null) {
-				cacheFactory.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields);
-			}
-			if (pdxPersistent != null) {
-				cacheFactory.setPdxPersistent(pdxPersistent);
-			}
-			if (pdxReadSerialized != null) {
-				cacheFactory.setPdxReadSerialized(pdxReadSerialized);
-			}
-		}
+		Optional.ofNullable(getPdxSerializer()).ifPresent(cacheFactory::setPdxSerializer);
+
+		Optional.ofNullable(getPdxDiskStoreName()).filter(StringUtils::hasText)
+			.ifPresent(cacheFactory::setPdxDiskStore);
+
+		Optional.ofNullable(getPdxIgnoreUnreadFields()).ifPresent(cacheFactory::setPdxIgnoreUnreadFields);
+
+		Optional.ofNullable(getPdxPersistent()).ifPresent(cacheFactory::setPdxPersistent);
+
+		Optional.ofNullable(getPdxReadSerialized()).ifPresent(cacheFactory::setPdxReadSerialized);
 
 		return cacheFactory;
 	}
 
 	/**
-	 * Determines whether the user specified PDX options.
+	 * Creates a new {@link Cache} instance using the provided factory.
 	 *
-	 * @return a boolean value indicating whether the user specified PDX options or not.
-	 */
-	protected boolean isPdxOptionsSpecified() {
-		return (pdxSerializer != null || pdxReadSerialized != null || pdxPersistent != null
-			|| pdxIgnoreUnreadFields != null || pdxDiskStoreName != null);
-	}
-
-	/**
-	 * Creates a new GemFire cache instance using the provided factory.
-	 *
-	 * @param <T> parameterized Class type extension of GemFireCache.
-	 * @param factory the appropriate GemFire factory used to create a cache instance.
-	 * @return an instance of the GemFire cache.
-	 * @see org.apache.geode.cache.GemFireCache
+	 * @param <T> parameterized {@link Class} type extension of {@link GemFireCache}.
+	 * @param factory instance of {@link CacheFactory}.
+	 * @return a new instance of {@link Cache} created by the provided factory.
 	 * @see org.apache.geode.cache.CacheFactory#create()
+	 * @see org.apache.geode.cache.GemFireCache
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T createCache(Object factory) {
-		return (T) (cache != null ? cache : ((CacheFactory) factory).create());
+		return (T) Optional.ofNullable(getCache()).orElseGet(((CacheFactory) factory)::create);
 	}
 
 	/**
-	 * Post processes the GemFire Cache instance by loading any cache.xml, applying settings specified in SDG XML
-	 * configuration meta-data, and registering the appropriate Transaction Listeners, Writer and JNDI settings.
+	 * Post processes the {@link GemFireCache} by loading any {@literal cache.xml}, applying custom settings
+	 * specified in SDG XML configuration meta-data, and registering appropriate Transaction Listeners, Writer
+	 * and JNDI settings.
 	 *
-	 * @param <T> parameterized Class type extension of GemFireCache.
-	 * @param cache the GemFire Cache instance to process.
-	 * @return the GemFire Cache instance after processing.
-	 * @throws IOException if the cache.xml Resource could not be loaded and applied to the Cache instance.
+	 * @param <T> Parameterized {@link Class} type extension of {@link GemFireCache}.
+	 * @param cache {@link GemFireCache} instance to post process.
+	 * @return the given {@link GemFireCache}.
 	 * @see org.apache.geode.cache.Cache#loadCacheXml(java.io.InputStream)
 	 * @see #getCacheXml()
-	 * @see #setHeapPercentages(org.apache.geode.cache.GemFireCache)
+	 * @see #configureHeapPercentages(org.apache.geode.cache.GemFireCache)
+	 * @see #registerJndiDataSources()
 	 * @see #registerTransactionListeners(org.apache.geode.cache.GemFireCache)
 	 * @see #registerTransactionWriter(org.apache.geode.cache.GemFireCache)
-	 * @see #registerJndiDataSources()
 	 */
-	protected <T extends GemFireCache> T postProcess(T cache) throws IOException {
-		Resource localCacheXml = getCacheXml();
+	protected <T extends GemFireCache> T postProcess(T cache) {
 
-		// load cache.xml Resource and initialize the Cache
-		if (localCacheXml != null) {
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("initializing Cache with '%1$s'", cacheXml));
+		// load cache.xml Resource and initialize the cache
+		Optional.ofNullable(getCacheXml()).ifPresent(cacheXml -> {
+			try {
+				logDebug("Initializing cache with [%s]", cacheXml);
+				cache.loadCacheXml(cacheXml.getInputStream());
 			}
+			catch (IOException e) {
+				throw newRuntimeException(e, "Failed to load cache.xml [%s]", cacheXml);
+			}
+		});
 
-			cache.loadCacheXml(localCacheXml.getInputStream());
-		}
+		Optional.ofNullable(getCopyOnRead()).ifPresent(cache::setCopyOnRead);
+		Optional.ofNullable(getGatewayConflictResolver()).ifPresent(((Cache) cache)::setGatewayConflictResolver);
+		Optional.ofNullable(getLockLease()).ifPresent(((Cache) cache)::setLockLease);
+		Optional.ofNullable(getLockTimeout()).ifPresent(((Cache) cache)::setLockTimeout);
+		Optional.ofNullable(getMessageSyncInterval()).ifPresent(((Cache) cache)::setMessageSyncInterval);
+		Optional.ofNullable(getSearchTimeout()).ifPresent(((Cache) cache)::setSearchTimeout);
 
-		if (this.copyOnRead != null) {
-			cache.setCopyOnRead(this.copyOnRead);
-		}
-		if (gatewayConflictResolver != null) {
-			((Cache) cache).setGatewayConflictResolver((GatewayConflictResolver) gatewayConflictResolver);
-		}
-		if (lockLease != null) {
-			((Cache) cache).setLockLease(lockLease);
-		}
-		if (lockTimeout != null) {
-			((Cache) cache).setLockTimeout(lockTimeout);
-		}
-		if (messageSyncInterval != null) {
-			((Cache) cache).setMessageSyncInterval(messageSyncInterval);
-		}
-		if (searchTimeout != null) {
-			((Cache) cache).setSearchTimeout(searchTimeout);
-		}
-
-		setHeapPercentages(cache);
+		configureHeapPercentages(cache);
 		registerTransactionListeners(cache);
 		registerTransactionWriter(cache);
 		registerJndiDataSources();
@@ -410,203 +448,174 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/* (non-Javadoc) */
-	private void setHeapPercentages(GemFireCache cache) {
-		if (criticalHeapPercentage != null) {
-			Assert.isTrue(criticalHeapPercentage > 0.0 && criticalHeapPercentage <= 100.0,
-				String.format("'criticalHeapPercentage' (%1$s) is invalid; must be > 0.0 and <= 100.0",
-					criticalHeapPercentage));
+	private boolean isHeapPercentageValid(Float heapPercentage) {
+		return (heapPercentage > 0.0f && heapPercentage <= 100.0f);
+	}
+
+	/* (non-Javadoc) */
+	private void configureHeapPercentages(GemFireCache cache) {
+		Optional.ofNullable(getCriticalHeapPercentage()).ifPresent(criticalHeapPercentage -> {
+			Assert.isTrue(isHeapPercentageValid(criticalHeapPercentage), String.format(
+				"criticalHeapPercentage [%s] is not valid; must be > 0.0 and <= 100.0", criticalHeapPercentage));
+
 			cache.getResourceManager().setCriticalHeapPercentage(criticalHeapPercentage);
-		}
+		});
 
-		if (evictionHeapPercentage != null) {
-			Assert.isTrue(evictionHeapPercentage > 0.0 && evictionHeapPercentage <= 100.0,
-				String.format("'evictionHeapPercentage' (%1$s) is invalid; must be > 0.0 and <= 100.0",
-					evictionHeapPercentage));
+		Optional.ofNullable(getEvictionHeapPercentage()).ifPresent(evictionHeapPercentage -> {
+			Assert.isTrue(isHeapPercentageValid(evictionHeapPercentage), String.format(
+				"evictionHeapPercentage [%s] is not valid; must be > 0.0 and <= 100.0", evictionHeapPercentage));
+
 			cache.getResourceManager().setEvictionHeapPercentage(evictionHeapPercentage);
-		}
-	}
-
-	/* (non-Javadoc) */
-	private void registerTransactionListeners(GemFireCache cache) {
-		for (TransactionListener transactionListener : CollectionUtils.nullSafeCollection(transactionListeners)) {
-			cache.getCacheTransactionManager().addListener(transactionListener);
-		}
-	}
-
-	/* (non-Javadoc) */
-	private void registerTransactionWriter(GemFireCache cache) {
-		if (transactionWriter != null) {
-			cache.getCacheTransactionManager().setWriter(transactionWriter);
-		}
+		});
 	}
 
 	/* (non-Javadoc) */
 	private void registerJndiDataSources() {
-		for (JndiDataSource jndiDataSource : CollectionUtils.nullSafeCollection(jndiDataSources)) {
-			String typeAttributeValue = jndiDataSource.getAttributes().get("type");
-			JndiDataSourceType jndiDataSourceType = JndiDataSourceType.valueOfIgnoreCase(typeAttributeValue);
+
+		nullSafeCollection(getJndiDataSources()).forEach(jndiDataSource -> {
+
+			String type = jndiDataSource.getAttributes().get("type");
+
+			JndiDataSourceType jndiDataSourceType = JndiDataSourceType.valueOfIgnoreCase(type);
 
 			Assert.notNull(jndiDataSourceType, String.format(
-				"'jndi-binding' 'type' [%1$s] is invalid; 'type' must be one of %2$s", typeAttributeValue,
-					Arrays.toString(JndiDataSourceType.values())));
+				"'jndi-binding' 'type' [%1$s] is invalid; 'type' must be one of %2$s", type,
+				Arrays.toString(JndiDataSourceType.values())));
 
 			jndiDataSource.getAttributes().put("type", jndiDataSourceType.getName());
 			JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
-		}
+		});
 	}
 
+	/* (non-Javadoc) */
+	private void registerTransactionListeners(GemFireCache cache) {
+		nullSafeCollection(getTransactionListeners())
+			.forEach(transactionListener -> cache.getCacheTransactionManager().addListener(transactionListener));
+	}
+
+	/* (non-Javadoc) */
+	private void registerTransactionWriter(GemFireCache cache) {
+		Optional.ofNullable(getTransactionWriter()).ifPresent(it -> cache.getCacheTransactionManager().setWriter(it));
+	}
+
+	/**
+	 * Destroys the {@link Cache} bean on Spring container shutdown.
+	 *
+	 * @throws Exception if an error occurs while closing the cache.
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 * @see #destroyBeanFactoryLocator()
+	 * @see #close(GemFireCache)
+	 * @see #isClose()
+	 */
 	@Override
 	public void destroy() throws Exception {
-		if (close) {
-			Cache localCache = fetchCache();
-
-			if (localCache != null && !localCache.isClosed()) {
-				close(localCache);
-			}
-
-			this.cache = null;
-
-			if (beanFactoryLocator != null) {
-				beanFactoryLocator.destroy();
-				beanFactoryLocator = null;
-			}
+		if (isClose()) {
+			close(fetchCache());
+			destroyBeanFactoryLocator();
 		}
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Null-safe internal method used to close the {@link GemFireCache} and calling {@link GemFireCache#close()}
+	 * iff the cache {@link GemFireCache#isClosed() is not already closed}.
+	 *
+	 * @param cache {@link GemFireCache} to close.
+	 * @see org.apache.geode.cache.GemFireCache#isClosed()
+	 * @see org.apache.geode.cache.GemFireCache#close()
+	 */
 	protected void close(GemFireCache cache) {
-		cache.close();
+
+		Optional.ofNullable(cache)
+			.filter(it -> !it.isClosed())
+			.ifPresent(RegionService::close);
+
+		this.cache = null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	/**
+	 * Destroys the {@link GemfireBeanFactoryLocator}.
+	 *
+	 * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator#destroy()
+	 */
+	private void destroyBeanFactoryLocator() {
+		Optional.ofNullable(getBeanFactoryLocator()).ifPresent(GemfireBeanFactoryLocator::destroy);
+		this.beanFactoryLocator = null;
+	}
+
+	/**
+	 * Translates the given Pivotal GemFire/Apache Geode {@link RuntimeException} thrown to a corresponding exception
+	 * from Spring's generic {@link DataAccessException} hierarchy, if possible.
+	 *
+	 * @param exception {@link RuntimeException} to translate.
+	 * @return the translated Spring {@link DataAccessException} or {@literal null} if the Pivotal GemFire/Apache Geode
+	 * {@link RuntimeException} could not be converted.
+	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(RuntimeException)
+	 * @see org.springframework.dao.DataAccessException
 	 */
 	@Override
-	public Class<? extends GemFireCache> getObjectType() {
-		return (cache != null ? cache.getClass() : Cache.class);
-	}
+	public DataAccessException translateExceptionIfPossible(RuntimeException exception) {
 
-	/* (non-Javadoc) */
-	protected void setPhase(int phase) {
-		this.phase = phase;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.Phased#getPhase()
-	 */
-	@Override
-	public int getPhase() {
-		return phase;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
-
-	@Override
-	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
-		if (e instanceof GemFireException) {
-			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) e);
-		}
-
-		if (e instanceof IllegalArgumentException) {
-			DataAccessException wrapped = GemfireCacheUtils.convertQueryExceptions(e);
-			// ignore conversion if the generic exception is returned
+		if (exception instanceof IllegalArgumentException) {
+			DataAccessException wrapped = GemfireCacheUtils.convertQueryExceptions(exception);
+			// ignore conversion if generic exception is returned
 			if (!(wrapped instanceof GemfireSystemException)) {
 				return wrapped;
 			}
 		}
 
-		if (e.getCause() instanceof GemFireException) {
-			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) e.getCause());
+		if (exception instanceof GemFireException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) exception);
 		}
 
-		if (e.getCause() instanceof GemFireCheckedException) {
-			return GemfireCacheUtils.convertGemfireAccessException((GemFireCheckedException) e.getCause());
+		if (exception.getCause() instanceof GemFireException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireException) exception.getCause());
+		}
+
+		if (exception.getCause() instanceof GemFireCheckedException) {
+			return GemfireCacheUtils.convertGemfireAccessException((GemFireCheckedException) exception.getCause());
 		}
 
 		return null;
 	}
 
 	/**
-	 * Sets a reference to the {@link ClassLoader} used to load and create bean classes in the Spring container.
+	 * Returns a reference to the configured {@link GemfireBeanFactoryLocator} used to resolve Spring bean references
+	 * in native Pivotal GemFire/Apache Geode native config (e.g. {@literal cache.xml}).
 	 *
-	 * @param classLoader the {@link ClassLoader} used to load and create beans in the Spring container.
-	 * @see java.lang.ClassLoader
+	 * @return a reference to the configured {@link GemfireBeanFactoryLocator}.
+	 * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
 	 */
-	@Override
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
-	}
-
-	/**
-	 * Gets a reference to the {@link ClassLoader} used to load and create bean classes in the Spring container.
-	 *
-	 * @return the {@link ClassLoader} used to load and create beans in the Spring container.
-	 * @see java.lang.ClassLoader
-	 */
-	public ClassLoader getBeanClassLoader() {
-		return beanClassLoader;
-	}
-
-	/**
-	 * Sets a reference to the Spring {@link BeanFactory} containing this GemFire {@link Cache} {@link FactoryBean}.
-	 *
-	 * @param beanFactory a reference to the Spring {@link BeanFactory}.
-	 * @see org.springframework.beans.factory.BeanFactory
-	 * @see #getBeanFactory()
-	 */
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	/**
-	 * Gets a reference to the Spring BeanFactory containing this GemFire {@link Cache} {@link FactoryBean}.
-	 *
-	 * @return a reference to the Spring {@link BeanFactory}.
-	 * @see org.springframework.beans.factory.BeanFactory
-	 * @see #setBeanFactory(BeanFactory)
-	 */
-	public BeanFactory getBeanFactory() {
-		return beanFactory;
-	}
-
-	/* (non-Javadoc) */
 	public GemfireBeanFactoryLocator getBeanFactoryLocator() {
-		return beanFactoryLocator;
+		return this.beanFactoryLocator;
 	}
 
 	/**
-	 * Sets the Spring bean name for this GemFire {@link Cache}.
+	 * Sets a reference to the constructed, configured an initialized {@link Cache}
+	 * created by this {@link CacheFactoryBean}.
 	 *
-	 * @param name a String value indicating the Spring container bean name for the GemFire {@link Cache} object.
+	 * @param cache {@link Cache} created by this {@link CacheFactoryBean}.
+	 * @see org.apache.geode.cache.Cache
 	 */
-	@Override
-	public void setBeanName(String name) {
-		this.beanName = name;
+	protected void setCache(Cache cache) {
+		this.cache = cache;
 	}
 
 	/**
-	 * Gets the Spring bean name for this GemFire {@link Cache}.
+	 * Returns a direct reference to the constructed, configured an initialized {@link Cache}
+	 * created by this {@link CacheFactoryBean}.
 	 *
-	 * @return a String value indicating the Spring container bean name for the GemFire {@link Cache} object.
+	 * @return a direct reference to the {@link Cache} created by this {@link CacheFactoryBean}.
+	 * @see org.apache.geode.cache.Cache
 	 */
-	public String getBeanName() {
-		return beanName;
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T getCache() {
+		return (T) this.cache;
 	}
 
 	/**
-	 * Sets the {@link Cache} configuration meta-data.
+	 * Sets a reference to the Pivotal GemFire/Apache Geode native {@literal cache.xml} {@link Resource}.
 	 *
-	 * @param cacheXml the cache.xml {@link Resource} used to initialize the GemFire {@link Cache}.
+	 * @param cacheXml reference to the Pivotal GemFire/Apache Geode native {@literal cache.xml} {@link Resource}.
 	 * @see org.springframework.core.io.Resource
 	 */
 	public void setCacheXml(Resource cacheXml) {
@@ -614,69 +623,160 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
-	 * Gets a reference to the GemFire native cache.xml file as a Spring {@link Resource}.
+	 * Returns a reference to the Pivotal GemFire/Apache Geode native {@literal cache.xml}
+	 * as a Spring {@link Resource}.
 	 *
-	 * @return the a reference to the GemFire native cache.xml as a Spring {@link Resource}.
+	 * @return a reference to the Pivotal GemFire/Apache Geode native {@literal cache.xml}
+	 * as a Spring {@link Resource}.
 	 * @see org.springframework.core.io.Resource
 	 */
 	public Resource getCacheXml() {
-		return cacheXml;
+		return this.cacheXml;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns the {@literal cache.xml} {@link Resource} as a {@link File}.
+	 *
+	 * @return the {@literal cache.xml} {@link Resource} as a {@link File}.
+	 * @throws IllegalStateException if the {@link Resource} is not a valid {@link File} in the file system
+	 * or a general problem exists accessing or reading the {@link File}.
+	 * @see org.springframework.core.io.Resource
+	 * @see java.io.File
+	 * @see #getCacheXml()
+	 */
 	private File getCacheXmlFile() {
 		try {
 			return getCacheXml().getFile();
 		}
-		catch (IOException e) {
-			throw new IllegalStateException(String.format("Resource (%1$s) is not resolvable as a file", e));
+		catch (Throwable e) {
+			throw newIllegalStateException(e, "Resource [%s] is not resolvable as a file", getCacheXml());
 		}
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Determines whether the {@link Resource cache.xml} {@link File} is present.
+	 *
+	 * @return boolean value indicating whether a {@link Resource cache.xml} {@link File} is present.
+	 * @see #getCacheXmlFile()
+	 */
 	private boolean isCacheXmlAvailable() {
 		try {
-			Resource localCacheXml = getCacheXml();
-			return (localCacheXml != null && localCacheXml.getFile().isFile());
+			return (getCacheXmlFile() != null);
 		}
-		catch (IOException ignore) {
+		catch (Throwable ignore) {
 			return false;
 		}
 	}
 
 	/**
-	 * Sets the cache properties.
+	 * Returns an object reference to the {@link Cache} created by this {@link CacheFactoryBean}.
 	 *
-	 * @param properties the properties to set
+	 * @return an object reference to the {@link Cache} created by this {@link CacheFactoryBean}.
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 * @see org.apache.geode.cache.Cache
+	 * @see #getCache()
+	 */
+	@Override
+	public Cache getObject() throws Exception {
+		return Optional.ofNullable(this.<Cache>getCache()).orElseGet(this::init);
+	}
+
+	/**
+	 * Returns the {@link Class} type of the {@link GemFireCache} produced by this {@link CacheFactoryBean}.
+	 *
+	 * @return the {@link Class} type of the {@link GemFireCache} produced by this {@link CacheFactoryBean}.
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public Class<? extends GemFireCache> getObjectType() {
+		return Optional.ofNullable(getCache()).<Class>map(Object::getClass).orElse(Cache.class);
+	}
+
+	/**
+	 * Set the phase for the {@link Cache} bean in the lifecycle managed by the Spring container.
+	 *
+	 * @param phase {@link Integer#TYPE int} value indicating the phase of this {@link Cache} bean
+	 * in the lifecycle managed by the Spring container.
+	 * @see org.springframework.context.Phased#getPhase()
+	 */
+	protected void setPhase(int phase) {
+		this.phase = phase;
+	}
+
+	/**
+	 * Returns the configured phase of the {@link Cache} bean in the lifecycle managed by the Spring container.
+	 *
+	 * @return an {@link Integer#TYPE int} value indicating the phase of this {@link Cache} bean in the lifecycle
+	 * managed by the Spring container.
+	 * @see org.springframework.context.Phased#getPhase()
+	 */
+	@Override
+	public int getPhase() {
+		return this.phase;
+	}
+
+	/**
+	 * Sets and then returns a reference to Pivotal GemFire/Apache Geode {@link Properties} used to configure the cache.
+	 *
+	 * @param properties reference to Pivotal GemFire/Apache Geode {@link Properties} used to configure the cache.
+	 * @return a reference to Pivotal GemFire/Apache Geode {@link Properties} used to configure the cache.
+	 * @see java.util.Properties
+	 * @see #setProperties(Properties)
+	 * @see #getProperties()
+	 */
+	protected Properties setAndGetProperties(Properties properties) {
+		setProperties(properties);
+		return getProperties();
+	}
+
+	/**
+	 * Returns a reference to Pivotal GemFire/Apache Geode {@link Properties} used to configure the cache.
+	 *
+	 * @param properties reference to Pivotal GemFire/Apache Geode {@link Properties} used to configure the cache.
+	 * @see java.util.Properties
 	 */
 	public void setProperties(Properties properties) {
 		this.properties = properties;
 	}
 
 	/**
-	 * Gets a reference to the GemFire System Properties.
+	 * Returns a reference to Pivotal GemFire/Apache Geode {@link Properties} used to configure the cache.
 	 *
-	 * @return a reference to the GemFire System Properties.
+	 * @return a reference to Pivotal GemFire/Apache Geode {@link Properties}.
 	 * @see java.util.Properties
 	 */
 	public Properties getProperties() {
-		return properties;
+		return this.properties;
 	}
 
 	/**
-	 * Set whether the Cache should be closed.
+	 * Sets a value to indicate whether the cache will be closed on shutdown of the Spring container.
 	 *
-	 * @param close set to false if destroy() should not close the cache
+	 * @param close boolean value indicating whether the cache will be closed on shutdown of the Spring container.
 	 */
 	public void setClose(boolean close) {
 		this.close = close;
 	}
 
 	/**
-	 * @return close.
+	 * Returns a boolean value indicating whether the cache will be closed on shutdown of the Spring container.
+	 *
+	 * @return a boolean value indicating whether the cache will be closed on shutdown of the Spring container.
 	 */
-	public Boolean getClose() {
-		return close;
+	public boolean isClose() {
+		return this.close;
+	}
+
+	/**
+	 * Returns a reference to the Composite {@link PeerCacheConfigurer} used to apply additional configuration
+	 * to this {@link CacheFactoryBean} on Spring container initialization.
+	 *
+	 * @return the Composite {@link PeerCacheConfigurer}.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+	 */
+	public PeerCacheConfigurer getCompositePeerCacheConfigurer() {
+		return this.compositePeerCacheConfigurer;
 	}
 
 	/**
@@ -769,14 +869,14 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 * compatibility with Gemfire 6 compatibility. This must be an instance of
 	 * {@link org.apache.geode.cache.util.GatewayConflictResolver}
 	 */
-	public void setGatewayConflictResolver(Object gatewayConflictResolver) {
+	public void setGatewayConflictResolver(GatewayConflictResolver gatewayConflictResolver) {
 		this.gatewayConflictResolver = gatewayConflictResolver;
 	}
 
 	/**
 	 * @return the gatewayConflictResolver
 	 */
-	public Object getGatewayConflictResolver() {
+	public GatewayConflictResolver getGatewayConflictResolver() {
 		return gatewayConflictResolver;
 	}
 
@@ -919,15 +1019,40 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	 *
 	 * @param serializer pdx serializer configured for this cache.
 	 */
-	public void setPdxSerializer(Object serializer) {
+	public void setPdxSerializer(PdxSerializer serializer) {
 		this.pdxSerializer = serializer;
 	}
 
 	/**
 	 * @return the pdxSerializer
 	 */
-	public Object getPdxSerializer() {
+	public PdxSerializer getPdxSerializer() {
 		return pdxSerializer;
+	}
+
+	/**
+	 * Null-safe operation to set an array of {@link PeerCacheConfigurer PeerCacheConfigurers} used to apply
+	 * additional configuration to this {@link CacheFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param peerCacheConfigurers array of {@link PeerCacheConfigurer PeerCacheConfigurers} used to apply
+	 * additional configuration to this {@link CacheFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+	 * @see #setPeerCacheConfigurers(List)
+	 */
+	public void setPeerCacheConfigurers(PeerCacheConfigurer... peerCacheConfigurers) {
+		setPeerCacheConfigurers(Arrays.asList(nullSafeArray(peerCacheConfigurers, PeerCacheConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation to set an {@link Iterable} of {@link PeerCacheConfigurer PeerCacheConfigurers} to apply
+	 * additional configuration to this {@link CacheFactoryBean} when using Annotation-based configuration.
+	 *
+	 * @param peerCacheConfigurers {@link Iterable} of {@link PeerCacheConfigurer PeerCacheConfigurers} used to apply
+	 * additional configuration to this {@link CacheFactoryBean}.
+	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+	 */
+	public void setPeerCacheConfigurers(List<PeerCacheConfigurer> peerCacheConfigurers) {
+		this.peerCacheConfigurers = Optional.ofNullable(peerCacheConfigurers).orElseGet(Collections::emptyList);
 	}
 
 	/**
@@ -983,42 +1108,48 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 	}
 
 	/**
-	 * Indicates whether a bean factory locator is enabled for this cache definition or not. The locator stores
-	 * the enclosing bean factory reference to allow auto-wiring of Spring beans into GemFire managed classes.
-	 * Usually disabled when the same cache is used in multiple application context/bean factories inside
-	 * the same VM.
+	 * Sets whether to enable the {@link GemfireBeanFactoryLocator}.
 	 *
-	 * @param usage true if the bean factory locator is to be used underneath the hood.
+	 * @param use boolean value indicating whether to enable the {@link GemfireBeanFactoryLocator}.
+	 * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
 	 */
-	public void setUseBeanFactoryLocator(boolean usage) {
-		this.useBeanFactoryLocator = usage;
+	public void setUseBeanFactoryLocator(boolean use) {
+		this.useBeanFactoryLocator = use;
 	}
 
 	/**
-	 * @return useBeanFactoryLocator
+	 * Determines whether the {@link GemfireBeanFactoryLocator} has been enabled.
+	 *
+	 * @return a boolean value indicating whether the {@link GemfireBeanFactoryLocator} has been enabled.
+	 * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
 	 */
 	public boolean isUseBeanFactoryLocator() {
-		return useBeanFactoryLocator;
+		return this.useBeanFactoryLocator;
 	}
 
 	/**
-	 * Sets the state of the use-shared-configuration GemFire distribution config setting.
+	 * Sets the state of the {@literal use-shared-configuration} Pivotal GemFire/Apache Geode
+	 * distribution configuration setting.
 	 *
-	 * @param useSharedConfiguration a boolean value to set the use-shared-configuration GemFire distribution property.
+	 * @param useSharedConfiguration boolean value to set the {@literal use-shared-configuration}
+	 * Pivotal GemFire/Apache Geode distribution configuration setting.
 	 */
 	public void setUseClusterConfiguration(Boolean useSharedConfiguration) {
 		this.useClusterConfiguration = useSharedConfiguration;
 	}
 
 	/**
-	 * Gets the value of the use-shared-configuration GemFire configuration setting.
+	 * Return the state of the {@literal use-shared-configuration} Pivotal GemFire/Apache Geode
+	 * distribution configuration setting.
 	 *
-	 * @return a boolean value indicating whether shared configuration use has been enabled or not.
+	 * @return the current boolean value for the {@literal use-shared-configuration}
+	 * Pivotal GemFire/Apache Geode distribution configuration setting.
 	 */
 	public Boolean getUseClusterConfiguration() {
 		return this.useClusterConfiguration;
 	}
 
+	/* (non-Javadoc) */
 	public static class DynamicRegionSupport {
 
 		private Boolean persistent = Boolean.TRUE;
@@ -1069,6 +1200,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		}
 	}
 
+	/* (non-Javadoc) */
 	public static class JndiDataSource {
 
 		private List<ConfigProperty> props;

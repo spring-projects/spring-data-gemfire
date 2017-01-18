@@ -30,6 +30,7 @@ import org.springframework.util.ObjectUtils;
  */
 @SuppressWarnings("unused")
 public enum ClientRegionShortcutWrapper {
+
 	CACHING_PROXY(ClientRegionShortcut.CACHING_PROXY, DataPolicy.NORMAL),
 	CACHING_PROXY_HEAP_LRU(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU, DataPolicy.NORMAL),
 	CACHING_PROXY_OVERFLOW(ClientRegionShortcut.CACHING_PROXY_OVERFLOW, DataPolicy.NORMAL),
@@ -45,11 +46,6 @@ public enum ClientRegionShortcutWrapper {
 
 	private final DataPolicy dataPolicy;
 
-	ClientRegionShortcutWrapper(ClientRegionShortcut clientRegionShortcut, DataPolicy dataPolicy) {
-		this.clientRegionShortcut = clientRegionShortcut;
-		this.dataPolicy = dataPolicy;
-	}
-
 	public static ClientRegionShortcutWrapper valueOf(ClientRegionShortcut clientRegionShortcut) {
 		for (ClientRegionShortcutWrapper wrapper : values()) {
 			if (ObjectUtils.nullSafeEquals(wrapper.getClientRegionShortcut(), clientRegionShortcut)) {
@@ -58,6 +54,11 @@ public enum ClientRegionShortcutWrapper {
 		}
 
 		return ClientRegionShortcutWrapper.UNSPECIFIED;
+	}
+
+	ClientRegionShortcutWrapper(ClientRegionShortcut clientRegionShortcut, DataPolicy dataPolicy) {
+		this.clientRegionShortcut = clientRegionShortcut;
+		this.dataPolicy = dataPolicy;
 	}
 
 	public ClientRegionShortcut getClientRegionShortcut() {
