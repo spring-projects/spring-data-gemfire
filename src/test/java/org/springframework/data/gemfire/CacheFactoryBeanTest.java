@@ -32,6 +32,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
@@ -63,18 +64,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.core.io.Resource;
+import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 import org.springframework.data.util.ReflectionUtils;
 
 /**
- * The CacheFactoryBeanTest class is a test suite of test cases testing the contract and functionality
- * of the CacheFactoryBean class.
+ * Unit tests for {@link CacheFactoryBean}.
  *
  * @author John Blum
  * @see org.junit.Rule
  * @see org.junit.Test
- * @see org.junit.rules.ExpectedException
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.apache.geode.cache.Cache
@@ -219,6 +218,7 @@ public class CacheFactoryBeanTest {
 
 		final CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
+		when(mockBeanFactory.getAliases(anyString())).thenReturn(new String[0]);
 		when(mockCacheFactory.create()).thenReturn(mockCache);
 		when(mockCache.getCacheTransactionManager()).thenReturn(mockCacheTransactionManager);
 		when(mockCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
@@ -269,6 +269,7 @@ public class CacheFactoryBeanTest {
 		cacheFactoryBean.setTransactionWriter(mockTransactionWriter);
 		cacheFactoryBean.setUseBeanFactoryLocator(true);
 
+		cacheFactoryBean.afterPropertiesSet();
 		cacheFactoryBean.init();
 
 		assertThat(Thread.currentThread().getContextClassLoader(), is(sameInstance(expectedThreadContextClassLoader)));
@@ -277,11 +278,11 @@ public class CacheFactoryBeanTest {
 
 		assertThat(beanFactoryLocator, is(notNullValue()));
 
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("TestGemFireCache");
+		BeanFactory beanFactoryReference = beanFactoryLocator.useBeanFactory("TestGemFireCache");
 
-		assertThat(beanFactoryReference, is(notNullValue()));
-		assertThat(beanFactoryReference.getFactory(), is(sameInstance(mockBeanFactory)));
+		assertThat(beanFactoryReference, is(sameInstance(mockBeanFactory)));
 
+		verify(mockBeanFactory, times(1)).getAliases(anyString());
 		verify(mockCacheFactory, times(1)).setPdxDiskStore(eq("TestPdxDiskStore"));
 		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
 		verify(mockCacheFactory, times(1)).setPdxPersistent(eq(true));
@@ -716,5 +717,4 @@ public class CacheFactoryBeanTest {
 		assertSame(mockTransactionWriter, cacheFactoryBean.getTransactionWriter());
 		assertTrue(cacheFactoryBean.getUseClusterConfiguration());
 	}
-
 }

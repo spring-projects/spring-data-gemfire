@@ -30,7 +30,6 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 		setUseBeanFactoryLocator(false);
 
 		if (cacheFactoryBean != null) {
-			this.beanFactoryLocator = cacheFactoryBean.getBeanFactoryLocator();
 			setBeanClassLoader(cacheFactoryBean.getBeanClassLoader());
 			setBeanFactory(cacheFactoryBean.getBeanFactory());
 			setBeanName(cacheFactoryBean.getBeanName());
@@ -56,6 +55,7 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 			setSearchTimeout(cacheFactoryBean.getSearchTimeout());
 			setTransactionListeners(cacheFactoryBean.getTransactionListeners());
 			setTransactionWriter(cacheFactoryBean.getTransactionWriter());
+			setUseBeanFactoryLocator(cacheFactoryBean.isUseBeanFactoryLocator());
 		}
 	}
 

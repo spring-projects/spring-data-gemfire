@@ -19,41 +19,47 @@ package org.springframework.data.gemfire;
 import java.lang.reflect.Field;
 
 /**
+ * Utility class containing common functionality used when writing tests.
+ *
  * @author Costin Leau
+ * @author John Blum
  */
 public abstract class TestUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T readField(String name, Object target) throws Exception {
-		Field field = null;
-		Class<?> clazz = target.getClass();
-		do {
-			try {
-				field = clazz.getDeclaredField(name);
-			} catch (Exception ex) {
-			}
+		Field field = findField(name, target);
 
-			clazz = clazz.getSuperclass();
-		} while (field == null && !clazz.equals(Object.class));
+		if (field == null) {
+			throw new IllegalArgumentException(String.format("Cannot find field [%1$s] in class [%2$s]",
+				name, target.getClass().getName()));
+		}
 
-		if (field == null)
-			throw new IllegalArgumentException("Cannot find field '" + name + "' in the class hierarchy of "
-					+ target.getClass());
 		field.setAccessible(true);
+
 		return (T) field.get(target);
 	}
 
-	public static void cleanBeanFactoryStaticReference() {
-		try {
-			Field field = GemfireBeanFactoryLocator.class.getDeclaredField("canUseDefaultBeanFactory");
-			field.setAccessible(true);
-			field.set(null, true);
+	/* (non-Javadoc) */
+	private static Field findField(String fieldName, Object target) {
+		return findField(fieldName, target.getClass());
+	}
 
-			field = GemfireBeanFactoryLocator.class.getDeclaredField("defaultFactory");
-			field.setAccessible(true);
-			field.set(null, null);
+	/* (non-Javadoc) */
+	private static Field findField(String fieldName, Class<?> type) {
+		Field field = null;
 
-		} catch (Exception ex) {
+		while (field == null && !type.equals(Object.class)) {
+			try {
+				field = type.getDeclaredField(fieldName);
+			}
+			catch (Throwable ignore) {
+			}
+			finally {
+				type = type.getSuperclass();
+			}
 		}
+
+		return field;
 	}
 }

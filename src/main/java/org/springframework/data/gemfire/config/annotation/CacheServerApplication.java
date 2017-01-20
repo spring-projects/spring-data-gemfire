@@ -28,7 +28,6 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
@@ -236,7 +235,7 @@ public @interface CacheServerApplication {
 	SubscriptionEvictionPolicy subscriptionEvictionPolicy() default SubscriptionEvictionPolicy.NONE;
 
 	/**
-	 * Determines whether the Spring {@link BeanFactoryLocator} should be enabled to lookup
+	 * Determines whether the Spring {@link BeanFactory} locator should be enabled to lookup
 	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
 	 * created in a non-Spring managed, GemFire context.
 	 *

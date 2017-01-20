@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import static org.springframework.data.gemfire.support.GemfireBeanFactoryLocator.newBeanFactoryLocator;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -54,6 +56,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -139,13 +142,21 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	private TransactionWriter transactionWriter;
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * @inheritDoc
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		initBeanFactoryLocator();
 		postProcessBeforeCacheInitialization(resolveProperties());
+	}
+
+	/* (non-Javadoc) */
+	private void initBeanFactoryLocator() {
+		if (useBeanFactoryLocator && beanFactoryLocator == null) {
+			beanFactoryLocator = newBeanFactoryLocator(this.beanFactory, this.beanName);
+		}
 	}
 
 	/* (non-Javadoc) */
@@ -180,9 +191,7 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 
 	/* (non-Javadoc) */
 	Cache init() throws Exception {
-		initBeanFactoryLocator();
-
-		final ClassLoader currentThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
+		ClassLoader currentThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
 		try {
 			// use bean ClassLoader to load Spring configured, GemFire Declarable classes
@@ -206,16 +215,6 @@ public class CacheFactoryBean implements BeanClassLoaderAware, BeanFactoryAware,
 		}
 		finally {
 			Thread.currentThread().setContextClassLoader(currentThreadContextClassLoader);
-		}
-	}
-
-	/* (non-Javadoc) */
-	private void initBeanFactoryLocator() {
-		if (useBeanFactoryLocator && beanFactoryLocator == null) {
-			beanFactoryLocator = new GemfireBeanFactoryLocator();
-			beanFactoryLocator.setBeanFactory(beanFactory);
-			beanFactoryLocator.setBeanName(beanName);
-			beanFactoryLocator.afterPropertiesSet();
 		}
 	}
 

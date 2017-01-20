@@ -2,10 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 ">
 
-	<bean id="userDataSource" class="org.springframework.data.gemfire.LazyWiringDeclarableSupportIntegrationTest$TestDataSource"/>
+	<bean id="userDataSource" class="org.springframework.data.gemfire.support.LazyWiringDeclarableSupportIntegrationTests$TestDataSource"/>
 
 	<bean id="supertoolUser" class="org.springframework.data.gemfire.repository.sample.User">
 		<constructor-arg type="java.lang.String" value="supertool"/>

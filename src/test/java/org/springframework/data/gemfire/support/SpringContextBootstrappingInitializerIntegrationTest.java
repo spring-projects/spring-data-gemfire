@@ -47,7 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.gemfire.LazyWiringDeclarableSupport;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.repository.sample.User;
 import org.springframework.data.gemfire.support.sample.TestUserDao;
@@ -62,7 +61,7 @@ import org.springframework.util.Assert;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext
- * @see org.springframework.data.gemfire.LazyWiringDeclarableSupport
+ * @see LazyWiringDeclarableSupport
  * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.CacheFactory

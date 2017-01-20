@@ -1,24 +1,23 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.support;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -31,26 +30,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.gemfire.function.sample.HelloFunctionExecution;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The LazyWiringDeclarableSupportFunctionBasedIntegrationTest class is a test suite of test cases testing the contract
- * and functionality of a GemFire Function implementing LazyWiringDeclarableSupport, defined using native GemFire
- * configuration metadata (cache.xml).
+ * Integration test to test the functionality of a GemFire Function implementing the Spring Data GemFire
+ * {@link LazyWiringDeclarableSupport} class, defined using native GemFire configuration meta-data
+ * (i.e {@literal cache.xml}).
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @since 1.7.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
-public class LazyWiringDeclarableSupportFunctionBasedIntegrationTest {
+public class LazyWiringDeclarableSupportFunctionBasedIntegrationTests {
 
 	@Autowired
 	private Cache gemfireCache;
@@ -62,7 +60,7 @@ public class LazyWiringDeclarableSupportFunctionBasedIntegrationTest {
 	@BeforeClass
 	public static void setupBeforeClass() {
 		Cache gemfireCache = new CacheFactory()
-			.set("name", LazyWiringDeclarableSupportFunctionBasedIntegrationTest.class.getSimpleName())
+			.set("name", LazyWiringDeclarableSupportFunctionBasedIntegrationTests.class.getSimpleName())
 			.set("mcast-port", "0")
 			.set("log-level", "config")
 			.set("cache-xml-file", null)
@@ -80,15 +78,15 @@ public class LazyWiringDeclarableSupportFunctionBasedIntegrationTest {
 
 	@Test
 	public void helloGreeting() {
-		assertThat(helloFunctionExecution.hello(null), is(equalTo("Hello Everyone!")));
+		assertThat(helloFunctionExecution.hello(null)).isEqualTo("Hello Everyone!");
 	}
 
 	protected static abstract class FunctionAdaptor extends LazyWiringDeclarableSupport implements Function {
 
 		private final String id;
 
-		public FunctionAdaptor(final String id) {
-			Assert.hasText(id, "The Function ID must be specified!");
+		FunctionAdaptor(String id) {
+			Assert.hasText(id, "Function ID must be specified");
 			this.id = id;
 		}
 
@@ -113,6 +111,7 @@ public class LazyWiringDeclarableSupportFunctionBasedIntegrationTest {
 		}
 	}
 
+	@SuppressWarnings("all")
 	public static class HelloGemFireFunction extends FunctionAdaptor {
 
 		protected static final String ADDRESS_TO_PARAMETER = "hello.address.to";
@@ -167,5 +166,4 @@ public class LazyWiringDeclarableSupportFunctionBasedIntegrationTest {
 			return String.format(HELLO_GREETING, addressTo);
 		}
 	}
-
 }

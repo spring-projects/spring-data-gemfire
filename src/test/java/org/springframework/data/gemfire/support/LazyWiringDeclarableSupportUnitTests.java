@@ -1,32 +1,35 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.support;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.support.GemfireBeanFactoryLocator.newBeanFactoryLocator;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,33 +43,31 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer;
 
 /**
- * The LazyWiringDeclarableSupportTest class is a test suite of test cases testing the contract and functionality
- * of the LazyWiringDeclarableSupport class.  This test class focuses on testing isolated units of functionality
- * in the Declarable class directly, mocking any dependencies as appropriate, in order for the class to uphold
- * it's contract.
+ * Unit tests for {@link LazyWiringDeclarableSupport}.
  *
  * @author John Blum
  * @see org.junit.Rule
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.LazyWiringDeclarableSupport
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
+ * @see org.springframework.data.gemfire.support.LazyWiringDeclarableSupport
  * @since 1.3.4
  */
-public class LazyWiringDeclarableSupportTest {
+public class LazyWiringDeclarableSupportUnitTests {
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
-	protected static void assertParameters(Properties parameters, String expectedKey, String expectedValue) {
+	private static void assertParameters(Properties parameters, String expectedKey, String expectedValue) {
 		assertThat(parameters, is(notNullValue()));
 		assertThat(parameters.containsKey(expectedKey), is(true));
 		assertThat(parameters.getProperty(expectedKey), is(equalTo(expectedValue)));
 	}
 
-	protected static Properties createParameters(final String parameter, final String value) {
+	private static Properties createParameters(String parameter, String value) {
 		Properties parameters = new Properties();
 		parameters.setProperty(parameter, value);
 		return parameters;
@@ -97,10 +98,10 @@ public class LazyWiringDeclarableSupportTest {
 		};
 
 		try {
-			expectedException.expect(IllegalStateException.class);
-			expectedException.expectCause(is(nullValue(Throwable.class)));
-			expectedException.expectMessage(String.format(
-				"This Declarable object (%1$s) has not been properly configured and initialized",
+			exception.expect(IllegalStateException.class);
+			exception.expectCause(is(nullValue(Throwable.class)));
+			exception.expectMessage(String.format(
+				"This Declarable object [%s] has not been properly configured and initialized",
 					declarable.getClass().getName()));
 
 			declarable.assertInitialized();
@@ -125,17 +126,18 @@ public class LazyWiringDeclarableSupportTest {
 	@Test
 	public void assertUninitializedWhenInitialized() {
 		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport() {
-			@Override protected boolean isInitialized() {
+			@Override
+			protected boolean isInitialized() {
 				return true;
 			}
 		};
 
 		try {
-			expectedException.expect(IllegalStateException.class);
-			expectedException.expectCause(is(nullValue(Throwable.class)));
-			expectedException.expectMessage(String.format(
-				"This Declarable object (%1$s) has already been configured and initialized",
-				declarable.getClass().getName()));
+			exception.expect(IllegalStateException.class);
+			exception.expectCause(is(nullValue(Throwable.class)));
+			exception.expectMessage(String.format(
+				"This Declarable object [%s] has already been configured and initialized",
+					declarable.getClass().getName()));
 
 			declarable.assertUninitialized();
 		}
@@ -190,25 +192,6 @@ public class LazyWiringDeclarableSupportTest {
 	}
 
 	@Test
-	public void locateBeanFactory() {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
-
-		GemfireBeanFactoryLocator locator = new GemfireBeanFactoryLocator();
-
-		locator.setBeanName("MockBeanFactory");
-		locator.setBeanFactory(mockBeanFactory);
-
-		try {
-			locator.afterPropertiesSet();
-
-			assertThat(new TestLazyWiringDeclarableSupport().locateBeanFactory(null), is(sameInstance(mockBeanFactory)));
-		}
-		finally {
-			locator.destroy();
-		}
-	}
-
-	@Test
 	public void nullSafeGetParametersWithNullReference() {
 		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport();
 
@@ -227,11 +210,8 @@ public class LazyWiringDeclarableSupportTest {
 
 	@Test
 	public void onApplicationEvent() {
-		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
-			"MockConfigurableApplicationContext");
-
-		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class,
-			"MockConfigurableListableBeanFactory");
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class);
+		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
 
 		when(mockApplicationContext.getBeanFactory()).thenReturn(mockBeanFactory);
 
@@ -241,7 +221,7 @@ public class LazyWiringDeclarableSupportTest {
 			@Override protected void doPostInit(final Properties parameters) {
 				super.doPostInit(parameters);
 				assertInitialized();
-				LazyWiringDeclarableSupportTest.assertParameters(parameters, "param", "value");
+				LazyWiringDeclarableSupportUnitTests.assertParameters(parameters, "param", "value");
 				doPostInitCalled.set(true);
 			}
 		};
@@ -269,13 +249,13 @@ public class LazyWiringDeclarableSupportTest {
 		LazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport();
 
 		try {
-			ContextRefreshedEvent mockContextRefreshedEvent = mock(ContextRefreshedEvent.class, "MockContextRefreshedEvent");
+			ContextRefreshedEvent mockContextRefreshedEvent = mock(ContextRefreshedEvent.class);
 
 			when(mockContextRefreshedEvent.getApplicationContext()).thenReturn(null);
 
-			expectedException.expect(IllegalArgumentException.class);
-			expectedException.expectCause(is(nullValue(Throwable.class)));
-			expectedException.expectMessage("The Spring ApplicationContext (null) must be an instance of ConfigurableApplicationContext");
+			exception.expect(IllegalArgumentException.class);
+			exception.expectCause(is(nullValue(Throwable.class)));
+			exception.expectMessage("The Spring ApplicationContext [null] must be an instance of ConfigurableApplicationContext");
 
 			declarable.onApplicationEvent(mockContextRefreshedEvent);
 		}
@@ -290,11 +270,8 @@ public class LazyWiringDeclarableSupportTest {
 
 	@Test
 	public void fullLifecycleOnApplicationEventToDestroy() throws Exception {
-		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
-			"MockConfigurableApplicationContext");
-
-		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class,
-			"MockConfigurableListableBeanFactory");
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class);
+		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
 
 		when(mockApplicationContext.getBeanFactory()).thenReturn(mockBeanFactory);
 
@@ -304,7 +281,7 @@ public class LazyWiringDeclarableSupportTest {
 			@Override protected void doPostInit(final Properties parameters) {
 				super.doPostInit(parameters);
 				assertInitialized();
-				LazyWiringDeclarableSupportTest.assertParameters(parameters, "param", "value");
+				LazyWiringDeclarableSupportUnitTests.assertParameters(parameters, "param", "value");
 				doPostInitCalled.set(true);
 			}
 		};
@@ -349,28 +326,27 @@ public class LazyWiringDeclarableSupportTest {
 
 	@Test
 	public void initThenOnApplicationEventThenInitWhenInitialized() {
-		BeanFactory mockBeanFactory = mock(BeanFactory.class, "MockBeanFactory");
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
-		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class, "MockApplicationContext");
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class);
 
-		ConfigurableListableBeanFactory mockConfigurableListableBeanFactory = mock(ConfigurableListableBeanFactory.class,
-			"MockConfigurableListableBeanFactory");
+		ConfigurableListableBeanFactory mockConfigurableListableBeanFactory =
+			mock(ConfigurableListableBeanFactory.class);
 
 		when(mockApplicationContext.getBeanFactory()).thenReturn(mockConfigurableListableBeanFactory);
+		when(mockBeanFactory.getAliases(anyString())).thenReturn(new String[0]);
 
-		GemfireBeanFactoryLocator locator = new GemfireBeanFactoryLocator();
-		locator.setBeanName("MockBeanFactory");
-		locator.setBeanFactory(mockBeanFactory);
+		GemfireBeanFactoryLocator locator = newBeanFactoryLocator(mockBeanFactory, "MockBeanFactory");
 
 		final AtomicBoolean doPostInitCalled = new AtomicBoolean(false);
-		final AtomicReference<String> expectedKey = new AtomicReference<String>("testParam");
-		final AtomicReference<String> expectedValue = new AtomicReference<String>("testValue");
+		final AtomicReference<String> expectedKey = new AtomicReference<>("testParam");
+		final AtomicReference<String> expectedValue = new AtomicReference<>("testValue");
 
 		TestLazyWiringDeclarableSupport declarable = new TestLazyWiringDeclarableSupport() {
 			@Override protected void doPostInit(final Properties parameters) {
 				super.doPostInit(parameters);
 				assertInitialized();
-				LazyWiringDeclarableSupportTest.assertParameters(parameters, expectedKey.get(), expectedValue.get());
+				LazyWiringDeclarableSupportUnitTests.assertParameters(parameters, expectedKey.get(), expectedValue.get());
 				doPostInitCalled.set(true);
 			}
 		};
@@ -394,7 +370,7 @@ public class LazyWiringDeclarableSupportTest {
 
 			doPostInitCalled.set(false);
 			declarable.onApplicationEvent(new ContextRefreshedEvent(mockApplicationContext));
-			declarable.assertBeanFactory(mockBeanFactory);
+			declarable.assertBeanFactory(mockConfigurableListableBeanFactory);
 			declarable.assertParameters(parameters);
 
 			assertThat(declarable.isInitialized(), is(true));
@@ -421,29 +397,26 @@ public class LazyWiringDeclarableSupportTest {
 		}
 	}
 
-	protected static class TestLazyWiringDeclarableSupport extends LazyWiringDeclarableSupport {
+	private static class TestLazyWiringDeclarableSupport extends LazyWiringDeclarableSupport {
 
 		private BeanFactory actualBeanFactory;
 		private Properties actualParameters;
 
-		protected void assertBeanFactory(final BeanFactory expectedBeanFactory) {
-			assertThat(actualBeanFactory, is(sameInstance(expectedBeanFactory)));
+		private void assertBeanFactory(final BeanFactory expectedBeanFactory) {
+			assertThat(this.actualBeanFactory, is(sameInstance(expectedBeanFactory)));
 		}
 
-		protected void assertParameters(final Properties expectedParameters) {
-			assertThat(actualParameters, is(equalTo(expectedParameters)));
+		private void assertParameters(final Properties expectedParameters) {
+			assertThat(this.actualParameters, is(equalTo(expectedParameters)));
 		}
 
 		@Override
-		void doInit(final BeanFactory beanFactory, final Properties parameters) {
-			if (!isInitialized()) {
-				this.actualBeanFactory = beanFactory;
-				initialized = true;
-			}
-
+		void doInit(BeanFactory beanFactory, Properties parameters) {
+			this.actualBeanFactory = beanFactory;
 			this.actualParameters = parameters;
+			this.initialized = true;
+
 			doPostInit(parameters);
 		}
 	}
-
 }

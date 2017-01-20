@@ -123,6 +123,37 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
+	public void nullOrEqualsWithNullIsTrue() {
+		assertThat(SpringUtils.nullOrEquals(null, "test")).isTrue();
+	}
+
+	@Test
+	public void nullOrEqualsWithEqualObjectsIsTrue() {
+		assertThat(SpringUtils.nullOrEquals("test", "test")).isTrue();
+	}
+
+	@Test
+	public void nullOrEqualsWithUnequalObjectsIsFalse() {
+		assertThat(SpringUtils.nullOrEquals("test", "mock")).isFalse();
+	}
+
+	@Test
+	public void nullSafeEqualsWithEqualObjectsIsTrue() {
+		assertThat(SpringUtils.nullSafeEquals("test", "test")).isTrue();
+	}
+
+	@Test
+	public void nullSafeEqualsWithUnequalObjectsIsFalse() {
+		assertThat(SpringUtils.nullSafeEquals("test", "mock")).isFalse();
+	}
+
+	@Test
+	public void nullSafeEqualsWithNullObjectsIsFalse() {
+		assertThat(SpringUtils.nullSafeEquals(null, "test")).isFalse();
+		assertThat(SpringUtils.nullSafeEquals("test", null)).isFalse();
+	}
+
+	@Test
 	public void dereferenceBean() {
 		assertThat(SpringUtils.dereferenceBean("example")).isEqualTo("&example");
 	}

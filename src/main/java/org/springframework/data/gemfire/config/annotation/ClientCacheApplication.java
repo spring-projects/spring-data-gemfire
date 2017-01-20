@@ -27,10 +27,10 @@ import java.lang.annotation.Target;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.control.ResourceManager;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 
 /**
  * The {@link ClientCacheApplication} annotation enables a Spring Data GemFire based application to become
@@ -259,7 +259,7 @@ public @interface ClientCacheApplication {
 	boolean threadLocalConnections() default PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
 
 	/**
-	 * Determines whether the Spring {@link BeanFactoryLocator} should be enabled to lookup
+	 * Determines whether the {@link GemfireBeanFactoryLocator} should be enabled to lookup
 	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
 	 * created in a non-Spring managed, GemFire context.
 	 *
