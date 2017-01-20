@@ -26,9 +26,9 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.control.ResourceManager;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 
 /**
  * The {@link PeerCacheApplication} annotation enables an embedded GemFire peer {@link org.apache.geode.cache.Cache}
@@ -131,7 +131,7 @@ public @interface PeerCacheApplication {
 	int searchTimeout() default 300;
 
 	/**
-	 * Determines whether the Spring {@link BeanFactoryLocator} should be enabled to lookup
+	 * Determines whether the {@link GemfireBeanFactoryLocator} should be enabled to lookup
 	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
 	 * created in a non-Spring managed, GemFire context.
 	 *

@@ -4,7 +4,7 @@
 <cache>
 	<function-service>
 		<function>
-			<class-name>org.springframework.data.gemfire.LazyWiringDeclarableSupportFunctionBasedIntegrationTest$HelloGemFireFunction</class-name>
+			<class-name>org.springframework.data.gemfire.support.LazyWiringDeclarableSupportFunctionBasedIntegrationTests$HelloGemFireFunction</class-name>
 			<parameter name="hello.address.to">
 				<string>Everyone</string>
 			</parameter>

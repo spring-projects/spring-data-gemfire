@@ -1,32 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN" "http://www.gemstone.com/dtd/cache8_0.dtd">
-<cache lock-lease="120" lock-timeout="60" search-timeout="300">
-  <region-attributes id="attTemplate" scope="local" data-policy="normal" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
-    <key-constraint>java.lang.String</key-constraint>
-    <cache-loader>
-		<class-name>org.springframework.data.gemfire.UserObject</class-name>
-	</cache-loader>
-
-  </region-attributes>
-  <region name="root">
-    <region-attributes refid="attTemplate" scope="distributed-no-ack">
-      <region-time-to-live>
-        <expiration-attributes timeout="0" action="invalidate"/>
-      </region-time-to-live>
-      <region-idle-time>
-        <expiration-attributes timeout="0" action="invalidate"/>
-      </region-idle-time>
-      <entry-time-to-live>
-        <expiration-attributes timeout="0" action="invalidate"/>
-      </entry-time-to-live>
-      <entry-idle-time>
-        <expiration-attributes timeout="0" action="invalidate"/>
-      </entry-idle-time>
+<cache>
+  <region name="Example">
+    <region-attributes data-policy="normal">
+      <cache-loader>
+        <class-name>org.springframework.data.gemfire.support.WiringDeclarableSupportIntegrationTests$TestCacheLoader</class-name>
+      </cache-loader>
     </region-attributes>
-    <entry>
-      <key><string>Application Version</string></key>
-      <value><string>1.0</string></value>
-    </entry>
   </region>
-
 </cache>

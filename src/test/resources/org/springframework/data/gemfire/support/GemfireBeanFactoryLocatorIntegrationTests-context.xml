@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
+
+	<gfe:cache use-bean-factory-locator="true"/>
+
+	<bean class="org.springframework.data.gemfire.support.GemfireBeanFactoryLocator"/>
+
+	<bean id="testBeanFactoryLocator" name="aliasOne, aliasTwo"
+		  class="org.springframework.data.gemfire.support.GemfireBeanFactoryLocator"/>
+
+</beans>

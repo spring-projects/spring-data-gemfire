@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.data.gemfire.support.GemfireBeanFactoryLocator.newBeanFactoryLocator;
 
 import java.util.Properties;
 
@@ -37,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
@@ -166,7 +166,7 @@ public class CacheNamespaceTest{
 		assertEquals(60.0f, evictionHeapPercentage, 0.0001);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testNoBeanFactoryLocator() throws Exception {
 		assertTrue(context.containsBean("no-bean-factory-locator-cache"));
 
@@ -174,15 +174,7 @@ public class CacheNamespaceTest{
 
 		assertThat(ReflectionTestUtils.getField(cacheFactoryBean, "beanFactoryLocator"), is(nullValue()));
 
-		GemfireBeanFactoryLocator beanFactoryLocator = new GemfireBeanFactoryLocator();
-
-		try {
-			assertNotNull(beanFactoryLocator.useBeanFactory("cache-with-name"));
-			beanFactoryLocator.useBeanFactory("no-bean-factory-locator-cache");
-		}
-		finally {
-			beanFactoryLocator.destroy();
-		}
+		newBeanFactoryLocator().useBeanFactory("no-bean-factory-locator-cache");
 	}
 
 	@Test

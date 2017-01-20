@@ -64,6 +64,16 @@ public abstract class SpringUtils {
 	}
 
 	/* (non-Javadoc) */
+	public static boolean nullOrEquals(Object obj1, Object obj2) {
+		return (obj1 == null || obj1.equals(obj2));
+	}
+
+	/* (non-Javadoc) */
+	public static boolean nullSafeEquals(Object obj1, Object obj2) {
+		return (obj1 != null && obj1.equals(obj2));
+	}
+
+	/* (non-Javadoc) */
 	public static String dereferenceBean(String beanName) {
 		return String.format("%1$s%2$s", BeanFactory.FACTORY_BEAN_PREFIX, beanName);
 	}
