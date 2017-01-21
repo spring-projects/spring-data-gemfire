@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.cache.Cache;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.test.support.AbstractNativeCacheTests;
 
 /**
  * Integration Tests for {@link GemfireCache}.
@@ -261,5 +262,4 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 			return value;
 		}
 	}
-
 }

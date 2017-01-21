@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  */
 
-package org.springframework.data.gemfire.support;
+package org.springframework.data.gemfire.cache;
 
 import java.util.concurrent.Callable;
 
@@ -27,17 +27,17 @@ import org.apache.geode.cache.TimeoutException;
 import org.springframework.util.Assert;
 
 /**
- * The CallableCacheLoaderAdapter class is a {@link Callable} and GemFire {@link CacheLoader} implementation that
- * adapts the {@link Callable} interface into an instance of the {@link CacheLoader} interface.  This class is useful
- * in situations where GemFire developers have several {@link CacheLoader} implementations that they wish to use
- * with Spring's Cache Abstraction.
+ * The {@link CallableCacheLoaderAdapter} class is a {@link Callable} and GemFire {@link CacheLoader} implementation
+ * that adapts the {@link Callable} interface into an instance of the {@link CacheLoader} interface.  This class is
+ * useful in situations where GemFire developers have several {@link CacheLoader} implementations that they wish to
+ * use with Spring's Cache Abstraction.
  *
  * @author John Blum
  * @see java.util.concurrent.Callable
  * @see org.apache.geode.cache.CacheLoader
  * @see org.apache.geode.cache.LoaderHelper
  * @see org.apache.geode.cache.Region
- * @since 1.0.0
+ * @since 1.9.0
  */
 @SuppressWarnings("unused")
 public class CallableCacheLoaderAdapter<K, V> implements Callable<V>, CacheLoader<K, V> {
@@ -196,5 +196,4 @@ public class CallableCacheLoaderAdapter<K, V> implements Callable<V>, CacheLoade
 	public V load(LoaderHelper<K, V> loaderHelper) throws CacheLoaderException {
 		return getCacheLoader().load(loaderHelper);
 	}
-
 }

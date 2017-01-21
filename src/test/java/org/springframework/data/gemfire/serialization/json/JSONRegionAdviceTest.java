@@ -1,17 +1,21 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
-package org.springframework.data.gemfire.support;
+package org.springframework.data.gemfire.serialization.json;
 
 import static org.junit.Assert.assertEquals;
 
@@ -34,23 +38,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * JSONRegionAdviceTest is a test suite of test cases testing SDG's support for storing and retrieving JSON data
- * in GemFire Cache Regions (un)marshalled using Jackson.
+ * Integration test to test SDG support for storing and reading JSON data to/from
+ * a GemFire Cache {@link Region} by (un)marshalled JSON data using Jackson.
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.apache.geode.cache.Region
+ * @see org.springframework.data.gemfire.GemfireOperations
+ * @see org.springframework.data.gemfire.serialization.json.JSONRegionAdvice
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings({ "unchecked", "unused" })
 public class JSONRegionAdviceTest {
 
 	// TODO figure out why auto-proxying the Region for JSON support prevents the GemfireTemplate from being "auto-wired",
 	// as a GemfireTemplate rather than GemfireOperations, resulting in a NoSuchBeanDefinitionException thrown by the
-	// Spring container!?!?!?!?
+	// Spring container?
 	@Autowired
 	private GemfireOperations template;
 
@@ -132,5 +141,4 @@ public class JSONRegionAdviceTest {
 		SelectResults<String> results = template.query("firstname='Dave'");
 		assertEquals(toJson(daveTuranski), results.iterator().next());
 	}
-
 }

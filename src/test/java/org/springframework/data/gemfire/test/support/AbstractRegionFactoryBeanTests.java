@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.springframework.data.gemfire.support;
+package org.springframework.data.gemfire.test.support;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -33,19 +34,15 @@ import org.springframework.data.gemfire.test.StubCache;
  * @author David Turanski
  * @author John Blum
  */
-public abstract class AbstractRegionFactoryBeanTest {
+public abstract class AbstractRegionFactoryBeanTests {
 
 	private GemFireCache cache;
 
-	private Map<String, RegionFactoryBeanConfig> regionFactoryBeanConfigs = new HashMap<String, RegionFactoryBeanConfig>();
+	private Map<String, RegionFactoryBeanConfig> regionFactoryBeanConfigs = new HashMap<>();
 
 	@AfterClass
 	public static void cleanUp() {
-		for (String name : new File(".").list(new FilenameFilter() {
-			@Override public boolean accept(File dir, String name) {
-				return name.startsWith("BACKUP");
-			}
-		})) {
+		for (String name : new File(".").list((dir, name1) -> name1.startsWith("BACKUP"))) {
 			new File(name).delete();
 		}
 	}
@@ -114,5 +111,4 @@ public abstract class AbstractRegionFactoryBeanTest {
 
 		public abstract void verify();
 	}
-
 }

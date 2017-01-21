@@ -55,7 +55,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.process.ProcessWrapper;
-import org.springframework.data.gemfire.test.AbstractGemFireClientServerIntegrationTest;
+import org.springframework.data.gemfire.test.support.AbstractGemFireClientServerIntegrationTest;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.test.annotation.DirtiesContext;
@@ -74,7 +74,7 @@ import org.springframework.util.SocketUtils;
  * @see org.springframework.beans.factory.config.BeanPostProcessor
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.data.gemfire.process.ProcessWrapper
- * @see org.springframework.data.gemfire.test.AbstractGemFireClientServerIntegrationTest
+ * @see AbstractGemFireClientServerIntegrationTest
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @see org.apache.geode.cache.client.ClientCache

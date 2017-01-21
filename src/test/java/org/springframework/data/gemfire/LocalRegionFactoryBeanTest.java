@@ -28,7 +28,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.junit.Test;
-import org.springframework.data.gemfire.support.AbstractRegionFactoryBeanTest;
+import org.springframework.data.gemfire.test.support.AbstractRegionFactoryBeanTests;
 
 /**
  * The PartitionedRegionFactoryBeanTest class is a test suite of test cases testing the component functionality
@@ -42,7 +42,7 @@ import org.springframework.data.gemfire.support.AbstractRegionFactoryBeanTest;
  * @since 1.3.x
  */
 @SuppressWarnings("unchecked")
-public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
+public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 
 	private final LocalRegionFactoryBean factoryBean = new LocalRegionFactoryBean();
 
@@ -283,5 +283,4 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 		factoryBean.resolveDataPolicy(mockRegionFactory, false, DataPolicy.PERSISTENT_REPLICATE);
 		verify(mockRegionFactory).setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
 	}
-
 }

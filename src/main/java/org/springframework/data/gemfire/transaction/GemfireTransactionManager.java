@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.springframework.data.gemfire;
+package org.springframework.data.gemfire.transaction;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -52,20 +53,20 @@ import org.springframework.util.Assert;
  * workaround, one could use explicitly deep copy objects before making changes
  * to them to avoid unnecessary copying on every fetch.
  *
- * @see org.apache.geode.cache.CacheTransactionManager
+ * @author Costin Leau
+ * @author John Blum
  * @see org.apache.geode.cache.Cache#setCopyOnRead(boolean)
+ * @see org.apache.geode.cache.CacheTransactionManager
  * @see org.apache.geode.cache.Region#get(Object)
  * @see org.apache.geode.CopyHelper#copy(Object)
- * @see #setCopyOnRead(boolean)
  * @see org.springframework.transaction.support.AbstractPlatformTransactionManager
- *
- * @author Costin Leau
+ * @see #setCopyOnRead(boolean)
  */
 // TODO add lenient behavior if a transaction is already started on the current
 // thread (what should happen then)
 @SuppressWarnings("serial")
-public class GemfireTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean,
-		ResourceTransactionManager {
+public class GemfireTransactionManager extends AbstractPlatformTransactionManager
+		implements InitializingBean, ResourceTransactionManager {
 
 	private Cache cache;
 
@@ -112,7 +113,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	protected void doBegin(Object transaction, TransactionDefinition definition) throws TransactionException {
 		CacheTransactionObject txObject = (CacheTransactionObject) transaction;
 
-		Cache cache = null;
+		Cache cache;
 
 		try {
 			cache = getCache();

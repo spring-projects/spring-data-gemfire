@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  */
 
-package org.springframework.data.gemfire.support;
+package org.springframework.data.gemfire.cache;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -43,7 +43,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 /**
- * Tests the adaption of the {@link java.util.concurrent.Callable} in to GemFire's {@link org.apache.geode.cache.CacheLoader} interface.
+ * Unit tests to test the adaption of the {@link java.util.concurrent.Callable}
+ * into GemFire's {@link org.apache.geode.cache.CacheLoader} interface.
  *
  * @author John Blum
  * @see org.junit.Rule
@@ -57,7 +58,7 @@ import org.mockito.stubbing.Answer;
  * @see org.apache.geode.cache.CacheLoader
  * @see org.apache.geode.cache.LoaderHelper
  * @see org.apache.geode.cache.Region
- * @since 1.0.0
+ * @since 1.9.0
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CallableCacheLoaderAdapterTest {
@@ -66,7 +67,7 @@ public class CallableCacheLoaderAdapterTest {
 	private CacheLoader<String, Object> mockCacheLoader;
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
 	private LoaderHelper<String, Object> mockLoaderHelper;
@@ -76,8 +77,8 @@ public class CallableCacheLoaderAdapterTest {
 
 	@Test
 	public void constructCallableCacheLoaderAdapterWithArgumentKeyAndRegion() {
-		CallableCacheLoaderAdapter<String, Object> instance = new CallableCacheLoaderAdapter<String, Object>(
-			mockCacheLoader, "key", mockRegion, "test");
+		CallableCacheLoaderAdapter<String, Object> instance =
+			new CallableCacheLoaderAdapter<>(mockCacheLoader, "key", mockRegion, "test");
 
 		assertThat(instance, is(notNullValue()));
 		assertThat(instance.getCacheLoader(), is(sameInstance(mockCacheLoader)));
@@ -88,8 +89,8 @@ public class CallableCacheLoaderAdapterTest {
 
 	@Test
 	public void constructCallableCacheLoaderAdapterWithKeyRegionAndNoArgument() {
-		CallableCacheLoaderAdapter<String, Object> instance = new CallableCacheLoaderAdapter<String, Object>(
-			mockCacheLoader, "key", mockRegion);
+		CallableCacheLoaderAdapter<String, Object> instance =
+			new CallableCacheLoaderAdapter<>(mockCacheLoader, "key", mockRegion);
 
 		assertThat(instance, is(notNullValue()));
 		assertThat(instance.getCacheLoader(), is(sameInstance(mockCacheLoader)));
@@ -101,7 +102,7 @@ public class CallableCacheLoaderAdapterTest {
 	@Test
 	public void constructCallableCacheLoaderAdapterWithNoArgumentKeyOrRegion() {
 		CallableCacheLoaderAdapter<String, Object> instance =
-			new CallableCacheLoaderAdapter<String, Object>(mockCacheLoader);
+			new CallableCacheLoaderAdapter<>(mockCacheLoader);
 
 		assertThat(instance, is(notNullValue()));
 		assertThat(instance.getCacheLoader(), is(sameInstance(mockCacheLoader)));
@@ -112,25 +113,25 @@ public class CallableCacheLoaderAdapterTest {
 
 	@Test
 	public void constructCallableCacheLoaderAdapterWithNullCacheLoader() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("CacheLoader must not be null");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("CacheLoader must not be null");
 
-		new CallableCacheLoaderAdapter<Object, Object>(null);
+		new CallableCacheLoaderAdapter<>(null);
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void callDelegatesToLoad() throws Exception {
-		CallableCacheLoaderAdapter<String, Object> instance = new CallableCacheLoaderAdapter<String, Object>(
-			mockCacheLoader, "key", mockRegion, "test");
+		CallableCacheLoaderAdapter<String, Object> instance =
+			new CallableCacheLoaderAdapter<>(mockCacheLoader, "key", mockRegion, "test");
 
 		when(mockCacheLoader.load(any(LoaderHelper.class))).thenAnswer(new Answer<String>() {
 			public String answer(final InvocationOnMock invocation) throws Throwable {
 				LoaderHelper<String, Object> loaderHelper = invocation.getArgumentAt(0, LoaderHelper.class);
 
 				assertThat(loaderHelper, is(notNullValue()));
-				assertThat((String) loaderHelper.getArgument(), is(equalTo("test")));
+				assertThat(loaderHelper.getArgument(), is(equalTo("test")));
 				assertThat(loaderHelper.getKey(), is(equalTo("key")));
 				assertThat(loaderHelper.getRegion(), is(sameInstance(mockRegion)));
 
@@ -138,57 +139,55 @@ public class CallableCacheLoaderAdapterTest {
 			}
 		});
 
-		assertThat((String) instance.call(), is(equalTo("mockValue")));
+		assertThat(instance.call(), is(equalTo("mockValue")));
 
 		verify(mockCacheLoader, times(1)).load(isA(LoaderHelper.class));
 	}
 
 	@Test
 	public void callThrowsIllegalStateExceptionForNullKey() throws Exception {
-		CallableCacheLoaderAdapter<String, Object> instance = new CallableCacheLoaderAdapter<String, Object>(
-			mockCacheLoader, null, mockRegion);
+		CallableCacheLoaderAdapter<String, Object> instance =
+			new CallableCacheLoaderAdapter<>(mockCacheLoader, null, mockRegion);
 
 		assertThat(instance.getKey(), is(nullValue()));
 		assertThat(instance.getRegion(), is(sameInstance(mockRegion)));
 
-		expectedException.expect(IllegalStateException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The key for which the value is loaded for cannot be null");
+		exception.expect(IllegalStateException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The key for which the value is loaded for cannot be null");
 
 		instance.call();
 	}
 
 	@Test
 	public void callThrowsIllegalStateExceptionForNullRegion() throws Exception {
-		CallableCacheLoaderAdapter<String, Object> instance = new CallableCacheLoaderAdapter<String, Object>(
-			mockCacheLoader, "key", null);
+		CallableCacheLoaderAdapter<String, Object> instance =
+			new CallableCacheLoaderAdapter<>(mockCacheLoader, "key", null);
 
 		assertThat(instance.getKey(), is(equalTo("key")));
 		assertThat(instance.getRegion(), is(nullValue()));
 
-		expectedException.expect(IllegalStateException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The Region to load cannot be null");
+		exception.expect(IllegalStateException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The Region to load cannot be null");
 
 		instance.call();
 	}
 
 	@Test
 	public void closeDelegatesToCacheLoaderClose() {
-		new CallableCacheLoaderAdapter<String, Object>(mockCacheLoader).close();
+		new CallableCacheLoaderAdapter<>(mockCacheLoader).close();
 		verify(mockCacheLoader, times(1)).close();
 	}
 
 	@Test
 	public void loadDelegatesToCacheLoaderLoad() {
-		CallableCacheLoaderAdapter<String, Object> instance =
-			new CallableCacheLoaderAdapter<String, Object>(mockCacheLoader);
+		CallableCacheLoaderAdapter<String, Object> instance = new CallableCacheLoaderAdapter<>(mockCacheLoader);
 
 		when(mockCacheLoader.load(eq(mockLoaderHelper))).thenReturn("test");
 
-		assertThat((String) instance.load(mockLoaderHelper), is(equalTo("test")));
+		assertThat(instance.load(mockLoaderHelper), is(equalTo("test")));
 
 		verify(mockCacheLoader, times(1)).load(eq(mockLoaderHelper));
 	}
-
 }

@@ -92,6 +92,7 @@ public class WiringDeclarableSupportIntegrationTests {
 
 	@Data
 	@NoArgsConstructor
+	@SuppressWarnings("all")
 	public static class TestCacheLoader extends WiringDeclarableSupport implements CacheLoader<String, String> {
 
 		private Object propertyOne;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.springframework.data.gemfire.support;
+package org.springframework.data.gemfire.dao;
 
 import org.apache.geode.cache.Region;
 import org.springframework.dao.support.DaoSupport;
@@ -23,35 +24,24 @@ import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.Assert;
 
 /**
- * Convenient super class for GemFire data access objects. Intended for
- * GemfireTemplate usage.
+ * Convenient super class for GemFire Data Access Objects (DAO) implementing the Spring
+ * {@link DaoSupport} abstract class. Intended for use with {@link GemfireTemplate}.
  *
- * <p>Requires a Region to be set, providing a GemfireTemplate based on it to subclasses.
- * Can alternatively be initialized directly via a GemfireTemplate, to reuse the latter's
- * settings.
+ * Requires a GemFire {@link Region} to be set, providing a {@link GemfireTemplate} based on it to subclasses.
+ * Can alternatively be initialized directly via a {@link GemfireTemplate} reusing the template's  settings.
  *
- * <p>This class will create its own GemfireTemplate if an Region reference is passed in.
- * A custom GemfireTemplate instance can be used through overriding <code>createGemfireTemplate</code>.
+ * This class will create its own {@link GemfireTemplate} if a GemFire {@link Region} reference is passed in.
+ * A custom {@link GemfireTemplate} instance can be used through overriding <code>createGemfireTemplate</code>.
  *
  * @author Costin Leau
  * @author John Blum
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.dao.support.DaoSupport
+ * @see org.springframework.data.gemfire.GemfireTemplate
  */
-public class GemfireDaoSupport extends DaoSupport {
+public abstract class GemfireDaoSupport extends DaoSupport {
 
 	private GemfireOperations gemfireTemplate;
-
-	/**
-	 * Sets the GemFire Cache Region to be used by this DAO. Will automatically create
-	 * an instance of the GemfireTemplate for the given Region.
-	 *
-	 * @param region the GemFire Cache Region upon which this DAO operates.
-	 * @see org.apache.geode.cache.Region
-	 * @see #createGemfireTemplate(org.apache.geode.cache.Region)
-	 */
-	public void setRegion(Region<?, ?> region) {
-		this.gemfireTemplate = createGemfireTemplate(region);
-	}
 
 	/**
 	 * Set the GemfireTemplate for this DAO explicitly as an alternative to specifying a GemFire Cache {@link Region}.
@@ -73,7 +63,19 @@ public class GemfireDaoSupport extends DaoSupport {
 	 * @see org.springframework.data.gemfire.GemfireTemplate
 	 */
 	public final GemfireOperations getGemfireTemplate() {
-		return gemfireTemplate;
+		return this.gemfireTemplate;
+	}
+
+	/**
+	 * Sets the GemFire Cache Region to be used by this DAO. Will automatically create
+	 * an instance of the GemfireTemplate for the given Region.
+	 *
+	 * @param region the GemFire Cache Region upon which this DAO operates.
+	 * @see org.apache.geode.cache.Region
+	 * @see #createGemfireTemplate(org.apache.geode.cache.Region)
+	 */
+	public void setRegion(Region<?, ?> region) {
+		this.gemfireTemplate = createGemfireTemplate(region);
 	}
 
 	/**
@@ -86,7 +88,7 @@ public class GemfireDaoSupport extends DaoSupport {
 	 * @see org.apache.geode.cache.Region
 	 * @see #setRegion
 	 */
-	protected GemfireOperations createGemfireTemplate(Region<?, ?> region) {
+	protected GemfireTemplate createGemfireTemplate(Region<?, ?> region) {
 		return new GemfireTemplate(region);
 	}
 
@@ -95,7 +97,6 @@ public class GemfireDaoSupport extends DaoSupport {
 	 */
 	@Override
 	protected final void checkDaoConfig() {
-		Assert.state(gemfireTemplate != null, "A GemFire Cache Region or an instance of the GemfireTemplate is required.");
+		Assert.state(gemfireTemplate != null, "A GemFire Cache Region or instance of GemfireTemplate is required");
 	}
-
 }

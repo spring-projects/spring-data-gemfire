@@ -248,6 +248,7 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 * the {@link #setBeanName(String)} beanName} property.
 	 *
 	 * @return the single Spring {@link BeanFactory} from the registry.
+	 * @throws IllegalArgumentException if more than Spring {@link BeanFactory} is registered.
 	 * @throws IllegalStateException if the {@link BeanFactory} with the associated
 	 * {@link #setBeanName(String) beanName} is not found.
 	 * @see org.springframework.beans.factory.BeanFactory
@@ -259,9 +260,16 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	}
 
 	/**
+	 * Attempts to use the Spring {@link BeanFactory} idenified by the given {@code beanFactoryKey}.
 	 *
-	 * @param beanFactoryKey
-	 * @return
+	 * @param beanFactoryKey {@link String} containing the key used to lookup the Spring {@link BeanFactory}.
+	 * @return the Spring {@link BeanFactory} for the given {@code beanFactoryKey}.
+	 * @throws IllegalArgumentException if a Spring {@link BeanFactory} could not be found for {@code beanFactoryKey}.
+	 * @throws IllegalStateException if {@literal useBeanFactoryLocator} was not configured.
+	 * @see org.springframework.beans.factory.BeanFactory
+	 * @see BeanFactoryReference#newBeanFactoryReference(BeanFactory)
+	 * @see #resolveBeanFactory(String)
+	 * @see #resolveSingleBeanFactory()
 	 */
 	public BeanFactory useBeanFactory(String beanFactoryKey) {
 		return newBeanFactoryReference(StringUtils.hasText(beanFactoryKey) ? resolveBeanFactory(beanFactoryKey)
@@ -349,9 +357,9 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 		 * @param beanFactory {@link BeanFactory} reference to store.
 		 * @return a new instance of {@link BeanFactoryReference} initialized with the given {@link BeanFactory}.
 		 * @see org.springframework.beans.factory.BeanFactory
-		 * @see #BeanFactoryReference(BeanFactory)
+		 * @see #GemfireBeanFactoryLocator.BeanFactoryReference(BeanFactory)
 		 */
-		public static BeanFactoryReference newBeanFactoryReference(BeanFactory beanFactory) {
+		protected static BeanFactoryReference newBeanFactoryReference(BeanFactory beanFactory) {
 			return new BeanFactoryReference(beanFactory);
 		}
 
@@ -361,7 +369,7 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 		 * @param beanFactory {@link BeanFactory} reference to store; may be {@literal null}.
 		 * @see org.springframework.beans.factory.BeanFactory
 		 */
-		public BeanFactoryReference(BeanFactory beanFactory) {
+		protected BeanFactoryReference(BeanFactory beanFactory) {
 			this.beanFactory.set(beanFactory);
 		}
 

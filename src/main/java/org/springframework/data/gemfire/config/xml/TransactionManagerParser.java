@@ -21,7 +21,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.GemfireTransactionManager;
+import org.springframework.data.gemfire.transaction.GemfireTransactionManager;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -31,7 +31,7 @@ import org.w3c.dom.Element;
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
- * @see org.springframework.data.gemfire.GemfireTransactionManager
+ * @see GemfireTransactionManager
  */
 class TransactionManagerParser extends AbstractSingleBeanDefinitionParser {
 

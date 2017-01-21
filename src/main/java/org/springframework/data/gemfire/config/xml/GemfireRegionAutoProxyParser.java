@@ -22,7 +22,7 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.support.JSONRegionAdvice;
+import org.springframework.data.gemfire.serialization.json.JSONRegionAdvice;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -32,7 +32,7 @@ import org.w3c.dom.Element;
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.beans.factory.xml.BeanDefinitionParser
- * @see org.springframework.data.gemfire.support.JSONRegionAdvice
+ * @see JSONRegionAdvice
  */
 class GemfireRegionAutoProxyParser implements BeanDefinitionParser {
 
