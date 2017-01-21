@@ -28,8 +28,8 @@ import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate;
 import org.springframework.data.gemfire.client.function.ListRegionsOnServerFunction;
+import org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 

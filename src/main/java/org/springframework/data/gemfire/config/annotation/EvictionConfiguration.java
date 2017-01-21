@@ -38,12 +38,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.EvictionActionType;
-import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
-import org.springframework.data.gemfire.EvictionPolicyType;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.eviction.EvictionActionType;
+import org.springframework.data.gemfire.eviction.EvictionAttributesFactoryBean;
+import org.springframework.data.gemfire.eviction.EvictionPolicyType;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
@@ -60,9 +60,9 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.ImportAware
- * @see org.springframework.data.gemfire.EvictionActionType
- * @see org.springframework.data.gemfire.EvictionAttributesFactoryBean
- * @see org.springframework.data.gemfire.EvictionPolicyType
+ * @see EvictionActionType
+ * @see EvictionAttributesFactoryBean
+ * @see EvictionPolicyType
  * @see org.springframework.data.gemfire.RegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.apache.geode.cache.EvictionAttributes
@@ -345,7 +345,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @param maximum integer value specifying the configured Eviction threshold.
 		 * @param type {@link EvictionPolicyType} specifying the type of Eviction algorithm.
 		 * @return a resolved value for the Eviction maximum/threshold.
-		 * @see org.springframework.data.gemfire.EvictionPolicyType
+		 * @see EvictionPolicyType
 		 */
 		protected static Integer resolveThreshold(int maximum, EvictionPolicyType type) {
 			return (EvictionPolicyType.HEAP_PERCENTAGE.equals(type) ? null : maximum);

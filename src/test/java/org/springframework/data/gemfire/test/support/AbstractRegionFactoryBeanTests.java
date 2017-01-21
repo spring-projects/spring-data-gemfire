@@ -18,7 +18,6 @@
 package org.springframework.data.gemfire.test.support;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
 

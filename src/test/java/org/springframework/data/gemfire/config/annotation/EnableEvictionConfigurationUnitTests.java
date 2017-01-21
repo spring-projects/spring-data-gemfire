@@ -40,11 +40,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.gemfire.EvictionActionType;
-import org.springframework.data.gemfire.EvictionAttributesFactoryBean;
-import org.springframework.data.gemfire.EvictionPolicyType;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
+import org.springframework.data.gemfire.eviction.EvictionActionType;
+import org.springframework.data.gemfire.eviction.EvictionAttributesFactoryBean;
+import org.springframework.data.gemfire.eviction.EvictionPolicyType;
 import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
@@ -55,7 +55,7 @@ import org.springframework.data.gemfire.util.ArrayUtils;
  * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.config.annotation.EnableEviction
  * @see org.springframework.data.gemfire.config.annotation.EvictionConfiguration
- * @see org.springframework.data.gemfire.EvictionAttributesFactoryBean
+ * @see EvictionAttributesFactoryBean
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.EvictionAttributes
  * @since 1.9.0

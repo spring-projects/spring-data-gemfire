@@ -37,8 +37,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.ExpirationActionType;
-import org.springframework.data.gemfire.support.AnnotationBasedExpiration;
+import org.springframework.data.gemfire.expiration.AnnotationBasedExpiration;
+import org.springframework.data.gemfire.expiration.ExpirationActionType;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.SpringUtils;
@@ -370,7 +370,7 @@ public class ExpirationConfiguration implements ImportAware {
 		 * meta-data.
 		 * @throws IllegalArgumentException if the {@link ExpirationType} array is empty.
 		 * @see org.springframework.data.gemfire.config.annotation.EnableExpiration.ExpirationType
-		 * @see org.springframework.data.gemfire.ExpirationActionType
+		 * @see ExpirationActionType
 		 * @see #ExpirationPolicyMetaData(ExpirationAttributes, Set, Set)
 		 * @see #newExpirationAttributes(int, ExpirationActionType)
 		 */
@@ -388,7 +388,7 @@ public class ExpirationConfiguration implements ImportAware {
 		 *
 		 * @param action given {@link ExpirationActionType} to evaluate.
 		 * @return the resolved {@link ExpirationActionType} or the default if {@code action} is {@literal null}.
-		 * @see org.springframework.data.gemfire.ExpirationActionType
+		 * @see ExpirationActionType
 		 */
 		protected static ExpirationActionType resolveAction(ExpirationActionType action) {
 			return SpringUtils.defaultIfNull(action, DEFAULT_ACTION);
@@ -415,7 +415,7 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @param types type of expiration algorithm/behavior (TTI/TTL) configured for the {@link Region}.
 		 * @throws IllegalArgumentException if the {@link ExpirationType} {@link Set} is empty.
 		 * @see org.springframework.data.gemfire.config.annotation.EnableExpiration.ExpirationType
-		 * @see org.springframework.data.gemfire.ExpirationActionType
+		 * @see ExpirationActionType
 		 * @see #ExpirationPolicyMetaData(ExpirationAttributes, Set, Set)
 		 * @see #newExpirationAttributes(int, ExpirationActionType)
 		 * @see #resolveAction(ExpirationActionType)

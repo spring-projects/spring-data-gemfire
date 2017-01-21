@@ -21,7 +21,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.FunctionServiceFactoryBean;
+import org.springframework.data.gemfire.function.FunctionServiceFactoryBean;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -32,7 +32,7 @@ import org.w3c.dom.Element;
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
- * @see org.springframework.data.gemfire.FunctionServiceFactoryBean
+ * @see FunctionServiceFactoryBean
  */
 class FunctionServiceParser extends AbstractSimpleBeanDefinitionParser {
 

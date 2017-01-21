@@ -43,7 +43,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.support.RegionShortcutWrapper;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;

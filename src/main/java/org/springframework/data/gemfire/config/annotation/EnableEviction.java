@@ -28,8 +28,8 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.gemfire.EvictionActionType;
-import org.springframework.data.gemfire.EvictionPolicyType;
+import org.springframework.data.gemfire.eviction.EvictionActionType;
+import org.springframework.data.gemfire.eviction.EvictionPolicyType;
 
 /**
  * The {@link EnableEviction} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
@@ -73,7 +73,7 @@ public @interface EnableEviction {
 		 *
 		 * Defaults to {@link EvictionActionType#LOCAL_DESTROY}.
 		 *
-		 * @see org.springframework.data.gemfire.EvictionActionType
+		 * @see EvictionActionType
 		 */
 		EvictionActionType action() default EvictionActionType.LOCAL_DESTROY;
 
@@ -106,7 +106,7 @@ public @interface EnableEviction {
 		 *
 		 * Defaults to {@link EvictionPolicyType#ENTRY_COUNT}.
 		 *
-		 * @see org.springframework.data.gemfire.EvictionPolicyType
+		 * @see EvictionPolicyType
 		 */
 		EvictionPolicyType type() default EvictionPolicyType.ENTRY_COUNT;
 

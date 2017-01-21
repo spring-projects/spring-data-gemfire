@@ -18,7 +18,6 @@ package org.springframework.data.gemfire;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
-import org.springframework.data.gemfire.support.RegionShortcutWrapper;
 import org.springframework.util.Assert;
 
 /**

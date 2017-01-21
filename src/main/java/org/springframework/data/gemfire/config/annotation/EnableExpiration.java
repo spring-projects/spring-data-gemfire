@@ -28,10 +28,10 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.Region;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.gemfire.ExpirationActionType;
-import org.springframework.data.gemfire.support.Expiration;
-import org.springframework.data.gemfire.support.IdleTimeoutExpiration;
-import org.springframework.data.gemfire.support.TimeToLiveExpiration;
+import org.springframework.data.gemfire.expiration.Expiration;
+import org.springframework.data.gemfire.expiration.ExpirationActionType;
+import org.springframework.data.gemfire.expiration.IdleTimeoutExpiration;
+import org.springframework.data.gemfire.expiration.TimeToLiveExpiration;
 
 /**
  * The {@link EnableExpiration} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
@@ -41,9 +41,9 @@ import org.springframework.data.gemfire.support.TimeToLiveExpiration;
  * @author John Blum
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.ExpirationConfiguration
- * @see org.springframework.data.gemfire.support.Expiration
- * @see org.springframework.data.gemfire.support.IdleTimeoutExpiration
- * @see org.springframework.data.gemfire.support.TimeToLiveExpiration
+ * @see Expiration
+ * @see IdleTimeoutExpiration
+ * @see TimeToLiveExpiration
  * @see org.apache.geode.cache.Region
  * @see <a href="http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:region:expiration:annotation">Annotation-based Data Expiration</a>
  * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/expiration/chapter_overview.html">GemFire Expiration</a>

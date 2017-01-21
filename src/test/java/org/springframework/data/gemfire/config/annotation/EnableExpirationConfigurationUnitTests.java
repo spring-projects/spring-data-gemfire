@@ -41,7 +41,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.gemfire.ExpirationActionType;
+import org.springframework.data.gemfire.expiration.ExpirationActionType;
 import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**

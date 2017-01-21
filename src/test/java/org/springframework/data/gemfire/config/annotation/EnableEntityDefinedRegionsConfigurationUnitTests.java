@@ -52,6 +52,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.gemfire.client.ClientRegionShortcutWrapper;
 import org.springframework.data.gemfire.config.annotation.test.entities.ClientRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.CollocatedPartitionRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.GenericRegionEntity;
@@ -61,7 +62,6 @@ import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
-import org.springframework.data.gemfire.support.ClientRegionShortcutWrapper;
 import org.springframework.data.gemfire.util.CollectionUtils;
 
 /**
