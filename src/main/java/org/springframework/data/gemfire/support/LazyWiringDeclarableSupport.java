@@ -117,7 +117,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	 *
 	 * @return a boolean value indicating whether this {@link Declarable} object has been properly configured
 	 * and initialized by the Spring container.
-	 * @see #doInit(Properties)
+	 * @see #doInit(BeanFactory, Properties)
 	 * @see #assertInitialized()
 	 */
 	protected boolean isInitialized() {
@@ -130,7 +130,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	 *
 	 * @return a boolean value indicating whether this {@link Declarable} object has been properly configured
 	 * and initialized by the Spring container.
-	 * @see #doInit(Properties)
+	 * @see #doInit(BeanFactory, Properties)
 	 * @see #isInitialized()
 	 */
 	protected boolean isNotInitialized() {
@@ -144,7 +144,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	 *
 	 * @param parameters {@link Properties} containing the configured parameters parsed from GemFire's
 	 * configuration meta-data (e.g. {@literal cache.xml}) and passed to this {@link Declarable} object.
-	 * @see #doInit(Properties)
+	 * @see #doInit(BeanFactory, Properties)
 	 * @see java.util.Properties
 	 */
 	@Override
@@ -188,7 +188,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	 *
 	 * @param parameters {@link Properties} containing the configured parameters parsed from GemFire's
 	 * configuration meta-data (e.g. {@literal cache.xml}) and passed to this {@link Declarable} object.
-	 * @see #doInit(Properties)
+	 * @see #doInit(BeanFactory, Properties)
 	 * @see java.util.Properties
 	 */
 	protected void doPostInit(Properties parameters) {

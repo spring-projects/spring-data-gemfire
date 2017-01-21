@@ -29,7 +29,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate;
-import org.springframework.data.gemfire.support.ListRegionsOnServerFunction;
+import org.springframework.data.gemfire.client.function.ListRegionsOnServerFunction;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -42,7 +42,7 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
  * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
  * @see org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate
- * @see org.springframework.data.gemfire.support.ListRegionsOnServerFunction
+ * @see ListRegionsOnServerFunction
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.ClientRegionFactory

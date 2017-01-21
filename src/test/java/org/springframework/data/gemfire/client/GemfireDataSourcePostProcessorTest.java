@@ -58,7 +58,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.data.gemfire.support.ListRegionsOnServerFunction;
+import org.springframework.data.gemfire.client.function.ListRegionsOnServerFunction;
 
 /**
  * The GemfireDataSourcePostProcessor class is a test suite of test cases testing the contract and functionality

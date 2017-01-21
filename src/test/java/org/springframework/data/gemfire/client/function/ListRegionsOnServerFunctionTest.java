@@ -1,20 +1,21 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.springframework.data.gemfire.support;
+package org.springframework.data.gemfire.client.function;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -49,7 +50,7 @@ import org.mockito.stubbing.Answer;
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.support.ListRegionsOnServerFunction
+ * @see ListRegionsOnServerFunction
  * @since 1.7.0
  */
 public class ListRegionsOnServerFunctionTest {
@@ -69,14 +70,14 @@ public class ListRegionsOnServerFunctionTest {
 
 		ResultSender<Object> mockResultSender = mock(ResultSender.class, "MockGemFireResultSender");
 
-		when(mockCache.rootRegions()).thenReturn(new HashSet<Region<?, ?>>(
+		when(mockCache.rootRegions()).thenReturn(new HashSet<>(
 			Arrays.<Region<?, ?>>asList(mockRegionOne, mockRegionTwo, mockRegionThree)));
 		when(mockRegionOne.getName()).thenReturn("One");
 		when(mockRegionTwo.getName()).thenReturn("Two");
 		when(mockRegionThree.getName()).thenReturn("Three");
 		when(mockFunctionContext.getResultSender()).thenReturn(mockResultSender);
 
-		final AtomicReference<List<String>> regionNames = new AtomicReference<List<String>>(null);
+		final AtomicReference<List<String>> regionNames = new AtomicReference<>(null);
 
 		doAnswer(new Answer<Void>() {
 			@Override
@@ -118,10 +119,10 @@ public class ListRegionsOnServerFunctionTest {
 
 		ResultSender<Object> mockResultSender = mock(ResultSender.class, "MockGemFireResultSender");
 
-		when(mockCache.rootRegions()).thenReturn(Collections.<Region<?, ?>>emptySet());
+		when(mockCache.rootRegions()).thenReturn(Collections.emptySet());
 		when(mockFunctionContext.getResultSender()).thenReturn(mockResultSender);
 
-		final AtomicReference<List<String>> regionNames = new AtomicReference<List<String>>(null);
+		final AtomicReference<List<String>> regionNames = new AtomicReference<>(null);
 
 		doAnswer(new Answer<Void>() {
 			@Override
@@ -164,5 +165,4 @@ public class ListRegionsOnServerFunctionTest {
 		assertThat(function.isHA(), is(false));
 		assertThat(function.optimizeForWrite(), is(false));
 	}
-
 }

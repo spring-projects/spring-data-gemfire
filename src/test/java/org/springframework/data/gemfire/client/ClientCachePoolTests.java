@@ -32,7 +32,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.process.ProcessWrapper;
-import org.springframework.data.gemfire.test.AbstractGemFireClientServerIntegrationTest;
+import org.springframework.data.gemfire.test.support.AbstractGemFireClientServerIntegrationTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;

@@ -26,7 +26,7 @@
 	<!-- gfe-data:json-region-autoproxy replaces... -->
 	<!--
 	<aop:aspectj-autoproxy/>
-	<bean class="org.springframework.data.gemfire.support.JSONRegionAdvice"/>
+	<bean class="org.springframework.data.gemfire.serialization.json.JSONRegionAdvice"/>
 	-->
 
 	<bean class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="jsonRegion"/>

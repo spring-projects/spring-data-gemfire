@@ -50,7 +50,7 @@ import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.junit.After;
 import org.junit.Test;
-import org.springframework.data.gemfire.support.AbstractRegionFactoryBeanTest;
+import org.springframework.data.gemfire.test.support.AbstractRegionFactoryBeanTests;
 import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
@@ -69,7 +69,7 @@ import org.springframework.data.gemfire.util.ArrayUtils;
  * @see org.apache.geode.cache.RegionShortcut
  */
 @SuppressWarnings("unchecked")
-public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
+public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 
 	private final RegionFactoryBean factoryBean = new TestRegionFactoryBean();
 
@@ -1053,5 +1053,4 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTest {
 
 	protected static class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 	}
-
 }
