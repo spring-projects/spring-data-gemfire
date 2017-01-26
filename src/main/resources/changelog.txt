@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.0.RELEASE (2017-01-26)
+---------------------------------------------
+* SGF-585 - Update project documentation with the CLA tool integration.
+* SGF-582 - Add support for using bean property "id" as a Region key if @Id annotation is not present.
+* SGF-581 - Fix possible test failure(s) in GenericRegionFactoryBeanTest.
+* SGF-579 - Release 1.9 GA (Ingalls).
+
+
 Changes in version 1.8.6.RELEASE (2016-12-21)
 ---------------------------------------------
 * SGF-577 - Late initialization of GemfireBeanFactoryLocator causes IllegalStateException.
