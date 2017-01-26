@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2010-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ import org.apache.geode.cache.InterestResultPolicy;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.springframework.core.ConstantException;
 
 /**
  * Unit tests for {@link Interest}.
  *
  * @author John Blum
+ * @author Mark Paluch
  * @see org.junit.Test
  * @see org.apache.geode.cache.InterestResultPolicy
  * @see org.springframework.data.gemfire.client.Interest
@@ -139,7 +139,7 @@ public class InterestUnitTests {
 		assertThat(interest.getType()).isEqualTo(KEY);
 	}
 
-	@Test(expected = ConstantException.class)
+	@Test(expected = IllegalArgumentException.class)
 	@SuppressWarnings("deprecation")
 	public void constructInterestWithInvalidStringPolicy() {
 		new Interest<>("testKey", "INVALID");
@@ -283,7 +283,7 @@ public class InterestUnitTests {
 		assertThat(interest.getPolicy()).isEqualTo(InterestResultPolicy.KEYS);
 	}
 
-	@Test(expected = ConstantException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setPolicyWithIllegalValueThrowsException() {
 		newInterest("key").setPolicy("ILLEGAL");
 	}
