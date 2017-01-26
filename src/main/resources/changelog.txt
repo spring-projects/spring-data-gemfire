@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.8.7.RELEASE (2017-01-26)
+---------------------------------------------
+* SGF-578 - Release 1.8.7 (Hopper SR7).
+
+
 Changes in version 1.9.0.RELEASE (2017-01-26)
 ---------------------------------------------
 * SGF-585 - Update project documentation with the CLA tool integration.
