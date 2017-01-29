@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2010-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,5 +74,5 @@ public class Animal {
 	public String toString() {
 		return String.format("{ @type = %1$s, id = %2$d, name = %3$s }", getClass().getSimpleName(), getId(), getName());
 	}
-	
+
 }

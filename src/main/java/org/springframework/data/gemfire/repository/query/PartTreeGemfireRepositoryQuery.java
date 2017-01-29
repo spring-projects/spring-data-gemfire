@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.data.repository.query.parser.PartTree;
 /**
  * {@link GemfireRepositoryQuery} backed by a {@link PartTree} and thus, deriving an OQL query from the backing query
  * method's name.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
@@ -41,7 +41,7 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	/**
 	 * Creates a new {@link PartTreeGemfireRepositoryQuery} using the given {@link GemfireQueryMethod} and
 	 * {@link GemfireTemplate}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param template must not be {@literal null}.
 	 */
@@ -56,7 +56,7 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		this.template = template;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
 	 */

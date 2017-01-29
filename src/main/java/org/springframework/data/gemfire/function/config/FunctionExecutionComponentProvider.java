@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
- * 
+ * Copyright 2002-2018 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -29,20 +29,20 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 
 /**
- * Custom {@link ClassPathScanningCandidateComponentProvider} scanning for interfaces annotated for 
+ * Custom {@link ClassPathScanningCandidateComponentProvider} scanning for interfaces annotated for
  * function execution
- * 
+ *
  * @author David Turanski
  */
 class FunctionExecutionComponentProvider extends ClassPathScanningCandidateComponentProvider {
 
-	 
+
 	private final Set<Class<? extends Annotation>> functionExecutionAnnotationTypes;
 
 	/**
 	 * Creates a new {@link FunctionExecutionComponentProvider} using the given {@link TypeFilter} to include components to be
 	 * picked up.
-	 * 
+	 *
 	 * @param includeFilters the {@link TypeFilter}s to select function execution interfaces to consider, must not be
 	 *          {@literal null}.
 	 */
@@ -56,19 +56,19 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 		if (includeFilters.iterator().hasNext()) {
 			for (TypeFilter filter : includeFilters) {
 				addIncludeFilter(filter);
-			}			
+			}
 		} else {
 			for (Class<? extends Annotation> annotation: this.functionExecutionAnnotationTypes) {
 				super.addIncludeFilter(new AnnotationTypeFilter(annotation, true, true));
 			}
-		} 
+		}
 	}
-	
+
 	/**
 	 * Custom extension of {@link #addIncludeFilter(TypeFilter)} to extend the added {@link TypeFilter}. For the
 	 * {@link TypeFilter} handed we'll have two filters registered: one additionally enforcing the
 	 * {@link FunctionExecutionDefinition} annotation, the other one forcing the extension of {@link AbstractFunctionExecution}.
-	 * 
+	 *
 	 * @see ClassPathScanningCandidateComponentProvider#addIncludeFilter(TypeFilter)
 	 */
 	@Override
@@ -76,7 +76,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 
 		List<TypeFilter> filterPlusInterface = new ArrayList<TypeFilter>();
 		filterPlusInterface.add(includeFilter);
- 
+
 		super.addIncludeFilter(new AllTypeFilter(filterPlusInterface));
 
 		List<TypeFilter> filterPlusAnnotation = new ArrayList<TypeFilter>();
@@ -85,7 +85,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 			filterPlusAnnotation.add(new AnnotationTypeFilter(annotation, true, true));
 		}
 
-		super.addIncludeFilter(new AllTypeFilter(filterPlusAnnotation)); 
+		super.addIncludeFilter(new AllTypeFilter(filterPlusAnnotation));
 	}
 
 	/*
@@ -107,7 +107,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 	 * A simple filter which matches classes with a given annotation, checking inherited annotations as well.
 	 * <p>
 	 * The matching logic mirrors that of <code>Class.isAnnotationPresent()</code>.
-	 * 
+	 *
 	 * @author Mark Fisher
 	 * @author Ramnivas Laddad
 	 * @author Juergen Hoeller
@@ -123,7 +123,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 		 * Create a new AnnotationTypeFilter for the given annotation type. This filter will also match meta-annotations. To
 		 * disable the meta-annotation matching, use the constructor that accepts a ' <code>considerMetaAnnotations</code>'
 		 * argument. The filter will not match interfaces.
-		 * 
+		 *
 		 * @param annotationType the annotation type to match
 		 */
 		@SuppressWarnings("unused")
@@ -133,7 +133,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 
 		/**
 		 * Create a new AnnotationTypeFilter for the given annotation type. The filter will not match interfaces.
-		 * 
+		 *
 		 * @param annotationType the annotation type to match
 		 * @param considerMetaAnnotations whether to also match on meta-annotations
 		 */
@@ -143,7 +143,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 
 		/**
 		 * Create a new {@link AnnotationTypeFilter} for the given annotation type.
-		 * 
+		 *
 		 * @param annotationType the annotation type to match
 		 * @param considerMetaAnnotations whether to also match on meta-annotations
 		 * @param considerInterfaces whether to also match interfaces
@@ -180,7 +180,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 
 	/**
 	 * Helper class to create a {@link TypeFilter} that matches if all the delegates match.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class AllTypeFilter implements TypeFilter {
@@ -189,7 +189,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 
 		/**
 		 * Creates a new {@link AllTypeFilter} to match if all the given delegates match.
-		 * 
+		 *
 		 * @param delegates must not be {@literal null}.
 		 */
 		public AllTypeFilter(List<TypeFilter> delegates) {
@@ -198,7 +198,7 @@ class FunctionExecutionComponentProvider extends ClassPathScanningCandidateCompo
 			this.delegates = delegates;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.type.filter.TypeFilter#match(org.springframework.core.type.classreading.MetadataReader, org.springframework.core.type.classreading.MetadataReaderFactory)
 		 */

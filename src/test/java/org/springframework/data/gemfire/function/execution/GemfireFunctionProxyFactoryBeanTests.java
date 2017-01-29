@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
- * 
+ * Copyright 2002-2018 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -34,15 +34,15 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.gemfire.function.annotation.FunctionId;
- 
+
 /**
- * 
+ *
  * @author David Turanski
  *
  */
 
 public class GemfireFunctionProxyFactoryBeanTests {
-	
+
 	private GemfireFunctionOperations functionOperations;
 
 	@Before
@@ -52,44 +52,44 @@ public class GemfireFunctionProxyFactoryBeanTests {
 
 	@Test
 	public void testInvokeAndExtractWithAnnotatedFunctionId() throws Throwable {
-		
-	
-		GemfireFunctionProxyFactoryBean proxy = new GemfireFunctionProxyFactoryBean(IFoo.class,functionOperations); 	
-		
+
+
+		GemfireFunctionProxyFactoryBean proxy = new GemfireFunctionProxyFactoryBean(IFoo.class,functionOperations);
+
 		MethodInvocation invocation = new TestInvocation(IFoo.class).withMethodNameAndArgTypes("oneArg",String.class);
-	 
+
 		int results = 1;
-		
+
 		when(functionOperations.executeAndExtract("oneArg",invocation.getArguments())).thenReturn(results);
 		Object result = proxy.invoke(invocation);
-		verify(functionOperations).executeAndExtract("oneArg",invocation.getArguments()); 
+		verify(functionOperations).executeAndExtract("oneArg",invocation.getArguments());
 		assertTrue(result.getClass().getName(), result instanceof Integer);
-		assertEquals(1,result);		
+		assertEquals(1,result);
 	}
-	
-	 
+
+
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testInvoke() throws Throwable {
-		
-		
-		GemfireFunctionProxyFactoryBean proxy = new GemfireFunctionProxyFactoryBean(IFoo.class, functionOperations); 	
-	
+
+
+		GemfireFunctionProxyFactoryBean proxy = new GemfireFunctionProxyFactoryBean(IFoo.class, functionOperations);
+
 		MethodInvocation invocation = new TestInvocation(IFoo.class).withMethodNameAndArgTypes("collections",List.class);
-	 
+
 		List results = Arrays.asList(new Integer[]{1,2,3});
-		
+
 		when(functionOperations.executeAndExtract("collections",invocation.getArguments())).thenReturn(results);
 		Object result = proxy.invoke(invocation);
-		verify(functionOperations).executeAndExtract("collections",invocation.getArguments()); ; 
+		verify(functionOperations).executeAndExtract("collections",invocation.getArguments()); ;
 		assertTrue(result instanceof List);
-		assertEquals(3,((List<?>)result).size());		
+		assertEquals(3,((List<?>)result).size());
 	}
-	
-	
-	
+
+
+
 	static class TestInvocation implements MethodInvocation {
-		
+
 		private Class<?>[] argTypes;
 		private Class<?> clazz;
 		private String methodName;
@@ -98,14 +98,14 @@ public class GemfireFunctionProxyFactoryBeanTests {
 		public TestInvocation(Class<?> clazz) {
 			this.clazz = clazz;
 		}
-		
+
 		public TestInvocation withArguments(Object ...arguments){
 			this.arguments = arguments;
 			return this;
 		}
-		
-		 
-		
+
+
+
 		public TestInvocation withMethodNameAndArgTypes(String methodName,Class<?>... argTypes) {
 			this.methodName = methodName;
 			this.argTypes = argTypes;
@@ -165,9 +165,9 @@ public class GemfireFunctionProxyFactoryBeanTests {
 			}
 			return method;
 		}
-		
+
 	}
-	
+
 	public interface IFoo {
 
 		@FunctionId("oneArg")
@@ -180,8 +180,8 @@ public class GemfireFunctionProxyFactoryBeanTests {
 		public abstract Map<String, Integer> getMapWithNoArgs();
 
 	}
-	
-	
+
+
 }
 
 
