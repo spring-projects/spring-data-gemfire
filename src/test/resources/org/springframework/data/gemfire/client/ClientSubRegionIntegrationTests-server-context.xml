@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/geode"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	   	http://www.springframework.org/schema/geode http://www.springframework.org/schema/geode/spring-geode.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
+
+	<context:property-placeholder/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">GemFireServerWithRegionForClientConfig</prop>
@@ -17,7 +21,7 @@
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:cache-server auto-startup="true" port="54321"/>
+	<gfe:cache-server auto-startup="true" port="${spring.data.gemfire.cache.server.port:40404}"/>
 
 	<gfe:local-region id="localAppDataRegion" name="LocalAppData"/>
 

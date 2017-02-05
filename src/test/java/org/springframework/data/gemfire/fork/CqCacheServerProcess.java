@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,30 +26,28 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.server.CacheServer;
 import org.springframework.data.gemfire.ForkUtil;
 
 /**
  * @author Costin Leau
- * @author David Turanski
  * @author John Blum
  */
-public class FunctionCacheServerProcess {
+@SuppressWarnings("unchecked")
+public class CqCacheServerProcess {
 
 	private static final int DEFAULT_CACHE_SERVER_PORT = 40404;
 
-	private static Region<Object,Object> testFunctionRegion;
+	private static Region<String, Integer> testCqRegion;
 
 	private static final String CACHE_SERVER_PORT_PROPERTY = "spring.data.gemfire.cache.server.port";
 	private static final String GEMFIRE_LOG_LEVEL = "warning";
-	private static final String GEMFIRE_NAME = "FunctionServer";
+	private static final String GEMFIRE_NAME = "CqServer";
 
-	public static void main(String[] args) throws Exception {
-		waitForShutdown(registerShutdownHook(registerFunctions(startCacheServer(
-			addRegion(newGemFireCache(GEMFIRE_NAME, GEMFIRE_LOG_LEVEL), "test-function")))));
+	@SuppressWarnings("deprecation")
+	public static void main(final String[] args) throws Exception {
+		waitForShutdown(registerShutdownHook(startCacheServer(addRegion(
+			newGemFireCache(GEMFIRE_NAME, GEMFIRE_LOG_LEVEL), "test-cq"))));
 	}
 
 	private static Cache newGemFireCache(String name, String logLevel) {
@@ -57,19 +55,15 @@ public class FunctionCacheServerProcess {
 			.set("name", name)
 			.set("mcast-port", "0")
 			.set("log-level", logLevel)
-			.set("groups", "g1,g2,g3")
 			.create();
 	}
 
 	private static Cache addRegion(Cache gemfireCache, String name) {
-		RegionFactory<Object,Object> regionFactory = gemfireCache.createRegionFactory(RegionShortcut.REPLICATE);
+		RegionFactory<String, Integer> regionFactory = gemfireCache.createRegionFactory(RegionShortcut.REPLICATE);
 
 		regionFactory.setScope(Scope.DISTRIBUTED_ACK);
 
-		testFunctionRegion = regionFactory.create(name);
-		testFunctionRegion.put("one", 1);
-		testFunctionRegion.put("two", 2);
-		testFunctionRegion.put("three", 3);
+		testCqRegion = regionFactory.create(name);
 
 		return gemfireCache;
 	}
@@ -83,13 +77,6 @@ public class FunctionCacheServerProcess {
 
 	private static int getCacheServerPort(int defaultPort) {
 		return Integer.getInteger(CACHE_SERVER_PORT_PROPERTY, defaultPort);
-	}
-
-	private static Cache registerFunctions(Cache gemfireCache) {
-		FunctionService.registerFunction(new EchoFunction());
-		FunctionService.registerFunction(new ServerFunction());
-
-		return gemfireCache;
 	}
 
 	private static Cache registerShutdownHook(Cache gemfireCache) {
@@ -106,49 +93,18 @@ public class FunctionCacheServerProcess {
 		return gemfireCache;
 	}
 
-	@SuppressWarnings({ "deprecation", "unused" })
+	@SuppressWarnings("deprecation")
 	private static void waitForShutdown(Cache gemfireCache) throws IOException {
-		ForkUtil.createControlFile(FunctionCacheServerProcess.class.getName());
+		ForkUtil.createControlFile(CqCacheServerProcess.class.getName());
+
 		Scanner scanner = new Scanner(System.in);
+
 		scanner.nextLine();
-	}
 
-	@SuppressWarnings("serial")
-	static class EchoFunction implements Function {
+		testCqRegion.put("one", 1);
+		testCqRegion.put("two", 2);
+		testCqRegion.put("three", 3);
 
-		@Override
-		public String getId() {
-			return "echoFunction";
-		}
-
-		@Override
-		public void execute(FunctionContext functionContext) {
-			Object[] arguments = (Object[]) functionContext.getArguments();
-
-			for (int index = 0; index < arguments.length; index++) {
-				if ((index + 1) == arguments.length){
-					functionContext.getResultSender().lastResult(arguments[index]);
-				}
-				else {
-					functionContext.getResultSender().sendResult(arguments[index]);
-				}
-			}
-		}
-	}
-
-	@SuppressWarnings("serial")
-	static class ServerFunction implements Function {
-
-		@Override
-		public String getId() {
-			return "serverFunction";
-		}
-
-		@Override
-		public void execute(FunctionContext functionContext) {
-			Object[] arguments = (Object[]) functionContext.getArguments();
-			testFunctionRegion.put(arguments[0], arguments[1]);
-			functionContext.getResultSender().lastResult(null);
-		}
+		scanner.nextLine();
 	}
 }

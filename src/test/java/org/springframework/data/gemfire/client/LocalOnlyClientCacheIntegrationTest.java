@@ -90,7 +90,7 @@ public class LocalOnlyClientCacheIntegrationTest {
 		}
 
 		@Bean
-		Properties gemfireProperties(@Value("${spring.gemfire.log.level:warning}") String logLevel) {
+		Properties gemfireProperties(@Value("${spring.data.gemfire.log.level:warning}") String logLevel) {
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", LocalOnlyClientCacheIntegrationTest.class.getSimpleName());
@@ -114,7 +114,7 @@ public class LocalOnlyClientCacheIntegrationTest {
 		ClientRegionFactoryBean<Long, String> exampleRegion(GemFireCache gemfireCache,
 				RegionAttributes<Long, String> exampleAttributes) {
 
-			ClientRegionFactoryBean<Long, String> exampleRegion = new ClientRegionFactoryBean<Long, String>();
+			ClientRegionFactoryBean<Long, String> exampleRegion = new ClientRegionFactoryBean<>();
 
 			exampleRegion.setCache(gemfireCache);
 			exampleRegion.setAttributes(exampleAttributes);
@@ -136,5 +136,4 @@ public class LocalOnlyClientCacheIntegrationTest {
 			return exampleRegionAttributes;
 		}
 	}
-
 }

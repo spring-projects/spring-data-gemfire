@@ -10,14 +10,7 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="serverProperties">
-		<prop key="server.bind.address">localhost</prop>
-		<prop key="server.hostname.for.clients">localhost</prop>
-		<prop key="server.max.connections">2</prop>
-		<prop key="server.port">12480</prop>
-	</util:properties>
-
-	<context:property-placeholder properties-ref="serverProperties"/>
+	<context:property-placeholder/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">SpringGemFireServerFunctionCreationWithPdx</prop>
@@ -41,8 +34,7 @@
 	<gfe:cache properties-ref="gemfireProperties" pdx-serializer-ref="domainBasedPdxSerializer"
 			   pdx-read-serialized="true" pdx-ignore-unread-fields="false"/>
 
-	<gfe:cache-server auto-startup="true" bind-address="${server.bind.address}" port="${server.port}"
-					  host-name-for-clients="${server.hostname.for.clients}" max-connections="${server.max.connections}"/>
+	<gfe:cache-server auto-startup="true" max-connections="2" port="${spring.data.gemfire.cache.server.port:40404}"/>
 
 	<gfe:annotation-driven/>
 

@@ -1,16 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
 	   xmlns:repo="http://www.springframework.org/schema/data/repository"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
 		http://www.springframework.org/schema/data/repository http://www.springframework.org/schema/data/repository/spring-repository.xsd
-" default-lazy-init="true">
+">
+
+	<context:property-placeholder/>
+
+	<bean class="org.springframework.beans.factory.config.MethodInvokingBean">
+		<property name="targetClass" value="java.lang.System"/>
+		<property name="targetMethod" value="setProperty"/>
+		<property name="arguments">
+			<list>
+				<value>gemfire.log-level</value>
+				<value>warning</value>
+			</list>
+		</property>
+	</bean>
 
 	<gfe-data:datasource>
-		<gfe-data:server host="localhost" port="40404"/>
+		<gfe-data:server host="localhost" port="${spring.data.gemfire.cache.server.port:40404}"/>
 	</gfe-data:datasource>
 
 	<gfe-data:repositories base-package="org.springframework.data.gemfire.repository.sample">

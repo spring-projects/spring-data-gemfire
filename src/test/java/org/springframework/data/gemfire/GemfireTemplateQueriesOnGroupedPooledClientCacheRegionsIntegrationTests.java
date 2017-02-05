@@ -86,8 +86,6 @@ import lombok.RequiredArgsConstructor;
 public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationTests
 		extends ClientServerIntegrationTestsSupport{
 
-	protected static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
-
 	private static ProcessWrapper serverOne;
 	private static ProcessWrapper serverTwo;
 
@@ -160,7 +158,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		}
 
 		String logLevel() {
-			return System.getProperty("gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
+			return System.getProperty("spring.data.gemfire.log.level", GEMFIRE_LOG_LEVEL);
 		}
 
 		@Bean
@@ -268,7 +266,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		abstract String groups();
 
 		String logLevel() {
-			return System.getProperty("gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
+			return System.getProperty("spring.data.gemfire.log.level", GEMFIRE_LOG_LEVEL);
 		}
 
 		String startLocator() {

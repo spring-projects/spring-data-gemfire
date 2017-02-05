@@ -27,20 +27,28 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.springframework.data.gemfire.fork.CacheServerProcess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.gemfire.fork.CqCacheServerProcess;
+import org.springframework.data.gemfire.fork.FunctionCacheServerProcess;
 import org.springframework.data.gemfire.test.support.IOUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Utility for forking Java processes.
- * 
+ * Utility class used to fork Java, JVM processes.
+ *
  * @author Costin Leau
  * @author John Blum
  * @deprecated ForkUtils has serious design flaws; please use ProcessExecutor instead
  */
 @Deprecated
 public class ForkUtil {
+
+	private static final long TIMEOUT = 30000L;
+
+	@SuppressWarnings("all")
+	private static final Logger logger = LoggerFactory.getLogger(ForkUtil.class);
 
 	private static OutputStream processStandardInStream;
 
@@ -49,97 +57,116 @@ public class ForkUtil {
 	private static String JAVA_EXE = JAVA_HOME.concat(File.separator).concat("bin").concat(File.separator).concat("java");
 	private static String TEMP_DIRECTORY = System.getProperty("java.io.tmpdir");
 
-	private static OutputStream cloneJVM(final String arguments) {
-		String[] args = arguments.split("\\s+");
+	private static List<String> buildJavaCommand(String arguments) {
+		return buildJavaCommand(arguments.split("\\s+"));
+	}
 
-		List<String> command = new ArrayList<String>(args.length + 3);
+	private static List<String> buildJavaCommand(String[] args) {
+		List<String> command = new ArrayList<>(args.length + 5);
 
 		command.add(JAVA_EXE);
+		command.add("-server");
+		command.add("-ea");
 		command.add("-classpath");
 		command.add(JAVA_CLASSPATH);
 		command.addAll(Arrays.asList(args));
+
+		return command;
+	}
+
+	private static OutputStream cloneJVM(String arguments) {
+		AtomicBoolean runCondition = new AtomicBoolean(true);
+
+		List<String> command = buildJavaCommand(arguments);
 
 		Process javaProcess;
 
 		try {
 			javaProcess = Runtime.getRuntime().exec(command.toArray(new String[command.size()]));
+
+			logger.debug("Started fork from command: {}",
+				StringUtils.arrayToDelimitedString(command.toArray()," "));
+
+			captureProcessStreams(runCondition, javaProcess);
+			registerShutdownHook(runCondition, javaProcess);
+
+			processStandardInStream = javaProcess.getOutputStream();
+
+			return processStandardInStream;
 		}
 		catch (IOException e) {
-			System.out.println("[FORK-ERROR] " + e.getMessage());
-			throw new IllegalStateException(String.format("Cannot start command %1$s",
+			throw new RuntimeException(String.format("Failed to fork JVM process using command [%s]",
 				StringUtils.arrayToDelimitedString(command.toArray(), " ")), e);
 		}
-
-		System.out.println("Started fork from command: \n" + StringUtils.arrayToDelimitedString(command.toArray()," "));
-
-		final AtomicBoolean runCondition = new AtomicBoolean(true);
-		final Process p = javaProcess;
-
-		startNewThread(newProcessStreamReader(runCondition, p.getErrorStream(), "[FORK-ERROR]"));
-		startNewThread(newProcessStreamReader(runCondition, p.getInputStream(), "[FORK]"));
-
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				runCondition.set(false);
-				processStandardInStream = null;
-
-				try {
-					p.destroy();
-					p.waitFor();
-				}
-				catch (InterruptedException ignore) {
-				}
-			}
-		});
-
-		processStandardInStream = javaProcess.getOutputStream();
-
-		return processStandardInStream;
 	}
 
-	protected static Thread startNewThread(final Runnable runnable) {
+	private static void captureProcessStreams(AtomicBoolean runCondition, Process javaProcess) {
+		startNewThread(newProcessStreamReader(runCondition, javaProcess.getErrorStream(), "[FORK-ERR]"));
+		startNewThread(newProcessStreamReader(runCondition, javaProcess.getInputStream(), "[FORK-OUT]"));
+	}
+
+	private static Thread startNewThread(Runnable runnable) {
 		Thread runnableThread = new Thread(runnable);
+		runnableThread.setDaemon(true);
+		runnableThread.setPriority(Thread.NORM_PRIORITY);
 		runnableThread.start();
 		return runnableThread;
 	}
 
-	protected static Runnable newProcessStreamReader(final AtomicBoolean runCondition, final InputStream processStream, final String label) {
-		return new Runnable() {
-			public void run() {
-				BufferedReader processStreamReader = new BufferedReader(new InputStreamReader(processStream));
-				try {
-					while (runCondition.get()) {
-						for (String line = "Reading..."; line != null; line = processStreamReader.readLine()) {
-							System.out.printf("%1$s %2$s%n ", label, line);
-						}
-					}
+	private static Runnable newProcessStreamReader(AtomicBoolean runCondition, InputStream processStream, String label) {
+		return () -> {
+			BufferedReader processStreamReader = null;
+
+			try {
+				processStreamReader = new BufferedReader(new InputStreamReader(processStream));
+
+				for (String line = "Reading..."; runCondition.get() && line != null;
+					 line = processStreamReader.readLine()) {
+
+					logger.debug("{} {}", label, line);
 				}
-				catch (Exception ignore) {
-				}
-				finally {
-					IOUtils.close(processStreamReader);
-				}
+			}
+			catch (Exception ignore) {
+			}
+			finally {
+				IOUtils.close(processStreamReader);
 			}
 		};
 	}
 
-	public static OutputStream cacheServer() {
-		return cacheServer(CacheServerProcess.class);
+	private static void registerShutdownHook(AtomicBoolean runCondition, Process javaProcess) {
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			runCondition.set(false);
+			processStandardInStream = null;
+
+			try {
+				javaProcess.destroyForcibly();
+				javaProcess.waitFor();
+			}
+			catch (InterruptedException ignore) {
+				Thread.currentThread().interrupt();
+			}
+		}));
 	}
 
 	public static OutputStream cacheServer(Class<?> type) {
 		return startCacheServer(type.getName());
 	}
 
+	public static OutputStream cqCacheServer() {
+		return cacheServer(CqCacheServerProcess.class);
+	}
+
+	public static OutputStream functionCacheServer() {
+		return cacheServer(FunctionCacheServerProcess.class);
+	}
+
 	public static OutputStream startCacheServer(String args) {
 		return startGemFireProcess(args, "cache server");
 	}
 
-	protected static OutputStream startGemFireProcess(final String args, final String processName) {
+	protected static OutputStream startGemFireProcess(String args, String processName) {
 		String className = args.split(" ")[0];
-
-		System.out.println("main class: " + className);
 
 		if (controlFileExists(className)) {
 			deleteControlFile(className);
@@ -147,17 +174,14 @@ public class ForkUtil {
 
 		OutputStream outputStream = cloneJVM(args);
 
-		final long timeout = System.currentTimeMillis() + 30000;
+		long timeout = (System.currentTimeMillis() + TIMEOUT);
 
 		while (!controlFileExists(className) && System.currentTimeMillis() < timeout) {
-			ThreadUtils.sleep(500);
+			ThreadUtils.sleep(500L);
 		}
 
-		if (controlFileExists(className)) {
-			System.out.printf("[FORK] Started %1$s%n", processName);
-		}
-		else {
-			throw new RuntimeException(String.format("Failed to fork %1$s", processName));
+		if (!controlFileExists(className)) {
+			throw new RuntimeException(String.format("Failed to fork %s", processName));
 		}
 
 		return outputStream;
@@ -168,21 +192,20 @@ public class ForkUtil {
 			processStandardInStream.write("\n".getBytes());
 			processStandardInStream.flush();
 		}
-		catch (IOException ex) {
-			throw new IllegalStateException("Cannot communicate with forked VM", ex);
+		catch (IOException e) {
+			logger.info("Cannot communicate with forked VM", e);
 		}
 	}
 
-	public static boolean createControlFile(final String name) throws IOException {
+	public static boolean createControlFile( String name) throws IOException {
 		return new File(TEMP_DIRECTORY + File.separator + name).createNewFile();
 	}
 
-	public static boolean controlFileExists(final String name) {
+	public static boolean controlFileExists(String name) {
 		return new File(TEMP_DIRECTORY + File.separator + name).isFile();
 	}
 
-	public static boolean deleteControlFile(final String name) {
+	public static boolean deleteControlFile(String name) {
 		return new File(TEMP_DIRECTORY + File.separator + name).delete();
 	}
-
 }

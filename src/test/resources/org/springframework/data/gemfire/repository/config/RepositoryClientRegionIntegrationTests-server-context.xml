@@ -1,28 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/geode"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	   	http://www.springframework.org/schema/geode http://www.springframework.org/schema/geode/spring-geode.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<context:property-placeholder/>
+
 	<util:properties id="gemfireProperties">
-		<prop key="name">RepositoryClientRegionTestsServerContext</prop>
+		<prop key="name">RepositoryClientRegionIntegrationTestsServer</prop>
 		<prop key="mcast-port">0</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:cache-server/>
+	<gfe:cache-server port="${spring.data.gemfire.cache.server.port:40404}"/>
 
-	<gfe:replicated-region id="region" name="simple"/>
+	<gfe:replicated-region id="People" name="simple"/>
 
 	<bean class="org.springframework.data.gemfire.repository.sample.RegionPopulator">
-		<property name="region" ref="region"/>
+		<property name="region" ref="People"/>
 	</bean>
 
 </beans>

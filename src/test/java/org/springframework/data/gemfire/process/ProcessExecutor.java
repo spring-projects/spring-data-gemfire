@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.process;
 
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ public abstract class ProcessExecutor {
 	public static final String JAVA_CLASSPATH = System.getProperty("java.class.path");
 
 	protected static final String SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX = "spring.gemfire.";
+	protected static final String SPRING_DATA_GEMFIRE_SYSTEM_PROPERTY_PREFIX = "spring.data.gemfire.";
 
 	public static ProcessWrapper launch(Class<?> type, String... args) throws IOException {
 		return launch(FileSystemUtils.WORKING_DIRECTORY, type, args);
@@ -78,7 +81,7 @@ public abstract class ProcessExecutor {
 		Assert.notNull(type, "The main Java class to launch must not be null");
 
 		List<String> command = new ArrayList<>();
-		List<String> programArgs = Collections.emptyList();
+		List<String> programArguments = new ArrayList<>(args.length);
 
 		command.add(JAVA_EXE.getAbsolutePath());
 		command.add("-server");
@@ -87,28 +90,25 @@ public abstract class ProcessExecutor {
 		command.add(StringUtils.hasText(classpath) ? classpath : JAVA_CLASSPATH);
 		command.addAll(getSpringGemFireSystemProperties());
 
-		if (args != null) {
-			programArgs = new ArrayList<>(args.length);
-
-			for (String arg : args) {
-				if (isJvmOption(arg)) {
-					command.add(arg);
-				}
-				else if (!StringUtils.isEmpty(arg)) {
-					programArgs.add(arg);
-				}
+		for (String arg : nullSafeArray(args, String.class)) {
+			if (isJvmOption(arg)) {
+				command.add(arg);
+			}
+			else if (!StringUtils.isEmpty(arg)) {
+				programArguments.add(arg);
 			}
 		}
 
 		command.add(type.getName());
-		command.addAll(programArgs);
+		command.addAll(programArguments);
 
 		return command.toArray(new String[command.size()]);
 	}
 
 	protected static Collection<? extends String> getSpringGemFireSystemProperties() {
 		return System.getProperties().stringPropertyNames().stream()
-			.filter(property -> property.startsWith(SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX))
+			.filter(property -> property.startsWith(SPRING_DATA_GEMFIRE_SYSTEM_PROPERTY_PREFIX)
+				|| property.startsWith(SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX))
 			.map(property -> String.format("-D%1$s=%2$s", property, System.getProperty(property)))
 			.collect(Collectors.toList());
 	}

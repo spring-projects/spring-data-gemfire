@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/geode"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 	   	http://www.springframework.org/schema/geode http://www.springframework.org/schema/geode/spring-geode.xsd
 ">
 
+	<context:property-placeholder/>
+
 	<util:properties id="gemfireProperties">
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
-	<gfe:pool id="serverBasedPool">
-		<gfe:server host="localhost" port="15243"/>
-	</gfe:pool>
-
 	<gfe:client-cache properties-ref="gemfireProperties" pool-name="serverBasedPool"/>
+
+	<gfe:pool id="serverBasedPool">
+		<gfe:server host="localhost" port="${spring.data.gemfire.cache.server.port:40404}"/>
+	</gfe:pool>
 
 	<gfe:client-region id="test-region" pool-name="serverBasedPool" shortcut="PROXY"/>
 
