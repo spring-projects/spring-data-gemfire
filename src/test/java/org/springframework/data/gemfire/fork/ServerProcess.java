@@ -17,7 +17,10 @@
 package org.springframework.data.gemfire.fork;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.gemfire.process.support.ProcessUtils;
@@ -35,23 +38,17 @@ import org.springframework.util.Assert;
  */
 public class ServerProcess {
 
-	public static void main(final String[] args) throws Throwable {
+	private static final Logger logger = LoggerFactory.getLogger(ServerProcess.class);
+
+	public static void main(String[] args) throws Throwable {
 		ConfigurableApplicationContext applicationContext = null;
 
 		try {
-			Assert.notEmpty(args, String.format("Usage: >java -cp ... %1$s %2$s", ServerProcess.class.getName(),
-				"classpath:/to/applicationContext.xml"));
-
-			applicationContext = new ClassPathXmlApplicationContext(args[0]);
-			applicationContext.registerShutdownHook();
-
-			ProcessUtils.writePid(new File(FileSystemUtils.WORKING_DIRECTORY, getServerProcessControlFilename()),
-				ProcessUtils.currentPid());
-
-			ProcessUtils.waitForStopSignal();
+			applicationContext = newApplicationContext(args);
+			waitForShutdown();
 		}
 		catch (Throwable e) {
-			e.printStackTrace(System.err);
+			logger.debug("", e);
 			throw e;
 		}
 		finally {
@@ -59,11 +56,18 @@ public class ServerProcess {
 		}
 	}
 
-	public static String getServerProcessControlFilename() {
-		return ServerProcess.class.getSimpleName().toLowerCase().concat(".pid");
+	private static ConfigurableApplicationContext newApplicationContext(String[] configLocations) {
+		Assert.notEmpty(configLocations, String.format("Usage: >java -cp ... %1$s %2$s",
+			ServerProcess.class.getName(), "classpath:/to/applicationContext.xml"));
+
+		ConfigurableApplicationContext applicationContext = new ClassPathXmlApplicationContext(configLocations);
+
+		applicationContext.registerShutdownHook();
+
+		return applicationContext;
 	}
 
-	protected static boolean close(final ConfigurableApplicationContext applicationContext) {
+	private static boolean close(ConfigurableApplicationContext applicationContext) {
 		if (applicationContext != null) {
 			applicationContext.close();
 			return !(applicationContext.isRunning() || applicationContext.isActive());
@@ -72,4 +76,14 @@ public class ServerProcess {
 		return true;
 	}
 
+	private static void waitForShutdown() throws IOException {
+		ProcessUtils.writePid(new File(FileSystemUtils.WORKING_DIRECTORY, getServerProcessControlFilename()),
+			ProcessUtils.currentPid());
+
+		ProcessUtils.waitForStopSignal();
+	}
+
+	public static String getServerProcessControlFilename() {
+		return ServerProcess.class.getSimpleName().toLowerCase().concat(".pid");
+	}
 }

@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:task="http://www.springframework.org/schema/task"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 	   	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
 	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="clientCacheConfigurationSettings">
+	<context:property-placeholder/>
+
+	<util:properties id="gemfireProperties">
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:client-cache use-bean-factory-locator="false" properties-ref="clientCacheConfigurationSettings" pool-name="clientPool"/>
+	<gfe:client-cache properties-ref="gemfireProperties" pool-name="clientPool"/>
 
 	<gfe:pool id="clientPool" subscription-enabled="true">
-		<gfe:server host="localhost" port="40404"/>
+		<gfe:server host="localhost" port="${spring.data.gemfire.cache.server.port:40404}"/>
 	</gfe:pool>
 
 	<bean id="testErrorHandler" class="org.springframework.data.gemfire.listener.StubErrorHandler"/>
@@ -27,8 +31,8 @@
 	<task:executor id="testTaskExecutor"/>
 
 	<gfe:cq-listener-container id="testContainerId" cache="gemfireCache" pool-name="clientPool"
-							   auto-startup="false" phase="4"
-							   error-handler="testErrorHandler" task-executor="testTaskExecutor">
+							   auto-startup="false" error-handler="testErrorHandler" phase="4"
+							   task-executor="testTaskExecutor">
 		<gfe:listener ref="testQueryListener" query="SELECT * FROM /test-cq" name="Q1"/>
 		<gfe:listener ref="testQueryListener" query="SELECT * FROM /test-cq" name="Q2" method="handleQuery"/>
 		<gfe:listener ref="testQueryListener" query="SELECT * FROM /test-cq" name="Q3" durable="true"/>

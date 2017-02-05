@@ -1,24 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:task="http://www.springframework.org/schema/task"
 	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 	   	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
 	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<context:property-placeholder/>
+
 	<util:properties id="gemfireProperties">
+		<prop key="name">ContainerXmlSetupIntegrationTests</prop>
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
 	<gfe:client-cache properties-ref="gemfireProperties"/>
 
 	<gfe:pool id="client" subscription-enabled="true">
-		<gfe:server host="localhost" port="40404"/>
+		<gfe:server host="localhost" port="${spring.data.gemfire.cache.server.port:40404}"/>
 	</gfe:pool>
 
 	<task:executor id="testTaskExecutor"/>

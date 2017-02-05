@@ -21,8 +21,10 @@ import java.util.Properties;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.DistributionLocator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -86,5 +88,11 @@ public abstract class DistributedSystemUtils extends SpringUtils {
 	@SuppressWarnings("unchecked")
 	public static <T extends DistributedSystem> T getDistributedSystem(GemFireCache gemfireCache) {
 		return (gemfireCache != null ? (T) gemfireCache.getDistributedSystem() : null);
+	}
+
+	/* (non-Javadoc)*/
+	@SuppressWarnings("unchecked")
+	public static <T extends Locator> T getLocator() {
+		return (T) InternalLocator.getLocator();
 	}
 }

@@ -216,10 +216,11 @@ public class CompoundCachePutCacheEvictIntegrationTests {
 		}
 
 		String logLevel() {
-			return System.getProperty("gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
+			return System.getProperty("spring.data.gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
 		}
 
-		@Bean CacheFactoryBean gemfireCache() {
+		@Bean
+		CacheFactoryBean gemfireCache() {
 			CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -228,7 +229,8 @@ public class CompoundCachePutCacheEvictIntegrationTests {
 			return gemfireCache;
 		}
 
-		@Bean(name = "People") LocalRegionFactoryBean<Long, Person> peopleRegion(GemFireCache gemfireCache) {
+		@Bean(name = "People")
+		LocalRegionFactoryBean<Long, Person> peopleRegion(GemFireCache gemfireCache) {
 			LocalRegionFactoryBean<Long, Person> peopleRegion = new LocalRegionFactoryBean<Long, Person>();
 
 			peopleRegion.setCache(gemfireCache);

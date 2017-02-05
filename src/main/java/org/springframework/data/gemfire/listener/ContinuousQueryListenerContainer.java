@@ -54,23 +54,28 @@ import org.springframework.util.ErrorHandler;
 import org.springframework.util.StringUtils;
 
 /**
- * Container providing asynchronous behaviour for GemFire continuous queries.
+ * Container providing asynchronous behaviour for GemFire Continuous Queries (CQ).
  *
  * @author Costin Leau
  * @author John Blum
+ * @see org.apache.geode.cache.RegionService
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolManager
+ * @see org.apache.geode.cache.query.CqAttributes
+ * @see org.apache.geode.cache.query.CqEvent
+ * @see org.apache.geode.cache.query.CqListener
+ * @see org.apache.geode.cache.query.CqQuery
+ * @see org.apache.geode.cache.query.QueryService
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.BeanNameAware
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.core.task.SimpleAsyncTaskExecutor
  * @see org.springframework.core.task.TaskExecutor
- * @see org.apache.geode.cache.RegionService
- * @see org.apache.geode.cache.client.Pool
- * @see org.apache.geode.cache.client.PoolManager
- * @see org.apache.geode.cache.query.CqEvent
- * @see org.apache.geode.cache.query.CqListener
- * @see org.apache.geode.cache.query.CqQuery
- * @see org.apache.geode.cache.query.QueryService
+ * @see org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter
+ * @see org.springframework.data.gemfire.client.support.DelegatingPoolAdapter
  */
 @SuppressWarnings("unused")
 public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanNameAware,
@@ -136,8 +141,8 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 			}
 		}
 		catch (BeansException ignore) {
-			Assert.notNull(PoolManager.find(poolName), String.format("No GemFire Pool with name [%s] was found",
-				poolName));
+			Assert.notNull(PoolManager.find(poolName),
+				String.format("No GemFire Pool with name [%s] was found", poolName));
 		}
 
 		return poolName;
@@ -213,7 +218,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 			cq.execute();
 		}
 		catch (QueryException e) {
-			throw new GemfireQueryException(String.format("Could not execute query [%1$s]; state is [%2$s].",
+			throw new GemfireQueryException(String.format("Could not execute query [%1$s]; state is [%2$s]",
 				cq.getName(), cq.getState()), e);
 		}
 	}
@@ -242,7 +247,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 				cq.stop();
 			}
 			catch (Exception e) {
-				logger.warn(String.format("Cannot stop query '%1$s'; state is '%2$s.", cq.getName(), cq.getState()), e);
+				logger.warn(String.format("Cannot stop query [%1$s]; state is [%2$s]", cq.getName(), cq.getState()), e);
 			}
 		}
 	}
@@ -263,7 +268,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 				}
 			}
 			catch (Exception e) {
-				logger.warn(String.format("Cannot close query '%1$s'; state is '%2$s.",
+				logger.warn(String.format("Cannot close query [%1$s]; state is [%2$s]",
 					cq.getName(), cq.getState()), e);
 			}
 		}
@@ -465,16 +470,12 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 			return cq;
 		}
 		catch (QueryException e) {
-			throw new GemfireQueryException("Cannot create query ", e);
+			throw new GemfireQueryException("Cannot create query", e);
 		}
 	}
 
 	private void dispatchEvent(final ContinuousQueryListener listener, final CqEvent event) {
-		taskExecutor.execute(new Runnable() {
-			public void run() {
-				executeListener(listener, event);
-			}
-		});
+		taskExecutor.execute(() -> executeListener(listener, event));
 	}
 
 	/**
@@ -532,7 +533,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 
 		private final ContinuousQueryListener delegate;
 
-		private EventDispatcherAdapter(final ContinuousQueryListener delegate) {
+		private EventDispatcherAdapter(ContinuousQueryListener delegate) {
 			this.delegate = delegate;
 		}
 

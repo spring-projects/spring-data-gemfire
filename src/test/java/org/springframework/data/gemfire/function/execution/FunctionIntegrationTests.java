@@ -31,35 +31,46 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.fork.SpringCacheServerProcess;
+import org.springframework.data.gemfire.fork.ServerProcess;
 import org.springframework.data.gemfire.function.annotation.GemfireFunction;
 import org.springframework.data.gemfire.function.annotation.RegionData;
+import org.springframework.data.gemfire.process.ProcessWrapper;
+import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author David Turanski
  * @author John Blum
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
-public class FunctionIntegrationTests {
+public class FunctionIntegrationTests extends ClientServerIntegrationTestsSupport {
+
+	private static ProcessWrapper gemfireServer;
 
 	@Resource(name = "test-region")
 	private Region<String, Integer> region;
 
 	@BeforeClass
-	public static void startup() throws Exception {
-		ForkUtil.startCacheServer(SpringCacheServerProcess.class.getName() +
-			" /org/springframework/data/gemfire/function/execution/FunctionIntegrationTests-server-context.xml");
+	public static void startGemFireServer() throws Exception {
+		int availablePort = findAvailablePort();
+
+		gemfireServer = run(ServerProcess.class,
+			String.format("-D%s=%d", GEMFIRE_CACHE_SERVER_PORT_PROPERTY, availablePort),
+			getServerContextXmlFileLocation(FunctionIntegrationTests.class));
+
+		waitForServerToStart(DEFAULT_HOSTNAME, availablePort);
+
+		System.setProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY, String.valueOf(availablePort));
 	}
 
 	@AfterClass
-	public static void shutdown() {
-		ForkUtil.sendSignal();
+	public static void stopGemFireServer() {
+		System.clearProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY);
+		stop(gemfireServer);
 	}
 
 	@Before
@@ -111,9 +122,11 @@ public class FunctionIntegrationTests {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void testArrayReturnTypes() {
-		Object result = new GemfireOnRegionFunctionTemplate(region).executeAndExtract("arrays",
-			new int[] { 1, 2, 3, 4, 5 });
+		Object result = new GemfireOnRegionFunctionTemplate(region)
+			.executeAndExtract("arrays", new int[] { 1, 2, 3, 4, 5 });
+
 		assertTrue(result.getClass().getName(), result instanceof int[]);
 		assertEquals(5, ((int[]) result).length);
 	}

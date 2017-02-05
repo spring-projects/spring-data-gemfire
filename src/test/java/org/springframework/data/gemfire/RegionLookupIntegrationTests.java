@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.gemfire.fork.SpringContainerProcess;
 
 /**
  * The RegionLookupIntegrationTests class is a test suite of test cases testing the lookup functionality for various
@@ -38,7 +39,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext
- * @see org.springframework.data.gemfire.fork.SpringCacheServerProcess
+ * @see SpringContainerProcess
  * @see org.apache.geode.cache.Region
  * @since 1.4.0
  * @link https://jira.spring.io/browse/SGF-204

@@ -13,19 +13,14 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="clientProperties">
-		<prop key="client.server.host">localhost</prop>
-		<prop key="client.server.port">12480</prop>
-	</util:properties>
-
-	<context:property-placeholder properties-ref="clientProperties"/>
+	<context:property-placeholder/>
 
 	<util:properties id="gemfireProperties">
-		<prop key="log-level">config</prop>
+		<prop key="log-level">warning</prop>
 	</util:properties>
 
 	<gfe:pool id="serverConnectionPool">
-		<gfe:server host="${client.server.host}" port="${client.server.port}"/>
+		<gfe:server host="localhost" port="${spring.data.gemfire.cache.server.port:40404}"/>
 	</gfe:pool>
 
 	<bean id="addressPdxSerializer" class="org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWithPdxIntegrationTest$AddressPdxSerializer"/>

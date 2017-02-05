@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
@@ -11,16 +11,18 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<context:property-placeholder/>
+
 	<util:properties id="gemfireProperties">
 		<prop key="name">FunctionIntegrationTestsServerContext</prop>
 		<prop key="statistic-sampling-enabled">false</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:cache-server port="15243"/>
+	<gfe:cache-server port="${spring.data.gemfire.cache.server.port:40404}"/>
 
 	<gfe:partitioned-region id="test-region"/>
 

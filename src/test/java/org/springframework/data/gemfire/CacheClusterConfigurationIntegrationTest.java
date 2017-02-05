@@ -133,8 +133,8 @@ public class CacheClusterConfigurationIntegrationTest {
 		arguments.add("-Dgemfire.name=" + locatorName);
 		arguments.add("-Dgemfire.mcast-port=0");
 		arguments.add("-Dgemfire.log-level=error");
-		arguments.add("-Dspring.gemfire.enable-cluster-configuration=true");
-		arguments.add("-Dspring.gemfire.load-cluster-configuration=true");
+		arguments.add("-Dspring.data.gemfire.enable-cluster-configuration=true");
+		arguments.add("-Dspring.data.gemfire.load-cluster-configuration=true");
 
 		locatorProcess = ProcessExecutor.launch(locatorWorkingDirectory, LocatorProcess.class,
 			arguments.toArray(new String[arguments.size()]));

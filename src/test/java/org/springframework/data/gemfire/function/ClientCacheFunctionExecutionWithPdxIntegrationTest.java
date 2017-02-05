@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,18 +32,21 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.internal.PdxInstanceEnum;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.gemfire.ForkUtil;
-import org.springframework.data.gemfire.fork.SpringCacheServerProcess;
+import org.springframework.data.gemfire.fork.ServerProcess;
+import org.springframework.data.gemfire.fork.SpringContainerProcess;
 import org.springframework.data.gemfire.function.annotation.GemfireFunction;
 import org.springframework.data.gemfire.function.sample.ApplicationDomainFunctionExecutions;
+import org.springframework.data.gemfire.process.ProcessWrapper;
+import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -56,21 +58,23 @@ import org.springframework.util.ObjectUtils;
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
- * @see org.springframework.data.gemfire.fork.SpringCacheServerProcess
+ * @see SpringContainerProcess
  * @see org.springframework.data.gemfire.function.annotation.GemfireFunction
  * @see org.springframework.data.gemfire.function.sample.ApplicationDomainFunctionExecutions
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.pdx.PdxInstance
  * @see org.apache.geode.pdx.PdxSerializer
  * @see org.apache.geode.pdx.internal.PdxInstanceEnum
  * @since 1.5.2
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
-public class ClientCacheFunctionExecutionWithPdxIntegrationTest {
+public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientServerIntegrationTestsSupport {
+
+	private static ProcessWrapper gemfireServer;
 
 	@Autowired
 	private ClientCache gemfireClientCache;
@@ -79,14 +83,22 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest {
 	private ApplicationDomainFunctionExecutions functionExecutions;
 
 	@BeforeClass
-	@SuppressWarnings("deprecation")
-	public static void setupSpringGemFireServer() throws IOException {
-		ForkUtil.startCacheServer(SpringCacheServerProcess.class.getName() + " "
-			+ toPathname(ClientCacheFunctionExecutionWithPdxIntegrationTest.class).concat("-server-context.xml"));
+	public static void startGemFireServer() throws Exception {
+		int availablePort = findAvailablePort();
+
+		gemfireServer = run(ServerProcess.class,
+			String.format("-D%s=%d", GEMFIRE_CACHE_SERVER_PORT_PROPERTY, availablePort),
+			getServerContextXmlFileLocation(ClientCacheFunctionExecutionWithPdxIntegrationTest.class));
+
+		waitForServerToStart(DEFAULT_HOSTNAME, availablePort);
+
+		System.setProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY, String.valueOf(availablePort));
 	}
 
-	protected static String toPathname(final Class type) {
-		return type.getName().replace(".", "/");
+	@AfterClass
+	public static void stopGemFireServer() {
+		System.clearProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY);
+		stop(gemfireServer);
 	}
 
 	protected PdxInstance toPdxInstance(final Map<String, Object> pdxData) {
@@ -427,5 +439,4 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest {
 			return null;
 		}
 	}
-
 }

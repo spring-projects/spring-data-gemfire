@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -231,6 +232,22 @@ public class ProcessWrapper {
 	/* (non-Javadoc) */
 	public void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+	}
+
+	/* (non-Javadoc) */
+	public void signal() {
+		try {
+			OutputStream outputStream = process.getOutputStream();
+			outputStream.write("\n".getBytes());
+			outputStream.flush();
+		}
+		catch (IOException e) {
+			log.warning("Failed to signal process");
+
+			if (log.isLoggable(Level.FINE)) {
+				log.fine(ThrowableUtils.toString(e));
+			}
+		}
 	}
 
 	/* (non-Javadoc) */

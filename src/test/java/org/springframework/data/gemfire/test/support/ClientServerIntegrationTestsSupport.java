@@ -18,10 +18,12 @@
 package org.springframework.data.gemfire.test.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.gemfire.process.ProcessExecutor.launch;
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.data.gemfire.process.ProcessExecutor;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.util.CollectionUtils;
 
@@ -40,6 +41,9 @@ import org.springframework.data.gemfire.util.CollectionUtils;
  *
  * @author John Blum
  * @see java.io.File
+ * @see java.net.ServerSocket
+ * @see java.net.Socket
+ * @see java.time.LocalDateTime
  * @see org.apache.geode.cache.server.CacheServer
  * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @see org.springframework.data.gemfire.process.ProcessExecutor
@@ -51,15 +55,17 @@ import org.springframework.data.gemfire.util.CollectionUtils;
 @SuppressWarnings("unused")
 public class ClientServerIntegrationTestsSupport {
 
-	protected static final long DEFAULT_WAIT_DURATION = TimeUnit.SECONDS.toMillis(20);
+	protected static final long DEFAULT_WAIT_DURATION = TimeUnit.SECONDS.toMillis(30);
 	protected static final long DEFAULT_WAIT_INTERVAL = 500L; // milliseconds
 
-	protected static final String DEFAULT_GEMFIRE_LOG_FILE = "gemfire-server.log";
-	protected static final String DEFAULT_GEMFIRE_LOG_LEVEL = "config";
-	protected static final String DIRECTORY_DELETE_ON_EXIT_PROPERTY = "sdg.directory.delete-on-exit";
-	protected static final String GEMFIRE_LOG_FILE_PROPERTY = "gemfire.log.file";
-	protected static final String GEMFIRE_LOG_LEVEL_PROPERTY = "gemfire.log.level";
-	protected static final String PROCESS_RUN_MANUAL_PROPERTY = "sdg.process.run.manual";
+	protected static final String DEFAULT_HOSTNAME = "localhost";
+	protected static final String DIRECTORY_DELETE_ON_EXIT_PROPERTY = "spring.data.gemfire.directory.delete-on-exit";
+	protected static final String GEMFIRE_CACHE_SERVER_PORT_PROPERTY = "spring.data.gemfire.cache.server.port";
+	protected static final String GEMFIRE_LOG_FILE = "gemfire-server.log";
+	protected static final String GEMFIRE_LOG_FILE_PROPERTY = "spring.data.gemfire.gemfire.log.file";
+	protected static final String GEMFIRE_LOG_LEVEL = "warning";
+	protected static final String GEMFIRE_LOG_LEVEL_PROPERTY = "spring.data.gemfire.gemfire.log.level";
+	protected static final String PROCESS_RUN_MANUAL_PROPERTY = "spring.data.gemfire.process.run-manual";
 	protected static final String SYSTEM_PROPERTIES_LOG_FILE = "system-properties.log";
 	protected static final String TEST_GEMFIRE_LOG_LEVEL = "warning";
 
@@ -92,6 +98,49 @@ public class ClientServerIntegrationTestsSupport {
 	}
 
 	/* (non-Javadoc) */
+	protected static int findAvailablePort() throws IOException {
+		ServerSocket serverSocket = null;
+
+		try {
+			serverSocket = new ServerSocket(0);
+			return serverSocket.getLocalPort();
+		}
+		finally {
+			SocketUtils.close(serverSocket);
+		}
+	}
+
+	/* (non-Javadoc) */
+	protected static String getClassNameAsPath(Class type) {
+		return type.getName().replaceAll("\\.", "/");
+	}
+
+	/* (non-Javadoc) */
+	protected static String getClassNameAsPath(Object obj) {
+		return getClassNameAsPath(obj.getClass());
+	}
+
+	/* (non-Javadoc) */
+	protected static String getPackageNameAsPath(Class type) {
+		return type.getPackage().getName().replaceAll("\\.", "/");
+	}
+
+	/* (non-Javadoc) */
+	protected static String getPackageNameAsPath(Object obj) {
+		return getPackageNameAsPath(obj.getClass());
+	}
+
+	/* (non-Javadoc) */
+	protected static String getContextXmlFileLocation(Class type) {
+		return getClassNameAsPath(type).concat("-context.xml");
+	}
+
+	/* (non-Javadoc) */
+	protected static String getServerContextXmlFileLocation(Class type) {
+		return getClassNameAsPath(type).concat("-server-context.xml");
+	}
+
+	/* (non-Javadoc) */
 	protected static boolean isDeleteDirectoryOnExit() {
 		return Boolean.valueOf(System.getProperty(DIRECTORY_DELETE_ON_EXIT_PROPERTY, Boolean.TRUE.toString()));
 	}
@@ -103,7 +152,7 @@ public class ClientServerIntegrationTestsSupport {
 
 	/* (non-Javadoc) */
 	protected static String logFile() {
-		return logFile(DEFAULT_GEMFIRE_LOG_FILE);
+		return logFile(GEMFIRE_LOG_FILE);
 	}
 
 	/* (non-Javadoc) */
@@ -113,7 +162,7 @@ public class ClientServerIntegrationTestsSupport {
 
 	/* (non-Javadoc) */
 	protected static String logLevel() {
-		return logLevel(DEFAULT_GEMFIRE_LOG_LEVEL);
+		return logLevel(GEMFIRE_LOG_LEVEL);
 	}
 
 	/* (non-Javadoc) */
@@ -134,8 +183,7 @@ public class ClientServerIntegrationTestsSupport {
 
 	/* (non-Javadoc) */
 	protected static ProcessWrapper run(File workingDirectory, Class<?> type, String... arguments) throws IOException {
-		return (isProcessRunManual() ? null
-			: ProcessExecutor.launch(createDirectory(workingDirectory), type, arguments));
+		return (isProcessRunAuto() ? launch(createDirectory(workingDirectory), type, arguments) : null);
 	}
 
 	/* (non-Javadoc) */
@@ -147,8 +195,12 @@ public class ClientServerIntegrationTestsSupport {
 	protected static ProcessWrapper run(File workingDirectory, String classpath, Class<?> type, String... arguments)
 			throws IOException {
 
-		return (isProcessRunManual() ? null
-			: ProcessExecutor.launch(createDirectory(workingDirectory), classpath, type, arguments));
+		return (isProcessRunAuto() ? launch(createDirectory(workingDirectory), classpath, type, arguments) : null);
+	}
+
+	/* (non-Javadoc) */
+	protected static boolean isProcessRunAuto() {
+		return !isProcessRunManual();
 	}
 
 	/* (non-Javadoc) */
@@ -231,5 +283,31 @@ public class ClientServerIntegrationTestsSupport {
 				return !connected.get();
 			}
 		});
+	}
+
+	protected static boolean waitOn(Condition condition) {
+		return waitOn(condition, DEFAULT_WAIT_DURATION);
+	}
+
+	@SuppressWarnings("all")
+	protected static boolean waitOn(Condition condition, long duration) {
+		long timeout = (System.currentTimeMillis() + duration);
+
+		try {
+			while (!condition.evaluate() && System.currentTimeMillis() < timeout) {
+				synchronized (condition) {
+					TimeUnit.MILLISECONDS.timedWait(condition, DEFAULT_WAIT_INTERVAL);
+				}
+			}
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+
+		return condition.evaluate();
+	}
+
+	protected interface Condition {
+		boolean evaluate();
 	}
 }

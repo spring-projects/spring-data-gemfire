@@ -37,14 +37,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.gemfire.ForkUtil;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.fork.CqCacheServerProcess;
 import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 import org.springframework.data.gemfire.listener.GemfireMDP;
 import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
+import org.springframework.data.gemfire.process.ProcessWrapper;
+import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ErrorHandler;
 
 /**
@@ -57,25 +59,35 @@ import org.springframework.util.ErrorHandler;
  * @see org.junit.runner.RunWith
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.CqListener
  * @see org.apache.geode.cache.query.CqQuery
  * @since 1.4.0
  */
+@RunWith(SpringRunner.class)
 @ContextConfiguration
-@RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
-public class ContinuousQueryListenerContainerNamespaceTest {
+public class ContinuousQueryListenerContainerNamespaceTest extends ClientServerIntegrationTestsSupport {
+
+	private static ProcessWrapper gemfireServer;
 
 	@BeforeClass
-	public static void setupBeforeClass() {
-		ForkUtil.cacheServer();
+	public static void startGemFireServer() throws Exception {
+		int availablePort = findAvailablePort();
+
+		gemfireServer = run(CqCacheServerProcess.class,
+			String.format("-D%s=%d", GEMFIRE_CACHE_SERVER_PORT_PROPERTY, availablePort));
+
+		waitForServerToStart(DEFAULT_HOSTNAME, availablePort);
+
+		System.setProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY, String.valueOf(availablePort));
 	}
 
 	@AfterClass
-	public static void tearDownAfterClass() {
-		ForkUtil.sendSignal();
+	public static void stopGemFireServer() {
+		System.clearProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY);
+		stop(gemfireServer);
 	}
 
 	@Autowired
@@ -107,10 +119,11 @@ public class ContinuousQueryListenerContainerNamespaceTest {
 		assertNotNull(queries);
 		assertEquals(3, queries.length);
 
-		List<String> actualNames = new ArrayList<String>(3);
+		List<String> actualNames = new ArrayList<>(3);
 
 		for (CqQuery query : queries) {
 			actualNames.add(query.getName());
+
 			assertEquals("SELECT * FROM /test-cq", query.getQueryString());
 			assertEquals("Q3".equalsIgnoreCase(query.getName()), query.isDurable());
 
@@ -133,5 +146,4 @@ public class ContinuousQueryListenerContainerNamespaceTest {
 
 		actualNames.containsAll(Arrays.asList("Q1", "Q2", "Q3"));
 	}
-
 }

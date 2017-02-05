@@ -24,8 +24,8 @@ import org.springframework.data.gemfire.process.support.ProcessUtils;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 
 /**
- * The GemFireBasedServerProcess class is a main Java class used to launch a GemFire Server
- * using GemFire's ServerLauncher API.
+ * The {@link GemFireBasedServerProcess} class is a main Java class used to launch a GemFire Server
+ * using GemFire's {@link ServerLauncher} API.
  *
  * @author John Blum
  * @see org.apache.geode.distributed.ServerLauncher
@@ -33,12 +33,12 @@ import org.springframework.data.gemfire.test.support.FileSystemUtils;
  */
 public class GemFireBasedServerProcess {
 
-	protected static final String DEFAULT_GEMFIRE_MEMBER_NAME = "SpringDataGemFire-Server";
-	protected static final String DEFAULT_HTTP_SERVICE_PORT = "0";
-	protected static final String DEFAULT_LOG_LEVEL = "warning";
-	protected static final String DEFAULT_USE_CLUSTER_CONFIGURATION = "false";
+	private static final String GEMFIRE_HTTP_SERVICE_PORT = "0";
+	private static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMIRE_NAME = "SpringDataGemFireServer";
+	private static final String GEMFIRE_USE_CLUSTER_CONFIGURATION = "false";
 
-	public static void main(final String[] args) throws Throwable {
+	public static void main(String[] args) throws Throwable {
 		runServer(args);
 
 		registerShutdownHook();
@@ -49,11 +49,7 @@ public class GemFireBasedServerProcess {
 		ProcessUtils.waitForStopSignal();
 	}
 
-	public static String getServerProcessControlFilename() {
-		return GemFireBasedServerProcess.class.getSimpleName().toLowerCase().concat(".pid");
-	}
-
-	private static ServerLauncher runServer(final String[] args) {
+	private static ServerLauncher runServer(String[] args) {
 		ServerLauncher serverLauncher = buildServerLauncher(args);
 
 		// start the GemFire Server process...
@@ -62,28 +58,38 @@ public class GemFireBasedServerProcess {
 		return serverLauncher;
 	}
 
-	private static ServerLauncher buildServerLauncher(final String[] args) {
+	private static ServerLauncher buildServerLauncher(String[] args) {
 		return new ServerLauncher.Builder(args)
-			.setMemberName(System.getProperty("gemfire.name", DEFAULT_GEMFIRE_MEMBER_NAME))
+			.setMemberName(getProperty("gemfire.name", GEMIRE_NAME))
 			.setCommand(ServerLauncher.Command.START)
 			.setDisableDefaultServer(true)
 			.setRedirectOutput(false)
-			.set(DistributionConfig.HTTP_SERVICE_PORT_NAME, System.getProperty("spring.gemfire.http-service-port",
-				DEFAULT_HTTP_SERVICE_PORT))
-			.set(DistributionConfig.JMX_MANAGER_NAME, String.valueOf(Boolean.TRUE))
-			.set(DistributionConfig.JMX_MANAGER_START_NAME, String.valueOf(Boolean.FALSE))
-			.set(DistributionConfig.LOG_LEVEL_NAME, System.getProperty("spring.gemfire.log-level", DEFAULT_LOG_LEVEL))
-			.set(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, System.getProperty("spring.gemfire.use-cluster-configuration",
-				DEFAULT_USE_CLUSTER_CONFIGURATION))
+			.set(DistributionConfig.HTTP_SERVICE_PORT_NAME,
+				getProperty("spring.data.gemfire.http-service-port", GEMFIRE_HTTP_SERVICE_PORT))
+			.set(DistributionConfig.JMX_MANAGER_NAME, Boolean.TRUE.toString())
+			.set(DistributionConfig.JMX_MANAGER_START_NAME, Boolean.FALSE.toString())
+			.set(DistributionConfig.LOG_LEVEL_NAME,
+				getProperty("spring.data.gemfire.log-level", GEMFIRE_LOG_LEVEL))
+			.set(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME,
+				getProperty("spring.data.gemfire.use-cluster-configuration", GEMFIRE_USE_CLUSTER_CONFIGURATION))
 			.build();
 	}
 
+	private static String getProperty(String name, String defaultValue) {
+		return System.getProperty(name, defaultValue);
+	}
+
 	private static void registerShutdownHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			@Override public void run() {
-				ServerLauncher.getInstance().stop();
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			ServerLauncher serverLauncher = ServerLauncher.getInstance();
+
+			if (serverLauncher != null) {
+				serverLauncher.stop();
 			}
 		}));
 	}
 
+	public static String getServerProcessControlFilename() {
+		return GemFireBasedServerProcess.class.getSimpleName().toLowerCase().concat(".pid");
+	}
 }
