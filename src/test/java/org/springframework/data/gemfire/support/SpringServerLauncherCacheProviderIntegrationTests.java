@@ -62,6 +62,7 @@ public class SpringServerLauncherCacheProviderIntegrationTests {
 
 		builder.setSpringXmlLocation(springXmlLocation);
 		builder.setMemberName("membername");
+		builder.setDisableDefaultServer(true);
 
 		ServerLauncher launcher = builder.build();
 		ServerState state = launcher.start();
