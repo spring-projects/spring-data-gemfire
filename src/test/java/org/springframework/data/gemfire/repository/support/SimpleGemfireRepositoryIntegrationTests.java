@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 
 import javax.annotation.Resource;
 
@@ -35,15 +35,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Integration tests for {@link SimpleGemfireRepository}.
@@ -52,8 +51,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.repository.support.SimpleGemfireRepository
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class SimpleGemfireRepositoryIntegrationTests {
@@ -81,22 +82,6 @@ public class SimpleGemfireRepositoryIntegrationTests {
 	}
 
 	@Test
-	public void saveAndDeleteEntity() {
-		Person oliverGierke = new Person(1L, "Oliver", "Gierke");
-
-		assertThat(repository.save(oliverGierke)).isEqualTo(oliverGierke);
-		assertThat(repository.count()).isEqualTo(1L);
-		assertThat(repository.findOne(oliverGierke.getId())).isEqualTo(oliverGierke);
-		assertThat(repository.findAll()).isEqualTo(Collections.singletonList(oliverGierke));
-
-		repository.delete(oliverGierke);
-
-		assertThat(repository.count()).isEqualTo(0L);
-		assertThat(repository.findOne(oliverGierke.getId())).isNull();
-		assertThat(repository.findAll()).isEmpty();
-	}
-
-	@Test
 	public void deleteAllFiresClearEvent() {
 		assertThat(regionClearListener.eventFired).isFalse();
 		repository.deleteAll();
@@ -104,20 +89,7 @@ public class SimpleGemfireRepositoryIntegrationTests {
 	}
 
 	@Test
-	public void queryRegion() throws Exception {
-		Person oliverGierke = new Person(1L, "Oliver", "Gierke");
-
-		assertThat(template.put(oliverGierke.getId(), oliverGierke)).isNull();
-
-		SelectResults<Person> people = template.find("SELECT * FROM /People p WHERE p.firstname = $1",
-				oliverGierke.getFirstname());
-
-		assertThat(people.size()).isEqualTo(1);
-		assertThat(people.iterator().next()).isEqualTo(oliverGierke);
-	}
-
-	@Test
-	public void findAllWithGivenIds() {
+	public void findAllWithIds() {
 		Person dave = new Person(1L, "Dave", "Matthews");
 		Person carter = new Person(2L, "Carter", "Beauford");
 		Person leroi = new Person(3L, "Leroi", "Moore");
@@ -134,12 +106,66 @@ public class SimpleGemfireRepositoryIntegrationTests {
 	}
 
 	@Test
+	public void findAllWithIdsReturnsNoMatches() {
+		Collection<Person> results = repository.findAll(Arrays.asList(1L, 2L));
+
+		assertThat(results).isNotNull();
+		assertThat(results).isEmpty();
+	}
+
+	@Test
+	public void findAllWithIdsReturnsPartialMatches() {
+		Person kurt = new Person(1L, "Kurt", "Cobain");
+		Person eddie = new Person(2L, "Eddie", "Veddar");
+		Person michael = new Person(3L, "Michael", "Jackson");
+
+		template.put(kurt.getId(), kurt);
+		template.put(eddie.getId(), eddie);
+
+		Collection<Person> results = repository.findAll(Arrays.asList(0L, 1L, 2L, 4L));
+
+		assertThat(results).isNotNull();
+		assertThat(results).hasSize(2);
+		assertThat(results).contains(kurt, eddie);
+		assertThat(results).doesNotContain(michael);
+	}
+
+	@Test
+	public void queryRegion() throws Exception {
+		Person oliverGierke = new Person(1L, "Oliver", "Gierke");
+
+		assertThat(template.put(oliverGierke.getId(), oliverGierke)).isNull();
+
+		SelectResults<Person> people = template.find("SELECT * FROM /People p WHERE p.firstname = $1",
+			oliverGierke.getFirstname());
+
+		assertThat(people.size()).isEqualTo(1);
+		assertThat(people.iterator().next()).isEqualTo(oliverGierke);
+	}
+
+	@Test
+	public void saveAndDeleteEntity() {
+		Person oliverGierke = new Person(1L, "Oliver", "Gierke");
+
+		assertThat(repository.save(oliverGierke)).isEqualTo(oliverGierke);
+		assertThat(repository.count()).isEqualTo(1L);
+		assertThat(repository.findOne(oliverGierke.getId())).isEqualTo(oliverGierke);
+		assertThat(repository.findAll()).isEqualTo(Collections.singletonList(oliverGierke));
+
+		repository.delete(oliverGierke);
+
+		assertThat(repository.count()).isEqualTo(0L);
+		assertThat(repository.findOne(oliverGierke.getId())).isNull();
+		assertThat(repository.findAll()).isEmpty();
+	}
+
+	@Test
 	public void saveEntities() {
 		assertThat(template.getRegion()).isEmpty();
 
-		Person johnBlum = new Person(1l, "John", "Blum");
-		Person jonBloom = new Person(2l, "Jon", "Bloom");
-		Person juanBlume = new Person(3l, "Juan", "Blume");
+		Person johnBlum = new Person(1L, "John", "Blum");
+		Person jonBloom = new Person(2L, "Jon", "Bloom");
+		Person juanBlume = new Person(3L, "Juan", "Blume");
 
 		repository.save(Arrays.asList(johnBlum, jonBloom, juanBlume));
 
@@ -160,35 +186,8 @@ public class SimpleGemfireRepositoryIntegrationTests {
 		}
 	}
 
-	@Configuration
+	@PeerCacheApplication(name = "SimpleGemfireRepositoryIntegrationTests", logLevel = DEFAULT_GEMFIRE_LOG_LEVEL)
 	static class SimpleGemfireRepositoryConfiguration {
-
-		Properties gemfireProperties() {
-			Properties gemfireProperties = new Properties();
-
-			gemfireProperties.setProperty("name", applicationName());
-			gemfireProperties.setProperty("mcast-port", "0");
-			gemfireProperties.setProperty("log-level", logLevel());
-			return gemfireProperties;
-		}
-
-		String applicationName() {
-			return SimpleGemfireRepositoryIntegrationTests.class.getName();
-		}
-
-		String logLevel() {
-			return System.getProperty("gemfire.log-level", DEFAULT_GEMFIRE_LOG_LEVEL);
-		}
-
-		@Bean
-		CacheFactoryBean gemfireCache() {
-			CacheFactoryBean gemfireCache = new CacheFactoryBean();
-
-			gemfireCache.setClose(false);
-			gemfireCache.setProperties(gemfireProperties());
-
-			return gemfireCache;
-		}
 
 		@Bean(name = "People")
 		LocalRegionFactoryBean<Object, Object> peopleRegion(GemFireCache gemfireCache) {
