@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.support;
 
 import java.io.Serializable;
@@ -21,6 +22,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -33,6 +36,7 @@ import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.data.gemfire.repository.query.QueryString;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.Assert;
 
@@ -50,8 +54,9 @@ import org.springframework.util.Assert;
  */
 public class SimpleGemfireRepository<T, ID extends Serializable> implements GemfireRepository<T, ID> {
 
-	private final GemfireTemplate template;
 	private final EntityInformation<T, ID> entityInformation;
+
+	private final GemfireTemplate template;
 
 	/**
 	 * Creates a new {@link SimpleGemfireRepository}.
@@ -60,9 +65,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 * @param entityInformation must not be {@literal null}.
 	 */
 	public SimpleGemfireRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
-
-		Assert.notNull(template);
-		Assert.notNull(entityInformation);
+		Assert.notNull(template, "Template must not be null");
+		Assert.notNull(entityInformation, "EntityInformation must not be null");
 
 		this.template = template;
 		this.entityInformation = entityInformation;
@@ -70,7 +74,6 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#save(S)
 	 */
 	@Override
@@ -81,12 +84,11 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
 	 */
 	@Override
 	public <U extends T> Iterable<U> save(Iterable<U> entities) {
-		Map<ID, U> result = new HashMap<ID, U>();
+		Map<ID, U> result = new HashMap<>();
 
 		for (U entity : entities) {
 			result.put(entityInformation.getId(entity), entity);
@@ -99,19 +101,17 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
-	 * @see
-	 * org.springframework.data.gemfire.repository.GemfireRepository#save(
-	 *   org.springframework.data.gemfire.repository.Wrapper)
+	 * @see org.springframework.data.gemfire.repository.GemfireRepository#save(org.springframework.data.gemfire.repository.Wrapper)
 	 */
 	@Override
 	public T save(Wrapper<T, ID> wrapper) {
-		return template.put(wrapper.getKey(), wrapper.getEntity());
+		T entity = wrapper.getEntity();
+		template.put(wrapper.getKey(), entity);
+		return entity;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#count()
 	 */
 	@Override
@@ -122,7 +122,6 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
 	 */
 	@Override
@@ -132,7 +131,6 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
 	 */
 	@Override
@@ -143,7 +141,6 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#findAll()
 	 */
 	@Override
@@ -169,24 +166,23 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public Collection<T> findAll(Iterable<ID> ids) {
-		List<ID> parameters = new ArrayList<ID>();
+		List<ID> parameters = new ArrayList<>();
 
 		for (ID id : ids) {
 			parameters.add(id);
 		}
 
-		return (Collection<T>) template.getAll(parameters).values();
+		return CollectionUtils.<ID, T>nullSafeMap(template.getAll(parameters)).values().stream()
+			.filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
 	 */
 	@Override
@@ -196,9 +192,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
-	 * @see
-	 * org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
 	 */
 	@Override
 	public void delete(T entity) {
@@ -207,9 +201,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
-	 * @see
-	 * org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
 	 */
 	@Override
 	public void delete(Iterable<? extends T> entities) {
@@ -220,76 +212,66 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.apache.geode.cache.Region#getAttributes()
 	 * @see org.apache.geode.cache.RegionAttributes#getDataPolicy()
 	 */
-	boolean isPartitioned(final Region region) {
+	boolean isPartitioned(Region region) {
 		return (region != null && region.getAttributes() != null
 			&& isPartitioned(region.getAttributes().getDataPolicy()));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.apache.geode.cache.DataPolicy#withPartitioning()
 	 */
-	boolean isPartitioned(final DataPolicy dataPolicy) {
+	boolean isPartitioned(DataPolicy dataPolicy) {
 		return (dataPolicy != null && dataPolicy.withPartitioning());
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.apache.geode.cache.Region#getRegionService()
 	 * @see org.apache.geode.cache.Cache#getCacheTransactionManager()
 	 */
-	boolean isTransactionPresent(final Region region) {
+	boolean isTransactionPresent(Region region) {
 		return (region.getRegionService() instanceof Cache
 			&& isTransactionPresent(((Cache) region.getRegionService()).getCacheTransactionManager()));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.apache.geode.cache.CacheTransactionManager#exists()
 	 */
-	boolean isTransactionPresent(final CacheTransactionManager cacheTransactionManager) {
+	boolean isTransactionPresent(CacheTransactionManager cacheTransactionManager) {
 		return (cacheTransactionManager != null && cacheTransactionManager.exists());
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
-	void doRegionClear(final Region region) {
+	void doRegionClear(Region region) {
 		region.removeAll(region.keySet());
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
 	 */
 	@Override
 	public void deleteAll() {
-		template.execute(new GemfireCallback<Void>() {
-			@Override
-			@SuppressWarnings("rawtypes")
-			public Void doInGemfire(final Region region) {
-				if (isPartitioned(region) || isTransactionPresent(region)) {
+		template.execute((GemfireCallback<Void>) region -> {
+			if (isPartitioned(region) || isTransactionPresent(region)) {
+				doRegionClear(region);
+			}
+			else {
+				try {
+					region.clear();
+				}
+				catch (UnsupportedOperationException ignore) {
 					doRegionClear(region);
 				}
-				else {
-					try {
-						region.clear();
-					}
-					catch (UnsupportedOperationException ignore) {
-						doRegionClear(region);
-					}
-				}
-
-				return null;
 			}
+
+			return null;
 		});
 	}
-
 }
