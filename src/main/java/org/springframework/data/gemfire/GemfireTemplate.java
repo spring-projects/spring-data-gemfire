@@ -310,11 +310,8 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 						queryString, result));
 			}
 		}
-		catch (IndexInvalidException ex) {
-			throw convertGemFireQueryException(ex);
-		}
-		catch (QueryInvalidException ex) {
-			throw convertGemFireQueryException(ex);
+		catch (IndexInvalidException | QueryInvalidException e) {
+			throw convertGemFireQueryException(e);
 		}
 		catch (GemFireCheckedException e) {
 			throw convertGemFireAccessException(e);
@@ -322,14 +319,14 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 		catch (GemFireException e) {
 			throw convertGemFireAccessException(e);
 		}
-		catch (RuntimeException ex) {
+		catch (RuntimeException e) {
 			// test for CqInvalidException (removed in 6.5)
-			if (GemfireCacheUtils.isCqInvalidException(ex)) {
-				throw GemfireCacheUtils.convertCqInvalidException(ex);
+			if (GemfireCacheUtils.isCqInvalidException(e)) {
+				throw GemfireCacheUtils.convertCqInvalidException(e);
 			}
 
 			// callback code threw application exception
-			throw ex;
+			throw e;
 		}
 	}
 

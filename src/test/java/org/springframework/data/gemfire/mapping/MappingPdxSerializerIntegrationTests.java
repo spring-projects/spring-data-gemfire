@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.mapping;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -43,7 +44,7 @@ import org.springframework.data.gemfire.repository.sample.Person;
  * @author Oliver Gierke
  * @author John Blum
  */
-public class MappingPdxSerializerIntegrationTest {
+public class MappingPdxSerializerIntegrationTests {
 
 	static Region<Object, Object> region;
 
@@ -55,7 +56,7 @@ public class MappingPdxSerializerIntegrationTest {
 				new DefaultConversionService());
 
 		cache = new CacheFactory()
-			.set("name", MappingPdxSerializerIntegrationTest.class.getSimpleName())
+			.set("name", MappingPdxSerializerIntegrationTests.class.getSimpleName())
 			.set("mcast-port", "0")
 			.set("log-level", "warning")
 			.setPdxSerializer(serializer)
@@ -115,7 +116,10 @@ public class MappingPdxSerializerIntegrationTest {
 		address.zipCode = "01234";
 		address.city = "London";
 
-		PersonWithDataSerializableProperty person = new PersonWithDataSerializableProperty(2L, "Oliver", "Gierke", new DataSerializableProperty("foo"));
+		PersonWithDataSerializableProperty person =
+			new PersonWithDataSerializableProperty(2L, "Oliver", "Gierke",
+				new DataSerializableProperty("foo"));
+
 		person.address = address;
 
 		region.put(2L, person);
@@ -182,5 +186,4 @@ public class MappingPdxSerializerIntegrationTest {
 		}
 
 	}
-
 }

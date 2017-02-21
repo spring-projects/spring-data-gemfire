@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.support;
 
 import static org.hamcrest.Matchers.hasItem;
@@ -48,14 +49,20 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 
 	@Autowired
-	List<Region<?, ?>> regions;
+	private List<Region<?, ?>> regions;
 
-	Person dave, carter, boyd, stefan, leroi, jeff, oliverAugust;
-	PersonRepository repository;
+	private Person boyd;
+	private Person carter;
+	private Person dave;
+	private Person jeff;
+	private Person leroi;
+	private Person oliverAugust;
+	private Person stefan;
+
+	private PersonRepository repository;
 
 	@Before
 	public void setUp() {
-
 		dave = new Person(1L, "Dave", "Matthews");
 		carter = new Person(2L, "Carter", "Beauford");
 		boyd = new Person(3L, "Boyd", "Tinsley");
@@ -64,9 +71,8 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 		jeff = new Person(6L, "Jeff", "Coffin");
 		oliverAugust = new Person(7L, "Oliver August", "Matthews");
 
-		GemfireMappingContext context = new GemfireMappingContext();
+		Regions regions = new Regions(this.regions, new GemfireMappingContext());
 
-		Regions regions = new Regions(this.regions, context);
 		GemfireTemplate template = new GemfireTemplate(regions.getRegion(Person.class));
 
 		template.put(dave.id, dave);
@@ -184,10 +190,10 @@ public abstract class AbstractGemfireRepositoryFactoryIntegrationTests {
 		assertResultsFound(repository.findByFirstnameLike("Da%"), dave);
 	}
 
-	private <T> void assertResultsFound(Iterable<T> result, T... expected) {
-
+	@SafeVarargs
+	private static <T> void assertResultsFound(Iterable<T> result, T... expected) {
 		assertThat(result, is(notNullValue()));
-		assertThat(result, is(Matchers.<T> iterableWithSize(expected.length)));
+		assertThat(result, is(Matchers.iterableWithSize(expected.length)));
 
 		for (T element : expected) {
 			assertThat(result, hasItem(element));

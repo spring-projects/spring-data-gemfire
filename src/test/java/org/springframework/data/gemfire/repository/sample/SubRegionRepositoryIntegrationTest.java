@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -60,11 +61,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SuppressWarnings("unused")
 public class SubRegionRepositoryIntegrationTest {
 
-	private static final Map<String, RootUser> ADMIN_USER_DATA = new HashMap<String, RootUser>(5, 0.90f);
+	private static final Map<String, RootUser> ADMIN_USER_DATA = new HashMap<>(5, 0.90f);
 
-	private static final Map<String, GuestUser> GUEST_USER_DATA = new HashMap<String, GuestUser>(3, 0.90f);
+	private static final Map<String, GuestUser> GUEST_USER_DATA = new HashMap<>(3, 0.90f);
 
-	private static final Map<String, Programmer> PROGRAMMER_USER_DATA = new HashMap<String, Programmer>(23, 0.90f);
+	private static final Map<String, Programmer> PROGRAMMER_USER_DATA = new HashMap<>(23, 0.90f);
 
 	static {
 		createAdminUser("supertool");
@@ -206,7 +207,7 @@ public class SubRegionRepositoryIntegrationTest {
 
 	@Test
 	public void testSubregionRepositoryInteractions() {
-		assertEquals(PROGRAMMER_USER_DATA.get("JamesGosling"), programmersRepo.findOne("JamesGosling"));
+		assertThat(programmersRepo.findOne("JamesGosling").orElse(null)).isEqualTo(PROGRAMMER_USER_DATA.get("JamesGosling"));
 
 		List<Programmer> javaProgrammers = programmersRepo.findDistinctByProgrammingLanguageOrderByUsernameAsc("Java");
 
@@ -222,9 +223,9 @@ public class SubRegionRepositoryIntegrationTest {
 		assertEquals(1, groovyProgrammers.size());
 		assertEquals(groovyProgrammers, getProgrammers("JamesStrachan"));
 
-		programmersRepo.save(new Wrapper<Programmer, String>(createProgrammer("RodJohnson", "Java"), "RodJohnson"));
-		programmersRepo.save(new Wrapper<Programmer, String>(createProgrammer("GuillaumeLaforge", "Groovy"), "GuillaumeLaforge"));
-		programmersRepo.save(new Wrapper<Programmer, String>(createProgrammer("GraemeRocher", "Groovy"), "GraemeRocher"));
+		programmersRepo.save(new Wrapper<>(createProgrammer("RodJohnson", "Java"), "RodJohnson"));
+		programmersRepo.save(new Wrapper<>(createProgrammer("GuillaumeLaforge", "Groovy"), "GuillaumeLaforge"));
+		programmersRepo.save(new Wrapper<>(createProgrammer("GraemeRocher", "Groovy"), "GraemeRocher"));
 
 		javaProgrammers = programmersRepo.findDistinctByProgrammingLanguageOrderByUsernameAsc("Java");
 
@@ -255,8 +256,8 @@ public class SubRegionRepositoryIntegrationTest {
 
 	@Test
 	public void testIdenticallyNamedSubregionDataAccess() {
-		assertEquals(getAdminUser("supertool"), adminUserRepo.findOne("supertool"));
-		assertEquals(getGuestUser("joeblow"), guestUserRepo.findOne("joeblow"));
+		assertThat(adminUserRepo.findOne("supertool").orElse(null)).isEqualTo(getAdminUser("supertool"));
+		assertThat(guestUserRepo.findOne("joeblow").orElse(null)).isEqualTo(getGuestUser("joeblow"));
 
 		List<RootUser> rootUsers = adminUserRepo.findDistinctByUsername("zeus");
 
@@ -273,5 +274,4 @@ public class SubRegionRepositoryIntegrationTest {
 		assertEquals(1, guestUsers.size());
 		assertEquals(getGuestUser("bubba"), guestUsers.get(0));
 	}
-
 }

@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.repository.query;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +40,9 @@ public class GemfireQueryCreatorUnitTests {
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() {
-		entity = (GemfirePersistentEntity<Person>) new GemfireMappingContext().getPersistentEntity(Person.class);
+		entity = (GemfirePersistentEntity<Person>) new GemfireMappingContext().getPersistentEntity(Person.class)
+			.orElseThrow(() -> newIllegalStateException("Unable to resolve PersistentEntity for type [%s]",
+				Person.class));
 	}
 
 	@Test

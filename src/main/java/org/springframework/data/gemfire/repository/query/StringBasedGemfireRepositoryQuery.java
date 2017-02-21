@@ -36,11 +36,12 @@ import org.springframework.util.StringUtils;
  */
 public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
-	private static final String INVALID_QUERY = "Paging and modifying queries are not supported!";
+	private static final String INVALID_QUERY = "Paging and modifying queries are not supported";
 
 	private boolean userDefinedQuery = false;
 
 	private final GemfireTemplate template;
+
 	private final QueryString query;
 
 	/*
@@ -74,7 +75,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod queryMethod, GemfireTemplate template) {
 		super(queryMethod);
 
-		Assert.notNull(template);
+		Assert.notNull(template, "GemfireTemplate must not be null");
 
 		this.userDefinedQuery |= !StringUtils.hasText(query);
 		this.query = new QueryString(StringUtils.hasText(query) ? query : queryMethod.getAnnotatedQuery());
@@ -108,11 +109,11 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	public Object execute(Object[] parameters) {
 		QueryMethod localQueryMethod = getQueryMethod();
 
-		QueryString query = (isUserDefinedQuery() ? this.query : this.query.forRegion(
-			localQueryMethod.getEntityInformation().getJavaType(), template.getRegion()));
+		QueryString query = (isUserDefinedQuery() ? this.query
+			: this.query.forRegion(localQueryMethod.getEntityInformation().getJavaType(), template.getRegion()));
 
-		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(
-			localQueryMethod.getParameters(), parameters);
+		ParametersParameterAccessor parameterAccessor =
+			new ParametersParameterAccessor(localQueryMethod.getParameters(), parameters);
 
 		for (Integer index : query.getInParameterIndexes()) {
 			query = query.bindIn(toCollection(parameterAccessor.getBindableValue(index - 1)));
@@ -144,7 +145,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		}
 	}
 
-	QueryString applyQueryAnnotationExtensions(final QueryMethod queryMethod, final QueryString queryString) {
+	QueryString applyQueryAnnotationExtensions(QueryMethod queryMethod, QueryString queryString) {
 		QueryString resolvedQueryString = queryString;
 
 		if (queryMethod instanceof GemfireQueryMethod) {
@@ -199,5 +200,4 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
 		return (source.getClass().isArray() ? CollectionUtils.arrayToList(source) : Collections.singletonList(source));
 	}
-
 }

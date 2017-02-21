@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.mapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +27,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.util.Collections;
 
@@ -94,8 +97,7 @@ public class MappingPdxSerializerUnitTests {
 		context = new GemfireMappingContext();
 		conversionService = new GenericConversionService();
 		serializer = new MappingPdxSerializer(context, conversionService);
-		serializer.setCustomSerializers(Collections.<Class<?>, PdxSerializer>singletonMap(
-			Address.class, mockAddressSerializer));
+		serializer.setCustomSerializers(Collections.singletonMap(Address.class, mockAddressSerializer));
 	}
 
 	@Test
@@ -158,26 +160,31 @@ public class MappingPdxSerializerUnitTests {
 
 		serializer.fromData(Person.class, mockReader);
 
-		verify(mockInstantiator, times(1)).createInstance(eq(context.getPersistentEntity(Person.class)),
-				any(ParameterValueProvider.class));
+		GemfirePersistentEntity<?> persistentEntity = context.getPersistentEntity(Person.class)
+			.orElseThrow(() -> newIllegalStateException("Unable to resolve PersistentEntity for type [%s]",
+				Person.class.getName()));
+
+		verify(mockInstantiator, times(1)).createInstance(eq(persistentEntity),
+			any(ParameterValueProvider.class));
 		verify(mockAddressSerializer, times(1)).fromData(eq(Address.class), any(PdxReader.class));
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void fromDataMapsPdxDataToApplicationDomainObject() {
 		Address expectedAddress = new Address();
+
 		expectedAddress.city = "Portland";
 		expectedAddress.zipCode = "12345";
 
 		when(mockInstantiator.createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class)))
 			.thenReturn(new Person(null, null, null));
-		when(mockReader.readField(eq("id"))).thenReturn(1l);
+		when(mockReader.readField(eq("id"))).thenReturn(1L);
 		when(mockReader.readField(eq("firstname"))).thenReturn("Jon");
 		when(mockReader.readField(eq("lastname"))).thenReturn("Doe");
 		when(mockAddressSerializer.fromData(eq(Address.class), eq(mockReader))).thenReturn(expectedAddress);
 
-		serializer.setGemfireInstantiators(Collections.<Class<?>, EntityInstantiator>singletonMap(
-			Person.class, mockInstantiator));
+		serializer.setGemfireInstantiators(Collections.singletonMap(Person.class, mockInstantiator));
 
 		Object obj = serializer.fromData(Person.class, mockReader);
 
@@ -186,7 +193,7 @@ public class MappingPdxSerializerUnitTests {
 		Person jonDoe = (Person) obj;
 
 		assertThat(jonDoe.getAddress()).isEqualTo(expectedAddress);
-		assertThat(jonDoe.getId()).isEqualTo(1l);
+		assertThat(jonDoe.getId()).isEqualTo(1L);
 		assertThat(jonDoe.getFirstname()).isEqualTo("Jon");
 		assertThat(jonDoe.getLastname()).isEqualTo("Doe");
 
@@ -198,24 +205,26 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void fromDataHandlesExceptionProperly() {
 		when(mockInstantiator.createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class)))
 			.thenReturn(new Person(null, null, null));
-		when(mockReader.readField(eq("id"))).thenThrow(new IllegalArgumentException("test"));
 
-		serializer.setGemfireInstantiators(Collections.<Class<?>, EntityInstantiator>singletonMap(
-			Person.class, mockInstantiator));
+		when(mockReader.readField(eq("id"))).thenThrow(newIllegalArgumentException("test"));
+
+		serializer.setGemfireInstantiators(Collections.singletonMap(Person.class, mockInstantiator));
 
 		try {
 			expectedException.expect(MappingException.class);
 			expectedException.expectCause(isA(IllegalArgumentException.class));
 			expectedException.expectMessage(String.format(
-				"while setting value [null] of property [id] for entity of type [%1$s] from PDX", Person.class));
+				"While setting value [null] of property [id] for entity of type [%s] from PDX", Person.class));
 
 			serializer.fromData(Person.class, mockReader);
 		}
 		finally {
-			verify(mockInstantiator, times(1)).createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class));
+			verify(mockInstantiator, times(1))
+				.createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class));
 			verify(mockReader, times(1)).readField(eq("id"));
 		}
 	}
@@ -226,16 +235,15 @@ public class MappingPdxSerializerUnitTests {
 		address.city = "Portland";
 		address.zipCode = "12345";
 
-		Person jonDoe = new Person(1l, "Jon", "Doe");
+		Person jonDoe = new Person(1L, "Jon", "Doe");
 		jonDoe.address = address;
 
-		serializer.setCustomSerializers(Collections.<Class<?>, PdxSerializer>singletonMap(
-			Address.class, mockAddressSerializer));
+		serializer.setCustomSerializers(Collections.singletonMap(Address.class, mockAddressSerializer));
 
 		assertThat(serializer.toData(jonDoe, mockWriter)).isTrue();
 
 		verify(mockAddressSerializer, times(1)).toData(eq(address), eq(mockWriter));
-		verify(mockWriter, times(1)).writeField(eq("id"), eq(1l), eq(Long.class));
+		verify(mockWriter, times(1)).writeField(eq("id"), eq(1L), eq(Long.class));
 		verify(mockWriter, times(1)).writeField(eq("firstname"), eq("Jon"), eq(String.class));
 		verify(mockWriter, times(1)).writeField(eq("lastname"), eq("Doe"), eq(String.class));
 		verify(mockWriter, times(1)).markIdentityField(eq("id"));
@@ -247,23 +255,23 @@ public class MappingPdxSerializerUnitTests {
 		address.city = "Portland";
 		address.zipCode = "12345";
 
-		Person jonDoe = new Person(1l, "Jon", "Doe");
+		Person jonDoe = new Person(1L, "Jon", "Doe");
 		jonDoe.address = address;
 
 		when(mockWriter.writeField(eq("address"), eq(address), eq(Address.class)))
-			.thenThrow(new IllegalArgumentException("test"));
+			.thenThrow(newIllegalArgumentException("test"));
 
 		try {
 			expectedException.expect(MappingException.class);
 			expectedException.expectCause(isA(IllegalArgumentException.class));
 			expectedException.expectMessage(String.format(
-				"Error while serializing entity property [address] value [Portland, 12345] of type [%s] to PDX",
+				"While serializing entity property [address] value [Portland, 12345] of type [%s] to PDX",
 					Person.class));
 
 			new MappingPdxSerializer(context, conversionService).toData(jonDoe, mockWriter);
 		}
 		finally {
-			verify(mockWriter, atMost(1)).writeField(eq("id"), eq(1l), eq(Long.class));
+			verify(mockWriter, atMost(1)).writeField(eq("id"), eq(1L), eq(Long.class));
 			verify(mockWriter, atMost(1)).writeField(eq("firstname"), eq("Jon"), eq(String.class));
 			verify(mockWriter, atMost(1)).writeField(eq("lastname"), eq("Doe"), eq(String.class));
 			verify(mockWriter, times(1)).writeField(eq("address"), eq(address), eq(Address.class));

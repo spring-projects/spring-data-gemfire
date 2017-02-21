@@ -16,30 +16,28 @@
 
 package org.springframework.data.gemfire.mapping;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.data.gemfire.repository.sample.GuestUser;
-import org.springframework.data.gemfire.repository.sample.RootUser;
 import org.springframework.data.gemfire.repository.sample.User;
 import org.springframework.data.mapping.context.MappingContext;
 
@@ -47,6 +45,7 @@ import org.springframework.data.mapping.context.MappingContext;
  * The RegionsTest class is a test suite of test cases testing the contract and functionality of the Regions class.
  *
  * @author John J. Blum
+ * @see org.junit.Rule
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mockito
@@ -58,6 +57,9 @@ import org.springframework.data.mapping.context.MappingContext;
 @RunWith(MockitoJUnitRunner.class)
 public class RegionsTest {
 
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 	@Mock
 	private MappingContext mockMappingContext;
 
@@ -67,13 +69,11 @@ public class RegionsTest {
 
 	private Regions regions;
 
-	protected Region mockRegion(final String fullPath) {
-		// NOTE if the Region path does not contain a "/" then lastIndexOf returns -1 and substring is appropriately
-		// based on a 0 index then by adding 1, ;-)
+	protected Region mockRegion(String fullPath) {
 		return mockRegion(fullPath.substring(fullPath.lastIndexOf(Region.SEPARATOR) + 1), fullPath);
 	}
 
-	protected Region mockRegion(final String name, final String fullPath) {
+	protected Region mockRegion(String name, String fullPath) {
 		Region mockRegion = mock(Region.class, name);
 
 		when(mockRegion.getName()).thenReturn(name);
@@ -88,10 +88,9 @@ public class RegionsTest {
 		mockAdminUsers = mockRegion("/Users/Admin");
 		mockGuestUsers = mockRegion("/Users/Guest");
 
-		regions = new Regions(Arrays.<Region<?, ?>>asList(mockUsers, mockAdminUsers, mockGuestUsers),
-			mockMappingContext);
+		regions = new Regions(Arrays.asList(mockUsers, mockAdminUsers, mockGuestUsers), mockMappingContext);
 
-		assertThat(regions, is(notNullValue()));
+		assertThat(regions).isNotNull();
 	}
 
 	@After
@@ -101,8 +100,74 @@ public class RegionsTest {
 	}
 
 	@Test
+	public void getRegionByEntityTypeReturnsRegionForEntityRegionName() {
+		GemfirePersistentEntity<User> mockPersistentEntity = mock(GemfirePersistentEntity.class);
+
+		when(mockPersistentEntity.getRegionName()).thenReturn("Users");
+		when(mockMappingContext.getPersistentEntity(eq(User.class))).thenReturn(Optional.of(mockPersistentEntity));
+
+		assertThat(regions.getRegion(User.class)).isEqualTo(mockUsers);
+	}
+
+	@Test
+	public void getRegionByEntityTypeReturnsRegionForEntityTypeSimpleName() {
+		when(mockMappingContext.getPersistentEntity(any(Class.class))).thenReturn(Optional.empty());
+
+		assertThat(regions.getRegion(Users.class)).isEqualTo(mockUsers);
+	}
+
+	@Test
+	public void getRegionByEntityTypeReturnsNull() {
+		when(mockMappingContext.getPersistentEntity(any(Class.class))).thenReturn(Optional.empty());
+
+		assertThat(regions.getRegion(Object.class)).isNull();
+	}
+
+	@Test
+	public void getRegionWithNullEntityTypeThrowsIllegalArgumentException() {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("Entity type must not be null");
+
+		regions.getRegion((Class) null);
+	}
+
+	@Test
+	public void getRegionWithNameReturnsRegion() {
+		assertThat(regions.getRegion("Users")).isSameAs(mockUsers);
+		assertThat(regions.getRegion("Admin")).isSameAs(mockAdminUsers);
+		assertThat(regions.getRegion("Guest")).isSameAs(mockGuestUsers);
+	}
+
+	@Test
+	public void getRegionWithPathReturnsRegion() {
+		assertThat(regions.getRegion("/Users")).isSameAs(mockUsers);
+		assertThat(regions.getRegion("/Users/Admin")).isSameAs(mockAdminUsers);
+		assertThat(regions.getRegion("/Users/Guest")).isSameAs(mockGuestUsers);
+	}
+
+	@Test
+	public void getRegionWithNonExistingNameReturnsNull() {
+		assertThat(regions.getRegion("NonExistingRegionName")).isNull();
+	}
+
+	@Test
+	public void getRegionWithNonExistingPathReturnsNull() {
+		assertThat(regions.getRegion("/Non/Existing/Region/Path")).isNull();
+	}
+
+	@Test
+	public void getRegionWithNullNameNullPathThrowsIllegalArgumentException() {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("Region name/path is required");
+
+		regions.getRegion((String) null);
+	}
+
+	@Test
 	public void iterateRegions() {
-		List<Region> actualRegions = new ArrayList<Region>(3);
+		List<Region> actualRegions = new ArrayList<>(3);
 
 		for (Region region : regions) {
 			actualRegions.add(region);
@@ -110,67 +175,10 @@ public class RegionsTest {
 
 		List<Region> expectedRegions = Arrays.asList(mockUsers, mockAdminUsers, mockGuestUsers);
 
-		assertEquals(expectedRegions.size() * 2, actualRegions.size());
-		assertTrue(actualRegions.containsAll(expectedRegions));
+		assertThat(actualRegions).hasSize(expectedRegions.size() * 2);
+		assertThat(actualRegions).containsAll(expectedRegions);
 	}
 
-	@Test
-	public void getRegionByNameOrPath() {
-		assertSame(mockUsers, regions.getRegion("Users"));
-		assertSame(mockUsers, regions.getRegion("/Users"));
-		assertSame(mockAdminUsers, regions.getRegion("Admin"));
-		assertSame(mockAdminUsers, regions.getRegion("/Users/Admin"));
-		assertSame(mockGuestUsers, regions.getRegion("Guest"));
-		assertSame(mockGuestUsers, regions.getRegion("/Users/Guest"));
+	interface Users {
 	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void getRegionByNameOrPathWithNullArgument() {
-		regions.getRegion((String) null);
-	}
-
-	@Test
-	public void getRegionByDomainClassType() {
-		when(mockMappingContext.getPersistentEntity(Object.class)).thenReturn(null);
-		assertSame(mockUsers, regions.getRegion(Users.class));
-		assertNull(regions.getRegion(User.class));
-		assertNull(regions.getRegion(RootUser.class));
-		assertNull(regions.getRegion(GuestUser.class));
-	}
-
-	@Test
-	public void getRegionByDomainClassTypeAndPersistentEntity() {
-		GemfirePersistentEntity mockUsersEntity = mock(GemfirePersistentEntity.class, "UsersGemfirePeristentEntity");
-		GemfirePersistentEntity mockAdminUserEntity = mock(GemfirePersistentEntity.class, "AdminUserGemfirePeristentEntity");
-		GemfirePersistentEntity mockGuestUserEntity = mock(GemfirePersistentEntity.class, "GuestUserGemfirePeristentEntity");
-
-		when(mockMappingContext.getPersistentEntity(User.class)).thenReturn(mockUsersEntity);
-		when(mockUsersEntity.getRegionName()).thenReturn("/Users");
-		when(mockMappingContext.getPersistentEntity(RootUser.class)).thenReturn(mockAdminUserEntity);
-		when(mockAdminUserEntity.getRegionName()).thenReturn("Admin");
-		when(mockMappingContext.getPersistentEntity(GuestUser.class)).thenReturn(mockGuestUserEntity);
-		when(mockGuestUserEntity.getRegionName()).thenReturn("/Users/Guest");
-		when(mockMappingContext.getPersistentEntity(Object.class)).thenReturn(null);
-
-		assertSame(mockUsers, regions.getRegion(User.class));
-		assertSame(mockUsers, regions.getRegion(Users.class));
-		assertSame(mockAdminUsers, regions.getRegion(RootUser.class));
-		assertSame(mockGuestUsers, regions.getRegion(GuestUser.class));
-	}
-
-	@Test
-	public void getRegionByPersistentEntity() {
-		GemfirePersistentEntity mockPersistentEntity = mock(GemfirePersistentEntity.class, "GemfirePersistentEntity");
-
-		when(mockMappingContext.getPersistentEntity(any(Class.class))).thenReturn(mockPersistentEntity);
-		when(mockPersistentEntity.getRegionName()).thenReturn("/Non/Existing/Region");
-
-		assertNull(regions.getRegion(User.class));
-		assertNull(regions.getRegion(RootUser.class));
-		assertNull(regions.getRegion(GuestUser.class));
-	}
-
-	protected interface Users {
-	}
-
 }

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -63,6 +64,7 @@ import org.springframework.data.gemfire.config.annotation.support.GemFireCompone
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
+import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
 import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
@@ -218,7 +220,9 @@ public class EntityDefinedRegionsConfiguration
 
 	/* (non-Javadoc) */
 	protected GemfirePersistentEntity<?> getPersistentEntity(Class<?> persistentEntityType) {
-		return resolveMappingContext().getPersistentEntity(persistentEntityType);
+		return resolveMappingContext().getPersistentEntity(persistentEntityType).orElseThrow(
+			() -> new IllegalStateException(String.format("PersistentEntity for type [%s] not found",
+				persistentEntityType)));
 	}
 
 	/* (non-Javadoc) */
@@ -475,13 +479,15 @@ public class EntityDefinedRegionsConfiguration
 
 	/* (non-Javadoc) */
 	protected Class<?> resolveDomainType(GemfirePersistentEntity persistentEntity) {
-		return defaultIfNull(persistentEntity.getType(), Object.class);
+		return Optional.of(persistentEntity.getType()).orElse(Object.class);
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
 	protected Class<?> resolveIdType(GemfirePersistentEntity persistentEntity) {
-		return (persistentEntity.hasIdProperty() ?
-			defaultIfNull(persistentEntity.getIdProperty().getActualType(), Object.class) : Object.class);
+		return (Class<?>) persistentEntity.getIdProperty()
+			.map((idProperty) -> ((GemfirePersistentProperty) idProperty).getActualType())
+				.orElse(Object.class);
 	}
 
 	/* (non-Javadoc) */

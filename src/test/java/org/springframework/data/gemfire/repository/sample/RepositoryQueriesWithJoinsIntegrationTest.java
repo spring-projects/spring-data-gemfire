@@ -16,10 +16,7 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,7 +44,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SuppressWarnings("unused")
 public class RepositoryQueriesWithJoinsIntegrationTest {
 
-	private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+	private static final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
 
 	@Autowired
 	private AccountRepository accountRepo;
@@ -55,38 +52,33 @@ public class RepositoryQueriesWithJoinsIntegrationTest {
 	@Autowired
 	private CustomerRepository customerRepo;
 
-	protected Account createAccount(final Customer customer, final String number) {
+	protected Account newAccount(Customer customer, String number) {
 		Account account = new Account(ID_SEQUENCE.incrementAndGet(), customer);
 		account.setNumber(number);
 		return account;
 	}
 
-	protected Customer createCustomer(final String firstName, final String lastName) {
+	protected Customer newCustomer(String firstName, String lastName) {
 		Customer customer = new Customer(firstName, lastName);
 		customer.setId(ID_SEQUENCE.incrementAndGet());
 		return customer;
 	}
 
 	@Test
-	public void testJoinQueries() {
-		Customer jonDoe = customerRepo.save(createCustomer("Jon", "Doe"));
-		Customer janeDoe = customerRepo.save(createCustomer("Jane", "Doe"));
-		Customer jackHandy = customerRepo.save(createCustomer("Jack", "Handy"));
+	public void joinQueriesWork() {
+		Customer jonDoe = customerRepo.save(newCustomer("Jon", "Doe"));
+		Customer janeDoe = customerRepo.save(newCustomer("Jane", "Doe"));
+		Customer jackHandy = customerRepo.save(newCustomer("Jack", "Handy"));
 
-		Account jonAccountOne = accountRepo.save(createAccount(jonDoe, "1"));
-		Account jonAccountTwo = accountRepo.save(createAccount(jonDoe, "2"));
-		Account janeAccount = accountRepo.save(createAccount(janeDoe, "1"));
+		Account jonAccountOne = accountRepo.save(newAccount(jonDoe, "1"));
+		Account jonAccountTwo = accountRepo.save(newAccount(jonDoe, "2"));
+		Account janeAccount = accountRepo.save(newAccount(janeDoe, "1"));
 
 		List<Customer> actualCustomersWithAccounts = customerRepo.findCustomersWithAccounts();
 		List<Customer> expectedCustomersWithAccounts = Arrays.asList(jonDoe, janeDoe);
 
-		assertNotNull(actualCustomersWithAccounts);
-		assertFalse(String.format("Expected Customers (%1$s)!", expectedCustomersWithAccounts),
-			actualCustomersWithAccounts.isEmpty());
-		assertEquals(String.format("Expected Customers (%1$s); but was (%2$s)!", expectedCustomersWithAccounts, actualCustomersWithAccounts),
-			2, actualCustomersWithAccounts.size());
-		assertTrue(String.format("Expected Customers (%1$s); but was (%2$s)!", expectedCustomersWithAccounts, actualCustomersWithAccounts),
-			actualCustomersWithAccounts.containsAll(expectedCustomersWithAccounts));
+		assertThat(actualCustomersWithAccounts).isNotNull();
+		assertThat(actualCustomersWithAccounts).hasSize(2);
+		assertThat(actualCustomersWithAccounts).containsAll(expectedCustomersWithAccounts);
 	}
-
 }

@@ -15,8 +15,11 @@
  */
 package org.springframework.data.gemfire.mapping;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -115,8 +118,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	public MappingPdxSerializer(GemfireMappingContext mappingContext, ConversionService conversionService) {
 
-		Assert.notNull(mappingContext);
-		Assert.notNull(conversionService);
+		Assert.notNull(mappingContext, "GemfireMappingContext must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.mappingContext = mappingContext;
 		this.conversionService = conversionService;
@@ -130,7 +133,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.context = new SpELContext(context, applicationContext);
+		this.context = new SpELContext(this.context, applicationContext);
 	}
 
 	/* (non-Javadoc) */
@@ -144,7 +147,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @param customSerializers a mapping of domain object class types and their corresponding PDX serializer.
 	 */
 	public void setCustomSerializers(Map<Class<?>, PdxSerializer> customSerializers) {
-		Assert.notNull(customSerializers);
+		Assert.notNull(customSerializers, "Custom PdxSerializers must not be null");
 		this.customSerializers = customSerializers;
 	}
 
@@ -159,7 +162,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @param gemfireInstantiators must not be {@literal null}.
 	 */
 	public void setGemfireInstantiators(Map<Class<?>, EntityInstantiator> gemfireInstantiators) {
-		Assert.notNull(gemfireInstantiators);
+		Assert.notNull(gemfireInstantiators, "EntityInstantiators must not be null");
 		this.instantiators = new EntityInstantiators(gemfireInstantiators);
 	}
 
@@ -177,46 +180,45 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Object fromData(final Class<?> type, final PdxReader reader) {
+	public Object fromData(Class<?> type, PdxReader reader) {
 
-		final GemfirePersistentEntity<?> entity = getPersistentEntity(type);
+		GemfirePersistentEntity<?> entity = getPersistentEntity(type);
 
-		final Object instance = getInstantiatorFor(entity).createInstance(entity,
-			new PersistentEntityParameterValueProvider<>(entity, new GemfirePropertyValueProvider(reader), null));
+		Object instance = getInstantiatorFor(entity).createInstance(entity,
+			new PersistentEntityParameterValueProvider<>(entity, new GemfirePropertyValueProvider(reader),
+				Optional.empty()));
 
-		final PersistentPropertyAccessor propertyAccessor =
+		PersistentPropertyAccessor propertyAccessor =
 			new ConvertingPropertyAccessor(entity.getPropertyAccessor(instance), getConversionService());
 
-		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
-			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
-				if (!entity.isConstructorArgument(persistentProperty)) {
-					PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
+		entity.doWithProperties((PropertyHandler<GemfirePersistentProperty>) persistentProperty -> {
+			if (!entity.isConstructorArgument(persistentProperty)) {
+				PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
 
-					Object value = null;
+				Object value = null;
 
-					try {
-						if (log.isDebugEnabled()) {
-							log.debug(String.format("setting property [%1$s] for entity [%2$s] of type [%3$s] from PDX%4$s",
-								persistentProperty.getName(), instance, type, (customSerializer != null ?
-									String.format(" using custom PdxSerializer [%1$s]", customSerializer) : "")));
-						}
-
-						value = (customSerializer != null
-							? customSerializer.fromData(persistentProperty.getType(), reader)
-							: reader.readField(persistentProperty.getName()));
-
-						if (log.isDebugEnabled()) {
-							log.debug(String.format("with value [%1$s]", value));
-						}
-
-						propertyAccessor.setProperty(persistentProperty, value);
+				try {
+					if (log.isDebugEnabled()) {
+						log.debug(String.format("setting property [%1$s] for entity [%2$s] of type [%3$s] from PDX%4$s",
+							persistentProperty.getName(), instance, type, (customSerializer != null ?
+								String.format(" using custom PdxSerializer [%1$s]", customSerializer) : "")));
 					}
-					catch (Exception e) {
-						throw new MappingException(String.format(
-							"while setting value [%1$s] of property [%2$s] for entity of type [%3$s] from PDX%4$s",
-								value, persistentProperty.getName(), type, (customSerializer != null ?
-									String.format(" using custom PdxSerializer [%14s]", customSerializer) : "")), e);
+
+					value = (customSerializer != null
+						? customSerializer.fromData(persistentProperty.getType(), reader)
+						: reader.readField(persistentProperty.getName()));
+
+					if (log.isDebugEnabled()) {
+						log.debug(String.format("with value [%1$s]", value));
 					}
+
+					propertyAccessor.setProperty(persistentProperty, Optional.ofNullable(value));
+				}
+				catch (Exception e) {
+					throw new MappingException(String.format(
+						"While setting value [%1$s] of property [%2$s] for entity of type [%3$s] from PDX%4$s",
+							value, persistentProperty.getName(), type, (customSerializer != null ?
+								String.format(" using custom PdxSerializer [%14s]", customSerializer) : "")), e);
 				}
 			}
 		});
@@ -228,52 +230,51 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean toData(final Object value, final PdxWriter writer) {
+	@SuppressWarnings("unchecked")
+	public boolean toData(Object value, PdxWriter writer) {
 
 		GemfirePersistentEntity<?> entity = getPersistentEntity(value);
 
-		final PersistentPropertyAccessor propertyAccessor =
+		PersistentPropertyAccessor propertyAccessor =
 			new ConvertingPropertyAccessor(entity.getPropertyAccessor(value), getConversionService());
 
-		entity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
-			@Override @SuppressWarnings("unchecked")
-			public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
-				PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
+		entity.doWithProperties((PropertyHandler<GemfirePersistentProperty>) persistentProperty -> {
+			PdxSerializer customSerializer = getCustomSerializer(persistentProperty.getType());
 
-				Object propertyValue = null;
+			Optional<Object> propertyValue = null;
 
-				try {
-					propertyValue = propertyAccessor.getProperty(persistentProperty);
+			try {
+				propertyValue = propertyAccessor.getProperty(persistentProperty);
 
-					if (log.isDebugEnabled()) {
-						log.debug(String.format("Serializing entity property [%1$s] value [%2$s] of type [%3$s] to PDX%4$s",
-							persistentProperty.getName(), propertyValue, value.getClass(), (customSerializer != null ?
-								String.format(" using custom PdxSerializer [%s]", customSerializer) : "")));
-					}
-
-					if (customSerializer != null) {
-						customSerializer.toData(propertyValue, writer);
-					}
-					else {
-						writer.writeField(persistentProperty.getName(), propertyValue,
-							(Class<Object>) persistentProperty.getType());
-					}
+				if (log.isDebugEnabled()) {
+					log.debug(String.format("Serializing entity property [%1$s] value [%2$s] of type [%3$s] to PDX%4$s",
+						persistentProperty.getName(), propertyValue, value.getClass(), (customSerializer != null ?
+							String.format(" using custom PdxSerializer [%s]", customSerializer) : "")));
 				}
-				catch (Exception e) {
-					throw new MappingException(String.format(
-						"Error while serializing entity property [%1$s] value [%2$s] of type [%3$s] to PDX%4$s",
-							persistentProperty.getName(), propertyValue, value.getClass(),
-								(customSerializer != null ? String.format(" using custom PdxSerializer [%1$s].",
-									customSerializer.getClass().getName()) : ".")), e);
+
+				if (customSerializer != null) {
+					customSerializer.toData(propertyValue.orElse(null), writer);
 				}
+				else {
+					writer.writeField(persistentProperty.getName(), propertyValue.orElse(null),
+						(Class<Object>) persistentProperty.getType());
+				}
+			}
+			catch (Exception e) {
+				Object resolvedPropertyValue = (propertyValue != null ? propertyValue.orElse(null) : null);
+
+				throw new MappingException(String.format(
+					"While serializing entity property [%1$s] value [%2$s] of type [%3$s] to PDX%4$s",
+						persistentProperty.getName(), resolvedPropertyValue, value.getClass(),
+							(customSerializer != null ? String.format(" using custom PdxSerializer [%1$s].",
+								customSerializer.getClass().getName()) : ".")), e);
 			}
 		});
 
-		GemfirePersistentProperty idProperty = entity.getIdProperty();
+		Optional<GemfirePersistentProperty> idProperty = entity.getIdProperty();
 
-		if (idProperty != null) {
-			writer.markIdentityField(idProperty.getName());
-		}
+		idProperty.ifPresent(gemfirePersistentProperty ->
+			writer.markIdentityField(gemfirePersistentProperty.getName()));
 
 		return true;
 	}
@@ -325,6 +326,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @see #getMappingContext()
 	 */
 	protected GemfirePersistentEntity<?> getPersistentEntity(Class<?> entityType) {
-		return getMappingContext().getPersistentEntity(entityType);
+		return getMappingContext().getPersistentEntity(entityType).orElseThrow(
+			() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%]", entityType));
 	}
 }

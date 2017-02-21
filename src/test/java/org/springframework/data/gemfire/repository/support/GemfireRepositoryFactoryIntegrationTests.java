@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.support;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -36,26 +37,25 @@ import org.springframework.test.context.ContextConfiguration;
  * Integration test for {@link GemfireRepositoryFactory}.
  *
  * @author Oliver Gierke
+ * @author John Blum
  */
 @ContextConfiguration("../config/repo-context.xml")
 public class GemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRepositoryFactoryIntegrationTests {
 
-	@Autowired ApplicationContext context;
-	@Autowired GemfireMappingContext mappingContext;
+	@Autowired
+	private ApplicationContext applicationContext;
+
+	@Autowired
+	private GemfireMappingContext mappingContext;
 
 	@Override
 	protected PersonRepository getRepository(Regions regions) {
-
-		GemfireRepositoryFactory factory = new GemfireRepositoryFactory(regions, mappingContext);
-		return factory.getRepository(PersonRepository.class);
+		return new GemfireRepositoryFactory(regions, mappingContext).getRepository(PersonRepository.class);
 	}
 
 	@Test(expected = IllegalStateException.class)
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionIfReferencedRegionIsNotConfigured() {
-
-		GemfireRepositoryFactory factory = new GemfireRepositoryFactory((Iterable) Collections.emptySet(), mappingContext);
-		factory.getRepository(PersonRepository.class);
+		new GemfireRepositoryFactory(Collections.emptySet(), mappingContext).getRepository(PersonRepository.class);
 	}
 
 	/**
@@ -63,9 +63,9 @@ public class GemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRep
 	 */
 	@Test
 	public void exposesPersistentProperty() {
-
-		Repositories repositories = new Repositories(context);
+		Repositories repositories = new Repositories(applicationContext);
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(Person.class);
+
 		assertThat(entity, is(notNullValue()));
 	}
 }

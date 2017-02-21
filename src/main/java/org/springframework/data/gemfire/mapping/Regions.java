@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.mapping;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -50,7 +52,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 		Assert.notNull(regions, "Regions must not be null");
 		Assert.notNull(mappingContext, "MappingContext must not be null");
 
-		Map<String, Region<?, ?>> regionMap = new HashMap<String, Region<?, ?>>();
+		Map<String, Region<?, ?>> regionMap = new HashMap<>();
 
 		for (Region<?, ?> region : regions) {
 			regionMap.put(region.getName(), region);
@@ -72,12 +74,12 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Region<?, T> getRegion(Class<T> entityType) {
-		Assert.notNull(entityType, "entityType must not be null");
+		Assert.notNull(entityType, "Entity type must not be null");
 
-		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(entityType);
-		String regionName = (entity != null ? entity.getRegionName() : entityType.getSimpleName());
+		String regionName = this.mappingContext.getPersistentEntity(entityType).map((entity) -> entity.getRegionName())
+			.orElseGet(entityType::getSimpleName);
 
-		return (Region<?, T>) regions.get(regionName);
+		return (Region<?, T>) this.regions.get(regionName);
 	}
 
 	/**
@@ -92,7 +94,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 	public <S, T> Region<S, T> getRegion(String namePath) {
 		Assert.hasText(namePath, "Region name/path is required");
 
-		return (Region<S, T>) regions.get(namePath);
+		return (Region<S, T>) this.regions.get(namePath);
 	}
 
 	/*
@@ -102,6 +104,6 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 */
 	@Override
 	public Iterator<Region<?, ?>> iterator() {
-		return regions.values().iterator();
+		return this.regions.values().iterator();
 	}
 }

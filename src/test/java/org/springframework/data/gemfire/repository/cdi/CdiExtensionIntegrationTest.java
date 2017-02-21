@@ -83,7 +83,7 @@ public class CdiExtensionIntegrationTest {
 		Person expectedJonDoe = repositoryClient.newPerson("Jon", "Doe");
 
 		assertThat(expectedJonDoe, is(notNullValue()));
-		assertThat(expectedJonDoe.getId(), is(greaterThan(0l)));
+		assertThat(expectedJonDoe.getId(), is(greaterThan(0L)));
 		assertThat(expectedJonDoe.getName(), is(equalTo("Jon Doe")));
 
 		Person savedJonDoe = repositoryClient.save(expectedJonDoe);
@@ -94,8 +94,8 @@ public class CdiExtensionIntegrationTest {
 
 		assertIsExpectedPerson(foundJonDoe, expectedJonDoe);
 
-		assertThat(repositoryClient.delete(expectedJonDoe), is(true));
-		assertThat(repositoryClient.find(expectedJonDoe.getId()), is(nullValue()));
+		assertThat(repositoryClient.delete(foundJonDoe), is(true));
+		assertThat(repositoryClient.find(foundJonDoe.getId()), is(nullValue()));
 	}
 
 	@Test

@@ -148,13 +148,13 @@ public class SimpleGemfireRepositoryIntegrationTests {
 
 		assertThat(repository.save(oliverGierke)).isEqualTo(oliverGierke);
 		assertThat(repository.count()).isEqualTo(1L);
-		assertThat(repository.findOne(oliverGierke.getId())).isEqualTo(oliverGierke);
+		assertThat(repository.findOne(oliverGierke.getId()).orElse(null)).isEqualTo(oliverGierke);
 		assertThat(repository.findAll()).isEqualTo(Collections.singletonList(oliverGierke));
 
 		repository.delete(oliverGierke);
 
 		assertThat(repository.count()).isEqualTo(0L);
-		assertThat(repository.findOne(oliverGierke.getId())).isNull();
+		assertThat(repository.findOne(oliverGierke.getId()).orElse(null)).isNull();
 		assertThat(repository.findAll()).isEmpty();
 	}
 

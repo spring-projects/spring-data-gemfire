@@ -18,6 +18,7 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -110,26 +111,20 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 			super.postProcess(importingClassMetadata, registry, persistentEntity);
 
 		if (isAnnotationPresent(importingClassMetadata, getEnableIndexesAnnotationTypeName())) {
-			final AnnotationAttributes enableIndexesAttributes =
+			AnnotationAttributes enableIndexesAttributes =
 				getAnnotationAttributes(importingClassMetadata, getEnableIndexesAnnotationTypeName());
 
-			localPersistentEntity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
-				@Override
-				public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
-					Id idAnnotation = persistentProperty.findAnnotation(Id.class);
+			localPersistentEntity.doWithProperties((PropertyHandler<GemfirePersistentProperty>) persistentProperty -> {
+				Optional<Id> idAnnotation = persistentProperty.findAnnotation(Id.class);
 
-					if (idAnnotation != null) {
-						registerIndexBeanDefinition(enableIndexesAttributes, localPersistentEntity, persistentProperty,
-							IndexType.KEY, idAnnotation, registry);
-					}
+				idAnnotation.ifPresent(id -> registerIndexBeanDefinition(enableIndexesAttributes, localPersistentEntity,
+					persistentProperty, IndexType.KEY, id, registry));
 
-					Indexed indexedAnnotation = persistentProperty.findAnnotation(Indexed.class);
+				Optional<Indexed> indexedAnnotation = persistentProperty.findAnnotation(Indexed.class);
 
-					if (indexedAnnotation != null) {
-						registerIndexBeanDefinition(enableIndexesAttributes, localPersistentEntity, persistentProperty,
-							indexedAnnotation.type(), indexedAnnotation, registry);
-					}
-				}
+				indexedAnnotation.ifPresent(
+					indexed -> registerIndexBeanDefinition(enableIndexesAttributes, localPersistentEntity,
+						persistentProperty, indexed.type(), indexed, registry));
 			});
 		}
 

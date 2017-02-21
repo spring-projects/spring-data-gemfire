@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.query;
 
 import java.util.ArrayList;
@@ -29,11 +30,15 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * The QueryString class is a utility class for working with GemFire OQL query statement syntax.
+ * {@link QueryString} is a utility class used to construct GemFire OQL query statement syntax.
  *
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
+ * @see java.util.regex.Pattern
+ * @see org.springframework.data.domain.Sort
+ * @see org.springframework.data.gemfire.repository.query.support.OqlKeyword
+ * @see org.apache.geode.cache.Region
  */
 public class QueryString {
 
@@ -117,8 +122,8 @@ public class QueryString {
 	 */
 	public QueryString bindIn(Collection<?> values) {
 		if (values != null) {
-			String valueString = StringUtils.collectionToDelimitedString(values, ", ", "'", "'");
-			return new QueryString(this.query.replaceFirst(IN_PATTERN, String.format("(%s)", valueString)));
+			return new QueryString(this.query.replaceFirst(IN_PATTERN, String.format("(%s)",
+				StringUtils.collectionToDelimitedString(values, ", ", "'", "'"))));
 		}
 
 		return this;
@@ -147,7 +152,7 @@ public class QueryString {
 	public Iterable<Integer> getInParameterIndexes() {
 		Pattern pattern = Pattern.compile(IN_PARAMETER_PATTERN);
 		Matcher matcher = pattern.matcher(query);
-		List<Integer> result = new ArrayList<Integer>();
+		List<Integer> result = new ArrayList<>();
 
 		while (matcher.find()) {
 			result.add(Integer.parseInt(matcher.group()));
@@ -166,7 +171,7 @@ public class QueryString {
 	 * @see org.springframework.data.gemfire.repository.query.QueryString
 	 */
 	public QueryString orderBy(Sort sort) {
-		if (sort != null) {
+		if (hasSort(sort)) {
 			StringBuilder orderClause = new StringBuilder("ORDER BY ");
 			int count = 0;
 
@@ -179,6 +184,11 @@ public class QueryString {
 		}
 
 		return this;
+	}
+
+	/* (non-Javadoc) */
+	private boolean hasSort(Sort sort) {
+		return (sort != null && sort.iterator().hasNext());
 	}
 
 	/**

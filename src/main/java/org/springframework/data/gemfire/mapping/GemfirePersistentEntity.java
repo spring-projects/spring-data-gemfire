@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.mapping;
 import static org.springframework.data.gemfire.util.SpringUtils.defaultIfEmpty;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -49,7 +50,6 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 
 	/* (non-Javadoc) */
 	protected static Annotation resolveRegionAnnotation(Class<?> persistentEntityType) {
-
 		for (Class<? extends Annotation> regionAnnotationType : Region.REGION_ANNOTATION_TYPES) {
 			Annotation regionAnnotation = AnnotatedElementUtils.getMergedAnnotation(
 				persistentEntityType, regionAnnotationType);
@@ -64,9 +64,9 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 
 	/* (non-Javadoc) */
 	protected static String resolveRegionName(Class<?> persistentEntityType, Annotation regionAnnotation) {
-
-		String regionName = (regionAnnotation != null
-			? getAnnotationAttributeStringValue(regionAnnotation, "value") : null);
+		String regionName = Optional.ofNullable(regionAnnotation)
+			.map((annotation) ->  getAnnotationAttributeStringValue(annotation, "value"))
+				.orElse(null);
 
 		return defaultIfEmpty(regionName, persistentEntityType.getSimpleName());
 	}
@@ -123,8 +123,9 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	 * @see #getRegionAnnotation()
 	 */
 	public Class<? extends Annotation> getRegionAnnotationType() {
-		Annotation regionAnnotation = getRegionAnnotation();
-		return (regionAnnotation != null ? regionAnnotation.annotationType() : null);
+		return Optional.ofNullable(getRegionAnnotation())
+			.map((annotation) -> ((Annotation) annotation).annotationType())
+				.orElse(null);
 	}
 
 	/**
@@ -148,15 +149,17 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 			GemfirePersistentProperty property) {
 
 		if (property.isIdProperty()) {
-			if (hasIdProperty()) {
-				GemfirePersistentProperty currentIdProperty = getIdProperty();
+			Optional<GemfirePersistentProperty> optionalIdProperty = getIdProperty();
 
-				if (currentIdProperty.isExplicitIdProperty()) {
+			if (optionalIdProperty.isPresent()) {
+				GemfirePersistentProperty idProperty = getIdProperty().get();
+
+				if (idProperty.isExplicitIdProperty()) {
 					if (property.isExplicitIdProperty()) {
 						throw new MappingException(String.format(
 							"Attempt to add explicit id property [%1$s] but already have id property [%2$s] registered as explicit;"
 								+ " Please check your object [%3$s] mapping configuration",
-									property.getName(), currentIdProperty.getName(), getType().getName()));
+									property.getName(), idProperty.getName(), getType().getName()));
 					}
 
 					return null;
