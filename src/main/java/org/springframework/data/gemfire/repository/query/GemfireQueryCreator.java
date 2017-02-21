@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.query;
 
 import java.util.Iterator;
@@ -98,7 +99,7 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 		QueryString query = queryBuilder.create(criteria).orderBy(sort);
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug(String.format("Created Query '%1$s'", query.toString()));
+			LOG.debug(String.format("Created Query [%s]", query.toString()));
 		}
 
 		return query;

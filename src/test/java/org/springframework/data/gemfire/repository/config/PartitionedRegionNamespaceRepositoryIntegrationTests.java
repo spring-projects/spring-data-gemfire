@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +24,12 @@ import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Integration tests for namespace usage.
- * 
+ *
  * @author Oliver Gierke
  */
 @ContextConfiguration("partitioned-region-repo-context.xml")
-public class PartitionedRegionNamespaceRepositoryIntegrationTests extends
-		AbstractGemfireRepositoryFactoryIntegrationTests {
+public class PartitionedRegionNamespaceRepositoryIntegrationTests
+		extends AbstractGemfireRepositoryFactoryIntegrationTests {
 
 	@Autowired
 	PersonRepository repository;

@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -102,10 +103,14 @@ public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTe
 
 	@Test
 	public void repositoryCreatedAndFunctional() {
-		PersonRepository repo = applicationContext.getBean(PersonRepository.class);
-		Person daveMathhews = new Person(1L, "Dave", "Mathhews");
+		Person daveMathews = new Person(1L, "Dave", "Mathews");
+		PersonRepository repository = applicationContext.getBean(PersonRepository.class);
 
-		assertThat(repo.save(daveMathhews)).isSameAs(daveMathhews);
-		assertThat(repo.findOne(1L).getFirstname()).isEqualTo("Dave");
+		assertThat(repository.save(daveMathews)).isSameAs(daveMathews);
+
+		Optional<Person> result = repository.findOne(1L);
+
+		assertThat(result.isPresent()).isTrue();
+		assertThat(result.get().getFirstname()).isEqualTo("Dave");
 	}
 }

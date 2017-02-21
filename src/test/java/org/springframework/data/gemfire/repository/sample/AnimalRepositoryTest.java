@@ -16,14 +16,15 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The AnimalRepositoryTest class is a test suite of test cases testing the functionality behind PR #55 involving
@@ -39,7 +40,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @link https://github.com/spring-projects/spring-data-gemfire/pull/55
  */
 @ContextConfiguration
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @SuppressWarnings("unused")
 public class AnimalRepositoryTest {
 
@@ -49,7 +50,7 @@ public class AnimalRepositoryTest {
 	@Autowired
 	private DogRepository dogRepo;
 
-	protected static Animal createAnimal(final long id, final String name) {
+	protected static Animal newAnimal(long id, String name) {
 		Animal animal = new Animal();
 		animal.setId(id);
 		animal.setName(name);
@@ -58,42 +59,42 @@ public class AnimalRepositoryTest {
 
 	@Test
 	public void testEntityStoredInMultipleRegions() {
-		Animal felix = createAnimal(1, "Felix");
-		Animal leo = createAnimal(2, "Leo");
-		Animal cerberus = createAnimal(3, "Cerberus");
-		Animal fido = createAnimal(1, "Fido");
+		Animal felix = newAnimal(1, "Felix");
+		Animal leo = newAnimal(2, "Leo");
+		Animal cerberus = newAnimal(3, "Cerberus");
+		Animal fido = newAnimal(1, "Fido");
 
-		assertNotNull(catRepo.save(felix));
-		assertNotNull(catRepo.save(leo));
-		assertNotNull(catRepo.save(cerberus));
-		assertNotNull(dogRepo.save(fido));
-		assertNotNull(dogRepo.save(cerberus));
-		assertEquals(3L, catRepo.count());
-		assertEquals(2L, dogRepo.count());
+		assertThat(catRepo.save(felix)).isNotNull();
+		assertThat(catRepo.save(leo)).isNotNull();
+		assertThat(catRepo.save(cerberus)).isNotNull();
+		assertThat(dogRepo.save(fido)).isNotNull();
+		assertThat(dogRepo.save(cerberus)).isNotNull();
+		assertThat(catRepo.count()).isEqualTo(3L);
+		assertThat(dogRepo.count()).isEqualTo(2L);
 
-		Animal foundFelix = catRepo.findOne(1L);
+		Optional<Animal> foundFelix = catRepo.findOne(1L);
 
-		assertEquals(felix, foundFelix);
+		assertThat(foundFelix.isPresent()).isTrue();
+		assertThat(foundFelix.get()).isEqualTo(felix);
 
 		Animal foundLeo = catRepo.findBy("Leo");
 
-		assertEquals(leo, foundLeo);
+		assertThat(foundLeo).isEqualTo(leo);
 
 		Animal foundCerberusTheCat = catRepo.findByName("Cerberus");
 
-		assertEquals(cerberus, foundCerberusTheCat);
-		assertEquals(foundCerberusTheCat, catRepo.findBy("Cerberus"));
-		assertEquals(foundCerberusTheCat, catRepo.findOne(3L));
+		assertThat(foundCerberusTheCat).isEqualTo(cerberus);
+		assertThat(catRepo.findBy("Cerberus")).isEqualTo(foundCerberusTheCat);
+		assertThat(catRepo.findOne(3L).orElse(null)).isEqualTo(foundCerberusTheCat);
 
 		Animal foundFido = dogRepo.findBy("Fido");
 
-		assertEquals(fido, foundFido);
+		assertThat(foundFido).isEqualTo(fido);
 
 		Animal foundCerberusTheDog = dogRepo.findByName("Cerberus");
 
-		assertEquals(cerberus, foundCerberusTheDog);
-		assertEquals(foundCerberusTheDog, dogRepo.findBy("Cerberus"));
-		assertEquals(foundCerberusTheDog, dogRepo.findOne(3L));
+		assertThat(foundCerberusTheDog).isEqualTo(cerberus);
+		assertThat(dogRepo.findBy("Cerberus")).isEqualTo(foundCerberusTheDog);
+		assertThat(dogRepo.findOne(3L).orElse(null)).isEqualTo(foundCerberusTheDog);
 	}
-
 }

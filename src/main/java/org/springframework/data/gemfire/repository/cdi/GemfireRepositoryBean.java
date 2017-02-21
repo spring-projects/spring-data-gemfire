@@ -21,6 +21,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -64,7 +65,7 @@ class GemfireRepositoryBean<T> extends CdiRepositoryBean<T> {
 			CustomRepositoryImplementationDetector detector, Bean<GemfireMappingContext> gemfireMappingContextBean,
 			Set<Bean<Region>> regionBeans) {
 
-		super(qualifiers, repositoryType, beanManager, detector);
+		super(qualifiers, repositoryType, beanManager, Optional.ofNullable(detector));
 
 		this.beanManager = beanManager;
 		this.gemfireMappingContextBean = gemfireMappingContextBean;
@@ -148,8 +149,12 @@ class GemfireRepositoryBean<T> extends CdiRepositoryBean<T> {
 	 * @see #newGemfireRepositoryFactory()
 	 */
 	@Override
-	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType, Object customImplementation) {
-		return newGemfireRepositoryFactory().getRepository(repositoryType, customImplementation);
-	}
+	@SuppressWarnings("all")
+	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
+			Optional<Object> customImplementation) {
 
+		return (customImplementation.isPresent()
+			? newGemfireRepositoryFactory().getRepository(repositoryType, customImplementation.get())
+			: newGemfireRepositoryFactory().getRepository(repositoryType));
+	}
 }

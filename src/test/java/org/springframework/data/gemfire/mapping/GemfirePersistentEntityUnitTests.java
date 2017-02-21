@@ -19,9 +19,11 @@ package org.springframework.data.gemfire.mapping;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +62,8 @@ public class GemfirePersistentEntityUnitTests {
 
 	@SuppressWarnings("unchecked")
 	protected <T> GemfirePersistentEntity<T> getMappingContextPersistentEntity(Class<T> type) {
-		return (GemfirePersistentEntity<T>) this.mappingContext.getPersistentEntity(type);
+		return (GemfirePersistentEntity<T>) this.mappingContext.getPersistentEntity(type).orElseThrow(
+			() -> newIllegalStateException("Unable to resolve PersistentEntity for type [%s]", type));
 	}
 
 	protected <T> GemfirePersistentEntity<T> newPersistentEntity(Class<T> type) {
@@ -93,10 +96,10 @@ public class GemfirePersistentEntityUnitTests {
 		assertThat(entity).isNotNull();
 		assertThat(entity.getRegionName()).isEqualTo("Example");
 
-		GemfirePersistentProperty currency = entity.getPersistentProperty("currency");
+		Optional<GemfirePersistentProperty> currency = entity.getPersistentProperty("currency");
 
-		assertThat(currency).isNotNull();
-		assertThat(currency.isEntity()).isFalse();
+		assertThat(currency.isPresent()).isTrue();
+		assertThat(currency.get().isEntity()).isFalse();
 	}
 
 	@Test
@@ -108,10 +111,10 @@ public class GemfirePersistentEntityUnitTests {
 		assertThat(entity).isNotNull();
 		assertThat(entity.getRegionName()).isEqualTo("Example");
 
-		GemfirePersistentProperty bigNumber = entity.getPersistentProperty("bigNumber");
+		Optional<GemfirePersistentProperty> bigNumber = entity.getPersistentProperty("bigNumber");
 
-		assertThat(bigNumber).isNotNull();
-		assertThat(bigNumber.isEntity()).isFalse();
+		assertThat(bigNumber.isPresent()).isTrue();
+		assertThat(bigNumber.get().isEntity()).isFalse();
 	}
 
 	/**
@@ -121,8 +124,7 @@ public class GemfirePersistentEntityUnitTests {
 	public void identifierForNonIdAnnotatedEntityWithNoIdFieldOrPropertyIsNull() {
 		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonRegionAnnotatedEntity());
 
-		assertThat(identifierAccessor).isNotNull();
-		assertThat(identifierAccessor.getIdentifier()).isNull();
+		assertThat(identifierAccessor.getIdentifier().orElse(null)).isNull();
 	}
 
 	/**
@@ -132,8 +134,7 @@ public class GemfirePersistentEntityUnitTests {
 	public void identifierForNonIdAnnotatedEntityWithIdFieldIsNotNull() {
 		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonIdAnnotatedIdFieldEntity());
 
-		assertThat(identifierAccessor.getIdentifier()).isNotNull();
-		assertThat(identifierAccessor.getIdentifier()).isEqualTo(123L);
+		assertThat(identifierAccessor.getIdentifier().orElse(null)).isEqualTo(123L);
 	}
 
 	/**
@@ -143,16 +144,14 @@ public class GemfirePersistentEntityUnitTests {
 	public void identifierForNonIdAnnotatedEntityWithIdPropertyIsNotNull() {
 		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonIdAnnotatedIdGetterEntity());
 
-		assertThat(identifierAccessor).isNotNull();
-		assertThat(identifierAccessor.getIdentifier()).isEqualTo(456L);
+		assertThat(identifierAccessor.getIdentifier().orElse(null)).isEqualTo(456L);
 	}
 
 	@Test
 	public void identifierForIdAnnotatedFieldAndPropertyEntityShouldNotConflict() {
 		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new IdAnnotatedFieldAndPropertyEntity());
 
-		assertThat(identifierAccessor).isNotNull();
-		assertThat(identifierAccessor.getIdentifier()).isEqualTo(1L);
+		assertThat(identifierAccessor.getIdentifier().orElse(null)).isEqualTo(1L);
 	}
 
 	@Test
@@ -170,6 +169,7 @@ public class GemfirePersistentEntityUnitTests {
 		getIdentifierAccessor(new AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity());
 	}
 
+	@SuppressWarnings("unused")
 	static class AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity {
 
 		@Id

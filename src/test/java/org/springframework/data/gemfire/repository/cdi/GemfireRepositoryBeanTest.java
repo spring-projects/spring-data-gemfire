@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,15 +56,12 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.gemfire.GemfireAccessor;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory;
 import org.springframework.data.gemfire.repository.support.SimpleGemfireRepository;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.support.RepositoryProxyPostProcessor;
 
 /**
  * The GemfireRepositoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -286,37 +284,35 @@ public class GemfireRepositoryBeanTest {
 			GemfireRepositoryFactory newGemfireRepositoryFactory() {
 				GemfireRepositoryFactory gemfireRepositoryFactory = super.newGemfireRepositoryFactory();
 
-				gemfireRepositoryFactory.addRepositoryProxyPostProcessor(new RepositoryProxyPostProcessor() {
-					public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
-						try {
-							assertThat((Class<PersonRepository>) repositoryInformation.getRepositoryInterface(),
-								is(equalTo(PersonRepository.class)));
-							assertThat((Class<SimpleGemfireRepository>) repositoryInformation.getRepositoryBaseClass(),
-								is(equalTo(SimpleGemfireRepository.class)));
-							assertThat((Class<Person>) repositoryInformation.getDomainType(), is(equalTo(Person.class)));
-							assertThat((Class<Long>) repositoryInformation.getIdType(), is(equalTo(Long.class)));
-							assertThat((Class<SimpleGemfireRepository>) factory.getTargetClass(),
-								is(equalTo(SimpleGemfireRepository.class)));
+				gemfireRepositoryFactory.addRepositoryProxyPostProcessor((factory, repositoryInformation) -> {
+					try {
+						assertThat(repositoryInformation.getRepositoryInterface(),
+							is(equalTo(PersonRepository.class)));
+						assertThat(repositoryInformation.getRepositoryBaseClass(),
+							is(equalTo(SimpleGemfireRepository.class)));
+						assertThat(repositoryInformation.getDomainType(), is(equalTo(Person.class)));
+						assertThat(repositoryInformation.getIdType(), is(equalTo(Long.class)));
+						assertThat(factory.getTargetClass(), is(equalTo(SimpleGemfireRepository.class)));
 
-							Object gemfireRepository = factory.getTargetSource().getTarget();
+						Object gemfireRepository = factory.getTargetSource().getTarget();
 
-							GemfireAccessor gemfireAccessor = TestUtils.readField("template", gemfireRepository);
+						GemfireAccessor gemfireAccessor = TestUtils.readField("template", gemfireRepository);
 
-							assertThat(gemfireAccessor, is(notNullValue()));
-							assertThat(gemfireAccessor.getRegion(), is(equalTo(mockRegion)));
+						assertThat(gemfireAccessor, is(notNullValue()));
+						assertThat(gemfireAccessor.getRegion(), is(equalTo(mockRegion)));
 
-							repositoryProxyPostProcessed.set(true);
-						}
-						catch (Exception e) {
-							throw new RuntimeException(e);
-						}
+						repositoryProxyPostProcessed.set(true);
+					}
+					catch (Exception e) {
+						throw new RuntimeException(e);
 					}
 				});
 				return gemfireRepositoryFactory;
 			}
 		};
 
-		GemfireRepository<Person, Long> gemfireRepository = repositoryBean.create(null, PersonRepository.class, null);
+		GemfireRepository<Person, Long> gemfireRepository =
+			repositoryBean.create(null, PersonRepository.class, Optional.empty());
 
 		assertThat(gemfireRepository, is(notNullValue()));
 		assertThat(repositoryProxyPostProcessed.get(), is(true));

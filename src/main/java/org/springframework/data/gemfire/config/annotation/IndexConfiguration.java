@@ -116,22 +116,29 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 		GemfirePersistentEntity<?> localPersistentEntity =
 			super.postProcess(importingClassMetadata, registry, persistentEntity);
 
+
 		if (isAnnotationPresent(importingClassMetadata, getEnableIndexingAnnotationTypeName())) {
 			AnnotationAttributes enableIndexingAttributes =
 				getAnnotationAttributes(importingClassMetadata, getEnableIndexingAnnotationTypeName());
 
 			localPersistentEntity.doWithProperties((PropertyHandler<GemfirePersistentProperty>) persistentProperty -> {
-				Optional.ofNullable(persistentProperty.findAnnotation(Id.class)).ifPresent(idAnnotation ->
-					registerIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity, persistentProperty,
-						IndexType.KEY, idAnnotation, registry));
+				Optional<Id> idAnnotation = persistentProperty.findAnnotation(Id.class);
 
-				Optional.ofNullable(persistentProperty.findAnnotation(Indexed.class)).ifPresent(indexedAnnotation ->
+				idAnnotation.ifPresent(id ->
 					registerIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity, persistentProperty,
-						indexedAnnotation.type(), indexedAnnotation, registry));
+						IndexType.KEY, id, registry));
 
-				Optional.ofNullable(persistentProperty.findAnnotation(LuceneIndexed.class)).ifPresent(
-					luceneIndexAnnotation -> registerLuceneIndexBeanDefinition(enableIndexingAttributes,
-						localPersistentEntity, persistentProperty, luceneIndexAnnotation, registry));
+				Optional<Indexed> indexedAnnotation = persistentProperty.findAnnotation(Indexed.class);
+
+				indexedAnnotation.ifPresent(indexed ->
+					registerIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity, persistentProperty,
+						indexed.type(), indexed, registry));
+
+				Optional<LuceneIndexed> luceneIndexedAnnotation = persistentProperty.findAnnotation(LuceneIndexed.class);
+
+				luceneIndexedAnnotation.ifPresent(luceneIndexed ->
+					registerLuceneIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity,
+						persistentProperty, luceneIndexed, registry));
 			});
 		}
 

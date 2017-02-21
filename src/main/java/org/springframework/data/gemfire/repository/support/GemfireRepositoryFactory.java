@@ -16,8 +16,11 @@
 
 package org.springframework.data.gemfire.repository.support;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.springframework.data.gemfire.GemfireTemplate;
@@ -38,7 +41,6 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -80,8 +82,10 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID extends Serializable> GemfireEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-		GemfirePersistentEntity<T> entity = (GemfirePersistentEntity<T>) mappingContext.getPersistentEntity(domainClass);
-		return new DefaultGemfireEntityInformation<T, ID>(entity);
+		GemfirePersistentEntity<T> entity = (GemfirePersistentEntity<T>) mappingContext.getPersistentEntity(domainClass)
+			.orElseThrow(() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%s]", domainClass));
+
+		return new DefaultGemfireEntityInformation<>(entity);
 	}
 
 	/*
@@ -99,7 +103,9 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 	GemfireTemplate getTemplate(RepositoryMetadata metadata) {
-		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(metadata.getDomainType());
+		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(metadata.getDomainType())
+			.orElseThrow(() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%s]",
+				metadata.getDomainType()));
 
 		String entityRegionName = entity.getRegionName();
 		String repositoryRegionName = getRepositoryRegionName(metadata.getRepositoryInterface());
@@ -148,13 +154,11 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 * 	#getQueryLookupStrategy(Key, EvaluationContextProvider)
 	 */
 	@Override
-	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
+			EvaluationContextProvider evaluationContextProvider) {
 
-		return new QueryLookupStrategy() {
-
-			@Override
-			public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
-					NamedQueries namedQueries) {
+		return Optional.of(
+			(Method method, RepositoryMetadata metadata, ProjectionFactory factory, NamedQueries namedQueries) -> {
 
 				GemfireQueryMethod queryMethod = new GemfireQueryMethod(method, metadata, factory, mappingContext);
 				GemfireTemplate template = getTemplate(metadata);
@@ -169,7 +173,6 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 				}
 
 				return new PartTreeGemfireRepositoryQuery(queryMethod, template);
-			}
-		};
+			});
 	}
 }

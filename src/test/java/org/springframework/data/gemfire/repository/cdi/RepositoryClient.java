@@ -34,13 +34,13 @@ import org.springframework.util.Assert;
  */
 public class RepositoryClient {
 
-	private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+	private static final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
 
 	@Inject
 	private SamplePersonRepository personRepository;
 
 	protected SamplePersonRepository getPersonRepository() {
-		Assert.state(personRepository != null, "personRepository was not properly initialized");
+		Assert.state(personRepository != null, "PersonRepository was not properly initialized");
 		return personRepository;
 	}
 
@@ -49,7 +49,7 @@ public class RepositoryClient {
 	}
 
 	public Person find(Long id) {
-		return getPersonRepository().findOne(id);
+		return getPersonRepository().findOne(id).orElse(null);
 	}
 
 	public Person save(Person person) {

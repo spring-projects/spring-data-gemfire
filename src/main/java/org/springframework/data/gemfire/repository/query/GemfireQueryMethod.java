@@ -43,10 +43,12 @@ import org.springframework.util.StringUtils;
  */
 public class GemfireQueryMethod extends QueryMethod {
 
+	@SuppressWarnings("all")
 	protected static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-	private final Method method;
 	private final GemfirePersistentEntity<?> entity;
+
+	private final Method method;
 
 	/**
 	 * Creates a new {@link GemfireQueryMethod} from the given {@link Method} and {@link RepositoryMetadata}.
@@ -54,18 +56,20 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @param method must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
-	 * @param context must not be {@literal null}.
+	 * @param mappingContext must not be {@literal null}.
 	 */
 	public GemfireQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
-			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> context) {
+			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext) {
 
 		super(method, metadata, factory);
 
-		Assert.notNull(context);
+		Assert.notNull(mappingContext, "MappingContext must not be null");
 		assertNonPagingQueryMethod(method);
 
 		this.method = method;
-		this.entity = context.getPersistentEntity(getDomainClass());
+		this.entity = mappingContext.getPersistentEntity(getDomainClass()).orElseThrow(
+			() -> new IllegalArgumentException(String.format("Failed to resolve PersistentEntity for type [%s]",
+				getDomainClass())));
 	}
 
 	/**

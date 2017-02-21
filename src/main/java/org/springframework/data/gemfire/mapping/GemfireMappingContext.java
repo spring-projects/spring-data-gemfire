@@ -21,6 +21,8 @@ import java.lang.reflect.Field;
 
 import org.springframework.data.gemfire.mapping.model.GemfireSimpleTypeHolder;
 import org.springframework.data.mapping.context.AbstractMappingContext;
+import org.springframework.data.mapping.model.MutablePersistentEntity;
+import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
@@ -57,9 +59,19 @@ public class GemfireMappingContext extends AbstractMappingContext<GemfirePersist
 
 	/**
 	 * @inheritDoc
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(java.lang.reflect.Field, java.beans.PropertyDescriptor, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
+	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(Property, MutablePersistentEntity, SimpleTypeHolder)
 	 */
 	@Override
+	protected GemfirePersistentProperty createPersistentProperty(Property property, GemfirePersistentEntity<?> owner,
+			SimpleTypeHolder simpleTypeHolder) {
+
+		return new GemfirePersistentProperty(property, owner, simpleTypeHolder);
+	}
+
+	/**
+	 * @deprecated use {@link #createPersistentProperty(Property, GemfirePersistentEntity, SimpleTypeHolder)} instead
+	 */
+	@Deprecated
 	protected GemfirePersistentProperty createPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			GemfirePersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
 

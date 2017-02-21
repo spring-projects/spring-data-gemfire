@@ -32,7 +32,6 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
-import org.springframework.util.StringUtils;
 
 /**
  * {@link RepositoryConfigurationExtension} implementation handling GemFire specific extensions to the Repository XML
@@ -66,7 +65,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	 */
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {
-		return Collections.<Class<?>>singleton(GemfireRepository.class);
+		return Collections.singleton(GemfireRepository.class);
 	}
 
 	/*
@@ -93,8 +92,9 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource configurationSource) {
-		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, resolveMappingContextBeanName(
-			configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME)));
+		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME,
+			configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME)
+				.orElse(DEFAULT_MAPPING_CONTEXT_BEAN_NAME));
 	}
 
 	/*
@@ -103,13 +103,9 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource configurationSource) {
-		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME, resolveMappingContextBeanName(
-			configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME)));
-	}
-
-	/* (non-Javadoc) */
-	private static String resolveMappingContextBeanName(String source) {
-		return (StringUtils.hasText(source) ? source : DEFAULT_MAPPING_CONTEXT_BEAN_NAME);
+		builder.addPropertyReference(MAPPING_CONTEXT_PROPERTY_NAME,
+			configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME)
+				.orElse(DEFAULT_MAPPING_CONTEXT_BEAN_NAME));
 	}
 
 	/*
@@ -121,7 +117,7 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 
 		super.registerBeansForRoot(registry, configurationSource);
 
-		if (!StringUtils.hasText(configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME))) {
+		if (!configurationSource.getAttribute(MAPPING_CONTEXT_REF_ATTRIBUTE_NAME).isPresent()) {
 			registry.registerBeanDefinition(DEFAULT_MAPPING_CONTEXT_BEAN_NAME,
 				new RootBeanDefinition(GemfireMappingContext.class));
 		}

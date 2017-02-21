@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.beans.PropertyValue;
@@ -51,8 +52,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * Test suite of test cases testing the contract and functionality of the
- * {@link GemfireRepositoryConfigurationExtension} class.
+ * Unit tests for {@link GemfireRepositoryConfigurationExtension}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -143,7 +143,8 @@ public class GemfireRepositoryConfigurationExtensionTest {
 		AnnotationRepositoryConfigurationSource mockRepositoryConfigurationSource =
 			mock(AnnotationRepositoryConfigurationSource.class);
 
-		when(mockRepositoryConfigurationSource.getAttribute(eq("mappingContextRef"))).thenReturn("testMappingContext");
+		when(mockRepositoryConfigurationSource.getAttribute(eq("mappingContextRef")))
+			.thenReturn(Optional.of("testMappingContext"));
 
 		BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition();
 
@@ -162,7 +163,8 @@ public class GemfireRepositoryConfigurationExtensionTest {
 		AnnotationRepositoryConfigurationSource mockRepositoryConfigurationSource =
 			mock(AnnotationRepositoryConfigurationSource.class);
 
-		when(mockRepositoryConfigurationSource.getAttribute(eq("mappingContextRef"))).thenReturn("  ");
+		when(mockRepositoryConfigurationSource.getAttribute(eq("mappingContextRef")))
+			.thenReturn(Optional.empty());
 
 		BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition();
 

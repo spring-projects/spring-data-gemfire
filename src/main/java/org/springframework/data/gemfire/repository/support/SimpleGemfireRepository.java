@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.repository.support;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
@@ -78,7 +81,11 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public <U extends T> U save(U entity) {
-		template.put(entityInformation.getId(entity), entity);
+		ID id = entityInformation.getId(entity).orElseThrow(
+			() -> newIllegalArgumentException("ID for entity [%s] is required", entity));
+
+		template.put(id, entity);
+
 		return entity;
 	}
 
@@ -88,15 +95,18 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public <U extends T> Iterable<U> save(Iterable<U> entities) {
-		Map<ID, U> result = new HashMap<>();
+		Map<ID, U> entitiesToSave = new HashMap<>();
 
 		for (U entity : entities) {
-			result.put(entityInformation.getId(entity), entity);
+			ID id = entityInformation.getId(entity).orElseThrow(
+				() -> newIllegalArgumentException("ID for entity [%s] is required", entity));
+
+			entitiesToSave.put(id, entity);
 		}
 
-		template.putAll(result);
+		template.putAll(entitiesToSave);
 
-		return result.values();
+		return entitiesToSave.values();
 	}
 
 	/*
@@ -116,8 +126,10 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public long count() {
-		SelectResults<Integer> results = template.find("SELECT count(*) FROM " + template.getRegion().getFullPath());
-		return (long) results.iterator().next();
+		SelectResults<Integer> results =
+			template.find(String.format("SELECT count(*) FROM %s", template.getRegion().getFullPath()));
+
+		return Long.valueOf(results.iterator().next());
 	}
 
 	/*
@@ -126,7 +138,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public boolean exists(ID id) {
-		return (findOne(id) != null);
+		return findOne(id).isPresent();
 	}
 
 	/*
@@ -135,8 +147,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public T findOne(ID id) {
-		return (T) template.get(id);
+	public Optional<T> findOne(ID id) {
+		return Optional.ofNullable(template.get(id));
 	}
 
 	/*
@@ -145,7 +157,9 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public Collection<T> findAll() {
-		SelectResults<T> results = template.find("SELECT * FROM " + template.getRegion().getFullPath());
+		SelectResults<T> results =
+			template.find(String.format("SELECT * FROM %s", template.getRegion().getFullPath()));
+
 		return results.asList();
 	}
 
@@ -196,7 +210,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public void delete(T entity) {
-		delete(entityInformation.getId(entity));
+		delete(entityInformation.getId(entity).orElseThrow(() -> new IllegalArgumentException("ID is required")));
 	}
 
 	/*
