@@ -58,7 +58,7 @@ import org.springframework.util.Assert;
 	GemfireTransactionManagerIntegrationTests.GemfireTransactionManagerIntegrationTestsConfiguration.class)
 public class GemfireTransactionManagerIntegrationTests {
 
-	protected static final String GEMFIRE_LOG_LEVEL = "warning";
+	static final String GEMFIRE_LOG_LEVEL = "warning";
 
 	@Resource(name = "Example")
 	@SuppressWarnings("unused")
@@ -100,7 +100,9 @@ public class GemfireTransactionManagerIntegrationTests {
 		}
 
 		@Bean
-		SuspendAndResumeCacheTransactionsRepository suspendAndResumeCacheTransactionsRepository(GemFireCache gemFireCache) {
+		SuspendAndResumeCacheTransactionsRepository suspendAndResumeCacheTransactionsRepository(
+				GemFireCache gemFireCache) {
+
 			return new SuspendAndResumeCacheTransactionsRepository(gemFireCache.getRegion("Example"));
 		}
 
@@ -150,7 +152,7 @@ public class GemfireTransactionManagerIntegrationTests {
 	static class SuspendAndResumeCacheTransactionsRepository {
 
 		@SuppressWarnings("all")
-		private Region<Object, Object> example;
+		Region<Object, Object> example;
 
 		SuspendAndResumeCacheTransactionsRepository(Region<Object, Object> example) {
 			Assert.notNull(example, "Region must not be null");
