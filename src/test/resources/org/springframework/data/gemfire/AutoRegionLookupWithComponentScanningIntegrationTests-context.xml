@@ -17,6 +17,7 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.context.annotation.Configuration"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
 		<context:exclude-filter type="assignable" expression="org.springframework.data.gemfire.AutoRegionLookupWithAutowiringIntegrationTests$TestComponent"/>
+		<context:exclude-filter type="assignable" expression="org.springframework.data.gemfire.GemfireTransactionManagerIntegrationTests$SuspendAndResumeCacheTransactionsRepository"/>
 		<context:exclude-filter type="regex" expression="org.springframework.data.gemfire.*.sample.*"/>
 	</context:component-scan>
 
