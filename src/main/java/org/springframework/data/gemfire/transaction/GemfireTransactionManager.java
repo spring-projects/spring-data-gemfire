@@ -20,6 +20,7 @@ package org.springframework.data.gemfire.transaction;
 import static org.springframework.data.gemfire.transaction.GemfireTransactionManager.CacheHolder.newCacheHolder;
 import static org.springframework.data.gemfire.transaction.GemfireTransactionManager.CacheTransactionObject.newCacheTransactionObject;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.CacheTransactionManager;
@@ -58,11 +59,17 @@ import org.springframework.util.Assert;
  *
  * @author Costin Leau
  * @author John Blum
+ * @see org.apache.geode.CopyHelper#copy(Object)
  * @see org.apache.geode.cache.GemFireCache#setCopyOnRead(boolean)
  * @see org.apache.geode.cache.CacheTransactionManager
- * @see org.apache.geode.cache.Region#get(Object)
- * @see org.apache.geode.CopyHelper#copy(Object)
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.TransactionId
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.transaction.PlatformTransactionManager
+ * @see org.springframework.transaction.TransactionDefinition
  * @see org.springframework.transaction.support.AbstractPlatformTransactionManager
+ * @see org.springframework.transaction.support.ResourceTransactionManager
+ * @see org.springframework.transaction.support.TransactionSynchronizationManager
  * @see #setCopyOnRead(boolean)
  */
 @SuppressWarnings("unused")
@@ -185,7 +192,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	protected Object doSuspend(Object transaction) throws TransactionException {
 		if (getCacheTransactionManager().suspend() != null) {
 			TransactionSynchronizationManager.unbindResource(getCache());
-			return ((CacheTransactionObject) transaction).setAndReturnExistingHolder(null);
+			return ((CacheTransactionObject) transaction).setAndGetExistingHolder(null);
 		}
 
 		return null;
@@ -225,8 +232,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		}
 		catch (IllegalStateException e) {
 			throw new NoTransactionException(
-				"No transaction is associated with the current thread; are multiple transaction managers present?",
-				e);
+				"No transaction is associated with the current thread; are multiple transaction managers present?", e);
 		}
 	}
 
@@ -330,87 +336,134 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		return getCache();
 	}
 
+	/***
+	 * Sets the timeout used to wait for the GemFire cache transaction to resume.
+	 *
+	 * @param resumeWaitTime long value with the timeout used to wait for the GemFire cache transaction to resume.
+	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
+	 */
 	public void setResumeWaitTime(Long resumeWaitTime) {
 		this.resumeWaitTime = resumeWaitTime;
 	}
 
+	/***
+	 * Returns the timeout used to wait for the GemFire cache transaction to resume.
+	 *
+	 * @return the long value with the timeout used to wait for the GemFire cache transaction to resume.
+	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
+	 */
 	protected Long getResumeWaitTime() {
 		return this.resumeWaitTime;
 	}
 
+	/**
+	 * Determines whether the user specified a wait time for resuming a GemFire cache transaction.
+	 *
+	 * @return a boolean value to indicate whether the user specified a wait time
+	 * for resuming a GemFire cache transaction.
+	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
+	 * @see #getResumeWaitTime()
+	 */
 	protected boolean isResumeWaitTimeSet() {
 		Long resumeWaitTime = getResumeWaitTime();
 		return (resumeWaitTime != null && resumeWaitTime > 0);
 	}
 
+	/**
+	 * Sets the {@link TimeUnit} used in the wait timeout when resuming a GemFire cache transaction.
+	 *
+	 * @param resumeWaitTimeUnit {@link TimeUnit} used in the wait timeout when resuming a GemFire cache transaction.
+	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
+	 */
 	public void setResumeWaitTimeUnit(TimeUnit resumeWaitTimeUnit) {
 		this.resumeWaitTimeUnit = resumeWaitTimeUnit;
 	}
 
+	/**
+	 * Returns the {@link TimeUnit} used in the wait timeout when resuming a GemFire cache transaction.
+	 *
+	 * Defaults to {@link TimeUnit#SECONDS}.
+	 *
+	 * @return the {@link TimeUnit} used in the wait timeout when resuming a GemFire cache transaction.
+	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
+	 */
 	protected TimeUnit getResumeWaitTimeUnit() {
-		TimeUnit localResumeWaitTimeUnit = this.resumeWaitTimeUnit;
-		return (localResumeWaitTimeUnit != null ? localResumeWaitTimeUnit : DEFAULT_RESUME_WAIT_TIME_UNIT);
+		return Optional.ofNullable(this.resumeWaitTimeUnit).orElse(DEFAULT_RESUME_WAIT_TIME_UNIT);
 	}
 
 	/**
-	 * GemfireTM local transaction object.
+	 * GemFire local transaction object.
 	 *
 	 * @author Costin Leau
+	 * @author John Blum
 	 */
 	protected static class CacheTransactionObject {
 
 		private CacheHolder cacheHolder;
 
+		/* (non-Javadoc) */
 		static CacheTransactionObject newCacheTransactionObject(CacheHolder cacheHolder) {
 			CacheTransactionObject transactionObject = new CacheTransactionObject();
 			transactionObject.setHolder(cacheHolder);
 			return transactionObject;
 		}
 
+		/* (non-Javadoc) */
 		boolean isHolding() {
 			return (getHolder() != null);
 		}
 
+		/* (non-Javadoc) */
 		CacheHolder getHolder() {
 			return this.cacheHolder;
 		}
 
+		/* (non-Javadoc) */
 		void setHolder(CacheHolder holder) {
 			this.cacheHolder = holder;
 		}
 
-		CacheHolder setAndGetHolder(CacheHolder holder) {
-			setHolder(holder);
-			return getHolder();
-		}
-
-		CacheHolder setAndReturnExistingHolder(CacheHolder cacheHolder) {
+		/* (non-Javadoc) */
+		CacheHolder setAndGetExistingHolder(CacheHolder cacheHolder) {
 			CacheHolder existingHolder = getHolder();
 			setHolder(cacheHolder);
 			return existingHolder;
 		}
+
+		/* (non-Javadoc) */
+		CacheHolder setAndGetHolder(CacheHolder holder) {
+			setHolder(holder);
+			return getHolder();
+		}
 	}
 
+	/**
+	 * Holder of GemFire cache transaction state.
+	 */
 	protected static class CacheHolder {
 
 		private boolean rollbackOnly = false;
 
 		private TransactionId transactionId;
 
+		/* (non-Javadoc) */
 		static CacheHolder newCacheHolder(TransactionId transactionId) {
 			CacheHolder cacheHolder = new CacheHolder();
 			cacheHolder.transactionId = transactionId;
 			return cacheHolder;
 		}
 
-		public boolean isRollbackOnly() {
+		/* (non-Javadoc) */
+		boolean isRollbackOnly() {
 			return this.rollbackOnly;
 		}
 
+		/* (non-Javadoc) */
 		void setRollbackOnly() {
 			this.rollbackOnly = true;
 		}
 
+		/* (non-Javadoc) */
 		TransactionId getTransactionId() {
 			return this.transactionId;
 		}
