@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.1.RELEASE (2017-03-02)
+---------------------------------------------
+* SGF-599 - Upgrade to Pivotal GemFire 8.2.3.
+* SGF-598 - Add support for suspend and resume in GemfireTransactionManager.
+* SGF-594 - Difficult to determine whether GemFireRepository.findAll(keys) records not found.
+* SGF-592 - Release 1.9.1 (Ingalls SR1).
+
+
 Changes in version 1.8.7.RELEASE (2017-01-26)
 ---------------------------------------------
 * SGF-578 - Release 1.8.7 (Hopper SR7).
