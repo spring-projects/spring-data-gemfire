@@ -60,7 +60,7 @@ class LookupRegionParser extends AbstractRegionParser {
 		ParsingUtils.setPropertyValue(element, builder, "cloning-enabled");
 		ParsingUtils.setPropertyValue(element, builder, "eviction-maximum");
 		ParsingUtils.setPropertyValue(element, builder, "name");
-		ParsingUtils.parseExpiration(parserContext, element, builder);
+		ParsingUtils.parseExpiration(element, parserContext, builder);
 
 		parseCollectionOfCustomSubElements(element, parserContext, builder, AsyncEventQueue.class.getName(),
 			"async-event-queue", "asyncEventQueues");
@@ -71,22 +71,23 @@ class LookupRegionParser extends AbstractRegionParser {
 		Element cacheListenerElement = DomUtils.getChildElementByTagName(element, "cache-listener");
 
 		if (cacheListenerElement != null) {
-			builder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext,
-				cacheListenerElement, builder));
+			builder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(
+				cacheListenerElement, parserContext,
+				builder));
 		}
 
 		Element cacheLoaderElement = DomUtils.getChildElementByTagName(element, "cache-loader");
 
 		if (cacheLoaderElement != null) {
 			builder.addPropertyValue("cacheLoader", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
-				parserContext, cacheLoaderElement, builder));
+				cacheLoaderElement, parserContext, builder));
 		}
 
 		Element cacheWriterElement = DomUtils.getChildElementByTagName(element, "cache-writer");
 
 		if (cacheWriterElement != null) {
 			builder.addPropertyValue("cacheWriter", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
-				parserContext, cacheWriterElement, builder));
+				cacheWriterElement, parserContext, builder));
 		}
 
 		if (!subRegion) {

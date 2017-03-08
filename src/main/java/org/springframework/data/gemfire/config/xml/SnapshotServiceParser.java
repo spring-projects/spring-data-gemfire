@@ -89,7 +89,7 @@ class SnapshotServiceParser extends AbstractSingleBeanDefinitionParser {
 
 		if (isSnapshotFilterSpecified(snapshotMetadataElement)) {
 			snapshotMetadataBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(
-				parserContext, snapshotMetadataElement, snapshotMetadataBuilder, "filter-ref", true));
+				snapshotMetadataElement, parserContext, snapshotMetadataBuilder, "filter-ref", true));
 		}
 
 		snapshotMetadataBuilder.addConstructorArgValue(snapshotMetadataElement.getAttribute("format"));

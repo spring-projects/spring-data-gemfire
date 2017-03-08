@@ -93,7 +93,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 
 			for (Element txListener : txListeners) {
 				transactionListeners.add(ParsingUtils.parseRefOrNestedBeanDeclaration(
-					parserContext, txListener, builder));
+					txListener, parserContext, builder));
 			}
 
 			builder.addPropertyValue("transactionListeners", transactionListeners);
@@ -103,7 +103,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 
 		if (txWriter != null) {
 			builder.addPropertyValue("transactionWriter", ParsingUtils.parseRefOrNestedBeanDeclaration(
-				parserContext, txWriter, builder));
+				txWriter, parserContext, builder));
 		}
 
 		Element gatewayConflictResolver = DomUtils.getChildElementByTagName(element, "gateway-conflict-resolver");
@@ -111,7 +111,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		if (gatewayConflictResolver != null) {
 			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), "gateway-conflict-resolver", parserContext);
 			builder.addPropertyValue("gatewayConflictResolver", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
-				parserContext, gatewayConflictResolver, builder));
+				gatewayConflictResolver, parserContext, builder));
 		}
 
 		parseDynamicRegionFactory(element, builder);

@@ -75,14 +75,14 @@ class GatewaySenderParser extends AbstractSimpleBeanDefinitionParser {
 
 		if (eventFilterElement != null) {
 			builder.addPropertyValue("eventFilters", ParsingUtils.parseRefOrNestedBeanDeclaration(
-				parserContext, eventFilterElement, builder));
+				eventFilterElement, parserContext, builder));
 		}
 
 		Element eventSubstitutionFilterElement = DomUtils.getChildElementByTagName(element, "event-substitution-filter");
 
 		if (eventSubstitutionFilterElement != null) {
 			builder.addPropertyValue("eventSubstitutionFilter", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
-				parserContext, eventSubstitutionFilterElement, builder));
+				eventSubstitutionFilterElement, parserContext, builder));
 		}
 
 		ParsingUtils.parseTransportFilters(element, parserContext, builder);
