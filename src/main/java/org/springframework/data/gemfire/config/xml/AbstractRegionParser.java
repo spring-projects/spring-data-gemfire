@@ -110,8 +110,8 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 
 		ParsingUtils.setPropertyValue(element, regionBuilder, "name");
-		ParsingUtils.setPropertyValue(element, regionBuilder, "ignore-if-exists", "lookupEnabled");
 		ParsingUtils.setPropertyValue(element, regionBuilder, "data-policy");
+		ParsingUtils.setPropertyValue(element, regionBuilder, "ignore-if-exists", "lookupEnabled");
 		ParsingUtils.setPropertyValue(element, regionBuilder, "persistent");
 		ParsingUtils.setPropertyValue(element, regionBuilder, "shortcut");
 
@@ -120,34 +120,13 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			regionBuilder.addDependsOn(element.getAttribute("disk-store-ref"));
 		}
 
-		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
-		ParsingUtils.parseSubscription(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseOptionalRegionAttributes(element, parserContext, regionAttributesBuilder);
+		ParsingUtils.parseSubscription(element, parserContext, regionAttributesBuilder);
 		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
-		ParsingUtils.parseMembershipAttributes(parserContext, element, regionAttributesBuilder);
-		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
-		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
-		ParsingUtils.parseCompressor(parserContext, element, regionAttributesBuilder);
-
-		String enableGateway = element.getAttribute("enable-gateway");
-		String hubId = element.getAttribute("hub-id");
-
-		// Factory will enable gateway if it is not set and hub-id is set.
-		if (StringUtils.hasText(enableGateway)) {
-			log.warn("'enable-gateway' has been deprecated since Gemfire 7.0; use the new GatewaySender/Receiver WAN support instead");
-		}
-
-		ParsingUtils.setPropertyValue(element, regionBuilder, "enable-gateway");
-
-		if (StringUtils.hasText(hubId)) {
-			log.warn("'hub-id' has been deprecated since Gemfire 7.0; use the new GatewaySender/Receiver WAN support instead");
-
-			if (!CollectionUtils.isEmpty(DomUtils.getChildElementsByTagName(element, "gateway-sender"))) {
-				parserContext.getReaderContext().error("specifying both 'hub-id' and 'gateway-sender' is invalid",
-					element);
-			}
-		}
-
-		ParsingUtils.setPropertyValue(element, regionBuilder, "hub-id");
+		ParsingUtils.parseMembershipAttributes(element, parserContext, regionAttributesBuilder);
+		ParsingUtils.parseExpiration(element, parserContext, regionAttributesBuilder);
+		ParsingUtils.parseEviction(element, parserContext, regionAttributesBuilder);
+		ParsingUtils.parseCompressor(element, parserContext, regionAttributesBuilder);
 
 		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder, AsyncEventQueue.class.getName(),
 			"async-event-queue", "asyncEventQueues");
@@ -160,15 +139,15 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		for (Element subElement : subElements) {
 			if (subElement.getLocalName().equals("cache-listener")) {
 				regionBuilder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(
-					parserContext, subElement, regionBuilder));
+					subElement, parserContext, regionBuilder));
 			}
 			else if (subElement.getLocalName().equals("cache-loader")) {
 				regionBuilder.addPropertyValue("cacheLoader", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
-					parserContext, subElement, regionBuilder));
+					subElement, parserContext, regionBuilder));
 			}
 			else if (subElement.getLocalName().equals("cache-writer")) {
 				regionBuilder.addPropertyValue("cacheWriter", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
-					parserContext, subElement, regionBuilder));
+					subElement, parserContext, regionBuilder));
 			}
 		}
 
@@ -229,7 +208,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 			ManagedArray array = new ManagedArray(className, subElements.size());
 
 			for (Element subElement : subElements) {
-				array.add(ParsingUtils.parseRefOrNestedCustomElement(parserContext, subElement, builder));
+				array.add(ParsingUtils.parseRefOrNestedCustomElement(subElement, parserContext, builder));
 			}
 
 			builder.addPropertyValue(propertyName, array);

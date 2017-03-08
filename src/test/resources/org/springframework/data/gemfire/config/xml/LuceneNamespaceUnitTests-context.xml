@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/geode"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/geode http://www.springframework.org/schema/geode/spring-geode.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
+
+	<util:properties id="gemfireProperties">
+		<prop key="name">LuceneNamespaceUnitTests</prop>
+		<prop key="log-level">warning</prop>
+	</util:properties>
+
+	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
+
+	<bean class="org.springframework.data.gemfire.config.xml.LuceneNamespaceUnitTests$LuceneNamespaceUnitTestsBeanFactoryPostProcessor"/>
+
+	<gfe:cache properties-ref="gemfireProperties"/>
+
+	<gfe:local-region id="Example" persistent="false"/>
+
+	<gfe:lucene-service id="luceneService"/>
+
+	<gfe:lucene-index id="IndexOne" destroy="true" fields="fieldOne, fieldTwo"
+					  lucene-service-ref="luceneService" region-ref="Example"/>
+
+	<gfe:lucene-index id="IndexTwo" lucene-service-ref="luceneService" region-path="/AnotherExample">
+		<gfe:field-analyzers>
+			<map>
+				<entry key="fieldOne">
+					<bean class="org.springframework.data.gemfire.config.xml.LuceneNamespaceUnitTests$MockAnalyzerFactoryBean"
+						  p:name="MockAnalyzerOne"/>
+				</entry>
+				<entry key="fieldTwo">
+					<bean class="org.springframework.data.gemfire.config.xml.LuceneNamespaceUnitTests$MockAnalyzerFactoryBean"
+						  p:name="MockAnalyzerTwo"/>
+				</entry>
+			</map>
+		</gfe:field-analyzers>
+	</gfe:lucene-index>
+
+	<gfe:lucene-index id="IndexThree" fields="singleField" lucene-service-ref="luceneService" region-ref="Example"/>
+
+	<util:map id="indexFourFieldAnalyzers">
+		<entry key="singleField">
+			<bean class="org.springframework.data.gemfire.config.xml.LuceneNamespaceUnitTests$MockAnalyzerFactoryBean"
+				  p:name="MockAnalyzerThree"/>
+		</entry>
+	</util:map>
+
+	<gfe:lucene-index id="IndexFour" lucene-service-ref="luceneService" region-path="/YetAnotherExample">
+		<gfe:field-analyzers ref="indexFourFieldAnalyzers"/>
+	</gfe:lucene-index>
+
+</beans>

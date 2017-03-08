@@ -57,7 +57,7 @@ class FunctionServiceParser extends AbstractSimpleBeanDefinitionParser {
 
 		if (functionElement != null) {
 			builder.addPropertyValue("functions", ParsingUtils.parseRefOrNestedBeanDeclaration(
-				parserContext, functionElement, builder));
+				functionElement, parserContext, builder));
 		}
 	}
 

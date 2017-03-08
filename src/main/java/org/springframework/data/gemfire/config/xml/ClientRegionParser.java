@@ -82,11 +82,11 @@ class ClientRegionParser extends AbstractRegionParser {
 
 		mergeRegionTemplateAttributes(element, parserContext, regionBuilder, regionAttributesBuilder);
 
-		ParsingUtils.parseOptionalRegionAttributes(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseOptionalRegionAttributes(element, parserContext, regionAttributesBuilder);
 		ParsingUtils.parseStatistics(element, regionAttributesBuilder);
-		ParsingUtils.parseExpiration(parserContext, element, regionAttributesBuilder);
-		ParsingUtils.parseEviction(parserContext, element, regionAttributesBuilder);
-		ParsingUtils.parseCompressor(parserContext, element, regionAttributesBuilder);
+		ParsingUtils.parseExpiration(element, parserContext, regionAttributesBuilder);
+		ParsingUtils.parseEviction(element, parserContext, regionAttributesBuilder);
+		ParsingUtils.parseCompressor(element, parserContext, regionAttributesBuilder);
 
 		regionBuilder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
@@ -99,15 +99,15 @@ class ClientRegionParser extends AbstractRegionParser {
 
 			if ("cache-listener".equals(subElementLocalName)) {
 				regionBuilder.addPropertyValue("cacheListeners", ParsingUtils.parseRefOrNestedBeanDeclaration(
-					parserContext, subElement, regionBuilder));
+					subElement, parserContext, regionBuilder));
 			}
 			else if ("cache-loader".equals(subElementLocalName)) {
 				regionBuilder.addPropertyValue("cacheLoader", ParsingUtils.parseRefOrNestedBeanDeclaration(
-					parserContext, subElement, regionBuilder));
+					subElement, parserContext, regionBuilder));
 			}
 			else if ("cache-writer".equals(subElementLocalName)) {
 				regionBuilder.addPropertyValue("cacheWriter", ParsingUtils.parseRefOrNestedBeanDeclaration(
-					parserContext, subElement, regionBuilder));
+					subElement, parserContext, regionBuilder));
 			}
 			else if ("key-interest".equals(subElementLocalName)) {
 				interests.add(parseKeyInterest(subElement, parserContext));
@@ -147,8 +147,9 @@ class ClientRegionParser extends AbstractRegionParser {
 	private Object parseKeyInterest(Element keyInterestElement, ParserContext parserContext) {
 		BeanDefinitionBuilder keyInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(KeyInterest.class);
 
-		keyInterestBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext,
-			keyInterestElement, keyInterestBuilder, "key-ref"));
+		keyInterestBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(keyInterestElement,
+			parserContext,
+			keyInterestBuilder, "key-ref"));
 
 		parseCommonInterestAttributes(keyInterestElement, keyInterestBuilder);
 

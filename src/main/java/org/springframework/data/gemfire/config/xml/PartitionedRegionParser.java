@@ -174,13 +174,13 @@ class PartitionedRegionParser extends AbstractRegionParser {
 	private Object parsePartitionResolver(Element subElement, ParserContext parserContext,
 			BeanDefinitionBuilder builder) {
 
-		return ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext, subElement, builder);
+		return ParsingUtils.parseRefOrSingleNestedBeanDeclaration(subElement, parserContext, builder);
 	}
 
 	/* (non-Javadoc) */
 	private Object parsePartitionListeners(Element subElement, ParserContext parserContext,
 			BeanDefinitionBuilder builder) {
 
-		return ParsingUtils.parseRefOrNestedBeanDeclaration(parserContext, subElement, builder);
+		return ParsingUtils.parseRefOrNestedBeanDeclaration(subElement, parserContext, builder);
 	}
 }

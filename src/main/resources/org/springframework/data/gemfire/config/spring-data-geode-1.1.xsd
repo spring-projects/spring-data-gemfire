@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.springframework.org/schema/data/geode"
+			xmlns:beans="http://www.springframework.org/schema/beans"
+			xmlns:context="http://www.springframework.org/schema/context"
+			xmlns:gfe="http://www.springframework.org/schema/geode"
+			xmlns:repository="http://www.springframework.org/schema/data/repository"
+			xmlns:tool="http://www.springframework.org/schema/tool"
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			targetNamespace="http://www.springframework.org/schema/data/geode"
+			elementFormDefault="qualified"
+			attributeFormDefault="unqualified"
+			version="1.1">
+	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
+	<xsd:import namespace="http://www.springframework.org/schema/context"
+				schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd" />
+	<xsd:import namespace="http://www.springframework.org/schema/data/repository"
+				schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/geode"
+				schemaLocation="http://www.springframework.org/schema/geode/spring-geode.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
+	<!-- -->
+	<xsd:annotation>
+		<xsd:documentation><![CDATA[
+            Namespace support for the Spring Data GemFire Client side data access.
+        ]]></xsd:documentation>
+	</xsd:annotation>
+	<!-- Repositories -->
+	<xsd:element name="repositories">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="repository:repositories">
+					<xsd:attributeGroup ref="gemfire-repository-attributes"/>
+					<xsd:attributeGroup ref="repository:repository-attributes"/>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- -->
+	<xsd:attributeGroup name="gemfire-repository-attributes">
+		<xsd:attribute name="mapping-context-ref" type="mappingContextRef">
+			<xsd:annotation>
+				<xsd:documentation>
+					The reference to a MappingContext. If not set a default one will be created.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	<!-- Mapping -->
+	<xsd:simpleType name="mappingContextRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="org.springframework.data.gemfire.GemfireMappingContext"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+	<!-- Function Executions -->
+	<xsd:element name="function-executions">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+   Enables component scanning for annotated function execution interfaces.
+             ]]></xsd:documentation>
+		</xsd:annotation>
+
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="include-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+   Controls which eligible types to include for component scanning.
+                           ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="exclude-filter" type="context:filterType" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+   Controls which eligible types to exclude for component scanning.
+                       ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="base-package" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+				Defines the base package where function execution interfaces will be tried to be detected.
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- DataSource -->
+	<xsd:element name="datasource">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Defines a connection from a Cache client to a set of GemFire Cache Servers.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:choice minOccurs="1" maxOccurs="1">
+				<xsd:element name="locator" type="gfe:connectionType"
+							 minOccurs="1" maxOccurs="unbounded" />
+				<xsd:element name="server" type="gfe:connectionType"
+							 minOccurs="1" maxOccurs="unbounded" />
+			</xsd:choice>
+
+			<xsd:attribute name="free-connection-timeout"
+						   type="xsd:string" use="optional" />
+			<xsd:attribute name="idle-timeout" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="load-conditioning-interval"
+						   type="xsd:string" use="optional" />
+			<xsd:attribute name="max-connections" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="min-connections" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="multi-user-authentication"
+						   type="xsd:string" use="optional" />
+			<xsd:attribute name="ping-interval" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="pr-single-hop-enabled"
+						   type="xsd:string" use="optional" />
+			<xsd:attribute name="read-timeout" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="retry-attempts" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="server-group" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="socket-buffer-size" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="statistic-interval" type="xsd:string"
+						   use="optional" />
+			<xsd:attribute name="subscription-ack-interval"
+						   type="xsd:string" use="optional" />
+			<xsd:attribute name="subscription-enabled"
+						   type="xsd:string" use="optional" />
+			<xsd:attribute name="subscription-message-tracking-timeout"
+						   type="xsd:string" use="optional" />
+			<xsd:attribute name="subscription-redundancy"
+						   type="xsd:string" use="optional" />
+			<xsd:attribute name="thread-local-connections"
+						   type="xsd:string" use="optional" />
+		</xsd:complexType>
+	</xsd:element>
+	<!-- JSON support -->
+	<xsd:element name="json-region-autoproxy">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Enables A Spring AOP proxy to perform automatic conversion to and from JSON for appropriate region operations
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="region-refs" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+A comma delimited string of region names to include for JSON conversion. By default all regions are included.
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="pretty-print" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+A boolean value to specify whether returned JSON strings are pretty printed, false by default.
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="convert-returned-collections" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+A boolean value to specify whether Collections returned by Region.getAll(), Region.values() should be converted from the
+native GemFire PdxInstance type. True, by default but will incur significant overhead for large collections.
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- Snapshot Service -->
+	<xsd:element name="snapshot-service">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Access to GemFire's Snapshot Service for taking snapshots of GemFire Cache and Region data.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="snapshot-import" type="snapshotMetadataType" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies meta-data for a snapshot import.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="snapshot-export" type="snapshotMetadataType" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies meta-data for a snapshot export.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="id" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+ID of the GemFire [Cache|Region] SnapshotService bean in the Spring context.
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="cache-ref" type="xsd:string" use="optional" default="gemfireCache">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+(Optional) Name of the GemFire Cache bean from which to extract data and record a snapshot (by default 'gemfireCache').
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="region-ref" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+(Optional) Name of the GemFire Region bean from which to extract data and record a snapshot.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="suppress-import-on-init" type="xsd:string" default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+						Determines whether imports are suppressed on initialization of the GemFire Snapshot Service.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- -->
+	<xsd:complexType name="snapshotMetadataType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Declares an element type defining snapshot meta-data.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Inner bean definition. The nested declaration serves as an alternative to bean references (using
+both in the same definition) is illegal.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:any>
+		</xsd:sequence>
+		<xsd:attribute name="location" type="xsd:string" use="required"/>
+		<xsd:attribute name="format" type="xsd:string" use="optional" default="GEMFIRE"/>
+		<xsd:attribute name="filter-ref" type="xsd:string" use="optional"/>
+	</xsd:complexType>
+</xsd:schema>

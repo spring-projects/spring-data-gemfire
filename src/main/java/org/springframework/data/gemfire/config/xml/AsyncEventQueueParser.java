@@ -93,8 +93,9 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 	private void parseAsyncEventListener(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
 
-		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(parserContext,
-			asyncEventListenerElement, builder);
+		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(asyncEventListenerElement,
+			parserContext,
+			builder);
 
 		builder.addPropertyValue("asyncEventListener", asyncEventListener);
 
