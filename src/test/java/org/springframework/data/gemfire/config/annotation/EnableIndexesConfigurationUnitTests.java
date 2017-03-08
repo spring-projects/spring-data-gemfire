@@ -20,19 +20,25 @@ package org.springframework.data.gemfire.config.annotation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -65,9 +71,7 @@ public class EnableIndexesConfigurationUnitTests {
 
 	@After
 	public void tearDown() {
-		if (applicationContext != null) {
-			applicationContext.close();
-		}
+		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
 	}
 
 	/* (non-Javadoc) */
@@ -80,6 +84,15 @@ public class EnableIndexesConfigurationUnitTests {
 	}
 
 	/* (non-Javadoc) */
+	protected void assertLuceneIndex(LuceneIndex index, String name, String regionPath, String... fields) {
+		assertThat(index).isNotNull();
+		assertThat(index.getName()).isEqualTo(name);
+		assertThat(index.getRegionPath()).isEqualTo(regionPath);
+		assertThat(index.getFieldNames()).contains(fields);
+		assertThat(index.getFieldNames()).hasSize(fields.length);
+	}
+
+	/* (non-Javadoc) */
 	protected ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
 		ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(annotatedClasses);
 		applicationContext.registerShutdownHook();
@@ -87,17 +100,28 @@ public class EnableIndexesConfigurationUnitTests {
 	}
 
 	@Test
-	public void pesistentEntityIndexesCreatedSuccessfully() {
+	public void persistentEntityIndexesCreatedSuccessfully() {
 		applicationContext = newApplicationContext(IndexedPersistentEntityConfiguration.class);
 
+		assertLuceneIndexes(applicationContext);
+		assertOqlIndexes(applicationContext);
+	}
+
+	private void assertLuceneIndexes(ConfigurableApplicationContext applicationContext) {
+		LuceneIndex luceneIndex = applicationContext.getBean("TitleLuceneIdx", LuceneIndex.class);
+
+		assertLuceneIndex(luceneIndex, "TitleLuceneIdx", "Customers", "title");
+	}
+
+	protected void assertOqlIndexes(ConfigurableApplicationContext applicationContext) {
 		Index customersIdIdx = applicationContext.getBean("CustomersIdKeyIdx", Index.class);
 
 		assertIndex(customersIdIdx, "CustomersIdKeyIdx", "id", "Customers", IndexType.KEY);
 
 		Index customersFirstNameIdx = applicationContext.getBean("CustomersFirstNameFunctionalIdx", Index.class);
 
-		assertIndex(customersFirstNameIdx, "CustomersFirstNameFunctionalIdx", "first_name", "/LoyalCustomers",
-			IndexType.FUNCTIONAL);
+		assertIndex(customersFirstNameIdx, "CustomersFirstNameFunctionalIdx", "first_name",
+			"/LoyalCustomers", IndexType.FUNCTIONAL);
 
 		Index lastNameIdx = applicationContext.getBean("LastNameIdx", Index.class);
 
@@ -116,20 +140,18 @@ public class EnableIndexesConfigurationUnitTests {
 
 	@Configuration
 	@SuppressWarnings("unused")
-	static class CacheConfiguration {
+	static class GemFireConfiguration {
 
 		@Bean
 		@SuppressWarnings("unchecked")
 		Cache gemfireCache() throws Exception {
-			Cache mockCache = mock(Cache.class);
+			return mockQueryService(mockRegionFactory(mock(Cache.class)));
+		}
+
+		Cache mockQueryService(Cache mockCache) throws Exception {
 			QueryService mockQueryService = mock(QueryService.class);
-			RegionFactory mockRegionFactory = mock(RegionFactory.class);
 
 			when(mockCache.getQueryService()).thenReturn(mockQueryService);
-			when(mockCache.createRegionFactory()).thenReturn(mockRegionFactory);
-			when(mockCache.createRegionFactory(any(RegionAttributes.class))).thenReturn(mockRegionFactory);
-			when(mockCache.createRegionFactory(any(RegionShortcut.class))).thenReturn(mockRegionFactory);
-			when(mockCache.createRegionFactory(anyString())).thenReturn(mockRegionFactory);
 
 			when(mockQueryService.createHashIndex(anyString(), anyString(), anyString()))
 				.thenAnswer(new HashIndexAnswer());
@@ -141,6 +163,46 @@ public class EnableIndexesConfigurationUnitTests {
 				.thenAnswer(new KeyIndexAnswer());
 
 			return mockCache;
+		}
+
+		@SuppressWarnings("unchecked")
+		Cache mockRegionFactory(Cache mockCache) {
+			RegionFactory mockRegionFactory = mock(RegionFactory.class);
+
+			when(mockCache.createRegionFactory()).thenReturn(mockRegionFactory);
+			when(mockCache.createRegionFactory(any(RegionAttributes.class))).thenReturn(mockRegionFactory);
+			when(mockCache.createRegionFactory(any(RegionShortcut.class))).thenReturn(mockRegionFactory);
+			when(mockCache.createRegionFactory(anyString())).thenReturn(mockRegionFactory);
+
+			return mockCache;
+		}
+
+		@Bean
+		LuceneService luceneService() {
+			LuceneService mockLuceneService = mock(LuceneService.class);
+
+			doAnswer(invocation -> {
+				LuceneIndex mockLuceneIndex = mock(LuceneIndex.class);
+
+				String indexName = invocation.getArgumentAt(0, String.class);
+				String regionPath = invocation.getArgumentAt(1, String.class);
+
+				when(mockLuceneIndex.getName()).thenReturn(indexName);
+				when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);
+				when(mockLuceneIndex.getFieldNames()).thenReturn(resolveFieldNames(invocation));
+				when(mockLuceneService.getIndex(eq(indexName), eq(regionPath))).thenReturn(mockLuceneIndex);
+
+				return mockLuceneIndex;
+			}).when(mockLuceneService).createIndex(anyString(), anyString(), Matchers.<String[]>anyVararg());
+
+			return mockLuceneService;
+		}
+
+		@SuppressWarnings("all")
+		String[] resolveFieldNames(InvocationOnMock invocation) {
+			String[] fieldNames = new String[invocation.getArguments().length - 2];
+			System.arraycopy(invocation.getArguments(), 2, fieldNames, 0, fieldNames.length);
+			return fieldNames;
 		}
 	}
 
@@ -195,7 +257,7 @@ public class EnableIndexesConfigurationUnitTests {
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
-	static class IndexedPersistentEntityConfiguration extends CacheConfiguration {
+	static class IndexedPersistentEntityConfiguration extends GemFireConfiguration {
 
 	}
 
@@ -203,7 +265,7 @@ public class EnableIndexesConfigurationUnitTests {
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
-	static class NoIndexesCreatedForIndexedPersistentEntityConfiguration extends CacheConfiguration {
+	static class NoIndexesCreatedForIndexedPersistentEntityConfiguration extends GemFireConfiguration {
 
 	}
 }

@@ -207,6 +207,11 @@ public class EntityDefinedRegionsConfiguration
 	}
 
 	/* (non-Javadoc) */
+	protected AnnotationAttributes getAnnotationAttributes(Annotation annotation) {
+		return AnnotationAttributes.fromMap(AnnotationUtils.getAnnotationAttributes(annotation));
+	}
+
+	/* (non-Javadoc) */
 	protected AnnotationAttributes getAnnotationAttributes(AnnotationMetadata importingClassMetadata) {
 		return getAnnotationAttributes(importingClassMetadata, getAnnotationTypeName());
 	}

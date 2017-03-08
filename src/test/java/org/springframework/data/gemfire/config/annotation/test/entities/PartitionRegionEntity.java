@@ -20,6 +20,7 @@ package org.springframework.data.gemfire.config.annotation.test.entities;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.mapping.annotation.Indexed;
+import org.springframework.data.gemfire.mapping.annotation.LuceneIndexed;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 
 /**
@@ -35,6 +36,7 @@ import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 		@PartitionRegion.FixedPartition(name = "two", numBuckets = 21)
 	}
 )
+@SuppressWarnings("unused")
 public class PartitionRegionEntity {
 
 	@Id
@@ -45,5 +47,8 @@ public class PartitionRegionEntity {
 
 	@Indexed(name = "LastNameIdx")
 	private String lastName;
+
+	@LuceneIndexed("TitleLuceneIdx")
+	private String title;
 
 }
