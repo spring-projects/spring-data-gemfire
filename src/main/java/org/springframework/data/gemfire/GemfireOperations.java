@@ -48,11 +48,11 @@ public interface GemfireOperations {
 
 	<K, V> V putIfAbsent(K key, V value);
 
+	<K, V> V remove(K key);
+
 	<K, V> V replace(K key, V value);
 
 	<K, V> boolean replace(K key, V oldValue, V newValue);
-
-	<K, V> V remove(K key);
 
 	/**
 	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return multiple results; for queries that return only one

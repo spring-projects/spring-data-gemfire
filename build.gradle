@@ -107,13 +107,14 @@ dependencies {
     }
 
     // Apache Geode (a.k.a. Pivotal GemFire)
-    compile("org.apache.geode:geode-core:$gemfireVersion") {
+    compile("org.apache.geode:geode-core:$geodeVersion") {
         exclude group: "org.apache.logging.log4j", module: "log4j-jcl"
         exclude group: "org.apache.logging.log4j", module: "log4j-jul"
         exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
     }
-    compile("org.apache.geode:geode-cq:$gemfireVersion")
-    compile("org.apache.geode:geode-wan:$gemfireVersion")
+    compile("org.apache.geode:geode-cq:$geodeVersion")
+    compile("org.apache.geode:geode-lucene:$geodeVersion")
+    compile("org.apache.geode:geode-wan:$geodeVersion")
     optional"org.apache.shiro:shiro-spring:$shiroVersion"
     runtime("antlr:antlr:$antlrVersion")
 

@@ -20,8 +20,10 @@ package org.springframework.data.gemfire.util;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -34,15 +36,15 @@ import org.springframework.util.StringUtils;
  * @since 1.8.0
  */
 @SuppressWarnings("unused")
-// TODO rename this utiltiy class using a more descriptive, intuitive and meaningful name
+// TODO rename this utility class using a more descriptive, intuitive and meaningful name
 public abstract class SpringUtils {
 
 	/* (non-Javadoc) */
-	public static BeanDefinition addDependsOn(BeanDefinition bean, String beanName) {
+	public static BeanDefinition addDependsOn(BeanDefinition bean, String... beanNames) {
 		List<String> dependsOnList = new ArrayList<>();
 
 		Collections.addAll(dependsOnList, nullSafeArray(bean.getDependsOn(), String.class));
-		dependsOnList.add(beanName);
+		dependsOnList.addAll(Arrays.asList(nullSafeArray(beanNames, String.class)));
 		bean.setDependsOn(dependsOnList.toArray(new String[dependsOnList.size()]));
 
 		return bean;
@@ -56,6 +58,16 @@ public abstract class SpringUtils {
 	/* (non-Javadoc) */
 	public static <T> T defaultIfNull(T value, T defaultValue) {
 		return (value != null ? value : defaultValue);
+	}
+
+	/* (non-Javadoc) */
+	public static <T> T defaultIfNull(T value, Supplier<T> supplier) {
+		return (value != null ? value : supplier.get());
+	}
+
+	/* (non-Javadoc) */
+	public static String dereferenceBean(String beanName) {
+		return String.format("%1$s%2$s", BeanFactory.FACTORY_BEAN_PREFIX, beanName);
 	}
 
 	/* (non-Javadoc) */
@@ -74,7 +86,17 @@ public abstract class SpringUtils {
 	}
 
 	/* (non-Javadoc) */
-	public static String dereferenceBean(String beanName) {
-		return String.format("%1$s%2$s", BeanFactory.FACTORY_BEAN_PREFIX, beanName);
+	public static <T> T safeGetValue(Supplier<T> supplier) {
+		return safeGetValue(supplier, null);
+	}
+
+	/* (non-Javadoc) */
+	public static <T> T safeGetValue(Supplier<T> supplier, T defaultValue) {
+		try {
+			return supplier.get();
+		}
+		catch (Throwable ignore) {
+			return defaultValue;
+		}
 	}
 }

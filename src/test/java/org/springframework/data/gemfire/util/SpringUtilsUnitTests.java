@@ -19,16 +19,21 @@ package org.springframework.data.gemfire.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.test.support.MockitoMatchers.stringArrayMatcher;
+import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
+
+import java.util.function.Supplier;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.data.gemfire.test.support.MockitoMatchers;
 
 /**
  * Unit tests for {@link SpringUtils}.
@@ -49,19 +54,36 @@ public class SpringUtilsUnitTests {
 
 	@Test
 	public void addDependsOnToExistingDependencies() {
-		when(mockBeanDefinition.getDependsOn()).thenReturn(ArrayUtils.asArray("testBeanNameOne", "testBeanNameTwo"));
+		when(mockBeanDefinition.getDependsOn()).thenReturn(asArray("testBeanNameOne", "testBeanNameTwo"));
+
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanNameThree")).isSameAs(mockBeanDefinition);
+
 		verify(mockBeanDefinition, times(1)).getDependsOn();
 		verify(mockBeanDefinition, times(1)).setDependsOn(argThat(
-			MockitoMatchers.stringArrayMatcher("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree")));
+			stringArrayMatcher("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree")));
 	}
 
 	@Test
 	public void addDependsOnToNonExistingDependencies() {
 		when(mockBeanDefinition.getDependsOn()).thenReturn(null);
+
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanName")).isSameAs(mockBeanDefinition);
+
 		verify(mockBeanDefinition, times(1)).getDependsOn();
-		verify(mockBeanDefinition, times(1)).setDependsOn(argThat(MockitoMatchers.stringArrayMatcher("testBeanName")));
+		verify(mockBeanDefinition, times(1)).setDependsOn(argThat(stringArrayMatcher("testBeanName")));
+	}
+
+	@Test
+	public void addDependsOnWithMultipleDependenciesWithExistingDependencies() {
+		when(mockBeanDefinition.getDependsOn()).thenReturn(asArray("testBeanNameOne", "testBeanNameTwo"));
+
+		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanNameThree", "testBeanNameFour"))
+			.isSameAs(mockBeanDefinition);
+
+		verify(mockBeanDefinition, times(1)).getDependsOn();
+		verify(mockBeanDefinition, times(1))
+			.setDependsOn(argThat(stringArrayMatcher("testBeanNameOne", "testBeanNameTwo",
+				"testBeanNameThree", "testBeanNameFour")));
 	}
 
 	@Test
@@ -102,6 +124,35 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
+	public void defaultIfNullWithSupplierReturnsValue() {
+		Supplier<String> mockSupplier = mock(Supplier.class);
+
+		when(mockSupplier.get()).thenReturn("supplier");
+
+		assertThat(SpringUtils.defaultIfNull("value", mockSupplier)).isEqualTo("value");
+
+		verify(mockSupplier, never()).get();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void defaultIfNullWithSupplierReturnsSupplierValue() {
+		Supplier<String> mockSupplier = mock(Supplier.class);
+
+		when(mockSupplier.get()).thenReturn("supplier");
+
+		assertThat(SpringUtils.defaultIfNull(null, mockSupplier)).isEqualTo("supplier");
+
+		verify(mockSupplier, times(1)).get();
+	}
+
+	@Test
+	public void dereferenceBean() {
+		assertThat(SpringUtils.dereferenceBean("example")).isEqualTo("&example");
+	}
+
+	@Test
 	public void equalsIgnoreNullIsTrue() {
 		assertThat(SpringUtils.equalsIgnoreNull(null, null)).isTrue();
 		assertThat(SpringUtils.equalsIgnoreNull(true, true)).isTrue();
@@ -123,13 +174,18 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
-	public void nullOrEqualsWithNullIsTrue() {
-		assertThat(SpringUtils.nullOrEquals(null, "test")).isTrue();
+	public void nullOrEqualsWithEqualObjectsIsTrue() {
+		assertThat(SpringUtils.nullOrEquals("test", "test")).isTrue();
 	}
 
 	@Test
-	public void nullOrEqualsWithEqualObjectsIsTrue() {
-		assertThat(SpringUtils.nullOrEquals("test", "test")).isTrue();
+	public void nullOrEqualsWithNonNullObjectAndNullIsFalse() {
+		assertThat(SpringUtils.nullOrEquals("test", null)).isFalse();
+	}
+
+	@Test
+	public void nullOrEqualsWithNullIsTrue() {
+		assertThat(SpringUtils.nullOrEquals(null, "test")).isTrue();
 	}
 
 	@Test
@@ -143,18 +199,30 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
-	public void nullSafeEqualsWithUnequalObjectsIsFalse() {
-		assertThat(SpringUtils.nullSafeEquals("test", "mock")).isFalse();
-	}
-
-	@Test
 	public void nullSafeEqualsWithNullObjectsIsFalse() {
 		assertThat(SpringUtils.nullSafeEquals(null, "test")).isFalse();
 		assertThat(SpringUtils.nullSafeEquals("test", null)).isFalse();
 	}
 
 	@Test
-	public void dereferenceBean() {
-		assertThat(SpringUtils.dereferenceBean("example")).isEqualTo("&example");
+	public void nullSafeEqualsWithUnequalObjectsIsFalse() {
+		assertThat(SpringUtils.nullSafeEquals("test", "mock")).isFalse();
+	}
+
+	@Test
+	public void safeGetValueReturnsSupplierValue() {
+		assertThat(SpringUtils.safeGetValue(() -> "test", null)).isEqualTo("test");
+	}
+
+	@Test
+	public void safeGetValueReturnsDefaultValue() {
+		assertThat(SpringUtils.safeGetValue(() -> { throw new RuntimeException("error"); },  "test"))
+			.isEqualTo("test");
+	}
+
+	@Test
+	public void safeGetValueReturnsNull() {
+		assertThat(SpringUtils.<Object>safeGetValue(() -> { throw new RuntimeException("error"); }))
+			.isEqualTo("test");
 	}
 }
