@@ -24,17 +24,25 @@ import java.text.MessageFormat;
  * with the added convenience of message formatting and optional {@link Throwable causes}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see java.lang.RuntimeException
+ * @since 2.0.0
  */
 @SuppressWarnings("unused")
 public abstract class RuntimeExceptionFactory {
+
+	public static final String NOT_IMPLEMENTED = "Not Implemented";
 
 	/**
 	 * Constructs and initializes an {@link IllegalArgumentException} with the given {@link String message}
 	 * and {@link Object[] arguments} used to format the message.
 	 *
+<<<<<<< HEAD
 	 * @param message {@link String} describing the exception.
 	 * @param args {@link Object[] arguments} used in the message to replace format placeholders.
+=======
+	 * @param message {@link String} describing the {@link IllegalArgumentException exception}.
+	 * @param args {@link Object[] arguments} used to replace format placeholders in the {@link String message}.
+>>>>>>> f104d57... SGF-402 - Add Lucene Integration support.
 	 * @return a new {@link IllegalArgumentException} with the given {@link String message}.
 	 * @see #newIllegalArgumentException(Throwable, String, Object...)
 	 * @see java.lang.IllegalArgumentException
@@ -63,8 +71,8 @@ public abstract class RuntimeExceptionFactory {
 	 * Constructs and initializes an {@link IllegalStateException} with the given {@link String message}
 	 * and {@link Object[] arguments} used to format the message.
 	 *
-	 * @param message {@link String} describing the exception.
-	 * @param args {@link Object[] arguments} used in the message to replace format placeholders.
+	 * @param message {@link String} describing the {@link IllegalStateException exception}.
+	 * @param args {@link Object} array of arguments used to replace format placeholders in the {@link String message}.
 	 * @return a new {@link IllegalStateException} with the given {@link String message}.
 	 * @see #newIllegalStateException(Throwable, String, Object...)
 	 * @see java.lang.IllegalStateException
@@ -78,9 +86,15 @@ public abstract class RuntimeExceptionFactory {
 	 * {@link String message} and {@link Object[] arguments} used to format the message.
 	 *
 	 * @param cause {@link Throwable} identifying the reason the {@link IllegalStateException} was thrown.
+<<<<<<< HEAD
 	 * @param message {@link String} describing the exception.
 	 * @param args {@link Object[] arguments} used in the message to replace format placeholders.
 	 * @return a new {@link IllegalStateException} with the given {@link String message}.
+=======
+	 * @param message {@link String} describing the {@link IllegalStateException exception}.
+	 * @param args {@link Object[] arguments} used to replace format placeholders in the {@link String message}.
+	 * @return a new {@link IllegalStateException} with the given {@link Throwable cause} and {@link String message}.
+>>>>>>> f104d57... SGF-402 - Add Lucene Integration support.
 	 * @see java.lang.IllegalStateException
 	 */
 	public static IllegalStateException newIllegalStateException(Throwable cause, String message, Object... args) {
@@ -91,8 +105,13 @@ public abstract class RuntimeExceptionFactory {
 	 * Constructs and initializes an {@link RuntimeException} with the given {@link String message}
 	 * and {@link Object[] arguments} used to format the message.
 	 *
+<<<<<<< HEAD
 	 * @param message {@link String} describing the exception.
 	 * @param args {@link Object[] arguments} used in the message to replace format placeholders.
+=======
+	 * @param message {@link String} describing the {@link RuntimeException exception}.
+	 * @param args {@link Object[] arguments} used to replace format placeholders in the {@link String message}.
+>>>>>>> f104d57... SGF-402 - Add Lucene Integration support.
 	 * @return a new {@link RuntimeException} with the given {@link String message}.
 	 * @see #newRuntimeException(Throwable, String, Object...)
 	 * @see java.lang.RuntimeException
@@ -106,9 +125,15 @@ public abstract class RuntimeExceptionFactory {
 	 * {@link String message} and {@link Object[] arguments} used to format the message.
 	 *
 	 * @param cause {@link Throwable} identifying the reason the {@link RuntimeException} was thrown.
+<<<<<<< HEAD
 	 * @param message {@link String} describing the exception.
 	 * @param args {@link Object[] arguments} used in the message to replace format placeholders.
 	 * @return a new {@link RuntimeException} with the given {@link String message}.
+=======
+	 * @param message {@link String} describing the {@link RuntimeException exception}.
+	 * @param args {@link Object[] arguments} used to replace format placeholders in the {@link String message}.
+	 * @return a new {@link RuntimeException} with the given {@link Throwable cause} and {@link String message}.
+>>>>>>> f104d57... SGF-402 - Add Lucene Integration support.
 	 * @see java.lang.RuntimeException
 	 */
 	public static RuntimeException newRuntimeException(Throwable cause, String message, Object... args) {
@@ -116,6 +141,40 @@ public abstract class RuntimeExceptionFactory {
 	}
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Constructs and initializes an {@link UnsupportedOperationException} with the given {@link String message}
+	 * and {@link Object[] arguments} used to format the message.
+	 *
+	 * @param message {@link String} describing the {@link UnsupportedOperationException exception}.
+	 * @param args {@link Object[] arguments} used to replace format placeholders in the {@link String message}
+	 * @return a new {@link UnsupportedOperationException} with the given {@link String message}.
+	 * @see #newUnsupportedOperationException(Throwable, String, Object...)
+	 * @see java.lang.UnsupportedOperationException
+	 */
+	public static UnsupportedOperationException newUnsupportedOperationException(String message, Object... args) {
+		return newUnsupportedOperationException(null, message, args);
+	}
+
+	/**
+	 * Constructs and initializes an {@link UnsupportedOperationException} with the given {@link Throwable cause},
+	 * {@link String message} and {@link Object[] arguments} used to format the message.
+	 *
+	 * @param cause {@link Throwable} identifying the reason the {@link UnsupportedOperationException} was thrown.
+	 * @param message {@link String} describing the {@link UnsupportedOperationException exception}.
+	 * @param args {@link Object[] arguments} used to replace format placeholders in the {@link String message}.
+	 * @return a new {@link UnsupportedOperationException} with the given {@link Throwable cause}
+	 * and {@link String message}.
+	 * @see java.lang.UnsupportedOperationException
+	 */
+	public static UnsupportedOperationException newUnsupportedOperationException(Throwable cause,
+			String message, Object... args) {
+
+		return new UnsupportedOperationException(format(message, args), cause);
+	}
+
+	/**
+>>>>>>> f104d57... SGF-402 - Add Lucene Integration support.
 	 * Formats the given {@link String message} using the given {@link Object[] arguments}.
 	 *
 	 * @param message {@link String} containing the message pattern to format.

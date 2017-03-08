@@ -124,4 +124,8 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 			return null;
 		}
 	}
+
+	public static GemFireCache resolveGemFireCache() {
+		return defaultIfNull(getCache(), CacheUtils::getClientCache);
+	}
 }

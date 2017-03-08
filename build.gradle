@@ -97,8 +97,8 @@ dependencies {
     // GemFire
     compile("io.pivotal.gemfire:geode-core:$gemfireVersion")
 	compile("io.pivotal.gemfire:geode-cq:$gemfireVersion")
+	compile("io.pivotal.gemfire:geode-lucene:$gemfireVersion")
 	compile("io.pivotal.gemfire:geode-wan:$gemfireVersion")
-    optional("com.google.code.findbugs:annotations:$googleCodeFindbugsVersion")
     optional("org.apache.shiro:shiro-spring:$shiroVersion")
     runtime("antlr:antlr:$antlrVersion")
 

@@ -78,6 +78,10 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 	private String indexName;
 	private String name;
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
 	public void afterPropertiesSet() throws Exception {
 		Assert.notNull(cache, "The GemFire Cache reference must not be null!");
 
@@ -251,15 +255,27 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 		return null;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
 	public Index getObject() {
 		index = (index != null ? index : getExistingIndex(queryService, indexName));
 		return index;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
 	public Class<?> getObjectType() {
 		return (index != null ? index.getClass() : Index.class);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
@@ -381,7 +397,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 		private final String indexName;
 
-		protected IndexWrapper(final QueryService queryService, final String indexName) {
+		protected IndexWrapper(QueryService queryService, String indexName) {
 			Assert.notNull(queryService, "QueryService must not be null");
 			Assert.hasText(indexName, "The name of the Index must be specified!");
 			this.queryService = queryService;
@@ -470,7 +486,7 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 		}
 
 		@Override
-		public boolean equals(final Object obj) {
+		public boolean equals(Object obj) {
 			if (obj == this) {
 				return true;
 			}
@@ -499,5 +515,4 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 			return (index != null ? String.valueOf(index) : getIndexName());
 		}
 	}
-
 }

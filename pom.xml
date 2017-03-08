@@ -18,6 +18,7 @@
 	<properties>
 		<antlr.version>2.7.7</antlr.version>
 		<apache-shiro.version>1.3.2</apache-shiro.version>
+		<assertj.version>3.6.2</assertj.version>
 		<gemfire.version>9.0.2</gemfire.version>
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
@@ -79,7 +80,16 @@
 		</dependency>
 
 		<dependency>
+<<<<<<< HEAD
 			<groupId>io.pivotal.gemfire</groupId>
+=======
+			<groupId>org.apache.geode</groupId>
+			<artifactId>geode-lucene</artifactId>
+			<version>${gemfire.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geode</groupId>
+>>>>>>> f104d57... SGF-402 - Add Lucene Integration support.
 			<artifactId>geode-wan</artifactId>
 			<version>${gemfire.version}</version>
 		</dependency>

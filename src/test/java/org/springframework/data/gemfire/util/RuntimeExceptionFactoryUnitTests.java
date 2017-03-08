@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newUnsupportedOperationException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +36,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.util.RuntimeExceptionFactory
  * @since 2.0.0
  */
@@ -87,5 +88,16 @@ public class RuntimeExceptionFactoryUnitTests {
 	public void newRuntimeExceptionWithFormattedMessageAndCause() {
 		assertThrowable(newRuntimeException(mockCause, "%1$s is a {1}", "This", "test"),
 			RuntimeException.class, "This is a test", mockCause);
+	}
+
+	@Test
+	public void newUnsupportedOperationExceptionWithMessage() {
+		assertThrowable(newUnsupportedOperationException("test"), UnsupportedOperationException.class, "test");
+	}
+
+	@Test
+	public void newUnsupportedOperationExceptionWithFormattedMessageAndCause() {
+		assertThrowable(newUnsupportedOperationException(mockCause, "%1$s is a {1}", "This", "test"),
+			UnsupportedOperationException.class, "This is a test", mockCause);
 	}
 }
