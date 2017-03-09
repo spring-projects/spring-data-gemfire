@@ -184,8 +184,8 @@ public class EnableIndexesConfigurationUnitTests {
 			doAnswer(invocation -> {
 				LuceneIndex mockLuceneIndex = mock(LuceneIndex.class);
 
-				String indexName = invocation.getArgumentAt(0, String.class);
-				String regionPath = invocation.getArgumentAt(1, String.class);
+				String indexName = invocation.getArgument(0);
+				String regionPath = invocation.getArgument(1);
 
 				when(mockLuceneIndex.getName()).thenReturn(indexName);
 				when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);

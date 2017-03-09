@@ -30,7 +30,7 @@ import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
  * @author John Blum
  * @since 1.9.0
  */
-@PartitionRegion(name = "Customers", persistent = true, redundantCopies = 1,
+@PartitionRegion(name = "Customers", ignoreIfExists = false, persistent = true, redundantCopies = 1,
 	fixedPartitions = {
 		@PartitionRegion.FixedPartition(name = "one", primary = true, numBuckets = 16),
 		@PartitionRegion.FixedPartition(name = "two", numBuckets = 21)

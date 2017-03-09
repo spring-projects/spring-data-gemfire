@@ -21,10 +21,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.util.CacheUtils.toRegionPath;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -32,10 +38,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCache;
@@ -45,6 +53,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -52,17 +61,21 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
+import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionShortcutWrapper;
 import org.springframework.data.gemfire.config.annotation.test.entities.ClientRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.CollocatedPartitionRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.GenericRegionEntity;
+import org.springframework.data.gemfire.config.annotation.test.entities.LocalRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.NonEntity;
+import org.springframework.data.gemfire.config.annotation.test.entities.PartitionRegionEntity;
+import org.springframework.data.gemfire.config.annotation.test.entities.ReplicateRegionEntity;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
-import org.springframework.data.gemfire.util.CollectionUtils;
 
 /**
  * Unit tests for the {@link EnableEntityDefinedRegions} annotation and {@link EntityDefinedRegionsConfiguration} class.
@@ -78,25 +91,26 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 
 	private static final AtomicInteger MOCK_ID = new AtomicInteger(0);
 
+	private static final Set<Region<?, ?>> cacheRegions = new HashSet<>();
+
 	private ConfigurableApplicationContext applicationContext;
 
 	@After
 	public void tearDown() {
-		if (applicationContext != null) {
-			applicationContext.close();
-		}
+		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
+		cacheRegions.clear();
 	}
 
 	/* (non-Javadoc) */
 	protected void assertRegion(Region<?, ?> region, String name) {
-		assertRegion(region, name, null, null);
+		assertRegion(region, name, toRegionPath(name), null, null);
 	}
 
 	/* (non-Javadoc) */
 	protected <K, V> void assertRegion(Region<?, ?> region, String name,
 			Class<K> keyConstraint, Class<V> valueConstraint) {
 
-		assertRegion(region, name, String.format("%1$s%2$s", Region.SEPARATOR, name), keyConstraint, valueConstraint);
+		assertRegion(region, name, toRegionPath(name), keyConstraint, valueConstraint);
 	}
 
 	/* (non-Javadoc) */
@@ -157,7 +171,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		assertThat(partitionAttributes).isNotNull();
 
 		List<FixedPartitionAttributes> fixedPartitionAttributes =
-			CollectionUtils.nullSafeList(partitionAttributes.getFixedPartitionAttributes());
+			nullSafeList(partitionAttributes.getFixedPartitionAttributes());
 
 		for (FixedPartitionAttributes attributes : fixedPartitionAttributes) {
 			if (attributes.getPartitionName().equals(partitionName)) {
@@ -183,15 +197,15 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		Region<String, ClientRegionEntity> sessions = applicationContext.getBean("Sessions", Region.class);
 
 		assertRegion(sessions, "Sessions", String.class, ClientRegionEntity.class);
-		assertRegionAttributes(sessions.getAttributes(), DataPolicy.NORMAL, null, true, false,
-			GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, null);
+		assertRegionAttributes(sessions.getAttributes(), DataPolicy.NORMAL, null, true,
+			false, GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, null);
 
 		Region<Long, GenericRegionEntity> genericRegionEntity =
 			applicationContext.getBean("GenericRegionEntity", Region.class);
 
 		assertRegion(genericRegionEntity, "GenericRegionEntity", Long.class, GenericRegionEntity.class);
-		assertRegionAttributes(genericRegionEntity.getAttributes(), DataPolicy.EMPTY, null, true, false,
-			GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, null);
+		assertRegionAttributes(genericRegionEntity.getAttributes(), DataPolicy.EMPTY, null,
+			true, false, GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, null);
 
 		assertThat(applicationContext.containsBean("CollocatedPartitionRegionEntity")).isFalse();
 		assertThat(applicationContext.containsBean("ContactEvents")).isFalse();
@@ -211,19 +225,20 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		Region<Object, Object> customers = applicationContext.getBean("Customers", Region.class);
 
 		assertRegion(customers, "Customers");
-		assertRegionAttributes(customers.getAttributes(), DataPolicy.PERSISTENT_PARTITION, null, true, false, null,
-			Scope.DISTRIBUTED_NO_ACK);
-		assertPartitionAttributes(customers.getAttributes().getPartitionAttributes(), null, null, 1);
-		assertFixedPartitionAttributes(findFixedPartitionAttributes(
-			customers.getAttributes().getPartitionAttributes(), "one"), "one", true, 16);
-		assertFixedPartitionAttributes(findFixedPartitionAttributes(
-			customers.getAttributes().getPartitionAttributes(), "two"), "two", false, 21);
+		assertRegionAttributes(customers.getAttributes(), DataPolicy.PERSISTENT_PARTITION, null,
+			true, false, null, Scope.DISTRIBUTED_NO_ACK);
+		assertPartitionAttributes(customers.getAttributes().getPartitionAttributes(), null,
+			null, 1);
+		assertFixedPartitionAttributes(findFixedPartitionAttributes(customers.getAttributes().getPartitionAttributes(),
+			"one"), "one", true, 16);
+		assertFixedPartitionAttributes(findFixedPartitionAttributes(customers.getAttributes().getPartitionAttributes(),
+			"two"), "two", false, 21);
 
 		Region<Object, Object> contactEvents = applicationContext.getBean("ContactEvents", Region.class);
 
 		assertRegion(contactEvents, "ContactEvents");
-		assertRegionAttributes(contactEvents.getAttributes(), DataPolicy.PERSISTENT_PARTITION, "mockDiskStore",
-			false, true, null, Scope.DISTRIBUTED_NO_ACK);
+		assertRegionAttributes(contactEvents.getAttributes(), DataPolicy.PERSISTENT_PARTITION,
+			"mockDiskStore", false, true, null, Scope.DISTRIBUTED_NO_ACK);
 		assertPartitionAttributes(contactEvents.getAttributes().getPartitionAttributes(), "Customers",
 			applicationContext.getBean("mockPartitionResolver", PartitionResolver.class), 2);
 
@@ -237,23 +252,49 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		assertThat(applicationContext.containsBean("Sessions")).isFalse();
 	}
 
+	@Test(expected = RegionExistsException.class)
+	public void entityPeerPartitionRegionAlreadyDefinedThrowsRegionExistsException() {
+		try {
+			applicationContext = newApplicationContext(ExistingPartitionRegionPersistentEntitiesConfiguration.class);
+		}
+		catch (BeanCreationException expected) {
+			assertThat(expected).hasCauseInstanceOf(RegionExistsException.class);
+			assertThat(expected.getCause()).hasMessage("/Customers");
+
+			throw (RegionExistsException) expected.getCause();
+		}
+	}
+
 	@Test
 	@SuppressWarnings("unchecked")
-	public void entityServerRegionsDefined() {
-		applicationContext = newApplicationContext(AllServerPersistentEntitiesConfiguration.class);
+	public void entityReplicateRegionAlreadyDefinedIgnoresEntityDefinedRegionDefinition() {
+		applicationContext = newApplicationContext(ExistingReplicateRegionPersistentEntitiesConfiguration.class);
 
 		Region<Object, Object> accounts = applicationContext.getBean("Accounts", Region.class);
 
 		assertRegion(accounts, "Accounts");
-		assertRegionAttributes(accounts.getAttributes(), DataPolicy.REPLICATE, null, true, false, null,
-			Scope.DISTRIBUTED_ACK);
+		assertRegionAttributes(accounts.getAttributes(), DataPolicy.REPLICATE, null, true,
+			false, null, Scope.DISTRIBUTED_NO_ACK);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void entityServerRegionsDefined() {
+		applicationContext = newApplicationContext(ServerPersistentEntitiesConfiguration.class);
+
+		Region<Object, Object> accounts = applicationContext.getBean("Accounts", Region.class);
+
+		assertRegion(accounts, "Accounts");
+		assertRegionAttributes(accounts.getAttributes(), DataPolicy.REPLICATE, null, true,
+			false, null, Scope.DISTRIBUTED_ACK);
 
 		Region<Object, Object> customers = applicationContext.getBean("Customers", Region.class);
 
 		assertRegion(customers, "Customers");
-		assertRegionAttributes(customers.getAttributes(), DataPolicy.PERSISTENT_PARTITION, null, true, false, null,
-			Scope.DISTRIBUTED_NO_ACK);
-		assertPartitionAttributes(customers.getAttributes().getPartitionAttributes(), null, null, 1);
+		assertRegionAttributes(customers.getAttributes(), DataPolicy.PERSISTENT_PARTITION,
+			null, true, false, null, Scope.DISTRIBUTED_NO_ACK);
+		assertPartitionAttributes(customers.getAttributes().getPartitionAttributes(), null,
+			null, 1);
 
 		Region<Object, Object> localRegionEntity = applicationContext.getBean("LocalRegionEntity", Region.class);
 
@@ -261,11 +302,12 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		assertRegionAttributes(localRegionEntity.getAttributes(), DataPolicy.NORMAL,
 			null, true, false, null, Scope.LOCAL);
 
-		Region<Object, Object> genericRegionEntity = applicationContext.getBean("GenericRegionEntity", Region.class);
+		Region<Object, Object> genericRegionEntity =
+			applicationContext.getBean("GenericRegionEntity", Region.class);
 
 		assertRegion(genericRegionEntity, "GenericRegionEntity");
-		assertRegionAttributes(genericRegionEntity.getAttributes(), DataPolicy.NORMAL, null, true, false, null,
-			Scope.DISTRIBUTED_NO_ACK);
+		assertRegionAttributes(genericRegionEntity.getAttributes(), DataPolicy.NORMAL,
+			null, true, false, null, Scope.DISTRIBUTED_NO_ACK);
 
 		assertThat(applicationContext.containsBean("CollocatedPartitionRegionEntity")).isFalse();
 		assertThat(applicationContext.containsBean("ContactEvents")).isFalse();
@@ -284,17 +326,15 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 	protected static <K, V> Cache mockCache() {
 		Cache mockCache = mock(Cache.class);
 
-		Answer<RegionFactory<K, V>> createRegionFactory = new Answer<RegionFactory<K, V>>() {
-			@Override @SuppressWarnings("unchecked")
-			public RegionFactory<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				RegionAttributes<K, V> defaultRegionAttributes =
-					mockRegionAttributes(null, null, true, false, null, null, null, Scope.DISTRIBUTED_NO_ACK, null);
+		Answer<RegionFactory<K, V>> createRegionFactory = invocation -> {
+			RegionAttributes<K, V> defaultRegionAttributes = mockRegionAttributes(null,
+				null, true, false, null, null,
+					null, Scope.DISTRIBUTED_NO_ACK, null);
 
 				RegionAttributes<K, V> regionAttributes = (invocation.getArguments().length == 1
 					? invocation.getArgument(0) : defaultRegionAttributes);
 
-				return mockRegionFactory(regionAttributes);
-			}
+			return mockRegionFactory(mockCache, regionAttributes);
 		};
 
 		when(mockCache.createRegionFactory()).thenAnswer(createRegionFactory);
@@ -346,7 +386,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		when(mockClientRegionFactory.setValueConstraint(any(Class.class))).thenAnswer(
 			newSetter(Class.class, valueConstraint, mockClientRegionFactory));
 
-		final RegionAttributes<K, V> mockRegionAttributes =
+		RegionAttributes<K, V> mockRegionAttributes =
 			mock(RegionAttributes.class, mockName("MockClientRegionAttributes"));
 
 		when(mockRegionAttributes.getDataPolicy()).thenReturn(
@@ -357,11 +397,17 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		when(mockRegionAttributes.getPoolName()).thenAnswer(newGetter(poolName));
 		when(mockRegionAttributes.getValueConstraint()).thenAnswer(newGetter(valueConstraint));
 
-		when(mockClientRegionFactory.create(anyString())).thenAnswer(new Answer<Region<K, V>>() {
-			@Override
-			public Region<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				return mockRegion(invocation.getArgument(0), mockRegionAttributes);
-			}
+		when(mockClientRegionFactory.create(anyString())).thenAnswer(invocation -> {
+			String regionName = invocation.getArgument(0);
+
+			cacheRegions.stream().filter(region -> region.getName().equals(regionName)).findAny()
+				.ifPresent(region -> { throw new RegionExistsException(region); });
+
+			Region<K, V> region = mockRegion(regionName, mockRegionAttributes);
+
+			cacheRegions.add(region);
+
+			return region;
 		});
 
 		return mockClientRegionFactory;
@@ -373,7 +419,8 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 			String diskStoreName, boolean diskSynchronous, boolean ignoreJta, Class<K> keyConstraint,
 			PartitionAttributes<K, V> partitionAttributes, String poolName, Scope scope, Class<V> valueConstraint) {
 
-		RegionAttributes<K, V> mockRegionAttributes = mock(RegionAttributes.class, mockName("MockRegionAttributes"));
+		RegionAttributes<K, V> mockRegionAttributes =
+			mock(RegionAttributes.class, mockName("MockRegionAttributes"));
 
 		when(mockRegionAttributes.getDataPolicy()).thenReturn(dataPolicy);
 		when(mockRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
@@ -390,7 +437,9 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
-	protected static <K, V> RegionFactory<K, V> mockRegionFactory(RegionAttributes<K, V> regionAttributes) {
+	protected static <K, V> RegionFactory<K, V> mockRegionFactory(GemFireCache mockCache,
+			RegionAttributes<K, V> regionAttributes) {
+
 		RegionFactory<K, V> mockRegionFactory = mock(RegionFactory.class, mockName("MockRegionFactory"));
 
 		AtomicReference<DataPolicy> dataPolicy = new AtomicReference<>(regionAttributes.getDataPolicy());
@@ -398,8 +447,8 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		AtomicReference<Boolean> diskSynchronous = new AtomicReference<>(regionAttributes.isDiskSynchronous());
 		AtomicReference<Boolean> ignoreJta = new AtomicReference<>(regionAttributes.getIgnoreJTA());
 		AtomicReference<Class> keyConstraint = new AtomicReference<>(null);
-		AtomicReference<PartitionAttributes> partitionAttributes = new AtomicReference<>(
-			regionAttributes.getPartitionAttributes());
+		AtomicReference<PartitionAttributes> partitionAttributes =
+			new AtomicReference<>(regionAttributes.getPartitionAttributes());
 		AtomicReference<Scope> scope = new AtomicReference<>(regionAttributes.getScope());
 		AtomicReference<Class> valueConstraint = new AtomicReference<>(null);
 
@@ -427,7 +476,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		when(mockRegionFactory.setValueConstraint(any(Class.class))).thenAnswer(
 			newSetter(Class.class, valueConstraint, mockRegionFactory));
 
-		final RegionAttributes<K, V> mockRegionAttributes =
+		RegionAttributes<K, V> mockRegionAttributes =
 			mock(RegionAttributes.class, mockName("MockRegionAttributes"));
 
 		when(mockRegionAttributes.getDataPolicy()).thenAnswer(newGetter(dataPolicy));
@@ -439,11 +488,20 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		when(mockRegionAttributes.getScope()).thenAnswer(newGetter(scope));
 		when(mockRegionAttributes.getValueConstraint()).thenAnswer(newGetter(valueConstraint));
 
-		when(mockRegionFactory.create(anyString())).thenAnswer(new Answer<Region<K, V>>() {
-			@Override
-			public Region<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				return mockRegion(invocation.getArgument(0), mockRegionAttributes);
-			}
+		when(mockRegionFactory.create(anyString())).thenAnswer(invocation -> {
+			String regionName = invocation.getArgument(0);
+
+			cacheRegions.stream().filter(region -> region.getName().equals(regionName)).findAny()
+				.ifPresent(region -> { throw new RegionExistsException(region); });
+
+			Region<K, V> mockRegion = mockRegion(regionName, mockRegionAttributes);
+
+			cacheRegions.add(mockRegion);
+
+			when(mockCache.getRegion(eq(regionName))).thenReturn((Region<Object, Object>) mockRegion);
+			when(mockRegion.getRegionService()).thenReturn(mockCache);
+
+			return mockRegion;
 		});
 
 		return mockRegionFactory;
@@ -455,7 +513,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		Region<K, V> mockRegion = mock(Region.class, mockName(name));
 
 		when(mockRegion.getName()).thenReturn(name);
-		when(mockRegion.getFullPath()).thenReturn(String.format("%1$s%2$s", Region.SEPARATOR, name));
+		when(mockRegion.getFullPath()).thenReturn(toRegionPath(name));
 		when(mockRegion.getAttributes()).thenReturn(regionAttributes);
 
 		return mockRegion;
@@ -495,24 +553,17 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		}
 	}
 
-	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
-		excludeFilters = { @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = ClientRegion.class),
-			@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = CollocatedPartitionRegionEntity.class) })
 	@SuppressWarnings("all")
-	static class AllServerPersistentEntitiesConfiguration extends ServerCacheConfiguration {
-	}
-
 	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class, strict = true,
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION,
 			classes = { LocalRegion.class, PartitionRegion.class, ReplicateRegion.class }))
-	@SuppressWarnings("all")
 	static class ClientPersistentEntitiesConfiguration extends ClientCacheConfiguration {
 	}
 
+	@SuppressWarnings("all")
 	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION,
 			classes = { ClientRegion.class, LocalRegion.class, ReplicateRegion.class }))
-	@SuppressWarnings("all")
 	static class PeerPartitionRegionPersistentEntitiesConfiguration extends ServerCacheConfiguration {
 
 		@Bean @Lazy
@@ -523,6 +574,60 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		@Bean @Lazy
 		PartitionResolver mockPartitionResolver() {
 			return mock(PartitionResolver.class, mockName("MockPartitionResolver"));
+		}
+	}
+
+	@SuppressWarnings("all")
+	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
+		excludeFilters = { @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = ClientRegion.class),
+			@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = CollocatedPartitionRegionEntity.class) })
+	static class ServerPersistentEntitiesConfiguration extends ServerCacheConfiguration {
+	}
+
+	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
+			LocalRegionEntity.class, ReplicateRegionEntity.class
+		})
+	)
+	static class ExistingPartitionRegionPersistentEntitiesConfiguration extends ServerCacheConfiguration {
+
+		@Bean
+		@SuppressWarnings("unused")
+		PartitionedRegionFactoryBean<Long, PartitionRegionEntity> customersRegion(GemFireCache gemfireCache) {
+			PartitionedRegionFactoryBean<Long, PartitionRegionEntity> customers = new PartitionedRegionFactoryBean<>();
+
+			customers.setCache(gemfireCache);
+			customers.setClose(false);
+			customers.setPersistent(false);
+			customers.setRegionName("Customers");
+
+			return customers;
+		}
+	}
+
+	@SuppressWarnings("all")
+	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
+			LocalRegionEntity.class, PartitionRegionEntity.class
+		})
+	)
+	static class ExistingReplicateRegionPersistentEntitiesConfiguration extends ServerCacheConfiguration {
+
+		@Bean
+		@SuppressWarnings("unused")
+		ReplicatedRegionFactoryBean<Long, ReplicateRegionEntity> accountsRegion(GemFireCache gemfireCache) {
+			ReplicatedRegionFactoryBean<Long, ReplicateRegionEntity> accounts = new ReplicatedRegionFactoryBean<>();
+
+			accounts.setCache(gemfireCache);
+			accounts.setClose(false);
+			accounts.setLookupEnabled(true);
+			accounts.setPersistent(false);
+			accounts.setRegionName("Accounts");
+			accounts.setScope(Scope.DISTRIBUTED_NO_ACK);
+
+			return accounts;
 		}
 	}
 }

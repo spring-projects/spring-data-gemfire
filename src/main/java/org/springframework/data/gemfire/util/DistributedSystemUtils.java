@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.util;
 
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.geode.cache.GemFireCache;
@@ -87,7 +88,7 @@ public abstract class DistributedSystemUtils extends SpringUtils {
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	public static <T extends DistributedSystem> T getDistributedSystem(GemFireCache gemfireCache) {
-		return (gemfireCache != null ? (T) gemfireCache.getDistributedSystem() : null);
+		return (T) Optional.ofNullable(gemfireCache).map(GemFireCache::getDistributedSystem).orElse(null);
 	}
 
 	/* (non-Javadoc)*/

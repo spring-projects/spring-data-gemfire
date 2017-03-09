@@ -17,8 +17,9 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
+import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.defaultIfEmpty;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -69,7 +70,6 @@ import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
-import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -82,6 +82,7 @@ import org.springframework.util.StringUtils;
  * based on the application persistent entity classes.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
  * @see org.springframework.beans.factory.BeanClassLoaderAware
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
@@ -89,19 +90,23 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+ * @see org.springframework.data.gemfire.FixedPartitionAttributesFactoryBean
  * @see org.springframework.data.gemfire.LocalRegionFactoryBean
+ * @see org.springframework.data.gemfire.PartitionAttributesFactoryBean
  * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
+ * @see org.springframework.data.gemfire.RegionAttributesFactoryBean
  * @see org.springframework.data.gemfire.ReplicatedRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.support.GemFireComponentClassTypeScanner
- * @see ClientRegion
  * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
  * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
- * @see LocalRegion
- * @see PartitionRegion
- * @see ReplicateRegion
+ * @see org.springframework.data.gemfire.mapping.annotation.ClientRegion
+ * @see org.springframework.data.gemfire.mapping.annotation.LocalRegion
+ * @see org.springframework.data.gemfire.mapping.annotation.PartitionRegion
+ * @see org.springframework.data.gemfire.mapping.annotation.ReplicateRegion
  * @see org.springframework.data.gemfire.mapping.annotation.Region
+ * @see org.apache.geode.cache.Region
  * @since 1.9.0
  */
 public class EntityDefinedRegionsConfiguration
@@ -232,16 +237,16 @@ public class EntityDefinedRegionsConfiguration
 
 	/* (non-Javadoc) */
 	protected GemfireMappingContext resolveMappingContext() {
-		if (this.mappingContext == null) {
+		return Optional.ofNullable(this.mappingContext).orElseGet(() -> {
 			try {
 				this.mappingContext = getBeanFactory().getBean(GemfireMappingContext.class);
 			}
 			catch (Throwable ignore) {
 				this.mappingContext = new GemfireMappingContext();
 			}
-		}
 
-		return this.mappingContext;
+			return this.mappingContext;
+		});
 	}
 
 	/**
@@ -284,15 +289,14 @@ public class EntityDefinedRegionsConfiguration
 
 		Set<String> resolvedBasePackages = new HashSet<>();
 
-		Collections.addAll(resolvedBasePackages, ArrayUtils.nullSafeArray(defaultIfEmpty(
+		Collections.addAll(resolvedBasePackages, nullSafeArray(defaultIfEmpty(
 			enableEntityDefinedRegionAttributes.getStringArray("basePackages"),
-				enableEntityDefinedRegionAttributes.getStringArray("value")), String.class));
+				enableEntityDefinedRegionAttributes.getStringArray("value")),
+					String.class));
 
-		for (Class<?> type : ArrayUtils.nullSafeArray(
-				enableEntityDefinedRegionAttributes.getClassArray("basePackageClasses"), Class.class)) {
-
-			resolvedBasePackages.add(type.getPackage().getName());
-		}
+		stream(nullSafeArray(enableEntityDefinedRegionAttributes.getClassArray(
+			"basePackageClasses"), Class.class))
+				.forEach(type -> resolvedBasePackages.add(type.getPackage().getName()));
 
 		if (resolvedBasePackages.isEmpty()) {
 			resolvedBasePackages.add(ClassUtils.getPackageName(importingClassMetaData.getClassName()));
@@ -303,7 +307,8 @@ public class EntityDefinedRegionsConfiguration
 
 	/* (non-Javadoc) */
 	protected ClassLoader resolveBeanClassLoader() {
-		return (this.beanClassLoader != null ? this.beanClassLoader : Thread.currentThread().getContextClassLoader());
+		return Optional.ofNullable(this.beanClassLoader)
+			.orElseGet(() -> Thread.currentThread().getContextClassLoader());
 	}
 
 	/* (non-Javadoc) */
@@ -320,11 +325,8 @@ public class EntityDefinedRegionsConfiguration
 	private Iterable<TypeFilter> parseFilters(AnnotationAttributes[] componentScanFilterAttributes) {
 		Set<TypeFilter> typeFilters = new HashSet<>();
 
-		for (AnnotationAttributes filterAttributes : ArrayUtils.nullSafeArray(
-				componentScanFilterAttributes, AnnotationAttributes.class)) {
-
-			CollectionUtils.addAll(typeFilters, typeFiltersFor(filterAttributes));
-		}
+		stream(nullSafeArray(componentScanFilterAttributes, AnnotationAttributes.class))
+			.forEach(filterAttributes -> CollectionUtils.addAll(typeFilters, typeFiltersFor(filterAttributes)));
 
 		return typeFilters;
 	}
@@ -335,7 +337,7 @@ public class EntityDefinedRegionsConfiguration
 		Set<TypeFilter> typeFilters = new HashSet<>();
 		FilterType filterType = filterAttributes.getEnum("type");
 
-		for (Class<?> filterClass : ArrayUtils.nullSafeArray(filterAttributes.getClassArray("value"), Class.class)) {
+		for (Class<?> filterClass : nullSafeArray(filterAttributes.getClassArray("value"), Class.class)) {
 			switch (filterType) {
 				case ANNOTATION:
 					Assert.isAssignable(Annotation.class, filterClass,
@@ -382,7 +384,7 @@ public class EntityDefinedRegionsConfiguration
 	 */
 	private String[] nullSafeGetPatterns(AnnotationAttributes filterAttributes) {
 		try {
-			return ArrayUtils.nullSafeArray(filterAttributes.getStringArray("pattern"), String.class);
+			return nullSafeArray(filterAttributes.getStringArray("pattern"), String.class);
 		}
 		catch (IllegalArgumentException ignore) {
 			return new String[0];
@@ -394,11 +396,8 @@ public class EntityDefinedRegionsConfiguration
 	protected Iterable<TypeFilter> regionAnnotatedPersistentEntityTypeFilters() {
 		Set<TypeFilter> regionAnnotatedPersistentEntityTypeFilters = new HashSet<>();
 
-		for (Class<? extends Annotation> annotationType :
-				org.springframework.data.gemfire.mapping.annotation.Region.REGION_ANNOTATION_TYPES) {
-
-			regionAnnotatedPersistentEntityTypeFilters.add(new AnnotationTypeFilter(annotationType));
-		}
+		org.springframework.data.gemfire.mapping.annotation.Region.REGION_ANNOTATION_TYPES.forEach(
+			annotationType -> regionAnnotatedPersistentEntityTypeFilters.add(new AnnotationTypeFilter(annotationType)));
 
 		return regionAnnotatedPersistentEntityTypeFilters;
 	}
@@ -423,19 +422,17 @@ public class EntityDefinedRegionsConfiguration
 	protected Class<? extends RegionLookupFactoryBean> resolveRegionFactoryBeanClass(
 			GemfirePersistentEntity persistentEntity) {
 
-		return defaultIfNull(regionAnnotationToRegionFactoryBeanClass.get(persistentEntity.getRegionAnnotationType()),
-			DEFAULT_REGION_FACTORY_BEAN_CLASS);
+		return Optional.<Class<? extends RegionLookupFactoryBean>>ofNullable(
+			regionAnnotationToRegionFactoryBeanClass.get(persistentEntity.getRegionAnnotationType()))
+				.orElse(DEFAULT_REGION_FACTORY_BEAN_CLASS);
 	}
 
 	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder setRegionAttributes(GemfirePersistentEntity persistentEntity,
 			BeanDefinitionBuilder regionFactoryBeanBuilder, boolean strict) {
 
-		Annotation regionAnnotation = persistentEntity.getRegionAnnotation();
-
-		if (regionAnnotation != null) {
-			AnnotationAttributes regionAnnotationAttributes =
-				AnnotationAttributes.fromMap(AnnotationUtils.getAnnotationAttributes(regionAnnotation));
+		Optional.ofNullable(persistentEntity.getRegionAnnotation()).ifPresent(regionAnnotation -> {
+			AnnotationAttributes regionAnnotationAttributes = getAnnotationAttributes(regionAnnotation);
 
 			if (strict) {
 				regionFactoryBeanBuilder.addPropertyValue("keyConstraint", resolveIdType(persistentEntity));
@@ -445,11 +442,17 @@ public class EntityDefinedRegionsConfiguration
 			if (regionAnnotationAttributes.containsKey("diskStoreName")) {
 				String diskStoreName = regionAnnotationAttributes.getString("diskStoreName");
 
-				setPropertyValueIfNotDefault(regionFactoryBeanBuilder, "diskStoreName", diskStoreName, "");
+				setPropertyValueIfNotDefault(regionFactoryBeanBuilder, "diskStoreName",
+					diskStoreName, "");
 
 				if (StringUtils.hasText(diskStoreName)) {
 					regionFactoryBeanBuilder.addDependsOn(diskStoreName);
 				}
+			}
+
+			if (regionAnnotationAttributes.containsKey("ignoreIfExists")) {
+				regionFactoryBeanBuilder.addPropertyValue("lookupEnabled",
+					regionAnnotationAttributes.getBoolean("ignoreIfExists"));
 			}
 
 			if (regionAnnotationAttributes.containsKey("persistent")) {
@@ -476,22 +479,21 @@ public class EntityDefinedRegionsConfiguration
 				regionAttributesFactoryBeanBuilder);
 
 			setReplicateRegionAttributes(regionAnnotationAttributes, regionFactoryBeanBuilder);
-
-		}
+		});
 
 		return regionFactoryBeanBuilder;
 	}
 
 	/* (non-Javadoc) */
 	protected Class<?> resolveDomainType(GemfirePersistentEntity persistentEntity) {
-		return Optional.of(persistentEntity.getType()).orElse(Object.class);
+		return Optional.ofNullable(persistentEntity.getType()).orElse(Object.class);
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	protected Class<?> resolveIdType(GemfirePersistentEntity persistentEntity) {
 		return (Class<?>) persistentEntity.getIdProperty()
-			.map((idProperty) -> ((GemfirePersistentProperty) idProperty).getActualType())
+			.map(idProperty -> ((GemfirePersistentProperty) idProperty).getActualType())
 				.orElse(Object.class);
 	}
 
@@ -502,8 +504,8 @@ public class EntityDefinedRegionsConfiguration
 		BeanDefinitionBuilder regionAttributesFactoryBeanBuilder = regionFactoryBeanBuilder;
 
 		if (!ClientRegion.class.isAssignableFrom(regionAnnotation.annotationType())) {
-			regionAttributesFactoryBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-				RegionAttributesFactoryBean.class);
+			regionAttributesFactoryBeanBuilder =
+				BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
 			regionFactoryBeanBuilder.addPropertyValue("attributes",
 				regionAttributesFactoryBeanBuilder.getBeanDefinition());
@@ -564,9 +566,8 @@ public class EntityDefinedRegionsConfiguration
 	protected BeanDefinitionBuilder setFixedPartitionRegionAttributes(AnnotationAttributes regionAnnotationAttributes,
 			BeanDefinitionBuilder partitionAttributesFactoryBeanBuilder) {
 
-		PartitionRegion.FixedPartition[] fixedPartitions = ArrayUtils.nullSafeArray(
-			regionAnnotationAttributes.getAnnotationArray("fixedPartitions", PartitionRegion.FixedPartition.class),
-				PartitionRegion.FixedPartition.class);
+		PartitionRegion.FixedPartition[] fixedPartitions = nullSafeArray(regionAnnotationAttributes.getAnnotationArray(
+			"fixedPartitions", PartitionRegion.FixedPartition.class), PartitionRegion.FixedPartition.class);
 
 		if (!ObjectUtils.isEmpty(fixedPartitions)) {
 			ManagedList<BeanDefinition> fixedPartitionAttributesFactoryBeans =
@@ -601,7 +602,8 @@ public class EntityDefinedRegionsConfiguration
 
 		if (regionAnnotationAttributes.containsKey("scope")) {
 			setPropertyValueIfNotDefault(regionFactoryBeanBuilder, "scope",
-				regionAnnotationAttributes.<ScopeType>getEnum("scope").getScope(), ScopeType.DISTRIBUTED_NO_ACK);
+				regionAnnotationAttributes.<ScopeType>getEnum("scope").getScope(),
+					ScopeType.DISTRIBUTED_NO_ACK);
 		}
 
 		return regionFactoryBeanBuilder;
@@ -611,7 +613,8 @@ public class EntityDefinedRegionsConfiguration
 	private <T> BeanDefinitionBuilder setPropertyReferenceIfSet(BeanDefinitionBuilder beanDefinitionBuilder,
 			String propertyName, String beanName) {
 
-		return (StringUtils.hasText(beanName) ? beanDefinitionBuilder.addPropertyReference(propertyName, beanName)
+		return (StringUtils.hasText(beanName)
+			? beanDefinitionBuilder.addPropertyReference(propertyName, beanName)
 			: beanDefinitionBuilder);
 	}
 
@@ -619,8 +622,9 @@ public class EntityDefinedRegionsConfiguration
 	private <T> BeanDefinitionBuilder setPropertyValueIfNotDefault(BeanDefinitionBuilder beanDefinitionBuilder,
 			String propertyName, T value, T defaultValue) {
 
-		return (value != null && !value.equals(defaultValue) ?
-			beanDefinitionBuilder.addPropertyValue(propertyName, value) : beanDefinitionBuilder);
+		return (value != null && !value.equals(defaultValue)
+			? beanDefinitionBuilder.addPropertyValue(propertyName, value)
+			: beanDefinitionBuilder);
 	}
 
 	/**

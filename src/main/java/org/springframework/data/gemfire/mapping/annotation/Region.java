@@ -71,4 +71,14 @@ public @interface Region {
 	@AliasFor(attribute = "name")
 	String value() default "";
 
+	/**
+	 * Determines whether an entity annotated with this Region annotation will ignore any existing Region definition
+	 * identified by the given {@link #name()} for this entity.
+	 *
+	 * Overrides the global, {@link EnableEntityDefinedRegions#ignoreIfExists()} setting.
+	 *
+	 * Defaults to {@literal true}.
+	 */
+	boolean ignoreIfExists() default true;
+
 }

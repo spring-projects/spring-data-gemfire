@@ -32,7 +32,8 @@ import org.springframework.data.gemfire.ScopeType;
  * {@link Annotation} defining the Replicate {@link Region} in which the application persistent entity will be stored.
  *
  * @author John Blum
- * @see Region
+ * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
+ * @see org.springframework.data.gemfire.mapping.annotation.Region
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -83,6 +84,16 @@ public @interface ReplicateRegion {
 	 * Defaults to {@literal synchronous}.
 	 */
 	boolean diskSynchronous() default true;
+
+	/**
+	 * Determines whether an entity annotated with this Region annotation will ignore any existing Region definition
+	 * identified by the given {@link #name()} for this entity.
+	 *
+	 * Overrides the global, {@link EnableEntityDefinedRegions#ignoreIfExists()} setting.
+	 *
+	 * Defaults to {@literal true}.
+	 */
+	boolean ignoreIfExists() default true;
 
 	/**
 	 * Determines whether this {@link org.apache.geode.cache.Region Region's} data access operations participates in

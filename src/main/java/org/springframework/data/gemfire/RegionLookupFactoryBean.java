@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import java.util.Optional;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -44,7 +46,7 @@ public abstract class RegionLookupFactoryBean<K, V>
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	private Boolean lookupEnabled = Boolean.TRUE;
+	private Boolean lookupEnabled = false;
 
 	private GemFireCache cache;
 
@@ -70,8 +72,9 @@ public abstract class RegionLookupFactoryBean<K, V>
 
 		synchronized (this.cache) {
 			if (isLookupEnabled()) {
-				this.region = (getParent() != null ? getParent().<K, V>getSubregion(regionName)
-					: this.cache.<K, V>getRegion(regionName));
+				this.region = Optional.ofNullable(getParent())
+					.map(parentRegion -> parentRegion.<K, V>getSubregion(regionName))
+					.orElseGet(() -> this.cache.<K, V>getRegion(regionName));
 			}
 
 			if (region != null) {
