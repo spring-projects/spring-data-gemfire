@@ -34,7 +34,8 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
  * {@link Annotation} defining the Client {@link Region} in which the application persistent entity will be stored.
  *
  * @author John Blum
- * @see Region
+ * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
+ * @see org.springframework.data.gemfire.mapping.annotation.Region
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -85,6 +86,16 @@ public @interface ClientRegion {
 	 * Defaults to {@literal synchronous}.
 	 */
 	boolean diskSynchronous() default true;
+
+	/**
+	 * Determines whether an entity annotated with this Region annotation will ignore any existing Region definition
+	 * identified by the given {@link #name()} for this entity.
+	 *
+	 * Overrides the global, {@link EnableEntityDefinedRegions#ignoreIfExists()} setting.
+	 *
+	 * Defaults to {@literal true}.
+	 */
+	boolean ignoreIfExists() default true;
 
 	/**
 	 * Name of the GemFire/Geode {@link Pool} used by this persistent entity's {@link org.apache.geode.cache.Region}

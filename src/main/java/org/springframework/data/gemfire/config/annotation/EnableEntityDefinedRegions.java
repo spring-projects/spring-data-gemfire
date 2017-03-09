@@ -39,9 +39,7 @@ import org.springframework.core.annotation.AliasFor;
  * @see org.springframework.context.annotation.ComponentScan.Filter
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.core.annotation.AliasFor
- * @see org.springframework.data.gemfire.config.annotation.EnableIndexes
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
- * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration
  * @see org.apache.geode.cache.Region
  * @since 1.9.0
  */
@@ -85,6 +83,14 @@ public @interface EnableEntityDefinedRegions {
 	Class<?>[] basePackageClasses() default {};
 
 	/**
+	 * Specifies which types are not eligible for component scanning.
+	 *
+	 * @return an array of {@link org.springframework.context.annotation.ComponentScan.Filter Filters} used to
+	 * specify application persistent entities to be excluded during the component scan.
+	 */
+	ComponentScan.Filter[] excludeFilters() default {};
+
+	/**
 	 * Specifies which types are eligible for component scanning.  Further narrows the set of candidate components
 	 * from everything in {@link #basePackages()} to everything in the base packages that matches the given filter
 	 * or filters.
@@ -93,14 +99,6 @@ public @interface EnableEntityDefinedRegions {
 	 * specify application persistent entities to be included during the component scan.
 	 */
 	ComponentScan.Filter[] includeFilters() default {};
-
-	/**
-	 * Specifies which types are not eligible for component scanning.
-	 *
-	 * @return an array of {@link org.springframework.context.annotation.ComponentScan.Filter Filters} used to
-	 * specify application persistent entities to be excluded during the component scan.
-	 */
-	ComponentScan.Filter[] excludeFilters() default {};
 
 	/**
 	 * Determines whether the created {@link Region} will have strongly-typed key and value constraints

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -57,12 +58,12 @@ public abstract class SpringUtils {
 
 	/* (non-Javadoc) */
 	public static <T> T defaultIfNull(T value, T defaultValue) {
-		return (value != null ? value : defaultValue);
+		return Optional.ofNullable(value).orElse(defaultValue);
 	}
 
 	/* (non-Javadoc) */
 	public static <T> T defaultIfNull(T value, Supplier<T> supplier) {
-		return (value != null ? value : supplier.get());
+		return Optional.ofNullable(value).orElseGet(supplier);
 	}
 
 	/* (non-Javadoc) */

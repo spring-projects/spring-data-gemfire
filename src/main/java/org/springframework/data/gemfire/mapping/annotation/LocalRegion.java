@@ -26,12 +26,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions;
 
 /**
  * {@link Annotation} defining the Local {@link Region} in which the application persistent entity will be stored.
  *
  * @author John Blum
- * @see Region
+ * @see org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions
+ * @see org.springframework.data.gemfire.mapping.annotation.Region
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -82,6 +84,16 @@ public @interface LocalRegion {
 	 * Defaults to {@literal synchronous}.
 	 */
 	boolean diskSynchronous() default true;
+
+	/**
+	 * Determines whether an entity annotated with this Region annotation will ignore any existing Region definition
+	 * identified by the given {@link #name()} for this entity.
+	 *
+	 * Overrides the global, {@link EnableEntityDefinedRegions#ignoreIfExists()} setting.
+	 *
+	 * Defaults to {@literal true}.
+	 */
+	boolean ignoreIfExists() default true;
 
 	/**
 	 * Determines whether this {@link org.apache.geode.cache.Region Region's} data access operations participates in
