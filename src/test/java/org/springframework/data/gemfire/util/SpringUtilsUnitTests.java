@@ -222,7 +222,7 @@ public class SpringUtilsUnitTests {
 
 	@Test
 	public void safeGetValueReturnsNull() {
-		assertThat(SpringUtils.<Object>safeGetValue(() -> { throw new RuntimeException("error"); }))
+		assertThat(SpringUtils.<Object>safeGetValue(() -> { throw new RuntimeException("error"); }, "test"))
 			.isEqualTo("test");
 	}
 }

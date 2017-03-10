@@ -42,7 +42,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link IndexConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * and extension of {@link EntityDefinedRegionsConfiguration} used in the {@link EnableIndexes} annotation
+ * and extension of {@link EntityDefinedRegionsConfiguration} used in the {@link EnableIndexing} annotation
  * to dynamically create GemFire/Geode {@link org.apache.geode.cache.Region} {@link Index Indexes} based on
  * {@link GemfirePersistentEntity} {@link GemfirePersistentProperty} annotations.
  *
@@ -71,12 +71,12 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	 *
 	 * @return the {@link Annotation} {@link Class type} that configures and creates {@link Region Region} Indexes
 	 * from application persistent entity properties.
-	 * @see org.springframework.data.gemfire.config.annotation.EnableIndexes
+	 * @see EnableIndexing
 	 * @see java.lang.annotation.Annotation
 	 * @see java.lang.Class
 	 */
-	protected Class<? extends Annotation> getEnableIndexesAnnotationType() {
-		return EnableIndexes.class;
+	protected Class<? extends Annotation> getEnableIndexingAnnotationType() {
+		return EnableIndexing.class;
 	}
 
 	/**
@@ -85,11 +85,11 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	 *
 	 * @return the name of the {@link Annotation} {@link Class type} that configures and creates {@link Region Region}
 	 * Indexes from application persistent entity properties.
-	 * @see #getEnableIndexesAnnotationType()
+	 * @see #getEnableIndexingAnnotationType()
 	 * @see java.lang.Class#getName()
 	 */
-	protected String getEnableIndexesAnnotationTypeName() {
-		return getEnableIndexesAnnotationType().getName();
+	protected String getEnableIndexingAnnotationTypeName() {
+		return getEnableIndexingAnnotationType().getName();
 	}
 
 	/**
@@ -98,12 +98,12 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	 *
 	 * @return the simple name of the {@link Annotation} {@link Class type} that configures and creates
 	 * {@link Region Region} Indexes from application persistent entity properties.
-	 * @see #getEnableIndexesAnnotationType()
+	 * @see #getEnableIndexingAnnotationType()
 	 * @see java.lang.Class#getSimpleName()
 	 */
 	@SuppressWarnings("unused")
-	protected String getEnableIndexesAnnotationTypeSimpleName() {
-		return getEnableIndexesAnnotationType().getSimpleName();
+	protected String getEnableIndexingAnnotationTypeSimpleName() {
+		return getEnableIndexingAnnotationType().getSimpleName();
 	}
 
 	/**
@@ -116,21 +116,21 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 		GemfirePersistentEntity<?> localPersistentEntity =
 			super.postProcess(importingClassMetadata, registry, persistentEntity);
 
-		if (isAnnotationPresent(importingClassMetadata, getEnableIndexesAnnotationTypeName())) {
-			AnnotationAttributes enableIndexesAttributes =
-				getAnnotationAttributes(importingClassMetadata, getEnableIndexesAnnotationTypeName());
+		if (isAnnotationPresent(importingClassMetadata, getEnableIndexingAnnotationTypeName())) {
+			AnnotationAttributes enableIndexingAttributes =
+				getAnnotationAttributes(importingClassMetadata, getEnableIndexingAnnotationTypeName());
 
 			localPersistentEntity.doWithProperties((PropertyHandler<GemfirePersistentProperty>) persistentProperty -> {
 				Optional.ofNullable(persistentProperty.findAnnotation(Id.class)).ifPresent(idAnnotation ->
-					registerIndexBeanDefinition(enableIndexesAttributes, localPersistentEntity, persistentProperty,
+					registerIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity, persistentProperty,
 						IndexType.KEY, idAnnotation, registry));
 
 				Optional.ofNullable(persistentProperty.findAnnotation(Indexed.class)).ifPresent(indexedAnnotation ->
-					registerIndexBeanDefinition(enableIndexesAttributes, localPersistentEntity, persistentProperty,
+					registerIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity, persistentProperty,
 						indexedAnnotation.type(), indexedAnnotation, registry));
 
 				Optional.ofNullable(persistentProperty.findAnnotation(LuceneIndexed.class)).ifPresent(
-					luceneIndexAnnotation -> registerLuceneIndexBeanDefinition(enableIndexesAttributes,
+					luceneIndexAnnotation -> registerLuceneIndexBeanDefinition(enableIndexingAttributes,
 						localPersistentEntity, persistentProperty, luceneIndexAnnotation, registry));
 			});
 		}
@@ -142,8 +142,8 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	 * Registers an Index of the given {@link IndexType} for the {@link GemfirePersistentProperty}
 	 * on the {@link GemfirePersistentEntity} using the {@link Annotation} meta-data to define the Index.
 	 *
-	 * @param enableIndexesAttributes {@link AnnotationAttributes} containing meta-data
-	 * for the {@link EnableIndexes} annotation.
+	 * @param enableIndexingAttributes {@link AnnotationAttributes} containing meta-data
+	 * for the {@link EnableIndexing} annotation.
 	 * @param persistentEntity {@link GemfirePersistentEntity} containing the {@link GemfirePersistentProperty}
 	 * to be indexed.
 	 * @param persistentProperty {@link GemfirePersistentProperty} for which the Index will be created.
@@ -157,7 +157,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
 	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentProperty
 	 */
-	protected void registerIndexBeanDefinition(AnnotationAttributes enableIndexesAttributes,
+	protected void registerIndexBeanDefinition(AnnotationAttributes enableIndexingAttributes,
 			GemfirePersistentEntity<?> persistentEntity, GemfirePersistentProperty persistentProperty,
 			IndexType indexType, Annotation indexAnnotation, BeanDefinitionRegistry registry) {
 
@@ -171,7 +171,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 
 			indexFactoryBeanBuilder.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 
-			indexFactoryBeanBuilder.addPropertyValue("define", resolveDefine(enableIndexesAttributes));
+			indexFactoryBeanBuilder.addPropertyValue("define", resolveDefine(enableIndexingAttributes));
 
 			indexFactoryBeanBuilder.addPropertyValue("expression",
 				resolveExpression(persistentEntity, persistentProperty, indexedAttributes));
@@ -195,8 +195,8 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	 * Registers a {@link LuceneIndex} for the {@link GemfirePersistentProperty} on the {@link GemfirePersistentEntity}
 	 * using the {@link Annotation} meta-data to define the Index.
 	 *
-	 * @param enableIndexesAttributes {@link AnnotationAttributes} containing meta-data
-	 * for the {@link EnableIndexes} annotation.
+	 * @param enableIndexingAttributes {@link AnnotationAttributes} containing meta-data
+	 * for the {@link EnableIndexing} annotation.
 	 * @param persistentEntity {@link GemfirePersistentEntity} containing the {@link GemfirePersistentProperty}
 	 * to be indexed.
 	 * @param persistentProperty {@link GemfirePersistentProperty} for which the {@link LuceneIndex} will be created.
@@ -210,7 +210,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	 * @see org.springframework.data.gemfire.mapping.annotation.LuceneIndexed
 	 */
 	@SuppressWarnings("unused")
-	protected void registerLuceneIndexBeanDefinition(AnnotationAttributes enableIndexesAttributes,
+	protected void registerLuceneIndexBeanDefinition(AnnotationAttributes enableIndexingAttributes,
 			GemfirePersistentEntity<?> persistentEntity, GemfirePersistentProperty persistentProperty,
 			Annotation luceneIndexAnnotation, BeanDefinitionRegistry registry) {
 
@@ -239,9 +239,9 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	}
 
 	/* (non-Javadoc) */
-	private boolean resolveDefine(AnnotationAttributes enableIndexesAnnotationAttributes) {
-		return (enableIndexesAnnotationAttributes.containsKey("define")
-			&& enableIndexesAnnotationAttributes.getBoolean("define"));
+	private boolean resolveDefine(AnnotationAttributes enableIndexingAttributes) {
+		return (enableIndexingAttributes.containsKey("define")
+			&& enableIndexingAttributes.getBoolean("define"));
 	}
 
 	/* (non-Javadoc) */
