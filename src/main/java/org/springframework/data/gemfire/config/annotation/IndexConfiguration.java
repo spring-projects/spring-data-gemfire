@@ -181,10 +181,8 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 
 			indexFactoryBeanBuilder.addPropertyValue("name", indexName);
 
-			/*
 			indexFactoryBeanBuilder.addPropertyValue("override",
 				resolveOverride(persistentEntity, persistentProperty, indexedAttributes));
-			*/
 
 			indexFactoryBeanBuilder.addPropertyValue("type",
 				resolveType(persistentEntity, persistentProperty, indexedAttributes, indexType).toString());
@@ -289,7 +287,6 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	}
 
 	/* (non-Javadoc) */
-	/*
 	@SuppressWarnings("unused")
 	private boolean resolveOverride(GemfirePersistentEntity persistentEntity,
 			GemfirePersistentProperty persistentProperty, AnnotationAttributes indexedAttributes) {
@@ -297,7 +294,6 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 		return (indexedAttributes.containsKey("override")
 			&& indexedAttributes.getBoolean("override"));
 	}
-	*/
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unused")

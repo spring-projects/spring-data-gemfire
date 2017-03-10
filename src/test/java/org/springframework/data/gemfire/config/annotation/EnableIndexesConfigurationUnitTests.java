@@ -25,10 +25,13 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -47,6 +50,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.annotation.test.entities.ClientRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.CollocatedPartitionRegionEntity;
@@ -67,11 +71,14 @@ import org.springframework.data.gemfire.config.annotation.test.entities.Replicat
  */
 public class EnableIndexesConfigurationUnitTests {
 
+	private static final Set<Index> indexes = new HashSet<>();
+
 	private ConfigurableApplicationContext applicationContext;
 
 	@After
 	public void tearDown() {
 		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
+		indexes.clear();
 	}
 
 	/* (non-Javadoc) */
@@ -113,7 +120,7 @@ public class EnableIndexesConfigurationUnitTests {
 		assertLuceneIndex(luceneIndex, "TitleLuceneIdx", "Customers", "title");
 	}
 
-	protected void assertOqlIndexes(ConfigurableApplicationContext applicationContext) {
+	private void assertOqlIndexes(ConfigurableApplicationContext applicationContext) {
 		Index customersIdIdx = applicationContext.getBean("CustomersIdKeyIdx", Index.class);
 
 		assertIndex(customersIdIdx, "CustomersIdKeyIdx", "id", "Customers", IndexType.KEY);
@@ -125,17 +132,36 @@ public class EnableIndexesConfigurationUnitTests {
 
 		Index lastNameIdx = applicationContext.getBean("LastNameIdx", Index.class);
 
-		assertIndex(lastNameIdx, "LastNameIdx", "lastName", "Customers", IndexType.HASH);
+		assertIndex(lastNameIdx, "LastNameIdx", "surname", "Customers", IndexType.HASH);
 	}
 
 	@Test
-	public void noIndexesCreatedForIndexedPersistentEntities() {
+	public void persistentEntityIndexesWillNotBeCreated() {
 		applicationContext = newApplicationContext(NoIndexesCreatedForIndexedPersistentEntityConfiguration.class);
 
 		Map<String, Index> indexes = applicationContext.getBeansOfType(Index.class);
 
 		assertThat(indexes).isNotNull();
 		assertThat(indexes.isEmpty()).isTrue();
+	}
+
+	@Test
+	public void indexAnnotatedEntityPropertyDoesNotOverrideIndexBeanDefinition() {
+		applicationContext = newApplicationContext(IndexAnnotatedEntityPropertyDoesNotOverrideBeanDefinitionConfiguration.class);
+
+		Index lastNameIdx = applicationContext.getBean("LastNameIdx", Index.class);
+
+		assertIndex(lastNameIdx, "LastNameIdx", "last_name", "/People", IndexType.HASH);
+	}
+
+	@Test
+	public void indexAnnotatedEntityPropertyOverridesIndexBeanDefinition() {
+		applicationContext = newApplicationContext(IndexAnnotatedEntityPropertyOverridesIndexBeanDefinitionConfiguration.class);
+
+		Index customersFirstNameIdx = applicationContext.getBean("CustomersFirstNameFunctionalIdx", Index.class);
+
+		assertIndex(customersFirstNameIdx, "CustomersFirstNameFunctionalIdx",
+			"first_name", "/LoyalCustomers", IndexType.FUNCTIONAL);
 	}
 
 	@Configuration
@@ -145,13 +171,14 @@ public class EnableIndexesConfigurationUnitTests {
 		@Bean
 		@SuppressWarnings("unchecked")
 		Cache gemfireCache() throws Exception {
-			return mockQueryService(mockRegionFactory(mock(Cache.class)));
+			return mockQueryService(mockRegionFactory(mock(Cache.class, "MockGemFireCache")));
 		}
 
 		Cache mockQueryService(Cache mockCache) throws Exception {
 			QueryService mockQueryService = mock(QueryService.class);
 
 			when(mockCache.getQueryService()).thenReturn(mockQueryService);
+			when(mockQueryService.getIndexes()).thenReturn(indexes);
 
 			when(mockQueryService.createHashIndex(anyString(), anyString(), anyString()))
 				.thenAnswer(new HashIndexAnswer());
@@ -221,6 +248,8 @@ public class EnableIndexesConfigurationUnitTests {
 			when(mockIndex.getFromClause()).thenReturn(from);
 			when(mockIndex.getType()).thenReturn(getType().getGemfireIndexType());
 
+			indexes.add(mockIndex);
+
 			return mockIndex;
 		}
 
@@ -267,5 +296,49 @@ public class EnableIndexesConfigurationUnitTests {
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
 	static class NoIndexesCreatedForIndexedPersistentEntityConfiguration extends GemFireConfiguration {
 
+	}
+
+	@EnableIndexes
+	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
+			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
+			LocalRegionEntity.class, ReplicateRegionEntity.class }))
+	static class IndexAnnotatedEntityPropertyDoesNotOverrideBeanDefinitionConfiguration extends GemFireConfiguration {
+
+		@Bean
+		@SuppressWarnings("unused")
+		IndexFactoryBean lastNameIndex(GemFireCache gemfireCache) {
+			IndexFactoryBean lastNameIndex = new IndexFactoryBean();
+
+			lastNameIndex.setCache(gemfireCache);
+			lastNameIndex.setExpression("last_name");
+			lastNameIndex.setFrom("/People");
+			lastNameIndex.setName("LastNameIdx");
+			lastNameIndex.setType(IndexType.HASH);
+
+			return lastNameIndex;
+		}
+	}
+
+	@EnableIndexes
+	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
+			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
+			LocalRegionEntity.class, ReplicateRegionEntity.class }))
+	static class IndexAnnotatedEntityPropertyOverridesIndexBeanDefinitionConfiguration extends GemFireConfiguration {
+
+		@Bean
+		@SuppressWarnings("unused")
+		IndexFactoryBean firstNameIndex(GemFireCache gemfireCache) {
+			IndexFactoryBean firstNameIndex = new IndexFactoryBean();
+
+			firstNameIndex.setCache(gemfireCache);
+			firstNameIndex.setExpression("given_name");
+			firstNameIndex.setFrom("/ProspectiveCustomers");
+			firstNameIndex.setName("CustomersFirstNameFunctionalIdx");
+			firstNameIndex.setType(IndexType.HASH);
+
+			return firstNameIndex;
+		}
 	}
 }
