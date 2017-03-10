@@ -71,6 +71,13 @@ public @interface Indexed {
 	String from() default "";
 
 	/**
+	 * Determines whether this given {@link Index} definition should override any existing {@link Index} definition.
+	 *
+	 * Defaults to {@literal false}.
+	 */
+	boolean override() default false;
+
+	/**
 	 * Type of Index to create.
 	 *
 	 * Defaults to {@link IndexType#HASH}.
