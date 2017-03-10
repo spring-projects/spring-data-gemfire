@@ -27,9 +27,9 @@ import java.lang.annotation.Target;
 import org.apache.geode.cache.query.Index;
 
 /**
- * The {@link EnableIndexes} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
+ * The {@link EnableIndexing} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
  * annotated application class to enable the creation of GemFire/Geode Indexes based on application persistent entity
- * field/property annotations, such as the {@link @Id} and @Indexed annotations.
+ * field/property annotations, such as the {@link @Id}, {@link @Indexed} and {@link @LuceneIndex} annotations.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration
@@ -41,7 +41,7 @@ import org.apache.geode.cache.query.Index;
 @Inherited
 @Documented
 @SuppressWarnings({ "unused" })
-public @interface EnableIndexes {
+public @interface EnableIndexing {
 
 	/**
 	 * Determines whether all GemFire/Geode {@link Index Indexes} will be defined before created.

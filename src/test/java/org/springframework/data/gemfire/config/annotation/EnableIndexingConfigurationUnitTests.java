@@ -60,16 +60,16 @@ import org.springframework.data.gemfire.config.annotation.test.entities.NonEntit
 import org.springframework.data.gemfire.config.annotation.test.entities.ReplicateRegionEntity;
 
 /**
- * Unit tests for the {@link EnableIndexes} and {@link IndexConfiguration} class.
+ * Unit tests for the {@link EnableIndexing} and {@link IndexConfiguration} class.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.config.annotation.EnableIndexes
+ * @see EnableIndexing
  * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration
  * @since 1.9.0
  */
-public class EnableIndexesConfigurationUnitTests {
+public class EnableIndexingConfigurationUnitTests {
 
 	private static final Set<Index> indexes = new HashSet<>();
 
@@ -281,7 +281,7 @@ public class EnableIndexesConfigurationUnitTests {
 		}
 	}
 
-	@EnableIndexes
+	@EnableIndexing
 	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
@@ -298,7 +298,7 @@ public class EnableIndexesConfigurationUnitTests {
 
 	}
 
-	@EnableIndexes
+	@EnableIndexing
 	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
@@ -320,7 +320,7 @@ public class EnableIndexesConfigurationUnitTests {
 		}
 	}
 
-	@EnableIndexes
+	@EnableIndexing
 	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
