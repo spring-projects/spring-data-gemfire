@@ -106,6 +106,7 @@ public interface LuceneOperations {
 	 * to execute as well as de/serialize to distribute across the cluster.
 	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link List} of {@link LuceneResultStruct} containing the query results.
+	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see org.apache.geode.cache.lucene.LuceneResultStruct
 	 * @see #query(LuceneQueryProvider, int, String...)
 	 * @see java.util.List
@@ -126,6 +127,7 @@ public interface LuceneOperations {
 	 * @param resultLimit limit on the number of query results to return.
 	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link List} of {@link LuceneResultStruct} containing the query results.
+	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see org.apache.geode.cache.lucene.LuceneResultStruct
 	 * @see java.util.List
 	 */
@@ -144,6 +146,7 @@ public interface LuceneOperations {
 	 * @param pageSize number of results per page.
 	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link PageableLuceneQueryResults} data structure containing the results of the Lucene query.
+	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see org.apache.geode.cache.lucene.PageableLuceneQueryResults
 	 */
 	<K, V> PageableLuceneQueryResults<K, V> query(LuceneQueryProvider queryProvider,
@@ -192,6 +195,7 @@ public interface LuceneOperations {
 	 * @param queryProvider {@link LuceneQueryProvider} is a provider implementation supplying the Lucene query
 	 * to execute as well as de/serialize to distribute across the cluster.
 	 * @return a {@link Collection} of keys matching the Lucene query clause (predicate).
+	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see #queryForKeys(String, String, int)
 	 * @see java.util.Collection
 	 */
@@ -208,6 +212,7 @@ public interface LuceneOperations {
 	 * to execute as well as de/serialize to distribute across the cluster.
 	 * @param resultLimit limit on the number of keys returned.
 	 * @return a {@link Collection} of keys matching the Lucene query clause (predicate).
+	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see #queryForKeys(String, String, int)
 	 * @see java.util.Collection
 	 */
@@ -256,6 +261,7 @@ public interface LuceneOperations {
 	 * @param queryProvider {@link LuceneQueryProvider} is a provider implementation supplying the Lucene query
 	 * to execute as well as de/serialize to distribute across the cluster.
 	 * @return a {@link Collection} of values matching Lucene query clause (predicate).
+	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see #queryForValues(String, String, int)
 	 * @see java.util.Collection
 	 */
@@ -272,6 +278,7 @@ public interface LuceneOperations {
 	 * to execute as well as de/serialize to distribute across the cluster.
 	 * @param resultLimit limit on the number of values returned.
 	 * @return a {@link Collection} of values matching Lucene query clause (predicate).
+	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see #queryForValues(String, String, int)
 	 * @see java.util.Collection
 	 */

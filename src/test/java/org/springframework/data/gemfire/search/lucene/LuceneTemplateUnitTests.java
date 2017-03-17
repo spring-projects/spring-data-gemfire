@@ -59,6 +59,11 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @see org.mockito.Spy
  * @see org.mockito.runners.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.search.lucene.LuceneTemplate
+ * @see org.apache.geode.cache.lucene.LuceneQuery
+ * @see org.apache.geode.cache.lucene.LuceneQueryFactory
+ * @see org.apache.geode.cache.lucene.LuceneQueryProvider
+ * @see org.apache.geode.cache.lucene.LuceneResultStruct
+ * @see org.apache.geode.cache.lucene.PageableLuceneQueryResults
  * @since 1.0.0
  */
 @RunWith(MockitoJUnitRunner.class)
