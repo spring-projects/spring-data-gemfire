@@ -31,6 +31,7 @@ import java.text.MessageFormat;
 public abstract class RuntimeExceptionFactory {
 
 	public static final String NOT_IMPLEMENTED = "Not Implemented";
+	public static final String NOT_SUPPORTED = "Operation Not Supported";
 
 	/**
 	 * Constructs and initializes an {@link IllegalArgumentException} with the given {@link String message}

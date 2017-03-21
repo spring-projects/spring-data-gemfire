@@ -17,10 +17,13 @@
 
 package org.springframework.data.gemfire.search.lucene;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -193,5 +196,18 @@ public abstract class ProjectingLuceneAccessor extends LuceneTemplate
 	 */
 	protected ProjectionFactory getProjectionFactory() {
 		return this.projectionFactory;
+	}
+
+	public <T, K, V> List<T> project(List<LuceneResultStruct<K, V>> source, Class<T> projectionType) {
+		return source.stream().map(luceneResultStruct -> project(luceneResultStruct, projectionType))
+			.collect(Collectors.toList());
+	}
+
+	public <T, K, V> T project(LuceneResultStruct<K, V> source, Class<T> projectionType) {
+		return project(source.getValue(), projectionType);
+	}
+
+	public <T> T project(Object source, Class<T> projectionType) {
+		return getProjectionFactory().createProjection(projectionType, source);
 	}
 }

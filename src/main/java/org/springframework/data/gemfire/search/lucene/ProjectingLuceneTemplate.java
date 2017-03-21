@@ -17,10 +17,9 @@
 
 package org.springframework.data.gemfire.search.lucene;
 
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newUnsupportedOperationException;
+import static org.springframework.data.gemfire.search.lucene.support.LucenePage.newLucenePage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
@@ -92,9 +91,7 @@ public class ProjectingLuceneTemplate extends ProjectingLuceneAccessor {
 	 */
 	@Override
 	public <T> List<T> query(String query, String defaultField, int resultLimit, Class<T> projectionType) {
-		return query(query, defaultField, resultLimit).stream()
-			.map(luceneResultStruct -> getProjectionFactory().createProjection(projectionType, luceneResultStruct.getValue()))
-			.collect(Collectors.toList());
+		return project(query(query, defaultField, resultLimit), projectionType);
 	}
 
 	/**
@@ -104,7 +101,7 @@ public class ProjectingLuceneTemplate extends ProjectingLuceneAccessor {
 	public <T> Page<T> query(String query, String defaultField, int resultLimit, int pageSize,
 			Class<T> projectionType) {
 
-		throw newUnsupportedOperationException("Not Implemented");
+		return newLucenePage(this, query(query, defaultField, resultLimit, pageSize), pageSize, projectionType);
 	}
 
 	/**
@@ -112,9 +109,7 @@ public class ProjectingLuceneTemplate extends ProjectingLuceneAccessor {
 	 */
 	@Override
 	public <T> List<T> query(LuceneQueryProvider queryProvider, int resultLimit, Class<T> projectionType) {
-		return query(queryProvider, resultLimit).stream()
-			.map(luceneResultStruct -> getProjectionFactory().createProjection(projectionType, luceneResultStruct.getValue()))
-			.collect(Collectors.toList());
+		return project(query(queryProvider, resultLimit), projectionType);
 	}
 
 	/**
@@ -124,6 +119,6 @@ public class ProjectingLuceneTemplate extends ProjectingLuceneAccessor {
 	public <T> Page<T> query(LuceneQueryProvider queryProvider, int resultLimit, int pageSize,
 			Class<T> projectionType) {
 
-		throw newUnsupportedOperationException("Not Implemented");
+		return newLucenePage(this, query(queryProvider, resultLimit, pageSize), pageSize, projectionType);
 	}
 }
