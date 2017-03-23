@@ -17,17 +17,10 @@
 
 package org.springframework.data.gemfire.client.function;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -82,7 +75,7 @@ public class ListRegionsOnServerFunctionTest {
 		doAnswer(new Answer<Void>() {
 			@Override
 			public Void answer(final InvocationOnMock invocation) throws Throwable {
-				regionNames.compareAndSet(null, invocation.getArgumentAt(0, List.class));
+				regionNames.compareAndSet(null, invocation.getArgument(0));
 				return null;
 			}
 		}).when(mockResultSender).lastResult(any(List.class));
@@ -127,7 +120,7 @@ public class ListRegionsOnServerFunctionTest {
 		doAnswer(new Answer<Void>() {
 			@Override
 			public Void answer(final InvocationOnMock invocation) throws Throwable {
-				regionNames.compareAndSet(null, invocation.getArgumentAt(0, List.class));
+				regionNames.compareAndSet(null, invocation.getArgument(0));
 				return null;
 			}
 		}).when(mockResultSender).lastResult(any(List.class));

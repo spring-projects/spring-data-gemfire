@@ -190,7 +190,7 @@ public class EnableEvictionConfigurationUnitTests {
 				new Answer<RegionFactory>() {
 					@Override
 					public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-						evictionAttributes.set(invocation.getArgumentAt(0, EvictionAttributes.class));
+						evictionAttributes.set(invocation.getArgument(0));
 						return (RegionFactory) invocation.getMock();
 					}
 				}
@@ -199,7 +199,7 @@ public class EnableEvictionConfigurationUnitTests {
 			when(mockRegionFactory.create(anyString())).thenAnswer(new Answer<Region>() {
 				@Override
 				public Region answer(InvocationOnMock invocation) throws Throwable {
-					String regionName = invocation.getArgumentAt(0, String.class);
+					String regionName = invocation.getArgument(0);
 
 					Region mockRegion = mock(Region.class, regionName);
 

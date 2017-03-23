@@ -17,17 +17,10 @@
 
 package org.springframework.data.gemfire.client.support;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -41,7 +34,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.gemfire.GemfireUtils;
 
 /**
@@ -81,7 +74,6 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 	@Before
 	public void setupMockPool() {
-		when(mockPool.isDestroyed()).thenReturn(false);
 		when(mockPool.getFreeConnectionTimeout()).thenReturn(5000);
 		when(mockPool.getIdleTimeout()).thenReturn(120000l);
 		when(mockPool.getLoadConditioningInterval()).thenReturn(300000);

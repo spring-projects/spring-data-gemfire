@@ -99,7 +99,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setCloningEnabled(anyBoolean())).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					attributesFactory.setCloningEnabled(Boolean.TRUE.equals(invocation.getArgumentAt(0, Boolean.class)));
+					attributesFactory.setCloningEnabled(Boolean.TRUE.equals(invocation.getArgument(0)));
 					return mockClientRegionFactory;
 				}
 			}
@@ -108,7 +108,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setCompressor(any(Compressor.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					Compressor compressor = invocation.getArgumentAt(0, Compressor.class);
+					Compressor compressor = invocation.getArgument(0);
 					attributesFactory.setCompressor(compressor);
 					return mockClientRegionFactory;
 				}
@@ -118,7 +118,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		doAnswer(new Answer<Void>() {
 			@Override public Void answer(final InvocationOnMock invocation) throws Throwable {
 			 	attributesFactory.setConcurrencyChecksEnabled(Boolean.TRUE.equals(
-					invocation.getArgumentAt(0, Boolean.class)));
+					invocation.getArgument(0)));
 				return null;
 			}
 		}).when(mockClientRegionFactory).setConcurrencyChecksEnabled(anyBoolean());
@@ -126,7 +126,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setConcurrencyLevel(anyInt())).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					int concurrencyLevel = invocation.getArgumentAt(0, Integer.TYPE);
+					int concurrencyLevel = invocation.getArgument(0);
 					attributesFactory.setConcurrencyLevel(concurrencyLevel);
 					return mockClientRegionFactory;
 				}
@@ -136,7 +136,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setCustomEntryIdleTimeout(any(CustomExpiry.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					CustomExpiry<K, V> customEntryIdleTimeout = invocation.getArgumentAt(0, CustomExpiry.class);
+					CustomExpiry<K, V> customEntryIdleTimeout = invocation.getArgument(0);
 					attributesFactory.setCustomEntryIdleTimeout(customEntryIdleTimeout);
 					return mockClientRegionFactory;
 				}
@@ -146,7 +146,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setCustomEntryTimeToLive(any(CustomExpiry.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					CustomExpiry<K, V> customEntryTimeToLive = invocation.getArgumentAt(0, CustomExpiry.class);
+					CustomExpiry<K, V> customEntryTimeToLive = invocation.getArgument(0);
 					attributesFactory.setCustomEntryTimeToLive(customEntryTimeToLive);
 					return mockClientRegionFactory;
 				}
@@ -156,7 +156,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setDiskStoreName(anyString())).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					String diskStoreName = invocation.getArgumentAt(0, String.class);
+					String diskStoreName = invocation.getArgument(0);
 					attributesFactory.setDiskStoreName(diskStoreName);
 					return mockClientRegionFactory;
 				}
@@ -167,7 +167,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
 					attributesFactory.setDiskSynchronous(Boolean.TRUE.equals(
-						invocation.getArgumentAt(0, Boolean.class)));
+						invocation.getArgument(0)));
 					return mockClientRegionFactory;
 				}
 			}
@@ -176,7 +176,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setEntryIdleTimeout(any(ExpirationAttributes.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					ExpirationAttributes entryIdleTimeout = invocation.getArgumentAt(0, ExpirationAttributes.class);
+					ExpirationAttributes entryIdleTimeout = invocation.getArgument(0);
 					attributesFactory.setEntryIdleTimeout(entryIdleTimeout);
 					return mockClientRegionFactory;
 				}
@@ -186,7 +186,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setEntryTimeToLive(any(ExpirationAttributes.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					ExpirationAttributes entryTimeToLive = invocation.getArgumentAt(0, ExpirationAttributes.class);
+					ExpirationAttributes entryTimeToLive = invocation.getArgument(0);
 					attributesFactory.setEntryTimeToLive(entryTimeToLive);
 					return mockClientRegionFactory;
 				}
@@ -196,7 +196,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setEvictionAttributes(any(EvictionAttributes.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					EvictionAttributes evictionAttributes = invocation.getArgumentAt(0, EvictionAttributes.class);
+					EvictionAttributes evictionAttributes = invocation.getArgument(0);
 					attributesFactory.setEvictionAttributes(evictionAttributes);
 					return mockClientRegionFactory;
 				}
@@ -206,7 +206,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setInitialCapacity(anyInt())).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					int initialCapacity = invocation.getArgumentAt(0, Integer.TYPE);
+					int initialCapacity = invocation.getArgument(0);
 					attributesFactory.setInitialCapacity(initialCapacity);
 					return mockClientRegionFactory;
 				}
@@ -216,7 +216,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setKeyConstraint(any(Class.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					Class keyConstraint = invocation.getArgumentAt(0, Class.class);
+					Class keyConstraint = invocation.getArgument(0);
 					attributesFactory.setKeyConstraint(keyConstraint);
 					return mockClientRegionFactory;
 				}
@@ -226,7 +226,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setLoadFactor(anyFloat())).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					float loadFactor = invocation.getArgumentAt(0, Float.TYPE);
+					float loadFactor = invocation.getArgument(0);
 					attributesFactory.setLoadFactor(loadFactor);
 					return mockClientRegionFactory;
 				}
@@ -236,7 +236,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setPoolName(anyString())).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					String poolName = invocation.getArgumentAt(0, String.class);
+					String poolName = invocation.getArgument(0);
 					poolName = (StringUtils.hasText(poolName) ? poolName : null);
 					attributesFactory.setPoolName(poolName);
 					return mockClientRegionFactory;
@@ -247,7 +247,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setRegionIdleTimeout(any(ExpirationAttributes.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					ExpirationAttributes regionIdleTimeout = invocation.getArgumentAt(0, ExpirationAttributes.class);
+					ExpirationAttributes regionIdleTimeout = invocation.getArgument(0);
 					attributesFactory.setRegionIdleTimeout(regionIdleTimeout);
 					return mockClientRegionFactory;
 				}
@@ -257,7 +257,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setRegionTimeToLive(any(ExpirationAttributes.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					ExpirationAttributes regionTimeToLive = invocation.getArgumentAt(0, ExpirationAttributes.class);
+					ExpirationAttributes regionTimeToLive = invocation.getArgument(0);
 					attributesFactory.setRegionTimeToLive(regionTimeToLive);
 					return mockClientRegionFactory;
 				}
@@ -268,7 +268,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
 					attributesFactory.setStatisticsEnabled(Boolean.TRUE.equals(
-						invocation.getArgumentAt(0, Boolean.class)));
+						invocation.getArgument(0)));
 					return mockClientRegionFactory;
 				}
 			}
@@ -277,7 +277,7 @@ public class MockClientRegionFactory<K, V> extends MockRegionFactory<K, V> {
 		when(mockClientRegionFactory.setValueConstraint(any(Class.class))).thenAnswer(
 			new Answer<ClientRegionFactory>() {
 				@Override public ClientRegionFactory answer(final InvocationOnMock invocation) throws Throwable {
-					Class valueConstraint = invocation.getArgumentAt(0, Class.class);
+					Class valueConstraint = invocation.getArgument(0);
 					attributesFactory.setValueConstraint(valueConstraint);
 					return mockClientRegionFactory;
 				}

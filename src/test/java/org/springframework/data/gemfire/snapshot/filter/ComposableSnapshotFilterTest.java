@@ -16,17 +16,11 @@
 
 package org.springframework.data.gemfire.snapshot.filter;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.isA;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.gemfire.snapshot.filter.ComposableSnapshotFilter.Operator;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.geode.cache.snapshot.SnapshotFilter;
 import org.junit.Test;
 import org.springframework.data.gemfire.TestUtils;
+import org.springframework.data.gemfire.snapshot.filter.ComposableSnapshotFilter.Operator;
 
 /**
  * The ComposableSnapshotFilterTest class is a test suite of test cases testing the contract and functionality
@@ -56,7 +51,7 @@ public class ComposableSnapshotFilterTest {
 		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, String.format(
 			"MockSnapshotFilter-%1$d", ID_SEQUENCE.incrementAndGet()));
 
-		when(mockSnapshotFilter.accept(any(Map.Entry.class))).thenReturn(accept);
+		when(mockSnapshotFilter.accept((Map.Entry) any())).thenReturn(accept);
 
 		return mockSnapshotFilter;
 	}

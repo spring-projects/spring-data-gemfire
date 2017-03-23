@@ -291,7 +291,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 					mockRegionAttributes(null, null, true, false, null, null, null, Scope.DISTRIBUTED_NO_ACK, null);
 
 				RegionAttributes<K, V> regionAttributes = (invocation.getArguments().length == 1
-					? invocation.getArgumentAt(0, RegionAttributes.class) : defaultRegionAttributes);
+					? invocation.getArgument(0) : defaultRegionAttributes);
 
 				return mockRegionFactory(regionAttributes);
 			}
@@ -309,7 +309,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		Answer<ClientRegionFactory<K, V>> createClientRegionFactory = new Answer<ClientRegionFactory<K, V>>() {
 			@Override @SuppressWarnings("unchecked")
 			public ClientRegionFactory<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				return mockClientRegionFactory(invocation.getArgumentAt(0, ClientRegionShortcut.class));
+				return mockClientRegionFactory(invocation.getArgument(0));
 			}
 		};
 
@@ -360,7 +360,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		when(mockClientRegionFactory.create(anyString())).thenAnswer(new Answer<Region<K, V>>() {
 			@Override
 			public Region<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				return mockRegion(invocation.getArgumentAt(0, String.class), mockRegionAttributes);
+				return mockRegion(invocation.getArgument(0), mockRegionAttributes);
 			}
 		});
 
@@ -442,7 +442,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		when(mockRegionFactory.create(anyString())).thenAnswer(new Answer<Region<K, V>>() {
 			@Override
 			public Region<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				return mockRegion(invocation.getArgumentAt(0, String.class), mockRegionAttributes);
+				return mockRegion(invocation.getArgument(0), mockRegionAttributes);
 			}
 		});
 
@@ -470,7 +470,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 	protected static <T, R> Answer<R> newSetter(Class<T> parameterType, AtomicReference<T> argument, R returnValue) {
 
 		return invocation -> {
-			argument.set(invocation.getArgumentAt(0, parameterType));
+			argument.set(invocation.getArgument(0));
 			return returnValue;
 		};
 	}

@@ -16,11 +16,9 @@
 
 package org.springframework.data.gemfire.client;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Properties;
 
@@ -214,8 +212,8 @@ public class PoolsConfiguredWithLocatorsAndServersExpressionsIntegrationTests {
 			when(mockPoolFactory.addLocator(anyString(), anyInt())).thenAnswer(new Answer<PoolFactory>() {
 				@Override
 				public PoolFactory answer(InvocationOnMock invocation) throws Throwable {
-					String host = invocation.getArgumentAt(0, String.class);
-					int port = invocation.getArgumentAt(1, Integer.class);
+					String host = invocation.getArgument(0);
+					int port = invocation.getArgument(1);
 					getLocatorList().add(newConnectionEndpoint(host, port));
 					return mockPoolFactory;
 				}
@@ -224,8 +222,8 @@ public class PoolsConfiguredWithLocatorsAndServersExpressionsIntegrationTests {
 			when(mockPoolFactory.addServer(anyString(), anyInt())).thenAnswer(new Answer<PoolFactory>() {
 				@Override
 				public PoolFactory answer(InvocationOnMock invocation) throws Throwable {
-					String host = invocation.getArgumentAt(0, String.class);
-					int port = invocation.getArgumentAt(1, Integer.class);
+					String host = invocation.getArgument(0);
+					int port = invocation.getArgument(1);
 					getServerList().add(newConnectionEndpoint(host, port));
 					return mockPoolFactory;
 				}

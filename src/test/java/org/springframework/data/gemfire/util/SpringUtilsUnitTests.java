@@ -17,18 +17,14 @@
 
 package org.springframework.data.gemfire.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.data.gemfire.test.support.MockitoMatchers;
 
 /**
  * Unit tests for {@link SpringUtils}.
@@ -52,8 +48,7 @@ public class SpringUtilsUnitTests {
 		when(mockBeanDefinition.getDependsOn()).thenReturn(ArrayUtils.asArray("testBeanNameOne", "testBeanNameTwo"));
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanNameThree")).isSameAs(mockBeanDefinition);
 		verify(mockBeanDefinition, times(1)).getDependsOn();
-		verify(mockBeanDefinition, times(1)).setDependsOn(argThat(
-			MockitoMatchers.stringArrayMatcher("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree")));
+		verify(mockBeanDefinition, times(1)).setDependsOn("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree");
 	}
 
 	@Test
@@ -61,7 +56,7 @@ public class SpringUtilsUnitTests {
 		when(mockBeanDefinition.getDependsOn()).thenReturn(null);
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanName")).isSameAs(mockBeanDefinition);
 		verify(mockBeanDefinition, times(1)).getDependsOn();
-		verify(mockBeanDefinition, times(1)).setDependsOn(argThat(MockitoMatchers.stringArrayMatcher("testBeanName")));
+		verify(mockBeanDefinition, times(1)).setDependsOn("testBeanName");
 	}
 
 	@Test

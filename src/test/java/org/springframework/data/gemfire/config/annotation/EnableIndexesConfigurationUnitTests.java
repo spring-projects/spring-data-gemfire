@@ -148,9 +148,9 @@ public class EnableIndexesConfigurationUnitTests {
 
 		@Override
 		public Index answer(InvocationOnMock invocation) throws Throwable {
-			String name = invocation.getArgumentAt(0, String.class);
-			String expression = invocation.getArgumentAt(1, String.class);
-			String from = invocation.getArgumentAt(2, String.class);
+			String name = invocation.getArgument(0);
+			String expression = invocation.getArgument(1);
+			String from = invocation.getArgument(2);
 
 			Index mockIndex = mock(Index.class, name);
 

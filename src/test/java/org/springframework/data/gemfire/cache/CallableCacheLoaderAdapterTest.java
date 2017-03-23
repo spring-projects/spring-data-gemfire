@@ -17,18 +17,12 @@
 
 package org.springframework.data.gemfire.cache;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.*;
 
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.LoaderHelper;
@@ -39,7 +33,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 /**
@@ -128,7 +122,7 @@ public class CallableCacheLoaderAdapterTest {
 
 		when(mockCacheLoader.load(any(LoaderHelper.class))).thenAnswer(new Answer<String>() {
 			public String answer(final InvocationOnMock invocation) throws Throwable {
-				LoaderHelper<String, Object> loaderHelper = invocation.getArgumentAt(0, LoaderHelper.class);
+				LoaderHelper<String, Object> loaderHelper = invocation.getArgument(0);
 
 				assertThat(loaderHelper, is(notNullValue()));
 				assertThat(loaderHelper.getArgument(), is(equalTo("test")));
