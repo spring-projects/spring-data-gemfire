@@ -16,19 +16,17 @@
 
 package org.springframework.data.gemfire.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.*;
+
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Optional;
 
 import org.junit.Test;
-import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.mapping.annotation.Region;
-import org.springframework.data.gemfire.mapping.model.GemfireSimpleTypeHolder;
-
-import lombok.Data;
 
 /**
  * Unit tests for {@link GemfireMappingContext} class.
@@ -45,6 +43,7 @@ public class GemfireMappingContextUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getPersistentEntityForPerson() throws Exception {
+		
 		GemfirePersistentEntity<Person> personPersistentEntity =
 			(GemfirePersistentEntity<Person>) mappingContext.getPersistentEntity(Person.class).orElseThrow(
 				() -> newIllegalStateException("Unable to resolve PersistentEntity for type [%s]",
@@ -60,8 +59,6 @@ public class GemfireMappingContextUnitTests {
 		assertThat(namePersistentProperty.get().isEntity()).isFalse();
 		assertThat(namePersistentProperty.get().getName()).isEqualTo("name");
 		assertThat(namePersistentProperty.get().getOwner()).isEqualTo(personPersistentEntity);
-		assertThat(TestUtils.<Object>readField("simpleTypeHolder", namePersistentProperty.get()))
-			.isInstanceOf(GemfireSimpleTypeHolder.class);
 	}
 
 	@Test

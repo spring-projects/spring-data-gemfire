@@ -26,7 +26,7 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newU
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link RuntimeExceptionFactory}.
@@ -36,7 +36,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.util.RuntimeExceptionFactory
  * @since 2.0.0
  */

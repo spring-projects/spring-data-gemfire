@@ -125,7 +125,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 			@Override
 			public Optional<Long> answer(InvocationOnMock invocation) throws Throwable {
-				Animal argument = invocation.getArgumentAt(0, Animal.class);
+				Animal argument = invocation.getArgument(0);
 				argument.setId(resolveId(argument.getId()));
 				return Optional.of(argument.getId());
 
@@ -296,7 +296,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		when(mockRegion.getAll(any(Collection.class))).then(invocation -> {
-			Collection<Long> keys = invocation.getArgumentAt(0, Collection.class);
+			Collection<Long> keys = invocation.getArgument(0);
 
 			return animals.values().stream().filter((animal -> keys.contains(animal.getId())))
 				.collect(Collectors.toMap(Animal::getId, Function.identity()));
@@ -319,7 +319,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		when(mockRegion.getAll(any(Collection.class))).then(invocation -> {
-			Collection<Long> keys = invocation.getArgumentAt(0, Collection.class);
+			Collection<Long> keys = invocation.getArgument(0);
 			Map<Long, Animal> result = new HashMap<>(keys.size());
 
 			for (Long key : keys) {
@@ -349,7 +349,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		when(mockRegion.getAll(any(Collection.class))).then(invocation -> {
-			Collection<Long> keys = invocation.getArgumentAt(0, Collection.class);
+			Collection<Long> keys = invocation.getArgument(0);
 			Map<Long, Animal> result = new HashMap<>(keys.size());
 
 			for (Long key : keys) {

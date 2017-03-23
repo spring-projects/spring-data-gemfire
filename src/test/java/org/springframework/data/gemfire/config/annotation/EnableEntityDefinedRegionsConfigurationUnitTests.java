@@ -51,6 +51,7 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -332,8 +333,8 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 				null, true, false, null, null,
 					null, Scope.DISTRIBUTED_NO_ACK, null);
 
-			RegionAttributes<K, V> regionAttributes = (invocation.getArguments().length == 1
-				? invocation.getArgumentAt(0, RegionAttributes.class) : defaultRegionAttributes);
+				RegionAttributes<K, V> regionAttributes = (invocation.getArguments().length == 1
+					? invocation.getArgument(0) : defaultRegionAttributes);
 
 			return mockRegionFactory(mockCache, regionAttributes);
 		};
@@ -347,8 +348,12 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 	protected static <K, V> ClientCache mockClientCache() {
 		ClientCache mockClientCache = mock(ClientCache.class, mockName("ClientCache"));
 
-		Answer<ClientRegionFactory<K, V>> createClientRegionFactory =
-			invocation -> mockClientRegionFactory(invocation.getArgumentAt(0, ClientRegionShortcut.class));
+		Answer<ClientRegionFactory<K, V>> createClientRegionFactory = new Answer<ClientRegionFactory<K, V>>() {
+			@Override @SuppressWarnings("unchecked")
+			public ClientRegionFactory<K, V> answer(InvocationOnMock invocation) throws Throwable {
+				return mockClientRegionFactory(invocation.getArgument(0));
+			}
+		};
 
 		when(mockClientCache.createClientRegionFactory(any(ClientRegionShortcut.class)))
 			.thenAnswer(createClientRegionFactory);
@@ -395,7 +400,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		when(mockRegionAttributes.getValueConstraint()).thenAnswer(newGetter(valueConstraint));
 
 		when(mockClientRegionFactory.create(anyString())).thenAnswer(invocation -> {
-			String regionName = invocation.getArgumentAt(0, String.class);
+			String regionName = invocation.getArgument(0);
 
 			cacheRegions.stream().filter(region -> region.getName().equals(regionName)).findAny()
 				.ifPresent(region -> { throw new RegionExistsException(region); });
@@ -486,7 +491,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 		when(mockRegionAttributes.getValueConstraint()).thenAnswer(newGetter(valueConstraint));
 
 		when(mockRegionFactory.create(anyString())).thenAnswer(invocation -> {
-			String regionName = invocation.getArgumentAt(0, String.class);
+			String regionName = invocation.getArgument(0);
 
 			cacheRegions.stream().filter(region -> region.getName().equals(regionName)).findAny()
 				.ifPresent(region -> { throw new RegionExistsException(region); });
@@ -524,7 +529,7 @@ public class EnableEntityDefinedRegionsConfigurationUnitTests {
 	/* (non-Javadoc) */
 	protected static <T, R> Answer<R> newSetter(Class<T> parameterType, AtomicReference<T> argument, R returnValue) {
 		return invocation -> {
-			argument.set(invocation.getArgumentAt(0, parameterType));
+			argument.set(invocation.getArgument(0));
 			return returnValue;
 		};
 	}

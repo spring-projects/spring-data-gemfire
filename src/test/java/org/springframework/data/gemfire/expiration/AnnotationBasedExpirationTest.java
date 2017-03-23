@@ -174,7 +174,7 @@ public class AnnotationBasedExpirationTest {
 
 		doAnswer(new Answer<Void>() {
 			@Override public Void answer(final InvocationOnMock invocation) throws Throwable {
-				BeanResolver beanResolver = invocation.getArgumentAt(0, BeanResolver.class);
+				BeanResolver beanResolver = invocation.getArgument(0);
 				assertThat(beanResolver, is(instanceOf(BeanFactoryResolver.class)));
 				assertThat(TestUtils.<ConfigurableBeanFactory>readField("beanFactory", beanResolver),
 					is(equalTo(mockBeanFactory)));

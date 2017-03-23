@@ -16,23 +16,11 @@
 
 package org.springframework.data.gemfire.client;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -271,7 +259,7 @@ public class GemfireDataSourcePostProcessorTest {
 
 		doAnswer(new Answer<Region<?, ?>>() {
 			@Override public Region<?, ?> answer(final InvocationOnMock invocation) throws Throwable {
-				String regionName = invocation.getArgumentAt(0, String.class);
+				String regionName = invocation.getArgument(0);
 				assertThat(regionMap.containsKey(regionName), is(true));
 				return regionMap.get(regionName);
 			}

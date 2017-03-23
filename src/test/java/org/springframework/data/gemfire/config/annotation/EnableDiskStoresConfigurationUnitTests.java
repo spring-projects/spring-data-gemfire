@@ -164,7 +164,7 @@ public class EnableDiskStoresConfigurationUnitTests {
 	/* (non-Javadoc) */
 	protected static <T, R> Answer<R> newSetter(Class<T> parameterType, AtomicReference<T> argument, R returnValue) {
 		return invocation -> {
-			argument.set(invocation.getArgumentAt(0, parameterType));
+			argument.set(invocation.getArgument(0));
 			return returnValue;
 		};
 	}
@@ -207,8 +207,8 @@ public class EnableDiskStoresConfigurationUnitTests {
 					when(mockDiskStoreFactory.setDiskDirsAndSizes(any(File[].class), any(int[].class))).thenAnswer(
 						new Answer<DiskStoreFactory>() {
 							@Override public DiskStoreFactory answer(InvocationOnMock invocation) throws Throwable {
-								File[] localDiskDirectories = invocation.getArgumentAt(0, File[].class);
-								int[] localDiskDirectorySizes = invocation.getArgumentAt(1, int[].class);
+								File[] localDiskDirectories = invocation.getArgument(0);
+								int[] localDiskDirectorySizes = invocation.getArgument(1);
 
 								diskDirectories.set(localDiskDirectories);
 								diskDirectorySizes.set(localDiskDirectorySizes);
@@ -239,7 +239,7 @@ public class EnableDiskStoresConfigurationUnitTests {
 					when(mockDiskStoreFactory.create(anyString())).thenAnswer(new Answer<DiskStore>() {
 						@Override
 						public DiskStore answer(InvocationOnMock invocation) throws Throwable {
-							String diskStoreName = invocation.getArgumentAt(0, String.class);
+							String diskStoreName = invocation.getArgument(0);
 
 							DiskStore mockDiskStore = mock(DiskStore.class, diskStoreName);
 

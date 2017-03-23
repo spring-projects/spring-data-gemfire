@@ -17,29 +17,22 @@
 
 package org.springframework.data.gemfire.config.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
-import org.springframework.data.gemfire.test.support.MockitoMatchers;
 import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
@@ -105,8 +98,7 @@ public class ClientRegionPoolBeanFactoryPostProcessorUnitTests {
 		verify(mockClientRegionBeanOne, times(1)).getBeanClassName();
 		verify(mockClientRegionBeanOne, times(1)).getPropertyValues();
 		verify(mockClientRegionBeanOne, times(1)).getDependsOn();
-		verify(mockClientRegionBeanOne, times(1)).setDependsOn(argThat(
-			MockitoMatchers.stringArrayMatcher("mockClientCacheBean", "mockPoolBean")));
+		verify(mockClientRegionBeanOne, times(1)).setDependsOn("mockClientCacheBean", "mockPoolBean");
 		verify(mockClientRegionBeanTwo, times(1)).getBeanClassName();
 		verify(mockClientRegionBeanTwo, times(1)).getPropertyValues();
 		verify(mockClientRegionBeanTwo, never()).getDependsOn();

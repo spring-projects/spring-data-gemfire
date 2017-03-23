@@ -16,28 +16,12 @@
 
 package org.springframework.data.gemfire.support;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.isA;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -47,7 +31,6 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Matchers;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
@@ -398,11 +381,9 @@ public class SpringContextBootstrappingInitializerTest {
 	}
 
 	private Class<?>[] annotatedClasses(final Class<?>... annotatedClasses) {
-		return argThat(new ArgumentMatcher<Class<?>[]>() {
-			@Override public boolean matches(final Object argument) {
-				assertThat(argument instanceof Class<?>[], is(true));
-				return Arrays.equals(annotatedClasses, (Class<?>[]) argument);
-			}
+		return argThat(argument -> {
+			assertThat(argument instanceof Class<?>[], is(true));
+			return Arrays.equals(annotatedClasses, (Class<?>[]) argument);
 		});
 	}
 

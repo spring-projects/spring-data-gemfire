@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -119,8 +119,8 @@ public class PoolParserUnitTests {
 		return new Answer<Void>() {
 			@Override
 			public Void answer(InvocationOnMock invocation) throws Throwable {
-				String generatedName = invocation.getArgumentAt(0, String.class);
-				BeanDefinition methodInvokingBeanDefinition = invocation.getArgumentAt(1, BeanDefinition.class);
+				String generatedName = invocation.getArgument(0);
+				BeanDefinition methodInvokingBeanDefinition = invocation.getArgument(1);
 
 				assertThat(methodInvokingBeanDefinition).isNotNull();
 				assertThat(methodInvokingBeanDefinition.getBeanClassName()).isEqualTo(MethodInvokingBean.class.getName());

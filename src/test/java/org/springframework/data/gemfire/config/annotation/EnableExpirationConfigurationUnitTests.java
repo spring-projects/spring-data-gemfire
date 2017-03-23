@@ -214,7 +214,7 @@ public class EnableExpirationConfigurationUnitTests {
 		doAnswer(new Answer<CustomExpiry<K, V>>() {
 			@Override
 			public CustomExpiry<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				CustomExpiry<K, V> customExpiry = invocation.getArgumentAt(0, CustomExpiry.class);
+				CustomExpiry<K, V> customExpiry = invocation.getArgument(0);
 				entryIdleTimeout.set(customExpiry);
 				return customExpiry;
 			}
@@ -223,7 +223,7 @@ public class EnableExpirationConfigurationUnitTests {
 		doAnswer(new Answer<CustomExpiry<K, V>>() {
 			@Override
 			public CustomExpiry<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				CustomExpiry<K, V> customExpiry = invocation.getArgumentAt(0, CustomExpiry.class);
+				CustomExpiry<K, V> customExpiry = invocation.getArgument(0);
 				entryTimeToLive.set(customExpiry);
 				return customExpiry;
 			}

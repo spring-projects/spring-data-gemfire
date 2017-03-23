@@ -154,7 +154,7 @@ public class GemfireRepositoryExtensionTest {
 
 		doAnswer(new Answer<Void>() {
 			public Void answer(final InvocationOnMock invocation) throws Throwable {
-				GemfireRepositoryBean<?> repositoryBean = invocation.getArgumentAt(0, GemfireRepositoryBean.class);
+				GemfireRepositoryBean<?> repositoryBean = invocation.getArgument(0);
 
 				assertThat(repositoryBean, is(notNullValue()));
 				assertThat((Class<TestRepository>) repositoryBean.getBeanClass(), is(equalTo(TestRepository.class)));

@@ -33,7 +33,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * The AbstractFunctionTemplateTest class is a test suite of test cases testing the contract and functionality

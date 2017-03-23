@@ -18,13 +18,11 @@
 package org.springframework.data.gemfire.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.data.gemfire.test.support.MockitoMatchers.stringArrayMatcher;
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 
 import java.util.function.Supplier;
@@ -32,7 +30,7 @@ import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.config.BeanDefinition;
 
 /**
@@ -42,7 +40,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.util.SpringUtils
  * @since 1.9.0
  */
@@ -59,8 +57,7 @@ public class SpringUtilsUnitTests {
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanNameThree")).isSameAs(mockBeanDefinition);
 
 		verify(mockBeanDefinition, times(1)).getDependsOn();
-		verify(mockBeanDefinition, times(1)).setDependsOn(argThat(
-			stringArrayMatcher("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree")));
+		verify(mockBeanDefinition, times(1)).setDependsOn("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree");
 	}
 
 	@Test
@@ -70,7 +67,7 @@ public class SpringUtilsUnitTests {
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanName")).isSameAs(mockBeanDefinition);
 
 		verify(mockBeanDefinition, times(1)).getDependsOn();
-		verify(mockBeanDefinition, times(1)).setDependsOn(argThat(stringArrayMatcher("testBeanName")));
+		verify(mockBeanDefinition, times(1)).setDependsOn("testBeanName");
 	}
 
 	@Test
@@ -82,8 +79,7 @@ public class SpringUtilsUnitTests {
 
 		verify(mockBeanDefinition, times(1)).getDependsOn();
 		verify(mockBeanDefinition, times(1))
-			.setDependsOn(argThat(stringArrayMatcher("testBeanNameOne", "testBeanNameTwo",
-				"testBeanNameThree", "testBeanNameFour")));
+			.setDependsOn("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree", "testBeanNameFour");
 	}
 
 	@Test
