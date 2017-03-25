@@ -134,7 +134,7 @@ public class GemfireRepositoryConfigurationExtensionTest {
 
 	@Test
 	public void repositoryFactoryClassNameIsGemfireRepositoryFactoryBean() {
-		assertThat(repositoryConfigurationExtension.getRepositoryFactoryClassName(),
+		assertThat(repositoryConfigurationExtension.getRepositoryFactoryBeanClassName(),
 			is(equalTo(GemfireRepositoryFactoryBean.class.getName())));
 	}
 
