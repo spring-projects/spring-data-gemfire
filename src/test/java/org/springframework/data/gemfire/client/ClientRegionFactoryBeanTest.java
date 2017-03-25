@@ -215,7 +215,6 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockBeanFactory, times(1)).containsBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
-		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test
@@ -243,8 +242,6 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockBeanFactory, times(1)).containsBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.PROXY));
 		verify(mockClientRegionFactory, times(1)).createSubregion(eq(mockRegion), eq("TestSubRegion"));
-		verifyZeroInteractions(mockRegion);
-		verifyZeroInteractions(mockSubRegion);
 	}
 
 	@Test
@@ -271,7 +268,6 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_HEAP_LRU));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
 		verify(mockClientRegionFactory, never()).setPoolName(any(String.class));
-		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test

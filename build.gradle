@@ -123,9 +123,9 @@ dependencies {
 
     testRuntime "javax.el:el-api:$cdiVersion"
     testRuntime "javax.servlet:servlet-api:$servletApiVersion"
-    testRuntime "log4j:log4j:$log4jVersion"
     testRuntime "org.apache.derby:derbyLocale_zh_TW:10.9.1.0"
-    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    testRuntime "org.apache.logging.log4j:log4j:$log4jVersion"
+    testRuntime "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
     testRuntime "org.springframework.shell:spring-shell:$springShellVersion"
 
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
