@@ -134,7 +134,7 @@ public abstract class LuceneAccessor extends LuceneOperationsSupport implements 
 	/**
 	 * Creates an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 *
-	 * @param projectionFields {@link String[]} containing the fields of the object to project.
+	 * @param projectionFields {@link String} array containing the fields of the object to project.
 	 * @return an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 * @see org.apache.geode.cache.lucene.LuceneQueryFactory
 	 * @see #createLuceneQueryFactory(int, int, String...)
@@ -147,7 +147,7 @@ public abstract class LuceneAccessor extends LuceneOperationsSupport implements 
 	 * Creates an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 *
 	 * @param resultLimit limit to the number of results returned by the query.
-	 * @param projectionFields {@link String[]} containing the fields of the object to project.
+	 * @param projectionFields {@link String} array containing the fields of the object to project.
 	 * @return an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 * @see org.apache.geode.cache.lucene.LuceneQueryFactory
 	 * @see #createLuceneQueryFactory(int, int, String...)
@@ -161,7 +161,7 @@ public abstract class LuceneAccessor extends LuceneOperationsSupport implements 
 	 *
 	 * @param resultLimit limit to the number of results returned by the query.
 	 * @param pageSize number of results appearing on a single page.
-	 * @param projectionFields {@link String[]} containing the fields of the object to project.
+	 * @param projectionFields {@link String} array containing the fields of the object to project.
 	 * @return an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 * @see #createLuceneQueryFactory()
 	 */

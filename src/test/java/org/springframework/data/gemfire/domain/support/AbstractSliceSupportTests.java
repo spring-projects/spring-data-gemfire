@@ -105,7 +105,6 @@ public class AbstractSliceSupportTests {
 		Pageable mockPageable = mock(Pageable.class);
 
 		when(mockPageable.previousOrFirst()).thenReturn(mockPageable);
-		when(mockPageable.hasPrevious()).thenReturn(false);
 		doReturn(mockPageable).when(mockSlice).previousPageable();
 
 		assertThat(mockSlice.getNumber()).isEqualTo(2);
@@ -120,9 +119,7 @@ public class AbstractSliceSupportTests {
 		Pageable mockPageableTwo = mock(Pageable.class, "Page Two");
 
 		when(mockPageableOne.previousOrFirst()).thenReturn(mockPageableOne);
-		when(mockPageableOne.hasPrevious()).thenReturn(false);
 		when(mockPageableTwo.previousOrFirst()).thenReturn(mockPageableOne);
-		when(mockPageableTwo.hasPrevious()).thenReturn(true);
 		doReturn(mockPageableTwo).when(mockSlice).previousPageable();
 
 		assertThat(mockSlice.getNumber()).isEqualTo(3);

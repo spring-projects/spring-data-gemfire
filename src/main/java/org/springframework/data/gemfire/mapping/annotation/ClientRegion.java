@@ -35,6 +35,7 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
  * persistent entity will be stored.
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
  * @see org.springframework.data.gemfire.mapping.annotation.Region
  * @since 1.9.0
@@ -91,8 +92,6 @@ public @interface ClientRegion {
 	/**
 	 * Determines whether an entity annotated with this Region annotation will ignore any existing Region definition
 	 * identified by the given {@link #name()} for this entity.
-	 *
-	 * Overrides the global, {@link EnableEntityDefinedRegions#ignoreIfExists()} setting.
 	 *
 	 * Defaults to {@literal true}.
 	 */

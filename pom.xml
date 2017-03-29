@@ -80,16 +80,13 @@
 		</dependency>
 
 		<dependency>
-<<<<<<< HEAD
 			<groupId>io.pivotal.gemfire</groupId>
-=======
-			<groupId>org.apache.geode</groupId>
 			<artifactId>geode-lucene</artifactId>
 			<version>${gemfire.version}</version>
 		</dependency>
+
 		<dependency>
-			<groupId>org.apache.geode</groupId>
->>>>>>> f104d57... SGF-402 - Add Lucene Integration support.
+			<groupId>io.pivotal.gemfire</groupId>
 			<artifactId>geode-wan</artifactId>
 			<version>${gemfire.version}</version>
 		</dependency>

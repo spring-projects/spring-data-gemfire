@@ -19,8 +19,8 @@ package org.springframework.data.gemfire.domain;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -104,7 +104,7 @@ public abstract class EmptySlice<T> extends AbstractSliceSupport<T> {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <S> Slice<S> map(Converter<? super T, ? extends S> converter) {
+	public <S> Slice<S> map(Function<? super T, ? extends S> converter) {
 		return (Slice<S>) EMPTY_SLICE;
 	}
 }

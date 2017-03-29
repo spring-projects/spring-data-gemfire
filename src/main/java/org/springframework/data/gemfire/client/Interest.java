@@ -197,7 +197,7 @@ public class Interest<K> implements InitializingBean {
 	 * using {@link Pattern#compile(String)}, then the {@code key} is considered a Regular Expression
 	 * and interest will be registered using {@link org.apache.geode.cache.Region#registerInterestRegex(String)}.
 	 *
-	 * @param key {@link String} to evaluate.
+	 * @param value {@link String} to evaluate.
 	 * @return a boolean value indicating whether the given {@link String} {@code value} is a Regular Expression.
 	 * @see #containsNonAlphaNumericWhitespace(String)
 	 * @see java.util.regex.Pattern#compile(String)

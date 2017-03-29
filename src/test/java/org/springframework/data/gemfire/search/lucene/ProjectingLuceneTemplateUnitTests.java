@@ -86,7 +86,6 @@ public class ProjectingLuceneTemplateUnitTests {
 		LuceneResultStruct<K, V> mockLuceneResultStruct =
 			mock(LuceneResultStruct.class, String.format("MockLuceneResultStruct%s", key));
 
-		when(mockLuceneResultStruct.getKey()).thenReturn(key);
 		when(mockLuceneResultStruct.getValue()).thenReturn(value);
 
 		return mockLuceneResultStruct;
