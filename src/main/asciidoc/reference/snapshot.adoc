@@ -1,5 +1,5 @@
 [[bootstrap:snapshot]]
-= Using the GemFire Snapshot Service
+= Using the Snapshot Service
 
 Spring Data GemFire supports `Cache` and `Region` snapshots using http://gemfire81.docs.pivotal.io/latest/userguide/index.html#managing/cache_snapshots/chapter_overview.html[GemFire's Snapshot Service].
 The out-of-the-box Snapshot Service support offers several convenient features to simply the use of GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/snapshot/CacheSnapshotService.html[Cache]

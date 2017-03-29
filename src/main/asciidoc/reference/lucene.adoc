@@ -19,9 +19,9 @@ can be created in _Spring (Data GemFire)_ XML config like so...
 
 Additionally, Apache Lucene allows the specification of
 http://lucene.apache.org/core/6_5_0/core/org/apache/lucene/analysis/Analyzer.html[Analyzers] per field
-and can be configured like so...
+and can be configured using...
 
-[source.xml]
+[source,xml]
 ----
 <gfe:lucene-index id="IndexTwo" lucene-service-ref="luceneService" region-path="/AnotherExample">
     <gfe:field-analyzers>
@@ -37,10 +37,10 @@ and can be configured like so...
 </gfe:lucene-index>
 ----
 
-Of course, the `Map` can be specified at top-level bean definitions and referenced using the `ref` attribute
-on the `<gfe:field-analyzers>` element like this, `<gfe-field-analyzers ref="refToTopLevelMapBeanDefinition"/>`.
+Of course, the `Map` can be specified as a top-level bean definition and referenced using the `ref` attribute
+on the nested `<gfe:field-analyzers>` element like this, `<gfe-field-analyzers ref="refToTopLevelMapBeanDefinition"/>`.
 
-Alternatively, a `LuceneIndex` can be declared in _Spring_ Java config, inside a `@Configuration` class like so...
+Alternatively, a `LuceneIndex` can be declared in _Spring_ Java config, inside a `@Configuration` class with...
 
 [source,java]
 ----
@@ -73,12 +73,13 @@ be created on a Geode `PARTITION` Region.  Second, all `LuceneIndexes` must be c
 the `LuceneIndex` is applied.
 
 It is possible that these Apache Geode restrictions will not apply in a future release which is why
-the SDG `LuceneIndexFactoryBean` can take a reference to the Region directly rather than just the Region path,
-which is more ideal.  For instance, it is reasonable to assume that some users may want to define a `LuceneIndex`
-on an already existing Region with data at a later point in the application lifecycle and as requirements demand.
-Where possible, SDG strives to stick to strongly-typed objects and classes.
+the SDG `LuceneIndexFactoryBean` API takes a reference to the Region directly as well, rather than just the Region path.
 
-Now that we have a `LuceneIndex` we can perform Lucene based data access operations, such as queries and so on.
+This is more ideal if think about the case in which users may want to define a `LuceneIndex` on an existing Region
+with data at a later point during the application's lifecycle and as requirements demand.  Where possible, SDG strives
+to stick to strongly-typed objects.
+
+Now that we have a `LuceneIndex` we can perform Lucene based data access operations, such as queries.
 
 #### Lucene Template Data Accessors
 
@@ -114,15 +115,17 @@ public interface LuceneOperations {
 }
 ----
 
-The operations in the `LuceneOperations` interface match the operations provided by the Apache Geode
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/lucene/LuceneQuery.html[LuceneQuery] interface,
-however SDG has the added value of translating proprietary Geode or Lucene `Exceptions` into _Spring's_ highly
+NOTE: The `[, int resultLimit]` indicates that the `resultLimit` parameter is optional.
+
+The operations in the `LuceneOperations` interface match the operations provided by the Apache Geode's
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/lucene/LuceneQuery.html[LuceneQuery] interface.
+However, SDG has the added value of translating proprietary Geode or Lucene `Exceptions` into _Spring's_ highly
 consistent and expressive DAO
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[Exception Hierarchy],
-particularly as many modern data access operations involve more than one store or repository.
+particularly as many modern data access operations involve more than single store or repository.
 
 Additionally, SDG's `LuceneOperations` interface can shield your application from interface breaking changes
-introduced by the underlying Apache Geode or Apache Lucene APIs when they do and will change.
+introduced by the underlying Apache Geode or Apache Lucene APIs when they do and will occur.
 
 However, it would be remorse to only offer a Lucene Data Access Object that only uses Apache Geode and Apache Lucene
 data types (e.g. Geode's `LuceneResultStruct`), therefore SDG gives you the `ProjectingLuceneOperations` interface
@@ -143,7 +146,7 @@ public interface ProjectingLuceneOperations {
 ----
 
 The `ProjectingLuceneOperations` interface primarily uses application domain object types to work with
-your application data.  The `query` method variants accept a "projection type" and the template applies
+your application data.  The `query` method variants accept a projection type and the template applies
 the query results to instances of the given projection type using the _Spring Data Commons_
 Projection infrastructure.
 
@@ -172,7 +175,7 @@ class Person {
 }
 ----
 
-Additionally, I might have a single interface to represent people as Customers depending on my application view...
+Additionally, I might have a single interface to represent people as `Customers` depending on my application view...
 
 [source,java]
 ----
@@ -205,7 +208,7 @@ Then it is a simple matter to query for people as either `Person` objects...
 List<Person> people = luceneTemplate.query("lastName: D*", "lastName", Person.class);
 ----
 
-Or as a page of type `Customer`...
+Or as a `Page` of type `Customer`...
 
 [source,java]
 ----
@@ -222,19 +225,19 @@ List<Customer> firstPage = customers.getContent();
 Conveniently, the _Spring Data Commons_ `Page` interface implements `java.lang.Iterable<T>` too making it very easy
 to iterate over the content as well.
 
-The only restriction to the _Spring Data Commons_ Projection infrastructure is that the "projection type"
+The only restriction to the _Spring Data Commons_ Projection infrastructure is that the projection type
 must be an interface.  However, it is possible to extend the provided, out-of-the-box (OOTB)
-SDC Projection infrastructure and provide a "custom"
+SDC Projection infrastructure and provide a custom
 http://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/projection/ProjectionFactory.html[ProjectionFactory]
 that uses https://github.com/cglib/cglib[CGLIB] to generate proxy classes as the projected entity.
 
-The "custom" `ProjectionFactory` can then be set on the template using `setProjectionFactory(:ProjectionFactory)`.
+A custom `ProjectionFactory` can be set on a Lucene template using `setProjectionFactory(:ProjectionFactory)`.
 
 #### Annotation configuration support
 
 Finally, _Spring Data Geode_ provides Annotation configuration support for `LuceneIndexes`. Eventually, the SDG Lucene
-support will find its way into the Repository infrastructure extension for Apache Geode so that Lucene queries
-can be expressed as methods on an application Repository interface, much like the
+support will find its way into the _Repository_ infrastructure extension for Apache Geode so that Lucene queries
+can be expressed as methods on an application `Repository` interface, much like the
 http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#gemfire-repositories.executing-queries[OQL support]
 today.
 

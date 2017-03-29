@@ -31,6 +31,7 @@ import org.springframework.core.annotation.AliasFor;
  * {@link Annotation} defining the Partition {@link Region} in which the application persistent entity will be stored.
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
  * @see org.springframework.data.gemfire.mapping.annotation.Region
  * @since 1.9.0
@@ -109,8 +110,6 @@ public @interface PartitionRegion {
 	/**
 	 * Determines whether an entity annotated with this Region annotation will ignore any existing Region definition
 	 * identified by the given {@link #name()} for this entity.
-	 *
-	 * Overrides the global, {@link EnableEntityDefinedRegions#ignoreIfExists()} setting.
 	 *
 	 * Defaults to {@literal true}.
 	 */

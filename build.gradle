@@ -187,6 +187,8 @@ javadoc {
       links = [
         "http://docs.oracle.com/javase/6/docs/api/",
         "http://docs.spring.io/spring/docs/current/javadoc-api/",
+        "http://docs.spring.io/spring-data-gemfire/docs/current/api/",
+        "http://docs.spring.io/spring-data/commons/docs/current/api/index.html?index-all.html",
         "http://gemfire.docs.pivotal.io/docs-gemfire/latest/javadocs/japi/",
         "http://logging.apache.org/log4j/1.2/apidocs/",
       ]
