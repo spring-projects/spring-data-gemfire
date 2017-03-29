@@ -7,7 +7,7 @@ Costin Leau , David Turanski , John Blum , Oliver Gierke
 :toc-placement!:
 :spring-data-commons-docs: {basedocdir}/../../../../spring-data-commons/src/main/asciidoc
 
-(C) 2011-2015 The original authors.
+(C) 2010-2017 The original authors.
 
 NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not
 charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed
@@ -20,18 +20,15 @@ include::{baseDir}/preface.adoc[]
 
 :leveloffset: 0
 :leveloffset: +1
-
 include::{baseDir}/introduction/introduction.adoc[]
 include::{baseDir}/introduction/requirements.adoc[]
 include::{baseDir}/introduction/new-features.adoc[]
-
 :leveloffset: -1
 
 [[reference]]
 = Reference Guide
 
 :leveloffset: +1
-
 include::{baseDir}/reference/introduction.adoc[]
 include::{baseDir}/reference/bootstrap.adoc[]
 include::{baseDir}/reference/data.adoc[]
@@ -39,20 +36,19 @@ include::{baseDir}/reference/serialization.adoc[]
 include::{baseDir}/reference/mapping.adoc[]
 include::{baseDir}/reference/repositories.adoc[]
 include::{baseDir}/reference/function-annotations.adoc[]
+include::{basedocdir}/reference/lucene.adoc[]
 include::{baseDir}/reference/gemfire-bootstrap.adoc[]
 include::{baseDir}/reference/samples.adoc[]
-
 :leveloffset: -1
 
 [[resources]]
 = Other Resources
 
-In addition to this reference documentation, there are a number of other resources that may help you learn how to use GemFire and Spring framework. These additional, third-party resources are enumerated in this section.
+In addition to this reference documentation, there are a number of other resources that may help you learn
+how to use GemFire with the Spring Framework. These additional, third-party resources are enumerated in this section.
 
 :leveloffset: +1
-
 include::{baseDir}/links.adoc[]
-
 :leveloffset: -1
 
 [[appendices]]
@@ -65,5 +61,4 @@ include::{spring-data-commons-docs}/repository-populator-namespace-reference.ado
 include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[]
 include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[]
 include::{baseDir}/appendix/appendix-schema.adoc[]
-
 :leveloffset: -1

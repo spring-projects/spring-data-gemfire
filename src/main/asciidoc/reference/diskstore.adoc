@@ -1,9 +1,14 @@
-[[bootstrap-diskstore]]
-= Configuring a Disk Store
+[[bootstrap:diskstore]]
+= Configuring a DiskStore
 
-As of Release 1.2.0, Spring Data GemFire supports disk store configuration via a top level `disk-store` element.
+As of Release 1.2.0, _Spring Data GemFire_ supports `DiskStore` configuration via the `disk-store` element.
 
-NOTE: Prior to Release 1.2.0, `disk-store` was a child element of `*-region`. If you have regions configured with disk storage using a prior release of Spring Data GemFire and want to upgrade to the latest release, move the disk-store element to the top level, assign an id and use the region's `disk-store-ref` attribute. Also, `disk-synchronous` is now a region level attribute.
+NOTE: Prior to Release 1.2.0, `disk-store` was a child element of the `\*-region` elements.
+If you have Regions configured with disk storage using a prior release of _Spring Data GemFire_
+and want to upgrade to the latest release, move all `disk-store` element(s) to the top-level,
+assign an `id` and use the `*-region` element's `disk-store-ref` attribute.
+
+Also, `disk-synchronous` is now a `*-region` attribute.
 
 [source,xml]
 ----
@@ -14,5 +19,8 @@ NOTE: Prior to Release 1.2.0, `disk-store` was a child element of `*-region`. If
 </gfe:disk-store>
 ----
 
-Disk stores are used by regions for file system persistent backup or overflow storage of evicted entries, and persistent backup of WAN gateways. Note that multiple components may share the same disk store. Also multiple directories may be defined for a single disk store. Please refer to the GemFire documentation for an explanation of the configuration options.
+`DiskStores` are used by Regions for file system persistent backup or overflow storage of evicted entries,
+and persistent backup of WAN Gateways.  Multiple components may share the same `DiskStore`.
+Additionally, multiple directories may be defined for a single `DiskStore`.
 
+Please refer to Pivotal GemFire's documentation for an explanation of the configuration options.

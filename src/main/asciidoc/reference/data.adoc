@@ -1,5 +1,5 @@
 [[apis]]
-= Working with the GemFire APIs
+= Working with GemFire APIs
 
 Once the GemFire Cache and Regions have been configured they can be injected and used inside application objects. This chapter describes the integration with Spring's Transaction Management functionality and `DaoException` hierarchy. It also covers support for dependency injection of GemFire managed objects.
 

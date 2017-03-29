@@ -1,0 +1,282 @@
+[[bootstrap:lucene]]
+= Apache Lucene Integration
+
+http://geode.apache.org/[Apache Geode] integrates with http://lucene.apache.org/[Apache Lucene] to allow developers
+to index and search on data stored in Apache Geode using Lucene queries.  Search-based queries also includes
+the capability to page through query results.
+
+Additionally, _Spring Data Geode_ adds support for query projections based on _Spring Data Commons_
+Projection infrastructure.  This feature enables the query results to be projected into first-class,
+application domain types as needed or required by the application use case.
+
+However, a Lucene `Index` must be created first before any Lucene search-based query can be ran.  A `LuceneIndex`
+can be created in _Spring (Data GemFire)_ XML config like so...
+
+[source,xml]
+----
+<gfe:lucene-index id="IndexOne" fields="fieldOne, fieldTwo" region-path="/Example"/>
+----
+
+Additionally, Apache Lucene allows the specification of
+http://lucene.apache.org/core/6_5_0/core/org/apache/lucene/analysis/Analyzer.html[Analyzers] per field
+and can be configured like so...
+
+[source.xml]
+----
+<gfe:lucene-index id="IndexTwo" lucene-service-ref="luceneService" region-path="/AnotherExample">
+    <gfe:field-analyzers>
+        <map>
+            <entry key="fieldOne">
+                <bean class="example.AnalyzerOne"/>
+             </entry>
+            <entry key="fieldTwo">
+                <bean class="example.AnalyzerTwo"/>
+             </entry>
+        </map>
+    </gfe:field-analyzers>
+</gfe:lucene-index>
+----
+
+Of course, the `Map` can be specified at top-level bean definitions and referenced using the `ref` attribute
+on the `<gfe:field-analyzers>` element like this, `<gfe-field-analyzers ref="refToTopLevelMapBeanDefinition"/>`.
+
+Alternatively, a `LuceneIndex` can be declared in _Spring_ Java config, inside a `@Configuration` class like so...
+
+[source,java]
+----
+@Bean(name = "People")
+@DependsOn("personTitleIndex")
+PartitionedRegionFactoryBean<Long, Person> peopleRegion(GemFireCache gemfireCache) {
+    PartitionedRegionFactoryBean<Long, Person> peopleRegion = new PartitionedRegionFactoryBean<>();
+
+    peopleRegion.setCache(gemfireCache);
+    peopleRegion.setClose(false);
+    peopleRegion.setPersistent(false);
+
+    return peopleRegion;
+}
+
+@Bean
+LuceneIndexFactoryBean personTitleIndex(GemFireCache gemFireCache) {
+    LuceneIndexFactoryBean luceneIndex = new LuceneIndexFactoryBean();
+
+    luceneIndex.setCache(gemFireCache);
+    luceneIndex.setFields("title");
+    luceneIndex.setRegionPath("/People");
+
+    return luceneIndex;
+}
+----
+
+There are a few limitations of Apache Geode's, Apache Lucene integration support.  First, a `LuceneIndex` can only
+be created on a Geode `PARTITION` Region.  Second, all `LuceneIndexes` must be created before the the Region on which
+the `LuceneIndex` is applied.
+
+It is possible that these Apache Geode restrictions will not apply in a future release which is why
+the SDG `LuceneIndexFactoryBean` can take a reference to the Region directly rather than just the Region path,
+which is more ideal.  For instance, it is reasonable to assume that some users may want to define a `LuceneIndex`
+on an already existing Region with data at a later point in the application lifecycle and as requirements demand.
+Where possible, SDG strives to stick to strongly-typed objects and classes.
+
+Now that we have a `LuceneIndex` we can perform Lucene based data access operations, such as queries and so on.
+
+#### Lucene Template Data Accessors
+
+_Spring Data Geode_ provides 2 primary templates for Lucene data access operations, depending on how low a level
+your application is prepared to deal with.
+
+The `LuceneOperations` interface defines query operations using Apache Geode
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/lucene/package-frame.html[Lucene types].
+
+[source,java]
+----
+public interface LuceneOperations {
+
+    <K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField [, int resultLimit]
+        , String... projectionFields);
+
+    <K, V> PageableLuceneQueryResults<K, V> query(String query, String defaultField,
+        int resultLimit, int pageSize, String... projectionFields);
+
+    <K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider [, int resultLimit]
+        , String... projectionFields);
+
+    <K, V> PageableLuceneQueryResults<K, V> query(LuceneQueryProvider queryProvider,
+        int resultLimit, int pageSize, String... projectionFields);
+
+    <K> Collection<K> queryForKeys(String query, String defaultField [, int resultLimit]);
+
+    <K> Collection<K> queryForKeys(LuceneQueryProvider queryProvider [, int resultLimit]);
+
+    <V> Collection<V> queryForValues(String query, String defaultField [, int resultLimit]);
+
+    <V> Collection<V> queryForValues(LuceneQueryProvider queryProvider [, int resultLimit]);
+}
+----
+
+The operations in the `LuceneOperations` interface match the operations provided by the Apache Geode
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/lucene/LuceneQuery.html[LuceneQuery] interface,
+however SDG has the added value of translating proprietary Geode or Lucene `Exceptions` into _Spring's_ highly
+consistent and expressive DAO
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[Exception Hierarchy],
+particularly as many modern data access operations involve more than one store or repository.
+
+Additionally, SDG's `LuceneOperations` interface can shield your application from interface breaking changes
+introduced by the underlying Apache Geode or Apache Lucene APIs when they do and will change.
+
+However, it would be remorse to only offer a Lucene Data Access Object that only uses Apache Geode and Apache Lucene
+data types (e.g. Geode's `LuceneResultStruct`), therefore SDG gives you the `ProjectingLuceneOperations` interface
+to remedy these important application concerns.
+
+[source,java]
+----
+public interface ProjectingLuceneOperations {
+
+    <T> List<T> query(String query, String defaultField [, int resultLimit], Class<T> projectionType);
+
+    <T> Page<T> query(String query, String defaultField, int resultLimit, int pageSize, Class<T> projectionType);
+
+    <T> List<T> query(LuceneQueryProvider queryProvider [, int resultLimit], Class<T> projectionType);
+
+    <T> Page<T> query(LuceneQueryProvider queryProvider, int resultLimit, int pageSize, Class<T> projectionType);
+}
+----
+
+The `ProjectingLuceneOperations` interface primarily uses application domain object types to work with
+your application data.  The `query` method variants accept a "projection type" and the template applies
+the query results to instances of the given projection type using the _Spring Data Commons_
+Projection infrastructure.
+
+Additionally, the template wraps the paged Lucene query results in an instance of the _Spring Data Commons_
+abstraction representing a `Page`.  The same projection logic can still be applied to the results in the page
+and are lazily projected as each page in the collection is accessed.
+
+By way of example, suppose I have a class representing a `Person` like so...
+
+[source,java]
+----
+class Person {
+
+    Gender gender;
+
+    LocalDate birthDate;
+
+    String firstName;
+    String lastName;
+
+    ...
+
+    String getName() {
+        return String.format("%1$s %2$s", getFirstName(), getLastName());
+    }
+}
+----
+
+Additionally, I might have a single interface to represent people as Customers depending on my application view...
+
+[source,java]
+----
+interface Customer {
+
+    String getName()
+}
+----
+
+If I define the following `LuceneIndex`...
+
+[source,java]
+----
+@Bean
+LuceneIndexFactoryBean personLastNameIndex(GemFireCache gemfireCache) {
+    LuceneIndexFactoryBean personLastNameIndex = new LuceneIndexFactoryBean();
+
+    personLastNameIndex.setCache(gemfireCache);
+    personLastNameIndex.setFields("lastName");
+    personLastNameIndex.setRegionPath("/People");
+
+    return personLastNameIndex;
+}
+----
+
+Then it is a simple matter to query for people as either `Person` objects...
+
+[source,java]
+----
+List<Person> people = luceneTemplate.query("lastName: D*", "lastName", Person.class);
+----
+
+Or as a page of type `Customer`...
+
+[source,java]
+----
+Page<Customer> customers = luceneTemplate.query("lastName: D*", "lastName", 100, 20, Customer.class);
+----
+
+The `Page` can then be used to fetch individual pages of results...
+
+[source,java]
+----
+List<Customer> firstPage = customers.getContent();
+----
+
+Conveniently, the _Spring Data Commons_ `Page` interface implements `java.lang.Iterable<T>` too making it very easy
+to iterate over the content as well.
+
+The only restriction to the _Spring Data Commons_ Projection infrastructure is that the "projection type"
+must be an interface.  However, it is possible to extend the provided, out-of-the-box (OOTB)
+SDC Projection infrastructure and provide a "custom"
+http://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/projection/ProjectionFactory.html[ProjectionFactory]
+that uses https://github.com/cglib/cglib[CGLIB] to generate proxy classes as the projected entity.
+
+The "custom" `ProjectionFactory` can then be set on the template using `setProjectionFactory(:ProjectionFactory)`.
+
+#### Annotation configuration support
+
+Finally, _Spring Data Geode_ provides Annotation configuration support for `LuceneIndexes`. Eventually, the SDG Lucene
+support will find its way into the Repository infrastructure extension for Apache Geode so that Lucene queries
+can be expressed as methods on an application Repository interface, much like the
+http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#gemfire-repositories.executing-queries[OQL support]
+today.
+
+However, in the meantime, if you want to conveniently express `LuceneIndexes`, you can do so directly on
+your application domain objects like so...
+
+[source,java]
+----
+@PartitionRegion("People")
+class Person {
+
+    Gender gender;
+
+    @Index
+    LocalDate birthDate;
+
+    String firstName;
+
+    @LuceneIndex;
+    String lastName;
+
+    ...
+}
+----
+
+You must be using the SDG Annotation configuration support along with the `@EnableEntityDefineRegions`
+and `@EnableIndexing` Annotations to enable this feature...
+
+[source,java]
+----
+@PeerCacheApplication
+@EnableEntityDefinedRegions
+@EnableIndexing
+class ApplicationConfiguration {
+
+  ...
+}
+----
+
+Given our definition of the `Person` class above, the SDG Annotation configuration support
+will find the `Person` entity class definition, determine that people will be stored in
+a `PARTITION` Region called "People" and that the Person will have an OQL `Index` on `birthDate`
+along with a `LuceneIndex` on `lastName`.
+
+More will be described with this feature in subsequent releases.

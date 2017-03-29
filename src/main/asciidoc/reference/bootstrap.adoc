@@ -1,14 +1,18 @@
 [[bootstrap]]
-= Bootstrapping GemFire through the Spring Container
+= Bootstrapping GemFire with the Spring container
 
-Spring Data GemFire provides full configuration and initialization of the GemFire data grid through Spring's IoC container and provides several classes that simplify the configuration of GemFire components including Caches, Regions, WAN Gateways, Persistence Backup, and other Distributed System components to support a variety of scenarios with minimal effort.
+Spring Data GemFire provides full configuration and initialization of the Pivotal GemFire In-Memory Data Grid
+using the Spring IoC container.  The framework includes several classes to help simplify the configuration of
+Pivotal GemFire components including: Caches, Regions, Indexes, DiskStores, Functions, WAN Gateways, persistence backup
+along with several other Distributed System components in order to support a variety of use cases with minimal effort.
 
-NOTE: This section assumes basic familiarity with GemFire. For more information see the http://www.pivotal.io/big-data/pivotal-gemfire[product documentation].
+NOTE: This section assumes basic familiarity with Pivotal GemFire. For more information,
+see the http://www.pivotal.io/big-data/pivotal-gemfire[product documentation].
 
 [[bootstrap:region:spring:config]]
 == Advantages of using Spring over GemFire `cache.xml`
 
-As of release 1.2.0, Spring Data GemFire's XML namespace supports full configuration of the GemFire in-memory data grid.
+As of release 1.2.0, Spring Data GemFire's XML namespace supports full configuration of the GemFire In-Memory Data Grid.
 In fact, Spring Data GemFire's XML namespace is considered to be the preferred way to configure GemFire.
 GemFire will continue to support native `cache.xml` for legacy reasons, but GemFire application developers can now do
 everything in Spring XML and take advantage of the many wonderful things Spring has to offer such as
@@ -93,31 +97,7 @@ prefix declaration above:
 include::{basedocdir}/reference/cache.adoc[]
 include::{basedocdir}/reference/data-access.adoc[]
 include::{basedocdir}/reference/region.adoc[]
-:leveloffset: -1
-
-[[bootstrap:indicies]]
-== Creating an Index
-
-GemFire allows the creation of indexes (or indices) to improve the performance of (common) queries.
-Spring Data GemFire allows indices to be declared through the `index` element:
-
-[source,xml]
-----
-<gfe:index id="myIndex" expression="someField" from="/someRegion"/>
-----
-
-Before creating an Index, Spring Data GemFire will verify whether an Index with the same name already exists.
-If an Index with the same name does exist, by default, SDG will "override" the existing Index by removing the old Index
-first followed by creating a new Index with the same name based on the new definition, regardless if the old definition
-was the same or not.  To prevent the named Index definition change, especially when the old and new Index definitions
-may not match, set the `override` property to false, which effectively returns the existing Index definition by name.
-
-Note that index declarations are not bound to a Region but rather are top-level elements (just like `gfe:cache`).
-This allows one to declare any number of indices on any Region whether they are just created or already exist
-- an improvement over GemFire's native `cache.xml`. By default, the index relies on the default cache declaration
-but one can customize it accordingly or use a pool (if need be) - see the namespace schema for the full set of options.
-
-:leveloffset: +1
+include::{basedocdir}/reference/indexing.adoc[]
 include::{basedocdir}/reference/diskstore.adoc[]
 include::{basedocdir}/reference/snapshot.adoc[]
 include::{basedocdir}/reference/function.adoc[]
