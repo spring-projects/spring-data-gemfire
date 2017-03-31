@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.search.lucene;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -54,24 +53,23 @@ public class LuceneOperationsUnitTests {
 
 	@Test
 	public void stringQueryCallsQueryWithResultLimit() {
-		when(mockLuceneOperations.query(anyString(), anyString(), anyVararg())).thenCallRealMethod();
+		when(mockLuceneOperations.query(anyString(), anyString())).thenCallRealMethod();
 
-		mockLuceneOperations.query("title : Up Shit Creek Without a Paddle", "title",
-			"content");
+		mockLuceneOperations.query("title : Up Shit Creek Without a Paddle", "title");
 
 		verify(mockLuceneOperations, times(1)).query(
 			eq("title : Up Shit Creek Without a Paddle"), eq("title"),
-				eq(LuceneOperations.DEFAULT_RESULT_LIMIT), eq("content"));
+				eq(LuceneOperations.DEFAULT_RESULT_LIMIT));
 	}
 
 	@Test
 	public void queryProviderQueryCallsQueryWithResultLimit() {
-		when(mockLuceneOperations.query(any(LuceneQueryProvider.class), anyVararg())).thenCallRealMethod();
+		when(mockLuceneOperations.query(any(LuceneQueryProvider.class))).thenCallRealMethod();
 
-		mockLuceneOperations.query(mockLuceneQueryProvider, "content");
+		mockLuceneOperations.query(mockLuceneQueryProvider);
 
 		verify(mockLuceneOperations, times(1)).query(eq(mockLuceneQueryProvider),
-			eq(LuceneOperations.DEFAULT_RESULT_LIMIT), eq("content"));
+			eq(LuceneOperations.DEFAULT_RESULT_LIMIT));
 	}
 
 	@Test
@@ -116,6 +114,6 @@ public class LuceneOperationsUnitTests {
 			eq(mockLuceneQueryProvider), eq(LuceneOperations.DEFAULT_RESULT_LIMIT));
 	}
 
-	abstract class TestLuceneOperations implements LuceneOperations {
-	}
+	abstract class TestLuceneOperations implements LuceneOperations { }
+
 }

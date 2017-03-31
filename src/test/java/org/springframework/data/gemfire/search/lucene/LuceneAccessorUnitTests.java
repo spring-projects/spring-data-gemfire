@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -133,65 +132,36 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	@SuppressWarnings("deprecation")
-	public void createLuceneQueryFactoryWithProjectionFields() {
+	public void createLuceneQueryFactoryWithResultLimit() {
 		doReturn(mockLuceneService).when(luceneAccessor).resolveLuceneService();
 		when(mockLuceneService.createLuceneQueryFactory()).thenReturn(mockLuceneQueryFactory);
 		when(mockLuceneQueryFactory.setPageSize(anyInt())).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setProjectionFields(anyVararg())).thenReturn(mockLuceneQueryFactory);
 		when(mockLuceneQueryFactory.setResultLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 
-		assertThat(luceneAccessor.createLuceneQueryFactory("fieldOne", "fieldTwo"))
-			.isEqualTo(mockLuceneQueryFactory);
-
-		verify(luceneAccessor).resolveLuceneService();
-		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1))
-			.setResultLimit(eq(LuceneAccessor.DEFAULT_RESULT_LIMIT));
-		verify(mockLuceneQueryFactory, times(1))
-			.setPageSize(eq(LuceneAccessor.DEFAULT_PAGE_SIZE));
-		verify(mockLuceneQueryFactory, times(1))
-			.setProjectionFields(eq("fieldOne"), eq("fieldTwo"));
-	}
-
-	@Test
-	@SuppressWarnings("deprecation")
-	public void createLuceneQueryFactoryWithResultLimitAndProjectionFields() {
-		doReturn(mockLuceneService).when(luceneAccessor).resolveLuceneService();
-		when(mockLuceneService.createLuceneQueryFactory()).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setPageSize(anyInt())).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setProjectionFields(anyVararg())).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setResultLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
-
-		assertThat(luceneAccessor.createLuceneQueryFactory(1000, "fieldOne", "fieldTwo"))
-			.isEqualTo(mockLuceneQueryFactory);
+		assertThat(luceneAccessor.createLuceneQueryFactory(1000)).isEqualTo(mockLuceneQueryFactory);
 
 		verify(luceneAccessor).resolveLuceneService();
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
 		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(1000));
 		verify(mockLuceneQueryFactory, times(1))
 			.setPageSize(eq(LuceneAccessor.DEFAULT_PAGE_SIZE));
-		verify(mockLuceneQueryFactory, times(1))
-			.setProjectionFields(eq("fieldOne"), eq("fieldTwo"));
 	}
 
 	@Test
 	@SuppressWarnings("deprecation")
-	public void createLuceneQueryFactoryWithResultLimitPageSizeAndProjectionFields() {
+	public void createLuceneQueryFactoryWithResultLimitAndPageSize() {
 		doReturn(mockLuceneService).when(luceneAccessor).resolveLuceneService();
 		when(mockLuceneService.createLuceneQueryFactory()).thenReturn(mockLuceneQueryFactory);
 		when(mockLuceneQueryFactory.setPageSize(anyInt())).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setProjectionFields(anyVararg())).thenReturn(mockLuceneQueryFactory);
 		when(mockLuceneQueryFactory.setResultLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 
-		assertThat(luceneAccessor.createLuceneQueryFactory(1000, 20,
-			"fieldOne", "fieldTwo")).isEqualTo(mockLuceneQueryFactory);
+		assertThat(luceneAccessor.createLuceneQueryFactory(1000, 20))
+			.isEqualTo(mockLuceneQueryFactory);
 
 		verify(luceneAccessor).resolveLuceneService();
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
 		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(1000));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(20));
-		verify(mockLuceneQueryFactory, times(1))
-			.setProjectionFields(eq("fieldOne"), eq("fieldTwo"));
 	}
 
 	@Test

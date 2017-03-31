@@ -22,6 +22,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,12 +37,12 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -208,6 +209,10 @@ public class EnableIndexingConfigurationUnitTests {
 		LuceneService luceneService() {
 			LuceneService mockLuceneService = mock(LuceneService.class);
 
+			LuceneIndexFactory mockLuceneIndexFactory = mock(LuceneIndexFactory.class);
+
+			doReturn(mockLuceneIndexFactory).when(mockLuceneService).createIndexFactory();
+
 			doAnswer(invocation -> {
 				LuceneIndex mockLuceneIndex = mock(LuceneIndex.class);
 
@@ -220,7 +225,7 @@ public class EnableIndexingConfigurationUnitTests {
 				when(mockLuceneService.getIndex(eq(indexName), eq(regionPath))).thenReturn(mockLuceneIndex);
 
 				return mockLuceneIndex;
-			}).when(mockLuceneService).createIndex(anyString(), anyString(), Matchers.<String[]>anyVararg());
+			}).when(mockLuceneIndexFactory).create(anyString(), anyString());
 
 			return mockLuceneService;
 		}

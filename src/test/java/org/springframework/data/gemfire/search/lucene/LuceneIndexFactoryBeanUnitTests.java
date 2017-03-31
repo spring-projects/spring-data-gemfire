@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -40,6 +39,7 @@ import java.util.Map;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.lucene.analysis.Analyzer;
 import org.junit.Before;
@@ -85,6 +85,9 @@ public class LuceneIndexFactoryBeanUnitTests {
 	private LuceneIndex mockLuceneIndex;
 
 	@Mock
+	private LuceneIndexFactory mockLuceneIndexFactory;
+
+	@Mock
 	private LuceneService mockLuceneService;
 
 	@Mock
@@ -93,9 +96,14 @@ public class LuceneIndexFactoryBeanUnitTests {
 	private LuceneIndexFactoryBean factoryBean;
 
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setup() {
 		factoryBean = spy(new LuceneIndexFactoryBean());
+
 		doReturn(mockLuceneService).when(factoryBean).resolveLuceneService(eq(mockCache));
+		doReturn(mockLuceneIndexFactory).when(mockLuceneService).createIndexFactory();
+		doReturn(mockLuceneIndexFactory).when(mockLuceneIndexFactory).setFields((String[]) any());
+		doReturn(mockLuceneIndexFactory).when(mockLuceneIndexFactory).setFields(any(Map.class));
 	}
 
 	@Test
@@ -121,7 +129,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	}
 
 	@Test
-	public void afterPropertiesSetThrowsIllegalStateExceptionIndexNameNotSet() throws Exception {
+	public void afterPropertiesSetThrowsIllegalStateExceptionWhenIndexNameNotSet() throws Exception {
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("indexName was not properly initialized");
@@ -140,8 +148,11 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getLuceneService()).isSameAs(mockLuceneService);
 		assertThat(factoryBean.createIndex("ExampleIndex", "/Example")).isEqualTo(mockLuceneIndex);
 
-		verify(mockLuceneService, times(1))
-			.createIndex(eq("ExampleIndex"), eq("/Example"), eq(LuceneService.REGION_VALUE_FIELD));
+		verify(mockLuceneService, times(1)).createIndexFactory();
+		verify(mockLuceneIndexFactory, times(1))
+			.setFields(eq(LuceneService.REGION_VALUE_FIELD));
+		verify(mockLuceneIndexFactory, times(1))
+			.create(eq("ExampleIndex"), eq("/Example"));
 		verify(mockLuceneService, times(1))
 			.getIndex(eq("ExampleIndex"), eq("/Example"));
 	}
@@ -160,8 +171,10 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getLuceneService()).isSameAs(mockLuceneService);
 		assertThat(factoryBean.createIndex("ExampleIndex", "/Example")).isEqualTo(mockLuceneIndex);
 
-		verify(mockLuceneService, times(1))
-			.createIndex(eq("ExampleIndex"), eq("/Example"), eq(fieldAnalyzers));
+		verify(mockLuceneService, times(1)).createIndexFactory();
+		verify(mockLuceneIndexFactory, times(1)).setFields(eq(fieldAnalyzers));
+		verify(mockLuceneIndexFactory, times(1))
+			.create(eq("ExampleIndex"), eq("/Example"));
 		verify(mockLuceneService, times(1))
 			.getIndex(eq("ExampleIndex"), eq("/Example"));
 	}
@@ -178,8 +191,11 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getLuceneService()).isSameAs(mockLuceneService);
 		assertThat(factoryBean.createIndex("ExampleIndex", "/Example")).isEqualTo(mockLuceneIndex);
 
-		verify(mockLuceneService, times(1))
-			.createIndex(eq("ExampleIndex"), eq("/Example"), eq("fieldOne"), eq("fieldTwo"));
+		verify(mockLuceneService, times(1)).createIndexFactory();
+		verify(mockLuceneIndexFactory, times(1))
+			.setFields(eq("fieldOne"), eq("fieldTwo"));
+		verify(mockLuceneIndexFactory, times(1))
+			.create(eq("ExampleIndex"), eq("/Example"));
 		verify(mockLuceneService, times(1))
 			.getIndex(eq("ExampleIndex"), eq("/Example"));
 	}
@@ -194,11 +210,14 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getLuceneService()).isSameAs(mockLuceneService);
 
 		doReturn(mockLuceneIndex).when(factoryBean).getObject();
+		doReturn("MockIndex").when(mockLuceneIndex).getName();
+		doReturn("MockRegion").when(mockLuceneIndex).getRegionPath();
 
 		factoryBean.destroy();
 
 		verify(factoryBean, times(1)).getObject();
-		verify(mockLuceneService, times(1)).destroyIndex(eq(mockLuceneIndex));
+		verify(mockLuceneService, times(1))
+			.destroyIndex(eq("MockIndex"), eq("MockRegion"));
 	}
 
 	@Test
@@ -215,7 +234,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 		factoryBean.destroy();
 
 		verify(factoryBean, times(1)).getObject();
-		verify(mockLuceneService, never()).destroyIndex(any(LuceneIndex.class));
+		verify(mockLuceneService, never()).destroyIndex(anyString(), anyString());
 	}
 
 	@Test
@@ -232,7 +251,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 		factoryBean.destroy();
 
 		verify(factoryBean, times(1)).getObject();
-		verify(mockLuceneService, never()).destroyIndex(isNull(LuceneIndex.class));
+		verify(mockLuceneService, never()).destroyIndex(anyString(), anyString());
 	}
 
 	@Test
@@ -344,6 +363,17 @@ public class LuceneIndexFactoryBeanUnitTests {
 	public void resolveFieldsWithNullReturnsAllFields() {
 		assertThat(factoryBean.resolveFields(null))
 			.isEqualTo(Collections.singletonList(LuceneService.REGION_VALUE_FIELD));
+	}
+
+	@Test
+	public void resolveLuceneIndexFactoryCallsLuceneServiceCreateIndexFactory() {
+		factoryBean.setCache(mockCache);
+
+		doReturn(mockLuceneIndexFactory).when(mockLuceneService).createIndexFactory();
+
+		assertThat(factoryBean.resolveLuceneIndexFactory()).isEqualTo(mockLuceneIndexFactory);
+
+		verify(mockLuceneService, times(1)).createIndexFactory();
 	}
 
 	@Test

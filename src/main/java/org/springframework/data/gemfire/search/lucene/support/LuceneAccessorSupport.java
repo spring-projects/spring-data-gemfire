@@ -85,9 +85,7 @@ public abstract class LuceneAccessorSupport extends LuceneAccessor {
 	 * @inheritDoc
 	 */
 	@Override
-	public <K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField,
-			int resultLimit, String... projectionFields) {
-
+	public <K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField, int resultLimit) {
 		throw newUnsupportedOperationException(RuntimeExceptionFactory.NOT_IMPLEMENTED);
 	}
 
@@ -96,7 +94,7 @@ public abstract class LuceneAccessorSupport extends LuceneAccessor {
 	 */
 	@Override
 	public <K, V> PageableLuceneQueryResults<K, V> query(String query, String defaultField,
-			int resultLimit, int pageSize, String... projectionFields) {
+			int resultLimit, int pageSize) {
 
 		throw newUnsupportedOperationException(RuntimeExceptionFactory.NOT_IMPLEMENTED);
 	}
@@ -105,9 +103,7 @@ public abstract class LuceneAccessorSupport extends LuceneAccessor {
 	 * @inheritDoc
 	 */
 	@Override
-	public <K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider,
-			int resultLimit, String... projectionFields) {
-
+	public <K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider, int resultLimit) {
 		throw newUnsupportedOperationException(RuntimeExceptionFactory.NOT_IMPLEMENTED);
 	}
 
@@ -116,7 +112,7 @@ public abstract class LuceneAccessorSupport extends LuceneAccessor {
 	 */
 	@Override
 	public <K, V> PageableLuceneQueryResults<K, V> query(LuceneQueryProvider queryProvider,
-			int resultLimit, int pageSize, String... projectionFields) {
+			int resultLimit, int pageSize) {
 
 		throw newUnsupportedOperationException(RuntimeExceptionFactory.NOT_IMPLEMENTED);
 	}

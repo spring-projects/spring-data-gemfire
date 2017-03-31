@@ -21,8 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -35,6 +35,7 @@ import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.lucene.analysis.Analyzer;
 import org.junit.Test;
@@ -97,9 +98,9 @@ public class LuceneNamespaceUnitTests {
 			String... keys) {
 
 		assertLuceneIndex(index, name, regionPath);
-		assertThat(index.getFieldNames()).isEmpty();
 		assertThat(index.getFieldAnalyzers()).hasSize(keys.length);
 		assertThat(index.getFieldAnalyzers()).containsKeys(keys);
+		assertThat(index.getFieldNames()).isEmpty();
 	}
 
 	protected void assertLuceneIndexWithFields(LuceneIndex index, String name, String regionPath, String... fieldNames) {
@@ -112,14 +113,8 @@ public class LuceneNamespaceUnitTests {
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void luceneServiceConfigurationAndInteractionsAreCorrect() {
 		assertThat(this.luceneService).isNotNull();
-
-		verify(this.luceneService, times(1))
-			.createIndex(eq("IndexOne"), eq("/Example"), eq("fieldOne"), eq("fieldTwo"));
-
-		verify(this.luceneService, times(1))
-			.createIndex(eq("IndexTwo"), eq("/AnotherExample"), isA(Map.class));
-
-		verify(this.luceneService, never()).destroyIndex(any(LuceneIndex.class));
+		verify(this.luceneService, times(2)).createIndexFactory();
+		verify(this.luceneService, never()).destroyIndex(anyString(), anyString());
 	}
 
 	@Test
@@ -157,7 +152,6 @@ public class LuceneNamespaceUnitTests {
 
 	public static class MockLuceneServiceFactoryBean implements FactoryBean<LuceneService>, InitializingBean {
 
-		@SuppressWarnings("all")
 		private GemFireCache gemfireCache;
 
 		private LuceneService luceneService;
@@ -173,20 +167,25 @@ public class LuceneNamespaceUnitTests {
 			return Optional.ofNullable(this.luceneService).orElseGet(() -> {
 				this.luceneService = mock(LuceneService.class);
 
-				Answer<LuceneIndex> mockLuceneIndex = newMockLuceneIndex(this.luceneService);
+				when(this.luceneService.createIndexFactory()).thenAnswer(invocation -> {
+					LuceneIndexFactory mockLuceneIndexFactory = mock(LuceneIndexFactory.class);
 
-				doAnswer(mockLuceneIndex).when(this.luceneService)
-					.createIndex(anyString(), anyString(), (String[]) any());
+					doReturn(mockLuceneIndexFactory).when(mockLuceneIndexFactory).setFields((String[]) any());
+					doReturn(mockLuceneIndexFactory).when(mockLuceneIndexFactory).setFields(any(Map.class));
 
-				doAnswer(mockLuceneIndex).when(this.luceneService)
-					.createIndex(anyString(), anyString(), isA(Map.class));
+					Answer<LuceneIndex> mockLuceneIndex = mockLuceneIndex(this.luceneService);
+
+					doAnswer(mockLuceneIndex).when(mockLuceneIndexFactory).create(anyString(), anyString());
+
+					return mockLuceneIndexFactory;
+				});
 
 				return this.luceneService;
 			});
 		}
 
 		@SuppressWarnings("unchecked")
-		private Answer<LuceneIndex> newMockLuceneIndex(LuceneService mockLuceneService) {
+		private Answer<LuceneIndex> mockLuceneIndex(LuceneService mockLuceneService) {
 			return (invocationOnMock) -> {
 				String indexName = invocationOnMock.getArgument(0);
 				String regionPath = invocationOnMock.getArgument(1);

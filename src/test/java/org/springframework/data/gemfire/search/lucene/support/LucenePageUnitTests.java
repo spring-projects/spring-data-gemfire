@@ -75,9 +75,9 @@ public class LucenePageUnitTests {
 
 	@SuppressWarnings("unchecked")
 	protected <K, V> LuceneResultStruct<K, V> mockLuceneResultStruct(K key, V value) {
-		LuceneResultStruct<K, V> mockLuceneResultStruct = mock(LuceneResultStruct.class);
+		LuceneResultStruct<K, V> mockLuceneResultStruct =
+			mock(LuceneResultStruct.class, String.format("MockLuceneResultStruct$%1$s", key));
 
-		when(mockLuceneResultStruct.getKey()).thenReturn(key);
 		when(mockLuceneResultStruct.getValue()).thenReturn(value);
 
 		return mockLuceneResultStruct;
