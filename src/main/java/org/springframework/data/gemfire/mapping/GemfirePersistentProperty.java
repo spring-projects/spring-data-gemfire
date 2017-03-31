@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.mapping;
 
-import static org.springframework.data.gemfire.util.CollectionUtils.*;
+import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
 
 import java.util.Set;
 
@@ -32,11 +32,12 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  * {@link PersistentProperty} implementation to for Gemfire related metadata.
  *
  * @author Oliver Gierke
+ * @author John Blum
+ * @see org.springframework.data.mapping.model.AnnotationBasedPersistentProperty
  */
 public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty<GemfirePersistentProperty> {
 
 	protected static final Set<String> SUPPORTED_IDENTIFIER_NAMES = asSet("id");
-
 
 	/**
 	 * Constructs an instance of {@link GemfirePersistentProperty} initialized with entity persistent property
@@ -53,6 +54,7 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 	 */
 	public GemfirePersistentProperty(Property property, PersistentEntity<?, GemfirePersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder) {
+
 		super(property, owner, simpleTypeHolder);
 	}
 

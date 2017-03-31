@@ -36,7 +36,7 @@ public class GemfireSimpleTypeHolder extends SimpleTypeHolder {
 
 	private static final boolean REGISTER_DEFAULTS = true;
 
-	protected static final Set<Class<?>> CUSTOM_SIMPLE_TYPES = new HashSet<Class<?>>(2);
+	protected static final Set<Class<?>> CUSTOM_SIMPLE_TYPES = new HashSet<>(2);
 
 	static {
 		CUSTOM_SIMPLE_TYPES.add(BigDecimal.class);
@@ -63,5 +63,4 @@ public class GemfireSimpleTypeHolder extends SimpleTypeHolder {
 	public GemfireSimpleTypeHolder(SimpleTypeHolder source) {
 		super(CUSTOM_SIMPLE_TYPES, source);
 	}
-
 }

@@ -26,8 +26,7 @@ import org.junit.Test;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
- * The GemfireSimpleTypeHolderTest class is a test suite of test cases testing the contract and functionality
- * of the GemfireSimpleTypeHolder class.
+ * Unit tests for {@link GemfireSimpleTypeHolder} class.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -50,7 +49,6 @@ public class GemfireSimpleTypeHolderTest {
 		assertThat(holder.isSimpleType(Person.class), is(false));
 	}
 
-	class Person {
-	}
+	class Person { }
 
 }
