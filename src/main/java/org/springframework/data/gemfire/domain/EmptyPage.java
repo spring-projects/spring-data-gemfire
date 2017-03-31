@@ -17,7 +17,8 @@
 
 package org.springframework.data.gemfire.domain;
 
-import org.springframework.core.convert.converter.Converter;
+import java.util.function.Function;
+
 import org.springframework.data.domain.Page;
 
 /**
@@ -56,7 +57,7 @@ public final class EmptyPage<T> extends EmptySlice<T> implements Page<T> {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <S> Page<S> map(Converter<? super T, ? extends S> converter) {
+	public <S> Page<S> map(Function<? super T, ? extends S> converter) {
 		return (Page<S>) EMPTY_PAGE;
 	}
 }

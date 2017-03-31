@@ -55,12 +55,11 @@ public class GemfireRepositoryFactoryBeanTest {
 
 	@Before
 	public void setup() {
-		repositoryFactoryBean = new GemfireRepositoryFactoryBean();
+		repositoryFactoryBean = new GemfireRepositoryFactoryBean<>(PersonRepository.class);
 	}
 
 	@Test
 	public void rejectsMappingContextNotSet() {
-
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("GemfireMappingContext");
 
@@ -70,19 +69,21 @@ public class GemfireRepositoryFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void initializesWithMappingContext() {
+		RegionAttributes<?, ?> mockRegionAttributes = mock(RegionAttributes.class);
 
-		RegionAttributes<?, ?> attributes = mock(RegionAttributes.class);
-		doReturn(Long.class).when(attributes).getKeyConstraint();
+		doReturn(Long.class).when(mockRegionAttributes).getKeyConstraint();
 
-		Region<?, ?> region = mock(Region.class);
-		doReturn("simple").when(region).getName();
-		doReturn(attributes).when(region).getAttributes();
+		Region<?, ?> mockRegion = mock(Region.class);
 
-		ApplicationContext applicationContext = mock(ApplicationContext.class);
-		doReturn(Collections.singletonMap("simple", region)).when(applicationContext).getBeansOfType(Region.class);
+		doReturn("simple").when(mockRegion).getName();
+		doReturn(mockRegionAttributes).when(mockRegion).getAttributes();
 
-		repositoryFactoryBean.setApplicationContext(applicationContext);
-		repositoryFactoryBean.setRepositoryInterface(PersonRepository.class);
+		ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
+
+		doReturn(Collections.singletonMap("simple", mockRegion))
+			.when(mockApplicationContext).getBeansOfType(Region.class);
+
+		repositoryFactoryBean.setApplicationContext(mockApplicationContext);
 		repositoryFactoryBean.setGemfireMappingContext(new GemfireMappingContext());
 		repositoryFactoryBean.afterPropertiesSet();
 

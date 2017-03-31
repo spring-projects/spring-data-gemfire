@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.domain.support.AbstractPageSupport;
@@ -163,7 +163,7 @@ public class ListablePage<T> extends AbstractPageSupport<T> {
 	 * @inheritDoc
 	 */
 	@Override
-	public <S> Page<S> map(Converter<? super T, ? extends S> converter) {
-		return newListablePage(getContent().stream().map(converter::convert).collect(Collectors.toList()));
+	public <S> Page<S> map(Function<? super T, ? extends S> converter) {
+		return newListablePage(getContent().stream().map(converter::apply).collect(Collectors.toList()));
 	}
 }

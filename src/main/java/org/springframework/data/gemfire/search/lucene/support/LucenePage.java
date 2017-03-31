@@ -23,11 +23,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.gemfire.domain.support.AbstractPageSupport;
 import org.springframework.data.gemfire.search.lucene.ProjectingLuceneAccessor;
@@ -327,7 +327,7 @@ public class LucenePage<T, K, V> extends AbstractPageSupport<T> {
 	 * @inheritDoc
 	 */
 	@Override
-	public <S> Page<S> map(Converter<? super T, ? extends S> converter) {
-		return newListablePage(getContent().stream().map(converter::convert).collect(Collectors.toList()));
+	public <S> Page<S> map(Function<? super T, ? extends S> converter) {
+		return newListablePage(getContent().stream().map(converter::apply).collect(Collectors.toList()));
 	}
 }

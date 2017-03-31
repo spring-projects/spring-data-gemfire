@@ -19,7 +19,8 @@ package org.springframework.data.gemfire.domain.support;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newUnsupportedOperationException;
 
-import org.springframework.core.convert.converter.Converter;
+import java.util.function.Function;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.gemfire.util.RuntimeExceptionFactory;
@@ -58,7 +59,7 @@ public abstract class AbstractPageSupport<T> extends AbstractSliceSupport<T> imp
 	 * @inheritDoc
 	 */
 	@Override
-	public <S> Page<S> map(Converter<? super T, ? extends S> converter) {
+	public <S> Page<S> map(Function<? super T, ? extends S> converter) {
 		throw newUnsupportedOperationException(RuntimeExceptionFactory.NOT_IMPLEMENTED);
 	}
 }

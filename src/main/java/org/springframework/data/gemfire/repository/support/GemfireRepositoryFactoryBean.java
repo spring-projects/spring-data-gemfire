@@ -58,6 +58,17 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext;
 
 	/**
+	 * Creates a new {@link GemfireRepositoryFactoryBean} for the given {@link Repository} {@link Class interface}.
+	 *
+	 * @param repositoryInterface {@link Class interface type} specifying the application data access operations
+	 * contract; must not be {@literal null}.
+	 * @see java.lang.Class
+	 */
+	public GemfireRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+		super(repositoryInterface);
+	}
+
+	/**
 	 * Sets a reference to the Spring {@link ApplicationContext} in which this object runs.
 	 *
 	 * @param applicationContext the Spring {@link ApplicationContext} reference.

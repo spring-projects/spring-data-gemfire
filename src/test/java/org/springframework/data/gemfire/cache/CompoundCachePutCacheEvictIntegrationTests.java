@@ -182,10 +182,9 @@ public class CompoundCachePutCacheEvictIntegrationTests {
 		@Bean
 		GemfireRepositoryFactoryBean<PersonRepository, Person, Long> personRepository() {
 			GemfireRepositoryFactoryBean<PersonRepository, Person, Long> personRepository =
-				new GemfireRepositoryFactoryBean<PersonRepository, Person, Long>();
+				new GemfireRepositoryFactoryBean<>(PersonRepository.class);
 
 			personRepository.setGemfireMappingContext(new GemfireMappingContext());
-			personRepository.setRepositoryInterface(PersonRepository.class);
 
 			return personRepository;
 		}
