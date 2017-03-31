@@ -41,7 +41,7 @@ import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.gemfire.search.lucene.ProjectingLuceneAccessor;
 
@@ -57,7 +57,7 @@ import lombok.RequiredArgsConstructor;
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.search.lucene.ProjectingLuceneAccessor
  * @see org.springframework.data.gemfire.search.lucene.support.LucenePage
  * @see org.apache.geode.cache.lucene.LuceneResultStruct
@@ -149,8 +149,8 @@ public class LucenePageUnitTests {
 	@SuppressWarnings("unchecked")
 	protected ProjectingLuceneAccessor prepare(ProjectingLuceneAccessor mockTemplate) {
 		when(mockTemplate.project(isA(List.class), eq(Person.class))).thenAnswer(invocation -> {
-			List<LuceneResultStruct<Long, String>> results = invocation.getArgumentAt(0, List.class);
-			assertThat(invocation.getArgumentAt(1, Class.class)).isEqualTo(Person.class);
+			List<LuceneResultStruct<Long, String>> results = invocation.getArgument(0);
+			assertThat(invocation.<Class>getArgument(1)).isEqualTo(Person.class);
 			return results.stream().map(result -> Person.parse(result.getValue())).collect(Collectors.toList());
 		});
 

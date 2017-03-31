@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link LuceneTemplate}.
@@ -57,7 +57,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.Spy
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.search.lucene.LuceneTemplate
  * @see org.apache.geode.cache.lucene.LuceneQuery
  * @see org.apache.geode.cache.lucene.LuceneQueryFactory

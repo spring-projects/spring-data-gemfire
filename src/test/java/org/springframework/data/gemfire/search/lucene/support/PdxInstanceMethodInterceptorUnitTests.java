@@ -36,7 +36,7 @@ import org.apache.geode.pdx.WritablePdxInstance;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import lombok.Data;
 import lombok.NonNull;
@@ -50,7 +50,7 @@ import lombok.RequiredArgsConstructor;
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.search.lucene.support.PdxInstanceMethodInterceptor
  * @since 1.1.0
  */

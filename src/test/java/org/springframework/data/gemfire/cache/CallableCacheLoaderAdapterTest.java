@@ -47,7 +47,7 @@ import org.mockito.stubbing.Answer;
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see java.util.concurrent.Callable
  * @see org.apache.geode.cache.CacheLoader
  * @see org.apache.geode.cache.LoaderHelper

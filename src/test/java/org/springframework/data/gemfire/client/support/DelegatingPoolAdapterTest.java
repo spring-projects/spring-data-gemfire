@@ -55,7 +55,7 @@ import org.springframework.data.gemfire.GemfireUtils;
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see DelegatingPoolAdapter
  * @see org.apache.geode.cache.client.Pool
  * @see org.apache.geode.cache.client.PoolFactory

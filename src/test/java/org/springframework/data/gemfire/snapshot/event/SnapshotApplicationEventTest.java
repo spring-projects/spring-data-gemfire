@@ -45,7 +45,7 @@ import org.springframework.data.gemfire.test.support.FileSystemUtils;
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent
  * @since 1.7.0
  */

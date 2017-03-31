@@ -20,7 +20,6 @@ package org.springframework.data.gemfire.config.xml;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
@@ -177,7 +176,7 @@ public class LuceneNamespaceUnitTests {
 				Answer<LuceneIndex> mockLuceneIndex = newMockLuceneIndex(this.luceneService);
 
 				doAnswer(mockLuceneIndex).when(this.luceneService)
-					.createIndex(anyString(), anyString(), (String[]) anyVararg());
+					.createIndex(anyString(), anyString(), (String[]) any());
 
 				doAnswer(mockLuceneIndex).when(this.luceneService)
 					.createIndex(anyString(), anyString(), isA(Map.class));
@@ -189,8 +188,8 @@ public class LuceneNamespaceUnitTests {
 		@SuppressWarnings("unchecked")
 		private Answer<LuceneIndex> newMockLuceneIndex(LuceneService mockLuceneService) {
 			return (invocationOnMock) -> {
-				String indexName = invocationOnMock.getArgumentAt(0, String.class);
-				String regionPath = invocationOnMock.getArgumentAt(1, String.class);
+				String indexName = invocationOnMock.getArgument(0);
+				String regionPath = invocationOnMock.getArgument(1);
 
 				LuceneIndex mockLuceneIndex = mock(LuceneIndex.class, indexName);
 
@@ -198,7 +197,7 @@ public class LuceneNamespaceUnitTests {
 				when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);
 
 				if (invocationOnMock.getArguments().length > 2) {
-					Object fields = invocationOnMock.getArgumentAt(2, Object.class);
+					Object fields = invocationOnMock.getArgument(2);
 
 					if (fields instanceof Map) {
 						when(mockLuceneIndex.getFieldAnalyzers()).thenReturn((Map<String, Analyzer>) fields);

@@ -49,7 +49,7 @@ import org.springframework.data.mapping.context.MappingContext;
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.mapping.Regions
  * @since 1.3.4
  */

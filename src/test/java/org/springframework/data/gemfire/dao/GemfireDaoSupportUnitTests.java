@@ -39,7 +39,7 @@ import org.springframework.data.gemfire.GemfireTemplate;
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  */
 @RunWith(MockitoJUnitRunner.class)
 public class GemfireDaoSupportUnitTests {

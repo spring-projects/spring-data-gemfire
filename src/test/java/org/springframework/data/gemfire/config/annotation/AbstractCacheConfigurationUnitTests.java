@@ -55,7 +55,7 @@ import org.springframework.util.MethodInvoker;
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
  * @since 1.9.0
  */

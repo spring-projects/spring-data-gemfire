@@ -48,7 +48,7 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see DefinedIndexesApplicationListener
  * @since 1.7.0
  */

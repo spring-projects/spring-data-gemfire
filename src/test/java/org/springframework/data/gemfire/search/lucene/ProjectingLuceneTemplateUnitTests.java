@@ -38,7 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.projection.ProjectionFactory;
@@ -56,7 +56,7 @@ import lombok.RequiredArgsConstructor;
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.Spy
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @since 1.1.0
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -110,8 +110,7 @@ public class ProjectingLuceneTemplateUnitTests {
 
 		when(mockProjectionFactory.createProjection(eq(Book.class), anyString())).thenAnswer( invocationOnMock ->
 			books.stream().filter(book ->
-				book.getTitle().equals(invocationOnMock.getArgumentAt(1, String.class)))
-					.findFirst().orElse(null)
+				book.getTitle().equals(invocationOnMock.getArgument(1))).findFirst().orElse(null)
 		);
 
 		assertThat(luceneTemplate.query("title : Star Wars Episode *V*", "title", Book.class))
@@ -146,8 +145,7 @@ public class ProjectingLuceneTemplateUnitTests {
 
 		when(mockProjectionFactory.createProjection(eq(Book.class), anyString())).thenAnswer( invocationOnMock ->
 			books.stream().filter(book ->
-				book.getTitle().equals(invocationOnMock.getArgumentAt(1, String.class)))
-					.findFirst().orElse(null)
+				book.getTitle().equals(invocationOnMock.getArgument(1))).findFirst().orElse(null)
 		);
 
 		assertThat(luceneTemplate.query(mockQueryProvider, Book.class)).containsAll(books);

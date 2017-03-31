@@ -48,7 +48,7 @@ import org.springframework.cache.Cache;
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mock
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see GemfireCache
  * @see org.apache.geode.cache.Region
  * @since 1.9.0

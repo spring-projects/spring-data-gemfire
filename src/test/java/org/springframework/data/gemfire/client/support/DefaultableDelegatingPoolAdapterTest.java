@@ -47,7 +47,7 @@ import org.springframework.data.gemfire.GemfireUtils;
  * @see org.junit.rules.ExpectedException
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter
  * @since 1.8.0
  */

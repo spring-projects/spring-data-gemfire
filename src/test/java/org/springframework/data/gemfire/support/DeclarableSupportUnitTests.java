@@ -42,7 +42,7 @@ import org.springframework.beans.factory.BeanFactory;
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.Spy
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @since 2.0.0
  */
 @RunWith(MockitoJUnitRunner.class)

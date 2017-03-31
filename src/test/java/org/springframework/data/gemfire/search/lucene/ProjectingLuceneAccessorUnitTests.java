@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.search.lucene.support.ProjectingLuceneAccessorSupport;
 import org.springframework.data.projection.ProjectionFactory;
@@ -47,7 +47,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.Spy
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.search.lucene.ProjectingLuceneAccessor
  * @since 1.1.0
  */

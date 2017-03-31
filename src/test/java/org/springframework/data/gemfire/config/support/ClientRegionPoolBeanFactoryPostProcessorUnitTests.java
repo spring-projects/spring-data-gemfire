@@ -42,7 +42,7 @@ import org.springframework.data.gemfire.util.ArrayUtils;
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see ClientRegionPoolBeanFactoryPostProcessor
  * @since 1.8.2
  */

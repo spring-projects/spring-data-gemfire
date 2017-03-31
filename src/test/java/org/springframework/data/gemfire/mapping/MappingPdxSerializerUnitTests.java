@@ -61,7 +61,7 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.core.convert.ConversionService
  * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
  * @see org.apache.geode.pdx.PdxReader

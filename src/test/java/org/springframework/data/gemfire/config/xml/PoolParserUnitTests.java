@@ -59,7 +59,7 @@ import org.w3c.dom.NodeList;
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.config.xml.PoolParser
  * @since 1.7.0
  */
