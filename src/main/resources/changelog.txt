@@ -3,6 +3,41 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.0.M2 (2017-04-04)
+----------------------------------------
+* SGF-607 - Upgrade to Pivotal GemFire 9.0.2.
+* SGF-606 - Adapt to Spring Data Commons RepositoryConfigurationExtension API changes.
+* SGF-605 - Add override attribute defaulted to false in the @Indexed annotation.
+* SGF-603 - Add ignoreIfExists attribute defaulted to true in @<Type>Region annotations for @EnableEntityDefinedRegions.
+* SGF-602 - Rename @EnableIndexes to @EnableIndexing.
+* SGF-598 - Add support for suspend and resume in GemfireTransactionManager.
+* SGF-595 - Integrate Spring Data Commons Java 8 support.
+* SGF-594 - Difficult to determine whether GemFireRepository.findAll(keys) records not found.
+* SGF-593 - Refactor failing client/server integration tests due to static port allocation.
+* SGF-590 - Remove reference to Spring's ConstantException from InterestUnitTests.
+* SGF-588 - Reorganize and repackage additional classes in the SDG API.
+* SGF-587 - Remove the GemfireBeanFactoryLocator and replace with SpringContextBootstrappingInitializer.
+* SGF-585 - Update project documentation with the CLA tool integration.
+* SGF-583 - Introduce InterestBuilder class to appropriately and flexibly express interests in keys/values between client/server when using JavaConfig.
+* SGF-582 - Add support for using bean property "id" as a Region key if @Id annotation is not present.
+* SGF-581 - Fix possible test failure(s) in GenericRegionFactoryBeanTest.
+* SGF-580 - Upgrade to GemFire 9.0.1.
+* SGF-577 - Late initialization of GemfireBeanFactoryLocator causes IllegalStateException.
+* SGF-576 - Adapt API in RepositoryFactoryBeanSupport implementation.
+* SGF-574 - Register repository factory in spring.factories for multi-store support.
+* SGF-573 - Change spring-shell dependency to 'test' scope and remove Bundlor from Gradle build.
+* SGF-572 - Release 2.0 M2 (Kay).
+* SGF-567 - Upgrade to GemFire 9.0.0-beta.1.
+* SGF-549 - Configure DiskStores with annotations.
+* SGF-548 - Configure Regions with annotations.
+* SGF-547 - Configure Eviction with annotations.
+* SGF-516 - Configure Expiration with annotations.
+* SGF-476 - Support bootstrapping a Geode server after Geode removes SDG dependency - GEODE-1025.
+* SGF-402 - Add Lucene Integration support.
+* SGF-250 - @EnableGemfireRegions for @Region.
+* SGF-106 - Add annotation support for creating Indexes.
+
+
 Changes in version 1.8.8.RELEASE (2017-03-02)
 ---------------------------------------------
 * SGF-591 - Release 1.8.8 (Hopper SR8).
