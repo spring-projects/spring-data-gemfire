@@ -32,7 +32,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -58,8 +57,19 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
+ * Unit tests for {@link ClientRegionFactoryBean}.
+ *
  * @author David Turanski
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.mockito.Mockito
+ * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.apache.geode.cache.EvictionAttributes
+ * @see org.apache.geode.cache.ExpirationAttributes
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientRegionFactory
+ * @see org.apache.geode.cache.client.Pool
  */
 public class ClientRegionFactoryBeanTest {
 
@@ -215,7 +225,6 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockBeanFactory, times(1)).containsBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
-		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test
@@ -244,7 +253,6 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockBeanFactory, times(1)).containsBean(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.PROXY));
 		verify(mockClientRegionFactory, times(1)).createSubregion(eq(mockRegion), eq("TestSubRegion"));
-		verifyZeroInteractions(mockSubRegion);
 	}
 
 	@Test
@@ -271,7 +279,6 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_HEAP_LRU));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
 		verify(mockClientRegionFactory, never()).setPoolName(any(String.class));
-		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test

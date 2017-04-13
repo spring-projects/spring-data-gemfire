@@ -122,14 +122,15 @@ public class LuceneIndexFactoryBean implements FactoryBean<LuceneIndex>,
 	protected LuceneIndex createIndex(String indexName, String regionPath) {
 		LuceneService luceneService = resolveLuceneService();
 
+		LuceneIndexFactory indexFactory = luceneService.createIndexFactory();
+
 		Map<String, Analyzer> fieldAnalyzers = getFieldAnalyzers();
 
 		if (isEmpty(fieldAnalyzers)) {
-			luceneService.createIndexFactory().setFields(asArray(resolveFields(getFields())))
-				.create(indexName, regionPath);
+			indexFactory.setFields(asArray(resolveFields(getFields()))).create(indexName, regionPath);
 		}
 		else {
-			luceneService.createIndexFactory().setFields(fieldAnalyzers).create(indexName, regionPath);
+			indexFactory.setFields(fieldAnalyzers).create(indexName, regionPath);
 		}
 
 		return luceneService.getIndex(indexName, regionPath);

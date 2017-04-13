@@ -22,11 +22,14 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -41,6 +44,7 @@ import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.lucene.analysis.Analyzer;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -82,6 +86,21 @@ public class EnableIndexingConfigurationUnitTests {
 		indexes.clear();
 	}
 
+	private static String[] asArray(List<String> list) {
+		return list.toArray(new String[list.size()]);
+	}
+
+	private static String[] toStringArray(Object[] array) {
+		String[] stringArray = new String[array.length];
+		int index = 0;
+
+		for (Object element : array) {
+			stringArray[index++] = String.valueOf(element);
+		}
+
+		return stringArray;
+	}
+
 	/* (non-Javadoc) */
 	protected void assertIndex(Index index, String name, String expression, String from, IndexType indexType) {
 		assertThat(index).isNotNull();
@@ -96,8 +115,8 @@ public class EnableIndexingConfigurationUnitTests {
 		assertThat(index).isNotNull();
 		assertThat(index.getName()).isEqualTo(name);
 		assertThat(index.getRegionPath()).isEqualTo(regionPath);
-		assertThat(index.getFieldNames()).contains(fields);
 		assertThat(index.getFieldNames()).hasSize(fields.length);
+		assertThat(index.getFieldNames()).contains(fields);
 	}
 
 	/* (non-Javadoc) */
@@ -206,35 +225,47 @@ public class EnableIndexingConfigurationUnitTests {
 		}
 
 		@Bean
+		@SuppressWarnings("unchecked")
 		LuceneService luceneService() {
 			LuceneService mockLuceneService = mock(LuceneService.class);
 
-			LuceneIndexFactory mockLuceneIndexFactory = mock(LuceneIndexFactory.class);
+			when(mockLuceneService.createIndexFactory()).thenAnswer(invocation -> {
+				LuceneIndexFactory mockLuceneIndexFactory = mock(LuceneIndexFactory.class);
 
-			doReturn(mockLuceneIndexFactory).when(mockLuceneService).createIndexFactory();
+				List<String> fieldNames = new ArrayList<>();
 
-			doAnswer(invocation -> {
-				LuceneIndex mockLuceneIndex = mock(LuceneIndex.class);
+				when(mockLuceneIndexFactory.setFields((String[]) any())).thenAnswer(setFieldsInvocation -> {
+					Collections.addAll(fieldNames, toStringArray(setFieldsInvocation.getArguments()));
+					return mockLuceneIndexFactory;
+				});
 
-				String indexName = invocation.getArgument(0);
-				String regionPath = invocation.getArgument(1);
+				Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
 
-				when(mockLuceneIndex.getName()).thenReturn(indexName);
-				when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);
-				when(mockLuceneIndex.getFieldNames()).thenReturn(resolveFieldNames(invocation));
-				when(mockLuceneService.getIndex(eq(indexName), eq(regionPath))).thenReturn(mockLuceneIndex);
+				when(mockLuceneIndexFactory.setFields(any(Map.class))).thenAnswer(setFieldsInvocation -> {
+					fieldAnalyzers.putAll(setFieldsInvocation.getArgument(0));
+					return mockLuceneIndexFactory;
+				});
 
-				return mockLuceneIndex;
-			}).when(mockLuceneIndexFactory).create(anyString(), anyString());
+				doAnswer(createInvocation -> {
+					LuceneIndex mockLuceneIndex = mock(LuceneIndex.class);
+
+					String indexName = createInvocation.getArgument(0);
+					String regionPath = createInvocation.getArgument(1);
+
+					when(mockLuceneIndex.getName()).thenReturn(indexName);
+					when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);
+					when(mockLuceneIndex.getFieldAnalyzers()).thenReturn(fieldAnalyzers);
+					when(mockLuceneIndex.getFieldNames()).thenReturn(asArray(fieldNames));
+
+					when(mockLuceneService.getIndex(eq(indexName), eq(regionPath))).thenReturn(mockLuceneIndex);
+
+					return mockLuceneIndex;
+				}).when(mockLuceneIndexFactory).create(anyString(), anyString());
+
+				return mockLuceneIndexFactory;
+			});
 
 			return mockLuceneService;
-		}
-
-		@SuppressWarnings("all")
-		String[] resolveFieldNames(InvocationOnMock invocation) {
-			String[] fieldNames = new String[invocation.getArguments().length - 2];
-			System.arraycopy(invocation.getArguments(), 2, fieldNames, 0, fieldNames.length);
-			return fieldNames;
 		}
 	}
 

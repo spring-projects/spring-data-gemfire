@@ -33,9 +33,7 @@ import org.springframework.data.gemfire.repository.sample.Algorithm;
 import org.springframework.data.gemfire.repository.sample.Animal;
 
 /**
- * The DefaultGemfireEntityInformationTest class is a test suite of test cases testing the contract and functionality
- * of the DefaultGemfireEntityInformation class used to extract entity information during persistence/mapping operations
- * during data access to the underlying data store (GemFire).
+ * Unit tests for {@link DefaultGemfireEntityInformation}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -106,7 +104,7 @@ public class DefaultGemfireEntityInformationTest {
 			newEntityInformation(newPersistentEntity(ConfusedDomainEntity.class));
 
 		assertNotNull(entityInfo);
-		assertEquals("MyConfusedDomainEntity", entityInfo.getRegionName());
+		assertEquals("ConfusedDomainEntity", entityInfo.getRegionName());
 		assertEquals(ConfusedDomainEntity.class, entityInfo.getJavaType());
 		assertEquals(Long.class, entityInfo.getIdType());
 		assertThat(entityInfo.getId(new ConfusedDomainEntity(123L)).orElse(null)).isEqualTo(123L);
@@ -119,7 +117,7 @@ public class DefaultGemfireEntityInformationTest {
 			newEntityInformation(newPersistentEntity(ConfusedDomainEntity.class));
 
 		assertNotNull(entityInfo);
-		assertEquals("MyConfusedDomainEntity", entityInfo.getRegionName());
+		assertEquals("ConfusedDomainEntity", entityInfo.getRegionName());
 		assertEquals(ConfusedDomainEntity.class, entityInfo.getJavaType());
 		//assertEquals(String.class, entityInfo.getIdType());
 		assertTrue(Long.class.equals(entityInfo.getIdType()));

@@ -38,6 +38,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.junit.MockitoJUnitRunner
@@ -123,8 +124,6 @@ public class SpringUtilsUnitTests {
 	@SuppressWarnings("unchecked")
 	public void defaultIfNullWithSupplierReturnsValue() {
 		Supplier<String> mockSupplier = mock(Supplier.class);
-
-		when(mockSupplier.get()).thenReturn("supplier");
 
 		assertThat(SpringUtils.defaultIfNull("value", mockSupplier)).isEqualTo("value");
 

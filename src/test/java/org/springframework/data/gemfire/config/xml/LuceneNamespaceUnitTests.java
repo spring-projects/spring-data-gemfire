@@ -22,14 +22,16 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,7 +42,6 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.lucene.analysis.Analyzer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
@@ -58,6 +59,10 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
+ * @see org.apache.geode.cache.lucene.LuceneIndex
+ * @see org.apache.geode.cache.lucene.LuceneService
+ * @see org.springframework.data.gemfire.config.xml.LuceneIndexParser
+ * @see org.springframework.data.gemfire.config.xml.LuceneServiceParser
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
  * @since 1.1.0
@@ -88,6 +93,21 @@ public class LuceneNamespaceUnitTests {
 	@Qualifier("IndexFour")
 	private LuceneIndex luceneIndexFour;
 
+	private static String[] asArray(List<String> list) {
+		return list.toArray(new String[list.size()]);
+	}
+
+	private static String[] toStringArray(Object[] array) {
+		String[] stringArray = new String[array.length];
+		int index = 0;
+
+		for (Object element : array) {
+			stringArray[index++] = String.valueOf(element);
+		}
+
+		return stringArray;
+	}
+
 	protected void assertLuceneIndex(LuceneIndex index, String name, String regionPath) {
 		assertThat(index).isNotNull();
 		assertThat(index.getName()).isEqualTo(name);
@@ -110,10 +130,9 @@ public class LuceneNamespaceUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void luceneServiceConfigurationAndInteractionsAreCorrect() {
 		assertThat(this.luceneService).isNotNull();
-		verify(this.luceneService, times(2)).createIndexFactory();
+		verify(this.luceneService, times(4)).createIndexFactory();
 		verify(this.luceneService, never()).destroyIndex(anyString(), anyString());
 	}
 
@@ -170,10 +189,22 @@ public class LuceneNamespaceUnitTests {
 				when(this.luceneService.createIndexFactory()).thenAnswer(invocation -> {
 					LuceneIndexFactory mockLuceneIndexFactory = mock(LuceneIndexFactory.class);
 
-					doReturn(mockLuceneIndexFactory).when(mockLuceneIndexFactory).setFields((String[]) any());
-					doReturn(mockLuceneIndexFactory).when(mockLuceneIndexFactory).setFields(any(Map.class));
+					List<String> fieldNames = new ArrayList<>();
 
-					Answer<LuceneIndex> mockLuceneIndex = mockLuceneIndex(this.luceneService);
+					when(mockLuceneIndexFactory.setFields((String[]) any())).thenAnswer(setFieldsInvocation -> {
+						Collections.addAll(fieldNames, toStringArray(setFieldsInvocation.getArguments()));
+						return mockLuceneIndexFactory;
+					});
+
+					Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
+
+					when(mockLuceneIndexFactory.setFields(any(Map.class))).thenAnswer(setFieldsInvocation -> {
+						fieldAnalyzers.putAll(setFieldsInvocation.getArgument(0));
+						return mockLuceneIndexFactory;
+					});
+
+					Answer<LuceneIndex> mockLuceneIndex =
+						mockLuceneIndex(this.luceneService, fieldAnalyzers, fieldNames);
 
 					doAnswer(mockLuceneIndex).when(mockLuceneIndexFactory).create(anyString(), anyString());
 
@@ -185,44 +216,23 @@ public class LuceneNamespaceUnitTests {
 		}
 
 		@SuppressWarnings("unchecked")
-		private Answer<LuceneIndex> mockLuceneIndex(LuceneService mockLuceneService) {
-			return (invocationOnMock) -> {
-				String indexName = invocationOnMock.getArgument(0);
-				String regionPath = invocationOnMock.getArgument(1);
+		private Answer<LuceneIndex> mockLuceneIndex(LuceneService mockLuceneService,
+				Map<String, Analyzer> fieldAnalyzers, List<String> fieldNames) {
+
+			return invocation -> {
+				String indexName = invocation.getArgument(0);
+				String regionPath = invocation.getArgument(1);
 
 				LuceneIndex mockLuceneIndex = mock(LuceneIndex.class, indexName);
 
 				when(mockLuceneIndex.getName()).thenReturn(indexName);
 				when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);
-
-				if (invocationOnMock.getArguments().length > 2) {
-					Object fields = invocationOnMock.getArgument(2);
-
-					if (fields instanceof Map) {
-						when(mockLuceneIndex.getFieldAnalyzers()).thenReturn((Map<String, Analyzer>) fields);
-						when(mockLuceneIndex.getFieldNames()).thenReturn(EMPTY_STRING_ARRAY);
-					}
-					else {
-						when(mockLuceneIndex.getFieldAnalyzers()).thenReturn(Collections.emptyMap());
-						when(mockLuceneIndex.getFieldNames()).thenReturn(extractFields(invocationOnMock));
-					}
-				}
-
+				when(mockLuceneIndex.getFieldAnalyzers()).thenReturn(fieldAnalyzers);
+				when(mockLuceneIndex.getFieldNames()).thenReturn(asArray(fieldNames));
 				when(mockLuceneService.getIndex(eq(indexName), eq(regionPath))).thenReturn(mockLuceneIndex);
 
 				return mockLuceneIndex;
 			};
-		}
-
-		private String[] asStringArray(Object fields) {
-			return (fields instanceof String[] ? (String[]) fields : String.valueOf(fields).split(", "));
-		}
-
-		@SuppressWarnings("all")
-		private String[] extractFields(InvocationOnMock invocationOnMock) {
-			String[] fields = new String[invocationOnMock.getArguments().length - 2];
-			System.arraycopy(invocationOnMock.getArguments(), 2, fields, 0, fields.length);
-			return fields;
 		}
 
 		@Override
