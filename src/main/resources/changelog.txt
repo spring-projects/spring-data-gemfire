@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.2.RELEASE (2017-04-19)
+---------------------------------------------
+* SGF-608 - Upgrade to Pivotal GemFire 8.2.4.
+* SGF-600 - Release 1.9.2 (Ingalls SR2).
+
+
 Changes in version 2.0.0.M2 (2017-04-04)
 ----------------------------------------
 * SGF-607 - Upgrade to Pivotal GemFire 9.0.2.
