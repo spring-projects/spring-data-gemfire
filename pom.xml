@@ -11,7 +11,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-gemfire</artifactId>
-	<version>1.8.10.BUILD-SNAPSHOT</version>
+	<version>1.8.10.RELEASE</version>
 
 	<name>Spring Data Gemfire</name>
 
