@@ -81,6 +81,9 @@ repositories {
 }
 
 dependencies {
+    // Java EE
+    optional "javax.enterprise:cdi-api:$cdiVersion"
+
     // Spring Framework
     compile("org.springframework:spring-context-support:$springVersion") {
         exclude group: "commons-logging", module: "commons-logging"
@@ -89,23 +92,23 @@ dependencies {
         exclude group: "commons-logging", module: "commons-logging"
     }
 
-    // Spring Data
+    // Spring Data Commons
     compile("org.springframework.data:spring-data-commons:${springDataCommonsVersion}") {
         exclude group: "commons-logging", module: "commons-logging"
     }
 
-    // GemFire
+    // Pivotal GemFire
     compile("io.pivotal.gemfire:geode-core:$gemfireVersion")
 	compile("io.pivotal.gemfire:geode-cq:$gemfireVersion")
 	compile("io.pivotal.gemfire:geode-lucene:$gemfireVersion")
 	compile("io.pivotal.gemfire:geode-wan:$gemfireVersion")
-    optional("org.apache.shiro:shiro-spring:$shiroVersion")
     runtime("antlr:antlr:$antlrVersion")
+    optional("org.apache.shiro:shiro-spring:$shiroVersion")
 
-    optional "javax.enterprise:cdi-api:$cdiVersion"
+    // 3rd Party Dependencies
+    compile "org.aspectj:aspectjweaver:$aspectjVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-    compile "org.aspectj:aspectjweaver:$aspectjVersion"
 
     // Testing
     testCompile("org.springframework:spring-test:$springVersion") {
@@ -117,8 +120,8 @@ dependencies {
     testCompile "org.assertj:assertj-core:$assertjVersion"
     testCompile "org.hamcrest:hamcrest-core:$hamcrestVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
-    testCompile "org.projectlombok:lombok:$lombokVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testCompile "org.projectlombok:lombok:$lombokVersion"
     testCompile "edu.umd.cs.mtc:multithreadedtc:$multiThreadedtcVersion"
 
     testRuntime "javax.el:el-api:$cdiVersion"

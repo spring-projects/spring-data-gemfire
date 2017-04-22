@@ -23,21 +23,18 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.junit.Test;
-import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
- * The GemfireSimpleTypeHolderTest class is a test suite of test cases testing the contract and functionality
- * of the GemfireSimpleTypeHolder class.
+ * Unit tests for {@link GemfireSimpleTypeHolder}.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.mapping.model.GemfireSimpleTypeHolder
- * @see org.springframework.data.mapping.model.SimpleTypeHolder
  * @since 1.6.3
  */
-public class GemfireSimpleTypeHolderTest {
+public class GemfireSimpleTypeHolderUnitTests {
 
-	private final GemfireSimpleTypeHolder holder = new GemfireSimpleTypeHolder(new SimpleTypeHolder());
+	private final GemfireSimpleTypeHolder holder = new GemfireSimpleTypeHolder();
 
 	@Test
 	public void bigDecimalAndBigIntegerAreSimpleTypes() {

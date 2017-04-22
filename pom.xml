@@ -43,6 +43,7 @@
 
 	<dependencies>
 
+		<!-- Java EE -->
 		<dependency>
 			<groupId>javax.enterprise</groupId>
 			<artifactId>cdi-api</artifactId>
@@ -51,6 +52,7 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Core Spring Framework -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
@@ -61,12 +63,14 @@
 			<artifactId>spring-tx</artifactId>
 		</dependency>
 
+		<!-- Spring Data Commons -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons</artifactId>
 			<version>${springdata.commons}</version>
 		</dependency>
 
+		<!-- Pivotal GemFire -->
 		<dependency>
 			<groupId>io.pivotal.gemfire</groupId>
 			<artifactId>geode-core</artifactId>
@@ -99,19 +103,13 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>annotations</artifactId>
-			<version>${google-code-findbugs.version}</version>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-spring</artifactId>
 			<version>${apache-shiro.version}</version>
 			<optional>true</optional>
 		</dependency>
 
+		<!-- 3rd Party Depenendencies -->
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
@@ -131,8 +129,6 @@
 		</dependency>
 
 		<!-- Logging -->
-		<!-- Slf4j JCL bridge redeclared to be available in compile scope -->
-		<!-- TODO Remove -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
@@ -140,7 +136,6 @@
 		</dependency>
 
 		<!-- Test -->
-
 		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>el-api</artifactId>
@@ -190,6 +185,11 @@
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<includes>
@@ -205,14 +205,6 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>wagon-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
 				<configuration>
@@ -223,6 +215,11 @@
 						<!-- TODO include other attributes from build.gradle! -->
 					</attributes>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
 			</plugin>
 
 		</plugins>
