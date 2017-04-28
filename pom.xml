@@ -34,6 +34,10 @@
 			<id>spring-libs-snapshot</id>
 			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
+		<repository>
+			<id>apache-snapshots</id>
+			<url>https://repository.apache.org/content/repositories/snapshots</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -213,6 +217,9 @@
 					<attributes>
 						<basedocdir>${project.basedir}/src/main/asciidoc</basedocdir>
 						<doctype>book</doctype>
+						<numbered>true</numbered>
+						<sectnums>true</sectnums>
+						<toclevels>2</toclevels>
 						<version>${project.version}</version>
 						<!-- TODO include other attributes from build.gradle! -->
 					</attributes>

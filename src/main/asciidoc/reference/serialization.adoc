@@ -1,16 +1,39 @@
 [[serialization]]
-= Working with GemFire Serialization
+= Working with Apache Geode Serialization
 
-To improve overall performance of the data grid, GemFire supports a dedicated serialization protocol (PDX) that is both faster and offers more compact results over the standard Java serialization and works transparently across various language http://community.gemstone.com/display/gemfire/Interoperability[platforms] (such as http://community.gemstone.com/display/gemfire/Serialization+in+Java[Java], http://community.gemstone.com/display/gemfire/Serialization+in+.NET[.NET] and C++). This chapter discusses the various ways in which Spring Data GemFire simplifies and improves GemFire custom serialization in Java.
+To improve overall performance of the Apache Geode In-memory Data Grid, Geode supports a dedicated
+serialization protocol, called PDX, that is both faster and offers more compact results over
+standard Java serialization in addition to works transparently across various language platforms (Java, C++, .NET).
+Please refer to
+http://geode.apache.org/docs/guide/11/developing/data_serialization/PDX_Serialization_Features.html[PDX Serialization Features]
+and
+https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals[PDX Serialization Internals]
+for more details.
+
+This chapter discusses the various ways in which _Spring Data Geode_ simplifies and improves Geode's
+custom serialization in Java.
 
 [[serialization:wiring]]
 == Wiring deserialized instances
 
-It is fairly common for serialized objects to have transient data. Transient data is often dependent on the node or environment where it lives at a certain point in time, for example a DataSource. Serializing such information is useless (and potentially even dangerous) since it is local to a certain VM/machine. For such cases, Spring Data GemFire offers a special http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/Instantiator.html[`Instantiator`] that performs wiring for each new instance created by GemFire during deserialization.
+It is fairly common for serialized objects to have transient data. Transient data is often dependent on the system
+or environment where it lives at a certain point in time.  For instance, a `DataSource` is environment specific.
+Serializing such information is useless, and potentially even dangerous, since it is local to a certain VM/machine.
+For such cases, _Spring Data Geode_ offers a special
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/Instantiator.html[`Instantiator`]
+that performs wiring for each new instance created by Geode during deserialization.
 
-Through such a mechanism, one can rely on the Spring container to inject (and manage) certain dependencies making it easy to split transient from persistent data and have *rich domain objects* in a transparent manner (Spring users might find this approach similar to that of http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#aop-atconfigurable[`@Configurable`]). The `WiringInstantiator` works just like `WiringDeclarableSupport`, trying to first locate a bean definition as a wiring template and following to autowiring otherwise. Please refer to the previous section (<<apis:declarable>>) for more details on wiring functionality.
+Through such a mechanism, one can rely on the _Spring_ container to inject and manage certain dependencies
+making it easy to split transient from persistent data and have *rich domain objects* in a transparent manner.
 
-To use this `Instantiator`, simply declare it as a usual bean:
+_Spring_ users might find this approach similar to that of
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#aop-atconfigurable[`@Configurable`]).
+The `WiringInstantiator` works just like `WiringDeclarableSupport`, trying to first locate a bean definition
+as a wiring template and falling back to autowiring otherwise.
+
+Please refer to the previous section (<<apis:declarable>>) for more details on wiring functionality.
+
+To use this SDG `Instantiator`, simply declare it as a bean:
 
 [source,xml]
 ----
@@ -22,16 +45,22 @@ To use this `Instantiator`, simply declare it as a usual bean:
 </bean>
 ----
 
-During the container startup, once it is being initialized, the `instantiator` will, by default, register itself with the GemFire system and perform wiring on all instances of `SomeDataSerializableClass` created by GemFire during deserialization.
+During the _Spring_ container startup, once it is being initialized, the `Instantiator` will, by default, register
+itself with the Geode serialization system and perform wiring on all instances of `SomeDataSerializableClass`
+created by Geode during deserialization.
 
 [[serialization:instance-generator]]
-== Auto-generating custom `Instantiator`s
+== Auto-generating custom `Instantiators`
 
-For data intensive applications, a large number of instances might be created on each machine as data flows in. Out of the box, GemFire uses reflection to create new types but for some scenarios, this might prove to be expensive. As always, it is good to perform profiling to quantify whether this is the case or not. For such cases, Spring Data GemFire allows the automatic generation of `Instatiator` classes which instantiate a new type (using the default constructor) without the use of reflection:
+For data intensive applications, a large number of instances might be created on each machine as data flows in.
+Out-of-the-box, Geode uses reflection to create new types, but for some scenarios, this might prove to be expensive.
+As always, it is good to perform profiling to quantify whether this is the case or not.  For such cases,
+_Spring Data Geode_ allows the automatic generation of `Instatiator` classes which instantiate a new type
+(using the default constructor) without the use of reflection:
 
 [source,xml]
 ----
-<bean id="instantiator-factory" class="org.springframework.data.gemfire.serialization.InstantiatorFactoryBean">
+<bean id="instantiatorFactory" class="org.springframework.data.gemfire.serialization.InstantiatorFactoryBean">
   <property name="customTypes">
     <map>
       <entry key="org.pkg.CustomTypeA" value="1025"/>
@@ -41,5 +70,6 @@ For data intensive applications, a large number of instances might be created on
 </bean>
 ----
 
-The definition above, automatically generated two `Instantiator`s for two classes, namely `CustomTypeA` and `CustomTypeB` and registers them with GemFire, under user id `1025` and `1026`. The two instantiators avoid the use of reflection and create the instances directly through Java code.
-
+The definition above, automatically generates two `Instantiators` for two classes, namely `CustomTypeA`
+and `CustomTypeB` and registers them with Geode, under user id `1025` and `1026`. The two `Instantiators` avoid
+the use of reflection and create the instances directly through Java code.

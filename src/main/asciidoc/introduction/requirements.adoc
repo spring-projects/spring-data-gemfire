@@ -1,5 +1,5 @@
 [[requirements]]
 = Requirements
 
-Spring Data GemFire requires JDK 6.0 or above, http://projects.spring.io/spring-framework[Spring Framework] 3
-and http://www.pivotal.io/big-data/pivotal-gemfire[Pivotal GemFire] 6.6 or above (version 7 or above is recommended).
+_Spring Data Geode_ requires JDK 8.0, http://projects.spring.io/spring-framework[Spring Framework] 5
+and http://geode.apache.org/[Apache Geode] 1.2.0.

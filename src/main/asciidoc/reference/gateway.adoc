@@ -1,91 +1,65 @@
 [[bootstrap:gateway]]
 = Configuring WAN Gateways
 
-WAN gateways provide a way to synchronize GemFire distributed systems across geographic distributed areas. As of Release 1.2.0, Spring Data GemFire provides namespace support for configuring WAN gateways as illustrated in the following examples:
+WAN Gateways provide a way to synchronize Apache Geode Distributed Systems across geographic areas.
+_Spring Data Geode_ provides namespace support for configuring WAN Gateways as illustrated in the following examples.
 
 == WAN Configuration in GemFire 7.0
 
-GemFire 7.0 introduces new APIs for WAN configuration. While the original APIs provided in GemFire 6 are still supported, it is recommended that you use the new APIs if you are using GemFire 7.0. The Spring Data GemFire namespace supports either. In the example below, `GatewaySender`s are configured for a partitioned region by adding child elements to the region (`gateway-sender` and `gateway-sender-ref`). The `GatewaySender` may register `EventFilter`s and `TransportFilters`. Also shown below is an example configuration of an `AsyncEventQueue` which must also be wired into a region (not shown).
+In the example below, `GatewaySenders` are configured for a PARTITION Region by adding child elements to the Region
+(`gateway-sender` and `gateway-sender-ref`).
+
+A `GatewaySender` may register `EventFilters` and `TransportFilters`.  Also shown below is an example configuration
+of an `AsyncEventQueue` which must also be wired into a Region (not shown).
 
 [source,xml]
 ----
-<gfe:partitioned-region id="region-inner-gateway-sender" >
-    <gfe:gateway-sender
-        remote-distributed-system-id="1">
-            <gfe:event-filter>
-                <bean class="org.springframework.data.gemfire.example.SomeEventFilter"/>
-            </gfe:event-filter>
-            <gfe:transport-filter>
-                <bean class="org.springframework.data.gemfire.example.SomeTransportFilter"/>
-            </gfe:transport-filter>
+<gfe:partitioned-region id="region-with-inner-gateway-sender" >
+    <gfe:gateway-sender remote-distributed-system-id="1">
+        <gfe:event-filter>
+	        <bean class="org.springframework.data.gemfire.example.SomeEventFilter"/>
+        </gfe:event-filter>
+        <gfe:transport-filter>
+	        <bean class="org.springframework.data.gemfire.example.SomeTransportFilter"/>
+        </gfe:transport-filter>
     </gfe:gateway-sender>
     <gfe:gateway-sender-ref bean="gateway-sender"/>
 </gfe:partitioned-region>
 
 <gfe:async-event-queue id="async-event-queue" batch-size="10" persistent="true" disk-store-ref="diskstore"
-         maximum-queue-memory="50">
+        maximum-queue-memory="50">
     <gfe:async-event-listener>
-        <bean class="org.springframework.data.gemfire.example.SomeAsyncEventListener"/>
+        <bean class="example.AsyncEventListener"/>
     </gfe:async-event-listener>
 </gfe:async-event-queue>
 
-
 <gfe:gateway-sender id="gateway-sender" remote-distributed-system-id="2">
     <gfe:event-filter>
-         <ref bean="event-filter"/>
-         <bean class="org.springframework.data.gemfire.example.SomeEventFilter"/>
+        <ref bean="event-filter"/>
+        <bean class="org.springframework.data.gemfire.example.SomeEventFilter"/>
     </gfe:event-filter>
     <gfe:transport-filter>
-         <ref bean="transport-filter"/>
-         <bean class="org.springframework.data.gemfire.example.SomeTransportFilter"/>
-     </gfe:transport-filter>
+        <ref bean="transport-filter"/>
+        <bean class="org.springframework.data.gemfire.example.SomeTransportFilter"/>
+    </gfe:transport-filter>
 </gfe:gateway-sender>
 
 <bean id="event-filter" class="org.springframework.data.gemfire.example.AnotherEventFilter"/>
 <bean id="transport-filter" class="org.springframework.data.gemfire.example.AnotherTransportFilter"/>
 ----
 
-On the other end of a `GatewaySender` is a corresponding `GatewayReceiver` to receive gateway events. The `GatewayReceiver` may also be configured with `EventFilter`s and `TransportFilter`s.
+On the other end of a `GatewaySender` is a corresponding `GatewayReceiver` to receive Gateway events.
+The `GatewayReceiver` may also be configured with `EventFilters` and `TransportFilters`.
 
 [source,xml]
 ----
-<gfe:gateway-receiver id="gateway-receiver"
-    start-port="12345" end-port="23456" bind-address="192.168.0.1">
-        <gfe:transport-filter>
-            <bean class="org.springframework.data.gemfire.example.SomeTransportFilter"/>
-        </gfe:transport-filter>
+<gfe:gateway-receiver id="gateway-receiver" start-port="12345" end-port="23456" bind-address="192.168.0.1">
+    <gfe:transport-filter>
+        <bean class="org.springframework.data.gemfire.example.SomeTransportFilter"/>
+    </gfe:transport-filter>
 </gfe:gateway-receiver>
 ----
 
-Please refer to the GemFire product document for a detailed explanation of all the configuration options.
-
-== WAN Configuration in GemFire 6.6
-
-[source,xml]
-----
-<gfe:cache/>
-
-<gfe:replicated-region id="region-with-gateway" enable-gateway="true" hub-id="gateway-hub"/>
-
-<gfe:gateway-hub id="gateway-hub" manual-start="true">
-    <gfe:gateway gateway-id="gateway">
-         <gfe:gateway-listener>
-             <bean class="com.company.example.MyGatewayListener"/>
-         </gfe:gateway-listener>
-         <gfe:gateway-queue maximum-queue-memory="5" batch-size="3"
-                batch-time-interval="10" />
-     </gfe:gateway>
-
-     <gfe:gateway gateway-id="gateway2">
-         <gfe:gateway-endpoint port="1234" host="host1" endpoint-id="endpoint1"/>
-         <gfe:gateway-endpoint port="2345" host="host2" endpoint-id="endpoint2"/>
-    </gfe:gateway>
-</gfe:gateway-hub>
-----
-
-A region may synchronize all or part of its contents to a gateway hub used to access one or more remote systems. The region must set `enable-gateway` to `true` and specify the `hub-id`.
-
-NOTE: If just a hub-id is specified, Spring Data GemFire automatically assumes that the gateway should be enabled.
-
-Please refer to the GemFire product document for a detailed explanation of all the configuration options.
-
+Please refer to the Apache Geode
+http://geode.apache.org/docs/guide/11/topologies_and_comm/multi_site_configuration/chapter_overview.html[documentation]
+for a detailed explanation of all the configuration options.

@@ -1,8 +1,9 @@
 [[new-features]]
 = New Features
 
-NOTE: As of the 1.2.0 release, this project, formerly known as Spring GemFire, has been renamed to Spring Data GemFire
-to reflect that it is now a component of the http://projects.spring.io/spring-data/[Spring Data] project.
+NOTE: As of the 1.2.0.RELEASE, this project, formerly known as _Spring GemFire_, has been renamed to
+_Spring Data GemFire_ to reflect that it is now a module of the
+http://projects.spring.io/spring-data/[Spring Data] project.
 
 [[new-in-1-2-0]]
 == New in the 1.2 Release
@@ -46,50 +47,54 @@ in GemFire 7.0, enabling Spring AOP to perform the necessary conversions automat
 [[new-in-1-4-0]]
 == New in the 1.4 Release
 
-* Upgrades Spring Data GemFire to GemFire 7.0.2.
-* Upgrades Spring Data GemFire to Spring Data Commons 1.8.0.
-* Upgrades Spring Data GemFire to Spring Framework 3.2.9.
-* Integrates Spring Data GemFire with Spring Boot, which includes both a *spring-boot-starter-data-gemfire* POM
-along with a Spring Boot sample application demonstrating GemFire Cache Transactions configured with SDG
-and bootstrapped with Spring Boot.
-* Support for bootstrapping a Spring Context in a GemFire Server when started from Gfsh.
+* Upgrades to Pivotal GemFire 7.0.2.
+* Upgrades to _Spring Data Commons_ 1.8.x.RELEASE.
+* Upgrades to _Spring Framework_ 3.2.x.RELEASE.
+* Integrates _Spring Data GemFire_ with _Spring Boot_, which includes both a *spring-boot-starter-data-gemfire* POM
+along with a _Spring Boot_ sample application demonstrating GemFire Cache Transactions configured with SDG
+and bootstrapped with _Spring Boot_.
+* Support for bootstrapping a Spring `ApplicationContext` in a GemFire Server when started from _Gfsh_.
 See <<gemfire-bootstrap>> for more details.
 * Support for persisting application domain object/entities to multiple GemFire Cache Regions.
 See <<mapping.entities>> for more details.
 * Support for persisting application domain object/entities to GemFire Cache Sub-Regions, avoiding collisions
 when Sub-Regions are uniquely identifiable, but identically named.
 See <<mapping.entities>> for more details.
-* Adds strict XSD type rules to, and full support for, Data Policies and Region Shortcuts on all GemFire
-Cache Region types.
+* Adds strict XSD type rules to, and full support for, Data Policies and Region Shortcuts
+on all GemFire Cache Region types.
 * Changed the default behavior of SDG `<*-region>` elements from lookup to always create a new Region
 along with an option to restore old behavior using the *ignore-if-exists* attribute.
-See <<bootstrap:region:common:attributes,Common Region Attributes>> and <<bootstrap:region:common:regions-subregions-lookups-caution>>
+See <<bootstrap:region:common:attributes, Common Region Attributes>>
+and <<bootstrap:region:common:regions-subregions-lookups-caution>>
 for more details.
-* Enables Spring Data GemFire to be fully built and ran on JDK 7 and JDK 8 (Note, however, GemFire has not yet
-been fully tested and supported on JDK 8;
-See http://gemfire.docs.pivotal.io/docs-gemfire/supported_configs/supported_configs_and_system_reqs.html[GemFire User Guide]
+* _Spring Data GemFire_ can now be fully built and ran on JDK 7 and JDK 8.
+
+CAUTION: Pivotal GemFire has not yet been fully tested and certified to run JDK 8; See
+http://gemfire.docs.pivotal.io/docs-gemfire/supported_configs/supported_configs_and_system_reqs.html[GemFire User Guide]
 for additional details.
 
 [[new-in-1-5-0]]
 == New in the 1.5 Release
 
-* Upgrades Spring Data GemFire to Spring Data Commons 1.9.0
-* Upgrades Spring Data GemFire to Spring Framework 4.0.7
-* Reference Guide migrated to Asciidoc
-* Renewed support for deploying Spring Data GemFire in an OSGi container.
-* Removed all default values in the Spring Data GemFire XML namespace Region-type elements, relying on GemFire defaults
-instead.
-* Added convenience to automatically create Disk Store directory locations without the need to create them manually,
-as required by GemFire.
-* SDG annotated Functions can now be executed from Gfsh.
-* Enable GemFire GatewayReceivers to be started manually.
+* Maintains support for Pivotal GemFire 7.0.2.
+* Upgrades to _Spring Data Commons_ 1.9.x.RELEASE.
+* Upgrades to _Spring Framework_ 4.0.x.RELEASE.
+* Reference Guide migrated to Asciidoc.
+* Renewed support for deploying _Spring Data GemFire_ in an OSGi container.
+* Removed all default values in the _Spring Data GemFire_ XML namespace Region-type elements to
+rely on GemFire defaults instead.
+* Added convenience to automatically create Disk Store directory locations.
+* SDG annotated Function implementations can now be executed from _Gfsh_.
+* Enable GemFire `GatewayReceivers` to be started manually.
 * Support for Auto Region Lookups.  See <<bootstrap:region:auto-lookup>> for further details.
-* Support for Region Templates See <<bootstrap:region:common:region-templates>> for further details.
+* Support for Region Templates.  See <<bootstrap:region:common:region-templates>> for further details.
 
 [[new-in-1-6-0]]
 == New in the 1.6 Release
 
-* Upgrades Spring Data GemFire to GemFire 8.0.
+* Upgrades to Pivotal GemFire 8.0.0.
+* Upgrades to _Spring Data Commons_ 1.10.x.RELEASE.
+* Maintains support on _Spring Framework_ 4.0.x.RELEASE.
 * Adds support for GemFire 8's new Cluster-based Configuration.
 * Enables 'auto-reconnect' functionality to be employed in Spring-configured GemFire Servers.
 * Allows the creation of concurrent and parallel Async Event Queues and Gateway Senders.
@@ -100,22 +105,70 @@ as required by GemFire.
 [[new-in-1-7-0]]
 == New in the 1.7 Release
 
-* Upgrades Spring Data GemFire to GemFire 8.1.0.
-* Early Access support for Apache Geode.
-* Support for adding Spring defined Cache Listeners, Loaders and Writers on "existing" GemFire Regions configured in Spring XML,
-`cache.xml` or even with GemFire's _Cluster Config_.
-* Spring JavaConfig support added to `SpringContextBootstrappingInitializer`.
-* Support for custom `ClassLoaders` in `SpringContextBootstrappingInitializer` to load Spring-defined bean classes.
+* Upgrades to Pivotal GemFire 8.1.0.
+* Upgrades to _Spring Data Commons_ 1.11.x.RELEASE.
+* Upgrades to _Spring Framework_ 4.1.x.RELEASE.
+* Early access support for Apache Geode.
+* Support for adding _Spring_-defined Cache Listeners, Loaders and Writers on "existing" GemFire Regions
+configured in _Spring_ XML, `cache.xml` or even with Pivotal GemFire's _Cluster Config_.
+* _Spring_ JavaConfig support added to `SpringContextBootstrappingInitializer`.
+* Support for custom `ClassLoaders` in `SpringContextBootstrappingInitializer` to load _Spring_-defined bean classes.
 * Support for `LazyWiringDeclarableSupport` re-initialization and complete replacement for `WiringDeclarableSupport`.
 * Adds `locators` and `servers` attributes to the `<gfe:pool>` element allowing variable Locator/Server
-endpoint lists configured with Spring's property placeholders.
-* Enables the use of `<gfe-data:datasource>` element with non-Spring configured GemFire Servers.
+endpoint lists configured with _Spring's_ property placeholders.
+* Enables the use of `<gfe-data:datasource>` element with non-_Spring_ configured Pivotal GemFire Servers.
 * Multi-Index definition and creation support.
 * <<bootstrap:region:expiration:annotation>>
-* <<gemfire-repositories.oql-extension>>
+* <<gemfire-repositories:oql-extensions>>
 * <<bootstrap:snapshot>>
 
 [[new-in-1-8-0]]
 == New in the 1.8 Release
 
-* Upgrades Spring Data GemFire to GemFire 8.2.0.
+* Upgrades to Pivotal GemFire 8.2.0.
+* Upgrades to _Spring Data Commons_ 1.12.x.RELEASE.
+* Upgrades to _Spring Framework_ 4.2.x.RELEASE.
+* Adds Maven POM to build SDG with Maven.
+* Adds support for CDI.
+* Enables a `ClientCache` to be configured without a `Pool`.
+* `<gfe:cache>` and `<gfe:client-cache>` elements `use-bean-factory-locator` attributes now default to *false*.
+* Adds `durable-client-id` and `durable-client-timeout` attributes to `<gfe:client-cache>`.
+* GemfirePersistentProperty now properly handles other non-entity, scalar-like types (e.g. `BigDecimal`, `BigInteger`).
+* Prevents SDG-defined `Pools` from being destroyed before `Regions` that use those `Pools`.
+* Handles case-insensitive GemFire OQL queries defined as _Repository_ query methods.
+* Changes `GemFireCache.evict(key)` to call `Region.remove(key)` in SDG's _Spring Cache Abstraction_ support.
+* Fixes `RegionNotFoundException` with _Repository_ queries on a client `Region` associated with a specific `Pool`
+configured for GemFire server groups.
+* Changes `Gateway Senders/Receivers` to no longer be tied to the _Spring_ container.
+
+[[new-in-1-9-0]]
+== New in the 1.9 Release
+
+* Upgrades to Pivotal GemFire 8.2.4.
+* Upgrades to _Spring Data Commons_ 1.13.x.RELEASE.
+* Upgrades to _Spring Framework_ 4.3.x.RELEASE.
+* Introduces an entirely new Annotation-based configuration model inspired by _Spring Boot_.
+* Adds support for suspend and resume in the `GemfireTransactionManager`.
+* Adds support in _Repositories_ to use the bean `id` property as the Region key when the `@Id` annotation
+is not present.
+* Uses `MappingPdxSerializer` as the default GemFire serialization strategy when `@EnablePdx` is used.
+* Enables `GemfireCacheManager` to explicitly list Region names to be used in the _Spring's Caching Abstraction_.
+* Configure GemFire Caches, CacheServers, Locators, Pools, Regions, Indexes, DiskStores, Expiration, Eviction,
+Statistics, Mcast, HttpService, Auth, SSL, Logging, System Properties.
+* Repository support with multiple _Spring Data_ modules on the classpath.
+
+[[new-in-2-0-0]]
+== New in the 2.0 Release
+
+* Upgrades to Pivotal GemFire 9.0.x.
+* Upgrades to _Spring Data Commons_ 2.0.x.RELEASE.
+* Upgrades to _Spring Framework_ 5.0.x.RELEASE.
+* Reorganizes the SDG codebase by better packaging different classes and components by concern.
+* Adds extensive support for Java 8 types, particularly in the SD _Repository_ abstraction.
+* Changes to the _Repository_ interface and abstraction, e.g. IDs are no longer required to be `java.io.Serializable`.
+* Sets `@EnableEntityDefinedRegions` annotation `ignoreIfExists` attribute to *true* by default.
+* Sets `@Indexed` annotation `override` attribute to *false* by default.
+* Renames `@EnableIndexes` to `@EnableIndexing`.
+* Introduces a `InterestsBuilder` class to easily and conveniently express Interests in keys/values between client
+and server when using JavaConfig.
+* Adds support for Off-Heap, Redis Adapter and GemFire's new Security framework to the Annotation configuration model.

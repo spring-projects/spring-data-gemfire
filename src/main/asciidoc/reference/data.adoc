@@ -1,105 +1,135 @@
 [[apis]]
-= Working with GemFire APIs
+= Working with Apache Geode APIs
 
-Once the GemFire Cache and Regions have been configured they can be injected and used inside application objects. This chapter describes the integration with Spring's Transaction Management functionality and `DaoException` hierarchy. It also covers support for dependency injection of GemFire managed objects.
-
-[[apis:exception-translation]]
-== Exception Translation
-
-Using a new data access technology requires not only accommodating a new API but also handling exceptions specific to that technology. To accommodate this case, Spring Framework provides a technology agnostic, consistent http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[exception hierarchy] that abstracts the application from proprietary (and usually checked) exceptions to a set of focused runtime exceptions. As mentioned in the Spring Framework documentation, http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#orm-exception-translation[exception translation] can be applied transparently to your data access objects through the use of the `@Repository` annotation and AOP by defining a `PersistenceExceptionTranslationPostProcessor` bean. The same exception translation functionality is enabled when using GemFire as long as at least a `CacheFactoryBean` is declared, e.g. using a `<gfe:cache/>` declaration, as it acts as an exception translator which is automatically detected by the Spring infrastructure and used accordingly.
+Once the Apache Geode Cache and Regions have been configured, they can be injected and used inside application objects.
+This chapter describes the integration with _Spring's_ Transaction Management functionality and DAO exception hierarchy.
+This chapter also covers support for dependency injection of Geode managed objects.
 
 [[apis:template]]
 == GemfireTemplate
 
-As with many other high-level abstractions provided by the Spring projects, Spring Data GemFire provides a *template* that simplifies GemFire data access. The class provides several *one-line* methods, for common region operations but also the ability to *execute* code against the native GemFire API without having to deal with GemFire checked exceptions for example through the `GemfireCallback`.
+As with many other high-level abstractions provided by _Spring_ projects, _Spring Data Geode_ provides a *template*
+to simplify Geode data access. The class provides several *one-liner* methods containing common Region operations,
+but also has the ability to *execute* code against the native Geode API without having to deal with Geode checked
+exceptions by using a `GemfireCallback`.
 
-The template class requires a GemFire `Region` instance and once configured is thread-safe and should be reused across multiple classes:
+The template class requires a Geode `Region` instance, and once configured, is thread-safe and can be reused
+across multiple application classes:
 
 [source,xml]
 ----
-<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="someRegion"/>
+<bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="SomeRegion"/>
 ----
 
-Once the template is configured, one can use it alongside `GemfireCallback` to work directly with the GemFire `Region`, without having to deal with checked exceptions, threading or resource management concerns:
+Once the template is configured, a developer can use it alongside `GemfireCallback` to work directly with
+the Geode `Region` without having to deal with checked exceptions, threading or resource management concerns:
 
 [source,java]
 ----
 template.execute(new GemfireCallback<Iterable<String>>() {
-	public Iterable<String> doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
-	  	// working against a Region of String
-		Region<String, String> region = reg;
+	public Iterable<String> doInGemfire(Region region) throws GemFireCheckedException, GemFireException {
+		Region<String, String> localRegion = (Region<String, String>) region;
 
-		region.put("1", "one");
-		region.put("3", "three");
+		localRegion.put("1", "one");
+		localRegion.put("3", "three");
 
-		return region.query("length < 5");
+		return localRegion.query("length < 5");
 	}
 });
 ----
 
-For accessing the full power of the GemFire query language, one can use the `find` and `findUnique` which, as opposed to the `query` method, can execute queries across multiple regions, execute projections, and the like. The `find` method should be used when the query selects multiple items (through`SelectResults`) and the latter, `findUnique`, as the name suggests, when only one object is returned.
+For accessing the full power of the Apache Geode query language, a developer can use the `find` and `findUnique`
+methods, which, as opposed to the `query` method, can execute queries across multiple Regions, execute projections,
+and the like.
 
-[[apis:spring-cache-abstraction]]
-== Support for Spring Cache Abstraction
+The `find` method should be used when the query selects multiple items (through`SelectResults`) and the latter,
+`findUnique`, as the name suggests, when only one object is returned.
 
-Since 1.1, Spring Data GemFire provides an implementation of the Spring 3.1 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[cache abstraction]. To use GemFire as a backing implementation, simply add `GemfireCacheManager` to your configuration:
+[[apis:exception-translation]]
+== Exception Translation
 
-[source,xml]
-----
-<beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:cache="http://www.springframework.org/schema/cache"
-  xmlns:gfe="http://www.springframework.org/schema/gemfire"
-  xmlns:p="http://www.springframework.org/schema/p"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  	                  http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-                      http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+Using a new data access technology requires not only accommodating a new API but also handling exceptions
+specific to that technology.
 
-  <!-- turn on declarative caching -->
-  <cache:annotation-driven/>
+To accommodate the exception handling case, the _Spring Framework_ provides a technology agnostic and consistent
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[exception hierarchy]
+that abstracts the application from proprietary, and usually "checked", exceptions to a set of focused runtime
+exceptions.
 
-  <gfe:cache id="gemfire-cache"/>
+As mentioned in _Spring Framework's_ documentation,
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#orm-exception-translation[Exception translation]
+can be applied transparently to your Data Access Objects (DAO) through the use of the `@Repository` annotation and AOP
+by defining a `PersistenceExceptionTranslationPostProcessor` bean. The same exception translation functionality
+is enabled when using Geode as long as the `CacheFactoryBean` is declared, e.g. using either a `<gfe:cache/>`
+or `<gfe:client-cache>` declaration, which acts as an exception translator and is automatically detected by
+the _Spring_ infrastructure and used accordingly.
 
-  <!-- declare GemFire Cache Manager -->
-  <bean id="cacheManager" class="org.springframework.data.gemfire.cache.GemfireCacheManager" p:cache-ref="gemfire-cache">
-</beans>
-----
-
-[[apis:tx-mgmt]]
+[[apis:transaction-management]]
 == Transaction Management
 
-One of the most popular features of Spring Framework is http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[transaction management]. If you are not familiar with it, we strongly recommend http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-motivation[reading] about it as it offers a consistent programming model that works transparently across multiple APIs and can be configured either programmatically or declaratively (the most popular choice).
+One of the most popular features of the _Spring Framework_ is
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management].
 
-For GemFire, Spring Data GemFire provides a dedicated, per-cache, transaction manager that, once declared, allows Region operations to be executed atomically through Spring:
+If you are not familiar with _Spring's_ transaction abstraction then we strongly recommend
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-motivation[reading]
+about it as it offers a _consistent programming model_ that works transparently across multiple APIs
+and can be configured either programmatically or declaratively (the most popular choice).
+
+For Apache Geode, _Spring Data Geode_ provides a dedicated, per-cache, `PlatformTransactionManager` that,
+once declared, allows Region operations to be executed atomically through _Spring_:
 
 [source,xml]
 ----
-<gfe:transaction-manager id="tx-manager" cache-ref="cache"/>
+<gfe:transaction-manager id="txManager" cache-ref="myCache"/>
 ----
 
-NOTE: The example above can be simplified even more by eliminating the `cache-ref` attribute if the GemFire Cache is defined under the default name`gemfireCache`. As with the other Spring Data GemFire namespace elements, if the Cache bean name is not configured, the aforementioned naming convention will used. Additionally, the transaction manager name is`gemfireTransactionManager` if not explicitly specified.
+NOTE: The example above can be simplified even further by eliminating the `cache-ref` attribute if the GemFire cache
+is defined under the default name, `gemfireCache`. As with the other _Spring Data Geode_ namespace elements,
+if the cache bean name is not configured, the aforementioned naming convention will be used.
+Additionally, the transaction manager name is `"gemfireTransactionManager"` if not explicitly specified.
 
-Currently, GemFire supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee this isolation, developers should avoid making *in-place* changes that manually modify values present in the Cache. To prevent this from happening, the transaction manager configures the Cache to use *copy on read* semantics, meaning a clone of the actual value is created, each time a read is performed. This behavior can be disabled if needed through the `copyOnRead` property. For more information on the semantics of the underlying GemFire transaction manager, see the GemFire http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/CacheTransactionManager.html[documentation].
+Currently, Apache Geode supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee
+this isolation, developers should avoid making *in-place* changes that manually modify values present in the cache.
+To prevent this from happening, the transaction manager configures the cache to use *copy on read* semantics,
+meaning a clone of the actual value is created each time a read is performed. This behavior can be disabled if needed
+through the `copyOnRead` property.
 
-:leveloffset: +1
+For more information on the semantics and bevior of the underlying Geode transaction manager, please refer to the Geode
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheTransactionManager.html[CacheTransactionManager Javadoc]
+as well as the http://geode.apache.org/docs/guide/11/developing/transactions/chapter_overview.html[documentation].
+
 include::{basedocdir}/reference/cq-container.adoc[]
-:leveloffset: -1
 
 [[apis:declarable]]
-== Wiring `Declarable` components
+== Wiring `Declarable` Components
 
-GemFire XML configuration (usually named `cache.xml` allows *user* objects to be declared as part of the configuration. Usually these objects are `CacheLoader`s or other pluggable callback components supported by GemFire. Using native GemFire configuration, each user type declared through XML must implement the `Declarable` interface which allows arbitrary parameters to be passed to the declared class through a `Properties` instance.
+Apache Geode XML configuration (usually referred to as `cache.xml`) allows *user* objects to be declared
+as part of the configuration. Usually these objects are `CacheLoaders` or other pluggable callback components
+supported by Geode. Using native Geode configuration, each user type declared through XML must implement
+the `Declarable` interface, which allows arbitrary parameters to be passed to the declared class
+through a `Properties` instance.
 
-In this section we describe how you can configure these pluggable components defined in `cache.xml` using Spring while keeping your Cache/Region configuration defined in `cache.xml` This allows your pluggable components to focus on the application logic and not the location or creation of DataSources or other collaboration objects.
+In this section, we describe how you can configure these pluggable components when defined in `cache.xml`
+using _Spring_ while keeping your Cache/Region configuration defined in `cache.xml`.  This allows your
+pluggable components to focus on the application logic and not the location or creation of `DataSources`
+or other collaborators.
 
-However, if you are starting a green field project, it is recommended that you configure Cache, Region, and other pluggable components directly in Spring. This avoids inheriting from the `Declarable` interface or the base class presented in this section. See the following sidebar for more information on this approach.
+However, if you are starting a green field project, it is recommended that you configure Cache, Region,
+and other pluggable Geode components directly in _Spring_.  This avoids inheriting from the `Declarable` interface
+or the base class presented in this section.
+
+See the following sidebar for more information on this approach.
 
 .Eliminate `Declarable` components
 ****
-One can configure custom types entirely through Spring as mentioned in <<bootstrap:region>>. That way, one does not have to implement the `Declarable` interface and also benefits from all the features of the Spring IoC container (not just dependency injection but also life-cycle and instance management).
+A developer can configure custom types entirely through _Spring_ as mentioned in <<bootstrap:region>>.
+That way, a developer does not have to implement the `Declarable` interface, and also benefits from
+all the features of the _Spring_ IoC container (not just dependency injection but also life-cycle
+and instance management).
 ****
 
-As an example of configuring a `Declarable` component using Spring, consider the following declaration (taken from the `Declarable` javadoc):
+As an example of configuring a `Declarable` component using _Spring_, consider the following declaration
+(taken from the `Declarable` http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/Declarable.html[Javadoc]):
 
 [source,xml]
 ----
@@ -111,25 +141,34 @@ As an example of configuring a `Declarable` component using Spring, consider the
 </cache-loader>
 ----
 
-To simplify the task of parsing, converting the parameters and initializing the object, Spring Data GemFire offers a base class (`WiringDeclarableSupport`) that allows GemFire user objects to be wired through a *template* bean definition or, in case that is missing, perform autowiring through the Spring container. To take advantage of this feature, the user objects need to extend `WiringDeclarableSupport` which automatically locates the declaring `BeanFactory` and performs wiring as part of the initialization process.
+To simplify the task of parsing, converting the parameters and initializing the object, _Spring Data Geode_ offers
+a base class (`WiringDeclarableSupport`) that allows Geode user objects to be wired through a *template* bean definition
+or, in case that is missing, perform auto-wiring through the _Spring_ IoC container. To take advantage of this feature,
+the user objects need to extend `WiringDeclarableSupport`, which automatically locates the declaring `BeanFactory`
+and performs wiring as part of the initialization process.
 
 .Why is a base class needed?
 ****
-In the current GemFire release there is no concept of an *object factory* and the types declared are instantiated and used as is. In other words, there is no easy way to manage object creation outside GemFire.
+In the current Geode release there is no concept of an *object factory* and the types declared are instantiated
+and used as is. In other words, there is no easy way to manage object creation outside Apache Geode.
 ****
 
 [[apis:declarable:template-wiring]]
-=== Configuration using *template* definitions
+=== Configuration using *template* bean definitions
 
-When used, `WiringDeclarableSupport` tries to first locate an existing bean definition and use that as wiring template. Unless specified, the component class name will be used as an implicit bean definition name. Let's see how our `DBLoader` declaration would look in that case:
+When used, `WiringDeclarableSupport` tries to first locate an existing bean definition and use that
+as the wiring template.  Unless specified, the component class name will be used as an implicit bean definition name.
+
+Let's see how our `DBLoader` declaration would look in that case:
 
 [source,java]
 ----
-public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
+class DBLoader extends WiringDeclarableSupport implements CacheLoader {
+
   private DataSource dataSource;
 
-  public void setDataSource(DataSource ds){
-    this.dataSource = ds;
+  public void setDataSource(DataSource dataSource){
+    this.dataSource = dataSource;
   }
 
   public Object load(LoaderHelper helper) { ... }
@@ -140,8 +179,7 @@ public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 ----
 <cache-loader>
    <class-name>com.company.app.DBLoader</class-name>
-   <!-- no parameter is passed (use the bean implicit name
-   that is the class name) -->
+   <!-- no parameter is passed (use the bean's implicit name, which is the class name) -->
 </cache-loader>
 ----
 
@@ -149,26 +187,28 @@ public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+">
 
   <bean id="dataSource" ... />
 
-     <!-- template bean definition -->
-     <bean id="com.company.app.DBLoader" abstract="true" p:dataSource-ref="dataSource"/>
+  <!-- template bean definition -->
+  <bean id="com.company.app.DBLoader" abstract="true" p:dataSource-ref="dataSource"/>
 </beans>
 ----
 
-In the scenario above, as no parameter was specified, a bean with the id/name `com.company.app.DBLoader` was used as a template for wiring the instance created by GemFire. For cases where the bean name uses a different convention, one can pass in the `bean-name` parameter in the GemFire configuration:
+In the scenario above, as no parameter was specified, a bean with the id/name `com.company.app.DBLoader` was used
+as a template for wiring the instance created by Geode. For cases where the bean name uses a different convention,
+one can pass in the `bean-name` parameter in the Geode configuration:
 
 [source,xml]
 ----
 <cache-loader>
    <class-name>com.company.app.DBLoader</class-name>
-   <!-- pass the bean definition template name
-        as parameter -->
+   <!-- pass the bean definition template name as parameter -->
    <parameter name="bean-name">
      <string>template-bean</string>
    </parameter>
@@ -179,31 +219,43 @@ In the scenario above, as no parameter was specified, a bean with the id/name `c
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+">
 
   <bean id="dataSource" ... />
 
-     <!-- template bean definition -->
-     <bean id="template-bean" abstract="true" p:dataSource-ref="dataSource"/>
+   <!-- template bean definition -->
+   <bean id="template-bean" abstract="true" p:dataSource-ref="dataSource"/>
 
 </beans>
 ----
 
-NOTE: The *template* bean definitions do not have to be declared in XML - any format is allowed (Groovy, annotations, etc..).
+NOTE: The *template* bean definitions do not have to be declared in XML.
+Any format is allowed (Groovy, annotations, etc).
 
 [[apis:declarable:autowiring]]
 === Configuration using auto-wiring and annotations
 
-If no bean definition is found, by default, `WiringDeclarableSupport` will http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-autowire[autowire] the declaring instance. This means that unless any dependency injection *metadata* is offered by the instance, the container will find the object setters and try to automatically satisfy these dependencies. However, one can also use JDK 5 annotations to provide additional information to the auto-wiring process. We strongly recommend reading the dedicated http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[chapter] in the Spring documentation for more information on the supported annotations and enabling factors.
+By default, if no bean definition is found, `WiringDeclarableSupport` will
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-autowire[autowire]
+the declaring instance. This means that unless any dependency injection *metadata* is offered by the instance,
+the container will find the object setters and try to automatically satisfy these dependencies.
+However, a developer can also use JDK 5 annotations to provide additional information to the auto-wiring process.
 
-For example, the hypothetical `DBLoader` declaration above can be injected with a Spring-configured `DataSource` in the following way:
+TIP: We strongly recommend reading the dedicated
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[chapter]
+in the _Spring_ documentation for more information on the supported annotations and enabling factors.
+
+For example, the hypothetical `DBLoader` declaration above can be injected with a Spring-configured `DataSource`
+in the following way:
 
 [source,java]
 ----
-public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
+class DBLoader extends WiringDeclarableSupport implements CacheLoader {
+
   // use annotations to 'mark' the needed dependencies
   @javax.inject.Inject
   private DataSource dataSource;
@@ -216,8 +268,7 @@ public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 ----
 <cache-loader>
    <class-name>com.company.app.DBLoader</class-name>
-   <!-- no need to declare any parameters anymore
-        since the class is auto-wired -->
+   <!-- no need to declare any parameters since the class is auto-wired -->
 </cache-loader>
 ----
 
@@ -225,12 +276,12 @@ public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans.xsd
-           http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+">
 
      <!-- enable annotation processing -->
      <context:annotation-config/>
@@ -238,5 +289,128 @@ public class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 </beans>
 ----
 
-By using the JSR-330 annotations, the cache loader code has been simplified since the location and creation of the DataSource has been externalized and the user code is concerned only with the loading process. The `DataSource` might be transactional, created lazily, shared between multiple objects or retrieved from JNDI - these aspects can be easily configured and changed through the Spring container without touching the `DBLoader` code.
+By using the JSR-330 annotations, the `CacheLoader` code has been simplified since the location and creation
+of the `DataSource` has been externalized and the user code is concerned only with the loading process.
+The `DataSource` might be transactional, created lazily, shared between multiple objects or retrieved from JNDI.
+These aspects can easily be configured and changed through the _Spring_ container without touching
+the `DBLoader` code.
 
+[[apis:spring-cache-abstraction]]
+== Support for Spring Cache Abstraction
+
+_Spring Data Geode_ provides an implementation of the _Spring_
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[Cache Abstraction]
+to position Apache Geode as a _caching provider_ in Spring's caching infrastructure.
+
+To use Apache Geode as a backing implementation, simply add `GemfireCacheManager` to your configuration:
+
+[source,xml]
+----
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:cache="http://www.springframework.org/schema/cache"
+  xmlns:gfe="http://www.springframework.org/schema/gemfire"
+  xmlns:p="http://www.springframework.org/schema/p"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+  <!-- enable declarative caching -->
+  <cache:annotation-driven/>
+
+  <gfe:cache id="gemfire-cache"/>
+
+  <!-- declare GemfireCacheManager; must have a bean ID of 'cacheManager' -->
+  <bean id="cacheManager" class="org.springframework.data.gemfire.cache.GemfireCacheManager"
+      p:cache-ref="gemfire-cache">
+
+</beans>
+----
+
+NOTE: The `cache-ref` attribute on the `CacheManager` bean definition is not necessary if the default cache bean name
+is used (i.e. "gemfireCache"), that is, `<gfe:cache>` without an explicit ID.
+
+When the `GemfireCacheManager` (Singleton) bean instance is declared and declarative caching is enabled
+(either in XML with `<cache:annotation-driven/>` or in JavaConfig with _Spring's_ `@EnableCaching` annotation),
+the _Spring_ caching annotations (e.g. `@Cacheable`) identify the "caches" that will cache data in-memory
+using Geode Regions.
+
+These caches (i.e. Regions) must exist before the caching annotations that use them otherwise an error will occur.
+
+By way of example, suppose you have a Customer Service application with a `CustomerService` application component
+that does caching...
+
+[source,java]
+----
+@Service
+class CustomerService {
+
+@Cacheable(cacheNames="Accounts", key="#customer.id")
+Account createAccount(Customer customer) {
+  ...
+}
+----
+
+Then you will need the following config.
+
+XML:
+
+[source,xml]
+----
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:cache="http://www.springframework.org/schema/cache"
+  xmlns:gfe="http://www.springframework.org/schema/gemfire"
+  xmlns:p="http://www.springframework.org/schema/p"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+  <!-- enable declarative caching -->
+  <cache:annotation-driven/>
+
+  <bean id="cacheManager" class="org.springframework.data.gemfire.cache.GemfireCacheManager">
+
+  <gfe:cache/>
+
+  <gfe:partitioned-region id="accontsRegion" name="Accounts" persistent="true" ...>
+    ...
+  </gfe:partitioned-region>
+</beans>
+----
+
+JavaConfig:
+
+[source,java]
+----
+@Configuration
+@EnableCaching
+class ApplicationConfiguration {
+
+  @Bean
+  CacheFactoryBean gemfireCache() {
+    return new CacheFactoryBean();
+  }
+
+  @Bean
+  GemfireCacheManager cacheManager() {
+    return new GemfireCacheManager(gemfireCache());
+  }
+
+  @Bean("Accounts")
+  PartitionedRegionFactoryBean accountsRegion() {
+    PartitionedRegionFactoryBean accounts = new PartitionedRegionFactoryBean();
+
+    accounts.setCache(gemfireCache());
+    accounts.setClose(false);
+    accounts.setPersistent(true);
+
+    return accounts;
+  }
+}
+----
+
+Of course, you are free to choose whatever Region type you like (e.g. REPLICATE, PARTITION, LOCAL, etc).
+
+For more details on _Spring's Cache Abstraction_, again, please refer to the
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[documentation].

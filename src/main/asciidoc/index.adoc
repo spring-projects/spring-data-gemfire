@@ -1,64 +1,73 @@
 = Spring Data GemFire Reference Guide
 Costin Leau , David Turanski , John Blum , Oliver Gierke
-:baseDir: .
 :revnumber: {version}
 :revdate: {localdate}
-:toc:
-:toc-placement!:
 :spring-data-commons-docs: {basedocdir}/../../../../spring-data-commons/src/main/asciidoc
+:toc:
+:!toc-placement:
 
 (C) 2010-2017 The original authors.
 
-NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not
-charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed
-in print or electronically.
+NOTE: Copies of this document may be made for your own use and for distribution to others provided that you do not
+charge any fee for such copies and further provided that each copy contains this Copyright Notice
+whether distributed in print or electronically.
 
 toc::[]
 
-[[spring-gemfire-reference]]
-include::{baseDir}/preface.adoc[]
+[[preface]]
+include::{basedocdir}/preface.adoc[]
 
-:leveloffset: 0
+ifndef::leveloffset[:leveloffset: 0]
+
 :leveloffset: +1
-include::{baseDir}/introduction/introduction.adoc[]
-include::{baseDir}/introduction/requirements.adoc[]
-include::{baseDir}/introduction/new-features.adoc[]
+
+include::{basedocdir}/introduction/introduction.adoc[]
+include::{basedocdir}/introduction/requirements.adoc[]
+include::{basedocdir}/introduction/new-features.adoc[]
+
 :leveloffset: -1
 
 [[reference]]
 = Reference Guide
 
 :leveloffset: +1
-include::{baseDir}/reference/introduction.adoc[]
-include::{baseDir}/reference/bootstrap.adoc[]
-include::{baseDir}/reference/data.adoc[]
-include::{baseDir}/reference/serialization.adoc[]
-include::{baseDir}/reference/mapping.adoc[]
-include::{baseDir}/reference/repositories.adoc[]
-include::{baseDir}/reference/function-annotations.adoc[]
+
+include::{basedocdir}/reference/introduction.adoc[]
+include::{basedocdir}/reference/bootstrap.adoc[]
+include::{basedocdir}/reference/data.adoc[]
+include::{basedocdir}/reference/serialization.adoc[]
+include::{basedocdir}/reference/mapping.adoc[]
+include::{basedocdir}/reference/repositories.adoc[]
+include::{basedocdir}/reference/function-annotations.adoc[]
 include::{basedocdir}/reference/lucene.adoc[]
-include::{baseDir}/reference/gemfire-bootstrap.adoc[]
-include::{baseDir}/reference/samples.adoc[]
+include::{basedocdir}/reference/gemfire-bootstrap.adoc[]
+include::{basedocdir}/reference/samples.adoc[]
+
 :leveloffset: -1
 
 [[resources]]
-= Other Resources
+= Resources
 
 In addition to this reference documentation, there are a number of other resources that may help you learn
-how to use GemFire with the Spring Framework. These additional, third-party resources are enumerated in this section.
+how to use Apache Geode with the _Spring Framework_. These additional, third-party resources are enumerated
+in this section.
 
 :leveloffset: +1
-include::{baseDir}/links.adoc[]
+
+include::{basedocdir}/links.adoc[]
+
 :leveloffset: -1
 
 [[appendices]]
 = Appendices
-:numbered!:
 
+:!sectnums:
 :leveloffset: +1
+
 include::{spring-data-commons-docs}/repository-namespace-reference.adoc[]
 include::{spring-data-commons-docs}/repository-populator-namespace-reference.adoc[]
 include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[]
 include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[]
-include::{baseDir}/appendix/appendix-schema.adoc[]
+include::{basedocdir}/appendix/appendix-schema.adoc[]
+
 :leveloffset: -1

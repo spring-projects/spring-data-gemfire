@@ -1,6 +1,16 @@
 = Preface
 
-Spring Data GemFire focuses on integrating the Spring Framework's powerful, non-invasive programming model and concepts with Pivotal GemFire, simplifying configuration, development and providing high-level abstractions. This document assumes the reader already has a basic familiarity with the Spring Framework and Pivotal GemFire concepts and APIs.
+_Spring Data Geode_ focuses on integrating the _Spring Framework's_ powerful, non-invasive programming model
+and concepts with Apache Geode to simplify configuration and development of Java applications using Geode.
 
-While every effort has been made to ensure this documentation is comprehensive and there are no errors, some topics might require more explanation and some typos might have crept in. If you do spot any mistakes or even more serious errors and you can spare a few cycles, please do bring the errors to the attention of the Spring Data GemFire team by raising an https://jira.spring.io/browse/SGF[issue]. Thank you.
+This document assumes the reader already has a basic familiarity with the _Spring Framework_ and Apache Geode
+concepts and APIs.
 
+While every effort has been made to ensure this documentation is comprehensive and complete, with no errors,
+some topics are beyond the scope of this document and may require more explanation (e.g. data distribution management
+with partitioning for HA while still preserving consistency).  Additionally, some typos might have crept in.
+If you do spot mistakes or even more serious errors and you can spare a few cycles, please do bring these issues
+to the attention of the _Spring Data Geode_ team by raising an appropriate
+https://jira.spring.io/browse/DATAGEODE[issue].
+
+Thank you.

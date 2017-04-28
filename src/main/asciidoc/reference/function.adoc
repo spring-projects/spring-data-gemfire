@@ -1,17 +1,29 @@
 [[bootstrap:function]]
 = Configuring the Function Service
 
-As of Release 1.3.0, Spring Data GemFire provides <<function-annotations,annotation>> support for implementing and registering functions. Spring Data GemFire also provides  namespace support for registering GemFire http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/execute/Function.html[Functions] for remote function execution. Please refer to the GemFire documentation for more information on the function execution framework. Functions are declared as Spring beans and must implement the `org.apache.geode.cache.execute.Function` interface or extend `org.apache.geode.cache.execute.FunctionAdapter`. The namespace uses a familiar pattern to declare functions:
+_Spring Data Geode_ provides <<function-annotations,annotation>> support for implementing and registering
+Apache Geode Functions.
+
+_Spring Data Geode_ also provides namespace support for registering Apache Geode
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/execute/Function.html[Functions]
+for remote Function execution.
+
+Please refer to Apache Geode' http://geode.apache.org/docs/guide/11/developing/function_exec/chapter_overview.html[documentation]
+for more information on the Function execution framework.
+
+Geode Functions are declared as _Spring_ beans and must implement the `org.apache.geode.cache.execute.Function`
+interface or extend `org.apache.geode.cache.execute.FunctionAdapter`.
+
+The namespace uses a familiar pattern to declare functions:
 
 [source,xml]
 ----
 <gfe:function-service>
   <gfe:function>
-      <bean class="com.company.example.Function1"/>
+      <bean class="example.FunctionOne"/>
       <ref bean="function2"/>
   </gfe:function>
 </gfe:function-service>
 
-<bean id="function2" class="com.company.example.Function2"/>
+<bean id="function2" class="example.FunctionTwo"/>
 ----
-

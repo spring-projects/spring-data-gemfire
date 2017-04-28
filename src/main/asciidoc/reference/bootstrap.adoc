@@ -1,58 +1,58 @@
 [[bootstrap]]
-= Bootstrapping GemFire with the Spring container
+= Bootstrapping Apache Geode with the Spring container
 
-Spring Data GemFire provides full configuration and initialization of the Pivotal GemFire In-Memory Data Grid
-using the Spring IoC container.  The framework includes several classes to help simplify the configuration of
-Pivotal GemFire components including: Caches, Regions, Indexes, DiskStores, Functions, WAN Gateways, persistence backup
+_Spring Data Geode_ provides full configuration and initialization of the Apache Geode In-Memory Data Grid (IMDG)
+using the _Spring_ IoC container.  The framework includes several classes to help simplify the configuration of
+Apache Geode components including: Caches, Regions, Indexes, DiskStores, Functions, WAN Gateways, persistence backup
 along with several other Distributed System components in order to support a variety of use cases with minimal effort.
 
-NOTE: This section assumes basic familiarity with Pivotal GemFire. For more information,
-see the http://www.pivotal.io/big-data/pivotal-gemfire[product documentation].
+NOTE: This section assumes basic familiarity with Apache Geode. For more information,
+see the Apache Geode http://geode.apache.org/docs/[product documentation].
 
-[[bootstrap:region:spring:config]]
-== Advantages of using Spring over GemFire `cache.xml`
+[[bootstrap:namespace:xml]]
+== Advantages of using Spring over Apache Geode `cache.xml`
 
-As of release 1.2.0, Spring Data GemFire's XML namespace supports full configuration of the GemFire In-Memory Data Grid.
-In fact, Spring Data GemFire's XML namespace is considered to be the preferred way to configure GemFire.
-GemFire will continue to support native `cache.xml` for legacy reasons, but GemFire application developers can now do
-everything in Spring XML and take advantage of the many wonderful things Spring has to offer such as
-modular XML configuration, property placeholders and overrides, SpEL, and environment profiles. Behind the
-XML namespace, Spring Data GemFire makes extensive use of Spring's `FactoryBean` pattern to simplify the creation,
-configuration and initialization of GemFire components.
+_Spring Data Geode's_ XML namespace supports full configuration of the Apache Geode In-Memory Data Grid (IMDG).
+The XML namespace is the preferred way to configure Apache Geode in a _Spring_ context in order to properly
+manage Geode's lifecycle inside the _Spring_ container.  While support for Geode's native `cache.xml` persists
+for legacy reasons, Geode application developers are encouraged to do everything in _Spring_ XML to take advantage of
+the many wonderful things _Spring_ has to offer such as modular XML configuration, property placeholders and overrides,
+SpEL, and environment profiles.  Behind the XML namespace, _Spring Data Geode_ makes extensive use of _Spring's_
+`FactoryBean` pattern to simplify the creation, configuration and initialization of Geode components.
 
-For example, GemFire provides several callback interfaces, such as `CacheListener`, `CacheWriter`, and `CacheLoader`,
-that allow developers to add custom event handlers. Using Spring's IoC container, these callbacks may be configured
-as normal Spring beans and injected into GemFire components. This is a significant improvement over native `cache.xml`,
-which provides relatively limited configuration options and requires callbacks to implement GemFire's `Declarable` interface
-(see <<apis:declarable>> to see how you can still use `Declarables` within Spring's IoC/DI container).
+Apache Geode provides several callback interfaces, such as `CacheListener`, `CacheLoader` and `CacheWriter`,
+that allow developers to add custom event handlers. Using _Spring's_ IoC container, these callbacks may be configured
+as normal _Spring_ beans and injected into Geode components. This is a significant improvement over native `cache.xml`,
+which provides relatively limited configuration options and requires callbacks to implement Geode's `Declarable`
+interface (see <<apis:declarable>> to see how you can still use `Declarables` within _Spring's_ IoC/DI container).
 
-In addition, IDEs such as the Spring Tool Suite (STS) provide excellent support for Spring XML namespaces, such as
-code completion, pop-up annotations, and real time validation, making them easy to use.
+In addition, IDEs, such as the _Spring Tool Suite_ (STS), provide excellent support for _Spring_ XML namespaces
+including code completion, pop-up annotations, and real time validation, making them easy to use.
 
 [[bootstrap:namespace]]
-== Using the Core Spring Data GemFire Namespace
+== Using the Core Namespace
 
-To simplify configuration, Spring Data GemFire provides a dedicated XML namespace for configuring core GemFire components.
-It is also possible to configure beans directly using Spring's standard <bean> definition. However, as of
-Spring Data GemFire 1.2.0, all bean properties are exposed via the XML namespace so there is little benefit to using
-raw bean definitions. For more information about XML Schema-based configuration in Spring, see
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config[this] appendix
-in the Spring Framework reference documentation.
+To simplify configuration, _Spring Data Geode_ provides a dedicated XML namespace for configuring core Apache Geode
+components. It is possible to configure beans directly using _Spring's_ standard `<bean>` definition. However,
+all bean properties are exposed via the XML namespace so there is little benefit to using raw bean definitions.
+For more information about XML Schema-based configuration in _Spring_, see the
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config[appendix]
+in the _Spring Framework_ reference documentation.
 
-NOTE: Spring Data Repository support uses a separate XML namespace. See <<gemfire-repositories>> for more information
-on how to configure Spring Data GemFire Repositories.
+NOTE: _Spring Data Repository_ support uses a separate XML namespace. See <<gemfire-repositories>> for more information
+on how to configure _Spring Data Geode_ Repositories.
 
-To use the Spring Data GemFire XML namespace, simply declare it in your Spring XML configuration meta-data:
+To use the _Spring Data Geode_ XML namespace, simply declare it in your _Spring_ XML configuration meta-data:
 
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:gfe="http://www.springframework.org/schema/gemfire"<!--1--><!--2-->
+  xmlns:gfe="http://www.springframework.org/schema/geode"<!--1--><!--2-->
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"> <!--3-->
+    http://www.springframework.org/schema/geode http://www.springframework.org/schema/gemfire/spring-geode.xsd"> <!--3-->
 
   <bean id ... >
 
@@ -60,26 +60,28 @@ To use the Spring Data GemFire XML namespace, simply declare it in your Spring X
 
 </beans>
 ----
-<1> Spring GemFire namespace prefix. Any name will do but through out the reference documentation, `gfe` will be used.
-<2> The namespace URI.
-<3> The namespace URI location. Note that even though the location points to an external address (which exists and is valid), Spring will resolve the schema locally as it is included in the Spring Data GemFire library.
-<4> Declaration example for the GemFire namespace. Notice the prefix usage.
+<1> _Spring Data Geode_ XML namespace prefix. Any name will do but through out this reference documentation,
+`gfe` will be used.
+<2> The XML namespace prefix is mapped to the URI.
+<3> The XML namespace URI location. Note that even though the location points to an external address (which does exist
+and is valid), _Spring_ will resolve the schema locally as it is included in the _Spring Data Geode_ library.
+<4> Example declaration using the XML namespace with the `gfe` prefix.
 
 [NOTE]
 ====
-It is possible to change the default namespace, for example from `beans` to `gfe`. This is useful for configuration
-composed mainly of GemFire components as it avoids declaring the prefix. To achieve this, simply swap the namespace
+It is possible to change the default namespace from `beans` to `gfe`. This is useful for XML configuration
+composed mainly of Geode components as it avoids declaring the prefix. To achieve this, simply swap the namespace
 prefix declaration above:
 
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/gemfire" <!--1-->
-  xmlns:beans="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<!--2-->
+<beans xmlns="http://www.springframework.org/schema/geode" <!--1-->
+  xmlns:beans="http://www.springframework.org/schema/beans" <!--2-->
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+    http://www.springframework.org/schema/geode http://www.springframework.org/schema/gemfire/spring-geode.xsd">
 
   <beans:bean id ... > <!--3-->
 
@@ -87,19 +89,21 @@ prefix declaration above:
 
 </beans>
 ----
-<1> The default namespace declaration for this XML file points to the Spring Data GemFire namespace.
-<2> The `beans` namespace prefix declaration.
+<1> The default namespace declaration for this XML document points to the _Spring Data Geode_ XML namespace.
+<2> The `beans` namespace prefix declaration for _Spring's_ raw bean definitions.
 <3> Bean declaration using the `beans` namespace. Notice the prefix.
-<4> Bean declaration using the `gfe` namespace. Notice the lack of prefix (as the default namespace is used).
+<4> Bean declaration using the `gfe` namespace. Notice the lack of prefix since `gfe` is the default namespace.
 ====
 
 :leveloffset: +1
-include::{basedocdir}/reference/cache.adoc[]
+
 include::{basedocdir}/reference/data-access.adoc[]
+include::{basedocdir}/reference/cache.adoc[]
 include::{basedocdir}/reference/region.adoc[]
 include::{basedocdir}/reference/indexing.adoc[]
 include::{basedocdir}/reference/diskstore.adoc[]
 include::{basedocdir}/reference/snapshot.adoc[]
 include::{basedocdir}/reference/function.adoc[]
 include::{basedocdir}/reference/gateway.adoc[]
+
 :leveloffset: -1

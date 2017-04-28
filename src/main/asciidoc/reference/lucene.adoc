@@ -81,7 +81,7 @@ to stick to strongly-typed objects.
 
 Now that we have a `LuceneIndex` we can perform Lucene based data access operations, such as queries.
 
-#### Lucene Template Data Accessors
+== Lucene Template Data Accessors
 
 _Spring Data Geode_ provides 2 primary templates for Lucene data access operations, depending on how low a level
 your application is prepared to deal with.
@@ -233,7 +233,7 @@ that uses https://github.com/cglib/cglib[CGLIB] to generate proxy classes as the
 
 A custom `ProjectionFactory` can be set on a Lucene template using `setProjectionFactory(:ProjectionFactory)`.
 
-#### Annotation configuration support
+== Annotation configuration support
 
 Finally, _Spring Data Geode_ provides Annotation configuration support for `LuceneIndexes`. Eventually, the SDG Lucene
 support will find its way into the _Repository_ infrastructure extension for Apache Geode so that Lucene queries

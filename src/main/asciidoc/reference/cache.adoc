@@ -1,16 +1,17 @@
 [[bootstrap:cache]]
-= Configuring a GemFire Cache
+= Configuring a Cache
 
-To use GemFire, a developer needs to either create a new `Cache` or connect to an existing one.  With the current
-version of GemFire, there can be only one open Cache per VM (technically, per `ClassLoader`).  In most cases, the
-`Cache` should only be created once.
+To use Apache Geode, a developer needs to either create a new `Cache` or connect to an existing one.
+With the current version of Geode, there can be only one open Cache per VM (technically, per `ClassLoader`).
+In most cases, the `Cache` should only be created once.
 
-NOTE: This section describes the creation and configuration of a cache member, appropriate in peer-to-peer topologies
-and cache servers. A cache member is also commonly used for standalone applications, integration tests and proof of
-concepts. In typical production systems, most application processes will act as cache clients, creating a `ClientCache`
-instance instead. This is described in the sections <<bootstrap:cache:client>> and <<bootstrap:region:client>>.
+NOTE: This section describes the creation and configuration of a peer cache member, appropriate in
+peer-to-peer (P2P) topologies and cache servers. A cache member can also be used in standalone applications
+and integration tests. However, in most typical production systems, most application processes will act as
+cache clients, creating a `ClientCache` instance instead. This is described in the sections <<bootstrap:cache:client>>
+and <<bootstrap:region:client>>.
 
-A cache with default configuration can be created with a very simple declaration:
+A peer cache with default configuration can be created with a very simple declaration:
 
 [source,xml]
 ----
@@ -18,39 +19,38 @@ A cache with default configuration can be created with a very simple declaration
 ----
 
 During Spring container initialization, any application context containing this cache definition will register
-a `CacheFactoryBean` that creates a Spring bean named `gemfireCache` referencing a GemFire `Cache` instance.
+a `CacheFactoryBean` that creates a Spring bean named `gemfireCache` referencing a Geode `Cache` instance.
 This bean will refer to either an existing cache, or if one does not already exist, a newly created one.  Since no
 additional properties were specified, a newly created cache will apply the default cache configuration.
 
-All _Spring Data GemFire_ components that depend on the cache respect this naming convention, so there is no need
+All _Spring Data Geode_ components that depend on the cache respect this naming convention, so there is no need
 to explicitly declare the cache dependency.  If you prefer, you can make the dependency explicit via the `cache-ref`
-attribute provided by various SDG namespace elements.  Also, you can easily override the cache's bean name using
+attribute provided by various SDG XML namespace elements.  Also, you can easily override the cache's bean name using
 the `id` attribute:
 
 [source,xml]
 ----
-<gfe:cache id="my-cache"/>
+<gfe:cache id="myCache"/>
 ----
 
-Starting with _Spring Data GemFire_ v1.2.0, a GemFire `Cache` can be fully configured using Spring.  However, GemFire's
-native XML configuration file, `cache.xml`, is also supported.  For situations in which the GemFire cache needs to be
-configured natively, simply provide a reference to the GemFire XML configuration file using the `cache-xml-location`
-attribute:
+A Geode `Cache` can be fully configured using Spring, however, Geode's native XML configuration file, `cache.xml`,
+is also supported.  For situations where the Geode cache needs to be configured natively, simply provide a reference
+to the Geode XML configuration file using the `cache-xml-location` attribute:
 
 [source,xml]
 ----
-<gfe:cache id="cache-using-native-xml" cache-xml-location="classpath:cache.xml"/>
+<gfe:cache id="cacheConfiguredWithNativeXml" cache-xml-location="classpath:cache.xml"/>
 ----
 
-In this example, if the cache needs to be created, it will use the file named `cache.xml` located in the classpath root
+In this example, if a cache needs to be created, it will use a file named `cache.xml` located in the classpath root
 to configure it.
 
 NOTE: The configuration makes use of Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#resources[`Resource`]
 abstraction to locate the file.  This allows various search patterns to be used, depending on the runtime environment
 or the prefix specified (if any) in the resource location.
 
-In addition to referencing an external XML configuration file, a developer may also specify GemFire System
-http://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html[properties]
+In addition to referencing an external XML configuration file, a developer may also specify Geode System
+http://geode.apache.org/docs/guide/11/reference/topics/gemfire_properties.html[properties]
 using any of Spring's `Properties` support features.
 
 For example, the developer may use the `properties` element defined in the `util` namespace to define `Properties`
@@ -60,21 +60,23 @@ directly or load properties from a properties file:
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:gfe="http://www.springframework.org/schema/gemfire"
+  xmlns:gfe="http://www.springframework.org/schema/geode"
   xmlns:util="http://www.springframework.org/schema/util"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/geode http://www.springframework.org/schema/gemfire/spring-geode.xsd
     http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-  <util:properties id="gemfireProperties" location="file:/pivotal/gemfire/gemfire.properties"/>
+  <util:properties id="gemfireProperties" location="file:/path/to/gemfire.properties"/>
 
   <gfe:cache properties-ref="gemfireProperties"/>
 
 </beans>
 ----
 
-The latter approach is recommended for externalizing environment specific settings outside the application configuration.
+Using a properties file is recommended for externalizing environment specific settings outside
+the application configuration.
 
 NOTE: Cache settings apply only if a new cache needs to be created.  If an open cache already exists in the VM,
 these settings are ignored.
@@ -89,10 +91,12 @@ or child elements:
 ----
 <!--1-->
 <gfe:cache
+    cache-xml-location=".."
+    properties-ref=".."
     close="false"
     copy-on-read="true"
-    critical-heap-percentage="70"
-    eviction-heap-percentage="60"
+    critical-heap-percentage="90"
+    eviction-heap-percentage="70"
     enable-auto-reconnect="false" <!--2-->
     lock-lease="120"
     lock-timeout="60"
@@ -103,204 +107,220 @@ or child elements:
     pdx-read-serialized="false"
     pdx-ignore-unread-fields="true"
     search-timeout="300"
-    use-cluster-configuration="false" <!--3-->
-    lazy-init="true">
+    use-bean-factory-locator="true" <!--3-->
+    use-cluster-configuration="false" <!--4-->
+>
 
-  <gfe:transaction-listener ref="myTransactionListener"/> <!--4-->
+  <gfe:transaction-listener ref="myTransactionListener"/> <!--5-->
 
-  <gfe:transaction-writer> <!--5-->
-    <bean class="org.springframework.data.gemfire.example.TransactionListener"/>
+  <gfe:transaction-writer> <!--6-->
+    <bean class="org.example.app.geode.transaction.TransactionWriter"/>
   </gfe:transaction-writer>
 
-  <gfe:gateway-conflict-resolver ref="myGatewayConflictResolver"/> <!--6-->
+  <gfe:gateway-conflict-resolver ref="myGatewayConflictResolver"/> <!--7-->
 
-  <gfe:dynamic-region-factory/> <!--7-->
+  <gfe:dynamic-region-factory/> <!--8-->
 
-  <gfe:jndi-binding jndi-name="myDataSource" type="ManagedDataSource"/> <!--8-->
+  <gfe:jndi-binding jndi-name="myDataSource" type="ManagedDataSource"/> <!--9-->
 
 </gfe:cache>
-
 ----
 
-<1> Various cache options are supported by attributes. For further information regarding anything shown in this example, please consult the GemFire http://gemfire.docs.pivotal.io/index.html[product documentation].
-The `close` attribute determines if the cache should be closed when the Spring application context is closed. The default is `true` however for cases in which multiple application contexts use the cache (common in web applications), set this value to `false`.
-The `lazy-init` attribute determines if the cache should be initialized before another bean references it. The default is `true` however in some cases it may be convenient to set this value to `false`.
-<2> Setting the `enable-auto-reconnect` attribute to true (default is false), allows a disconnected GemFire member to automatically reconnect and rejoin a GemFire cluster.
-See the GemFire http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/autoreconnect/member-reconnect.html[product documentation] for more details.
-<3> Setting the `use-cluster-configuration` attribute to true (default is false) to enable a GemFire member to retrieve the common, shared Cluster-based configuration from a Locator.
-See the GemFire http://gemfire.docs.pivotal.io/docs-gemfire/configuring/cluster_config/gfsh_persist.html[product documentation] for more details.
-<4> An example of a `TransactionListener` callback declaration using a bean reference. The referenced bean must implement
-http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionListener.html[TransactionListener].
-`TransactionListener(s)` can be implemented to handle transaction related events.
-<5> An example of a `TransactionWriter` callback declaration using an inner bean declaration this time. The bean must implement
-http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/TransactionWriter.html[TransactionWriter].
-`TransactionWriter` is a callback that is allowed to veto a transaction.
-<6> An example of a `GatewayConflictResolver` declaration using a bean reference. The referenced bean must implement
-http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/util/GatewayConflictResolver.html[GatewayConflictResolver].
-GatewayConflictResolver is a Cache-level plugin that is called upon to decide what to do with events that originate in other systems and arrive through the WAN Gateway.
-<7> Enable GemFire's http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/DynamicRegionFactory.html[DynamicRegionFactory],
-which provides a distributed region creation service.
-<8> Declares a JNDI binding to enlist an external DataSource in a GemFire transaction.
+<1> Various cache options are supported by attributes. For further information regarding anything shown in this example,
+please consult the Geode http://geode.apache.org/docs/[product documentation].
+The `close` attribute determines whether the cache should be closed when the Spring application context is closed.
+The default is `true`, however, for use cases in which multiple application contexts use the cache
+(common in web applications), set this value to `false`.
+<2> Setting the `enable-auto-reconnect` attribute to true (default is false), allows a disconnected Geode member to
+automatically reconnect and rejoin the Geode cluster.
+See the Geode http://geode.apache.org/docs/guide/11/managing/autoreconnect/member-reconnect.html[product documentation]
+for more details.
+<3> Setting the `use-bean-factory-locator` attribute to `true` (defaults to `false`) is only applicable when both
+Spring (XML) configuration meta-data and Geode `cache.xml` is used to configure the Geode cache node
+(whether client or peer).  This option allows Geode components (e.g. `CacheLoader`) expressed in `cache.xml`
+to be auto-wired with beans (e.g. `DataSource`) defined in the Spring application context.  This option is typically
+used in conjunction with `cache-xml-location`.
+<4> Setting the `use-cluster-configuration` attribute to `true` (default is `false`) enables a Geode member to
+retrieve the common, shared Cluster-based configuration from a Locator.
+See the Geode http://geode.apache.org/docs/guide/11/configuring/cluster_config/gfsh_persist.html[product documentation]
+for more details.
+<5> Example of a `TransactionListener` callback declaration using a bean reference. The referenced bean must implement
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/TransactionListener.html[TransactionListener].
+A `TransactionListener` can be implemented to handle transaction related events (e.g. afterCommit, afterRollback).
+<6> Example of a `TransactionWriter` callback declaration using an inner bean declaration. The bean must implement
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/TransactionWriter.html[TransactionWriter].
+The `TransactionWriter` is a callback that is allowed to veto a transaction.
+<7> Example of a `GatewayConflictResolver` callback declaration using a bean reference. The referenced bean
+must implement http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/util/GatewayConflictResolver.html
+[GatewayConflictResolver].
+A `GatewayConflictResolver` is a Cache-level plugin that is called upon to decide what to do with events that originate
+in other systems and arrive through the WAN Gateway.
+<8> Enable Geode's http://geode.apache.org/docs/guide/11/developing/region_options/dynamic_region_creation.html[DynamicRegionFactory],
+which provides a distributed Region creation service.
+<9> Declares a JNDI binding to enlist an external DataSource in a Geode transaction.
 
-NOTE: The `use-bean-factory-locator` attribute (not shown) deserves a mention. The factory bean responsible for
-creating the cache uses an internal Spring type called a `BeanFactoryLocator` to enable user classes declared in
-GemFire's native `cache.xml` to be registered as Spring beans. The `BeanFactoryLocator` implementation also permits
-only one bean definition for a cache with a given id. In certain situations, such as running JUnit integration tests
-from within Eclipse, it is necessary to disable the `BeanFactoryLocator` by setting this value to false to prevent
-an exception. This exception may also arise during JUnit tests running from a build script. In this case the test runner
-should be configured to fork a new JVM for each test (in maven, set `<forkmode>always</forkmode>`) . Generally, there is
-no harm in setting this value to false.
-
+[[bootstrap:cache:pdx-serialization]]
 === Enabling PDX Serialization
 
-The example above includes a number of attributes related to GemFire's enhanced serialization framework, PDX.
+The example above includes a number of attributes related to Geode's enhanced serialization framework, PDX.
 While a complete discussion of PDX is beyond the scope of this reference guide, it is important to note that PDX
-is enabled by registering a PDX serializer which is done via the `pdx-serializer` attribute. GemFire provides
-an implementation class `org.apache.geode.pdx.ReflectionBasedAutoSerializer`, however it is common for developers
-to provide their own implementation. The value of the attribute is simply a reference to a Spring bean that implements
-the required interface. More information on serialization support can be found in <<serialization>>
+is enabled by registering a `PdxSerializer` which is specified via the `pdx-serializer` attribute. Geode provides
+an implementing class `org.apache.geode.pdx.ReflectionBasedAutoSerializer` that uses Java Reflection, however, it is
+common for developers to provide their own implementation. The value of the attribute is simply a reference to
+a Spring bean that implements the `PdxSerializer` interface.
+
+More information on serialization support can be found in <<serialization>>
 
 [[boostrap:cache:auto-reconnect]]
 === Enabling auto-reconnect
 
-Setting the `<gfe:cache enable-auto-reconnect="[true|false*]>` attribute to true should be done with care.
+Setting the `<gfe:cache enable-auto-reconnect="[true|false*]>` attribute to `true` should be done with care.
 
-Generally, enabling 'auto-reconnect' should only be done in cases where _Spring Data GemFire's_ XML namespace is used to
-configure and bootstrap a new GemFire Server data node to add to the cluster.  In other words, 'auto-reconnect'
-should not be used when _Spring Data GemFire_ is used to develop and build an GemFire application that also happens
-to be a peer cache member of the GemFire cluster.
+Generally, 'auto-reconnect' should only be enabled in cases where _Spring Data Geode's_ XML namespace is used to
+configure and bootstrap a new, non-application Geode Server to add to a cluster.  In other words, 'auto-reconnect'
+should not be enabled when _Spring Data Geode_ is used to develop and build an Geode application that also happens
+to be a peer cache member of the Geode cluster.
 
-The main reason is most GemFire applications use references to the GemFire cache or regions in order to perform
-data access operations.  The references are "injected" by the Spring container into application components (e.g. DAOs
-or Repositories) for use by the application.  When a member (such as the application) is forcefully disconnected
-from the rest of the cluster, presumably because the member (the application) has become unresponsive for
-a period of time, or network partition separates one or more members (along with the application peer cache member) into
-a group that is too small to act as the distributed system, the member will shutdown and all GemFire component references
-(e.g. Cache, Regions, etc) become invalid.
+The main reason for this is that most Geode applications use references to the Geode cache or Regions in order to
+perform data access operations.  These references are "injected" by the Spring container into application components
+(e.g. DAOs or Repositories) for use by the application.  When a peer member is forcefully disconnected from the rest
+of the cluster, presumably because the peer member has become unresponsive or a network partition separates one or more
+peer members into a group too small to function as an independent distributed system, the peer member will shutdown
+and all Geode component references (e.g. Cache, Regions, etc) become invalid.
 
-Essentially, the current forced-disconnect processing in each member dismantles the system from the ground up.
-It shuts down the JGroups stack, puts the Distributed System in a shut-down state and then closes the Cache.
-This effectively loses all in-memory information.
+Essentially, the current forced-disconnect processing logic in each peer member dismantles the system from the ground up.
+The JGroups stack shuts down, the Distributed System is put in a shutdown state and finally, the Cache is closed.
+Effectively, all memory references become stale and are lost.
 
-After being disconnected from a distributed system and successfully shutting down, the GemFire member then restarts in a
-"reconnecting" state, while periodically attempting to rejoin the distributed system. If the member succeeds in reconnecting,
-the member rebuilds its "view" of the distributed system from existing members and receives a new distributed system ID.
+After being disconnected from the Distributed System a peer member enters a "reconnecting" state and periodically
+attempts to rejoin the Distributed System.  If the peer member succeeds in reconnecting, the member rebuilds
+its "view" of the Distributed System from existing members and receives a new Distributed System ID.  Additionally, all
+Cache, Regions and other Geode components are reconstructed.  Therefore, all old references, which may have been
+injected into application by the Spring container are now stale and no longer valid.
 
-This means the cache, regions and other GemFire components are reconstructed and all old references that may have been
-injected into application are now stale and no longer valid.
+Geode makes no guarantee, even when using the Geode public Java API, that application Cache, Region or other
+component references will be automatically refreshed by the reconnect operation. As such, Geode applications
+must take care to refresh their own references.
 
-GemFire makes no guarantee, even when using the GemFire public Java API, that application cache, region or other
-component references will be automatically refreshed by the reconnect operation. As such, applications must take care
-to refresh their own references.
+Unfortunately, there is no way to be notified of a disconnect event, and subsequently, a reconnect event.
+If that were the case, the application developer would have a clean way to know when to call
+`ConfigurableApplicationContext.refresh()`, if even applicable for an application to do so, which is why
+this "feature" of Apache Geode is not recommended for peer cache Geode applications.
 
-Unfortunately there is no way to be "notified" of a disconnect and subsequently a reconnect event. If so, the application
-developer would then have a clean way to know when to call ConfigurableApplicationContext.refresh(), if even applicable
-for an application to do so, which is why this "feature" of GemFire 8 is not recommended for peer cache GemFire applications.
-
-For more information about 'auto-reconnect', see GemFire's http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/autoreconnect/member-reconnect.html[product documentation].
+For more information about 'auto-reconnect', see Geode's
+http://geode.apache.org/docs/guide/11/managing/autoreconnect/member-reconnect.html[product documentation].
 
 [[bootstrap:cache:cluster-configuration]]
 === Using Cluster-based Configuration
 
-GemFire 8's new Cluster-based Configuration Service is a convenient way for a member joining the cluster to get a
-"consistent view" of the cluster, by using the shared, persistent configuration maintained by a Locator, ensuring
-the member's configuration will be compatible with the GemFire distributed system when the member joins.
+Apache Geode's Cluster Configuration Service is a convenient way for any peer member joining the cluster to get
+a "consistent view" of the cluster by using the shared, persistent configuration maintained by a Locator.
+Using the Cluster-based Configuration ensures the peer member's configuration will be compatible with
+the Geode Distributed System when the member joins.
 
-This feature of Spring Data GemFire (setting the `use-cluster-configuration` attribute to true) works in the same way
-as the `cache-xml-location` attribute, except the source of the GemFire configuration meta-data comes from a network
-Locator as opposed to a native `cache.xml` file.
+This feature of _Spring Data Geode_ (setting the `use-cluster-configuration` attribute to `true`) works in the same way
+as the `cache-xml-location` attribute, except the source of the Geode configuration meta-data comes from the network
+via a Locator as opposed to a native `cache.xml` file residing in the local file system.
 
-All GemFire native configuration meta-data, whether from `cache.xml` or from the Cluster Configuration Service,
-gets applied before any Spring XML configuration meta-data.  As such, Spring's config serves to "augment" the
-native GemFire configuration meta-data, which would most likely be specific to the application.
+All Geode native configuration meta-data, whether from `cache.xml` or from the Cluster Configuration Service,
+gets applied before any _Spring_ (XML) configuration meta-data.  As such, _Spring's_ config serves to "augment" the
+native Geode configuration meta-data and would most likely be specific to the application.
 
-Again, to enable this feature, just specify the following in the Spring XML config:
+Again, to enable this feature, just specify the following in the _Spring_ XML config:
 
 [source,xml]
 ----
   <gfe:cache use-cluster-configuration="true"/>
 ----
 
-NOTE: While certain GemFire tools, like Gfsh, have their actions "recorded" when any schema-like change is made
-(e.g. `gfsh>create region --name=Example --type=PARTITION`) to the cluster, Spring Data GemFire's configuration meta-data
-specified with the XML namespace is not recorded.  The same is true when using GemFire's public Java API directly;
-it too is not recorded.
+NOTE: While certain Geode tools, like _Gfsh_, have their actions "recorded" when schema-like changes are made
+(e.g. `gfsh>create region --name=Example --type=PARTITION`), _Spring Data Geode's_ configuration meta-data
+is not recorded.  The same is true when using Geode's public Java API directly; it too is not recorded.
 
-For more information on GemFire's Cluster Configuration Service, see the
-http://gemfire.docs.pivotal.io/docs-gemfire/configuring/cluster_config/gfsh_persist.html[product documentation].
+For more information on Geode's Cluster Configuration Service, see the
+http://geode.apache.org/docs/guide/11/configuring/cluster_config/gfsh_persist.html[product documentation].
 
 [[bootstrap:cache:server]]
-== Configuring a GemFire Cache Server
+== Configuring a Geode CacheServer
 
-_Spring Data GemFire_ includes dedicated support for configuring a http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/server/CacheServer.html[CacheServer],
+_Spring Data Geode_ includes dedicated support for configuring a
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/server/CacheServer.html[CacheServer],
 allowing complete configuration through the Spring container:
 
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:gfe="http://www.springframework.org/schema/gemfire"
   xmlns:context="http://www.springframework.org/schema/context"
-  xsi:schemaLocation="http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+  xmlns:gfe="http://www.springframework.org/schema/geode"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/geode http://www.springframework.org/schema/geode/spring-geode.xsd
+">
 
-  <gfe:cache />
+  <gfe:cache/>
 
-  <!-- Advanced example depicting various cache server configuration options -->
+  <!-- Example depicting serveral Geode CacheServer configuration options -->
   <gfe:cache-server id="advanced-config" auto-startup="true"
-       bind-address="localhost" host-name-for-clients="localhost" port="${gemfire.cache.server.port}"
-       load-poll-interval="2000" max-connections="22" max-message-count="1000"
-       max-threads="16" max-time-between-pings="30000"
-       groups="test-server">
+       bind-address="localhost" host-name-for-clients="localhost" port="${geode.cache.server.port}"
+       load-poll-interval="2000" max-connections="22" max-message-count="1000" max-threads="16"
+       max-time-between-pings="30000" groups="test-server">
+
     <gfe:subscription-config eviction-type="ENTRY" capacity="1000" disk-store="file://${java.io.tmpdir}"/>
+
   </gfe:cache-server>
 
-   <context:property-placeholder location="classpath:cache-server.properties"/>
+  <context:property-placeholder location="classpath:cache-server.properties"/>
 
 </beans>
 ----
 
 The configuration above illustrates the `cache-server` element and the many options available.
 
-NOTE: Rather than hard-coding the port, this configuration uses Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config-body-schemas-context[context] namespace to declare a `property-placeholder`.
+NOTE: Rather than hard-coding the port, this configuration uses _Spring's_
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config-body-schemas-context[context]
+namespace to declare a `property-placeholder`.
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-placeholderconfigurer[property placeholder]
 reads one or more properties files and then replaces property placeholders with values at runtime. This allows administrators
-to change values without having to touch the main application configuration.  Spring also provides the http://docs.spring.io/spring/docs/3.2.11.RELEASE/spring-framework-reference/htmlsingle/#new-feature-el[SpEL] and the http://docs.spring.io/spring/docs/3.2.11.RELEASE/spring-framework-reference/htmlsingle/#new-in-3.1-environment-abstraction[environment abstraction]
-to support externalization of environment-specific properties from the main codebase, easing deployment across multiple machines.
+to change values without having to touch the main application configuration.  _Spring_ also provides the
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#expressions[SpEL]
+and the http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-environment[environment abstraction]
+to support externalization of environment-specific properties from the main codebase, easing deployment
+across multiple machines.
 
-NOTE: To avoid initialization problems, the `CacheServer` started by _Spring Data GemFire_ will start *after* the container
-has been fully initialized.  This allows potential regions, listeners, writers or instantiators defined declaratively
-to be fully initialized and registered before the server starts accepting connections.  Keep this in mind when
-programmatically configuring these elements as the server might start after your components and thus not be seen
-by the clients connecting right away.
+NOTE: To avoid initialization problems, the `CacheServer` started by _Spring Data Geode_ will start *after*
+the _Spring_ container has been fully initialized.  This allows potential Regions, Listeners, Writers or Instantiators
+defined declaratively to be fully initialized and registered before the server starts accepting connections.
+Keep this in mind when programmatically configuring these elements as the server might start after your components
+and thus not be seen by the clients connecting right away.
 
 [[bootstrap:cache:client]]
-== Configuring a GemFire ClientCache
+== Configuring a Geode ClientCache
 
-In addition to defining a GemFire peer http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/Cache.html[Cache],
-_Spring Data GemFire_ also supports the definition of a GemFire http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html[ClientCache]
-in a Spring context.  A `ClientCache` definition is very similar in configuration and use to the GemFire peer <<bootstrap:cache,Cache>>
-and is supported by the `org.springframework.data.gemfire.client.ClientCacheFactoryBean`.
+In addition to defining a Geode peer http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/Cache.html[Cache],
+_Spring Data Geode_ also supports the definition of a Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientCache.html[ClientCache]
+in a _Spring_ context.  A `ClientCache` definition is very similar in configuration and use to
+the Geode peer <<bootstrap:cache,Cache>> and is supported by the `org.springframework.data.gemfire.client.ClientCacheFactoryBean`.
 
-The simplest definition of a GemFire cache client with default configuration can be accomplished with the following
+The simplest definition of a Geode cache client using default configuration can be accomplished with the following
 declaration:
 
 [source,xml]
 ----
 <beans>
-    <gfe:client-cache />
+  <gfe:client-cache/>
 </beans>
 ----
 
-`client-cache` supports much of the same options as the <<bootstrap:cache:advanced,cache>> element.  However, as opposed
-to a *full-fledged* cache member, a client cache connects to a remote cache server through a Pool.  By default, a Pool
-is created to connect to a server running on `localhost`, listening to port `40404`. The default Pool is used
-by all client Regions unless the Region is configured to use a different Pool.
+`client-cache` supports many of the same options as the <<bootstrap:cache:advanced,cache>> element.  However, as opposed
+to a *full-fledged* peer cache member, a cache client connects to a remote cache server through a Pool.  By default,
+a Pool is created to connect to a server running on `localhost`, listening to port `40404`. The default Pool is used
+by all client Regions unless the Region is configured to use a specific Pool.
 
 Pools can be defined with the `pool` element.  This client-side Pool can be used to configure connectivity directly to
-a server for individual entities or to the entire cache through one or more Locators.
+a server for individual entities or the entire cache through one or more Locators.
 
 For example, to customize the default Pool used by the `client-cache`, the developer needs to define a Pool and wire it
 to the cache definition:
@@ -308,23 +328,23 @@ to the cache definition:
 [source,xml]
 ----
 <beans>
-  <gfe:client-cache id="my-cache" pool-name="my-pool"/>
+  <gfe:client-cache id="my-cache" pool-name="myPool"/>
 
-  <gfe:pool id="my-pool" subscription-enabled="true">
-     <gfe:locator host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
- </gfe:pool>
+  <gfe:pool id="myPool" subscription-enabled="true">
+    <gfe:locator host="${geode.locator.host}" port="${geode.locator.port}"/>
+  </gfe:pool>
 </beans>
 ----
 
-The `<client-cache>` element also includes the `ready-for-events` attribute.  If set to `true`, the client cache
-initialization will include a call to http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientCache.html#readyForEvents()[ClientCache.readyForEvents()].
+The `<client-cache>` element also has a `ready-for-events` attribute.  If set to `true`, the client cache
+initialization will include a call to http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientCache.html#readyForEvents--[ClientCache.readyForEvents()].
 
 Client-side configuration is covered in more detail in <<bootstrap:region:client>>.
 
 [[bootstrap:cache:client:pool]]
-=== GemFire's DEFAULT Pool and Spring Data GemFire Pool Definitions
+=== Geode's DEFAULT Pool and Spring Data Geode Pool Definitions
 
-If a GemFire `ClientCache` is local-only, then no Pool definition is required.  For instance, a developer may define:
+If a Geode `ClientCache` is local-only, then no Pool definition is required.  For instance, a developer may define:
 
 [source,xml]
 ----
@@ -334,14 +354,14 @@ If a GemFire `ClientCache` is local-only, then no Pool definition is required.  
 ----
 
 In this case, the "Example" Region is `LOCAL` and no data is distributed between the client and a server, therefore,
-no Pool is necessary.  This is true for any client-side, local-only Region, as defined by the GemFire's
-http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+no Pool is necessary.  This is true for any client-side, local-only Region, as defined by the Geode's
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
 (all `LOCAL_*` shortcuts).
 
-However, if the client Region is a (caching) proxy to a server-side Region, then a Pool is required.  There are several
+However, if a client Region is a (caching) proxy to a server-side Region, then a Pool is required.  There are several
 ways to define and use a Pool in this case.
 
-When a client cache, Pool and proxy-based Region are all defined, but not explicitly identified, _Spring Data GemFire_
+When a client cache, Pool and proxy-based Region are all defined, but not explicitly identified, _Spring Data Geode_
 will resolve the references automatically for you.
 
 For example:
@@ -351,31 +371,31 @@ For example:
 <gfe:client-cache/>
 
 <gfe:pool>
-  <gfe:locator host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
+  <gfe:locator host="${geode.locator.host}" port="${geode.locator.port}"/>
 </gfe:pool>
 
 <gfe:client-region id="Example" shortcut="PROXY"/>
 ----
 
-In this case, the client cache is identified as `gemfireCache`, the Pool as `gemfirePool` and the client Region as,
-well, "Example".  However, the client cache will initialize GemFire's DEFAULT Pool from the `gemfirePool`
-and the client Region will use the `gemfirePool` when distributing data between the client and the server.
+In the example above, the client cache is identified as `gemfireCache`, the Pool as `gemfirePool` and the client Region
+as "Example".  However, the client cache will initialize Geode's DEFAULT Pool from `gemfirePool` and the client Region
+will use the `gemfirePool` when distributing data between the client and the server.
 
-_Spring Data GemFire_ basically resolves the above configuration to the following:
+Basically, _Spring Data Geode_ resolves the above configuration to the following:
 
 [source,xml]
 ----
 <gfe:client-cache id="gemfireCache" pool-name="gemfirePool"/>
 
 <gfe:pool id="gemfirePool">
-  <gfe:locator host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
+  <gfe:locator host="${geode.locator.host}" port="${geode.locator.port}"/>
 </gfe:pool>
 
 <gfe:client-region id="Example" cache-ref="gemfireCache" pool-name="gemfirePool" shortcut="PROXY"/>
 ----
 
-GemFire still creates a Pool called "DEFAULT".  _Spring Data GemFire_ will just cause the "DEFAULT" Pool to be
-initialized from `gemfirePool`.  This is useful in situations where multiple Pools are defined and client Regions
+Geode still creates a Pool called "DEFAULT".  _Spring Data Geode_ will just cause the "DEFAULT" Pool to be
+initialized from the `gemfirePool`.  This is useful in situations where multiple Pools are defined and client Regions
 are using separate Pools.
 
 Consider the following:
@@ -385,11 +405,11 @@ Consider the following:
 <gfe:client-cache pool-name="locatorPool"/>
 
 <gfe:pool id="locatorPool">
-  <gfe:locator host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
+  <gfe:locator host="${geode.locator.host}" port="${geode.locator.port}"/>
 </gfe:pool>
 
 <gfe:pool id="serverPool">
-  <gfe:locator host="${gemfire.server.host}" port="${gemfire.server.port}"/>
+  <gfe:server host="${geode.server.host}" port="${geode.server.port}"/>
 </gfe:pool>
 
 <gfe:client-region id="Example" pool-name="serverPool" shortcut="PROXY"/>
@@ -399,12 +419,12 @@ Consider the following:
 <gfe:client-region id="YetAnotherExample" shortcut="LOCAL"/>
 ----
 
-In this setup, the GemFire client cache's "DEFAULT" Pool is initialized from "locatorPool" as specified with the
-`pool-name` attribute.  There is no _Spring Data GemFire_-defined `gemfirePool` since both Pools were explicitly
+In this setup, the Geode client cache's "DEFAULT" Pool is initialized from "locatorPool" as specified with the
+`pool-name` attribute.  There is no _Spring Data Geode_-defined `gemfirePool` since both Pools were explicitly
 identified (named) "locatorPool" and "serverPool", respectively.
 
 The "Example" Region explicitly refers to and uses the "serverPool" exclusively.  The "AnotherExample" Region uses
-GemFire's "DEFAULT" Pool, which was configured from the "locatorPool" based on the client cache bean definition's
+Geode's "DEFAULT" Pool, which was configured from the "locatorPool" based on the client cache bean definition's
 `pool-name` attribute.
 
 Finally, the "YetAnotherExample" Region will not use a Pool since it is `LOCAL`.

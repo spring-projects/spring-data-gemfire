@@ -1,14 +1,9 @@
 [[bootstrap:diskstore]]
 = Configuring a DiskStore
 
-As of Release 1.2.0, _Spring Data GemFire_ supports `DiskStore` configuration via the `disk-store` element.
+_Spring Data Geode_ supports `DiskStore` configuration via the `disk-store` element.
 
-NOTE: Prior to Release 1.2.0, `disk-store` was a child element of the `\*-region` elements.
-If you have Regions configured with disk storage using a prior release of _Spring Data GemFire_
-and want to upgrade to the latest release, move all `disk-store` element(s) to the top-level,
-assign an `id` and use the `*-region` element's `disk-store-ref` attribute.
-
-Also, `disk-synchronous` is now a `*-region` attribute.
+For example:
 
 [source,xml]
 ----
@@ -19,8 +14,9 @@ Also, `disk-synchronous` is now a `*-region` attribute.
 </gfe:disk-store>
 ----
 
-`DiskStores` are used by Regions for file system persistent backup or overflow storage of evicted entries,
-and persistent backup of WAN Gateways.  Multiple components may share the same `DiskStore`.
-Additionally, multiple directories may be defined for a single `DiskStore`.
+`DiskStores` are used by Regions for file system persistent backup and overflow of evicted entries
+as well as persistent backup of WAN Gateways.  Multiple Geode components may share the same `DiskStore`.
+Additionally, multiple file system directories may be defined for a single `DiskStore`.
 
-Please refer to Pivotal GemFire's documentation for an explanation of the configuration options.
+Please refer to Apache Geode's documentation for a complete explanation of the
+http://geode.apache.org/docs/guide/11/developing/storing_data_on_disk/chapter_overview.html[configuration options].

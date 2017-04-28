@@ -1,12 +1,14 @@
 [[sgf-links]]
 = Useful Links
 
-* http://projects.spring.io/spring-data-gemfire[Spring Data GemFire Home Page]
-* http://www.pivotal.io/big-data/pivotal-gemfire[Pivotal GemFire Home Page]
-* http://gemfire.docs.pivotal.io/index.html[Pivotal GemFire Documentation]
-* https://support.pivotal.io/hc/en-us/categories/200072748-Pivotal-GemFire-Knowledge-Base[Pivotal GemFire Knowledge Base]
-* https://support.pivotal.io/hc/communities/public/topics/200053218-Pivotal-GemFire-General[Pivotal GemFire Community Home Page]
-* http://communities.vmware.com/community/vmtn/appplatform/vfabric_gemfire[VMWare vFabric GemFire Community Home Page]
-* http://stackoverflow.com/questions/tagged/spring-data-gemfire[Spring Data GemFire Forum (StackOverflow)]
-* http://forum.spring.io/forum/spring-projects/data/gemfire[Spring Data GemFire Forum (spring.io archive)]
-
+* http://projects.spring.io/spring-data-gemfire[Spring Data GemFire Project Page]
+* https://github.com/spring-projects/spring-data-geode[Spring Data Geode source code]
+* https://jira.spring.io/browse/DATAGEODE[Spring Data Geode JIRA]
+* http://stackoverflow.com/questions/tagged/spring-data-gemfire[Spring Data GemFire on StackOverflow]
+* http://forum.spring.io/forum/spring-projects/data/gemfire[Archive of the Spring Data GemFire Forum on Spring IO]
+* http://geode.apache.org/[Apache Geode Home Page]
+* http://geode.apache.org/docs/[Apache Geode Documentation]
+* http://geode.apache.org/community/[Apache Geode Community]
+* https://github.com/apache/geode[Apache Geode source code]
+* https://issues.apache.org/jira/browse/GEODE/?selectedTab=com.atlassian.jira.jira-projects-plugin:summary-panel[Apache Geode JIRA]
+* http://stackoverflow.com/search?q=Apache%20Geode[Apache Geode on StackOverflow]

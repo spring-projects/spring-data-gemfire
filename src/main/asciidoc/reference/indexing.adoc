@@ -1,25 +1,25 @@
 [[bootstrap:indexing]]
-= Creating an Index
+= Configuring an Index
 
-Pivotal GemFire allows Indexes (or Indices) to be created to improve the performance of OQL queries.
+Apache Geode allows Indexes (or Indices) to be created to improve the performance of OQL queries.
 
-In _Spring Data GemFire_, Indices can be declared with the `index` element:
+In _Spring Data Geode_, Indexes are declared with the `index` element:
 
 [source,xml]
 ----
-<gfe:index id="myIndex" expression="someField" from="/someRegion"/>
+<gfe:index id="myIndex" expression="someField" from="/SomeRegion"/>
 ----
 
-Before creating an `Index`, _Spring Data GemFire_ will verify whether an `Index` with the same name already exists.
-If an `Index` with the same name does exist, by default, SDG will override the existing `Index`
-by removing the old `Index` first followed by creating a new `Index` with the same name using the new bean definition,
-regardless if the old `Index` definition was the same or not.
+Before creating the `Index`, _Spring Data Geode_ will verify whether an `Index` with the same name already exists.
+By default, SDG overrides an existing `Index` if an `Index` with the same name already exists.  The existing Index
+is overridden by removing the old `Index` first followed by creating a new `Index` with the same name defined by
+the new bean definition, regardless if the old `Index` definition was the same or not.
 
 To prevent the named `Index` definition change, especially when the old and new `Index` definitions differ
-in a significant way, then set the `override` attribute to `false`, which effectively returns the existing
+in a significant way, then set the `override` attribute to *false*, which effectively returns the existing
 `Index` definition given the same name.
 
 `Index` declarations are not bound to a Region but rather are top-level elements (just like `cache`).
 This allows one to declare any number of Indices on any Region whether they are just created or already exist
-- an improvement over GemFire's native `cache.xml`. By default, the `Index` relies on the default cache declaration
+- an improvement over Geode's native `cache.xml`. By default, the `Index` relies on the default cache declaration
 but one can customize it accordingly or use a Pool (if need be) - see the XML schema for a full set of options.

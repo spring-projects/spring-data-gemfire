@@ -4,9 +4,10 @@
 [[mapping.entities]]
 == Entity Mapping
 
-Spring Data GemFire provides support to map entities that will be stored in a GemFire data grid. The mapping metadata is defined using annotations at the domain classes just like this:
+_Spring Data Geode_ provides support to map entities that will be stored in a Region in the Geode In-Memory Data Grid.
+The mapping metadata is defined using annotations on application domain classes just like this:
 
-.Mapping a domain class to a GemFire Region
+.Mapping a domain class to a Geode Region
 ====
 [source,java]
 ----
@@ -14,6 +15,7 @@ Spring Data GemFire provides support to map entities that will be stored in a Ge
 public class Person {
 
   @Id Long id;
+
   String firstname;
   String lastname;
 
@@ -27,9 +29,16 @@ public class Person {
 ----
 ====
 
-The first thing you see here is the `@Region` annotation that can be used to customize the Region in which the `Person` class is stored in. The `@Id` annotation can be used to annotate the property that shall be used as the Cache key. The `@PersistenceConstructor` annotation actually helps disambiguating multiple potentially available constructors taking parameters and explicitly marking the one annotated as the one to be used to create entities. With none or only a single constructor you can omit the annotation.
+The first thing you notice here is the `@Region` annotation that can be used to customize the Region
+in which an instance of the `Person` class is stored.  The `@Id` annotation can be used to annotate the property
+that shall be used as the cache (Region) key, identifying the Region entry. The `@PersistenceConstructor` annotation
+helps to disambiguate multiple, potentially available constructors taking parameters and explicitly marking
+the constructor annotated as the constructor to be used to construct entities. In an application domain class with no
+or only a single constructor you can omit the annotation.
 
-In addition to storing entities in top-level Regions, entities can be stored in GemFire Sub-Regions, as so:
+In addition to storing entities in top-level Regions, entities can be stored in Sub-Regions as well.
+
+For instance:
 
 [source,java]
 ----
@@ -44,11 +53,39 @@ public class Guest extends User {
 }
 ----
 
-Be sure to use the full-path of the GemFire Region, as defined in Spring Data GemFire XML namespace configuration meta-data, as specified in the `id` or `name` attributes of the `<*-region>` bean definition.
+Be sure to use the full-path of the Geode Region, as defined with the _Spring Data Geode_ XML namespace
+using the `id` or `name` attributes of the `<*-region>` element.
 
-As alternative to specifying the Region in which the entity will be stored using the `@Region` annotation on the entity class, you can also specify the `@Region` annotation on the entity's `Repository` abstraction. See <<gemfire-repositories>> for more details.
+[[mapping.entities.region]]
+=== Entity Mapping by Region Type
 
-However, let's say you want to store a Person in multiple GemFire Regions (e.g. `People` and `Customers`), then you can define your corresponding `Repository` interface abstractions like so:
+In addition to the `@Region` annotation, _Spring Data Geode_ also recognizes the Region type-specific
+mapping annotations: `@ClientRegion`, `@LocalRegion`, `@PartitionRegion` and `@ReplicateRegion`.
+
+Functionally, these annotations are treated exactly the same as the generic `@Region` annotation in the SDG
+mapping infrastructure.  However, these additional mapping annotations are useful in _Spring Data Geode's`
+Annotation configuration model.  When combined with the `@EnableEntityDefinedRegions` configuration annotation
+on _Spring_ `@Configuration` annotated class, it is possible to generate Regions in the local cache, whether
+the application is a client or peer.
+
+These annotations allow you, the developer, to be more specific about what type of Region that your application
+entity class should be mapped to, and also has an impact on the data management policies of the Region
+(e.g. partition (a.k.a. sharding) vs. just replicating data).
+
+Using these Region type-specific mapping annotations with the SDG Annotation config model saves you from having to
+explicitly define these Regions in config.
+
+The details of the new Annotation configuration model will be discussed in more detail in a subsequent releaase.
+
+[[mapping.repositories]]
+=== Repository Mapping
+
+As an alternative to specifying the Region in which the entity will be stored using the `@Region` annotation
+on the entity class, you can also specify the `@Region` annotation on the entity's `Repository`.
+See <<gemfire-repositories>> for more details.
+
+However, let's say you want to store a `Person` in multiple Geode Regions (e.g. `People` and `Customers`),
+then you can define your corresponding `Repository` interface extensions like so:
 
 [source,java]
 ----
@@ -63,10 +100,40 @@ public interface CustomerRepository extends GemfireRepository<Person, String> {
 }
 ----
 
+Then, using each Repository individually, you can store the entity in multiple Geode Regions.
+
+[source,java]
+----
+@Service
+class CustomerService {
+
+  CustomerRepository customerRepo;
+
+  PersonRepository personRepo;
+
+  Customer update(Customer customer) {
+    customerRepo.save(customer);
+    personRepo.save(customer);
+    return customer;
+  }
+----
+
+It is not difficult to imagine wrapping the `update` service method in a _Spring_ managed transaction,
+either as a local cache transaction or a global transaction.
+
 [[mapping.pdx-serializer]]
 == Mapping PDX Serializer
 
-Spring Data GemFire provides a custom `PDXSerializer` implementation that uses the mapping information to customize entity serialization. Beyond that it allows customizing the entity instantiation by using the Spring Data `EntityInstantiator` abstraction. By default the serializer uses a `ReflectionEntityInstantiator` that will use the persistence constructor of the mapped entity (either the single declared one or explicitly annoted with `@PersistenceConstructor`). To provide values for constructor parameters it will read fields with name of the constructor parameters from the `PDXReader` supplied.
+_Spring Data Geode_ provides a custom
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/PdxSerializer.html[PdxSerializer] implementation
+that uses the mapping information to customize entity serialization.  Beyond that, it allows customizing
+the entity instantiation by using the Spring Data `EntityInstantiator` abstraction.  By default the serializer
+uses a `ReflectionEntityInstantiator` that will use the persistence constructor of the mapped entity
+(either the default constructor, a singly declared constructor or an explicitly annotated constructor annotated with
+the `@PersistenceConstructor` annotation).
+
+To provide values for constructor parameters it will read fields with name of the constructor parameters from
+the supplied http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/PdxReader.html[PdxReader].
 
 .Using @Value on entity constructor parameters
 ====
@@ -77,10 +144,9 @@ public class Person {
   public Person(@Value("#root.foo") String firstname, @Value("bean") String lastname) {
     // …
   }
-
 }
 ----
 ====
 
-The entity annotated as such will get the field `foo` read from the `PDXReader` and handed as constructor parameter value for `firstname`. The value for `lastname` will be the Spring bean with name `bean`.
-
+An entity class annotated in this way will have the field `foo` read from the `PdxReader` and passed to the constructor
+parameter value for `firstname`.  The value for `lastname` will be the _Spring_ bean with the name `bean`.

@@ -1,9 +1,6 @@
 [[introduction]]
 = Introduction
 
-This reference guide for Spring Data GemFire explains how to use the Spring Framework to configure
-and develop applications with Pivotal GemFire. It presents the basic concepts, semantics and provides numerous examples
+This reference guide for _Spring Data Geode_ explains how to use the _Spring Framework_ to configure and develop
+applications with Apache Geode. It presents the basic concepts, semantics and provides numerous examples
 to help you get started.
-
-NOTE: Spring Data GemFire started as a top-level Spring project called Spring GemFire (SGF) and since then
-has been moved under the Spring Data umbrella project and renamed accordingly.

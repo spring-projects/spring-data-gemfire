@@ -1,78 +1,132 @@
 [[gemfire-bootstrap]]
-= Bootstrapping a Spring ApplicationContext in GemFire
+= Bootstrapping a Spring ApplicationContext in Apache Geode
 
 == Introduction
 
-Normally, a Spring-based application will <<bootstrap,bootstrap GemFire>> using Spring Data GemFire's XML namespace. Just by specifying a `<gfe:cache/>` element in Spring Data GemFire configuration meta-data, a single, peer GemFire Cache instance will be created and initialized with default settings in the same JVM process as your application.
+Normally, a _Spring_-based application will <<bootstrap,bootstrap Apache Geode>> using _Spring Data Geode's.
+Just by specifying a `<gfe:cache/>` element using the _Spring Data Geode_ XML namespace, a single, embedded Geode
+peer `Cache` instance is created and initialized with default settings in the same JVM process as your application.
 
-However, sometimes it is a requirement, perhaps imposed by your IT operations team, that GemFire must be fully managed and operated using the provided GemFire tool suite, such as with http://gemfire.docs.pivotal.io/docs-gemfire/latest/tools_modules/gfsh/chapter_overview.html[Gfsh]. Using *Gfsh*, even though the application and GemFire will share the same JVM process, GemFire will bootstrap your Spring application context rather than the other way around. So, using this approach GemFire, instead of an application server, or a Java main class using Spring Boot, will bootstrap and host your application.
+However, it is sometimes necessary, perhaps a requirement imposed by your IT organization, that Geode be fully managed
+and operated using the provided Apache Geode tool suite, such as with
+http://geode.apache.org/docs/guide/11/tools_modules/gfsh/chapter_overview.html[Gfsh].  By using _Gfsh_,
+Geode will bootstrap your _Spring_ application context rather than the other way around.  Instead of
+an application server, or a Java main class using _Spring Boot_, whatever, Geode does the bootstrapping and will
+host your application.
 
-Keep in mind, however, that GemFire is not an application server. In addition, there are limitations to using this approach where GemFire Cache configuration is concerned.
+Keep in mind, however, that Geode is not an application server.  In addition, there are limitations to using
+this approach where Geode cache configuration is concerned.
 
-== Using GemFire to Bootstrap a Spring Context Started with Gfsh
+[[gemfire-bootstrap-gfsh]]
+== Using Apache Geode to Bootstrap a Spring Context Started with Gfsh
 
-In order to bootstrap a Spring application context in GemFire when starting a GemFire Server process using Gfsh, a user must make use of GemFire's http://gemfire.docs.pivotal.io/docs-gemfire/latest/basic_config/the_cache/setting_cache_initializer.html[Initalizer] functionality. An *Initializer* can be used to specify a callback application that is launched after the Cache is initialized by GemFire.
+In order to bootstrap a _Spring_ application context in Geode when starting a Geode Server process using _Gfsh_,
+a user must make use of Geode's
+http://geode.apache.org/docs/guide/11/basic_config/the_cache/setting_cache_initializer.html[Initalizer] functionality.
+An Initializer block can declare a callback application that is launched after the cache is initialized by Geode.
 
-An *Initializer* is specified within an http://gemfire.docs.pivotal.io/docs-gemfire/latest/reference/topics/cache_xml.html#initializer[initializer] element using a minimal snippet of GemFire's native configuration meta-data inside a `cache.xml` file. The `cache.xml` file is required in order to bootstrap the Spring application context, much like a minimal snippet of Spring XML config is needed to bootstrap a Spring application context configured with component scanning (e.g. `<context:component-scan base-packages="..."/>`)
+An Initializer is declared within an
+http://geode.apache.org/docs/guide/11/reference/topics/cache_xml.html#initializer[initializer] element
+using a minimal snippet of Geode's native `cache.xml`.  The `cache.xml` file is required in order to bootstrap
+the _Spring_ application context, much like a minimal snippet of _Spring_ XML config is needed to bootstrap
+a _Spring_ application context configured with component scanning (e.g. `<context:component-scan base-packages="..."/>`)
 
-As of Spring Data GemFire 1.4, such an *Initializer* is already conveniently provided by the framework, the `org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer`. The typical, yet minimal configuration for this class inside GemFire's `cache.xml` file will look like the following:
+Fortunately, such an Initializer is already conveniently provided by the framework, the
+http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/support/SpringContextBootstrappingInitializer.html[SpringContextBootstrappingInitializer].
+A typical, yet very minimal configuration for this class inside Geodes's `cache.xml` file will look like this:
 
 [source,xml]
 ----
-<?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-  "http://www.gemstone.com/dtd/cache7_0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
 
-<cache>
   <initializer>
     <class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer</class-name>
     <parameter name="contextConfigLocations">
       <string>classpath:application-context.xml</string>
     </parameter>
   </initializer>
+
 </cache>
 ----
 
-The `SpringContextBootstrappingInitializer` class follows similar conventions as Spring's ContextLoaderListener class for bootstrapping a Spring context inside a Web Application, where application context configuration files are specified with the `contextConfigLocations` Servlet Context Parameter. In addition, the `SpringContextBootstrappingInitializer` class can also be used with a `basePackages` parameter to specify a comma-separated list of base package containing the appropriately annotated application components that the Spring container will search using component scanning and create Spring beans for:
+The `SpringContextBootstrappingInitializer` class follows similar conventions as _Spring's_ `ContextLoaderListener`
+class used to bootstrap a _Spring_ application context inside a Web Application, where application context
+configuration files are specified with the `contextConfigLocations` Servlet Context Parameter.
+
+In addition, the `SpringContextBootstrappingInitializer` class can also be used with a `basePackages` parameter
+to specify a comma-separated list of base packages containing appropriately annotated application components
+that the _Spring_ container will search in order to find and create _Spring_ beans and other application components
+on the classpath:
 
 [source,xml]
 ----
-<?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-  "http://www.gemstone.com/dtd/cache7_0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
 
-<cache>
   <initializer>
     <class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer</class-name>
     <parameter name="basePackages">
       <string>org.mycompany.myapp.services,org.mycompany.myapp.dao,...</string>
     </parameter>
   </initializer>
+
 </cache>
 ----
 
-Then, with a properly configured and constructed `CLASSPATH` along with the `cache.xml` file shown above specified as a command-line option when starting a GemFire Server in Gfsh, the command-line would be:
+Then, with a properly configured and constructed `CLASSPATH` along with `cache.xml` file shown above, specified as
+a command-line option when starting a Geode Server in _Gfsh_, the command-line would be:
 
 [source]
 ----
 gfsh>start server --name=Server1 --log-level=config ...
-			--classpath="/path/to/spring-data-gemfire-1.4.0.jar:/path/to/application/classes.jar"
-			--cache-xml-file="/path/to/gemfire/cache.xml"
+    --classpath="/path/to/application/classes.jar:/path/to/spring-data-geode-<major>.<minor>.<maint>.RELEASE.jar"
+    --cache-xml-file="/path/to/geode/cache.xml"
 ----
 
-The `application-context.xml` can be any valid Spring context configuration meta-data including all the SDG namespace elements. The only limitation with this approach is that the GemFire Cache cannot be configured using the Spring Data GemFire namespace. In other words, none of the `<gfe:cache/>` element attributes, such as `cache-xml-location`, `properties-ref`, `critical-heap-percentage`, `pdx-serializer-ref`, `lock-lease`, etc can be specified. If used, these attributes will be ignored. The main reason for this is that GemFire itself has already created an initialized the Cache before the *Initializer* gets invoked. As such, the Cache will already exist and since it is a "Singleton", it cannot be re-initialized or have any of it's configuration augmented.
+The `application-context.xml` can be any valid _Spring_ context configuration meta-data including all the SDG namespace
+elements.  The only limitation with this approach is that a GemFire cache cannot be configured using
+the _Spring Data Geode_ namespace.  In other words, none of the `<gfe:cache/>` element attributes,
+such as `cache-xml-location`, `properties-ref`, `critical-heap-percentage`, `pdx-serializer-ref`, `lock-lease`, etc,
+can be specified.  If used, these attributes will be ignored.
 
+The reason for this is that Geode itself has already created an initialized the cache before the Initializer
+gets invoked.  As such, the cache will already exist and since it is a "Singleton", it cannot be re-initialized
+or have any of it's configuration augmented.
+
+[[gemfire-bootstrap-lazywiring]]
 == Lazy-Wiring GemFire Components
 
-Spring Data GemFire already provides existing support for wiring GemFire components (such as CacheListeners, CacheLoaders or CacheWriters) that are declared and created by GemFire in `cache.xml` using the `WiringDeclarableSupport` class as described in <<apis:declarable:autowiring>>. However, this only works when Spring does the bootstrapping (i.e. bootstraps GemFire). When your Spring application context is the one bootstrapped by GemFire, then these GemFire components go unnoticed since the Spring application context does not even exist yet! The Spring application context will not get created until GemFire calls the *Initializer*, which occurs after all the other GemFire components and configuration have already been created and initialized.
+_Spring Data Geode_ already provides existing support for wiring Geode components, such as `CacheListeners`,
+`CacheLoaders`, `CacheWriters` and so on, that are declared and created by Geode in `cache.xml` using
+SDG's `WiringDeclarableSupport` class as described in <<apis:declarable:autowiring>>.  However, this only works
+when _Spring_ is the one doing the bootstrapping (i.e. bootstrapping Geode).
 
-So, in order to solve this problem, a new `LazyWiringDeclarableSupport` class was introduced, that is, in a sense, Spring application context aware. The intention of this abstract base class is that any implementing class will register itself to be configured by the Spring application context created by GemFire after the *Initializer* is called. In essence, this give your GemFire managed component a chance to be configured and auto-wired with Spring beans defined in the Spring application context.
+When your _Spring_ application context is bootstrapped by Geode, then these Geode application components go unnoticed
+since the _Spring_ application context does not even exist yet!  The _Spring_ application context will not get created
+until Geode calls the Initializer block, which only occurs after all the other Geode components and configuration
+have already been created and initialized.
 
-In order for your GemFire application component to be auto-wired by the Spring container, create a application class that extends the `LazyWiringDeclarableSupport` and annotate any class member that needs to be provided as a Spring bean dependency, similar to:
+So, in order to solve this problem, a new `LazyWiringDeclarableSupport` class was introduced that is, in a sense,
+_Spring_ application context aware.  The intention of this abstract base class is that any implementing class
+will register itself to be configured by the _Spring_ container that will eventually be created by Geode
+once the Initializer is called.  In essence, this give your Geode defined application components a chance
+to be configured and auto-wired with _Spring_ beans defined in the _Spring_ application context.
+
+In order for your Geode application components to be auto-wired by the _Spring_ container, create an application class
+that extends the `LazyWiringDeclarableSupport` and annotate any class member that needs to be provided as
+a _Spring_ bean dependency, similar to:
 
 [source,java]
 ----
-public static final class UserDataSourceCacheLoader extends LazyWiringDeclarableSupport implements CacheLoader<String, User> {
+public class UserDataSourceCacheLoader extends LazyWiringDeclarableSupport
+    implements CacheLoader<String, User> {
 
   @Autowired
   private DataSource userDataSource;
@@ -81,30 +135,41 @@ public static final class UserDataSourceCacheLoader extends LazyWiringDeclarable
 }
 ----
 
-As implied by the CacheLoader example above, you might necessarily (although, rare) have defined both a Region and CacheListener component in GemFire `cache.xml`. The CacheLoader may need access to an application DAO, or perhaps Spring application context defined JDBC Data Source for loading "Users" into a GemFire Cache `REPLICATE` Region on start. Of course, one should be careful in mixing the different life-cycles of GemFire and the Spring Container together in this manner as not all use cases and scenarios are supported. The GemFire `cache.xml` configuration would be similar to the following (which comes from SDG's test suite):
+As implied in the `CacheLoader` example above, you might necessarily (although, rarely) have defined both
+a Region and `CacheListener` component in Geode `cache.xml`.  The `CacheLoader` may need access to an application DAO,
+or perhaps a _Spring_ application context defined JDBC `DataSource` for loading `Users` into a Geode `REPLICATE` Region
+on start.
+
+CAUTION: Be careful when mixing the different life-cycles of Apache Geode and the _Spring_ Container together
+in this manner as not all use cases and scenarios are supported. The Geode `cache.xml` configuration would be
+similar to the following (which comes from SDG's test suite):
 
 [source,xml]
 ----
-<?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-  "http://www.gemstone.com/dtd/cache7_0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
 
-<cache>
   <region name="Users" refid="REPLICATE">
     <region-attributes initial-capacity="101" load-factor="0.85">
       <key-constraint>java.lang.String</key-constraint>
       <value-constraint>org.springframework.data.gemfire.repository.sample.User</value-constraint>
       <cache-loader>
-        <class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$UserDataStoreCacheLoader</class-name>
+        <class-name>
+          org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$UserDataStoreCacheLoader
+        </class-name>
       </cache-loader>
     </region-attributes>
   </region>
+
   <initializer>
     <class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer</class-name>
     <parameter name="basePackages">
       <string>org.springframework.data.gemfire.support.sample</string>
     </parameter>
   </initializer>
+
 </cache>
 ----
-

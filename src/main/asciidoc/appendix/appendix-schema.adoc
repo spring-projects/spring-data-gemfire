@@ -16,4 +16,3 @@ include::{resourcesDir}/org/springframework/data/gemfire/config/spring-gemfire-2
 ----
 include::{resourcesDir}/org/springframework/data/gemfire/config/spring-data-gemfire-2.0.xsd[]
 ----
-

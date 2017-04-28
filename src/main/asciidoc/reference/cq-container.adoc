@@ -1,25 +1,56 @@
-[[apis:cq-container]]
-= GemFire Continuous Query Container
+[[apis:continuous-query]]
+= Continuous Query (CQ)
 
-A powerful functionality offered by GemFire is http://community.gemstone.com/display/gemfire/Continuous+Querying[continuous querying] (or CQ). In short, CQ allows one to create a query and automatically be notified when new data that gets added to GemFire matches the query. Spring GemFire provides dedicated support for CQs through the `org.springframework.data.gemfire.listener` package and its *listener container*; very similar in functionality and naming to the JMS integration in Spring Framework; in fact, users familiar with the JMS support in Spring, should feel right at home. Basically Spring Data GemFire allows methods on POJOs to become end-points for CQ - simply define the query and indicate the method that should be notified when there is a match - Spring Data GemFire takes care of the rest. This is similar Java EE's message-driven bean style, but without any requirement for base class or interface implementations, based on GemFire.
+A powerful functionality offered by Apache Geode is
+http://geode.apache.org/docs/guide/11/developing/continuous_querying/chapter_overview.html[Continuous Query] (or CQ).
+In short, CQ allows one to create and register an OQL query, and then automatically be notified when new data
+that gets added to Geode matches the query predicate. _Spring Data Geode_ provides dedicated support for CQs through
+the `org.springframework.data.gemfire.listener` package and its *listener container*; very similar in functionality
+and naming to the JMS integration in the _Spring Framework_; in fact, users familiar with the JMS support in _Spring_,
+should feel right at home.
 
-NOTE: Currently, continuous queries are supported by GemFire only in client/server topologies. Additionally the pool used is required to have the `subscription` property enabled. Please refer to the documentation for more information.
+Basically _Spring Data Geode_ allows methods on POJOs to become end-points for CQ.  Simply define the query
+and indicate the method that should be called to be notified when there is a match.  _Spring Data Geode_ takes care
+of the rest.  This is very similar to Java EE's message-driven bean style, but without any requirement for base class
+or interface implementations, based on Apache Geode.
 
-[[apis:cq-container:containers]]
+NOTE: Currently, Continuous Query is only supported in Geode's client/server topology. Additionally, the client Pool
+used is required to have the subscription enabled. Please refer to the Geode
+http://geode.apache.org/docs/guide/11/developing/continuous_querying/implementing_continuous_querying.html[documentation]
+for more information.
+
+[[apis:continuous-query:container]]
 == Continuous Query Listener Container
 
-Spring Data GemFire simplifies the creation, registration, life-cycle and dispatch of CQs by taking care of the infrastructure around them through `ContinuousQueryListenerContainer` which does all the heavy lifting on behalf of the user - users familiar with EJB and JMS should find the concepts familiar as it is designed as close as possible to the support in Spring Framework and its message-driven POJOs (MDPs)
+_Spring Data Geode_ simplifies creation, registration, life-cycle and dispatch of CQ events by taking care of
+the infrastructure around CQ with the use of SDG's `ContinuousQueryListenerContainer`, which does all the heavy lifting
+on behalf of the user.  Users familiar with EJB and JMS should find the concepts familiar as it is designed
+as close as possible to the support provided in the _Spring Framework_ with its Message-driven POJOs (MDPs).
 
-`ContinuousQueryListenerContainer` acts as an event (or message) listener container; it is used to receive the events from the registered CQs and drive the POJOs that are injected into it. The listener container is responsible for all threading of message reception and dispatches into the listener for processing. It acts as the intermediary between an EDP (Event Driven POJO) and the event provider and takes care of creation and registration of CQs (to receive events), resource acquisition and release, exception conversion and the like.  This allows you as an application developer to write the (possibly complex) business logic associated with receiving an event (and reacting to it), and delegates boilerplate GemFire infrastructure concerns to the framework.
+The SDG `ContinuousQueryListenerContainer` acts as an event (or message) listener container; it is used to
+receive the events from the registered CQs and invoke the POJOs that are injected into it. The listener container
+is responsible for all threading of message reception and dispatches into the listener for processing. It acts as
+the intermediary between an EDP (Event-driven POJO) and the event provider and takes care of creation and registration
+of CQs (to receive events), resource acquisition and release, exception conversion and the like.  This allows you,
+as an application developer, to write the (possibly complex) business logic associated with receiving an event
+(and reacting to it), and delegate the boilerplate Geode infrastructure concerns to the framework.
 
-The container is fully customizable - one can chose either to use the CQ thread to perform the dispatch (synchronous delivery) or a new thread (from an existing pool for examples) for an asynchronous approach by defining the suitable `java.util.concurrent.Executor` (or Spring's `TaskExecutor`). Depending on the load, the number of listeners or the runtime environment, one should change or tweak the executor to better serve her needs - in particular in managed environments (such as app servers), it is  highly recommended to pick a a proper `TaskExecutor` to take advantage of its runtime.
+The listener container is fully customizable.  A developer can chose either to use the CQ thread to perform the dispatch
+(synchronous delivery) or a new thread (from an existing pool) for an asynchronous approach by defining the suitable
+`java.util.concurrent.Executor` (or _Spring's_ `TaskExecutor`). Depending on the load, the number of listeners
+or the runtime environment, the developer should change or tweak the executor to better serve her needs.  In particular,
+in managed environments (such as app servers), it is highly recommended to pick a proper `TaskExecutor`
+to take advantage of its runtime.
 
-[[apis:cq-container:adapter]]
-== The `ContinuousQueryListenerAdapter` and `ContinuousQueryListener`
+[[apis:continuous-query:adapter]]
+== The `ContinuousQueryListener` and `ContinuousQueryListenerAdapter`
 
-The `ContinuousQueryListenerAdapter` class is the final component in Spring Data GemFire CQ support: in a nutshell, it allows you to expose almost *any* class as a EDP (there are of course some constraints) - it implements `ContinuousQueryListener`, a simpler listener interface similar to GemFire http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/query/CqListener.html[CqListener].
+The `ContinuousQueryListenerAdapter` class is the final component in _Spring Data Geode_ CQ support.  In a nutshell,
+class allows you to expose almost *any* implementing class as an EDP with minimal constraints.
+`ContinuousQueryListenerAdapter` implements the `ContinuousQueryListener` interface, a simple listener interface
+similar to Geode's http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/query/CqListener.html[CqListener].
 
-Consider the following interface definition. Notice the various event handling methods and their parameters:
+Consider the following interface definition.  Notice the various event handling methods and their parameters:
 
 [source,java]
 ----
@@ -28,7 +59,7 @@ public interface EventDelegate {
      void handleEvent(Operation baseOp);
      void handleEvent(Object key);
      void handleEvent(Object key, Object newValue);
-     void handleEvent(Throwable th);
+     void handleEvent(Throwable throwable);
      void handleQuery(CqQuery cq);
      void handleEvent(CqEvent event, Operation baseOp, byte[] deltaValue);
      void handleEvent(CqEvent event, Operation baseOp, Operation queryOp, Object key, Object newValue);
@@ -37,43 +68,55 @@ public interface EventDelegate {
 
 [source,java]
 ----
-public class DefaultEventDelegate implements EventDelegate {
+package example;
+
+class DefaultEventDelegate implements EventDelegate {
     // implementation elided for clarity...
 }
 ----
 
-In particular, note how the above implementation of the `EventDelegate` interface (the above `DefaultEventDelegate` class) has *no* GemFire dependencies at all. It truly is a POJO that we will make into an EDP via the following configuration (note that the class doesn't have to implement an interface, one is present only to better show case the decoupling between contract and implementation).
+In particular, note how the above implementation of the `EventDelegate` interface has *no* Geode dependencies at all.
+It truly is a POJO that we can and will make into an EDP via the following configuration.
+
+NOTE: the class does not have to implement an interface; an interface is only used to better showcase the decoupling
+between the contract and the implementation.
 
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gfe="http://www.springframework.org/schema/gemfire"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
 
-	<gfe:client-cache pool-name="client"/>
+	<gfe:client-cache/>
 
-	<gfe:pool id="client" subscription-enabled="true">
+	<gfe:pool subscription-enabled="true">
 	   <gfe:server host="localhost" port="40404"/>
 	</gfe:pool>
 
 	<gfe:cq-listener-container>
 	   <!-- default handle method -->
-	   <gfe:listener ref="listener" query="SELECT * from /region"/ >
-	   <gfe:listener ref="another-listener" query="SELECT * from /another-region" name="my-query" method="handleQuery"/>
+	   <gfe:listener ref="listener" query="SELECT * FROM /SomeRegion"/>
+	   <gfe:listener ref="another-listener" query="SELECT * FROM /AnotherRegion" name="myQuery" method="handleQuery"/>
 	</gfe:cq-listener-container>
 
-	<bean id="listener" class="gemfireexample.DefaultMessageDelegate"/>
-	<bean id="another-listener" class="gemfireexample.DefaultMessageDelegate"/>
+	<bean id="listener" class="example.DefaultMessageDelegate"/>
+	<bean id="another-listener" class="example.DefaultMessageDelegate"/>
   ...
 <beans>
 ----
 
-NOTE: The example above shows some of the various forms that a listener can have; at its minimum the listener reference and the actual query definition are required. It's possible however to specify a name for the resulting continuous query (useful for monitoring) but also the name of the method (the default is `handleEvent`). The specified method can have various argument types, the `EventDelegate` interface lists the allowed types.
+NOTE: The example above shows a few of the various forms that a listener can have; at its minimum, the listener
+reference and the actual query definition are required. It's possible, however, to specify a name for
+the resulting Continuous Query (useful for monitoring) but also the name of the method (the default is `handleEvent`).
+The specified method can have various argument types, the `EventDelegate` interface lists the allowed types.
 
-The example above uses the Spring Data GemFire namespace to declare the event listener container and automatically register the listeners. The full blown, *beans* definition is displayed below:
+The example above uses the _Spring Data Geode_ namespace to declare the event listener container
+and automatically register the listeners. The full blown, *beans* definition is displayed below:
 
 [source,xml]
 ----
@@ -88,16 +131,17 @@ The example above uses the Spring Data GemFire namespace to declare the event li
 <bean id="gemfireListenerContainer" class="org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer">
     <property name="cache" ref="gemfireCache"/>
     <property name="queryListeners">
-      <!-- set of listeners -->
+      <!-- set of CQ listeners -->
       <set>
         <bean class="org.springframework.data.gemfire.listener.ContinuousQueryDefinition" >
-               <constructor-arg value="SELECT * from /region" />
-               <constructor-arg ref="eventListener" />
+               <constructor-arg value="SELECT * FROM /SomeRegion" />
+               <constructor-arg ref="eventListener"/>
         </bean>
       </set>
     </property>
 </bean>
 ----
 
-Each time an event is received, the adapter automatically performs type translation between the GemFire event and the required method argument(s) transparently. Any exception caused by the method invocation is caught and handled by the container (by default, being logged).
-
+Each time an event is received, the adapter automatically performs type translation between the Geode event
+and the required method argument(s) transparently. Any exception caused by the method invocation is caught
+and handled by the container (by default, being logged).

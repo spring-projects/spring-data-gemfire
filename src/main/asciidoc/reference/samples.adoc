@@ -1,31 +1,46 @@
 [[samples]]
 = Sample Applications
 
-NOTE: Sample applications are now maintained in the https://github.com/spring-projects/spring-gemfire-examples[Spring Data GemFire Examples] repository.
+NOTE: Sample applications are now maintained in the
+https://github.com/spring-projects/spring-gemfire-examples[Spring GemFire Examples] repository.
 
-The Spring Data GemFire project also includes one sample application. Named "Hello World", the sample demonstrates how to configure and use GemFire inside a Spring application. At runtime, the sample offers a *shell* to the user allowing him to run various commands against the grid. It provides an excellent starting point for users unfamiliar with the essential components or the Spring and GemFire concepts.
+The _Spring Data Geode_ project also includes one sample application.  Named "Hello World", the sample application
+demonstrates how to configure and use Apache Geode inside a _Spring_ application.  At runtime, the sample offers
+a *shell* to the user allowing her to run various commands against the data grid.  It provides an excellent
+starting point for users unfamiliar with the essential components or with _Spring_ and GemFire concepts.
 
-The sample is bundled with the distribution and is Maven-based. One can easily import them into any Maven-aware IDE (such as https://spring.io/tools/sts[Spring Tool Suite]) or run them from the command-line.
+The sample is bundled with the distribution and is Maven-based.  A developer can easily import them into any
+Maven-aware IDE (such as https://spring.io/tools/sts[Spring Tool Suite]) or run them from the command-line.
 
 [[samples:hello-world]]
 == Hello World
 
-The Hello World sample demonstrates the core functionality of the Spring GemFire project. It bootstraps GemFire, configures it, executes arbitrary commands against it and shuts it down when the application exits. Multiple instances can be started at the same time as they will work with each other sharing data without any user intervention.
+The Hello World sample application demonstrates the core functionality of the _Spring Data Geode_ project.
+It bootstraps Geode, configures it, executes arbitrary commands against the cache and shuts it down
+when the application exits.  Multiple instances of the application can be started at the same time
+and they will work together, sharing data without any user intervention.
 
 .Running under Linux
-NOTE: If you experience networking problems when starting GemFire or the samples, try adding the following system property `java.net.preferIPv4Stack=true` to the command line (insert `-Djava.net.preferIPv4Stack=true`). For an alternative (global) fix especially on Ubuntu see this https://jira.spring.io/browse/SGF-28[link]
+NOTE: If you experience networking problems when starting Geode or the samples, try adding the following
+system property `java.net.preferIPv4Stack=true` to the command line (e.g. `-Djava.net.preferIPv4Stack=true`).
+For an alternative (global) fix especially on Ubuntu see https://jira.spring.io/browse/SGF-28[SGF-28].
 
 [[samples:hello-world:start-stop]]
 === Starting and stopping the sample
 
-Hello World is designed as a stand-alone java application. It features a `Main` class which can be started either from your IDE of choice (in Eclipse/STS through `Run As/Java Application`) or from the command line through Maven using `mvn exec:java`. One can also use `java` directly on the resulting artifact if the classpath is properly set.
+Hello World is designed as a stand-alone Java application. It features a `main` class which can be started
+either from your IDE of choice (in Eclipse/STS through `Run As/Java Application`) or from the command-line
+through Maven using `mvn exec:java`.  A developer can also use `java` directly on the resulting artifact
+if the classpath is properly set.
 
-To stop the sample, simply type `exit` at the command line or press `Ctrl+C` to stop the VM and shutdown the Spring container.
+To stop the sample, simply type `exit` at the command-line or press `Ctrl+C` to stop the JVM and shutdown
+the _Spring_ container.
 
 [[samples:hello-world:run]]
 === Using the sample
 
-Once started, the sample will create a shared data grid and allow the user to issue commands against it. The output will likely look as follows:
+Once started, the sample will create a shared data grid and allow the user to issue commands against it.
+The output will likely look as follows:
 
 [source]
 ----
@@ -61,7 +76,8 @@ null
 2
 ----
 
-Multiple instances can be created at the same time. Once started, the new VMs automatically see the existing region and its information:
+Multiple instances can be ran at the same time.  Once started, the new VMs automatically see the existing Region
+and its information:
 
 [source]
 ----
@@ -77,12 +93,22 @@ Hello World!
 [one, two]
 ----
 
-Experiment with the example, start (and stop) as many instances as you want, run various commands in one instance and see how the others react. To preserve data, at least one instance needs to be alive all times - if all instances are shutdown, the grid data is completely destroyed (in this example - to preserve data between runs, see the GemFire documentations).
+Experiment with the example, start (and stop) as many instances as you want, run various commands in one instance
+and see how the others react.  To preserve data, at least one instance needs to be alive all times.  If all instances
+are shutdown, the grid data is completely destroyed.
 
 [[samples:hello-world:explained]]
 === Hello World Sample Explained
 
-Hello World uses both Spring XML and annotations for its configuration. The initial boostrapping configuration is `app-context.xml` which includes the cache configuration, defined under `cache-context.xml` file and performs classpath http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-classpath-scanning[scanning] for Spring http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[components]. The cache configuration defines the GemFire cache, region and for illustrative purposes a simple cache listener that acts as a logger.
+Hello World uses both _Spring_ XML and annotations for its configuration.  The initial bootstrapping configuration is
+`app-context.xml`, which includes the cache configuration defined in the `cache-context.xml` file
+and performs classpath
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-classpath-scanning[component scanning]
+for _Spring_
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[components].
 
-The main *beans* are `HelloWorld` and `CommandProcessor` which rely on the `GemfireTemplate` to interact with the distributed fabric. Both classes use annotations to define their dependency and life-cycle callbacks.
+The cache configuration defines the GemFire cache, Region and for illustrative purposes, a simple `CacheListener`
+that acts as a logger.
 
+The main *beans* are `HelloWorld` and `CommandProcessor` which rely on the `GemfireTemplate` to interact with
+the distributed fabric.  Both classes use annotations to define their dependency and life-cycle callbacks.
