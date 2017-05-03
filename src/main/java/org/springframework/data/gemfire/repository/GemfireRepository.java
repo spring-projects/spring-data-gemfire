@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 
 /**
- * Gemfire-specific extension of the {@link CrudRepository} interface.
+ * GemFire specific extension of the Spring Data {@link CrudRepository} interface.
  *
  * @author Oliver Gierke
  * @author John Blum
- * @see java.io.Serializable
  * @see org.springframework.data.repository.CrudRepository
  */
 public interface GemfireRepository<T, ID> extends CrudRepository<T, ID> {

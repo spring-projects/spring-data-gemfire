@@ -221,7 +221,7 @@ public class GemfireRepositoryFactoryUnitTests {
 			exception.expect(IllegalArgumentException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage(String.format(
-				"The Region referenced only supports keys of type %1$s, but the entity to be stored has an id of type %2$s",
+				"The Region referenced only supports keys of type [%1$s], but the entity to be stored has an id of type [%2$s]",
 					String.class.getName(), Long.class.getName()));
 
 			gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);
@@ -248,7 +248,7 @@ public class GemfireRepositoryFactoryUnitTests {
 			exception.expect(IllegalStateException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage(String.format(
-				"No Region 'People' found for domain class %s; Make sure you have configured a GemFire Region of that name in your application context",
+				"No Region [People] was found for domain class [%s]; Make sure you have configured a GemFire Region of that name in your application context",
 					Person.class.getName()));
 
 			gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);

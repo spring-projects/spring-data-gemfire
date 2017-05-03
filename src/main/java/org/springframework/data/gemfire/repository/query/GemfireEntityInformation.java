@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository.query;
 
 import org.apache.geode.cache.Region;
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
- * {@link EntityInformation} to capture Gemfire specific information.
+ * {@link EntityInformation} capturing GemFire specific information.
  *
  * @author Oliver Gierke
+ * @see org.springframework.data.repository.core.EntityInformation
  */
 public interface GemfireEntityInformation<T, ID> extends EntityInformation<T, ID> {
 
@@ -31,4 +33,5 @@ public interface GemfireEntityInformation<T, ID> extends EntityInformation<T, ID
 	 * @return the name of the {@link Region} the entity is held in.
 	 */
 	String getRegionName();
+
 }

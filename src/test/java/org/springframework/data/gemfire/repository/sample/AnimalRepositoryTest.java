@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
@@ -27,20 +27,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The AnimalRepositoryTest class is a test suite of test cases testing the functionality behind PR #55 involving
- * persisting application domain object/entities to multiple Regions in GemFire's Cache.
+ * Integration test testing the functionality behind PR #55 involving persisting application domain object/entities
+ * to multiple Regions in a GemFire Cache.
  *
  * @author Stuart Williams
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @since 1.4.0
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @link https://github.com/spring-projects/spring-data-gemfire/pull/55
+ * @since 1.4.0
  */
-@ContextConfiguration
 @RunWith(SpringRunner.class)
+@ContextConfiguration
 @SuppressWarnings("unused")
 public class AnimalRepositoryTest {
 
@@ -58,7 +58,7 @@ public class AnimalRepositoryTest {
 	}
 
 	@Test
-	public void testEntityStoredInMultipleRegions() {
+	public void entityStoredInMultipleRegionsIsSuccessful() {
 		Animal felix = newAnimal(1, "Felix");
 		Animal leo = newAnimal(2, "Leo");
 		Animal cerberus = newAnimal(3, "Cerberus");

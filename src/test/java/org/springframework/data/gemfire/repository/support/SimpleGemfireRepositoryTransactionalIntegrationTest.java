@@ -16,7 +16,10 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,16 +39,15 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.sample.Customer;
 import org.springframework.data.repository.core.support.ReflectionEntityInformation;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * The SimpleGemfireRepositoryTransactionalIntegrationTest class is a test suite of test cases testing
- * the SimpleGemfireRepository class and SDC Repository abstraction implementation in the context of
- * GemFire "Cache" Transactions.
+ * Integration tests testing the {@link SimpleGemfireRepository} class and SDC Repository abstraction implementation
+ * in the context of GemFire "Cache" Transactions.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -55,14 +57,14 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.6.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 
 	// TODO add additional test cases for SimpleGemfireRepository (Region operations) in the presence of Transactions!!!
 
-	protected static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+	static final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
 
 	@Autowired
 	private CustomerService customerService;
@@ -70,7 +72,7 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 	@Resource(name = "Customers")
 	private Region customers;
 
-	protected static Customer createCustomer(final String firstName, final String lastName) {
+	static Customer createCustomer(String firstName, String lastName) {
 		Customer customer = new SerializableCustomer(firstName, lastName);
 		customer.setId(ID_SEQUENCE.incrementAndGet());
 		return customer;
@@ -146,7 +148,7 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 			transactionTemplate = new TransactionTemplate(transactionManager);
 		}
 
-		public void saveAll(final Iterable<Customer> customers) {
+		void saveAll(final Iterable<Customer> customers) {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 				@Override protected void doInTransactionWithoutResult(final TransactionStatus status) {
 					customerRepository.saveAll(customers);
@@ -154,7 +156,7 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 			});
 		}
 
-		public void removeAllCausingTransactionRollback() {
+		void removeAllCausingTransactionRollback() {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 				@Override protected void doInTransactionWithoutResult(final TransactionStatus status) {
 					removeAll();
@@ -163,7 +165,7 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 			});
 		}
 
-		public void removeAll() {
+		void removeAll() {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 				@Override protected void doInTransactionWithoutResult(final TransactionStatus status) {
 					customerRepository.deleteAll();
@@ -171,5 +173,4 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 			});
 		}
 	}
-
 }

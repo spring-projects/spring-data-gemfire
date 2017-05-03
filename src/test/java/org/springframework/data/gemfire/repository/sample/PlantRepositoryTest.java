@@ -38,15 +38,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class PlantRepositoryTest {
 
-	protected static final String APPLICATION_CONTEXT_CONFIG_LOCATION = String.format("%1$s%2$s%1$s%3$s",
+	private static final String APPLICATION_CONTEXT_CONFIG_LOCATION = String.format("%1$s%2$s%1$s%3$s",
 		File.separator, PlantRepositoryTest.class.getPackage().getName().replace('.', File.separatorChar),
 			"PlantRepositoryTest-context.xml");
 
 	@Test(expected = IllegalArgumentException.class)
 	public void storePlantHavingStringIdInPlantsRegionWithLongKey() {
 		try {
-			ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(
-				APPLICATION_CONTEXT_CONFIG_LOCATION);
+			ConfigurableApplicationContext context =
+				new ClassPathXmlApplicationContext(APPLICATION_CONTEXT_CONFIG_LOCATION);
+
 			context.getBean(PlantRepository.class);
 		}
 		// NOTE technically, the IllegalArgumentException for incompatible Region 'Key' and Entity ID is thrown
@@ -54,8 +55,9 @@ public class PlantRepositoryTest {
 		catch (BeanCreationException expected) {
 			//expected.printStackTrace(System.err);
 			assertTrue(expected.getCause() instanceof IllegalArgumentException);
-			assertEquals(String.format("The Region referenced only supports keys of type %1$s, but the entity to be stored has an id of type %2$s",
+			assertEquals(String.format("The Region referenced only supports keys of type [%1$s], but the entity to be stored has an id of type [%2$s]",
 				Long.class.getName(), String.class.getName()), expected.getCause().getMessage());
+
 			throw (IllegalArgumentException) expected.getCause();
 		}
 	}

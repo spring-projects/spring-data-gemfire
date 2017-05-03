@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,7 +58,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SuppressWarnings("unused")
 public class SimpleGemfireRepositoryIntegrationTests {
 
-	protected static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
+	static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
 
 	@Autowired
 	private GemfireTemplate template;
@@ -177,7 +177,7 @@ public class SimpleGemfireRepositoryIntegrationTests {
 	@SuppressWarnings("rawtypes")
 	public static class RegionClearListener extends CacheListenerAdapter {
 
-		public volatile boolean eventFired;
+		volatile boolean eventFired;
 
 		@Override
 		public void afterRegionClear(RegionEvent ev) {

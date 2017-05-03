@@ -39,15 +39,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class IncompatibleRegionKeyEntityIdAnimalRepositoryTest {
 
-	protected static final String APPLICATION_CONTEXT_CONFIG_LOCATION = String.format("%1$s%2$s%1$s%3$s",
+	private static final String APPLICATION_CONTEXT_CONFIG_LOCATION = String.format("%1$s%2$s%1$s%3$s",
 		File.separator, AnimalRepositoryTest.class.getPackage().getName().replace('.', File.separatorChar),
-			"IncompatibleRegionKeyEntityIdAnimalRepositoryTest-context.xml");
+			String.format("%s-context.xml", IncompatibleRegionKeyEntityIdAnimalRepositoryTest.class.getSimpleName()));
 
 	@Test(expected = IllegalArgumentException.class)
 	public void storeAnimalHavingLongIdInRabbitsRegionWithStringKey() {
 		try {
-			ConfigurableApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-				APPLICATION_CONTEXT_CONFIG_LOCATION);
+			ConfigurableApplicationContext applicationContext =
+				new ClassPathXmlApplicationContext(APPLICATION_CONTEXT_CONFIG_LOCATION);
+
 			applicationContext.getBean(RabbitRepository.class);
 		}
 		// NOTE the ClassCastException thrown from GemFire is unexpected; this is not correct and the identifying type
@@ -62,8 +63,9 @@ public class IncompatibleRegionKeyEntityIdAnimalRepositoryTest {
 		catch (BeanCreationException expected) {
 			//expected.printStackTrace(System.err);
 			assertTrue(expected.getCause() instanceof IllegalArgumentException);
-			assertEquals(String.format("The Region referenced only supports keys of type %1$s, but the entity to be stored has an id of type %2$s",
+			assertEquals(String.format("The Region referenced only supports keys of type [%1$s], but the entity to be stored has an id of type [%2$s]",
 				String.class.getName(), Long.class.getName()), expected.getCause().getMessage());
+
 			throw (IllegalArgumentException) expected.getCause();
 		}
 	}

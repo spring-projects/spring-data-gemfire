@@ -21,8 +21,8 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.core.support.PersistentEntityInformation;
 
 /**
- * Implementation of {@link GemfireEntityInformation} to return the region name stored in the backing
- * {@link PersistentEntity}.
+ * Implementation of {@link GemfireEntityInformation} and Spring Data's {@link PersistentEntityInformation}
+ * that returns the Region name associated with the {@link PersistentEntity}.
  *
  * @author Oliver Gierke
  * @author John Blum
@@ -53,5 +53,4 @@ public class DefaultGemfireEntityInformation<T, ID> extends PersistentEntityInfo
 	public String getRegionName() {
 		return persistentEntity.getRegionName();
 	}
-
 }

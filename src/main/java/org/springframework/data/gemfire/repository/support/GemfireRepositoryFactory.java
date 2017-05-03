@@ -16,7 +16,8 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.*;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -82,9 +83,10 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID> GemfireEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-		
+
 		GemfirePersistentEntity<T> entity = (GemfirePersistentEntity<T>) mappingContext.getPersistentEntity(domainClass)
-			.orElseThrow(() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%s]", domainClass));
+			.orElseThrow(() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%s]",
+				domainClass));
 
 		return new DefaultGemfireEntityInformation<>(entity);
 	}
@@ -95,8 +97,9 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
-		GemfireEntityInformation<?, Serializable> entityInformation = getEntityInformation(
-			repositoryInformation.getDomainType());
+
+		GemfireEntityInformation<?, Serializable> entityInformation =
+			getEntityInformation(repositoryInformation.getDomainType());
 
 		GemfireTemplate gemfireTemplate = getTemplate(repositoryInformation);
 
@@ -104,20 +107,21 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 	GemfireTemplate getTemplate(RepositoryMetadata metadata) {
+
 		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(metadata.getDomainType())
 			.orElseThrow(() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%s]",
 				metadata.getDomainType()));
 
 		String entityRegionName = entity.getRegionName();
 		String repositoryRegionName = getRepositoryRegionName(metadata.getRepositoryInterface());
-		String regionName = (StringUtils.hasText(repositoryRegionName) ? repositoryRegionName : entityRegionName);
+		String resolvedRegionName = StringUtils.hasText(repositoryRegionName) ? repositoryRegionName : entityRegionName;
 
-		Region<?, ?> region = regions.getRegion(regionName);
+		Region<?, ?> region = regions.getRegion(resolvedRegionName);
 
 		if (region == null) {
-			throw new IllegalStateException(String.format("No Region '%1$s' found for domain class %2$s;"
+			throw newIllegalStateException("No Region [%1$s] was found for domain class [%2$s];"
 				+ " Make sure you have configured a GemFire Region of that name in your application context",
-					regionName, metadata.getDomainType().getName()));
+					resolvedRegionName, metadata.getDomainType().getName());
 		}
 
 		Class<?> regionKeyType = region.getAttributes().getKeyConstraint();
@@ -125,7 +129,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 		if (regionKeyType != null && entity.getIdProperty() != null) {
 			Assert.isTrue(regionKeyType.isAssignableFrom(entityIdType), String.format(
-				"The Region referenced only supports keys of type %1$s, but the entity to be stored has an id of type %2$s",
+				"The Region referenced only supports keys of type [%1$s], but the entity to be stored has an id of type [%2$s]",
 					regionKeyType.getName(), entityIdType.getName()));
 		}
 

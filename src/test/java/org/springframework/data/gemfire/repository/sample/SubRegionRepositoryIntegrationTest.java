@@ -17,7 +17,10 @@
 package org.springframework.data.gemfire.repository.sample;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,11 +37,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The SubRegionRepositoryTest class is a test suite of test cases testing the use of GemFire Repositories on GemFire
- * Cache Subregions.
+ * Integration tests testing the use of GemFire Repositories on GemFire Cache Subregions.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -53,8 +55,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @link https://jira.springsource.org/browse/SGF-252
  * @since 1.4.0
  */
+@RunWith(SpringRunner.class)
 @ContextConfiguration("subregionRepository.xml")
-@RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class SubRegionRepositoryIntegrationTest {
 

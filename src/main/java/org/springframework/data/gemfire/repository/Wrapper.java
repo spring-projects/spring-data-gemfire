@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.repository;
 
 import lombok.NonNull;
 import lombok.Value;
 
 /**
- * Simple value object to hold an entity alongside an external key the entity shall be stored under.
- * 
+ * Simple value object holding an entity along with the external key in which the entity will be mapped.
+ *
  * @author Oliver Gierke
  */
 @Value
@@ -28,4 +29,5 @@ public class Wrapper<T, KEY> {
 
 	T entity;
 	@NonNull KEY key;
+
 }

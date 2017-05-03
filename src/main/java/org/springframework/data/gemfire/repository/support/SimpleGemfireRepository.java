@@ -16,7 +16,6 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +53,7 @@ import org.springframework.util.Assert;
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.Region
  */
-public class SimpleGemfireRepository<T, ID extends Serializable> implements GemfireRepository<T, ID> {
+public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> {
 
 	private final EntityInformation<T, ID> entityInformation;
 
@@ -80,7 +79,6 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public <U extends T> U save(U entity) {
-		
 		ID id = entityInformation.getRequiredId(entity);
 
 		template.put(id, entity);
@@ -94,13 +92,10 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public <U extends T> Iterable<U> saveAll(Iterable<U> entities) {
-		
 		Map<ID, U> entitiesToSave = new HashMap<>();
 
-		entities.forEach(entity -> {
-			entitiesToSave.put(entityInformation.getRequiredId(entity), entity);
-		});
-		
+		entities.forEach(entity -> entitiesToSave.put(entityInformation.getRequiredId(entity), entity));
+
 		template.putAll(entitiesToSave);
 
 		return entitiesToSave.values();
@@ -113,7 +108,9 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	@Override
 	public T save(Wrapper<T, ID> wrapper) {
 		T entity = wrapper.getEntity();
+
 		template.put(wrapper.getKey(), entity);
+
 		return entity;
 	}
 
@@ -180,10 +177,9 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public Collection<T> findAllById(Iterable<ID> ids) {
-		
-		List<ID> parameters = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
+		List<ID> keys = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
 
-		return CollectionUtils.<ID, T>nullSafeMap(template.getAll(parameters)).values().stream()
+		return CollectionUtils.<ID, T>nullSafeMap(template.getAll(keys)).values().stream()
 			.filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
