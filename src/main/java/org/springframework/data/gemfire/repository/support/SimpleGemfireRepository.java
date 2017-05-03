@@ -16,10 +16,7 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
-
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +38,8 @@ import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.data.gemfire.repository.query.QueryString;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.util.StreamUtils;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 /**
@@ -81,8 +80,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public <U extends T> U save(U entity) {
-		ID id = entityInformation.getId(entity).orElseThrow(
-			() -> newIllegalArgumentException("ID for entity [%s] is required", entity));
+		
+		ID id = entityInformation.getRequiredId(entity);
 
 		template.put(id, entity);
 
@@ -94,16 +93,14 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
 	 */
 	@Override
-	public <U extends T> Iterable<U> save(Iterable<U> entities) {
+	public <U extends T> Iterable<U> saveAll(Iterable<U> entities) {
+		
 		Map<ID, U> entitiesToSave = new HashMap<>();
 
-		for (U entity : entities) {
-			ID id = entityInformation.getId(entity).orElseThrow(
-				() -> newIllegalArgumentException("ID for entity [%s] is required", entity));
-
-			entitiesToSave.put(id, entity);
-		}
-
+		entities.forEach(entity -> {
+			entitiesToSave.put(entityInformation.getRequiredId(entity), entity);
+		});
+		
 		template.putAll(entitiesToSave);
 
 		return entitiesToSave.values();
@@ -134,20 +131,19 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#existsById(java.lang.Object)
 	 */
 	@Override
-	public boolean exists(ID id) {
-		return findOne(id).isPresent();
+	public boolean existsById(ID id) {
+		return findById(id).isPresent();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
-	public Optional<T> findOne(ID id) {
+	public Optional<T> findById(ID id) {
 		return Optional.ofNullable(template.get(id));
 	}
 
@@ -180,16 +176,12 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#findAllById(java.lang.Iterable)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
-	public Collection<T> findAll(Iterable<ID> ids) {
-		List<ID> parameters = new ArrayList<>();
-
-		for (ID id : ids) {
-			parameters.add(id);
-		}
+	public Collection<T> findAllById(Iterable<ID> ids) {
+		
+		List<ID> parameters = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
 
 		return CollectionUtils.<ID, T>nullSafeMap(template.getAll(parameters)).values().stream()
 			.filter(Objects::nonNull).collect(Collectors.toList());
@@ -197,10 +189,10 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#deleteById(java.lang.Object)
 	 */
 	@Override
-	public void delete(ID id) {
+	public void deleteById(ID id) {
 		template.remove(id);
 	}
 
@@ -210,7 +202,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 */
 	@Override
 	public void delete(T entity) {
-		delete(entityInformation.getId(entity).orElseThrow(() -> new IllegalArgumentException("ID is required")));
+		deleteById(entityInformation.getRequiredId(entity));
 	}
 
 	/*
@@ -218,10 +210,8 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
 	 */
 	@Override
-	public void delete(Iterable<? extends T> entities) {
-		for (T entity : entities) {
-			delete(entity);
-		}
+	public void deleteAll(Iterable<? extends T> entities) {
+		entities.forEach(this::delete);
 	}
 
 	/*
@@ -229,7 +219,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 * @see org.apache.geode.cache.Region#getAttributes()
 	 * @see org.apache.geode.cache.RegionAttributes#getDataPolicy()
 	 */
-	boolean isPartitioned(Region region) {
+	boolean isPartitioned(Region<?, ?> region) {
 		return (region != null && region.getAttributes() != null
 			&& isPartitioned(region.getAttributes().getDataPolicy()));
 	}
@@ -247,7 +237,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	 * @see org.apache.geode.cache.Region#getRegionService()
 	 * @see org.apache.geode.cache.Cache#getCacheTransactionManager()
 	 */
-	boolean isTransactionPresent(Region region) {
+	boolean isTransactionPresent(Region<?, ?> region) {
 		return (region.getRegionService() instanceof Cache
 			&& isTransactionPresent(((Cache) region.getRegionService()).getCacheTransactionManager()));
 	}
@@ -261,8 +251,7 @@ public class SimpleGemfireRepository<T, ID extends Serializable> implements Gemf
 	}
 
 	/* (non-Javadoc) */
-	@SuppressWarnings("unchecked")
-	void doRegionClear(Region region) {
+	<K> void  doRegionClear(Region<K, ?> region) {
 		region.removeAll(region.keySet());
 	}
 

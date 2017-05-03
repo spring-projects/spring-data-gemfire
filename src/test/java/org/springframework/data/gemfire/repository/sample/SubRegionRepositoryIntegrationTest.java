@@ -17,10 +17,7 @@
 package org.springframework.data.gemfire.repository.sample;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -207,7 +204,7 @@ public class SubRegionRepositoryIntegrationTest {
 
 	@Test
 	public void testSubregionRepositoryInteractions() {
-		assertThat(programmersRepo.findOne("JamesGosling").orElse(null)).isEqualTo(PROGRAMMER_USER_DATA.get("JamesGosling"));
+		assertThat(programmersRepo.findById("JamesGosling").orElse(null)).isEqualTo(PROGRAMMER_USER_DATA.get("JamesGosling"));
 
 		List<Programmer> javaProgrammers = programmersRepo.findDistinctByProgrammingLanguageOrderByUsernameAsc("Java");
 
@@ -256,8 +253,8 @@ public class SubRegionRepositoryIntegrationTest {
 
 	@Test
 	public void testIdenticallyNamedSubregionDataAccess() {
-		assertThat(adminUserRepo.findOne("supertool").orElse(null)).isEqualTo(getAdminUser("supertool"));
-		assertThat(guestUserRepo.findOne("joeblow").orElse(null)).isEqualTo(getGuestUser("joeblow"));
+		assertThat(adminUserRepo.findById("supertool").orElse(null)).isEqualTo(getAdminUser("supertool"));
+		assertThat(guestUserRepo.findById("joeblow").orElse(null)).isEqualTo(getGuestUser("joeblow"));
 
 		List<RootUser> rootUsers = adminUserRepo.findDistinctByUsername("zeus");
 

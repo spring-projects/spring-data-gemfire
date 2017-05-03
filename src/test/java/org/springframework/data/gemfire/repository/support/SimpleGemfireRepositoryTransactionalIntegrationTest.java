@@ -16,10 +16,7 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -152,7 +149,7 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 		public void saveAll(final Iterable<Customer> customers) {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 				@Override protected void doInTransactionWithoutResult(final TransactionStatus status) {
-					customerRepository.save(customers);
+					customerRepository.saveAll(customers);
 				}
 			});
 		}

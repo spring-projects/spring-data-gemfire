@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -81,7 +81,8 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T, ID extends Serializable> GemfireEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	public <T, ID> GemfireEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+		
 		GemfirePersistentEntity<T> entity = (GemfirePersistentEntity<T>) mappingContext.getPersistentEntity(domainClass)
 			.orElseThrow(() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%s]", domainClass));
 

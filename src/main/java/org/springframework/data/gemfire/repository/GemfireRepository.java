@@ -15,8 +15,6 @@
  */
 package org.springframework.data.gemfire.repository;
 
-import java.io.Serializable;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 
@@ -28,8 +26,7 @@ import org.springframework.data.repository.CrudRepository;
  * @see java.io.Serializable
  * @see org.springframework.data.repository.CrudRepository
  */
-@SuppressWarnings("unused")
-public interface GemfireRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
+public interface GemfireRepository<T, ID> extends CrudRepository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.

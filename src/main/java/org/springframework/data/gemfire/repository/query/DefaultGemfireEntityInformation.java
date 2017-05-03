@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.repository.query;
 
-import java.io.Serializable;
-
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.core.support.PersistentEntityInformation;
@@ -32,7 +30,7 @@ import org.springframework.data.repository.core.support.PersistentEntityInformat
  * @see org.springframework.data.gemfire.repository.query.GemfireEntityInformation
  * @see org.springframework.data.repository.core.support.PersistentEntityInformation
  */
-public class DefaultGemfireEntityInformation<T, ID extends Serializable> extends PersistentEntityInformation<T, ID>
+public class DefaultGemfireEntityInformation<T, ID> extends PersistentEntityInformation<T, ID>
 		implements GemfireEntityInformation<T, ID> {
 
 	private final GemfirePersistentEntity<T> persistentEntity;

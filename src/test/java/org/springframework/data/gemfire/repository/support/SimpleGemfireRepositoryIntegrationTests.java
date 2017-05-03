@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -97,7 +97,7 @@ public class SimpleGemfireRepositoryIntegrationTests {
 		template.put(carter.getId(), carter);
 		template.put(leroi.getId(), leroi);
 
-		Collection<Person> result = repository.findAll(Arrays.asList(carter.getId(), leroi.getId()));
+		Collection<Person> result = repository.findAllById(Arrays.asList(carter.getId(), leroi.getId()));
 
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(2);
@@ -106,7 +106,7 @@ public class SimpleGemfireRepositoryIntegrationTests {
 
 	@Test
 	public void findAllWithIdsReturnsNoMatches() {
-		Collection<Person> results = repository.findAll(Arrays.asList(1L, 2L));
+		Collection<Person> results = repository.findAllById(Arrays.asList(1L, 2L));
 
 		assertThat(results).isNotNull();
 		assertThat(results).isEmpty();
@@ -121,7 +121,7 @@ public class SimpleGemfireRepositoryIntegrationTests {
 		template.put(kurt.getId(), kurt);
 		template.put(eddie.getId(), eddie);
 
-		Collection<Person> results = repository.findAll(Arrays.asList(0L, 1L, 2L, 4L));
+		Collection<Person> results = repository.findAllById(Arrays.asList(0L, 1L, 2L, 4L));
 
 		assertThat(results).isNotNull();
 		assertThat(results).hasSize(2);
@@ -148,13 +148,13 @@ public class SimpleGemfireRepositoryIntegrationTests {
 
 		assertThat(repository.save(oliverGierke)).isEqualTo(oliverGierke);
 		assertThat(repository.count()).isEqualTo(1L);
-		assertThat(repository.findOne(oliverGierke.getId()).orElse(null)).isEqualTo(oliverGierke);
+		assertThat(repository.findById(oliverGierke.getId()).orElse(null)).isEqualTo(oliverGierke);
 		assertThat(repository.findAll()).isEqualTo(Collections.singletonList(oliverGierke));
 
 		repository.delete(oliverGierke);
 
 		assertThat(repository.count()).isEqualTo(0L);
-		assertThat(repository.findOne(oliverGierke.getId()).orElse(null)).isNull();
+		assertThat(repository.findById(oliverGierke.getId()).orElse(null)).isNull();
 		assertThat(repository.findAll()).isEmpty();
 	}
 
@@ -166,7 +166,7 @@ public class SimpleGemfireRepositoryIntegrationTests {
 		Person jonBloom = new Person(2L, "Jon", "Bloom");
 		Person juanBlume = new Person(3L, "Juan", "Blume");
 
-		repository.save(Arrays.asList(johnBlum, jonBloom, juanBlume));
+		repository.saveAll(Arrays.asList(johnBlum, jonBloom, juanBlume));
 
 		assertThat(template.getRegion().size()).isEqualTo(3);
 		assertThat((Person) template.get(johnBlum.getId())).isEqualTo(johnBlum);

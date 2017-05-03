@@ -15,8 +15,6 @@
  */
 package org.springframework.data.gemfire.repository.query;
 
-import java.io.Serializable;
-
 import org.apache.geode.cache.Region;
 import org.springframework.data.repository.core.EntityInformation;
 
@@ -25,7 +23,7 @@ import org.springframework.data.repository.core.EntityInformation;
  *
  * @author Oliver Gierke
  */
-public interface GemfireEntityInformation<T, ID extends Serializable> extends EntityInformation<T, ID> {
+public interface GemfireEntityInformation<T, ID> extends EntityInformation<T, ID> {
 
 	/**
 	 * Returns the name of the {@link Region} the entity is held in.

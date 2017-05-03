@@ -49,7 +49,7 @@ public class RepositoryClient {
 	}
 
 	public Person find(Long id) {
-		return getPersonRepository().findOne(id).orElse(null);
+		return getPersonRepository().findById(id).orElse(null);
 	}
 
 	public Person save(Person person) {

@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
 
@@ -72,7 +72,7 @@ public class AnimalRepositoryTest {
 		assertThat(catRepo.count()).isEqualTo(3L);
 		assertThat(dogRepo.count()).isEqualTo(2L);
 
-		Optional<Animal> foundFelix = catRepo.findOne(1L);
+		Optional<Animal> foundFelix = catRepo.findById(1L);
 
 		assertThat(foundFelix.isPresent()).isTrue();
 		assertThat(foundFelix.get()).isEqualTo(felix);
@@ -85,7 +85,7 @@ public class AnimalRepositoryTest {
 
 		assertThat(foundCerberusTheCat).isEqualTo(cerberus);
 		assertThat(catRepo.findBy("Cerberus")).isEqualTo(foundCerberusTheCat);
-		assertThat(catRepo.findOne(3L).orElse(null)).isEqualTo(foundCerberusTheCat);
+		assertThat(catRepo.findById(3L).orElse(null)).isEqualTo(foundCerberusTheCat);
 
 		Animal foundFido = dogRepo.findBy("Fido");
 
@@ -95,6 +95,6 @@ public class AnimalRepositoryTest {
 
 		assertThat(foundCerberusTheDog).isEqualTo(cerberus);
 		assertThat(dogRepo.findBy("Cerberus")).isEqualTo(foundCerberusTheDog);
-		assertThat(dogRepo.findOne(3L).orElse(null)).isEqualTo(foundCerberusTheDog);
+		assertThat(dogRepo.findById(3L).orElse(null)).isEqualTo(foundCerberusTheDog);
 	}
 }

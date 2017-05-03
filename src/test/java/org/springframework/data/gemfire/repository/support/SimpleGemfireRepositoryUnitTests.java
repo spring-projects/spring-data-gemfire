@@ -16,19 +16,11 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +30,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -120,21 +111,21 @@ public class SimpleGemfireRepositoryUnitTests {
 	protected EntityInformation<Animal, Long> mockEntityInformation() {
 		EntityInformation<Animal, Long> mockEntityInformation = mock(EntityInformation.class);
 
-		doAnswer(new Answer<Optional<Long>>() {
+		doAnswer(new Answer<Long>() {
 			private final AtomicLong idSequence = new AtomicLong(0L);
 
 			@Override
-			public Optional<Long> answer(InvocationOnMock invocation) throws Throwable {
+			public Long answer(InvocationOnMock invocation) throws Throwable {
 				Animal argument = invocation.getArgument(0);
 				argument.setId(resolveId(argument.getId()));
-				return Optional.of(argument.getId());
+				return argument.getId();
 
 			}
 
 			private Long resolveId(Long id) {
 				return (id != null ? id : idSequence.incrementAndGet());
 			}
-		}).when(mockEntityInformation).getId(any(Animal.class));
+		}).when(mockEntityInformation).getRequiredId(any(Animal.class));
 
 		return mockEntityInformation;
 	}
@@ -213,7 +204,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		Iterable<Animal> savedAnimals = repository.save(animals);
+		Iterable<Animal> savedAnimals = repository.saveAll(animals);
 
 		assertThat(savedAnimals).isNotNull();
 
@@ -267,8 +258,8 @@ public class SimpleGemfireRepositoryUnitTests {
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		assertThat(repository.exists(1L)).isTrue();
-		assertThat(repository.exists(10L)).isFalse();
+		assertThat(repository.existsById(1L)).isTrue();
+		assertThat(repository.existsById(10L)).isFalse();
 	}
 
 	@Test
@@ -283,8 +274,8 @@ public class SimpleGemfireRepositoryUnitTests {
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		assertThat(repository.findOne(1L).orElse(null)).isEqualTo(dog);
-		assertThat(repository.findOne(10L).isPresent()).isFalse();
+		assertThat(repository.findById(1L).orElse(null)).isEqualTo(dog);
+		assertThat(repository.findById(10L).isPresent()).isFalse();
 	}
 
 	@Test
@@ -305,7 +296,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		SimpleGemfireRepository<Animal, Long> repository = new SimpleGemfireRepository<>(
 			newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		Collection<Animal> animalsFound = repository.findAll(Arrays.asList(1L, 3L));
+		Collection<Animal> animalsFound = repository.findAllById(Arrays.asList(1L, 3L));
 
 		assertThat(animalsFound).isNotNull();
 		assertThat(animalsFound).hasSize(2);
@@ -332,7 +323,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		Collection<Animal> animalsFound = repository.findAll(Arrays.asList(1L, 2L, 3L));
+		Collection<Animal> animalsFound = repository.findAllById(Arrays.asList(1L, 2L, 3L));
 
 		assertThat(animalsFound).isNotNull();
 		assertThat(animalsFound).isEmpty();
@@ -362,7 +353,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		Collection<Animal> animalsFound = repository.findAll(Arrays.asList(0L, 1L, 2L, 4L));
+		Collection<Animal> animalsFound = repository.findAllById(Arrays.asList(0L, 1L, 2L, 4L));
 
 		assertThat(animalsFound).isNotNull();
 		assertThat(animalsFound).hasSize(2);
@@ -378,7 +369,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		repository.delete(1L);
+		repository.deleteById(1L);
 
 		verify(mockRegion, times(1)).remove(eq(1L));
 	}
@@ -402,7 +393,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		repository.delete(Arrays.asList(newAnimal(1L, "bird"), newAnimal(2L, "cat"),
+		repository.deleteAll(Arrays.asList(newAnimal(1L, "bird"), newAnimal(2L, "cat"),
 			newAnimal(3L, "dog")));
 
 		verify(mockRegion, times(1)).remove(eq(1L));

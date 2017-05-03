@@ -12,7 +12,7 @@
  */
 package org.springframework.data.gemfire.client;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -82,7 +82,6 @@ public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTe
 	}
 
 	@Test
-	@SuppressWarnings("unused")
 	public void gemfireServerDataSourceCreated() {
 		Pool pool = applicationContext.getBean("gemfirePool", Pool.class);
 
@@ -108,7 +107,7 @@ public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTe
 
 		assertThat(repository.save(daveMathews)).isSameAs(daveMathews);
 
-		Optional<Person> result = repository.findOne(1L);
+		Optional<Person> result = repository.findById(1L);
 
 		assertThat(result.isPresent()).isTrue();
 		assertThat(result.get().getFirstname()).isEqualTo("Dave");
