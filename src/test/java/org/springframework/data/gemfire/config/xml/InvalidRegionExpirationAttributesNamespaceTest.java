@@ -16,8 +16,9 @@
 
 package org.springframework.data.gemfire.config.xml;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.cache.Region;
 import org.junit.Test;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionStoreException;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -26,33 +27,34 @@ import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
 import org.xml.sax.SAXParseException;
 
 /**
- * The InvalidRegionExpirationAttributesNamespaceTest class is a test suite of test cases testing the proper syntax
- * of declaring "custom" expiration attributes on a Region.
+ * Unit test testing the proper syntax for declaring "custom" expiration attributes on a {@link Region}.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.support.GenericXmlApplicationContext
  * @see org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor
+ * @see org.apache.geode.cache.ExpirationAttributes
+ * @see org.apache.geode.cache.Region
  * @since 1.5.0
  */
 public class InvalidRegionExpirationAttributesNamespaceTest {
 
-	protected String contextConfigLocation() {
+	private String contextConfigLocation() {
 		return getClass().getName().replaceAll("\\.", "/").concat("-context.xml");
 	}
 
-	protected ConfigurableApplicationContext createApplicationContext() {
+	private ConfigurableApplicationContext createApplicationContext() {
 		return new GenericXmlApplicationContext();
 	}
 
-	protected ConfigurableApplicationContext configureContext(ConfigurableApplicationContext applicationContext) {
+	private ConfigurableApplicationContext configureContext(ConfigurableApplicationContext applicationContext) {
 		applicationContext.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
 		return applicationContext;
 	}
 
-	protected ConfigurableApplicationContext initializeApplicationContext(ConfigurableApplicationContext applicationContext) {
-		assertTrue(applicationContext instanceof GenericXmlApplicationContext);
+	private ConfigurableApplicationContext initializeApplicationContext(ConfigurableApplicationContext applicationContext) {
+		assertThat(applicationContext).isInstanceOf(GenericXmlApplicationContext.class);
 		((GenericXmlApplicationContext) applicationContext).load(contextConfigLocation());
 		applicationContext.registerShutdownHook();
 		applicationContext.refresh();
@@ -65,10 +67,8 @@ public class InvalidRegionExpirationAttributesNamespaceTest {
 			initializeApplicationContext(configureContext(createApplicationContext()));
 		}
 		catch (XmlBeanDefinitionStoreException expected) {
-			expected.printStackTrace();
-			assertTrue(expected.getCause() instanceof SAXParseException);
+			assertThat(expected).hasCauseInstanceOf(SAXParseException.class);
 			throw expected;
 		}
 	}
-
 }
