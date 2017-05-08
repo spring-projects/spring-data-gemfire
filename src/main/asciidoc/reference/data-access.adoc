@@ -1,16 +1,16 @@
 [[data-access]]
 = Using the Data Access Namespace
 
-In addition to the core XML namespace (`gfe`), _Spring Data Geode_ provides a `gfe-data` XML namespace
-primarily intended to simplify the development of Apache Geode client applications. This namespace currently contains
-support for Geode <<gemfire-repositories, Repositories>> and function <<function-execution, execution>> as well as
-includes a `<datasource>` tag that offers a convenient way to connect to the Apache Geode data grid.
+In addition to the core XML namespace (`gfe`), _Spring Data GemFire_ provides a `gfe-data` XML namespace
+primarily intended to simplify the development of Pivotal GemFire client applications. This namespace currently contains
+support for GemFire <<gemfire-repositories, Repositories>> and function <<function-execution, execution>> as well as
+includes a `<datasource>` tag that offers a convenient way to connect to the Pivotal GemFire data grid.
 
 [[data-access:datasource]]
-== An Easy Way to Connect to Geode
+== An Easy Way to Connect to GemFire
 
-For many applications, a basic connection to a Geode data grid using default values is sufficient.
-_Spring Data Geode's_ `<datasource>` tag provides a simple way to access data. The data source creates
+For many applications, a basic connection to a GemFire data grid using default values is sufficient.
+_Spring Data GemFire's_ `<datasource>` tag provides a simple way to access data. The data source creates
 a `ClientCache` and connection `Pool`. In addition, it will query the cluster servers for all existing root Regions
 and create an (empty) client Region proxy for each one.
 

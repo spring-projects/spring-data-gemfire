@@ -108,7 +108,7 @@ rely on GemFire defaults instead.
 * Upgrades to Pivotal GemFire 8.1.0.
 * Upgrades to _Spring Data Commons_ 1.11.x.RELEASE.
 * Upgrades to _Spring Framework_ 4.1.x.RELEASE.
-* Early access support for Apache Geode.
+* Early access support for Pivotal GemFire.
 * Support for adding _Spring_-defined Cache Listeners, Loaders and Writers on "existing" GemFire Regions
 configured in _Spring_ XML, `cache.xml` or even with Pivotal GemFire's _Cluster Config_.
 * _Spring_ JavaConfig support added to `SpringContextBootstrappingInitializer`.

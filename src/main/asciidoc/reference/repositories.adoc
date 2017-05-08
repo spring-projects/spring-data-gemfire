@@ -1,28 +1,28 @@
 [[gemfire-repositories]]
-= Spring Data Geode Repositories
+= Spring Data GemFire Repositories
 
 == Introduction
 
-_Spring Data Geode_ provides support to use the _Spring Data Repository_ abstraction to easily persist entities
-into Geode along with execute queries.  A general introduction to the _Repository programming model_ is provided
+_Spring Data GemFire_ provides support to use the _Spring Data Repository_ abstraction to easily persist entities
+into GemFire along with execute queries.  A general introduction to the _Repository programming model_ is provided
 http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
 
 [[gemfire-repositories.spring-configuration]]
 == Spring Configuration
 
-To bootstrap _Spring Data Repositories_, you use the `<repositories/>` element from the _Spring Data Geode_
+To bootstrap _Spring Data Repositories_, you use the `<repositories/>` element from the _Spring Data GemFire_
 Data namespace:
 
-.Bootstrap Spring Data Geode Repositories
+.Bootstrap Spring Data GemFire Repositories
 ====
 [source,xml]
 ----
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:gfe-data="http://www.springframework.org/schema/data/geode"
+       xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/data/geode http://www.springframework.org/schema/data/geode/spring-data-geode.xsd>
+         http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd>
 
   <gfe-data:repositories base-package="com.example.acme.repository"/>
 
@@ -39,7 +39,7 @@ or the bootstrap process will fail otherwise.
 [[gemfire-repositories.executing-queries]]
 == Executing OQL Queries
 
-_Spring Data Geode Repositories_ enable the definition of query methods to easily execute Geode OQL Queries
+_Spring Data GemFire Repositories_ enable the definition of query methods to easily execute GemFire OQL Queries
 against the Region the managed entity is mapped to.
 
 .Sample Repository
@@ -141,7 +141,7 @@ becomes too verbose, you can annotate the query methods with `@Query` as seen fo
 [[gemfire-repositories:oql-extensions]]
 == OQL Query Extensions using Annotations
 
-Many query languages, such as Apache Geode's OQL (Object Query Language), have extensions that are not directly
+Many query languages, such as Pivotal GemFire's OQL (Object Query Language), have extensions that are not directly
 supported by _Spring Data Commons' Repository_ infrastructure.
 
 One of _Spring Data Commons' Repository_ infrastructure goals is to function as the lowest common denominator
@@ -150,20 +150,20 @@ for application development today.  Technically, this means developers can acces
 supported by _Spring Data Commons_ within their applications by reusing their existing application-specific
 Repository interfaces, a very convenient and powerful abstraction.
 
-To support Geode's OQL Query language extensions and preserve portability across different data stores,
-_Spring Data Geode_ adds support for OQL Query extensions using Java Annotations.  These Annotations will be ignored
+To support GemFire's OQL Query language extensions and preserve portability across different data stores,
+_Spring Data GemFire_ adds support for OQL Query extensions using Java Annotations.  These Annotations will be ignored
 by other _Spring Data Repository_ implementations (e.g. _Spring Data_ JPA or _Spring Data Redis_) that do not have
 similar query language extensions.
 
-For instance, many data stores will most likely not implement Geode's OQL `IMPORT` keyword.  By implementing `IMPORT`
+For instance, many data stores will most likely not implement GemFire's OQL `IMPORT` keyword.  By implementing `IMPORT`
 as an Annotation (i.e. `@Import`) rather than as part of the query method signature (specifically, the method 'name'),
 then this will not interfere with the parsing infrastructure when evaluating the query method name to construct
 another data store language appropriate query.
 
-Currently, the set of Geode OQL Query language extensions that are supported by _Spring Data Geode_ include:
+Currently, the set of GemFire OQL Query language extensions that are supported by _Spring Data GemFire_ include:
 
 [cols="1,2,2,2", options="header"]
-.Supported Geode OQL extensions for Repository query methods
+.Supported GemFire OQL extensions for Repository query methods
 |===
 | Keyword
 | Annotation
@@ -191,7 +191,7 @@ Currently, the set of Geode OQL Query language extensions that are supported by 
 | NA
 |===
 
-As an example, suppose you have a `Customers` application domain class and corresponding Geode Region along with a
+As an example, suppose you have a `Customers` application domain class and corresponding GemFire Region along with a
 `CustomerRepository` and a query method to lookup `Customers` by last name, like so...
 
 .Sample Customers Repository
@@ -238,7 +238,7 @@ This will result in the following OQL Query:
 
 `<TRACE> <HINT 'LastNameIdx'> IMPORT org.example.app.domain.Customer; SELECT * FROM /Customers x WHERE x.lastName = $1 LIMIT 10`
 
-_Spring Data Geode's Repository_ extension and support is careful not to create conflicting declarations when
+_Spring Data GemFire's Repository_ extension and support is careful not to create conflicting declarations when
 the OQL Annotation extensions are used in combination with the `@Query` annotation.
 
 As another example, suppose you have a raw `@Query` annotated query method defined in your `CustomerRepository`

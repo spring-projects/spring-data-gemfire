@@ -1,21 +1,21 @@
 [[bootstrap:snapshot]]
 = Configuring the Snapshot Service
 
-_Spring Data Geode_ supports `Cache` and `Region` snapshots using
-http://geode.apache.org/docs/guide/11/managing/cache_snapshots/chapter_overview.html[Apache Geode's Snapshot Service].
-The out-of-the-box Snapshot Service support offers several convenient features to simplify the use of Geode's
+_Spring Data GemFire_ supports `Cache` and `Region` snapshots using
+http://geode.apache.org/docs/guide/11/managing/cache_snapshots/chapter_overview.html[Pivotal GemFire's Snapshot Service].
+The out-of-the-box Snapshot Service support offers several convenient features to simplify the use of GemFire's
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/CacheSnapshotService.html[Cache]
 and http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/RegionSnapshotService.html[Region]
 Snapshot Service APIs.
 
-As the http://geode.apache.org/docs/guide/11/managing/cache_snapshots/chapter_overview.html[Apache Geode documentation]
+As the http://geode.apache.org/docs/guide/11/managing/cache_snapshots/chapter_overview.html[Pivotal GemFire documentation]
 describes, snapshots allow you to save and subsequently reload the cached data later, which can be useful for
 moving data between environments, such as from production to a staging or test environment in order to reproduce
-data-related issues in a controlled context. You can imagine combining _Spring Data Geode's_ Snapshot Service support
+data-related issues in a controlled context. You can imagine combining _Spring Data GemFire's_ Snapshot Service support
 with http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-definition-profiles[Spring's bean definition profiles]
 to load snapshot data specific to the environment as necessary.
 
-_Spring Data Geode's_ support for Apache Geode's Snapshot Service begins with the `<gfe-data:snapshot-service>` element
+_Spring Data GemFire's_ support for Pivotal GemFire's Snapshot Service begins with the `<gfe-data:snapshot-service>` element
 from the `<gfe-data>` namespace.
 
 For example, I might want to define Cache-wide snapshots to be loaded as well as saved using a couple snapshot imports
@@ -32,10 +32,10 @@ and a data export definition as follows:
 ----
 
 You can define as many imports and/or exports as you like.  You can define just imports or just exports.
-The file locations and directory paths can be absolute, or relative to the _Spring Data Geode_ application,
+The file locations and directory paths can be absolute, or relative to the _Spring Data GemFire_ application,
 JVM process's working directory.
 
-This is a pretty simple example and the Snapshot Service defined in this case refers to the Geode `Cache` with
+This is a pretty simple example and the Snapshot Service defined in this case refers to the GemFire `Cache` with
 the default name of `gemfireCache` (as described in <<bootstrap:cache>>).  If you name your cache bean definition
 something other than the default, than you can use the `cache-ref` attribute to refer to the cache bean by name:
 
@@ -48,7 +48,7 @@ something other than the default, than you can use the `cache-ref` attribute to 
 </gfe-data:snapshot-service>
 ----
 
-It is also straightforward to define a Snapshot Service for a particular Geode Region by specifying
+It is also straightforward to define a Snapshot Service for a particular GemFire Region by specifying
 the `region-ref` attribute:
 
 [source,xml]
@@ -61,17 +61,17 @@ the `region-ref` attribute:
 </gfe-data:snapshot-service>
 ----
 
-When the `region-ref` attribute is specified, _Spring Data Geode's_ `SnapshotServiceFactoryBean` resolves
+When the `region-ref` attribute is specified, _Spring Data GemFire's_ `SnapshotServiceFactoryBean` resolves
 the `region-ref` attribute value to a Region bean defined in the _Spring_ context and proceeds to create a
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/RegionSnapshotService.html[RegionSnapshotService].
 The snapshot import and export definitions function the same way, however, the `location` must refer to a file
 on export.
 
-NOTE: Geode is strict about imported snapshot files actually existing before they are referenced.  For exports,
-Geode will create the snapshot file if it does not already exist.  If the snapshot file for export already exists,
+NOTE: GemFire is strict about imported snapshot files actually existing before they are referenced.  For exports,
+GemFire will create the snapshot file if it does not already exist.  If the snapshot file for export already exists,
 the data will be overwritten.
 
-TIP: _Spring Data Geode_ includes a `suppress-import-on-init` attribute on the `<gfe-data:snapshot-service>` element
+TIP: _Spring Data GemFire_ includes a `suppress-import-on-init` attribute on the `<gfe-data:snapshot-service>` element
 to suppress the configured Snapshot Service from trying to import data into the Cache or Region on initialization.
 This is useful when data exported from 1 Region is used to feed the import of another Region, for example.
 
@@ -86,13 +86,13 @@ http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/
 method in the `CacheSnapshotService` API indicates.
 
 NOTE: Of course, a developer may use the other, overloaded `load(:File[], :SnapshotFormat, :SnapshotOptions)` method
-variant to get specific about which snapshot files are to be loaded into the Geode `Cache`.
+variant to get specific about which snapshot files are to be loaded into the GemFire `Cache`.
 
-However, _Spring Data Geode_ recognizes that a typical developer workflow might be to extract and export data
+However, _Spring Data GemFire_ recognizes that a typical developer workflow might be to extract and export data
 from one environment into several snapshot files, zip all of them up, and then conveniently move the ZIP file
 to another environment for import.
 
-Therefore, _Spring Data Geode_ enables the developer to specify a JAR or ZIP file on import for a `Cache`-based
+Therefore, _Spring Data GemFire_ enables the developer to specify a JAR or ZIP file on import for a `Cache`-based
 Snapshot Service as follows:
 
 [source,xml]
@@ -102,18 +102,18 @@ Snapshot Service as follows:
   </gfe-data:snapshot-service>
 ----
 
-_Spring Data Geode_ will conveniently extract the provided ZIP file and treat it like a directory import (load).
+_Spring Data GemFire_ will conveniently extract the provided ZIP file and treat it like a directory import (load).
 
 [[bootstrap:snapshot:filters]]
 == Snapshot Filters
 
 The real power of defining multiple snapshot imports and exports is realized through the use of snapshot filters.
-Snapshot filters implement Apache Geode's
+Snapshot filters implement Pivotal GemFire's
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/SnapshotFilter.html[SnapshotFilter]
 interface and are used to filter Region entries for inclusion into the Region on import
 and for inclusion into the snapshot on export.
 
-_Spring Data Geode_ makes it brain dead simple to utilize snapshot filters on import and export using the `filter-ref`
+_Spring Data GemFire_ makes it brain dead simple to utilize snapshot filters on import and export using the `filter-ref`
 attribute or an anonymous, nested bean definition:
 
 [source,xml]
@@ -123,25 +123,25 @@ attribute or an anonymous, nested bean definition:
 <gfe:partitioned-region id="Admins" persistent="false"/>
 <gfe:partitioned-region id="Guests" persistent="false"/>
 
-<bean id="activeUsersFilter" class="example.geode.snapshot.filter.ActiveUsersFilter/>
+<bean id="activeUsersFilter" class="example.gemfire.snapshot.filter.ActiveUsersFilter/>
 
 <gfe-data:snapshot-service id="adminsSnapshotService" region-ref="Admins">
   <gfe-data:snapshot-import location="/path/to/import/users.snapshot">
-    <bean class="example.geode.snapshot.filter.AdminsFilter/>
+    <bean class="example.gemfire.snapshot.filter.AdminsFilter/>
   </gfe-data:snapshot-import>
   <gfe-data:snapshot-export location="/path/to/export/active/admins.snapshot" filter-ref="activeUsersFilter"/>
 </gfe-data:snapshot-service>
 
 <gfe-data:snapshot-service id="guestsSnapshotService" region-ref="Guests">
   <gfe-data:snapshot-import location="/path/to/import/users.snapshot">
-    <bean class="example.geode.snapshot.filter.GuestsFilter/>
+    <bean class="example.gemfire.snapshot.filter.GuestsFilter/>
   </gfe-data:snapshot-import>
   <gfe-data:snapshot-export location="/path/to/export/active/guests.snapshot" filter-ref="activeUsersFilter"/>
 </gfe-data:snapshot-service>
 ----
 
-In addition, more complex snapshot filters can be expressed with the `ComposableSnapshotFilter` _Spring Data Geode_
-provided class.  This class implements Geode's
+In addition, more complex snapshot filters can be expressed with the `ComposableSnapshotFilter` _Spring Data GemFire_
+provided class.  This class implements GemFire's
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/SnapshotFilter.html[SnapshotFilter]
 interface as well as the https://en.wikipedia.org/wiki/Composite_pattern[Composite] software design pattern.
 
@@ -180,7 +180,7 @@ The developer could then go onto combine the `activesUsersSinceFilter` with anot
   <constructor-arg index="0">
     <list>
       <ref bean="activeUsersSinceFilter"/>
-      <bean class="example.geode.snapshot.filter.CovertUsersFilter"/>
+      <bean class="example.gemfire.snapshot.filter.CovertUsersFilter"/>
     </list>
   </constructor-arg>
 </bean>
@@ -189,15 +189,15 @@ The developer could then go onto combine the `activesUsersSinceFilter` with anot
 [[bootstrap::snapshot::events]]
 == Snapshot Events
 
-By default, _Spring Data Geode_ uses Apache Geode's Snapshot Services on startup to import data and shutdown
+By default, _Spring Data GemFire_ uses Pivotal GemFire's Snapshot Services on startup to import data and shutdown
 to export data.  However, you may want to trigger periodic, event-based snapshots, for either import or export
 from within your _Spring_ application.
 
-For this purpose, _Spring Data Geode_ defines two additional _Spring_ application events, extending _Spring's_
+For this purpose, _Spring Data GemFire_ defines two additional _Spring_ application events, extending _Spring's_
 http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/ApplicationEvent.html[ApplicationEvent]
 class for imports and exports, respectively: `ImportSnapshotApplicationEvent` and `ExportSnapshotApplicationEvent`.
 
-The two application events can be targeted at the entire Geode Cache, or individual Geode Regions.  The constructors
+The two application events can be targeted at the entire GemFire Cache, or individual GemFire Regions.  The constructors
 in these classes accept an optional Region pathname (e.g. "/Example") as well as 0 or more `SnapshotMetadata` instances.
 
 The array of `SnapshotMetadata` is used to override the snapshot meta-data defined by `<gfe-data:snapshot-import>`

@@ -2,13 +2,13 @@
 = Useful Links
 
 * http://projects.spring.io/spring-data-gemfire[Spring Data GemFire Project Page]
-* https://github.com/spring-projects/spring-data-geode[Spring Data Geode source code]
-* https://jira.spring.io/browse/DATAGEODE[Spring Data Geode JIRA]
+* https://github.com/spring-projects/spring-data-gemfire[Spring Data GemFire source code]
+* https://jira.spring.io/browse/SGF[Spring Data GemFire JIRA]
 * http://stackoverflow.com/questions/tagged/spring-data-gemfire[Spring Data GemFire on StackOverflow]
 * http://forum.spring.io/forum/spring-projects/data/gemfire[Archive of the Spring Data GemFire Forum on Spring IO]
-* http://geode.apache.org/[Apache Geode Home Page]
-* http://geode.apache.org/docs/[Apache Geode Documentation]
+* https://pivotal.io/pivotal-gemfire[Pivotal GemFire Home Page]
+* http://gemfire.docs.pivotal.io/gemfire/about_gemfire.html[Pivotal GemFire Documentation]
 * http://geode.apache.org/community/[Apache Geode Community]
 * https://github.com/apache/geode[Apache Geode source code]
 * https://issues.apache.org/jira/browse/GEODE/?selectedTab=com.atlassian.jira.jira-projects-plugin:summary-panel[Apache Geode JIRA]
-* http://stackoverflow.com/search?q=Apache%20Geode[Apache Geode on StackOverflow]
+* http://stackoverflow.com/questions/tagged/gemfire[Pivotal GemFire on StackOverflow]

@@ -4,10 +4,10 @@
 [[mapping.entities]]
 == Entity Mapping
 
-_Spring Data Geode_ provides support to map entities that will be stored in a Region in the Geode In-Memory Data Grid.
+_Spring Data GemFire_ provides support to map entities that will be stored in a Region in the GemFire In-Memory Data Grid.
 The mapping metadata is defined using annotations on application domain classes just like this:
 
-.Mapping a domain class to a Geode Region
+.Mapping a domain class to a GemFire Region
 ====
 [source,java]
 ----
@@ -53,17 +53,17 @@ public class Guest extends User {
 }
 ----
 
-Be sure to use the full-path of the Geode Region, as defined with the _Spring Data Geode_ XML namespace
+Be sure to use the full-path of the GemFire Region, as defined with the _Spring Data GemFire_ XML namespace
 using the `id` or `name` attributes of the `<*-region>` element.
 
 [[mapping.entities.region]]
 === Entity Mapping by Region Type
 
-In addition to the `@Region` annotation, _Spring Data Geode_ also recognizes the Region type-specific
+In addition to the `@Region` annotation, _Spring Data GemFire_ also recognizes the Region type-specific
 mapping annotations: `@ClientRegion`, `@LocalRegion`, `@PartitionRegion` and `@ReplicateRegion`.
 
 Functionally, these annotations are treated exactly the same as the generic `@Region` annotation in the SDG
-mapping infrastructure.  However, these additional mapping annotations are useful in _Spring Data Geode's`
+mapping infrastructure.  However, these additional mapping annotations are useful in _Spring Data GemFire's`
 Annotation configuration model.  When combined with the `@EnableEntityDefinedRegions` configuration annotation
 on _Spring_ `@Configuration` annotated class, it is possible to generate Regions in the local cache, whether
 the application is a client or peer.
@@ -84,7 +84,7 @@ As an alternative to specifying the Region in which the entity will be stored us
 on the entity class, you can also specify the `@Region` annotation on the entity's `Repository`.
 See <<gemfire-repositories>> for more details.
 
-However, let's say you want to store a `Person` in multiple Geode Regions (e.g. `People` and `Customers`),
+However, let's say you want to store a `Person` in multiple GemFire Regions (e.g. `People` and `Customers`),
 then you can define your corresponding `Repository` interface extensions like so:
 
 [source,java]
@@ -100,7 +100,7 @@ public interface CustomerRepository extends GemfireRepository<Person, String> {
 }
 ----
 
-Then, using each Repository individually, you can store the entity in multiple Geode Regions.
+Then, using each Repository individually, you can store the entity in multiple GemFire Regions.
 
 [source,java]
 ----
@@ -124,7 +124,7 @@ either as a local cache transaction or a global transaction.
 [[mapping.pdx-serializer]]
 == Mapping PDX Serializer
 
-_Spring Data Geode_ provides a custom
+_Spring Data GemFire_ provides a custom
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/PdxSerializer.html[PdxSerializer] implementation
 that uses the mapping information to customize entity serialization.  Beyond that, it allows customizing
 the entity instantiation by using the Spring Data `EntityInstantiator` abstraction.  By default the serializer

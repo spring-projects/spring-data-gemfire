@@ -49,7 +49,7 @@ include::{basedocdir}/reference/samples.adoc[]
 = Resources
 
 In addition to this reference documentation, there are a number of other resources that may help you learn
-how to use Apache Geode with the _Spring Framework_. These additional, third-party resources are enumerated
+how to use Pivotal GemFire with the _Spring Framework_. These additional, third-party resources are enumerated
 in this section.
 
 :leveloffset: +1

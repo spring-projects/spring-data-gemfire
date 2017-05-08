@@ -1,8 +1,8 @@
 [[bootstrap:gateway]]
 = Configuring WAN Gateways
 
-WAN Gateways provide a way to synchronize Apache Geode Distributed Systems across geographic areas.
-_Spring Data Geode_ provides namespace support for configuring WAN Gateways as illustrated in the following examples.
+WAN Gateways provide a way to synchronize Pivotal GemFire Distributed Systems across geographic areas.
+_Spring Data GemFire_ provides namespace support for configuring WAN Gateways as illustrated in the following examples.
 
 == WAN Configuration in GemFire 7.0
 
@@ -60,6 +60,6 @@ The `GatewayReceiver` may also be configured with `EventFilters` and `TransportF
 </gfe:gateway-receiver>
 ----
 
-Please refer to the Apache Geode
+Please refer to the Pivotal GemFire
 http://geode.apache.org/docs/guide/11/topologies_and_comm/multi_site_configuration/chapter_overview.html[documentation]
 for a detailed explanation of all the configuration options.

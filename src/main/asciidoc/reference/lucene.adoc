@@ -1,11 +1,11 @@
 [[bootstrap:lucene]]
 = Apache Lucene Integration
 
-http://geode.apache.org/[Apache Geode] integrates with http://lucene.apache.org/[Apache Lucene] to allow developers
-to index and search on data stored in Apache Geode using Lucene queries.  Search-based queries also includes
+https://pivotal.io/pivotal-gemfire[Pivotal GemFire] integrates with http://lucene.apache.org/[Apache Lucene] to allow developers
+to index and search on data stored in Pivotal GemFire using Lucene queries.  Search-based queries also includes
 the capability to page through query results.
 
-Additionally, _Spring Data Geode_ adds support for query projections based on _Spring Data Commons_
+Additionally, _Spring Data GemFire_ adds support for query projections based on _Spring Data Commons_
 Projection infrastructure.  This feature enables the query results to be projected into first-class,
 application domain types as needed or required by the application use case.
 
@@ -68,11 +68,11 @@ LuceneIndexFactoryBean personTitleIndex(GemFireCache gemFireCache) {
 }
 ----
 
-There are a few limitations of Apache Geode's, Apache Lucene integration support.  First, a `LuceneIndex` can only
-be created on a Geode `PARTITION` Region.  Second, all `LuceneIndexes` must be created before the the Region on which
+There are a few limitations of Pivotal GemFire's, Apache Lucene integration support.  First, a `LuceneIndex` can only
+be created on a GemFire `PARTITION` Region.  Second, all `LuceneIndexes` must be created before the the Region on which
 the `LuceneIndex` is applied.
 
-It is possible that these Apache Geode restrictions will not apply in a future release which is why
+It is possible that these Pivotal GemFire restrictions will not apply in a future release which is why
 the SDG `LuceneIndexFactoryBean` API takes a reference to the Region directly as well, rather than just the Region path.
 
 This is more ideal if think about the case in which users may want to define a `LuceneIndex` on an existing Region
@@ -83,10 +83,10 @@ Now that we have a `LuceneIndex` we can perform Lucene based data access operati
 
 == Lucene Template Data Accessors
 
-_Spring Data Geode_ provides 2 primary templates for Lucene data access operations, depending on how low a level
+_Spring Data GemFire_ provides 2 primary templates for Lucene data access operations, depending on how low a level
 your application is prepared to deal with.
 
-The `LuceneOperations` interface defines query operations using Apache Geode
+The `LuceneOperations` interface defines query operations using Pivotal GemFire
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/lucene/package-frame.html[Lucene types].
 
 [source,java]
@@ -117,18 +117,18 @@ public interface LuceneOperations {
 
 NOTE: The `[, int resultLimit]` indicates that the `resultLimit` parameter is optional.
 
-The operations in the `LuceneOperations` interface match the operations provided by the Apache Geode's
+The operations in the `LuceneOperations` interface match the operations provided by the Pivotal GemFire's
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/lucene/LuceneQuery.html[LuceneQuery] interface.
-However, SDG has the added value of translating proprietary Geode or Lucene `Exceptions` into _Spring's_ highly
+However, SDG has the added value of translating proprietary GemFire or Lucene `Exceptions` into _Spring's_ highly
 consistent and expressive DAO
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[Exception Hierarchy],
 particularly as many modern data access operations involve more than single store or repository.
 
 Additionally, SDG's `LuceneOperations` interface can shield your application from interface breaking changes
-introduced by the underlying Apache Geode or Apache Lucene APIs when they do and will occur.
+introduced by the underlying Pivotal GemFire or Apache Lucene APIs when they do and will occur.
 
-However, it would be remorse to only offer a Lucene Data Access Object that only uses Apache Geode and Apache Lucene
-data types (e.g. Geode's `LuceneResultStruct`), therefore SDG gives you the `ProjectingLuceneOperations` interface
+However, it would be remorse to only offer a Lucene Data Access Object that only uses Pivotal GemFire and Apache Lucene
+data types (e.g. GemFire's `LuceneResultStruct`), therefore SDG gives you the `ProjectingLuceneOperations` interface
 to remedy these important application concerns.
 
 [source,java]
@@ -235,8 +235,8 @@ A custom `ProjectionFactory` can be set on a Lucene template using `setProjectio
 
 == Annotation configuration support
 
-Finally, _Spring Data Geode_ provides Annotation configuration support for `LuceneIndexes`. Eventually, the SDG Lucene
-support will find its way into the _Repository_ infrastructure extension for Apache Geode so that Lucene queries
+Finally, _Spring Data GemFire_ provides Annotation configuration support for `LuceneIndexes`. Eventually, the SDG Lucene
+support will find its way into the _Repository_ infrastructure extension for Pivotal GemFire so that Lucene queries
 can be expressed as methods on an application `Repository` interface, much like the
 http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#gemfire-repositories.executing-queries[OQL support]
 today.

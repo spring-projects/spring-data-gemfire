@@ -6,7 +6,7 @@ extending `java.util.Map` and enables basic data access using familiar key-value
 is wired into application classes that require it so the actual Region type is decoupled from the programming model.
 Typically, each Region is associated with one domain object, similar to a table in a relational database.
 
-Geode implements the following types of Regions:
+GemFire implements the following types of Regions:
 
 * *REPLICATE* - Data is replicated across all cache members that define the Region. This provides very high
 read performance but writes take longer to perform the replication.
@@ -19,13 +19,13 @@ Local updates are synchronized to the cache server. Also, a client Region may su
 stay up-to-date (synchronized) with changes originating from remote processes that access the same server Region.
 
 For more information about the various Region types and their capabilities as well as configuration options,
-please refer to Apache Geode's documentation on
+please refer to Pivotal GemFire's documentation on
 http://geode.apache.org/docs/guide/11/developing/region_options/region_types.html[Region Types].
 
 [[bootstrap:region:lookup]]
 == Using an externally configured Region
 
-To reference Regions already configured in a Geode native `cache.xml` file, use the `lookup-region` element.
+To reference Regions already configured in a GemFire native `cache.xml` file, use the `lookup-region` element.
 Simply declare the target Region name with the `name` attribute.  For example, to declare a bean definition identified
 as `ordersRegion` for an existing Region named `Orders`, you can use the following bean definition:
 
@@ -61,7 +61,7 @@ the Region semantics or setup infrastructure.
 [[bootstrap:region:lookup:auto]]
 == Auto Region Lookup
 
-"auto-lookup" allows all Regions defined in a Geode native `cache.xml` file to be imported into a _Spring_
+"auto-lookup" allows all Regions defined in a GemFire native `cache.xml` file to be imported into a _Spring_
 application context when using the`cache-xml-location` attribute on the `<gfe:cache>` element.
 
 For instance, given a `cache.xml` file of...
@@ -97,12 +97,12 @@ with:
 <gfe:auto-region-lookup/>
 ----
 
-_Spring Data Geode_ will automatically create beans for all Geode Regions defined in `cache.xml` that have not been
+_Spring Data GemFire_ will automatically create beans for all GemFire Regions defined in `cache.xml` that have not been
 explicitly added to the _Spring_ context with explicit `<gfe:lookup-region>` bean declarations.
 
-It is important to realize that _Spring Data Geode_ uses a _Spring_
+It is important to realize that _Spring Data GemFire_ uses a _Spring_
 http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/beans/factory/config/BeanPostProcessor.html[BeanPostProcessor]
-to post process the cache after it is both created and initialized to determine the Regions defined in Geode to add
+to post process the cache after it is both created and initialized to determine the Regions defined in GemFire to add
 as beans in the _Spring_ application context.
 
 You may inject these "auto-looked-up" Regions like any other bean defined in the _Spring_ application context with
@@ -137,20 +137,20 @@ If you are declaring your components using _Spring_ XML config, then you would d
 <bean class="example.ApplicationDao" depends-on="gemfireCache"/>
 ----
 
-This ensures the Geode cache and all the Regions defined in `cache.xml` get created before any components
+This ensures the GemFire cache and all the Regions defined in `cache.xml` get created before any components
 with auto-wire references when using the new `<gfe:auto-region-lookup>` element.
 
 [[bootstrap:region:overview]]
 == Configuring Regions
 
-_Spring Data Geode_ provides comprehensive support for configuring any type of Region via the following elements:
+_Spring Data GemFire_ provides comprehensive support for configuring any type of Region via the following elements:
 
 * LOCAL Region: `<local-region>`
 * PARTITION Region: `<partitioned-region>`
 * REPLICATE Region: `<replicated-region>`
 * Client Region: `<client-region>`
 
-Please see the Apache Geode documentation for a comprehensive description of
+Please see the Pivotal GemFire documentation for a comprehensive description of
 http://geode.apache.org/docs/guide/11/developing/region_options/region_types.html[Region Types].
 
 [[bootstrap:region:attributes]]
@@ -166,8 +166,8 @@ The following table lists attributes available for all Region types:
 | Description
 
 | cache-ref
-| Geode Cache bean reference
-| The name of the bean defining the Geode Cache (by default 'gemfireCache').
+| GemFire Cache bean reference
+| The name of the bean defining the GemFire Cache (by default 'gemfireCache').
 
 | cloning-enabled
 | boolean, default:false
@@ -182,7 +182,7 @@ The following table lists attributes available for all Region types:
 | Determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to distributed Regions.
 
 | data-policy
-| See Geode's http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/DataPolicy.html[Data Policy]
+| See GemFire's http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/DataPolicy.html[Data Policy]
 | The Region's Data Policy. Note, not all Data Policies are supported for every Region type.
 
 | destroy
@@ -297,7 +297,7 @@ mutually exclusive and using both in the same element will result in an exceptio
 .Bean Reference Conventions
 [NOTE]
 ====
-The `cache-listener` element is an example of a common pattern used in the namespace anywhere Geode provides
+The `cache-listener` element is an example of a common pattern used in the namespace anywhere GemFire provides
 a callback interface to be implemented in order to invoke custom code in response to Cache or Region events.
 Using _Spring's_ IoC container, the implementation is a standard _Spring_ bean. In order to simplify the configuration,
 the schema allows a single occurrence of the `cache-listener` element, but it may contain nested bean references
@@ -311,11 +311,11 @@ configuration example.
 === CacheLoaders and CacheWriters
 
 Similar to `cache-listener`, the namespace provides `cache-loader` and `cache-writer` elements to register
-these Geode components respectively for a Region.
+these GemFire components respectively for a Region.
 
 A `CacheLoader` is invoked on a cache miss to allow an entry to be loaded from an external data source, such as a
 database.  A `CacheWriter` is invoked before an entry is created or updated, intended for synchronizing to
-an external data source. The difference is Geode only supports at most a single instance `CacheLoader` and `CacheWriter`
+an external data source. The difference is GemFire only supports at most a single instance `CacheLoader` and `CacheWriter`
 per Region. However, either declaration style may be used.
 
 Example:
@@ -340,12 +340,12 @@ Example:
 
 See http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheLoader.html[`CacheLoader`]
 and http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheWriter.html[`CacheWriter`]
-in the Apache Geode documentation for more details.
+in the Pivotal GemFire documentation for more details.
 
 [[bootstrap:region:compression]]
 == Compression
 
-Geode Regions may also be compressed in order to reduce JVM memory consumption and pressure to possibly avoid
+GemFire Regions may also be compressed in order to reduce JVM memory consumption and pressure to possibly avoid
 stop the world GCs.  When you enable compression for a Region, all values stored in the Region, in-memory
 are compressed while keys and indexes remain uncompressed.  New values are compressed when put into Region
 and all values are decompressed automatically when read back from the Region.  Values are not compressed when
@@ -364,17 +364,17 @@ Example:
 </beans>
 ----
 
-Please refer to Apache Geode's documentation for more information on
+Please refer to Pivotal GemFire's documentation for more information on
 http://gemfire.docs.pivotal.io/geode/managing/region_compression/region_compression.html[Region Compression].
 
 [[bootstrap:region:subregions]]
 == Subregions
 
-_Spring Data Geode_ also supports Subregions, allowing Regions to be arranged in a hierarchical relationship.
+_Spring Data GemFire_ also supports Subregions, allowing Regions to be arranged in a hierarchical relationship.
 
-For example, Geode allows for a */Customer/Address* Region and a different */Employee/Address* Region. Additionally,
+For example, GemFire allows for a */Customer/Address* Region and a different */Employee/Address* Region. Additionally,
 a Subregion may have it's own Subregions and its own configuration. A Subregion does not inherit attributes from
-the parent Region. Regions types may be mixed and matched subject to Geode constraints. A Subregion is naturally
+the parent Region. Regions types may be mixed and matched subject to GemFire constraints. A Subregion is naturally
 declared as a child element of a Region. The Subregion's name attribute is the simple name. The above example
 might be configured as:
 
@@ -399,11 +399,11 @@ OQL query strings.
 [[bootstrap:region:templates]]
 == Region Templates
 
-_Spring Data Geode_ also supports Region Templates.  This feature allows developers to define common Region
+_Spring Data GemFire_ also supports Region Templates.  This feature allows developers to define common Region
 configuration settings and attributes once and reuse the configuration among many Region bean definitions declared
 in the _Spring_ application context.
 
-_Spring Data Geode_ includes 5 Region template tags in namespace:
+_Spring Data GemFire_ includes 5 Region template tags in namespace:
 
 [cols="1,2", options="header"]
 .Region Template Tags
@@ -481,7 +481,7 @@ Attributes and sub-elements defined in subsequent, inherited Region bean definit
 
 === How Templating Works
 
-_Spring Data Geode_ applies Region Templates when the _Spring_ application context configuration meta-data is *parsed*,
+_Spring Data GemFire_ applies Region Templates when the _Spring_ application context configuration meta-data is *parsed*,
 and therefore, *must be declared in the order of inheritance*.  In other words, parent templates must be defined
 before children.  This ensures the proper configuration is applied, especially when element attributes or sub-elements
 are "overridden".
@@ -495,14 +495,14 @@ NOTE: Region Templates are single-inheritance.
 === Caution concerning Regions, Subregions and Lookups
 
 Previously, one of the underlying properties of the `replicated-region`, `partitioned-region`, `local-region`
-and `client-region` elements in the _Spring Data Geode_ XML namespace was to perform a lookup first before
+and `client-region` elements in the _Spring Data GemFire_ XML namespace was to perform a lookup first before
 attempting to create a Region.  This was done in case the Region already existed, which would be the case
-if the Region was defined in an imported Geode native `cache.xml` configuration file.  Therefore, the lookup
+if the Region was defined in an imported GemFire native `cache.xml` configuration file.  Therefore, the lookup
 was performed first to avoid any errors.  This was by design and subject to change.
 
 This behavior has been altered and the default behavior is now to create the Region first.  If the Region
 already exists, then the creation logic fails-fast and an appropriate exception is thrown.  However, much like the
-`CREATE TABLE IF NOT EXISTS ...` DDL syntax, the _Spring Data Geode_ `<*-region>` namespace elements now includes
+`CREATE TABLE IF NOT EXISTS ...` DDL syntax, the _Spring Data GemFire_ `<*-region>` namespace elements now includes
 a `ignore-if-exists` attribute, which re-instates the old behavior by performing a lookup of an existing Region
 identified by name, first.  If an existing Region by name is found and `ignore-if-exists` is set to `true`, then
 the Region bean definition defined in _Spring_ config is ignored.
@@ -518,7 +518,7 @@ by the application.  Even worse, the application developer may want to define th
 IMPORTANT: Recommended Practice - Only use `replicated-region`, `partitioned-region`, `local-region` and `client-region`
 namespace elements to define new Regions.
 
-Consider the following native Geode `cache.xml` configuration file...
+Consider the following native GemFire `cache.xml` configuration file...
 
 [source,xml]
 ----
@@ -608,9 +608,9 @@ Then the Region beans defined in the _Spring_ application context will consist o
 above (i.e. `@Resource(name = "Customers/Accounts"))` is now broken since no bean with name "Customers/Accounts"
 is actually defined.
 
-Geode is flexible in referencing both parent Regions and Subregions with or without the leading forward slash.
+GemFire is flexible in referencing both parent Regions and Subregions with or without the leading forward slash.
 For example, the parent can be referenced as "/Customers" or "Customers" and the child as "/Customers/Accounts"
-or just "Customers/Accounts". However, _Spring Data _Geode is very specific when it comes to naming beans after Regions,
+or just "Customers/Accounts". However, _Spring Data _GemFire is very specific when it comes to naming beans after Regions,
 typically always using the forward slash (/) to represent Subregions (e.g. "/Customers/Accounts").
 
 Therefore, it is recommended that users either use the nested `lookup-region` syntax as shown above,
@@ -624,18 +624,18 @@ or define direct references with a leading forward slash (/) like so...
 
 The example above where the nested `replicated-region` elements were used to reference the Subregions serves to
 illustrate the problem stated earlier. Are the Customers, Accounts and Orders Regions/Subregions persistent or not?
-Not, since the Regions were defined in the native Geode `cache.xml` configuration file as `REPLICATES` and will exist
+Not, since the Regions were defined in the native GemFire `cache.xml` configuration file as `REPLICATES` and will exist
 by the time the cache is initialized, or once the `<gfe:cache>` bean is processed.
 
 [[bootstrap:region:eviction]]
 == Data Eviction (with Overflow)
 
 Based on various constraints, each Region can have an eviction policy in place for evicting data from memory.
-Currently, in Geode, eviction applies to the _Least Recently Used_ entry (also known as
+Currently, in GemFire, eviction applies to the _Least Recently Used_ entry (also known as
 http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used[LRU]). Evicted entries are either destroyed
 or paged to disk (referred to as *overflow* to disk).
 
-_Spring Data Geode_ supports all eviction policies (entry count, memory and heap usage) for PARTITION Regions,
+_Spring Data GemFire_ supports all eviction policies (entry count, memory and heap usage) for PARTITION Regions,
 REPLICATE Regions and client, local Regions using the nested `eviction` element.
 
 For example, to configure a PARTITION Region to overflow to disk if the memory size exceeds more than 512 MB,
@@ -649,22 +649,22 @@ a developer would specify the following configuration:
 ----
 
 IMPORTANT: Replicas cannot use `local destroy` eviction since that would invalidate them.
-See the Geode docs for more information.
+See the GemFire docs for more information.
 
 When configuring Regions for overflow, it is recommended to configure the storage through the `disk-store` element
 for maximum efficiency.
 
-For a detailed description of eviction policies, please refer to the Geode documentation on
+For a detailed description of eviction policies, please refer to the GemFire documentation on
 http://geode.apache.org/docs/guide/11/developing/eviction/chapter_overview.html[Eviction].
 
 [[bootstrap:region:expiration]]
 == Data Expiration
 
-Apache Geode allows you to control how long entries exist in the cache. Expiration is driven by elapsed time,
+Pivotal GemFire allows you to control how long entries exist in the cache. Expiration is driven by elapsed time,
 as opposed to Eviction, which is driven by the entry count or heap/memory usage. Once an entry expires
 it may no longer be accessed from the cache.
 
-Geode supports the following Expiration types:
+GemFire supports the following Expiration types:
 
 * *Time-to-Live (TTL)* - The amount of time in seconds that an object may remain in the cache after the last creation
 or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when
@@ -674,7 +674,7 @@ The Idle Timeout counter for an object is reset any time its TTL counter is rese
 _Idle Timeout_ counter is reset any time the entry is accessed through a get operation or a netSearch.
 The _Idle Timeout_ counter for a Region is reset whenever the _Idle Timeout_ is reset for one of its entries.
 
-Each of these may be applied to the Region itself or entries in the Region. _Spring Data Geode_ provides `<region-ttl>`,
+Each of these may be applied to the Region itself or entries in the Region. _Spring Data GemFire_ provides `<region-ttl>`,
 `<region-tti>`, `<entry-ttl>` and `<entry-tti>` Region child elements to specify timeout values and expiration actions.
 
 For example:
@@ -687,13 +687,13 @@ For example:
 </gfe:replicated-region>
 ----
 
-For a detailed description of expiration policies, please refer to the Geode documentation on
+For a detailed description of expiration policies, please refer to the GemFire documentation on
 http://geode.apache.org/docs/guide/11/developing/expiration/chapter_overview.html[Expiration].
 
 [[bootstrap:region:expiration:annotation]]
 === Annotation-based Data Expiration
 
-With _Spring Data Geode_, a developer has the ability to define Expiration policies and settings on individual
+With _Spring Data GemFire_, a developer has the ability to define Expiration policies and settings on individual
 Region Entry values, or rather, application domain objects directly.  For instance, a developer might define Expiration
 settings on a Session-based application domain object like so...
 
@@ -727,7 +727,7 @@ Expiration types, such as TTL and TTI, are configured.
 [NOTE]
 ====
 All @Expiration-based annotations apply only to Region Entry values.  Expiration for a "Region" is not covered
-by _Spring Data Geode's_ Expiration annotation support.  However, Apache Geode and _Spring Data Geode_ do allow you
+by _Spring Data GemFire's_ Expiration annotation support.  However, Pivotal GemFire and _Spring Data GemFire_ do allow you
 to set Region Expiration using the SDG XML namespace, like so...
 
 [source,xml]
@@ -739,16 +739,16 @@ to set Region Expiration using the SDG XML namespace, like so...
 ----
 ====
 
-_Spring Data Geode's_ `@Expiration` annotation support is implemented with Geode's
+_Spring Data GemFire's_ `@Expiration` annotation support is implemented with GemFire's
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CustomExpiry.html[`CustomExpiry`] interface.
-Refer to Geode's documentation on http://geode.apache.org/docs/guide/11/developing/expiration/configuring_data_expiration.html[Configuring Data Expiration]
+Refer to GemFire's documentation on http://geode.apache.org/docs/guide/11/developing/expiration/configuring_data_expiration.html[Configuring Data Expiration]
 for more details
 
-The _Spring Data Geode_ `AnnotationBasedExpiration` class (and `CustomExpiry` implementation) is responsible
+The _Spring Data GemFire_ `AnnotationBasedExpiration` class (and `CustomExpiry` implementation) is responsible
 for processing the SDG `@Expiration` annotations and applying the Expiration policy and settings appropriately
 for Region Entry Expiration on request.
 
-To use _Spring Data Geode_ to configure specific Geode Regions to appropriately apply the Expiration policy
+To use _Spring Data GemFire_ to configure specific GemFire Regions to appropriately apply the Expiration policy
 and settings applied to your application domain objects annotated with `@Expiration`-based annotations, you must...
 
 1. Define a bean in the _Spring_ `ApplicationContext` of type `AnnotationBasedExpiration` using the appropriate
@@ -773,11 +773,11 @@ along with the `<gfe:custom-entry-tti ref="ttiExpiration"/>` element to set TTI.
 ====
 
 2. (optional) Annotate your application domain objects that will be stored in the Region with Expiration policies
-and custom settings using one of _Spring Data Geode's_ `@Expiration` annotations: `@Expiration`,
+and custom settings using one of _Spring Data GemFire's_ `@Expiration` annotations: `@Expiration`,
 `@IdleTimeoutExpiration` and/or `@TimeToLiveExpiration`
 
-3. (optional) In cases where particular application domain objects have not been annotated with _Spring Data Geode's_
-`@Expiration` annotations at all, but the Geode Region is configured to use SDG's custom `AnnotationBasedExpiration`
+3. (optional) In cases where particular application domain objects have not been annotated with _Spring Data GemFire's_
+`@Expiration` annotations at all, but the GemFire Region is configured to use SDG's custom `AnnotationBasedExpiration`
 class to determine the Expiration policy and settings for objects stored in the Region, then it is possible to set
 "default" Expiration attributes on the `AnnotationBasedExpiration` bean by doing the following...
 
@@ -798,11 +798,11 @@ class to determine the Expiration policy and settings for objects stored in the 
 </gfe:partitioned-region>
 ----
 
-You may have noticed that _Spring Data Geode's_ `@Expiration` annotations use a String as the attributes type rather
+You may have noticed that _Spring Data GemFire's_ `@Expiration` annotations use a String as the attributes type rather
 than, and perhaps more appropriately, being strongly typed, i.e. `int` for 'timeout' and SDG'S `ExpirationActionType`
 for 'action'.  Why is that?
 
-Well, enter one of _Spring Data Geode's_ other features, leveraging _Spring's_ core infrastructure
+Well, enter one of _Spring Data GemFire's_ other features, leveraging _Spring's_ core infrastructure
 for configuration convenience: _Property Placeholders_ and _Spring Expression Language_ (SpEL).
 
 For instance, a developer can specify both the Expiration 'timeout' and 'action' using _Property Placeholders_
@@ -866,18 +866,18 @@ instance of `java.util.Properties`. In this example, even the Properties (`expir
 the action value on the actual Expiration action enumerated type leading to more quickly identified failures
 if the types ever change.
 
-All of this has been demonstrated and tested in the _Spring Data Geode_ test suite, by way of example.  See the
+All of this has been demonstrated and tested in the _Spring Data GemFire_ test suite, by way of example.  See the
 https://github.com/spring-projects/spring-data-geode[source] for further details.
 
 [[bootstrap:region:persistence]]
 == Data Persistence
 
-Regions can be persistent. Geode ensures that all the data you put into a Region that is configured for persistence
+Regions can be persistent. GemFire ensures that all the data you put into a Region that is configured for persistence
 will be written to disk in a way that is recoverable the next time you recreate the Region.  This allows data
 to be recovered after machine or process failure, or even after an orderly shutdown and subsequent restart of
-the Geode data node.
+the GemFire data node.
 
-To enable persistence with _Spring Data Geode_, simply set the `persistent` attribute to `true` on
+To enable persistence with _Spring Data GemFire_, simply set the `persistent` attribute to `true` on
 any of the `<*-region>` elements.  For example...
 
 [source,xml]
@@ -886,7 +886,7 @@ any of the `<*-region>` elements.  For example...
 ----
 
 Persistence may also be configured using the `data-policy` attribute; set the attribute's value to one of
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/DataPolicy.html[Geode's DataPolicy settings].
+http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/DataPolicy.html[GemFire's DataPolicy settings].
 For example...
 
 [source,xml]
@@ -913,8 +913,8 @@ This is discussed further in <<bootstrap:diskstore>>
 [[bootstrap:region:subscription]]
 == Subscription Policy
 
-Geode allows configuration of http://geode.apache.org/docs/guide/11/developing/events/configure_p2p_event_messaging.html[peer-to-peer (P2P) event messaging]
-to control the entry events that the Region will receive.  _Spring Data Geode_ provides the `<gfe:subscription/>`
+GemFire allows configuration of http://geode.apache.org/docs/guide/11/developing/events/configure_p2p_event_messaging.html[peer-to-peer (P2P) event messaging]
+to control the entry events that the Region will receive.  _Spring Data GemFire_ provides the `<gfe:subscription/>`
 sub-element to set the subscription policy on REPLICATE and PARTITION Regions to either `ALL` or `CACHE_CONTENT`.
 
 [source,xml]
@@ -927,11 +927,11 @@ sub-element to set the subscription policy on REPLICATE and PARTITION Regions to
 [[bootstrap:region:local]]
 == Local Region
 
-_Spring Data Geode_ offers a dedicated `local-region` element for creating local Regions. Local Regions, as the name
+_Spring Data GemFire_ offers a dedicated `local-region` element for creating local Regions. Local Regions, as the name
 implies, are standalone, meaning they do not share data with any other distributed system member. Other than that,
 all common Region configuration options apply.
 
-A minimal declaration looks as follows (again, the example relies on the _Spring Data Geode_ namespace
+A minimal declaration looks as follows (again, the example relies on the _Spring Data GemFire_ namespace
 naming conventions to wire the cache):
 
 [source,xml]
@@ -940,7 +940,7 @@ naming conventions to wire the cache):
 ----
 
 Here, a local Region is created (if one doesn't exist already). The name of the Region is the same as the bean id
-(`myLocalRegion`) and the bean assumes the existence of a Geode cache named `gemfireCache`.
+(`myLocalRegion`) and the bean assumes the existence of a GemFire cache named `gemfireCache`.
 
 [[bootstrap:region:replicate]]
 == Replicated Region
@@ -951,7 +951,7 @@ a REPLICATE Region is distributed to all copies of the Region. When a _replica_ 
 an initialization stage in which it discovers other _replicas_ and automatically copies all the entries.
 While one _replica_ is initializing you can still continue to use the other _replica_.
 
-_Spring Data Geode_ offers a `replicated-region` element. A minimal declaration looks as follows.
+_Spring Data GemFire_ offers a `replicated-region` element. A minimal declaration looks as follows.
 All common configuration options are available for REPLICATE Regions.
 
 [source,xml]
@@ -959,22 +959,22 @@ All common configuration options are available for REPLICATE Regions.
 <gfe:replicated-region id="exampleReplica"/>
 ----
 
-Refer to Geode's documentation on
+Refer to GemFire's documentation on
 http://geode.apache.org/docs/guide/11/developing/distributed_regions/chapter_overview.html[Distributed and Replicated Regions]
 for more details.
 
 [[bootstrap:region:partition]]
 == Partitioned Region
 
-Another Region type supported out-of-the-box by the _Spring Data Geode_ namespace is the PARTITION Region.
+Another Region type supported out-of-the-box by the _Spring Data GemFire_ namespace is the PARTITION Region.
 
-To quote the Geode docs:
+To quote the GemFire docs:
 
 "A partitioned region is a region where data is divided between peer servers hosting the region so that
 each peer stores a subset of the data. When using a partitioned region, applications are presented with
 a logical view of the region that looks like a single map containing all of the data in the region.
 Reads or writes to this map are transparently routed to the peer that hosts the entry that is the target of
-the operation. Geode divides the domain of hashcodes into buckets. Each bucket is assigned to a specific peer,
+the operation. GemFire divides the domain of hashcodes into buckets. Each bucket is assigned to a specific peer,
 but may be relocated at any time to another peer in order to improve the utilization of resources across the cluster."
 
 A partition is created using the `partitioned-region` element. Its configuration options are similar to that of
@@ -992,7 +992,7 @@ Below is a quick example on setting up a PARTITION Region with 2 redundant copie
 </gfe:partitioned-region>
 ----
 
-Refer to Geode's documentation on
+Refer to GemFire's documentation on
 http://geode.apache.org/docs/guide/11/developing/partitioned_regions/chapter_overview.html[Partitioned Regions]
 for more details.
 
@@ -1049,12 +1049,12 @@ immediately when a new member is added.
 [[bootstrap:region:client]]
 == Client Region
 
-Apache Geode supports various deployment topologies for managing and distributing data.  Geode topologies is outside
-the scope of this documentation.  However, to quickly recap, Geode's supported topologies can be classified in short as:
+Pivotal GemFire supports various deployment topologies for managing and distributing data.  GemFire topologies is outside
+the scope of this documentation.  However, to quickly recap, GemFire's supported topologies can be classified in short as:
 _peer-to-peer_ (p2p), _client-server_, and _wide area network_ (WAN).  In the last two configurations, it is common
 to declare *client* Regions which connect to a cache server.
 
-_Spring Data Geode_ offers dedicated support for such configuration through <<bootstrap:cache:client, client-cache>>,
+_Spring Data GemFire_ offers dedicated support for such configuration through <<bootstrap:cache:client, client-cache>>,
 `client-region` and `pool` elements.  As the names imply, the former defines a client Region while the latter defines
 a Pool of connections to be used/shared by the various client Regions.
 
@@ -1089,14 +1089,14 @@ cache servers and peer data members in the distributed system and are recommende
 possible to configure the Pool to connect directly to one or more cache servers using the `server` element.
 
 For a full list of options to set on the client and especially on the Pool, please refer to
-the _Spring Data Geode_ schema (<<appendix-schema>>) and Geode's documentation on
+the _Spring Data GemFire_ schema (<<appendix-schema>>) and GemFire's documentation on
 http://geode.apache.org/docs/guide/11/topologies_and_comm/cs_configuration/chapter_overview.html[Client/Server Configuration].
 
 [[bootstrap:region:client:interests]]
 === Client Interests
 
-To minimize network traffic, each client can separately define its own 'interests' policies, indicating to Geode
-the data it actually requires. In _Spring Data Geode_, 'interests' can be defined for each client Region separately.
+To minimize network traffic, each client can separately define its own 'interests' policies, indicating to GemFire
+the data it actually requires. In _Spring Data GemFire_, 'interests' can be defined for each client Region separately.
 Both Key-based and Regular Expression-based interest types are supported.
 
 For example:
@@ -1185,20 +1185,20 @@ like so...
 
 A full, in-depth discussion of how client interests work and capabilities is beyond the scope of this document.
 
-Please refer to Apache Geode's documentation on
+Please refer to Pivotal GemFire's documentation on
 http://gemfire.docs.pivotal.io/geode/developing/events/how_client_server_distribution_works.html[Client-to-Server Event Distribution]
 for more details.
 
 [[bootstrap:region:json]]
 == JSON Support
 
-Apache Geode has support for caching JSON documents in Regions along with the ability to query stored JSON documents
-using the Geode OQL. JSON documents are stored internally as
+Pivotal GemFire has support for caching JSON documents in Regions along with the ability to query stored JSON documents
+using the GemFire OQL. JSON documents are stored internally as
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/PdxInstance.html[PdxInstance] types
 using the http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/JSONFormatter.html[JSONFormatter] class
 to perform conversion to and from JSON documents (as a `String`).
 
-_Spring Data Geode_ provides the `<gfe-data:json-region-autoproxy/>` element to enable a
+_Spring Data GemFire_ provides the `<gfe-data:json-region-autoproxy/>` element to enable a
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#aop-introduction[AOP, _Spring_]
 component to advise appropriate, proxied Region operations, which effectively encapsulates the `JSONFormatter`,
 thereby allowing your applications to work directly with JSON Strings.
@@ -1215,7 +1215,7 @@ configured Regions.  This is done by creating a parallel data structure in local
 significant overhead for large collections, so set the `convert-returned-collections` to *false*
 if you would like to disable automatic conversion for these Region operations.
 
-NOTE: Certain Region operations, specifically those that use Geode's proprietary `Region.Entry` such as:
+NOTE: Certain Region operations, specifically those that use GemFire's proprietary `Region.Entry` such as:
 `entries(boolean)`, `entrySet(boolean)` and `getEntry()` type are not targeted for AOP advice. In addition,
 the `entrySet()` method which returns a `Set<java.util.Map.Entry<?, ?>>` is also not affected.
 

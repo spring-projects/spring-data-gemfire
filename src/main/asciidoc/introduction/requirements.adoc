@@ -1,5 +1,5 @@
 [[requirements]]
 = Requirements
 
-_Spring Data Geode_ requires JDK 8.0, http://projects.spring.io/spring-framework[Spring Framework] 5
-and http://geode.apache.org/[Apache Geode] 1.2.0.
+_Spring Data GemFire_ requires JDK 8.0, http://projects.spring.io/spring-framework[Spring Framework] 5
+and http://geode.apache.org/[Pivotal GemFire] 9.0.x.

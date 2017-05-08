@@ -1,19 +1,19 @@
 [[apis]]
-= Working with Apache Geode APIs
+= Working with Pivotal GemFire APIs
 
-Once the Apache Geode Cache and Regions have been configured, they can be injected and used inside application objects.
+Once the Pivotal GemFire Cache and Regions have been configured, they can be injected and used inside application objects.
 This chapter describes the integration with _Spring's_ Transaction Management functionality and DAO exception hierarchy.
-This chapter also covers support for dependency injection of Geode managed objects.
+This chapter also covers support for dependency injection of GemFire managed objects.
 
 [[apis:template]]
 == GemfireTemplate
 
-As with many other high-level abstractions provided by _Spring_ projects, _Spring Data Geode_ provides a *template*
-to simplify Geode data access. The class provides several *one-liner* methods containing common Region operations,
-but also has the ability to *execute* code against the native Geode API without having to deal with Geode checked
+As with many other high-level abstractions provided by _Spring_ projects, _Spring Data GemFire_ provides a *template*
+to simplify GemFire data access. The class provides several *one-liner* methods containing common Region operations,
+but also has the ability to *execute* code against the native GemFire API without having to deal with GemFire checked
 exceptions by using a `GemfireCallback`.
 
-The template class requires a Geode `Region` instance, and once configured, is thread-safe and can be reused
+The template class requires a GemFire `Region` instance, and once configured, is thread-safe and can be reused
 across multiple application classes:
 
 [source,xml]
@@ -22,7 +22,7 @@ across multiple application classes:
 ----
 
 Once the template is configured, a developer can use it alongside `GemfireCallback` to work directly with
-the Geode `Region` without having to deal with checked exceptions, threading or resource management concerns:
+the GemFire `Region` without having to deal with checked exceptions, threading or resource management concerns:
 
 [source,java]
 ----
@@ -38,7 +38,7 @@ template.execute(new GemfireCallback<Iterable<String>>() {
 });
 ----
 
-For accessing the full power of the Apache Geode query language, a developer can use the `find` and `findUnique`
+For accessing the full power of the Pivotal GemFire query language, a developer can use the `find` and `findUnique`
 methods, which, as opposed to the `query` method, can execute queries across multiple Regions, execute projections,
 and the like.
 
@@ -60,7 +60,7 @@ As mentioned in _Spring Framework's_ documentation,
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#orm-exception-translation[Exception translation]
 can be applied transparently to your Data Access Objects (DAO) through the use of the `@Repository` annotation and AOP
 by defining a `PersistenceExceptionTranslationPostProcessor` bean. The same exception translation functionality
-is enabled when using Geode as long as the `CacheFactoryBean` is declared, e.g. using either a `<gfe:cache/>`
+is enabled when using GemFire as long as the `CacheFactoryBean` is declared, e.g. using either a `<gfe:cache/>`
 or `<gfe:client-cache>` declaration, which acts as an exception translator and is automatically detected by
 the _Spring_ infrastructure and used accordingly.
 
@@ -75,7 +75,7 @@ http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/
 about it as it offers a _consistent programming model_ that works transparently across multiple APIs
 and can be configured either programmatically or declaratively (the most popular choice).
 
-For Apache Geode, _Spring Data Geode_ provides a dedicated, per-cache, `PlatformTransactionManager` that,
+For Pivotal GemFire, _Spring Data GemFire_ provides a dedicated, per-cache, `PlatformTransactionManager` that,
 once declared, allows Region operations to be executed atomically through _Spring_:
 
 [source,xml]
@@ -84,28 +84,32 @@ once declared, allows Region operations to be executed atomically through _Sprin
 ----
 
 NOTE: The example above can be simplified even further by eliminating the `cache-ref` attribute if the GemFire cache
-is defined under the default name, `gemfireCache`. As with the other _Spring Data Geode_ namespace elements,
+is defined under the default name, `gemfireCache`. As with the other _Spring Data GemFire_ namespace elements,
 if the cache bean name is not configured, the aforementioned naming convention will be used.
 Additionally, the transaction manager name is `"gemfireTransactionManager"` if not explicitly specified.
 
-Currently, Apache Geode supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee
+Currently, Pivotal GemFire supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee
 this isolation, developers should avoid making *in-place* changes that manually modify values present in the cache.
 To prevent this from happening, the transaction manager configures the cache to use *copy on read* semantics,
 meaning a clone of the actual value is created each time a read is performed. This behavior can be disabled if needed
 through the `copyOnRead` property.
 
-For more information on the semantics and bevior of the underlying Geode transaction manager, please refer to the Geode
+For more information on the semantics and bevior of the underlying GemFire transaction manager, please refer to the GemFire
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheTransactionManager.html[CacheTransactionManager Javadoc]
 as well as the http://geode.apache.org/docs/guide/11/developing/transactions/chapter_overview.html[documentation].
 
+:leveloffset: +1
+
 include::{basedocdir}/reference/cq-container.adoc[]
+
+:leveloffset: -1
 
 [[apis:declarable]]
 == Wiring `Declarable` Components
 
-Apache Geode XML configuration (usually referred to as `cache.xml`) allows *user* objects to be declared
+Pivotal GemFire XML configuration (usually referred to as `cache.xml`) allows *user* objects to be declared
 as part of the configuration. Usually these objects are `CacheLoaders` or other pluggable callback components
-supported by Geode. Using native Geode configuration, each user type declared through XML must implement
+supported by GemFire. Using native GemFire configuration, each user type declared through XML must implement
 the `Declarable` interface, which allows arbitrary parameters to be passed to the declared class
 through a `Properties` instance.
 
@@ -115,7 +119,7 @@ pluggable components to focus on the application logic and not the location or c
 or other collaborators.
 
 However, if you are starting a green field project, it is recommended that you configure Cache, Region,
-and other pluggable Geode components directly in _Spring_.  This avoids inheriting from the `Declarable` interface
+and other pluggable GemFire components directly in _Spring_.  This avoids inheriting from the `Declarable` interface
 or the base class presented in this section.
 
 See the following sidebar for more information on this approach.
@@ -141,16 +145,16 @@ As an example of configuring a `Declarable` component using _Spring_, consider t
 </cache-loader>
 ----
 
-To simplify the task of parsing, converting the parameters and initializing the object, _Spring Data Geode_ offers
-a base class (`WiringDeclarableSupport`) that allows Geode user objects to be wired through a *template* bean definition
+To simplify the task of parsing, converting the parameters and initializing the object, _Spring Data GemFire_ offers
+a base class (`WiringDeclarableSupport`) that allows GemFire user objects to be wired through a *template* bean definition
 or, in case that is missing, perform auto-wiring through the _Spring_ IoC container. To take advantage of this feature,
 the user objects need to extend `WiringDeclarableSupport`, which automatically locates the declaring `BeanFactory`
 and performs wiring as part of the initialization process.
 
 .Why is a base class needed?
 ****
-In the current Geode release there is no concept of an *object factory* and the types declared are instantiated
-and used as is. In other words, there is no easy way to manage object creation outside Apache Geode.
+In the current GemFire release there is no concept of an *object factory* and the types declared are instantiated
+and used as is. In other words, there is no easy way to manage object creation outside Pivotal GemFire.
 ****
 
 [[apis:declarable:template-wiring]]
@@ -201,8 +205,8 @@ class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 ----
 
 In the scenario above, as no parameter was specified, a bean with the id/name `com.company.app.DBLoader` was used
-as a template for wiring the instance created by Geode. For cases where the bean name uses a different convention,
-one can pass in the `bean-name` parameter in the Geode configuration:
+as a template for wiring the instance created by GemFire. For cases where the bean name uses a different convention,
+one can pass in the `bean-name` parameter in the GemFire configuration:
 
 [source,xml]
 ----
@@ -298,11 +302,11 @@ the `DBLoader` code.
 [[apis:spring-cache-abstraction]]
 == Support for Spring Cache Abstraction
 
-_Spring Data Geode_ provides an implementation of the _Spring_
+_Spring Data GemFire_ provides an implementation of the _Spring_
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[Cache Abstraction]
-to position Apache Geode as a _caching provider_ in Spring's caching infrastructure.
+to position Pivotal GemFire as a _caching provider_ in Spring's caching infrastructure.
 
-To use Apache Geode as a backing implementation, simply add `GemfireCacheManager` to your configuration:
+To use Pivotal GemFire as a backing implementation, simply add `GemfireCacheManager` to your configuration:
 
 [source,xml]
 ----
@@ -333,7 +337,7 @@ is used (i.e. "gemfireCache"), that is, `<gfe:cache>` without an explicit ID.
 When the `GemfireCacheManager` (Singleton) bean instance is declared and declarative caching is enabled
 (either in XML with `<cache:annotation-driven/>` or in JavaConfig with _Spring's_ `@EnableCaching` annotation),
 the _Spring_ caching annotations (e.g. `@Cacheable`) identify the "caches" that will cache data in-memory
-using Geode Regions.
+using GemFire Regions.
 
 These caches (i.e. Regions) must exist before the caching annotations that use them otherwise an error will occur.
 
