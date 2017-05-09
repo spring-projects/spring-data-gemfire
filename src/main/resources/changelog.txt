@@ -3,6 +3,20 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.0.M3 (2017-05-09)
+----------------------------------------
+* SGF-625 - Add execution to Asciidoctor Maven Build Plugin to generate HTML for the SDG Reference Guide.
+* SGF-624 - Fix up Lucene Integration tests and Region namespace test to improve reliability.
+* SGF-623 - Adapt to API changes in Repository interfaces.
+* SGF-622 - Adapt to API changes in CrudRepository.
+* SGF-620 - Fix GemfireSimpleTypeHolderTest due to API changes in SDC SimpleTypeHolder.
+* SGF-614 - Upgrade to Pivotal GemFire 9.0.3.
+* SGF-613 - Release 2.0 M3 (Kay).
+* SGF-611 - Create Spring Data Geode project.
+* SGF-302 - Review and edit 'Client Interests' section in SDG Reference Guide on GemFire Register Interests.
+* SGF-300 - Review, edit and update Spring Data GemFire Reference Guide.
+
+
 Changes in version 1.8.10.RELEASE (2017-04-19)
 ----------------------------------------------
 * SGF-617 - Release 1.8.10 (Hopper SR10).
