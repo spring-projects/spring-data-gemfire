@@ -128,8 +128,8 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 			}
 		}
 
-		boolean locatorsSet = parseLocators(element, getRegistry(parserContext));
-		boolean serversSet = parseServers(element, getRegistry(parserContext));
+		boolean locatorsSet = parseLocators(element, builder, getRegistry(parserContext));
+		boolean serversSet = parseServers(element, builder, getRegistry(parserContext));
 
 		// NOTE: if neither Locators nor Servers were configured, then setup a connection to a Server
 		// running on localhost, listening on the default CacheServer port 40404
@@ -192,7 +192,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	/* (non-Javadoc) */
-	boolean parseLocators(Element element, BeanDefinitionRegistry registry) {
+	boolean parseLocators(Element element, BeanDefinitionBuilder poolBuilder, BeanDefinitionRegistry registry) {
 		String locatorsAttributeValue = element.getAttribute(LOCATORS_ATTRIBUTE_NAME);
 
 		if (StringUtils.hasText(locatorsAttributeValue)) {
@@ -207,7 +207,8 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 			AbstractBeanDefinition addLocatorsMethodInvokingBean =
 				addLocatorsMethodInvokingBeanBuilder.getBeanDefinition();
 
-			BeanDefinitionReaderUtils.registerWithGeneratedName(addLocatorsMethodInvokingBean, registry);
+			poolBuilder.addPropertyReference("locatorsConfiguration",
+				BeanDefinitionReaderUtils.registerWithGeneratedName(addLocatorsMethodInvokingBean, registry));
 
 			return true;
 		}
@@ -222,7 +223,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	/* (non-Javadoc) */
-	boolean parseServers(Element element, BeanDefinitionRegistry registry) {
+	boolean parseServers(Element element, BeanDefinitionBuilder poolBuilder, BeanDefinitionRegistry registry) {
 		String serversAttributeValue = element.getAttribute(SERVERS_ATTRIBUTE_NAME);
 
 		if (StringUtils.hasText(serversAttributeValue)) {
@@ -237,7 +238,8 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 			AbstractBeanDefinition addServersMethodInvokingBean =
 				addServersMethodInvokingBeanBuilder.getBeanDefinition();
 
-			BeanDefinitionReaderUtils.registerWithGeneratedName(addServersMethodInvokingBean, registry);
+			poolBuilder.addPropertyReference("serversConfiguration",
+				BeanDefinitionReaderUtils.registerWithGeneratedName(addServersMethodInvokingBean, registry));
 
 			return true;
 		}

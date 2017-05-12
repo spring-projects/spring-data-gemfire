@@ -12,9 +12,9 @@
 ">
 
 	<util:properties id="clientProperties">
-		<prop key="gemfire.cache.client.server.hosts-and-ports">localhost[23579],localhost[23654]</prop>
-		<prop key="gemfire.cache.client.server.host.3">localhost</prop>
-		<prop key="gemfire.cache.client.server.port.3">24448</prop>
+		<prop key="gemfire.cache.client.pool.server.hosts-and-ports">localhost[23579],localhost[23654]</prop>
+		<prop key="gemfire.cache.client.pool.server.host">localhost</prop>
+		<prop key="gemfire.cache.client.pool.server.port">24448</prop>
 	</util:properties>
 
 	<context:property-placeholder properties-ref="clientProperties"/>
@@ -25,11 +25,12 @@
 
 	<gfe:client-cache properties-ref="gemfireProperties" pool-name="serverPool"/>
 
-	<gfe:pool id="serverPool" servers="${gemfire.cache.client.server.hosts-and-ports}">
-		<gfe:server host="${gemfire.cache.client.server.host.3}" port="${gemfire.cache.client.server.port.3}"/>
-	</gfe:pool>
-
 	<gfe:client-region id="Example" pool-name="serverPool" shortcut="PROXY"
 					   key-constraint="java.lang.String" value-constraint="java.lang.Integer"/>
+
+	<!-- Keep the definition of this GemFire Pool bean after the Region (Example) that depends on it! -->
+	<gfe:pool id="serverPool" servers="${gemfire.cache.client.pool.server.hosts-and-ports}">
+		<gfe:server host="${gemfire.cache.client.pool.server.host}" port="${gemfire.cache.client.pool.server.port}"/>
+	</gfe:pool>
 
 </beans>

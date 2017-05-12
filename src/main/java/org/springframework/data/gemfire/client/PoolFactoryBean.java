@@ -120,7 +120,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	public void afterPropertiesSet() throws Exception {
 		if (!StringUtils.hasText(name)) {
 			Assert.hasText(beanName, "Pool 'name' is required");
-			name = beanName;
+			this.name = beanName;
 		}
 
 		// check for an existing, configured Pool with name first
@@ -131,15 +131,15 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 				log.debug(String.format("A Pool with name [%1$s] already exists; using existing Pool.", name));
 			}
 
-			springBasedPool = false;
-			pool = existingPool;
+			this.springBasedPool = false;
+			this.pool = existingPool;
 		}
 		else {
 			if (log.isDebugEnabled()) {
 				log.debug(String.format("No Pool with name [%1$s] was found. Creating new Pool.", name));
 			}
 
-			springBasedPool = true;
+			this.springBasedPool = true;
 		}
 	}
 
@@ -166,7 +166,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	/* (non-Javadoc) */
 	@Override
 	public Pool getObject() throws Exception {
-		if (pool == null) {
+		if (this.pool == null) {
 			eagerlyInitializeClientCacheIfNotPresent();
 
 			PoolFactory poolFactory = createPoolFactory();
@@ -190,11 +190,11 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
 			poolFactory.setThreadLocalConnections(threadLocalConnections);
 
-			for (ConnectionEndpoint locator : locators) {
+			for (ConnectionEndpoint locator : this.locators) {
 				poolFactory.addLocator(locator.getHost(), locator.getPort());
 			}
 
-			for (ConnectionEndpoint server : servers) {
+			for (ConnectionEndpoint server : this.servers) {
 				poolFactory.addServer(server.getHost(), server.getPort());
 			}
 
@@ -202,6 +202,18 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		}
 
 		return pool;
+	}
+
+	/**
+	 * Determines whether the GemFire DistributedSystem exists yet or not.
+	 *
+	 * @return a boolean value indicating whether the single, GemFire DistributedSystem has been created already.
+	 * @see org.springframework.data.gemfire.GemfireUtils#getDistributedSystem()
+	 * @see org.springframework.data.gemfire.GemfireUtils#isConnected(DistributedSystem)
+	 * @see org.apache.geode.distributed.DistributedSystem
+	 */
+	boolean isDistributedSystemPresent() {
+		return GemfireUtils.isConnected(GemfireUtils.getDistributedSystem());
 	}
 
 	/**
@@ -219,18 +231,6 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	}
 
 	/**
-	 * Determines whether the GemFire DistributedSystem exists yet or not.
-	 *
-	 * @return a boolean value indicating whether the single, GemFire DistributedSystem has been created already.
-	 * @see org.springframework.data.gemfire.GemfireUtils#getDistributedSystem()
-	 * @see org.springframework.data.gemfire.GemfireUtils#isConnected(DistributedSystem)
-	 * @see org.apache.geode.distributed.DistributedSystem
-	 */
-	boolean isDistributedSystemPresent() {
-		return GemfireUtils.isConnected(GemfireUtils.getDistributedSystem());
-	}
-
-	/**
 	 * Creates an instance of the GemFire {@link PoolFactory} interface to construct, configure and initialize
 	 * a GemFire {@link Pool}.
 	 *
@@ -245,7 +245,7 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	/* (non-Javadoc) */
 	@Override
 	public Class<?> getObjectType() {
-		return (pool != null ? pool.getClass() : Pool.class);
+		return (this.pool != null ? this.pool.getClass() : Pool.class);
 	}
 
 	/* (non-Javadoc) */
@@ -594,5 +594,13 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 	/* (non-Javadoc) */
 	public void setThreadLocalConnections(boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
+	}
+
+	/* (non-Javadoc; internal framework use only) */
+	public final void setLocatorsConfiguration(Object locatorsConfiguration) {
+	}
+
+	/* (non-Javadoc; internal framework use only) */
+	public final void setServersConfiguration(Object serversConfiguration) {
 	}
 }
