@@ -73,7 +73,7 @@ public class DelegatingPoolAdapterTest {
 	@Mock
 	private QueryService mockQueryService;
 
-	protected InetSocketAddress newSocketAddress(String host, int port) {
+	private InetSocketAddress newSocketAddress(String host, int port) {
 		return new InetSocketAddress(host, port);
 	}
 
@@ -81,15 +81,16 @@ public class DelegatingPoolAdapterTest {
 	public void setup() {
 		when(mockPool.isDestroyed()).thenReturn(false);
 		when(mockPool.getFreeConnectionTimeout()).thenReturn(10000);
-		when(mockPool.getIdleTimeout()).thenReturn(120000l);
+		when(mockPool.getIdleTimeout()).thenReturn(120000L);
 		when(mockPool.getLoadConditioningInterval()).thenReturn(300000);
 		when(mockPool.getLocators()).thenReturn(Collections.singletonList(newSocketAddress("skullbox", 11235)));
 		when(mockPool.getMaxConnections()).thenReturn(500);
 		when(mockPool.getMinConnections()).thenReturn(50);
 		when(mockPool.getMultiuserAuthentication()).thenReturn(true);
 		when(mockPool.getName()).thenReturn("MockPool");
+		when(mockPool.getOnlineLocators()).thenReturn(Collections.singletonList(newSocketAddress("trinity", 10101)));
 		when(mockPool.getPendingEventCount()).thenReturn(2);
-		when(mockPool.getPingInterval()).thenReturn(15000l);
+		when(mockPool.getPingInterval()).thenReturn(15000L);
 		when(mockPool.getPRSingleHopEnabled()).thenReturn(true);
 		when(mockPool.getQueryService()).thenReturn(mockQueryService);
 		when(mockPool.getReadTimeout()).thenReturn(30000);
@@ -116,15 +117,16 @@ public class DelegatingPoolAdapterTest {
 
 		assertThat(pool.isDestroyed(), is(equalTo(false)));
 		assertThat(pool.getFreeConnectionTimeout(), is(equalTo(10000)));
-		assertThat(pool.getIdleTimeout(), is(equalTo(120000l)));
+		assertThat(pool.getIdleTimeout(), is(equalTo(120000L)));
 		assertThat(pool.getLoadConditioningInterval(), is(equalTo(300000)));
 		assertThat(pool.getMaxConnections(), is(equalTo(500)));
 		assertThat(pool.getMinConnections(), is(equalTo(50)));
 		assertThat(pool.getMultiuserAuthentication(), is(equalTo(true)));
 		assertThat(pool.getLocators(), is(equalTo(Collections.singletonList(newSocketAddress("skullbox", 11235)))));
 		assertThat(pool.getName(), is(equalTo("MockPool")));
+		assertThat(pool.getOnlineLocators(), is(equalTo(Collections.singletonList(newSocketAddress("trinity", 10101)))));
 		assertThat(pool.getPendingEventCount(), is(equalTo(2)));
-		assertThat(pool.getPingInterval(), is(equalTo(15000l)));
+		assertThat(pool.getPingInterval(), is(equalTo(15000L)));
 		assertThat(pool.getPRSingleHopEnabled(), is(equalTo(true)));
 		assertThat(pool.getQueryService(), is(equalTo(mockQueryService)));
 		assertThat(pool.getReadTimeout(), is(equalTo(30000)));
@@ -193,6 +195,7 @@ public class DelegatingPoolAdapterTest {
 		assertThat(pool.getMaxConnections(), is(equalTo(PoolFactory.DEFAULT_MAX_CONNECTIONS)));
 		assertThat(pool.getMinConnections(), is(equalTo(PoolFactory.DEFAULT_MIN_CONNECTIONS)));
 		assertThat(pool.getMultiuserAuthentication(), is(equalTo(PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION)));
+		assertThat(pool.getOnlineLocators(), is(equalTo(Collections.EMPTY_LIST)));
 		assertThat(pool.getPingInterval(), is(equalTo(PoolFactory.DEFAULT_PING_INTERVAL)));
 		assertThat(pool.getPRSingleHopEnabled(), is(equalTo(PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED)));
 		assertThat(pool.getReadTimeout(), is(equalTo(PoolFactory.DEFAULT_READ_TIMEOUT)));
@@ -261,5 +264,4 @@ public class DelegatingPoolAdapterTest {
 		DelegatingPoolAdapter.from(null).releaseThreadLocalConnection();
 		verify(mockPool, never()).releaseThreadLocalConnection();
 	}
-
 }

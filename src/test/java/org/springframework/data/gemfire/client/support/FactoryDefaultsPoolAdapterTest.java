@@ -32,14 +32,13 @@ import org.junit.rules.ExpectedException;
 import org.springframework.data.gemfire.GemfireUtils;
 
 /**
- * The FactoryDefaultsPoolAdapterTest class is a test suite of test cases testing the contract and functionality
- * of the {@link FactoryDefaultsPoolAdapter} class.
+ * Unit tests for {@link FactoryDefaultsPoolAdapter}.
  *
  * @author John Blum
  * @see org.junit.Rule
  * @see org.junit.Test
  * @see org.junit.rules.ExpectedException
- * @see FactoryDefaultsPoolAdapter
+ * @see org.springframework.data.gemfire.client.support.FactoryDefaultsPoolAdapter
  * @see org.apache.geode.cache.client.Pool
  * @see org.apache.geode.cache.client.PoolFactory
  * @since 1.8.0
@@ -81,13 +80,18 @@ public class FactoryDefaultsPoolAdapterTest {
 	}
 
 	@Test
-	public void locatorsEqualsEmptyList() {
+	public void locatorsReturnsEmptyList() {
 		assertThat(poolAdapter.getLocators(), is(equalTo(Collections.<InetSocketAddress>emptyList())));
 	}
 
 	@Test
-	public void nameEqualsDefault() {
+	public void nameReturnsDefault() {
 		assertThat(poolAdapter.getName(), is(equalTo(FactoryDefaultsPoolAdapter.DEFAULT_POOL_NAME)));
+	}
+
+	@Test
+	public void onlineLocatorsIsEmptyList() {
+		assertThat(poolAdapter.getOnlineLocators(), is(equalTo(Collections.EMPTY_LIST)));
 	}
 
 	@Test
@@ -96,7 +100,7 @@ public class FactoryDefaultsPoolAdapterTest {
 	}
 
 	@Test
-	public void serversEqualsLocalhostListeningOnDefaultCacheServerPort() {
+	public void serversReturnsLocalhostListeningOnDefaultCacheServerPort() {
 		assertThat(poolAdapter.getServers(), is(equalTo(Collections.singletonList(
 			newSocketAddress("localhost", DEFAULT_CACHE_SERVER_PORT)))));
 	}
@@ -106,6 +110,7 @@ public class FactoryDefaultsPoolAdapterTest {
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
+
 		poolAdapter.isDestroyed();
 	}
 
@@ -114,6 +119,7 @@ public class FactoryDefaultsPoolAdapterTest {
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
+
 		poolAdapter.getPendingEventCount();
 	}
 
@@ -122,6 +128,7 @@ public class FactoryDefaultsPoolAdapterTest {
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
+
 		poolAdapter.destroy();
 	}
 
@@ -130,6 +137,7 @@ public class FactoryDefaultsPoolAdapterTest {
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
+
 		poolAdapter.destroy(false);
 	}
 
@@ -138,7 +146,7 @@ public class FactoryDefaultsPoolAdapterTest {
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
+
 		poolAdapter.releaseThreadLocalConnection();
 	}
-
 }

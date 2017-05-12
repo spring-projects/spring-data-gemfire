@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.client.support;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.query.QueryService;
@@ -32,7 +33,7 @@ import org.apache.geode.cache.query.QueryService;
  * when the {@link Pool} reference is <code>null</code>.
  *
  * @author John Blum
- * @see FactoryDefaultsPoolAdapter
+ * @see org.springframework.data.gemfire.client.support.FactoryDefaultsPoolAdapter
  * @see org.apache.geode.cache.client.Pool
  * @since 1.8.0
  */
@@ -46,6 +47,12 @@ public abstract class DelegatingPoolAdapter extends FactoryDefaultsPoolAdapter {
 		return new DelegatingPoolAdapter(delegate) { };
 	}
 
+	/**
+	 * Constructs an instance of {@link DelegatingPoolAdapter} initialized with the specified {@link Pool}.
+	 *
+	 * @param delegate {@link Pool} used as the delegate; can be {@literal null}.
+	 * @see org.apache.geode.cache.client.Pool
+	 */
 	public DelegatingPoolAdapter(Pool delegate) {
 		this.delegate = delegate;
 	}
@@ -58,197 +65,178 @@ public abstract class DelegatingPoolAdapter extends FactoryDefaultsPoolAdapter {
 	/* (non-Javadoc) */
 	@Override
 	public boolean isDestroyed() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.isDestroyed() : super.isDestroyed());
+		return Optional.ofNullable(getDelegate()).map(Pool::isDestroyed).orElseGet(super::isDestroyed);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getFreeConnectionTimeout() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getFreeConnectionTimeout() : super.getFreeConnectionTimeout());
+		return Optional.ofNullable(getDelegate()).map(Pool::getFreeConnectionTimeout)
+			.orElseGet(super::getFreeConnectionTimeout);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public long getIdleTimeout() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getIdleTimeout() : super.getIdleTimeout());
+		return Optional.ofNullable(getDelegate()).map(Pool::getIdleTimeout).orElseGet(super::getIdleTimeout);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getLoadConditioningInterval() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getLoadConditioningInterval() : super.getLoadConditioningInterval());
+		return Optional.ofNullable(getDelegate()).map(Pool::getLoadConditioningInterval)
+			.orElseGet(super::getLoadConditioningInterval);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public List<InetSocketAddress> getLocators() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getLocators() : super.getLocators());
+		return Optional.ofNullable(getDelegate()).map(Pool::getLocators).orElseGet(super::getLocators);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getMaxConnections() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getMaxConnections() : super.getMaxConnections());
+		return Optional.ofNullable(getDelegate()).map(Pool::getMaxConnections).orElseGet(super::getMaxConnections);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getMinConnections() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getMinConnections() : super.getMinConnections());
+		return Optional.ofNullable(getDelegate()).map(Pool::getMinConnections).orElseGet(super::getMinConnections);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public boolean getMultiuserAuthentication() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getMultiuserAuthentication() : super.getMultiuserAuthentication());
+		return Optional.ofNullable(getDelegate()).map(Pool::getMultiuserAuthentication)
+			.orElseGet(super::getMultiuserAuthentication);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public String getName() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getName() : super.getName());
+		return Optional.ofNullable(getDelegate()).map(Pool::getName).orElseGet(super::getName);
 	}
 
 	/* (non-Javadoc) */
 	@Override
-	public boolean getPRSingleHopEnabled() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getPRSingleHopEnabled() : super.getPRSingleHopEnabled());
+	public List<InetSocketAddress> getOnlineLocators() {
+		return Optional.ofNullable(getDelegate()).map(Pool::getOnlineLocators).orElseGet(super::getOnlineLocators);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getPendingEventCount() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getPendingEventCount() : 0);
+		return Optional.ofNullable(getDelegate()).map(Pool::getPendingEventCount).orElse(0);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public long getPingInterval() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getPingInterval() : super.getPingInterval());
+		return Optional.ofNullable(getDelegate()).map(Pool::getPingInterval).orElseGet(super::getPingInterval);
+	}
+
+	/* (non-Javadoc) */
+	@Override
+	public boolean getPRSingleHopEnabled() {
+		return Optional.ofNullable(getDelegate()).map(Pool::getPRSingleHopEnabled)
+			.orElseGet(super::getPRSingleHopEnabled);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public QueryService getQueryService() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getQueryService() : super.getQueryService());
+		return Optional.ofNullable(getDelegate()).map(Pool::getQueryService).orElseGet(super::getQueryService);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getReadTimeout() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getReadTimeout() : super.getReadTimeout());
+		return Optional.ofNullable(getDelegate()).map(Pool::getReadTimeout).orElseGet(super::getReadTimeout);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getRetryAttempts() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getRetryAttempts() : super.getRetryAttempts());
+		return Optional.ofNullable(getDelegate()).map(Pool::getRetryAttempts).orElseGet(super::getRetryAttempts);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public String getServerGroup() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getServerGroup() : super.getServerGroup());
+		return Optional.ofNullable(getDelegate()).map(Pool::getServerGroup).orElseGet(super::getServerGroup);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public List<InetSocketAddress> getServers() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getServers() : super.getServers());
+		return Optional.ofNullable(getDelegate()).map(Pool::getServers).orElseGet(super::getServers);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getSocketBufferSize() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getSocketBufferSize() : super.getSocketBufferSize());
+		return Optional.ofNullable(getDelegate()).map(Pool::getSocketBufferSize).orElseGet(super::getSocketBufferSize);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getStatisticInterval() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getStatisticInterval() : super.getStatisticInterval());
+		return Optional.ofNullable(getDelegate()).map(Pool::getStatisticInterval)
+			.orElseGet(super::getStatisticInterval);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getSubscriptionAckInterval() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getSubscriptionAckInterval() : super.getSubscriptionAckInterval());
+		return Optional.ofNullable(getDelegate()).map(Pool::getSubscriptionAckInterval)
+			.orElseGet(super::getSubscriptionAckInterval);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public boolean getSubscriptionEnabled() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getSubscriptionEnabled() : super.getSubscriptionEnabled());
+		return Optional.ofNullable(getDelegate()).map(Pool::getSubscriptionEnabled)
+			.orElseGet(super::getSubscriptionEnabled);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getSubscriptionMessageTrackingTimeout() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getSubscriptionMessageTrackingTimeout()
-			: super.getSubscriptionMessageTrackingTimeout());
+		return Optional.ofNullable(getDelegate()).map(Pool::getSubscriptionMessageTrackingTimeout)
+			.orElseGet(super::getSubscriptionMessageTrackingTimeout);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public int getSubscriptionRedundancy() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getSubscriptionRedundancy() : super.getSubscriptionRedundancy());
+		return Optional.ofNullable(getDelegate()).map(Pool::getSubscriptionRedundancy)
+			.orElseGet(super::getSubscriptionRedundancy);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public boolean getThreadLocalConnections() {
-		Pool delegate = getDelegate();
-		return (delegate != null ? delegate.getThreadLocalConnections() : super.getThreadLocalConnections());
+		return Optional.ofNullable(getDelegate()).map(Pool::getThreadLocalConnections)
+			.orElseGet(super::getThreadLocalConnections);
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public void destroy() {
-		Pool delegate = getDelegate();
-		if (delegate != null) {
-			delegate.destroy();
-		}
+		Optional.ofNullable(getDelegate()).ifPresent(Pool::destroy);
 	}
 
 	/* (non-Javadoc) */
 	@Override
-	public void destroy(final boolean keepAlive) {
-		Pool delegate = getDelegate();
-		if (delegate != null) {
-			delegate.destroy(keepAlive);
-		}
+	public void destroy(boolean keepAlive) {
+		Optional.ofNullable(getDelegate()).ifPresent(delegate -> delegate.destroy(keepAlive));
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public void releaseThreadLocalConnection() {
-		Pool delegate = getDelegate();
-		if (delegate != null) {
-			delegate.releaseThreadLocalConnection();
-		}
+		Optional.ofNullable(getDelegate()).ifPresent(Pool::releaseThreadLocalConnection);
 	}
-
 }

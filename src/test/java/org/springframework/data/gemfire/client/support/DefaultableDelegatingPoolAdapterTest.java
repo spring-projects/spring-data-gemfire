@@ -17,10 +17,17 @@
 
 package org.springframework.data.gemfire.client.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -38,8 +45,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.gemfire.GemfireUtils;
 
 /**
- * The DefaultableDelegatingPoolAdapterTest class is a default suite of default cases testing the contract and functionality
- * of the {@link DefaultableDelegatingPoolAdapter} class.
+ * Additional unit tests for {@link DefaultableDelegatingPoolAdapter} testing defaults.
  *
  * @author John Blum
  * @see org.junit.Rule
@@ -68,22 +74,22 @@ public class DefaultableDelegatingPoolAdapterTest {
 	@Mock
 	private DefaultableDelegatingPoolAdapter.ValueProvider mockValueProvider;
 
-	protected static InetSocketAddress newSocketAddress(String host, int port) {
+	private static InetSocketAddress newSocketAddress(String host, int port) {
 		return new InetSocketAddress(host, port);
 	}
 
 	@Before
 	public void setupMockPool() {
 		when(mockPool.getFreeConnectionTimeout()).thenReturn(5000);
-		when(mockPool.getIdleTimeout()).thenReturn(120000l);
+		when(mockPool.getIdleTimeout()).thenReturn(120000L);
 		when(mockPool.getLoadConditioningInterval()).thenReturn(300000);
-		when(mockPool.getLocators()).thenReturn(Collections.<InetSocketAddress>emptyList());
+		when(mockPool.getLocators()).thenReturn(Collections.emptyList());
 		when(mockPool.getMaxConnections()).thenReturn(500);
 		when(mockPool.getMinConnections()).thenReturn(50);
 		when(mockPool.getMultiuserAuthentication()).thenReturn(true);
 		when(mockPool.getName()).thenReturn("TestPool");
 		when(mockPool.getPendingEventCount()).thenReturn(2);
-		when(mockPool.getPingInterval()).thenReturn(15000l);
+		when(mockPool.getPingInterval()).thenReturn(15000L);
 		when(mockPool.getPRSingleHopEnabled()).thenReturn(true);
 		when(mockPool.getQueryService()).thenReturn(null);
 		when(mockPool.getReadTimeout()).thenReturn(30000);
@@ -138,47 +144,51 @@ public class DefaultableDelegatingPoolAdapterTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void defaultIfNullWhenPrefersDefaultUsesDefault() {
 		poolAdapter = poolAdapter.preferDefault();
 
 		assertThat(poolAdapter.prefersDefault(), is(true));
-		assertThat((String) poolAdapter.defaultIfNull("default", mockValueProvider), is(equalTo("default")));
+		assertThat(poolAdapter.defaultIfNull("default", mockValueProvider), is(equalTo("default")));
 
 		verifyZeroInteractions(mockValueProvider);
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void defaultIfNullWhenPrefersDefaultUsesPoolValueWhenDefaultIsNull() {
 		poolAdapter = poolAdapter.preferDefault();
 
 		when(mockValueProvider.getValue()).thenReturn("pool");
 
 		assertThat(poolAdapter.prefersDefault(), is(true));
-		assertThat((String) poolAdapter.defaultIfNull(null, mockValueProvider), is(equalTo("pool")));
+		assertThat(poolAdapter.defaultIfNull(null, mockValueProvider), is(equalTo("pool")));
 
 		verify(mockValueProvider, times(1)).getValue();
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void defaultIfNullWhenPrefersPoolUsesPoolValue() {
 		poolAdapter = poolAdapter.preferPool();
 
 		when(mockValueProvider.getValue()).thenReturn("pool");
 
 		assertThat(poolAdapter.prefersPool(), is(true));
-		assertThat((String) poolAdapter.defaultIfNull("default", mockValueProvider), is(equalTo("pool")));
+		assertThat(poolAdapter.defaultIfNull("default", mockValueProvider), is(equalTo("pool")));
 
 		verify(mockValueProvider, times(1)).getValue();
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void defaultIfNullWhenPrefersPoolUsesDefaultWhenPoolValueIsNull() {
 		poolAdapter = poolAdapter.preferPool();
 
 		when(mockValueProvider.getValue()).thenReturn(null);
 
 		assertThat(poolAdapter.prefersPool(), is(true));
-		assertThat((String) poolAdapter.defaultIfNull("default", mockValueProvider), is(equalTo("default")));
+		assertThat(poolAdapter.defaultIfNull("default", mockValueProvider), is(equalTo("default")));
 
 		verify(mockValueProvider, times(1)).getValue();
 	}
@@ -188,7 +198,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 	public void defaultIfEmptyWhenPrefersDefaultUsesDefault() {
 		poolAdapter = poolAdapter.preferDefault();
 
-		List<Object> defaultList = Collections.<Object>singletonList("default");
+		List<Object> defaultList = Collections.singletonList("default");
 
 		assertThat(poolAdapter.prefersDefault(), is(true));
 		assertThat((List<Object>) poolAdapter.defaultIfEmpty(defaultList, mockValueProvider), is(equalTo(defaultList)));
@@ -201,7 +211,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 	public void defaultIfEmptyWhenPrefersDefaultUsesPoolValueWhenDefaultIsNull() {
 		poolAdapter = poolAdapter.preferDefault();
 
-		List<Object> poolList = Collections.<Object>singletonList("pool");
+		List<Object> poolList = Collections.singletonList("pool");
 
 		when(mockValueProvider.getValue()).thenReturn(poolList);
 
@@ -216,7 +226,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 	public void defaultIfEmptyWhenPrefersDefaultUsesPoolValueWhenDefaultIsEmpty() {
 		poolAdapter = poolAdapter.preferDefault();
 
-		List<Object> poolList = Collections.<Object>singletonList("pool");
+		List<Object> poolList = Collections.singletonList("pool");
 
 		when(mockValueProvider.getValue()).thenReturn(poolList);
 
@@ -232,7 +242,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 	public void defaultIfEmptyWhenPrefersPoolUsesPoolValue() {
 		poolAdapter = poolAdapter.preferPool();
 
-		List<Object> poolList = Collections.<Object>singletonList("pool");
+		List<Object> poolList = Collections.singletonList("pool");
 
 		when(mockValueProvider.getValue()).thenReturn(poolList);
 
@@ -250,7 +260,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		when(mockValueProvider.getValue()).thenReturn(null);
 
-		List<Object> defaultList = Collections.<Object>singletonList("default");
+		List<Object> defaultList = Collections.singletonList("default");
 
 		assertThat(poolAdapter.prefersPool(), is(true));
 		assertThat((List<Object>) poolAdapter.defaultIfEmpty(defaultList, mockValueProvider),
@@ -266,7 +276,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		when(mockValueProvider.getValue()).thenReturn(Collections.emptyList());
 
-		List<Object> defaultList = Collections.<Object>singletonList("default");
+		List<Object> defaultList = Collections.singletonList("default");
 
 		assertThat(poolAdapter.prefersPool(), is(true));
 		assertThat((List<Object>) poolAdapter.defaultIfEmpty(defaultList, mockValueProvider),
@@ -285,7 +295,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(poolAdapter.getDelegate(), is(equalTo(mockPool)));
 		assertThat(poolAdapter.prefersDefault(), is(true));
 		assertThat(poolAdapter.getFreeConnectionTimeout(10000), is(equalTo(10000)));
-		assertThat(poolAdapter.getIdleTimeout(300000l), is(equalTo(300000l)));
+		assertThat(poolAdapter.getIdleTimeout(300000L), is(equalTo(300000L)));
 		assertThat(poolAdapter.getLoadConditioningInterval(60000), is(equalTo(60000)));
 		assertThat(poolAdapter.getLocators(defaultLocator), is(equalTo(defaultLocator)));
 		assertThat(poolAdapter.getMaxConnections(100), is(equalTo(100)));
@@ -293,7 +303,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(poolAdapter.getMultiuserAuthentication(false), is(equalTo(false)));
 		assertThat(poolAdapter.getName(), is(equalTo("TestPool")));
 		assertThat(poolAdapter.getPendingEventCount(), is(equalTo(2)));
-		assertThat(poolAdapter.getPingInterval(20000l), is(equalTo(20000l)));
+		assertThat(poolAdapter.getPingInterval(20000L), is(equalTo(20000L)));
 		assertThat(poolAdapter.getPRSingleHopEnabled(false), is(equalTo(false)));
 		assertThat(poolAdapter.getQueryService(mockQueryService), is(equalTo(mockQueryService)));
 		assertThat(poolAdapter.getReadTimeout(20000), is(equalTo(20000)));
@@ -323,7 +333,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(poolAdapter.getDelegate(), is(equalTo(mockPool)));
 		assertThat(poolAdapter.prefersDefault(), is(true));
 		assertThat(poolAdapter.getFreeConnectionTimeout(null), is(equalTo(5000)));
-		assertThat(poolAdapter.getIdleTimeout(null), is(equalTo(120000l)));
+		assertThat(poolAdapter.getIdleTimeout(null), is(equalTo(120000L)));
 		assertThat(poolAdapter.getLoadConditioningInterval(60000), is(equalTo(60000)));
 		assertThat(poolAdapter.getLocators(defaultLocator), is(equalTo(defaultLocator)));
 		assertThat(poolAdapter.getMaxConnections(null), is(equalTo(500)));
@@ -331,7 +341,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(poolAdapter.getMultiuserAuthentication(null), is(equalTo(true)));
 		assertThat(poolAdapter.getName(), is(equalTo("TestPool")));
 		assertThat(poolAdapter.getPendingEventCount(), is(equalTo(2)));
-		assertThat(poolAdapter.getPingInterval(null), is(equalTo(15000l)));
+		assertThat(poolAdapter.getPingInterval(null), is(equalTo(15000L)));
 		assertThat(poolAdapter.getPRSingleHopEnabled(true), is(equalTo(true)));
 		assertThat(poolAdapter.getQueryService(null), is(nullValue()));
 		assertThat(poolAdapter.getReadTimeout(20000), is(equalTo(20000)));
@@ -372,7 +382,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(poolAdapter.getDelegate(), is(equalTo(mockPool)));
 		assertThat(poolAdapter.prefersDefault(), is(true));
 		assertThat(poolAdapter.getFreeConnectionTimeout(null), is(equalTo(5000)));
-		assertThat(poolAdapter.getIdleTimeout(null), is(equalTo(120000l)));
+		assertThat(poolAdapter.getIdleTimeout(null), is(equalTo(120000L)));
 		assertThat(poolAdapter.getLoadConditioningInterval(null), is(equalTo(300000)));
 		assertThat(poolAdapter.getLocators(null), is(equalTo(Collections.<InetSocketAddress>emptyList())));
 		assertThat(poolAdapter.getMaxConnections(null), is(equalTo(500)));
@@ -380,7 +390,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(poolAdapter.getMultiuserAuthentication(null), is(equalTo(true)));
 		assertThat(poolAdapter.getName(), is(equalTo("TestPool")));
 		assertThat(poolAdapter.getPendingEventCount(), is(equalTo(2)));
-		assertThat(poolAdapter.getPingInterval(null), is(equalTo(15000l)));
+		assertThat(poolAdapter.getPingInterval(null), is(equalTo(15000L)));
 		assertThat(poolAdapter.getPRSingleHopEnabled(null), is(equalTo(true)));
 		assertThat(poolAdapter.getQueryService(null), is(nullValue()));
 		assertThat(poolAdapter.getReadTimeout(null), is(equalTo(30000)));
@@ -429,16 +439,15 @@ public class DefaultableDelegatingPoolAdapterTest {
 		List<InetSocketAddress> poolServer = Collections.singletonList(newSocketAddress("localhost", 40404));
 
 		assertThat(poolAdapter.getFreeConnectionTimeout(15000), is(equalTo(5000)));
-		assertThat(poolAdapter.getIdleTimeout(60000l), is(equalTo(120000l)));
+		assertThat(poolAdapter.getIdleTimeout(60000L), is(equalTo(120000L)));
 		assertThat(poolAdapter.getLoadConditioningInterval(180000), is(equalTo(300000)));
-		assertThat(poolAdapter.getLocators(Collections.<InetSocketAddress>emptyList()),
-			is(equalTo(Collections.<InetSocketAddress>emptyList())));
+		assertThat(poolAdapter.getLocators(Collections.emptyList()), is(equalTo(Collections.<InetSocketAddress>emptyList())));
 		assertThat(poolAdapter.getMaxConnections(999), is(equalTo(500)));
 		assertThat(poolAdapter.getMinConnections(99), is(equalTo(50)));
 		assertThat(poolAdapter.getMultiuserAuthentication(false), is(equalTo(true)));
 		assertThat(poolAdapter.getName(), is(equalTo("TestPool")));
 		assertThat(poolAdapter.getPendingEventCount(), is(equalTo(2)));
-		assertThat(poolAdapter.getPingInterval(20000l), is(equalTo(15000l)));
+		assertThat(poolAdapter.getPingInterval(20000L), is(equalTo(15000L)));
 		assertThat(poolAdapter.getPRSingleHopEnabled(false), is(equalTo(true)));
 		assertThat(poolAdapter.getQueryService(null), is(nullValue()));
 		assertThat(poolAdapter.getReadTimeout(20000), is(equalTo(30000)));
@@ -513,5 +522,4 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		verify(mockPool, times(2)).releaseThreadLocalConnection();
 	}
-
 }

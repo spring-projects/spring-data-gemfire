@@ -395,7 +395,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 	/* (non-Javadoc) */
 	public Pool getPool() {
-		return (pool != null ? pool : new PoolAdapter() {
+		return Optional.ofNullable(this.pool).orElseGet(() -> new PoolAdapter() {
 			@Override
 			public boolean isDestroyed() {
 				Pool pool = PoolFactoryBean.this.pool;
@@ -423,6 +423,12 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			}
 
 			@Override
+			public List<InetSocketAddress> getOnlineLocators() {
+				return Optional.ofNullable(PoolFactoryBean.this.pool).map(Pool::getOnlineLocators)
+					.orElseThrow(() -> new IllegalStateException("The Pool has not been initialized"));
+			}
+
+			@Override
 			public int getMaxConnections() {
 				return PoolFactoryBean.this.maxConnections;
 			}
@@ -445,11 +451,8 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			@Override
 			public int getPendingEventCount() {
-				Pool pool = PoolFactoryBean.this.pool;
-				if (pool != null) {
-					return pool.getPendingEventCount();
-				}
-				throw new IllegalStateException("The Pool is not initialized");
+				return Optional.ofNullable(PoolFactoryBean.this.pool).map(Pool::getPendingEventCount)
+					.orElseThrow(() -> new IllegalStateException("The Pool has not been initialized"));
 			}
 
 			@Override
@@ -464,11 +467,8 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			@Override
 			public QueryService getQueryService() {
-				Pool pool = PoolFactoryBean.this.pool;
-				if (pool != null) {
-					return pool.getQueryService();
-				}
-				throw new IllegalStateException("The Pool is not initialized");
+				return Optional.ofNullable(PoolFactoryBean.this.pool).map(Pool::getQueryService)
+					.orElseThrow(() -> new IllegalStateException("The Pool has not been initialized"));
 			}
 
 			@Override
@@ -532,26 +532,24 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			}
 
 			@Override
-			public void destroy(final boolean keepAlive) {
+			public void destroy(boolean keepAlive) {
 				try {
 					PoolFactoryBean.this.destroy();
 				}
 				catch (Exception ignore) {
-					Pool pool = PoolFactoryBean.this.pool;
-					if (pool != null) {
-						pool.destroy(keepAlive);
-					}
+					Optional.ofNullable(PoolFactoryBean.this.pool).ifPresent(pool -> pool.destroy(keepAlive));
 				}
 			}
 
 			@Override
 			public void releaseThreadLocalConnection() {
 				Pool pool = PoolFactoryBean.this.pool;
+
 				if (pool != null) {
 					pool.releaseThreadLocalConnection();
 				}
 				else {
-					throw new IllegalStateException("The Pool is not initialized");
+					throw new IllegalStateException("The Pool has not been initialized");
 				}
 			}
 		});

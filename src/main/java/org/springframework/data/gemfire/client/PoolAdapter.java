@@ -88,7 +88,8 @@ public abstract class PoolAdapter implements Pool {
 	}
 
 	/* (non-Javadoc) */
-	public boolean getPRSingleHopEnabled() {
+	@Override
+	public List<InetSocketAddress> getOnlineLocators() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
@@ -99,6 +100,11 @@ public abstract class PoolAdapter implements Pool {
 
 	/* (non-Javadoc) */
 	public long getPingInterval() {
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
+	}
+
+	/* (non-Javadoc) */
+	public boolean getPRSingleHopEnabled() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
@@ -176,5 +182,4 @@ public abstract class PoolAdapter implements Pool {
 	public void releaseThreadLocalConnection() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
-
 }

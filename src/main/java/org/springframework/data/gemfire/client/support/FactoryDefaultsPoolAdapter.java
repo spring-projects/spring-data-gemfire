@@ -95,14 +95,20 @@ public abstract class FactoryDefaultsPoolAdapter extends PoolAdapter {
 
 	/* (non-Javadoc) */
 	@Override
-	public boolean getPRSingleHopEnabled() {
-		return PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED;
+	public List<InetSocketAddress> getOnlineLocators() {
+		return Collections.emptyList();
 	}
 
 	/* (non-Javadoc) */
 	@Override
 	public long getPingInterval() {
 		return PoolFactory.DEFAULT_PING_INTERVAL;
+	}
+
+	/* (non-Javadoc) */
+	@Override
+	public boolean getPRSingleHopEnabled() {
+		return PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED;
 	}
 
 	/* (non-Javadoc) */
@@ -181,5 +187,4 @@ public abstract class FactoryDefaultsPoolAdapter extends PoolAdapter {
 	public void destroy() {
 		destroy(DEFAULT_KEEP_ALIVE);
 	}
-
 }
