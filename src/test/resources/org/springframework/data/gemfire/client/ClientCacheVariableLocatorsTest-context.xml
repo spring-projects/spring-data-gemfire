@@ -12,7 +12,7 @@
 ">
 
 	<util:properties id="client.properties">
-		<prop key="gemfire.cache.client.locator.host-and-port">localhost[11235]</prop>
+		<prop key="gemfire.cache.client.pool.locator.hosts-and-ports">localhost[11235]</prop>
 	</util:properties>
 
 	<context:property-placeholder properties-ref="client.properties"/>
@@ -21,11 +21,12 @@
 		<prop key="log-level">warning</prop>
 	</util:properties>
 
-	<gfe:client-cache properties-ref="gemfireProperties" pool-name="locatorPool"/>
-
-	<gfe:pool id="locatorPool" locators="${gemfire.cache.client.locator.host-and-port}"/>
+	<gfe:client-cache properties-ref="gemfireProperties"/>
 
 	<gfe:client-region id="Example" pool-name="locatorPool" shortcut="PROXY"
 					   key-constraint="java.lang.String" value-constraint="java.lang.Integer"/>
+
+	<!-- Keep the definition of this GemFire Pool bean after the Region (Example) that depends on it! -->
+	<gfe:pool id="locatorPool" locators="${gemfire.cache.client.pool.locator.hosts-and-ports}"/>
 
 </beans>

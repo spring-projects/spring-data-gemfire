@@ -507,7 +507,9 @@ public class PoolParserUnitTests {
 		doAnswer(answer).when(mockRegistry).registerBeanDefinition(eq(generateBeanName(MethodInvokingBean.class)),
 			any(BeanDefinition.class));
 
-		assertThat(parser.parseLocators(mockElement, mockRegistry)).isTrue();
+		BeanDefinitionBuilder poolBuilder = BeanDefinitionBuilder.genericBeanDefinition();
+
+		assertThat(parser.parseLocators(mockElement, poolBuilder, mockRegistry)).isTrue();
 
 		verify(mockElement, times(1)).getAttribute(eq(PoolParser.ID_ATTRIBUTE));
 		verify(mockElement, times(1)).getAttribute(eq(PoolParser.LOCATORS_ATTRIBUTE_NAME));
@@ -557,7 +559,9 @@ public class PoolParserUnitTests {
 		doAnswer(answer).when(mockRegistry).registerBeanDefinition(eq(generateBeanName(MethodInvokingBean.class)),
 			any(BeanDefinition.class));
 
-		assertThat(parser.parseServers(mockElement, mockRegistry)).isTrue();
+		BeanDefinitionBuilder poolBuilder = BeanDefinitionBuilder.genericBeanDefinition();
+
+		assertThat(parser.parseServers(mockElement, poolBuilder, mockRegistry)).isTrue();
 
 		verify(mockElement, times(1)).getAttribute(eq(PoolParser.ID_ATTRIBUTE));
 		verify(mockElement, times(1)).getAttribute(eq(PoolParser.SERVERS_ATTRIBUTE_NAME));
