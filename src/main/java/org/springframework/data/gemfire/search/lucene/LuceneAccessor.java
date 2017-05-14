@@ -17,7 +17,6 @@
 
 package org.springframework.data.gemfire.search.lucene;
 
-import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import static org.springframework.data.gemfire.util.SpringUtils.safeGetValue;
 
 import java.util.Optional;
@@ -137,23 +136,22 @@ public abstract class LuceneAccessor extends LuceneOperationsSupport implements 
 	 * @param projectionFields {@link String} array containing the fields of the object to project.
 	 * @return an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 * @see org.apache.geode.cache.lucene.LuceneQueryFactory
-	 * @see #createLuceneQueryFactory(int, int, String...)
+	 * @see #createLuceneQueryFactory(int, int)
 	 */
 	public LuceneQueryFactory createLuceneQueryFactory(String... projectionFields) {
-		return createLuceneQueryFactory(DEFAULT_RESULT_LIMIT, DEFAULT_PAGE_SIZE, projectionFields);
+		return createLuceneQueryFactory(DEFAULT_RESULT_LIMIT, DEFAULT_PAGE_SIZE);
 	}
 
 	/**
 	 * Creates an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 *
 	 * @param resultLimit limit to the number of results returned by the query.
-	 * @param projectionFields {@link String} array containing the fields of the object to project.
 	 * @return an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 * @see org.apache.geode.cache.lucene.LuceneQueryFactory
-	 * @see #createLuceneQueryFactory(int, int, String...)
+	 * @see #createLuceneQueryFactory(int, int)
 	 */
-	public LuceneQueryFactory createLuceneQueryFactory(int resultLimit, String... projectionFields) {
-		return createLuceneQueryFactory(resultLimit, DEFAULT_PAGE_SIZE, projectionFields);
+	public LuceneQueryFactory createLuceneQueryFactory(int resultLimit) {
+		return createLuceneQueryFactory(resultLimit, DEFAULT_PAGE_SIZE);
 	}
 
 	/**
@@ -161,14 +159,11 @@ public abstract class LuceneAccessor extends LuceneOperationsSupport implements 
 	 *
 	 * @param resultLimit limit to the number of results returned by the query.
 	 * @param pageSize number of results appearing on a single page.
-	 * @param projectionFields {@link String} array containing the fields of the object to project.
 	 * @return an instance of the {@link LuceneQueryFactory} to create and execute {@link LuceneQuery Lucene queries}.
 	 * @see #createLuceneQueryFactory()
 	 */
-	@SuppressWarnings("deprecation")
-	public LuceneQueryFactory createLuceneQueryFactory(int resultLimit, int pageSize, String... projectionFields) {
-		return createLuceneQueryFactory().setResultLimit(resultLimit).setPageSize(pageSize)
-			.setProjectionFields(nullSafeArray(projectionFields, String.class));
+	public LuceneQueryFactory createLuceneQueryFactory(int resultLimit, int pageSize) {
+		return createLuceneQueryFactory().setLimit(resultLimit).setPageSize(pageSize);
 	}
 
 	/**

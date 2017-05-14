@@ -95,17 +95,18 @@ public class LuceneTemplateUnitTests {
 	@Before
 	@SuppressWarnings("deprecation")
 	public void setup() {
+
 		luceneTemplate.setLuceneService(mockLuceneService);
 
 		when(mockLuceneService.createLuceneQueryFactory()).thenReturn(mockLuceneQueryFactory);
+		when(mockLuceneQueryFactory.setLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 		when(mockLuceneQueryFactory.setPageSize(anyInt())).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setProjectionFields(any())).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setResultLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 	}
 
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void stringQueryReturnsList() throws LuceneQueryException {
+
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"), anyString(), anyString()))
 			.thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findResults()).thenReturn(asList(mockLuceneResultStructOne, mockLuceneResultStructTwo));
@@ -126,9 +127,8 @@ public class LuceneTemplateUnitTests {
 		verify(luceneTemplate, times(1)).doFind(isA(LuceneQueryExecutor.class),
 			eq("title : Up Shit Creek Without a Paddle"), eq("/Example"), eq("TestIndex"));
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(100));
+		verify(mockLuceneQueryFactory, times(1)).setLimit(eq(100));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(LuceneOperations.DEFAULT_PAGE_SIZE));
-		verify(mockLuceneQueryFactory, times(1)).setProjectionFields(eq("content"));
 		verify(mockLuceneQueryFactory, times(1)).create(eq("TestIndex"),
 			eq("/Example"), eq("title : Up Shit Creek Without a Paddle"), eq("title"));
 		verify(mockLuceneQuery, times(1)).findResults();
@@ -137,6 +137,7 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void stringQueryWithPageSizeReturnsPageableResults() throws LuceneQueryException {
+
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"), anyString(), anyString()))
 			.thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findPages()).thenReturn(mockPageableLuceneQueryResults);
@@ -155,9 +156,8 @@ public class LuceneTemplateUnitTests {
 		verify(luceneTemplate, times(1)).doFind(isA(LuceneQueryExecutor.class),
 			eq("title : Up Shit Creek Without a Paddle"), eq("/Example"), eq("TestIndex"));
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(100));
+		verify(mockLuceneQueryFactory, times(1)).setLimit(eq(100));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(20));
-		verify(mockLuceneQueryFactory, times(1)).setProjectionFields(eq("content"));
 		verify(mockLuceneQueryFactory, times(1)).create(eq("TestIndex"),
 			eq("/Example"), eq("title : Up Shit Creek Without a Paddle"), eq("title"));
 		verify(mockLuceneQuery, times(1)).findPages();
@@ -166,6 +166,7 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void queryProviderQueryReturnsList() throws LuceneQueryException {
+
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"),
 			any(LuceneQueryProvider.class))).thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findResults()).thenReturn(asList(mockLuceneResultStructOne, mockLuceneResultStructTwo));
@@ -185,9 +186,8 @@ public class LuceneTemplateUnitTests {
 		verify(luceneTemplate, times(1)).doFind(isA(LuceneQueryExecutor.class),
 			eq(mockLuceneQueryProvider), eq("/Example"), eq("TestIndex"));
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(100));
+		verify(mockLuceneQueryFactory, times(1)).setLimit(eq(100));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(LuceneOperations.DEFAULT_PAGE_SIZE));
-		verify(mockLuceneQueryFactory, times(1)).setProjectionFields(eq("content"));
 		verify(mockLuceneQueryFactory, times(1)).create(eq("TestIndex"),
 			eq("/Example"), eq(mockLuceneQueryProvider));
 		verify(mockLuceneQuery, times(1)).findResults();
@@ -196,6 +196,7 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void queryProviderQueryWithPageSizeReturnsPageableResults() throws LuceneQueryException {
+
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"),
 			any(LuceneQueryProvider.class))).thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findPages()).thenReturn(mockPageableLuceneQueryResults);
@@ -213,9 +214,8 @@ public class LuceneTemplateUnitTests {
 		verify(luceneTemplate, times(1)).doFind(isA(LuceneQueryExecutor.class),
 			eq(mockLuceneQueryProvider), eq("/Example"), eq("TestIndex"));
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(100));
+		verify(mockLuceneQueryFactory, times(1)).setLimit(eq(100));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(20));
-		verify(mockLuceneQueryFactory, times(1)).setProjectionFields(eq("content"));
 		verify(mockLuceneQueryFactory, times(1)).create(eq("TestIndex"),
 			eq("/Example"), eq(mockLuceneQueryProvider));
 		verify(mockLuceneQuery, times(1)).findPages();
@@ -224,6 +224,7 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void stringQueryForKeysReturnsKeys() throws LuceneQueryException {
+
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"), anyString(), anyString()))
 			.thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findKeys()).thenReturn(asList("keyOne", "keyTwo"));
@@ -243,9 +244,8 @@ public class LuceneTemplateUnitTests {
 		verify(luceneTemplate, times(1)).doFind(isA(LuceneQueryExecutor.class),
 			eq("title : Up Shit Creek Without a Paddle"), eq("/Example"), eq("TestIndex"));
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(100));
+		verify(mockLuceneQueryFactory, times(1)).setLimit(eq(100));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(LuceneOperations.DEFAULT_PAGE_SIZE));
-		verify(mockLuceneQueryFactory, times(1)).setProjectionFields();
 		verify(mockLuceneQueryFactory, times(1)).create(eq("TestIndex"),
 			eq("/Example"), eq("title : Up Shit Creek Without a Paddle"), eq("title"));
 		verify(mockLuceneQuery, times(1)).findKeys();
@@ -254,6 +254,7 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void queryProviderQueryForKeysReturnsKeys() throws LuceneQueryException {
+
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"),
 			any(LuceneQueryProvider.class))).thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findKeys()).thenReturn(asList("keyOne", "keyTwo"));
@@ -272,9 +273,8 @@ public class LuceneTemplateUnitTests {
 		verify(luceneTemplate, times(1)).doFind(isA(LuceneQueryExecutor.class),
 			eq(mockLuceneQueryProvider), eq("/Example"), eq("TestIndex"));
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(100));
+		verify(mockLuceneQueryFactory, times(1)).setLimit(eq(100));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(LuceneOperations.DEFAULT_PAGE_SIZE));
-		verify(mockLuceneQueryFactory, times(1)).setProjectionFields();
 		verify(mockLuceneQueryFactory, times(1)).create(eq("TestIndex"),
 			eq("/Example"), eq(mockLuceneQueryProvider));
 		verify(mockLuceneQuery, times(1)).findKeys();
@@ -283,6 +283,7 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void stringQueryForValuesReturnsValues() throws LuceneQueryException {
+
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"), anyString(), anyString()))
 			.thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findValues()).thenReturn(asList("valueOne", "valueTwo"));
@@ -302,9 +303,8 @@ public class LuceneTemplateUnitTests {
 		verify(luceneTemplate, times(1)).doFind(isA(LuceneQueryExecutor.class),
 			eq("title : Up Shit Creek Without a Paddle"), eq("/Example"), eq("TestIndex"));
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(100));
+		verify(mockLuceneQueryFactory, times(1)).setLimit(eq(100));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(LuceneOperations.DEFAULT_PAGE_SIZE));
-		verify(mockLuceneQueryFactory, times(1)).setProjectionFields();
 		verify(mockLuceneQueryFactory, times(1)).create(eq("TestIndex"),
 			eq("/Example"), eq("title : Up Shit Creek Without a Paddle"), eq("title"));
 		verify(mockLuceneQuery, times(1)).findValues();
@@ -313,6 +313,7 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void queryProviderQueryForValuesReturnsValues() throws LuceneQueryException {
+
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"),
 			any(LuceneQueryProvider.class))).thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findValues()).thenReturn(asList("valueOne", "valueTwo"));
@@ -331,9 +332,8 @@ public class LuceneTemplateUnitTests {
 		verify(luceneTemplate, times(1)).doFind(isA(LuceneQueryExecutor.class),
 			eq(mockLuceneQueryProvider), eq("/Example"), eq("TestIndex"));
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
-		verify(mockLuceneQueryFactory, times(1)).setResultLimit(eq(100));
+		verify(mockLuceneQueryFactory, times(1)).setLimit(eq(100));
 		verify(mockLuceneQueryFactory, times(1)).setPageSize(eq(LuceneOperations.DEFAULT_PAGE_SIZE));
-		verify(mockLuceneQueryFactory, times(1)).setProjectionFields();
 		verify(mockLuceneQueryFactory, times(1)).create(eq("TestIndex"),
 			eq("/Example"), eq(mockLuceneQueryProvider));
 		verify(mockLuceneQuery, times(1)).findValues();
