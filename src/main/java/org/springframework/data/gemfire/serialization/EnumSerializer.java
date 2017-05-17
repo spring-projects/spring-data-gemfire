@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2010-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,62 +28,86 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 
 /**
- * Generic Serializer for JDK Enums. The class needs to be registered only once - custom enums
- * will be then understood by the converter by calling {@link #addEnum(Class)}.
+ * Generic serializer for all Java Enums. The class needs to be registered only once.  Custom enums will then
+ * be understood by the converter by calling {@link #addEnum(Class)}.
  *
  * @author Costin Leau
+ * @author John Blum
+ * @see java.io.Serializable
+ * @see org.apache.geode.DataSerializer
  */
 public class EnumSerializer extends DataSerializer implements Serializable {
 
 	private static final long serialVersionUID = -7069461993489626976L;
 
-	private static final ConcurrentMap<Class<?>, Enum[]> supportedClasses = new ConcurrentHashMap<Class<?>, Enum[]>();
+	private static final ConcurrentMap<Class<?>, Enum[]> supportedEnumTypes = new ConcurrentHashMap<>();
 
 	private int id = 1024;
 
 	@Override
-	public boolean toData(Object o, DataOutput out) throws IOException {
-		if (o instanceof Enum<?>) {
-			// add enum to the set
-			Enum<?> enm = (Enum<?>) o;
-			Class<?> cls = enm.getDeclaringClass();
-			addEnum(cls);
-			DataSerializer.writeClass(cls, out);
-			out.writeInt(enm.ordinal());
-		}
-		return false;
+	public boolean toData(Object obj, DataOutput out) throws IOException {
+		return (obj instanceof Enum && serialize((Enum<?>) obj, out));
 	}
 
-	@SuppressWarnings("unchecked")
+	/* (non-Javadoc) */
+	private boolean serialize(Enum<?> enumeratedValue, DataOutput out) throws IOException {
+		DataSerializer.writeClass(registerEnumType(enumeratedValue), out);
+		out.writeInt(enumeratedValue.ordinal());
+		return true;
+	}
+
+	/* (non-Javadoc) */
+	private Class<?> registerEnumType(Enum<?> enumeratedValue) {
+		return addEnum(enumeratedValue.getDeclaringClass());
+	}
+
 	@Override
 	public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-		Class cls = DataSerializer.readClass(in);
-		if (cls.isEnum()) {
-			addEnum(cls);
-			int ordinal = in.readInt();
-			return supportedClasses.get(cls)[ordinal];
-		}
-		throw new IOException("Non-enum class read from the stream -" + cls);
+		Class<?> type = DataSerializer.readClass(in);
+
+		return Optional.ofNullable(type).filter(Class::isEnum).map(enumType -> {
+			int ordinal = safeReadInt(in);
+			return supportedEnumTypes.get(addEnum(enumType))[ordinal];
+		}).orElseThrow(() -> new IOException(String.format("Non-enum type [%s] read from the stream", type)));
 	}
 
-	@SuppressWarnings("unchecked")
-	public void addEnum(Class enumClass) {
-		if (!supportedClasses.containsKey(enumClass)) {
-			supportedClasses.put(enumClass, (Enum[]) enumClass.getEnumConstants());
+	/* (non-Javadoc) */
+	private int safeReadInt(DataInput in) {
+		try {
+			return in.readInt();
 		}
+		catch (IOException e) {
+			throw new IllegalStateException("Failed to read int from DataInput", e);
+		}
+	}
 
-		// if registered, re-register the serializer to propagate the changes
-		if (InternalDataSerializer.getSerializer(getId()) != null) {
-			if (InternalDataSerializer.getSerializer(enumClass) == null) {
-				InternalDataSerializer.unregister(getId());
-				InternalDataSerializer.register(getClass());
+	public Class<?> addEnum(Class<?> enumType) {
+		synchronized (supportedEnumTypes) {
+			if (!supportedEnumTypes.containsKey(enumType)) {
+				supportedEnumTypes.put(enumType, (Enum[]) enumType.getEnumConstants());
+				potentiallyReRegisterThisSerializer();
 			}
 		}
+
+		return enumType;
 	}
 
-	@Override
-	public Class<?>[] getSupportedClasses() {
-		return supportedClasses.keySet().toArray(new Class<?>[supportedClasses.size()]);
+	// TODO refactor the use of the Apache Geode internal class
+	// if registered then re-register this serializer to propagate and distribute the changes
+	private void potentiallyReRegisterThisSerializer() {
+		if (InternalDataSerializer.getSerializer(getId()) != null) {
+			InternalDataSerializer.unregister(getId());
+			DataSerializer.register(getClass());
+		}
+	}
+
+	/**
+	 * Sets the id of this serializer.  Default is 1024.
+	 *
+	 * @param id identifier to set on this serializer.
+	 */
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	@Override
@@ -90,12 +115,8 @@ public class EnumSerializer extends DataSerializer implements Serializable {
 		return id;
 	}
 
-	/**
-	 * Sets the id for this serializer. Default is 1024;
-	 *
-	 * @param id the id to set
-	 */
-	public void setId(int id) {
-		this.id = id;
+	@Override
+	public Class<?>[] getSupportedClasses() {
+		return supportedEnumTypes.keySet().toArray(new Class<?>[supportedEnumTypes.size()]);
 	}
 }
