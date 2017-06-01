@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.6.2.RELEASE</version>
+		<version>1.6.3.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-gemfire</artifactId>
-	<version>1.6.2.RELEASE-PATCH01</version>
+	<version>1.6.3.BUILD-SNAPSHOT</version>
 
 	<name>Spring Data Gemfire</name>
 
@@ -21,14 +21,14 @@
 		<assertj.version>3.5.2</assertj.version>
 		<gemfire.version>8.0.0</gemfire.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
-		<springdata.commons>1.10.2.RELEASE</springdata.commons>
+		<springdata.commons>1.10.3.BUILD-SNAPSHOT</springdata.commons>
 		<spring-shell.version>1.0.0.RELEASE</spring-shell.version>
 	</properties>
 
 	<repositories>
 		<repository>
-			<id>spring-libs-release</id>
-			<url>https://repo.spring.io/libs-release</url>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
 
