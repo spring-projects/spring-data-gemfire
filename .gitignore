@@ -5,7 +5,6 @@ build
 out
 .gradle
 .springBeans
-pom.xml
 *.iml
 *.ipr
 *.iws
