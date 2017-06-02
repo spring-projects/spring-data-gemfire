@@ -17,10 +17,12 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import static java.util.Arrays.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
  * The {@link DiskStoresConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
@@ -36,22 +38,21 @@ import org.springframework.data.gemfire.util.ArrayUtils;
  */
 public class DiskStoresConfiguration extends DiskStoreConfiguration {
 
-	/**
-	 * @inheritDoc
-	 */
+	/* (non-Javadoc) */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+
 		if (importingClassMetadata.hasAnnotation(EnableDiskStores.class.getName())) {
+
 			AnnotationAttributes enableDiskStoresAttributes = AnnotationAttributes.fromMap(
 				importingClassMetadata.getAnnotationAttributes(EnableDiskStores.class.getName()));
 
-			AnnotationAttributes[] diskStores = ArrayUtils.nullSafeArray(
-				enableDiskStoresAttributes.getAnnotationArray("diskStores"), AnnotationAttributes.class);
+			AnnotationAttributes[] diskStores =
+				enableDiskStoresAttributes.getAnnotationArray("diskStores");
 
-			for (AnnotationAttributes diskStoreAttributes : diskStores) {
-				registerDiskStoreBeanDefinition(importingClassMetadata,
-					mergeDiskStoreAttributes(enableDiskStoresAttributes, diskStoreAttributes), registry);
-			}
+			stream(nullSafeArray(diskStores, AnnotationAttributes.class)).forEach(diskStoreAttributes ->
+				registerDiskStoreBeanDefinition(
+					mergeDiskStoreAttributes(enableDiskStoresAttributes, diskStoreAttributes), registry));
 		}
 	}
 

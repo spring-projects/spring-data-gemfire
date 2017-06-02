@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.util.StringUtils;
 
 /**
  * Spring {@link Configuration} class used to construct, configure and initialize a peer {@link Cache} instance
@@ -139,15 +140,30 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
             Map<String, Object> peerCacheApplicationAttributes =
                 importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
-            setEnableAutoReconnect(Boolean.TRUE.equals(peerCacheApplicationAttributes.get("enableAutoReconnect")));
-            setLockLease((Integer) peerCacheApplicationAttributes.get("lockLease"));
-            setLockTimeout((Integer) peerCacheApplicationAttributes.get("lockTimeout"));
-            setMessageSyncInterval((Integer) peerCacheApplicationAttributes.get("messageSyncInterval"));
-            setSearchTimeout((Integer) peerCacheApplicationAttributes.get("searchTimeout"));
-            setUseClusterConfiguration(Boolean.TRUE.equals(peerCacheApplicationAttributes.get("useClusterConfiguration")));
+            setEnableAutoReconnect(resolveProperty(cachePeerProperty("enable-auto-reconnect"),
+                Boolean.TRUE.equals(peerCacheApplicationAttributes.get("enableAutoReconnect"))));
+
+            setLockLease(resolveProperty(cachePeerProperty("lock-lease"),
+                (Integer) peerCacheApplicationAttributes.get("lockLease")));
+
+            setLockTimeout(resolveProperty(cachePeerProperty("lock-timeout"),
+                (Integer) peerCacheApplicationAttributes.get("lockTimeout")));
+
+            setMessageSyncInterval(resolveProperty(cachePeerProperty("message-sync-interval"),
+                (Integer) peerCacheApplicationAttributes.get("messageSyncInterval")));
+
+            setSearchTimeout(resolveProperty(cachePeerProperty("search-timeout"),
+                (Integer) peerCacheApplicationAttributes.get("searchTimeout")));
+
+            setUseClusterConfiguration(resolveProperty(cachePeerProperty("use-cluster-configuration"),
+                Boolean.TRUE.equals(peerCacheApplicationAttributes.get("useClusterConfiguration"))));
 
             Optional.ofNullable((String) peerCacheApplicationAttributes.get("locators"))
                 .filter(PeerCacheConfiguration::hasValue)
+                .ifPresent(this::setLocators);
+
+            Optional.ofNullable(resolveProperty(cachePeerProperty("locators"), (String) null))
+                .filter(StringUtils::hasText)
                 .ifPresent(this::setLocators);
         }
     }

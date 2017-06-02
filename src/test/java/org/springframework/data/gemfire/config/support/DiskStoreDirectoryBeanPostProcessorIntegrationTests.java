@@ -30,19 +30,23 @@ import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.DiskStoreFactoryBean;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
+import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.FileSystemUtils;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Integration tests for {@link DiskStoreDirectoryBeanPostProcessor}.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.junit.runner.RunWith
+ * @see org.springframework.data.gemfire.DiskStoreFactoryBean
  * @see org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 public class DiskStoreDirectoryBeanPostProcessorIntegrationTests {
 
@@ -53,8 +57,8 @@ public class DiskStoreDirectoryBeanPostProcessorIntegrationTests {
 
 	@AfterClass
 	public static void testSuiteTearDown() {
-		assertThat(FileSystemUtils.deleteRecursively(new File("./gemfire"))).isTrue();
-		assertThat(FileSystemUtils.deleteRecursively(new File("./gfe"))).isTrue();
+		assertThat(FileSystemUtils.deleteRecursive(new File("./gemfire"))).isTrue();
+		assertThat(FileSystemUtils.deleteRecursive(new File("./gfe"))).isTrue();
 	}
 
 	@Test

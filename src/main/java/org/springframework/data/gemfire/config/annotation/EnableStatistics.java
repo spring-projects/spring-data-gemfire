@@ -24,15 +24,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableStatistics annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to configure and enable statistics and runtime metrics of a running GemFire/Geode system.
+ * The {@link EnableStatistics} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to configure and enable statistics and runtime metrics of a running Pivotal GemFire/Apache Geode system.
  *
  * Sets {@literal statistic-sampling-enabled} to {@literal true}.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.StatisticsConfiguration
  * @since 1.9.0
  */
@@ -50,6 +53,9 @@ public @interface EnableStatistics {
 	 * disk space use is unlimited.
 	 *
 	 * Defaults to {@literal 0} MB.
+	 *
+	 * Use the {@literal spring.data.gemfire.stats.archive-disk-space-limit} property
+	 * in {@literal application.properties}.
 	 */
 	int archiveDiskSpaceLimit() default StatisticsConfiguration.DEFAULT_ARCHIVE_DISK_SPACE_LIMIT;
 
@@ -58,6 +64,8 @@ public @interface EnableStatistics {
 	 * An empty string disables archiving. Adding .gz suffix to the file name causes it to be compressed.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.stats.archive-file} property in {@literal application.properties}.
 	 */
 	String archiveFile() default "";
 
@@ -67,6 +75,9 @@ public @interface EnableStatistics {
 	 * file size is unlimited.
 	 *
 	 * Defaults to {@literal 0} MB.
+	 *
+	 * Use the {@literal spring.data.gemfire.stats.archive-file-size-limit} property
+	 * in {@literal application.properties}.
 	 */
 	int archiveFileSizeLimit() default StatisticsConfiguration.DEFAULT_ARCHIVE_FILE_SIZE_LIMIT;
 
@@ -75,6 +86,9 @@ public @interface EnableStatistics {
 	 * Disabled by default for performance reasons and not recommended for production environments.
 	 *
 	 * Defaults to {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.stats.enable-time-statistics} property
+	 * in {@literal application.properties}.
 	 */
 	boolean enableTimeStatistics() default StatisticsConfiguration.DEFAULT_ENABLE_TIME_STATISTICS;
 
@@ -84,6 +98,8 @@ public @interface EnableStatistics {
 	 * Valid values are in the range 100..60000.
 	 *
 	 * Defaults to {@literal 1000} milliseconds.
+	 *
+	 * Use the {@literal spring.data.gemfire.stats.sample-rate} property in {@literal application.properties}.
 	 */
 	long sampleRate() default StatisticsConfiguration.DEFAULT_STATISTIC_SAMPLE_RATE;
 

@@ -20,15 +20,17 @@ package org.springframework.data.gemfire.config.annotation;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The StatisticsConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * that applies additional GemFire/Geode configuration by way of GemFire/Geode System properties to configure
- * GemFire/Geode Statistics.
+ * The {@link StatisticsConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that applies
+ * additional configuration using Pivotal GemFire/Apache Geode {@link Properties} to configure
+ * Pivotal GemFire/Apache Geode Statistics.
  *
  * @author John Blum
+ * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @see org.springframework.data.gemfire.config.annotation.EnableStatistics
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
@@ -41,7 +43,12 @@ public class StatisticsConfiguration extends EmbeddedServiceConfigurationSupport
 	public static final int DEFAULT_ARCHIVE_FILE_SIZE_LIMIT = 0;
 	public static final int DEFAULT_STATISTIC_SAMPLE_RATE = 1000;
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns the {@link EnableStatistics} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 *
+	 * @return the {@link EnableStatistics} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableStatistics
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableStatistics.class;
@@ -50,23 +57,31 @@ public class StatisticsConfiguration extends EmbeddedServiceConfigurationSupport
 	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
+
 		PropertiesBuilder gemfireProperties = new PropertiesBuilder();
 
-		gemfireProperties.setProperty("statistic-sampling-enabled", true);
+		gemfireProperties.setProperty("statistic-sampling-enabled",
+			resolveProperty(statsProperty("sampling-enabled"), true));
 
 		gemfireProperties.setPropertyIfNotDefault("archive-disk-space-limit",
-			annotationAttributes.get("archiveDiskSpaceLimit"), DEFAULT_ARCHIVE_DISK_SPACE_LIMIT);
+			resolveProperty(statsProperty("archive-disk-space-limit"),
+				(Integer) annotationAttributes.get("archiveDiskSpaceLimit")), DEFAULT_ARCHIVE_DISK_SPACE_LIMIT);
+
+		gemfireProperties.setProperty("statistic-archive-file",
+			resolveProperty(statsProperty("archive-file"),
+				(String) annotationAttributes.get("archiveFile")));
 
 		gemfireProperties.setPropertyIfNotDefault("archive-file-size-limit",
-			annotationAttributes.get("archiveFileSizeLimit"), DEFAULT_ARCHIVE_FILE_SIZE_LIMIT);
+			resolveProperty(statsProperty("archive-file-size-limit"),
+				(Integer) annotationAttributes.get("archiveFileSizeLimit")), DEFAULT_ARCHIVE_FILE_SIZE_LIMIT);
 
 		gemfireProperties.setProperty("enable-time-statistics",
-			Boolean.TRUE.equals(annotationAttributes.get("enableTimeStatistics")));
-
-		gemfireProperties.setProperty("statistic-archive-file", annotationAttributes.get("archiveFile"));
+			resolveProperty(statsProperty("enable-time-statistics"),
+				Boolean.TRUE.equals(annotationAttributes.get("enableTimeStatistics"))));
 
 		gemfireProperties.setPropertyIfNotDefault("statistic-sample-rate",
-			annotationAttributes.get("sampleRate"), DEFAULT_STATISTIC_SAMPLE_RATE);
+			resolveProperty(statsProperty("sample-rate"),
+				(Long) annotationAttributes.get("sampleRate")), DEFAULT_STATISTIC_SAMPLE_RATE);
 
 		return gemfireProperties.build();
 	}

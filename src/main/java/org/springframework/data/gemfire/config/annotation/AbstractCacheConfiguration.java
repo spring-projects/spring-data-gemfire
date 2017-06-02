@@ -192,7 +192,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
-
 		configureInfrastructure(importMetadata);
 		configureCache(importMetadata);
 		configurePdx(importMetadata);
@@ -208,7 +207,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
 	protected void configureInfrastructure(AnnotationMetadata importMetadata) {
-
 		registerCustomEditorBeanFactoryPostProcessor(importMetadata);
 		registerDefinedIndexesApplicationListener(importMetadata);
 		registerDiskStoreDirectoryBeanPostProcessor(importMetadata);
@@ -254,19 +252,33 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 			Map<String, Object> cacheMetadataAttributes =
 				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
-			setCopyOnRead(Boolean.TRUE.equals(cacheMetadataAttributes.get("copyOnRead")));
+			setCopyOnRead(resolveProperty(cacheProperty("copy-on-read"),
+				Boolean.TRUE.equals(cacheMetadataAttributes.get("copyOnRead"))));
+
+			Optional.ofNullable(resolveProperty(cacheProperty("critical-heap-percentage"), (Float) null))
+				.ifPresent(this::setCriticalHeapPercentage);
 
 			Optional.ofNullable((Float) cacheMetadataAttributes.get("criticalHeapPercentage"))
+				.filter(it -> getCriticalHeapPercentage() == null)
 				.filter(AbstractAnnotationConfigSupport::hasValue)
 				.ifPresent(this::setCriticalHeapPercentage);
 
+			Optional.ofNullable(resolveProperty(cacheProperty("eviction-heap-percentage"), (Float) null))
+				.ifPresent(this::setEvictionHeapPercentage);
+
 			Optional.ofNullable((Float) cacheMetadataAttributes.get("evictionHeapPercentage"))
+				.filter(it -> getEvictionHeapPercentage() == null)
 				.filter(AbstractAnnotationConfigSupport::hasValue)
 				.ifPresent(this::setEvictionHeapPercentage);
 
-			setLogLevel((String) cacheMetadataAttributes.get("logLevel"));
-			setName((String) cacheMetadataAttributes.get("name"));
-			setUseBeanFactoryLocator(Boolean.TRUE.equals(cacheMetadataAttributes.get("useBeanFactoryLocator")));
+			setLogLevel(resolveProperty(cacheProperty("log-level"),
+				(String) cacheMetadataAttributes.get("logLevel")));
+
+			setName(resolveProperty(cacheProperty("name"),
+				(String) cacheMetadataAttributes.get("name")));
+
+			setUseBeanFactoryLocator(resolveProperty(propertyName("use-bean-factory-locator"),
+				Boolean.TRUE.equals(cacheMetadataAttributes.get("useBeanFactoryLocator"))));
 		}
 	}
 
@@ -286,10 +298,18 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 
 			Map<String, Object> enablePdxAttributes = importMetadata.getAnnotationAttributes(enablePdxTypeName);
 
-			setPdxDiskStoreName((String) enablePdxAttributes.get("diskStoreName"));
-			setPdxIgnoreUnreadFields(Boolean.TRUE.equals(enablePdxAttributes.get("ignoreUnreadFields")));
-			setPdxPersistent(Boolean.TRUE.equals(enablePdxAttributes.get("persistent")));
-			setPdxReadSerialized(Boolean.TRUE.equals(enablePdxAttributes.get("readSerialized")));
+			setPdxDiskStoreName(resolveProperty(pdxProperty("disk-store-name"),
+				(String) enablePdxAttributes.get("diskStoreName")));
+
+			setPdxIgnoreUnreadFields(resolveProperty(pdxProperty("ignore-unread-fields"),
+				Boolean.TRUE.equals(enablePdxAttributes.get("ignoreUnreadFields"))));
+
+			setPdxPersistent(resolveProperty(pdxProperty("persistent"),
+				Boolean.TRUE.equals(enablePdxAttributes.get("persistent"))));
+
+			setPdxReadSerialized(resolveProperty(pdxProperty("read-serialized"),
+				Boolean.TRUE.equals(enablePdxAttributes.get("readSerialized"))));
+
 			setPdxSerializer(resolvePdxSerializer((String) enablePdxAttributes.get("serializerBeanName")));
 
 			registerPdxDiskStoreAwareBeanFactoryPostProcessor(importMetadata);
@@ -313,7 +333,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return Optional.ofNullable(pdxSerializerBeanName)
 			.filter(beanFactory::containsBean)
 			.map(beanName -> beanFactory.getBean(beanName, PdxSerializer.class))
-			.orElseGet(() -> Optional.ofNullable(pdxSerializer()).orElseGet(() -> newPdxSerializer(beanFactory)));
+			.orElseGet(() -> Optional.ofNullable(getPdxSerializer()).orElseGet(() -> newPdxSerializer(beanFactory)));
 	}
 
 	/**
@@ -353,7 +373,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	/* (non-Javadoc) */
 	private void registerPdxDiskStoreAwareBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
 
-		Optional.ofNullable(pdxDiskStoreName())
+		Optional.ofNullable(getPdxDiskStoreName())
 			.filter(StringUtils::hasText)
 			.ifPresent(pdxDiskStoreName -> {
 				if (PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
@@ -425,22 +445,22 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 
 		gemfireCache.setBeanClassLoader(beanClassLoader());
 		gemfireCache.setBeanFactory(beanFactory());
-		gemfireCache.setCacheXml(cacheXml());
-		gemfireCache.setClose(close());
-		gemfireCache.setCopyOnRead(copyOnRead());
-		gemfireCache.setCriticalHeapPercentage(criticalHeapPercentage());
-		gemfireCache.setDynamicRegionSupport(dynamicRegionSupport());
-		gemfireCache.setEvictionHeapPercentage(evictionHeapPercentage());
-		gemfireCache.setGatewayConflictResolver(gatewayConflictResolver());
-		gemfireCache.setJndiDataSources(jndiDataSources());
+		gemfireCache.setCacheXml(getCacheXml());
+		gemfireCache.setClose(isClose());
+		gemfireCache.setCopyOnRead(getCopyOnRead());
+		gemfireCache.setCriticalHeapPercentage(getCriticalHeapPercentage());
+		gemfireCache.setDynamicRegionSupport(getDynamicRegionSupport());
+		gemfireCache.setEvictionHeapPercentage(getEvictionHeapPercentage());
+		gemfireCache.setGatewayConflictResolver(getGatewayConflictResolver());
+		gemfireCache.setJndiDataSources(getJndiDataSources());
 		gemfireCache.setProperties(gemfireProperties());
-		gemfireCache.setPdxDiskStoreName(pdxDiskStoreName());
-		gemfireCache.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields());
-		gemfireCache.setPdxPersistent(pdxPersistent());
-		gemfireCache.setPdxReadSerialized(pdxReadSerialized());
-		gemfireCache.setPdxSerializer(pdxSerializer());
-		gemfireCache.setTransactionListeners(transactionListeners());
-		gemfireCache.setTransactionWriter(transactionWriter());
+		gemfireCache.setPdxDiskStoreName(getPdxDiskStoreName());
+		gemfireCache.setPdxIgnoreUnreadFields(getPdxIgnoreUnreadFields());
+		gemfireCache.setPdxPersistent(getPdxPersistent());
+		gemfireCache.setPdxReadSerialized(getPdxReadSerialized());
+		gemfireCache.setPdxSerializer(getPdxSerializer());
+		gemfireCache.setTransactionListeners(getTransactionListeners());
+		gemfireCache.setTransactionWriter(getTransactionWriter());
 
 		return gemfireCache;
 	}
@@ -588,7 +608,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.cacheXml = cacheXml;
 	}
 
-	protected Resource cacheXml() {
+	protected Resource getCacheXml() {
 		return this.cacheXml;
 	}
 
@@ -597,7 +617,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.close = close;
 	}
 
-	protected boolean close() {
+	protected boolean isClose() {
 		return this.close;
 	}
 
@@ -606,7 +626,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.copyOnRead = copyOnRead;
 	}
 
-	protected boolean copyOnRead() {
+	protected boolean getCopyOnRead() {
 		return this.copyOnRead;
 	}
 
@@ -615,7 +635,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.criticalHeapPercentage = criticalHeapPercentage;
 	}
 
-	protected Float criticalHeapPercentage() {
+	protected Float getCriticalHeapPercentage() {
 		return this.criticalHeapPercentage;
 	}
 
@@ -624,7 +644,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.dynamicRegionSupport = dynamicRegionSupport;
 	}
 
-	protected DynamicRegionSupport dynamicRegionSupport() {
+	protected DynamicRegionSupport getDynamicRegionSupport() {
 		return this.dynamicRegionSupport;
 	}
 
@@ -633,7 +653,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.evictionHeapPercentage = evictionHeapPercentage;
 	}
 
-	protected Float evictionHeapPercentage() {
+	protected Float getEvictionHeapPercentage() {
 		return this.evictionHeapPercentage;
 	}
 
@@ -642,7 +662,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.gatewayConflictResolver = gatewayConflictResolver;
 	}
 
-	protected GatewayConflictResolver gatewayConflictResolver() {
+	protected GatewayConflictResolver getGatewayConflictResolver() {
 		return this.gatewayConflictResolver;
 	}
 
@@ -651,7 +671,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.jndiDataSources = jndiDataSources;
 	}
 
-	protected List<CacheFactoryBean.JndiDataSource> jndiDataSources() {
+	protected List<CacheFactoryBean.JndiDataSource> getJndiDataSources() {
 		return nullSafeList(this.jndiDataSources);
 	}
 
@@ -706,7 +726,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.pdxDiskStoreName = pdxDiskStoreName;
 	}
 
-	protected String pdxDiskStoreName() {
+	protected String getPdxDiskStoreName() {
 		return this.pdxDiskStoreName;
 	}
 
@@ -715,7 +735,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.pdxIgnoreUnreadFields = pdxIgnoreUnreadFields;
 	}
 
-	protected Boolean pdxIgnoreUnreadFields() {
+	protected Boolean getPdxIgnoreUnreadFields() {
 		return this.pdxIgnoreUnreadFields;
 	}
 
@@ -724,7 +744,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.pdxPersistent = pdxPersistent;
 	}
 
-	protected Boolean pdxPersistent() {
+	protected Boolean getPdxPersistent() {
 		return this.pdxPersistent;
 	}
 
@@ -733,7 +753,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.pdxReadSerialized = pdxReadSerialized;
 	}
 
-	protected Boolean pdxReadSerialized() {
+	protected Boolean getPdxReadSerialized() {
 		return this.pdxReadSerialized;
 	}
 
@@ -742,7 +762,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.pdxSerializer = pdxSerializer;
 	}
 
-	protected PdxSerializer pdxSerializer() {
+	protected PdxSerializer getPdxSerializer() {
 		return this.pdxSerializer;
 	}
 
@@ -760,7 +780,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.transactionListeners = transactionListeners;
 	}
 
-	protected List<TransactionListener> transactionListeners() {
+	protected List<TransactionListener> getTransactionListeners() {
 		return nullSafeList(this.transactionListeners);
 	}
 
@@ -769,7 +789,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		this.transactionWriter = transactionWriter;
 	}
 
-	protected TransactionWriter transactionWriter() {
+	protected TransactionWriter getTransactionWriter() {
 		return this.transactionWriter;
 	}
 

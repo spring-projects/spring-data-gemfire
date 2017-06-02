@@ -41,14 +41,24 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 	protected static final String SECURITY_SHIRO_INIT = "security-shiro-init";
 
 	/**
-	 * @inheritDoc
+	 * Returns the {@link EnableSecurity} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 *
+	 * @return the {@link EnableSecurity} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableSecurity
 	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableSecurity.class;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Determines whether Pivotal GemFire/Apache Geode's Apache Shiro Security Framework support is enabled
+	 * or available.
+	 *
+	 * @return a boolean value indicating whether Pivotal GemFire/Apache Geode's Apache Shiro Security Framework
+	 * support is enabled or available.
+	 * @see #isShiroSecurityNotConfigured()
+	 */
 	protected boolean isShiroSecurityConfigured() {
 		try {
 			// NOTE experimental...
@@ -60,38 +70,51 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 		}
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Determines whether Pivotal GemFire/Apache Geode's Apache Shiro Security Framework support is enabled
+	 * or available.
+	 *
+	 * @return a boolean value indicating whether Pivotal GemFire/Apache Geode's Apache Shiro Security Framework
+	 * support is enabled or available.
+	 * @see #isShiroSecurityConfigured()
+	 */
 	protected boolean isShiroSecurityNotConfigured() {
 		return !isShiroSecurityConfigured();
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		PropertiesBuilder gemfireProperties = new PropertiesBuilder();
+
+		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
 		gemfireProperties.setProperty(SECURITY_CLIENT_AUTH_INIT,
-			annotationAttributes.get("clientAuthenticationInitializer"));
+			resolveProperty(securityProperty("client.authentication-initializer"),
+				(String) annotationAttributes.get("clientAuthenticationInitializer")));
 
 		if (isShiroSecurityNotConfigured()) {
 			gemfireProperties.setPropertyIfNotDefault(SECURITY_MANAGER,
 				annotationAttributes.get("securityManagerClass"), Void.class);
 
-			gemfireProperties.setProperty(SECURITY_MANAGER, annotationAttributes.get("securityManagerClassName"));
+			gemfireProperties.setProperty(SECURITY_MANAGER,
+				resolveProperty(securityProperty("manager.class-name"),
+					(String) annotationAttributes.get("securityManagerClassName")));
 
-			gemfireProperties.setProperty(SECURITY_SHIRO_INIT, annotationAttributes.get("shiroIniResourcePath"));
+			gemfireProperties.setProperty(SECURITY_SHIRO_INIT,
+				resolveProperty(securityProperty("shiro.ini-resource-path"),
+					(String) annotationAttributes.get("shiroIniResourcePath")));
 		}
 
 		gemfireProperties.setProperty(SECURITY_PEER_AUTH_INIT,
-			annotationAttributes.get("peerAuthenticationInitializer"));
+			resolveProperty(securityProperty("peer.authentication-initializer"),
+				(String) annotationAttributes.get("peerAuthenticationInitializer")));
 
 		gemfireProperties.setPropertyIfNotDefault(SECURITY_POST_PROCESSOR,
 			annotationAttributes.get("securityPostProcessorClass"), Void.class);
 
 		gemfireProperties.setProperty(SECURITY_POST_PROCESSOR,
-			annotationAttributes.get("securityPostProcessorClassName"));
+			resolveProperty(securityProperty("postprocessor.class-name"),
+				(String) annotationAttributes.get("securityPostProcessorClassName")));
 
 		return gemfireProperties.build();
 	}

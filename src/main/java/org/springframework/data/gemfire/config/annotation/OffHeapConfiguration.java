@@ -17,10 +17,14 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import static java.util.Arrays.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -33,6 +37,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.GenericRegionFactoryBean;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
@@ -40,22 +45,27 @@ import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
-import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The OffHeapConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * capable of enabling GemFire cache {@link Region Regions} to use Off-Heap memory for data storage.
+ * The {@link OffHeapConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} capable of
+ * enabling Pivotal GemFire/Apache Geode cache {@link Region Regions} to use Off-Heap memory for data storage.
  *
  * @author John Blum
+ * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @see org.springframework.data.gemfire.config.annotation.EnableOffHeap
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
 public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns the {@link EnableOffHeap} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 *
+	 * @return the {@link EnableOffHeap} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableOffHeap
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableOffHeap.class;
@@ -66,10 +76,11 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 	protected void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
 			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
-			OffHeapBeanFactoryPostProcessor.class);
+		BeanDefinitionBuilder builder =
+			BeanDefinitionBuilder.genericBeanDefinition(OffHeapBeanFactoryPostProcessor.class);
 
-		builder.addConstructorArgValue(annotationAttributes.get("regionNames"));
+		builder.addConstructorArgValue(resolveProperty(cacheProperty("region-names"),
+			String[].class, (String[]) annotationAttributes.get("regionNames")));
 
 		registry.registerBeanDefinition(generateBeanName(OffHeapBeanFactoryPostProcessor.class),
 			builder.getBeanDefinition());
@@ -78,17 +89,19 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
-		gemfireProperties.setProperty("off-heap-memory-size", annotationAttributes.get("memorySize"));
-
-		return gemfireProperties.build();
+		return PropertiesBuilder.create()
+			.setProperty("off-heap-memory-size",
+				resolveProperty(cacheProperty("off-heap-memory-size"),
+					(String) annotationAttributes.get("memorySize")))
+			.build();
 	}
 
+	/* (non-Javadoc) */
 	@SuppressWarnings("unused")
 	protected static class OffHeapBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
-		protected static final Set<String> REGION_FACTORY_BEAN_TYPES = new HashSet<String>(5);
+		protected static final Set<String> REGION_FACTORY_BEAN_TYPES = new HashSet<>(5);
 
 		static {
 			REGION_FACTORY_BEAN_TYPES.add(ClientRegionFactoryBean.class.getName());
@@ -101,7 +114,7 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 		private final Set<String> regionNames;
 
 		protected OffHeapBeanFactoryPostProcessor(String[] regionNames) {
-			this(CollectionUtils.asSet(ArrayUtils.nullSafeArray(regionNames, String.class)));
+			this(CollectionUtils.asSet(nullSafeArray(regionNames, String.class)));
 		}
 
 		protected OffHeapBeanFactoryPostProcessor(Set<String> regionNames) {
@@ -110,13 +123,14 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 
 		@Override
 		public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-			for (String beanName : beanFactory.getBeanDefinitionNames()) {
-				BeanDefinition bean = beanFactory.getBeanDefinition(beanName);
 
-				if (isTargetedRegionBean(beanName, bean, beanFactory)) {
-					bean.getPropertyValues().addPropertyValue("offHeap", true);
-				}
-			}
+			stream(nullSafeArray(beanFactory.getBeanDefinitionNames(), String.class)).forEach(beanName -> {
+
+				Optional.ofNullable(beanFactory.getBeanDefinition(beanName))
+					.filter(bean -> isTargetedRegionBean(beanName, bean, beanFactory))
+					.ifPresent(bean ->
+						bean.getPropertyValues().addPropertyValue("offHeap", true));
+			});
 		}
 
 		boolean isTargetedRegionBean(String beanName, BeanDefinition bean,
@@ -135,14 +149,17 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 		}
 
 		Collection<String> getBeanNames(String beanName, BeanDefinition bean, BeanFactory beanFactory) {
-			Collection<String> beanNames = new HashSet<String>();
+
+			Collection<String> beanNames = new HashSet<>();
 
 			beanNames.add(beanName);
+
 			Collections.addAll(beanNames, beanFactory.getAliases(beanName));
 
 			PropertyValue regionName = bean.getPropertyValues().getPropertyValue("regionName");
 
 			if (regionName != null) {
+
 				Object regionNameValue = regionName.getValue();
 
 				if (regionNameValue != null) {

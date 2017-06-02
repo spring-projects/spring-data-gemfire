@@ -24,13 +24,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableLogging annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to configure and enable GemFire/Geode system logging.
+ * The {@link EnableLogging} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to configure and enable Pivotal GemFire/Apache Geode system logging.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.LoggingConfiguration
  * @since 1.9.0
  */
@@ -47,6 +50,9 @@ public @interface EnableLogging {
 	 * are deleted, oldest first, until the total size is within the limit. If set to zero, disk space use is unlimited.
 	 *
 	 * Defaults to {@literal 0} MB.
+	 *
+	 * Use the {@literal spring.data.gemfire.logging.log-disk-space-limit} property
+	 * in {@literal application.properties}.
 	 */
 	int logDiskSpaceLimit() default LoggingConfiguration.DEFAULT_LOG_DISK_SPACE_LIMIT;
 
@@ -54,6 +60,8 @@ public @interface EnableLogging {
 	 * File to which a running system member writes log messages.  Logs to standard out by default.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.logging.log-file} property in {@literal application.properties}.
 	 */
 	String logFile() default "";
 
@@ -62,6 +70,8 @@ public @interface EnableLogging {
 	 * If set to 0, log rolling is disabled.
 	 *
 	 * Defaults to {@literal 0} MB.
+	 *
+	 * Use the {@literal spring.data.gemfire.logging.log-file-size-limit} property in {@literal application.properties}.
 	 */
 	int logFileSizeLimit() default LoggingConfiguration.DEFAULT_LOG_FILE_SIZE_LIMIT;
 
@@ -73,6 +83,8 @@ public @interface EnableLogging {
 	 * {@literal error}, {@literal severe}, and {@literal none}.
 	 *
 	 * Defaults to {@literal config}.
+	 *
+	 * Use the {@literal spring.data.gemfire.logging.level} property in {@literal application.properties}.
 	 */
 	String logLevel() default "config";
 

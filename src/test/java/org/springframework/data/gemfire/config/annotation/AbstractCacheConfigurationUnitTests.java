@@ -76,20 +76,24 @@ public class AbstractCacheConfigurationUnitTests {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T> T invokeMethod(Object obj, String methodName) throws Exception {
+	private <T> T invokeMethod(Object obj, String methodName) throws Exception {
+
 		MethodInvoker methodInvoker = new MethodInvoker();
+
 		methodInvoker.setTargetObject(obj);
 		methodInvoker.setTargetMethod(methodName);
 		methodInvoker.prepare();
+
 		return (T) methodInvoker.invoke();
 	}
 
 	@Test
 	public void configurePdxWhenEnablePdxIsConfigured() {
+
 		AnnotationMetadata mockAnnotationMetadata = mock(AnnotationMetadata.class);
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
 
-		Map<String, Object> annotationAttributes = new HashMap<String, Object>(5);
+		Map<String, Object> annotationAttributes = new HashMap<>(5);
 
 		annotationAttributes.put("diskStoreName", "BlockDiskStore");
 		annotationAttributes.put("ignoreUnreadFields", Boolean.FALSE);
@@ -98,19 +102,18 @@ public class AbstractCacheConfigurationUnitTests {
 		annotationAttributes.put("serializerBeanName", "MockPdxSerializer");
 
 		when(mockAnnotationMetadata.hasAnnotation(eq(EnablePdx.class.getName()))).thenReturn(true);
-		when(mockAnnotationMetadata.getAnnotationAttributes(eq(EnablePdx.class.getName())))
-			.thenReturn(annotationAttributes);
+		when(mockAnnotationMetadata.getAnnotationAttributes(eq(EnablePdx.class.getName()))).thenReturn(annotationAttributes);
 		when(mockBeanFactory.containsBean(eq("MockPdxSerializer"))).thenReturn(true);
 		when(mockBeanFactory.getBean(eq("MockPdxSerializer"), eq(PdxSerializer.class))).thenReturn(mockPdxSerializer);
 
 		cacheConfiguration.setBeanFactory(mockBeanFactory);
 		cacheConfiguration.configurePdx(mockAnnotationMetadata);
 
-		assertThat(cacheConfiguration.pdxDiskStoreName()).isEqualTo("BlockDiskStore");
-		assertThat(cacheConfiguration.pdxIgnoreUnreadFields()).isFalse();
-		assertThat(cacheConfiguration.pdxPersistent()).isTrue();
-		assertThat(cacheConfiguration.pdxReadSerialized()).isTrue();
-		assertThat(cacheConfiguration.pdxSerializer()).isEqualTo(mockPdxSerializer);
+		assertThat(cacheConfiguration.getPdxDiskStoreName()).isEqualTo("BlockDiskStore");
+		assertThat(cacheConfiguration.getPdxIgnoreUnreadFields()).isFalse();
+		assertThat(cacheConfiguration.getPdxPersistent()).isTrue();
+		assertThat(cacheConfiguration.getPdxReadSerialized()).isTrue();
+		assertThat(cacheConfiguration.getPdxSerializer()).isEqualTo(mockPdxSerializer);
 
 		verify(mockAnnotationMetadata, times(1)).hasAnnotation(eq(EnablePdx.class.getName()));
 		verify(mockAnnotationMetadata, times(1)).getAnnotationAttributes(eq(EnablePdx.class.getName()));
@@ -120,17 +123,18 @@ public class AbstractCacheConfigurationUnitTests {
 
 	@Test
 	public void configurePdxWhenEnablePdxIsNotConfigured() {
+
 		AnnotationMetadata mockAnnotationMetadata = mock(AnnotationMetadata.class);
 
 		when(mockAnnotationMetadata.hasAnnotation(anyString())).thenReturn(false);
 
 		cacheConfiguration.configurePdx(mockAnnotationMetadata);
 
-		assertThat(cacheConfiguration.pdxDiskStoreName()).isNull();
-		assertThat(cacheConfiguration.pdxIgnoreUnreadFields()).isNull();
-		assertThat(cacheConfiguration.pdxPersistent()).isNull();
-		assertThat(cacheConfiguration.pdxReadSerialized()).isNull();
-		assertThat(cacheConfiguration.pdxSerializer()).isNull();
+		assertThat(cacheConfiguration.getPdxDiskStoreName()).isNull();
+		assertThat(cacheConfiguration.getPdxIgnoreUnreadFields()).isNull();
+		assertThat(cacheConfiguration.getPdxPersistent()).isNull();
+		assertThat(cacheConfiguration.getPdxReadSerialized()).isNull();
+		assertThat(cacheConfiguration.getPdxSerializer()).isNull();
 
 		verify(mockAnnotationMetadata, times(1)).hasAnnotation(eq(EnablePdx.class.getName()));
 		verifyNoMoreInteractions(mockAnnotationMetadata);
@@ -138,6 +142,7 @@ public class AbstractCacheConfigurationUnitTests {
 
 	@Test
 	public void resolvePdxSerializerUsesPdxSerializerBean() {
+
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
 
 		when(mockBeanFactory.containsBean(anyString())).thenReturn(true);
@@ -155,6 +160,7 @@ public class AbstractCacheConfigurationUnitTests {
 
 	@Test
 	public void resolvePdxSerializerUsesConfiguredPdxSerializer() {
+
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
 
 		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
@@ -173,6 +179,7 @@ public class AbstractCacheConfigurationUnitTests {
 
 	@Test
 	public void resolvePdxSerializerCallsNewMappingPdxSerializer() {
+
 		AbstractCacheConfiguration cacheConfigurationSpy = spy(this.cacheConfiguration);
 		MappingPdxSerializer mockPdxSerializer = mock(MappingPdxSerializer.class);
 
@@ -192,6 +199,7 @@ public class AbstractCacheConfigurationUnitTests {
 
 	@Test
 	public void newPdxSerializerUsesConfiguredConversionServiceAndMappingContext() throws Exception {
+
 		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 		ConversionService mockConversionService = mock(ConversionService.class);
 		GemfireMappingContext mockMappingContext = mock(GemfireMappingContext.class);
@@ -207,13 +215,14 @@ public class AbstractCacheConfigurationUnitTests {
 		assertThat((Object) invokeMethod(pdxSerializer, "getConversionService")).isEqualTo(mockConversionService);
 		assertThat((Object) invokeMethod(pdxSerializer, "getMappingContext")).isEqualTo(mockMappingContext);
 
-		verify(mockBeanFactory, times(1)).getConversionService();
+		verify(mockBeanFactory, times(2)).getConversionService();
 		verifyZeroInteractions(mockConversionService);
 		verifyZeroInteractions(mockMappingContext);
 	}
 
 	@Test
 	public void newPdxSerializerDefaultsConversionServiceAndMappingContextWhenNotConfigured() throws Exception {
+
 		cacheConfiguration.setBeanFactory(mockBeanFactory);
 
 		MappingPdxSerializer pdxSerializer = cacheConfiguration.newPdxSerializer();

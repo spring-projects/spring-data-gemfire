@@ -44,35 +44,43 @@ public class McastConfiguration extends EmbeddedServiceConfigurationSupport {
 	public static final String DEFAULT_MCAST_FLOW_CONTROL = "1048576,0.25,5000";
 
 	/**
-	 * {@inheritDoc}
+	 * Returns the {@link EnableMcast} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 *
+	 * @return the {@link EnableMcast} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableMcast
 	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableMcast.class;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
+
 		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
 		gemfireProperties.unsetProperty("locators");
 
 		gemfireProperties.setPropertyIfNotDefault("mcast-address",
-			annotationAttributes.get("address"), DEFAULT_MCAST_ADDRESS);
+			resolveProperty(propertyName("mcast.address"),
+				(String) annotationAttributes.get("address")), DEFAULT_MCAST_ADDRESS);
 
 		gemfireProperties.setPropertyIfNotDefault("mcast-flow-control",
-			annotationAttributes.get("flowControl"), DEFAULT_MCAST_FLOW_CONTROL);
+			resolveProperty(propertyName("mcast.flow-control"),
+				(String) annotationAttributes.get("flowControl")), DEFAULT_MCAST_FLOW_CONTROL);
 
-		gemfireProperties.setPropertyIfNotDefault("mcast-port", annotationAttributes.get("port"), DEFAULT_MCAST_PORT);
+		gemfireProperties.setPropertyIfNotDefault("mcast-port",
+			resolveProperty(propertyName("mcast.port"),
+				(Integer) annotationAttributes.get("port")), DEFAULT_MCAST_PORT);
 
 		gemfireProperties.setPropertyIfNotDefault("mcast-recv-buffer-size",
-			annotationAttributes.get("receiveBufferSize"), DEFAULT_MCAST_RECEIVE_BUFFER_SIZE);
+			resolveProperty(propertyName("mcast.receive-buffer-size"),
+				(Integer) annotationAttributes.get("receiveBufferSize")), DEFAULT_MCAST_RECEIVE_BUFFER_SIZE);
 
 		gemfireProperties.setPropertyIfNotDefault("mcast-send-buffer-size",
-			annotationAttributes.get("sendBufferSize"), DEFAULT_MCAST_SEND_BUFFER_SIZE);
+			resolveProperty(propertyName("mcast.send-buffer-size"),
+				(Integer) annotationAttributes.get("sendBufferSize")), DEFAULT_MCAST_SEND_BUFFER_SIZE);
 
 		return gemfireProperties.build();
 	}

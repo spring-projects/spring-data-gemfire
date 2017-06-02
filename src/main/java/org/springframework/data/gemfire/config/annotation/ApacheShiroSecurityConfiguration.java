@@ -17,11 +17,15 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.security.SecurityService;
@@ -31,7 +35,6 @@ import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
@@ -41,9 +44,12 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -57,41 +63,60 @@ import org.springframework.util.ReflectionUtils;
  * @see org.apache.shiro.mgt.DefaultSecurityManager
  * @see org.apache.shiro.realm.Realm
  * @see org.apache.shiro.spring.LifecycleBeanPostProcessor
- * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.ListableBeanFactory
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Condition
  * @see org.springframework.context.annotation.Conditional
  * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.core.type.AnnotationMetadata
  * @see org.springframework.data.gemfire.config.annotation.ApacheShiroSecurityConfiguration.ApacheShiroPresentCondition
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
  * @since 1.9.0
  */
 @Configuration
 @Conditional(ApacheShiroSecurityConfiguration.ApacheShiroPresentCondition.class)
 @SuppressWarnings("unused")
-public class ApacheShiroSecurityConfiguration implements BeanFactoryAware {
-
-	private ListableBeanFactory beanFactory;
+public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSupport {
 
 	/**
-	 * @inheritDoc
+	 * Returns the {@link EnableSecurity} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 *
+	 * @return the {@link EnableSecurity} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableSecurity
+	 */
+	@Override
+	protected Class getAnnotationType() {
+		return EnableSecurity.class;
+	}
+
+	/**
+	 * Sets a reference to the Spring {@link BeanFactory}.
+	 *
+	 * @param beanFactory reference to the Spring {@link BeanFactory}.
+	 * @throws IllegalArgumentException if the Spring {@link BeanFactory} is not
+	 * an instance of {@link ListableBeanFactory}.
+	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
-		this.beanFactory = (ListableBeanFactory) beanFactory;
+
+		super.setBeanFactory(Optional.ofNullable(beanFactory)
+			.filter(it -> it instanceof ListableBeanFactory)
+			.orElseThrow(() -> newIllegalArgumentException(
+				"BeanFactory [%s] must be an instance of ListableBeanFactory",
+					ObjectUtils.nullSafeClassName(beanFactory))));
 	}
 
 	/**
 	 * Returns a reference to the Spring {@link BeanFactory}.
 	 *
 	 * @return a reference to the Spring {@link BeanFactory}.
-	 * @throws IllegalStateException if the Spring {@link BeanFactory} was not properly initialized.
+	 * @throws IllegalStateException if the Spring {@link BeanFactory} was not set.
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
-	protected ListableBeanFactory getBeanFactory() {
-		Assert.state(this.beanFactory != null, "BeanFactory was not properly initialized");
-		return this.beanFactory;
+	protected ListableBeanFactory getListableBeanFactory() {
+		return (ListableBeanFactory) beanFactory();
 	}
 
 	/**
@@ -138,15 +163,18 @@ public class ApacheShiroSecurityConfiguration implements BeanFactoryAware {
 	 */
 	@Bean
 	public org.apache.shiro.mgt.SecurityManager shiroSecurityManager(GemFireCache gemfireCache) {
+
 		org.apache.shiro.mgt.SecurityManager shiroSecurityManager = null;
 
 		List<Realm> realms = resolveRealms();
 
 		if (!realms.isEmpty()) {
+
 			shiroSecurityManager = registerSecurityManager(new DefaultSecurityManager(realms));
 
 			if (!enableApacheGeodeSecurity()) {
-				throw new IllegalStateException("Failed to enable security services in Apache Geode");
+				throw newIllegalStateException("Failed to enable security services in %s",
+					GemfireUtils.apacheGeodeProductName());
 			}
 		}
 
@@ -167,8 +195,10 @@ public class ApacheShiroSecurityConfiguration implements BeanFactoryAware {
 	 * @see org.apache.shiro.realm.Realm
 	 */
 	protected List<Realm> resolveRealms() {
+
 		try {
-			Map<String, Realm> realmBeans = getBeanFactory().getBeansOfType(Realm.class, false, true);
+			Map<String, Realm> realmBeans = getListableBeanFactory()
+				.getBeansOfType(Realm.class, false, true);
 			List<Realm> realms = new ArrayList<>(CollectionUtils.nullSafeMap(realmBeans).values());
 			Collections.sort(realms, OrderComparator.INSTANCE);
 			return realms;
@@ -207,18 +237,21 @@ public class ApacheShiroSecurityConfiguration implements BeanFactoryAware {
 	 * @see org.apache.geode.internal.security.SecurityService#getSecurityService()
 	 */
 	protected boolean enableApacheGeodeSecurity() {
+
 		SecurityService securityService = SecurityService.getSecurityService();
 
 		if (securityService != null) {
+
 			String isIntegratedSecurityFieldName = "isIntegratedSecurity";
 
 			Field isIntegratedSecurity = ReflectionUtils.findField(securityService.getClass(),
 				isIntegratedSecurityFieldName, Boolean.class);
 
-			isIntegratedSecurity = (isIntegratedSecurity != null ? isIntegratedSecurity
-				: ReflectionUtils.findField(securityService.getClass(), isIntegratedSecurityFieldName, Boolean.TYPE));
+			isIntegratedSecurity = Optional.ofNullable(isIntegratedSecurity).orElseGet(() ->
+				ReflectionUtils.findField(securityService.getClass(), isIntegratedSecurityFieldName, Boolean.TYPE));
 
 			if (isIntegratedSecurity != null) {
+
 				ReflectionUtils.makeAccessible(isIntegratedSecurity);
 				ReflectionUtils.setField(isIntegratedSecurity, securityService, Boolean.TRUE);
 

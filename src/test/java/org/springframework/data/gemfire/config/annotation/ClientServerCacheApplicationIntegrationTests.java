@@ -67,6 +67,7 @@ public class ClientServerCacheApplicationIntegrationTests extends ClientServerIn
 
 	@BeforeClass
 	public static void setupGemFireServer() throws Exception {
+
 		gemfireServerProcess = run(CacheServerApplicationConfiguration.class, String.format("-Dgemfire.name=%1$s",
 			asApplicationName(ClientServerCacheApplicationIntegrationTests.class)));
 
@@ -99,6 +100,7 @@ public class ClientServerCacheApplicationIntegrationTests extends ClientServerIn
 
 		@Bean("Echo")
 		public PartitionedRegionFactoryBean<String, String> echoRegion(Cache gemfireCache) {
+
 			PartitionedRegionFactoryBean<String, String> echoRegion =
 				new PartitionedRegionFactoryBean<String, String>();
 
@@ -111,6 +113,7 @@ public class ClientServerCacheApplicationIntegrationTests extends ClientServerIn
 		}
 
 		CacheLoader<String, String> echoCacheLoader() {
+
 			return new CacheLoader<String, String>() {
 				@Override
 				public String load(LoaderHelper<String, String> helper) throws CacheLoaderException {
@@ -129,6 +132,7 @@ public class ClientServerCacheApplicationIntegrationTests extends ClientServerIn
 
 		@Bean(name = "Echo")
 		ClientRegionFactoryBean<String, String> echoRegion(ClientCache gemfireCache) {
+
 			ClientRegionFactoryBean<String, String> echoRegion = new ClientRegionFactoryBean<String, String>();
 
 			echoRegion.setCache(gemfireCache);

@@ -27,13 +27,15 @@ import java.lang.annotation.Target;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.Authenticator;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableAuth annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to configure and enable GemFire/Geode's Authentication and Authorization framework services.
+ * The {@link EnableAuth} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to configure and enable Pivotal GemFire/Apache Geode's Authentication and Authorization framework and services.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
  * @see org.apache.geode.security.AccessControl
  * @see org.apache.geode.security.AuthInitialize
  * @see org.apache.geode.security.Authenticator
@@ -57,6 +59,8 @@ public @interface EnableAuth {
 	 * in the pre-operation phase, which is when the request for the operation is received from the client.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.client.accessor} property in {@literal application.properties}.
 	 */
 	String clientAccessor() default "";
 
@@ -67,8 +71,11 @@ public @interface EnableAuth {
 	 * through the notification channel.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.client.accessor-post-processor} property
+	 * in {@literal application.properties}.
 	 */
-	String clientAccessPostOperation() default "";
+	String clientAccessorPostProcessor() default "";
 
 	/**
 	 * Used for authentication. Static creation method returning an {@link AuthInitialize} object,
@@ -77,6 +84,9 @@ public @interface EnableAuth {
 	 * on the clients.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.client.authentication-initializer} property
+	 * in {@literal application.properties}.
 	 */
 	String clientAuthenticationInitializer() default "";
 
@@ -85,6 +95,9 @@ public @interface EnableAuth {
 	 * which is used by a server to verify the credentials of the connecting client.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.client.authenticator} property
+	 * in {@literal application.properties}.
 	 */
 	String clientAuthenticator() default "";
 
@@ -95,6 +108,9 @@ public @interface EnableAuth {
 	 * supported by the JDK.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.client.diffie-hellman-algorithm} property
+	 * in {@literal application.properties}.
 	 */
 	String clientDiffieHellmanAlgorithm() default "";
 
@@ -104,6 +120,9 @@ public @interface EnableAuth {
 	 * {@link Authenticator} specified through the {@literal security-peer-authenticator} property on the peers.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.peer.authentication-initializer} property
+	 * in {@literal application.properties}.
 	 */
 	String peerAuthenticationInitializer() default "";
 
@@ -112,6 +131,8 @@ public @interface EnableAuth {
 	 * by a peer to verify the credentials of the connecting peer.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.peer.authenticator} property in {@literal application.properties}.
 	 */
 	String peerAuthenticator() default "";
 
@@ -120,6 +141,9 @@ public @interface EnableAuth {
 	 * authenticated peer requesting a secure connection.
 	 *
 	 * Defaults to {@literal 1000} milliseconds.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.peer.verify-member-timeout} property
+	 * in {@literal application.properties}.
 	 */
 	long peerVerifyMemberTimeout() default AuthConfiguration.DEFAULT_PEER_VERIFY_MEMBER_TIMEOUT;
 
@@ -128,6 +152,8 @@ public @interface EnableAuth {
 	 * regular log file is used.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.log.file} property in {@literal application.properties}.
 	 */
 	String securityLogFile() default "";
 
@@ -138,6 +164,8 @@ public @interface EnableAuth {
 	 * {@literal error}, {@literal severe}, and {@literal none}.
 	 *
 	 * Defaults to {@literal config}.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.log.level} property in {@literal application.properties}.
 	 */
 	String securityLogLevel() default AuthConfiguration.DEFAULT_SECURITY_LOG_LEVEL;
 
@@ -152,6 +180,8 @@ public @interface EnableAuth {
 	 * or write access for your {@literal gemfire.properties} file.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.properties-file} property in {@literal application.properties}.
 	 */
 	String securityPropertiesFile() default "";
 

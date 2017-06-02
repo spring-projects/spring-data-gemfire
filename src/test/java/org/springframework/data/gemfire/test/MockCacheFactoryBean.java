@@ -24,10 +24,6 @@ import org.springframework.data.gemfire.CacheFactoryBean;
  */
 public class MockCacheFactoryBean extends CacheFactoryBean {
 
-	public MockCacheFactoryBean() {
-		this(null);
-	}
-
 	public MockCacheFactoryBean(CacheFactoryBean cacheFactoryBean) {
 
 		setUseBeanFactoryLocator(false);

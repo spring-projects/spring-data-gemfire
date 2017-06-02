@@ -40,14 +40,15 @@ import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
  * and therefore will be configured, constructed and initialized as a Spring bean in the application context.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.control.ResourceManager
+ * @see org.apache.geode.cache.server.CacheServer
+ * @see org.apache.geode.cache.server.ClientSubscriptionConfig
+ * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.CacheServerConfiguration
  * @see org.springframework.data.gemfire.config.annotation.EnableCacheServers
  * @see org.springframework.data.gemfire.config.annotation.EnableCacheServer
- * @see org.apache.geode.cache.control.ResourceManager
- * @see org.apache.geode.cache.server.CacheServer
- * @see org.apache.geode.cache.server.ClientSubscriptionConfig
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -62,28 +63,36 @@ public @interface CacheServerApplication {
 	/**
 	 * Configures whether the {@link CacheServer} should start automatically at runtime.
 	 *
-	 * Default is {@literal true).
+	 * Defaults to {@literal true).
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.auto-startup} property in {@literal application.properties}.
 	 */
 	boolean autoStartup() default true;
 
 	/**
 	 * Configures the ip address or host name that this cache server will listen on.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_BIND_ADDRESS
+	 * Defaults to {@link CacheServer#DEFAULT_BIND_ADDRESS}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.bind-address} property in {@literal application.properties}.
 	 */
 	String bindAddress() default CacheServer.DEFAULT_BIND_ADDRESS;
 
 	/**
 	 * Indicates whether the "copy on read" is enabled for this cache.
 	 *
-	 * Default is {@literal false}.
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.copy-on-read} property in {@literal application.properties}.
 	 */
 	boolean copyOnRead() default false;
 
 	/**
 	 * Configures the percentage of heap at or above which the cache is considered in danger of becoming inoperable.
 	 *
-	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_CRITICAL_PERCENTAGE
+	 * Defaults to {@link ResourceManager#DEFAULT_CRITICAL_PERCENTAGE}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.critical-heap-percentage} property in {@literal application.properties}.
 	 */
 	float criticalHeapPercentage() default ResourceManager.DEFAULT_CRITICAL_PERCENTAGE;
 
@@ -92,7 +101,10 @@ public @interface CacheServerApplication {
 	 * after it has been forced out of the distributed system by a network partition event or has otherwise been
 	 * shunned by other members. Use this property to enable the auto-reconnect behavior.
 	 *
-	 * Default is {@literal false}.
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.enable-auto-reconnect} property
+	 * in {@literal application.properties}.
 	 */
 	boolean enableAutoReconnect() default false;
 
@@ -100,7 +112,9 @@ public @interface CacheServerApplication {
 	 * Configures the percentage of heap at or above which the eviction should begin on Regions configured
 	 * for HeapLRU eviction.
 	 *
-	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_EVICTION_PERCENTAGE
+	 * Defaults to {@link ResourceManager#DEFAULT_EVICTION_PERCENTAGE}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.eviction-heap-percentage} property in {@literal application.properties}.
 	 */
 	float evictionHeapPercentage() default ResourceManager.DEFAULT_EVICTION_PERCENTAGE;
 
@@ -108,69 +122,90 @@ public @interface CacheServerApplication {
 	 * Configures the ip address or host name that server locators will tell clients that this cache server
 	 * is listening on.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_HOSTNAME_FOR_CLIENTS
+	 * Defaults to {@link CacheServer#DEFAULT_HOSTNAME_FOR_CLIENTS}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.hostname-for-clients} property
+	 * in {@literal application.properties}.
 	 */
 	String hostnameForClients() default CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
 
 	/**
 	 * Configures the frequency in milliseconds to poll the load probe on this cache server.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_LOAD_POLL_INTERVAL
+	 * Defaults to {@link CacheServer#DEFAULT_LOAD_POLL_INTERVAL}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.load-poll-interval} property in {@literal application.properties}.
 	 */
 	long loadPollInterval() default CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
 
 	/**
-	 * Configures the list of GemFire Locators defining the cluster to which this GemFire cache data node
-	 * should connect.
+	 * Configures the list of Locators defining the cluster to which this Spring cache application will connect.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.copy-on-read} property in {@literal application.properties}.
 	 */
 	String locators() default "";
 
 	/**
 	 * Configures the length, in seconds, of distributed lock leases obtained by this cache.
 	 *
-	 * Default is {@literal 120} seconds.
+	 * Defaults to {@literal 120} seconds.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.lock-lease} property in {@literal application.properties}.
 	 */
 	int lockLease() default 120;
 
 	/**
 	 * Configures the number of seconds a cache operation will wait to obtain a distributed lock lease.
 	 *
-	 * Default is {@literal 60} seconds
+	 * Defaults to {@literal 60} seconds.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.lock-timeout} property in {@literal application.properties}.
 	 */
 	int lockTimeout() default 60;
 
 	/**
 	 * Configures the log level used to output log messages at GemFire cache runtime.
 	 *
-	 * Default is {@literal config}.
+	 * Defaults to {@literal config}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.log-level} property in {@literal application.properties}.
 	 */
 	String logLevel() default CacheServerConfiguration.DEFAULT_LOG_LEVEL;
 
 	/**
 	 * Configures the maximum allowed client connections.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MAX_CONNECTIONS
+	 * Defaults to {@link CacheServer#DEFAULT_MAX_CONNECTIONS}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.max-connections} property in {@literal application.properties}.
 	 */
 	int maxConnections() default CacheServer.DEFAULT_MAX_CONNECTIONS;
 
 	/**
 	 * Configures he maximum number of messages that can be enqueued in a client-queue.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MAXIMUM_MESSAGE_COUNT
+	 * Defaults to {@link CacheServer#DEFAULT_MAXIMUM_MESSAGE_COUNT}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.max-message-count} property in {@literal application.properties}.
 	 */
 	int maxMessageCount() default CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
 
 	/**
 	 * Configures the maximum number of threads allowed in this cache server to service client requests.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MAX_THREADS
+	 * Defaults to {@link CacheServer#DEFAULT_MAX_THREADS}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.max-threads} property in {@literal application.properties}.
 	 */
 	int maxThreads() default CacheServer.DEFAULT_MAX_THREADS;
 
 	/**
 	 * Configures the maximum amount of time between client pings.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS
+	 * Defaults to {@link CacheServer#DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.max-time-between-pings} property
+	 * in {@literal application.properties}.
 	 */
 	int maxTimeBetweenPings() default CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
 
@@ -178,54 +213,74 @@ public @interface CacheServerApplication {
 	 * Configures the frequency (in seconds) at which a message will be sent by the primary cache-server to all
 	 * the secondary cache-server nodes to remove the events which have already been dispatched from the queue.
 	 *
-	 * Default is {@literal 1} second.
+	 * Defaults to {@literal 1} second.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.message-sync-interval} property
+	 * in {@literal application.properties}.
 	 */
 	int messageSyncInterval() default 1;
 
 	/**
 	 * Configures the time (in seconds ) after which a message in the client queue will expire.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_MESSAGE_TIME_TO_LIVE
+	 * Defaults to {@link CacheServer#DEFAULT_MESSAGE_TIME_TO_LIVE}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.message-time-to-live} property
+	 * in {@literal application.properties}.
 	 */
 	int messageTimeToLive() default CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
 
 	/**
 	 * Configures the name of this GemFire member in the cluster (distributed system).
 	 *
-	 * Default is {@literal SpringBasedCacheClientApplication}.
+	 * Defaults to {@literal SpringBasedCacheServerApplication}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.name} property in {@literal application.properties}.
 	 */
 	String name() default CacheServerConfiguration.DEFAULT_NAME;
 
 	/**
 	 * Configures the port on which this cache server listens for clients.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_PORT
+	 * Defaults to {@link CacheServer#DEFAULT_PORT}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.port} property in {@literal application.properties}.
 	 */
 	int port() default CacheServer.DEFAULT_PORT;
 
 	/**
 	 * Configures the number of seconds a cache get operation can spend searching for a value before it times out.
 	 *
-	 * Default is {@literal 300} seconds.
+	 * Defaults to {@literal 300} seconds, or 5 minutes.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.search-timeout} property in {@literal application.properties}.
 	 */
 	int searchTimeout() default 300;
 
 	/**
 	 * Configures the configured buffer size of the socket connection for this CacheServer.
 	 *
-	 * @see org.apache.geode.cache.server.CacheServer#DEFAULT_SOCKET_BUFFER_SIZE
+	 * Defaults to {@link CacheServer#DEFAULT_SOCKET_BUFFER_SIZE}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.socket-buffer-size} property in {@literal application.properties}.
 	 */
 	int socketBufferSize() default CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
 
 	/**
 	 * Configures the capacity of the client queue.
 	 *
-	 * @see org.apache.geode.cache.server.ClientSubscriptionConfig#DEFAULT_CAPACITY
+	 * Defaults to {@link ClientSubscriptionConfig#DEFAULT_CAPACITY}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.subscription-capacity} property
+	 * in {@literal application.properties}.
 	 */
 	int subscriptionCapacity() default ClientSubscriptionConfig.DEFAULT_CAPACITY;
 
 	/**
 	 * Configures the disk store name for overflow.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.subscription-disk-store-name} property
+	 * in {@literal application.properties}.
 	 */
 	String subscriptionDiskStoreName() default "";
 
@@ -233,6 +288,9 @@ public @interface CacheServerApplication {
 	 * Configures the eviction policy that is executed when capacity of the client queue is reached.
 	 *
 	 * Defaults to {@link SubscriptionEvictionPolicy#NONE}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.server.subscription-eviction-policy} property
+	 * in {@literal application.properties}.
 	 */
 	SubscriptionEvictionPolicy subscriptionEvictionPolicy() default SubscriptionEvictionPolicy.NONE;
 
@@ -242,6 +300,8 @@ public @interface CacheServerApplication {
 	 * created in a non-Spring managed, GemFire context.
 	 *
 	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.data.gemfire.use-bean-factory-locator} property in {@literal application.properties}.
 	 */
 	boolean useBeanFactoryLocator() default false;
 
@@ -249,8 +309,22 @@ public @interface CacheServerApplication {
 	 * Configures whether this GemFire cache member node would pull it's configuration meta-data
 	 * from the cluster-based Cluster Configuration service.
 	 *
-	 * Default is {@literal false}.
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.use-cluster-configuration} property
+	 * in {@literal application.properties}.
 	 */
 	boolean useClusterConfiguration() default false;
+
+	/**
+	 * Configures the tcpNoDelay setting of sockets used to send messages to clients.
+	 *
+	 * TcpNoDelay is enabled by default.
+	 *
+	 * Use either the {@literal spring.data.gemfire.cache.server.<beanName>.tcp-no-delay} property
+	 * or the {@literal spring.data.gemfire.cache.server.tcp-no-delay} property
+	 * in {@literal application.properties}.
+	 */
+	boolean tcpNoDelay() default CacheServer.DEFAULT_TCP_NO_DELAY;
 
 }

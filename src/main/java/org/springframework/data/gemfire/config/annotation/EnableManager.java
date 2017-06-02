@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -24,15 +25,22 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableManager annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to configure, embed and start a GemFire/Geode Manager service in the GemFire/Geode Server.
+ * The {@link EnableManager} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to configure, embed and start a Pivotal GemFire/Apache Geode Manager service in this cluster member.
  *
- * Automatically sets {@literal jmx-manager} to {@literal true}.
+ * Automatically sets {@literal jmx-manager} to {@literal true} just by specifying this {@link Annotation}
+ * on your Spring application {@link Configuration @Configuration} annotated {@link Class}.
+ *
+ * However, the embedded Pivotal GemFire/Apache Geode Manager can be enabled/disabled externally
+ * in {@literal application.properties} by using the {@literal spring.data.gemfire.manager.enabled} property
+ * even when this {@link Annotation} is present, thereby serving as a toggle.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.ManagerConfiguration
  * @since 1.9.0
@@ -54,6 +62,8 @@ public @interface EnableManager {
 	 * is false or if {@literal jmx-manager-port} is zero.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.manager.access-file} property in {@literal application.properties}.
 	 */
 	String accessFile() default "";
 
@@ -63,6 +73,8 @@ public @interface EnableManager {
 	 * non-HTTP connections. Ignored if JMX Manager is {@literal false} or {@literal jmx-manager-port} is zero.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.manager.bind-address} property in {@literal application.properties}.
 	 */
 	String bindAddress() default "";
 
@@ -73,6 +85,9 @@ public @interface EnableManager {
 	 * {@literal jmx-manager} is {@literal false} or {@literal jmx-manager-port} is zero.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.manager.hostname-for-clients} property
+	 * in {@literal application.properties}.
 	 */
 	String hostnameForClients() default "";
 
@@ -84,6 +99,8 @@ public @interface EnableManager {
 	 * System property. Ignored if {@literal jmx-manager} is {@literal false} or {@literal jmx-manager-port} is zero.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.manager.password-file} property in {@literal application.properties}.
 	 */
 	String passwordFile() default "";
 
@@ -93,6 +110,8 @@ public @interface EnableManager {
 	 * by the JVM for configuring access from remote JMX clients. Ignored if {@literal jmx-manager} is {@literal false}.
 	 *
 	 * Defaults to {@literal 1099}.
+	 *
+	 * Use the {@literal spring.data.gemfire.manager.port} property in {@literal application.properties}.
 	 */
 	int port() default ManagerConfiguration.DEFAULT_JMX_MANAGER_PORT;
 
@@ -103,6 +122,8 @@ public @interface EnableManager {
 	 * to {@literal true}. Ignored if {@literal jmx-manager} is {@literal false}.
 	 *
 	 * Defaults to {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.manager.start} property in {@literal application.properties}.
 	 */
 	boolean start() default false;
 
@@ -112,6 +133,8 @@ public @interface EnableManager {
 	 * cause stale values to be seen by Gfsh and GemFire Pulse.
 	 *
 	 * Defaults to {@literal 2000} milliseconds.
+	 *
+	 * Use the {@literal spring.data.gemfire.manager.update-rate} property in {@literal application.properties}.
 	 */
 	int updateRate() default 2000;
 

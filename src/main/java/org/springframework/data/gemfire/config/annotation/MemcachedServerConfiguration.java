@@ -18,17 +18,20 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The MemcachedServerConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * that applies additional GemFire configuration by way of GemFire System properties to configure
- * an embedded Memcached server.
+ * The {@link MemcachedServerConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that applies
+ * additional configuration using Pivotal GemFire/Apache Geode {@link Properties} to configure
+ * an embedded Memcached server in this cluster member.
  *
  * @author John Blum
+ * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @see org.springframework.data.gemfire.config.annotation.EnableMemcachedServer
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
@@ -37,17 +40,35 @@ public class MemcachedServerConfiguration extends EmbeddedServiceConfigurationSu
 
 	protected static final int DEFAULT_MEMCACHED_SERVER_PORT = 11211;
 
+	/**
+	 * Returns the {@link EnableMemcachedServer} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 *
+	 * @return the {@link EnableMemcachedServer} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableMemcachedServer
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableMemcachedServer.class;
 	}
 
+	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
-		return PropertiesBuilder.create()
-			.setProperty("memcached-port", resolvePort((Integer) annotationAttributes.get("port"),
-				DEFAULT_MEMCACHED_SERVER_PORT))
-			.setProperty("memcached-protocol", annotationAttributes.get("protocol"))
-			.build();
+
+		return Optional.of(resolveProperty(memcachedServiceProperty("enabled"), Boolean.TRUE))
+			.filter(Boolean.TRUE::equals)
+			.map(enabled ->
+
+				PropertiesBuilder.create()
+					.setProperty("memcached-port",
+						resolvePort(resolveProperty(memcachedServiceProperty("port"),
+							(Integer) annotationAttributes.get("port")), DEFAULT_MEMCACHED_SERVER_PORT))
+					.setProperty("memcached-protocol",
+						resolveProperty(memcachedServiceProperty("protocol"),
+							EnableMemcachedServer.MemcachedProtocol.class,
+								(EnableMemcachedServer.MemcachedProtocol) annotationAttributes.get("protocol")))
+					.build()
+
+			).orElseGet(Properties::new);
 	}
 }

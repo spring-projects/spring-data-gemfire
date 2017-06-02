@@ -24,14 +24,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.geode.cache.Region;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableOffHeap annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to configure and enable Apache Geode Off-Heap Memory support and data storage
- * in Geode's cache {@link org.apache.geode.cache.Region Regions}.
+ * The {@link EnableOffHeap} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to configure and enable Pivotal GemFire/Apache Geode Off-Heap Memory support and data storage
+ * in cache {@link org.apache.geode.cache.Region Regions}.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.OffHeapConfiguration
  * @since 1.9.0
  */
@@ -44,7 +48,9 @@ import org.springframework.context.annotation.Import;
 public @interface EnableOffHeap {
 
 	/**
-	 * Specifies the size of off-heap memory in megabytes (m) or gigabytes (g). For example:
+	 * Specifies the size of off-heap memory in megabytes (m) or gigabytes (g).
+	 *
+	 * For example:
 	 *
 	 * <pre>
 	 *     <code>
@@ -54,13 +60,17 @@ public @interface EnableOffHeap {
 	 * </pre>
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.cache.off-heap-memory-size} property in {@literal application.properties}.
 	 */
 	String memorySize();
 
 	/**
-	 * Idenfitied the Regions by name in which the off-heap memory setting will be applied.
+	 * Identifies all the {@link Region Regions} by name in which the off-heap memory setting will be applied.
 	 *
 	 * Defaults to all Regions.
+	 *
+	 * Use the {@literal spring.data.gemfire.cache.region-names} property in {@literal application.properties}.
 	 */
 	String[] regionNames() default {};
 

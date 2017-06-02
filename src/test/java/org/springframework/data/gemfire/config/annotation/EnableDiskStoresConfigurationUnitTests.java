@@ -18,30 +18,19 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyFloat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.DiskStoreFactory;
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
 
 /**
  * Unit tests for the {@link EnableDiskStore} and {@link EnableDiskStores} annotations as well as
@@ -49,7 +38,12 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.mockito.Mockito
+ * @see org.apache.geode.cache.DiskStore
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.data.gemfire.config.annotation.EnableDiskStore
+ * @see org.springframework.data.gemfire.config.annotation.EnableDiskStores
+ * @see org.springframework.data.gemfire.config.annotation.DiskStoreConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.DiskStoresConfiguration
  * @since 1.9.0
  */
 public class EnableDiskStoresConfigurationUnitTests {
@@ -60,13 +54,11 @@ public class EnableDiskStoresConfigurationUnitTests {
 
 	@After
 	public void tearDown() {
-		if (applicationContext != null) {
-			applicationContext.close();
-		}
+		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
 	}
 
 	/* (non-Javadoc) */
-	protected void assertDiskStore(DiskStore diskStore, String name, boolean allowForceCompaction, boolean autoCompact,
+	private void assertDiskStore(DiskStore diskStore, String name, boolean allowForceCompaction, boolean autoCompact,
 			int compactionThreshold, float diskUsageCriticalPercentage, float diskUsageWarningPercentage,
 			long maxOplogSize, int queueSize, long timeInterval, int writeBufferSize) {
 
@@ -84,7 +76,8 @@ public class EnableDiskStoresConfigurationUnitTests {
 	}
 
 	/* (non-Javadoc) */
-	protected void assertDiskStoreDirectoryLocations(DiskStore diskStore, File... diskDirectories) {
+	private void assertDiskStoreDirectoryLocations(DiskStore diskStore, File... diskDirectories) {
+
 		assertThat(diskStore).isNotNull();
 
 		File[] diskStoreDirectories = diskStore.getDiskDirs();
@@ -100,7 +93,8 @@ public class EnableDiskStoresConfigurationUnitTests {
 	}
 
 	/* (non-Javadoc) */
-	protected void assertDiskStoreDirectorySizes(DiskStore diskStore, int... diskDirectorySizes) {
+	private void assertDiskStoreDirectorySizes(DiskStore diskStore, int... diskDirectorySizes) {
+
 		assertThat(diskStore).isNotNull();
 
 		int[] diskStoreDirectorySizes = diskStore.getDiskDirSizes();
@@ -116,22 +110,23 @@ public class EnableDiskStoresConfigurationUnitTests {
 	}
 
 	/* (non-Javadoc) */
-	protected File newFile(String location) {
-		return new File(location);
-	}
-
-	/* (non-Javadoc) */
-	protected ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
+	private ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
 		ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(annotatedClasses);
 		applicationContext.registerShutdownHook();
 		return applicationContext;
 	}
 
+	/* (non-Javadoc) */
+	private File newFile(String location) {
+		return new File(location);
+	}
+
 	@Test
 	public void enableSingleDiskStore() {
-		applicationContext = newApplicationContext(SingleDiskStoreConfiguration.class);
 
-		DiskStore testDiskStore = applicationContext.getBean("TestDiskStore", DiskStore.class);
+		this.applicationContext = newApplicationContext(SingleDiskStoreConfiguration.class);
+
+		DiskStore testDiskStore = this.applicationContext.getBean("TestDiskStore", DiskStore.class);
 
 		assertDiskStore(testDiskStore, "TestDiskStore", true, true, 75, 95.0f, 75.0f, 8192L, 100, 2000L, 65536);
 		assertDiskStoreDirectoryLocations(testDiskStore, newFile("/absolute/path/to/gemfire/disk/directory"),
@@ -140,14 +135,15 @@ public class EnableDiskStoresConfigurationUnitTests {
 	}
 
 	@Test
-	public void enablesMultipleDiskStores() {
-		applicationContext = newApplicationContext(MultipleDiskStoresConfiguration.class);
+	public void enableMultipleDiskStores() {
 
-		DiskStore testDiskStoreOne = applicationContext.getBean("TestDiskStoreOne", DiskStore.class);
+		this.applicationContext = newApplicationContext(MultipleDiskStoresConfiguration.class);
+
+		DiskStore testDiskStoreOne = this.applicationContext.getBean("TestDiskStoreOne", DiskStore.class);
 
 		assertDiskStore(testDiskStoreOne, "TestDiskStoreOne", false, true, 75, 99.0f, 90.0f, 2048L, 100, 1000L, 32768);
 
-		DiskStore testDiskStoreTwo = applicationContext.getBean("TestDiskStoreTwo", DiskStore.class);
+		DiskStore testDiskStoreTwo = this.applicationContext.getBean("TestDiskStoreTwo", DiskStore.class);
 
 		assertDiskStore(testDiskStoreTwo, "TestDiskStoreTwo", true, true, 85, 99.0f, 90.0f, 4096L, 0, 1000L, 32768);
 	}
@@ -169,121 +165,26 @@ public class EnableDiskStoresConfigurationUnitTests {
 		};
 	}
 
-	@Configuration
-	@SuppressWarnings("unused")
-	static class CacheConfiguration {
-
-		@Bean
-		Cache gemfireCache() {
-			Cache mockCache = mock(Cache.class);
-
-			when(mockCache.createDiskStoreFactory()).thenAnswer(new Answer<DiskStoreFactory>() {
-				@Override
-				public DiskStoreFactory answer(InvocationOnMock invocation) throws Throwable {
-					final DiskStoreFactory mockDiskStoreFactory =
-						mock(DiskStoreFactory.class, mockName("MockDiskStoreFactory"));
-
-					final AtomicReference<Boolean> allowForceCompaction = new AtomicReference<>(false);
-					final AtomicReference<Boolean> autoCompact = new AtomicReference<>(false);
-					final AtomicReference<Integer> compactionThreshold = new AtomicReference<>(50);
-					final AtomicReference<File[]> diskDirectories = new AtomicReference<>(new File[0]);
-					final AtomicReference<int[]> diskDirectorySizes = new AtomicReference<>(new int[0]);
-					final AtomicReference<Float> diskUsageCriticalPercentage = new AtomicReference<>(99.0f);
-					final AtomicReference<Float> diskUsageWarningPercentage = new AtomicReference<>(90.0f);
-					final AtomicReference<Long> maxOplogSize = new AtomicReference<>(1024L);
-					final AtomicReference<Integer> queueSize = new AtomicReference<>(0);
-					final AtomicReference<Long> timeInterval = new AtomicReference<>(1000L);
-					final AtomicReference<Integer> writeBufferSize = new AtomicReference<>(32768);
-
-					when(mockDiskStoreFactory.setAllowForceCompaction(anyBoolean())).thenAnswer(
-						newSetter(Boolean.TYPE, allowForceCompaction, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.setAutoCompact(anyBoolean())).thenAnswer(
-						newSetter(Boolean.TYPE, autoCompact, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.setCompactionThreshold(anyInt())).thenAnswer(
-						newSetter(Integer.TYPE, compactionThreshold, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.setDiskDirsAndSizes(any(File[].class), any(int[].class))).thenAnswer(
-						new Answer<DiskStoreFactory>() {
-							@Override public DiskStoreFactory answer(InvocationOnMock invocation) throws Throwable {
-								File[] localDiskDirectories = invocation.getArgument(0);
-								int[] localDiskDirectorySizes = invocation.getArgument(1);
-
-								diskDirectories.set(localDiskDirectories);
-								diskDirectorySizes.set(localDiskDirectorySizes);
-
-								return mockDiskStoreFactory;
-							}
-						}
-					);
-
-					when(mockDiskStoreFactory.setDiskUsageCriticalPercentage(anyFloat())).thenAnswer(
-						newSetter(Float.TYPE, diskUsageCriticalPercentage, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.setDiskUsageWarningPercentage(anyFloat())).thenAnswer(
-						newSetter(Float.TYPE, diskUsageWarningPercentage, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.setMaxOplogSize(anyLong())).thenAnswer(
-						newSetter(Long.TYPE, maxOplogSize, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.setQueueSize(anyInt())).thenAnswer(
-						newSetter(Integer.TYPE, queueSize, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.setTimeInterval(anyLong())).thenAnswer(
-						newSetter(Long.TYPE, timeInterval, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.setWriteBufferSize(anyInt())).thenAnswer(
-						newSetter(Integer.TYPE, writeBufferSize, mockDiskStoreFactory));
-
-					when(mockDiskStoreFactory.create(anyString())).thenAnswer(new Answer<DiskStore>() {
-						@Override
-						public DiskStore answer(InvocationOnMock invocation) throws Throwable {
-							String diskStoreName = invocation.getArgument(0);
-
-							DiskStore mockDiskStore = mock(DiskStore.class, diskStoreName);
-
-							when(mockDiskStore.getAllowForceCompaction()).thenAnswer(newGetter(allowForceCompaction));
-							when(mockDiskStore.getAutoCompact()).thenAnswer(newGetter(autoCompact));
-							when(mockDiskStore.getCompactionThreshold()).thenAnswer(newGetter(compactionThreshold));
-							when(mockDiskStore.getDiskDirs()).thenAnswer(newGetter(diskDirectories));
-							when(mockDiskStore.getDiskDirSizes()).thenAnswer(newGetter(diskDirectorySizes));
-							when(mockDiskStore.getDiskUsageCriticalPercentage()).thenAnswer(newGetter(diskUsageCriticalPercentage));
-							when(mockDiskStore.getDiskUsageWarningPercentage()).thenAnswer(newGetter(diskUsageWarningPercentage));
-							when(mockDiskStore.getMaxOplogSize()).thenAnswer(newGetter(maxOplogSize));
-							when(mockDiskStore.getName()).thenReturn(diskStoreName);
-							when(mockDiskStore.getQueueSize()).thenAnswer(newGetter(queueSize));
-							when(mockDiskStore.getTimeInterval()).thenAnswer(newGetter(timeInterval));
-							when(mockDiskStore.getWriteBufferSize()).thenAnswer(newGetter(writeBufferSize));
-
-							return mockDiskStore;
-						}
-					});
-
-					return mockDiskStoreFactory;
-				}
-			});
-
-			return mockCache;
-		}
-	}
-
+	@PeerCacheApplication
+	@EnableGemFireMocking
 	@EnableDiskStore(name = "TestDiskStore", allowForceCompaction = true, autoCompact = true, compactionThreshold = 75,
 		diskUsageCriticalPercentage = 95.0f, diskUsageWarningPercentage = 75.0f, maxOplogSize = 8192L, queueSize = 100,
 		timeInterval = 2000L, writeBufferSize = 65536, diskDirectories = {
 			@EnableDiskStore.DiskDirectory(location = "/absolute/path/to/gemfire/disk/directory", maxSize = 1024),
 			@EnableDiskStore.DiskDirectory(location = "relative/path/to/gemfire/disk/directory", maxSize = 4096)
 	})
-	static class SingleDiskStoreConfiguration extends CacheConfiguration {
+	static class SingleDiskStoreConfiguration {
 
 	}
 
+	@PeerCacheApplication
+	@EnableGemFireMocking
 	@EnableDiskStores(autoCompact = true, compactionThreshold = 75, maxOplogSize = 2048L, diskStores = {
 		@EnableDiskStore(name = "TestDiskStoreOne", queueSize = 100),
 		@EnableDiskStore(name = "TestDiskStoreTwo", allowForceCompaction = true,
 			compactionThreshold = 85, maxOplogSize = 4096)
 	})
-	static class MultipleDiskStoresConfiguration extends CacheConfiguration {
+	static class MultipleDiskStoresConfiguration {
 
 	}
 }

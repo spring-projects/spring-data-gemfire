@@ -63,13 +63,14 @@ public class DiskStoreFactoryBean extends AbstractFactoryBeanSupport<DiskStore> 
 	private GemFireCache cache;
 
 	private Integer compactionThreshold;
-	private Integer maxOplogSize;
 	private Integer queueSize;
-	private Integer timeInterval;
 	private Integer writeBufferSize;
 
 	private Float diskUsageCriticalPercentage;
 	private Float diskUsageWarningPercentage;
+
+	private Long maxOplogSize;
+	private Long timeInterval;
 
 	private List<DiskStoreConfigurer> diskStoreConfigurers = Collections.emptyList();
 
@@ -312,7 +313,7 @@ public class DiskStoreFactoryBean extends AbstractFactoryBeanSupport<DiskStore> 
 		this.diskUsageWarningPercentage = diskUsageWarningPercentage;
 	}
 
-	public void setMaxOplogSize(Integer maxOplogSize) {
+	public void setMaxOplogSize(Long maxOplogSize) {
 		this.maxOplogSize = maxOplogSize;
 	}
 
@@ -320,7 +321,7 @@ public class DiskStoreFactoryBean extends AbstractFactoryBeanSupport<DiskStore> 
 		this.queueSize = queueSize;
 	}
 
-	public void setTimeInterval(Integer timeInterval) {
+	public void setTimeInterval(Long timeInterval) {
 		this.timeInterval = timeInterval;
 	}
 

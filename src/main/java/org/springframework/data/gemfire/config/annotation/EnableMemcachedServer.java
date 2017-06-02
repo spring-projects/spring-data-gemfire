@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -24,16 +25,22 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableMemcachedServer annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to start an embedded Memcached Server (Gemcached) service in the GemFire server/data node.
+ * The {@link EnableMemcachedServer} annotation marks a Spring {@link Configuration @Configuration}
+ * annotated {@link Class} to start an embedded Memcached Server (Gemcached) service in this cluster member.
  *
  * The Gemcached service implements the Memcached Server protocol enabling Memcached clients to connect to
  * and communicate with Pivotal GemFire or Apache Geode servers.
  *
+ * However, the embedded Pivotal GemFire/Apache Geode Memcached Service can be enabled/disabled externally
+ * in {@literal application.properties} by using the {@literal spring.data.gemfire.service.memcached.enabled} property
+ * even when this {@link Annotation} is present, thereby serving as a toggle.
+ *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.MemcachedServerConfiguration
  * @since 1.9.0
@@ -51,6 +58,8 @@ public @interface EnableMemcachedServer {
 	 * and starts the Gemcached server.
 	 *
 	 * Default to {@literal 11211}.
+	 *
+	 * Use the {@literal spring.data.gemfire.service.memcached.port} property in {@literal application.properties}.
 	 */
 	int port() default MemcachedServerConfiguration.DEFAULT_MEMCACHED_SERVER_PORT;
 
@@ -59,6 +68,8 @@ public @interface EnableMemcachedServer {
 	 * If you omit this property, the ASCII protocol is used.
 	 *
 	 * Default to {@link MemcachedProtocol#ASCII}.
+	 *
+	 * Use the {@literal spring.data.gemfire.service.memcached.protocol} property in {@literal application.properties}.
 	 */
 	MemcachedProtocol protocol() default MemcachedProtocol.ASCII;
 

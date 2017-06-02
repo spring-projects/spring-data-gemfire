@@ -35,10 +35,12 @@ import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
  * instance in a Spring Data GemFire based application.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.control.ResourceManager
+ * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfiguration
- * @see org.apache.geode.cache.control.ResourceManager
+ * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
  * @since 1.9.0
  */
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.TYPE})
@@ -53,14 +55,18 @@ public @interface PeerCacheApplication {
 	/**
 	 * Indicates whether the "copy on read" is enabled for this cache.
 	 *
-	 * Default is {@literal false}.
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.copy-on-read} property in {@literal application.properties}.
 	 */
 	boolean copyOnRead() default false;
 
 	/**
 	 * Configures the percentage of heap at or above which the cache is considered in danger of becoming inoperable.
 	 *
-	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_CRITICAL_PERCENTAGE
+	 * Defaults to {@link ResourceManager#DEFAULT_CRITICAL_PERCENTAGE}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.critical-heap-percentage} property in {@literal application.properties}.
 	 */
 	float criticalHeapPercentage() default ResourceManager.DEFAULT_CRITICAL_PERCENTAGE;
 
@@ -69,7 +75,10 @@ public @interface PeerCacheApplication {
 	 * after it has been forced out of the distributed system by a network partition event or has otherwise been
 	 * shunned by other members. Use this property to enable the auto-reconnect behavior.
 	 *
-	 * Default is {@literal false}.
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.enable-auto-reconnect} property
+	 * in {@literal application.properties}.
 	 */
 	boolean enableAutoReconnect() default false;
 
@@ -77,34 +86,43 @@ public @interface PeerCacheApplication {
 	 * Configures the percentage of heap at or above which the eviction should begin on Regions configured
 	 * for HeapLRU eviction.
 	 *
-	 * @see org.apache.geode.cache.control.ResourceManager#DEFAULT_EVICTION_PERCENTAGE
+	 * Defaults to {@link ResourceManager#DEFAULT_EVICTION_PERCENTAGE}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.eviction-heap-percentage} property in {@literal application.properties}.
 	 */
 	float evictionHeapPercentage() default ResourceManager.DEFAULT_EVICTION_PERCENTAGE;
 
 	/**
-	 * Configures the list of GemFire Locators defining the cluster to which this GemFire cache data node
-	 * should connect.
+	 * Configures the list of Locators defining the cluster to which this Spring cache application will connect.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.locators} property in {@literal application.properties}.
 	 */
 	String locators() default "";
 
 	/**
 	 * Configures the length, in seconds, of distributed lock leases obtained by this cache.
 	 *
-	 * Default is {@literal 120} seconds.
+	 * Defaults to {@literal 120} seconds.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.lock-lease} property in {@literal application.properties}.
 	 */
 	int lockLease() default 120;
 
 	/**
 	 * Configures the number of seconds a cache operation will wait to obtain a distributed lock lease.
 	 *
-	 * Default is {@literal 60} seconds.
+	 * Defaults to {@literal 60} seconds.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.lock-timeout} property in {@literal application.properties}.
 	 */
 	int lockTimeout() default 60;
 
 	/**
 	 * Configures the log level used to output log messages at GemFire cache runtime.
 	 *
-	 * Default is {@literal config}.
+	 * Defaults to {@literal config}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.log-level} property in {@literal application.properties}.
 	 */
 	String logLevel() default PeerCacheConfiguration.DEFAULT_LOG_LEVEL;
 
@@ -112,21 +130,28 @@ public @interface PeerCacheApplication {
 	 * Configures the frequency (in seconds) at which a message will be sent by the primary cache-server to all
 	 * the secondary cache-server nodes to remove the events which have already been dispatched from the queue.
 	 *
-	 * Default is {@literal 1} second.
+	 * Defaults to {@literal 1} second.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.message-sync-interval} property
+	 * in {@literal application.properties}.
 	 */
 	int messageSyncInterval() default 1;
 
 	/**
 	 * Configures the name of this GemFire member in the cluster (distributed system).
 	 *
-	 * Default is {@literal SpringBasedPeerCacheApplication}.
+	 * Defaults to {@literal SpringBasedPeerCacheApplication}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.name} property in {@literal application.properties}.
 	 */
 	String name() default PeerCacheConfiguration.DEFAULT_NAME;
 
 	/**
 	 * Configures the number of seconds a cache get operation can spend searching for a value before it times out.
 	 *
-	 * Default is {@literal 300} seconds.
+	 * Defaults to {@literal 300} seconds, or 5 minutes.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.search-timeout} property in {@literal application.properties}.
 	 */
 	int searchTimeout() default 300;
 
@@ -136,6 +161,8 @@ public @interface PeerCacheApplication {
 	 * created in a non-Spring managed, GemFire context.
 	 *
 	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.data.gemfire.use-bean-factory-locator} property in {@literal application.properties}.
 	 */
 	boolean useBeanFactoryLocator() default false;
 
@@ -143,7 +170,10 @@ public @interface PeerCacheApplication {
 	 * Configures whether this GemFire cache member node would pull it's configuration meta-data
 	 * from the cluster-based Cluster Configuration service.
 	 *
-	 * Default is {@literal false}.
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.peer.use-cluster-configuration} property
+	 * in {@literal application.properties}.
 	 */
 	boolean useClusterConfiguration() default false;
 

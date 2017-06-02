@@ -64,6 +64,7 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 
 	private boolean autoStartup = true;
 	private boolean notifyBySubscription = CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION;
+	private boolean tcpNoDelay = CacheServer.DEFAULT_TCP_NO_DELAY;
 
 	private int maxConnections = CacheServer.DEFAULT_MAX_CONNECTIONS;
 	private int maxMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
@@ -183,6 +184,7 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 		cacheServer.setNotifyBySubscription(this.notifyBySubscription);
 		cacheServer.setPort(this.port);
 		cacheServer.setSocketBufferSize(this.socketBufferSize);
+		cacheServer.setTcpNoDelay(this.tcpNoDelay);
 
 		nullSafeCollection(this.listeners).forEach(cacheServer::registerInterestRegistrationListener);
 
@@ -414,5 +416,10 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 	/* (non-Javadoc) */
 	public void setSubscriptionEvictionPolicy(SubscriptionEvictionPolicy evictionPolicy) {
 		this.subscriptionEvictionPolicy = evictionPolicy;
+	}
+
+	/* (non-Javadoc) */
+	public void setTcpNoDelay(boolean tcpNoDelay) {
+		this.tcpNoDelay = tcpNoDelay;
 	}
 }

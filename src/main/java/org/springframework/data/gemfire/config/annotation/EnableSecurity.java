@@ -25,15 +25,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.apache.geode.security.AuthInitialize;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableSecurity} annotation marks a Spring {@link org.springframework.context.annotation.Configuration}
- * annotated class to configure and enable Apache Geode's Security features for authentication, authorization
+ * The {@link EnableSecurity} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to configure and enable Pivotal GemFire/Apache Geode's Security features for authentication, authorization
  * and post processing.
  *
  * @author John Blum
- * @see GeodeIntegratedSecurityConfiguration
+ * @see java.lang.annotation.Annotation
  * @see org.apache.geode.security.AuthInitialize
  * @see org.apache.geode.security.SecurityManager
  * @see org.apache.geode.security.PostProcessor
@@ -55,6 +56,9 @@ public @interface EnableSecurity {
 	 * which obtains credentials for clients.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.client.authentication-initializer} property
+	 * in {@literal application.properties}.
 	 */
 	String clientAuthenticationInitializer() default "";
 
@@ -63,6 +67,9 @@ public @interface EnableSecurity {
 	 * credentials for peers in a distributed system.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.peer.authentication-initializer} property
+	 * in {@literal application.properties}.
 	 */
 	String peerAuthenticationInitializer() default "";
 
@@ -81,6 +88,8 @@ public @interface EnableSecurity {
 	 * Use this Annotation attribute if you are uncertain whether the application class is on the classpath or not.
 	 *
 	 * Default is unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.manager.class-name} property in {@literal application.properties}.
 	 */
 	String securityManagerClassName() default "";
 
@@ -101,6 +110,9 @@ public @interface EnableSecurity {
 	 * Use this Annotation attribute if you are uncertain whether the application class is on the classpath or not.
 	 *
 	 * Default is unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.postprocessor.class-name} property
+	 * in {@literal application.properties}.
 	 */
 	String securityPostProcessorClassName() default "";
 
@@ -109,6 +121,9 @@ public @interface EnableSecurity {
 	 * the Apache Shiro Security Framework to secure Apache Geode.
 	 *
 	 * Default is unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.shiro.ini-resource-path} property
+	 * in {@literal application.properties}.
 	 */
 	String shiroIniResourcePath() default "";
 

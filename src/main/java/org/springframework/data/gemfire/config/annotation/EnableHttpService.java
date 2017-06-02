@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -24,16 +25,24 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableHttpService annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to configure and enable GemFire/Geode's embedded HTTP service.
+ * The {@link EnableHttpService} annotation marks a Spring {@link Configuration @Configuration}
+ * annotated {@link Class} to configure and enable Pivotal GemFire/Apache Geode's embedded HTTP service.
  *
- * By using this annotation, this allows GemFire's embedded HTTP services, like Pulse, the Management REST API
- * and the Developer REST API to be enabled.
+ * By using this {@link Annotation}, this enables the embedded HTTP services like Pulse, the Management REST API
+ * and the Developer REST API on startup.
+ *
+ * However, the embedded Pivotal GemFire/Apache Geode HTTP service and all dependent services (e.g. Pulse)
+ * can be enabled/disabled externally in {@literal application.properties} with
+ * the {@literal spring.data.gemfire.service.http.enabled} property even when this {@link Annotation} is present,
+ * thereby serving as a toggle.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.HttpServiceConfiguration
  * @see <a href="http://geode.docs.pivotal.io/docs/rest_apps/book_intro.html">Developing REST Applications for Apache Geode</a>
  * @since 1.9.0
@@ -53,6 +62,8 @@ public @interface EnableHttpService {
 	 * and the Developer REST API service.
 	 *
 	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.service.http.bind-address} property in {@literal application.properties}.
 	 */
 	String bindAddress() default "";
 
@@ -64,6 +75,8 @@ public @interface EnableHttpService {
 	 * and {@literal start-dev-rest-api} are both set to {@literal false}.
 	 *
 	 * Defaults to {@literal 7070}.
+	 *
+	 * Use the {@literal spring.data.gemfire.service.http.port} property in {@literal application.properties}.
 	 */
 	int port() default HttpServiceConfiguration.DEFAULT_HTTP_SERVICE_PORT;
 
@@ -77,15 +90,21 @@ public @interface EnableHttpService {
 	 * {@link org.springframework.data.gemfire.config.annotation.EnableSsl.Component#HTTP}.
 	 *
 	 * Defaults to {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.service.http.ssl-require-authentication} property
+	 * in {@literal application.properties}.
 	 */
 	boolean sslRequireAuthentication() default false;
 
 	/**
-	 * If set to true, then the developer REST API service will be started when cache is created.
-	 * The REST service can be configured using {@literal http-service-port} and {@literal http-service-bind-address}
-	 * GemFire System Properties.
+	 * If set to {@literal true}, then the Developer REST API service will be started when the cache is created.
+	 * The REST service can be configured using {@literal http-service-bind-address} and {@literal http-service-port}
+	 * Pivotal GemFire/Apache Geode System Properties.
 	 *
 	 * Defaults to {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.service.http.dev-rest-api.start} property
+	 * in {@literal application.properties}.
 	 */
 	boolean startDeveloperRestApi() default false;
 

@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Import;
  * expression or a Spring property placeholder.
  *
  * @author John Blum
+ * @see org.springframework.data.gemfire.RegionFactoryBean#setLookupEnabled(Boolean)
  * @see org.springframework.data.gemfire.config.annotation.AutoRegionLookupConfiguration
  * @since 1.9.0
  */
@@ -48,13 +49,13 @@ import org.springframework.context.annotation.Import;
 public @interface EnableAutoRegionLookup {
 
 	/**
-	 * Attribute to indicate whether auto {@link org.apache.geode.cache.Region} lookup should be enabled;
+	 * Attribute indicating whether auto {@link org.apache.geode.cache.Region} lookup should be enabled;
+	 *
 	 * Defaults to {@literal true}.
 	 *
-	 * This attribute accepts either a SpEL or Spring property placeholder expression so that
-	 * auto {@link org.apache.geode.cache.Region} lookup behavior can be determined
-	 * at application configuration time.
+	 * Use the {@literal spring.data.gemfire.enable-auto-region-lookup} in {@literal application.properties}
+	 * to dynamically customize this configuration setting.
 	 */
-	String enabled() default "true";
+	boolean enabled() default true;
 
 }

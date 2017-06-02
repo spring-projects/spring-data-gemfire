@@ -130,7 +130,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		ClientCache cache = resolveCache(gemfireCache);
 
 		ClientRegionFactory<K, V> clientRegionFactory =
-			configure(createClientRegionFactory(cache, resolveClientRegionShortcut()));
+			postProcess(configure(createClientRegionFactory(cache, resolveClientRegionShortcut())));
 
 		@SuppressWarnings("all")
 		Region<K, V> region = newRegion(clientRegionFactory, getParent(), regionName);
@@ -251,6 +251,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	ClientRegionShortcut resolveClientRegionShortcut() {
+
 		ClientRegionShortcut resolvedShortcut = this.shortcut;
 
 		if (resolvedShortcut == null) {

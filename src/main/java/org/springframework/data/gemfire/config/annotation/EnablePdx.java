@@ -24,12 +24,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.type.AnnotationMetadata;
+
 /**
- * The EnablePdx annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to enable the GemFire PDX features and functionality in a GemFire server/data node
- * or GemFire cache client application.
+ * The {@link EnablePdx} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to enable the Pivotal GemFire/Apache Geode PDX features and functionality in this peer cache, cluster member
+ * or cache client application.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration#configurePdx(AnnotationMetadata)
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -41,6 +46,8 @@ public @interface EnablePdx {
 
 	/**
 	 * Configures the disk store that is used for PDX meta data.
+	 *
+	 * Use the {@literal spring.data.gemfire.pdx.disk-store-name} property in {@literal application.properties}.
 	 */
 	String diskStoreName() default "";
 
@@ -48,6 +55,8 @@ public @interface EnablePdx {
 	 * Configures whether pdx ignores fields that were unread during deserialization.
 	 *
 	 * Default is {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.pdx.ignore-unread-fields} property in {@literal application.properties}.
 	 */
 	boolean ignoreUnreadFields() default false;
 
@@ -55,6 +64,8 @@ public @interface EnablePdx {
 	 * Configures whether the type metadata for PDX objects is persisted to disk.
 	 *
 	 * Default is {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.pdx.persistent} property in {@literal application.properties}.
 	 */
 	boolean persistent() default false;
 
@@ -62,6 +73,8 @@ public @interface EnablePdx {
 	 * Configures the object preference to {@link org.apache.geode.pdx.PdxInstance} type or {@link Object}.
 	 *
 	 * Default is {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.pdx.read-serialized} property in {@literal application.properties}.
 	 */
 	boolean readSerialized() default false;
 

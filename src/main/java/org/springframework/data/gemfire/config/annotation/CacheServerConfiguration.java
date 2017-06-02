@@ -28,11 +28,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.InterestRegistrationListener;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
+import org.apache.shiro.util.Assert;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -70,6 +72,8 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 
 	private boolean autoStartup = DEFAULT_AUTO_STARTUP;
 
+	private Boolean tcpNoDelay;
+
 	private Integer maxConnections;
 	private Integer maxMessageCount;
 	private Integer maxThreads;
@@ -105,28 +109,32 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	 * @see org.apache.geode.cache.Cache
 	 */
 	@Bean
-	public CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache) {
+	public CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache) {
+
+		Assert.isInstanceOf(Cache.class, gemfireCache,
+			"GemFireCache must be an instance of org.apache.geode.cache.Cache");
 
 		CacheServerFactoryBean gemfireCacheServer = new CacheServerFactoryBean();
 
-		gemfireCacheServer.setCache(gemfireCache);
+		gemfireCacheServer.setCache((Cache) gemfireCache);
 		gemfireCacheServer.setCacheServerConfigurers(resolveCacheServerConfigurers());
-		gemfireCacheServer.setAutoStartup(autoStartup());
-		gemfireCacheServer.setBindAddress(bindAddress());
-		gemfireCacheServer.setHostNameForClients(hostnameForClients());
-		gemfireCacheServer.setListeners(interestRegistrationListeners());
-		gemfireCacheServer.setLoadPollInterval(loadPollInterval());
-		gemfireCacheServer.setMaxConnections(maxConnections());
-		gemfireCacheServer.setMaxMessageCount(maxMessageCount());
-		gemfireCacheServer.setMaxThreads(maxThreads());
-		gemfireCacheServer.setMaxTimeBetweenPings(maxTimeBetweenPings());
-		gemfireCacheServer.setMessageTimeToLive(messageTimeToLive());
-		gemfireCacheServer.setPort(port());
-		gemfireCacheServer.setServerLoadProbe(serverLoadProbe());
-		gemfireCacheServer.setSocketBufferSize(socketBufferSize());
-		gemfireCacheServer.setSubscriptionCapacity(subscriptionCapacity());
-		gemfireCacheServer.setSubscriptionDiskStore(subscriptionDiskStoreName());
-		gemfireCacheServer.setSubscriptionEvictionPolicy(subscriptionEvictionPolicy());
+		gemfireCacheServer.setAutoStartup(isAutoStartup());
+		gemfireCacheServer.setBindAddress(getBindAddress());
+		gemfireCacheServer.setHostNameForClients(getHostnameForClients());
+		gemfireCacheServer.setListeners(getInterestRegistrationListeners());
+		gemfireCacheServer.setLoadPollInterval(getLoadPollInterval());
+		gemfireCacheServer.setMaxConnections(getMaxConnections());
+		gemfireCacheServer.setMaxMessageCount(getMaxMessageCount());
+		gemfireCacheServer.setMaxThreads(getMaxThreads());
+		gemfireCacheServer.setMaxTimeBetweenPings(getMaxTimeBetweenPings());
+		gemfireCacheServer.setMessageTimeToLive(getMessageTimeToLive());
+		gemfireCacheServer.setPort(getPort());
+		gemfireCacheServer.setServerLoadProbe(getServerLoadProbe());
+		gemfireCacheServer.setSocketBufferSize(getSocketBufferSize());
+		gemfireCacheServer.setSubscriptionCapacity(getSubscriptionCapacity());
+		gemfireCacheServer.setSubscriptionDiskStore(getSubscriptionDiskStoreName());
+		gemfireCacheServer.setSubscriptionEvictionPolicy(getSubscriptionEvictionPolicy());
+		gemfireCacheServer.setTcpNoDelay(getTcpNoDelay());
 
 		return gemfireCacheServer;
 	}
@@ -140,10 +148,12 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 				Optional.of(this.beanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
+
 						Map<String, CacheServerConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
 							.getBeansOfType(CacheServerConfigurer.class, true, true);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+
 					})
 					.orElseGet(Collections::emptyList)
 			);
@@ -165,24 +175,53 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 
 		if (isCacheServerApplication(importMetadata)) {
 
-			Map<String, Object> cacheServerApplicationMetadata =
+			Map<String, Object> cacheServerApplicationAttributes =
 				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
-			setAutoStartup(Boolean.TRUE.equals(cacheServerApplicationMetadata.get("autoStartup")));
-			setBindAddress((String) cacheServerApplicationMetadata.get("bindAddress"));
-			setHostnameForClients((String) cacheServerApplicationMetadata.get("hostnameForClients"));
-			setLoadPollInterval((Long) cacheServerApplicationMetadata.get("loadPollInterval"));
-			setMaxConnections((Integer) cacheServerApplicationMetadata.get("maxConnections"));
-			setMaxMessageCount((Integer) cacheServerApplicationMetadata.get("maxMessageCount"));
-			setMaxThreads((Integer) cacheServerApplicationMetadata.get("maxThreads"));
-			setMaxTimeBetweenPings((Integer) cacheServerApplicationMetadata.get("maxTimeBetweenPings"));
-			setMessageTimeToLive((Integer) cacheServerApplicationMetadata.get("messageTimeToLive"));
-			setPort((Integer) cacheServerApplicationMetadata.get("port"));
-			setSocketBufferSize((Integer) cacheServerApplicationMetadata.get("socketBufferSize"));
-			setSubscriptionCapacity((Integer) cacheServerApplicationMetadata.get("subscriptionCapacity"));
-			setSubscriptionDiskStoreName((String) cacheServerApplicationMetadata.get("subscriptionDiskStoreName"));
-			setSubscriptionEvictionPolicy((SubscriptionEvictionPolicy)
-				cacheServerApplicationMetadata.get("subscriptionEvictionPolicy"));
+			setAutoStartup(resolveProperty(cacheServerProperty("auto-startup"),
+				Boolean.TRUE.equals(cacheServerApplicationAttributes.get("autoStartup"))));
+
+			setBindAddress(resolveProperty(cacheServerProperty("bind-address"),
+				(String) cacheServerApplicationAttributes.get("bindAddress")));
+
+			setHostnameForClients(resolveProperty(cacheServerProperty("hostname-for-clients"),
+				(String) cacheServerApplicationAttributes.get("hostnameForClients")));
+
+			setLoadPollInterval(resolveProperty(cacheServerProperty("load-poll-interval"),
+				(Long) cacheServerApplicationAttributes.get("loadPollInterval")));
+
+			setMaxConnections(resolveProperty(cacheServerProperty("max-connections"),
+				(Integer) cacheServerApplicationAttributes.get("maxConnections")));
+
+			setMaxMessageCount(resolveProperty(cacheServerProperty("max-message-count"),
+				(Integer) cacheServerApplicationAttributes.get("maxMessageCount")));
+
+			setMaxThreads(resolveProperty(cacheServerProperty("max-threads"),
+				(Integer) cacheServerApplicationAttributes.get("maxThreads")));
+
+			setMaxTimeBetweenPings(resolveProperty(cacheServerProperty("max-time-between-pings"),
+				(Integer) cacheServerApplicationAttributes.get("maxTimeBetweenPings")));
+
+			setMessageTimeToLive(resolveProperty(cacheServerProperty("message-time-to-live"),
+				(Integer) cacheServerApplicationAttributes.get("messageTimeToLive")));
+
+			setPort(resolveProperty(cacheServerProperty("port"),
+				(Integer) cacheServerApplicationAttributes.get("port")));
+
+			setSocketBufferSize(resolveProperty(cacheServerProperty("socket-buffer-size"),
+				(Integer) cacheServerApplicationAttributes.get("socketBufferSize")));
+
+			setSubscriptionCapacity(resolveProperty(cacheServerProperty("subscription-capacity"),
+				(Integer) cacheServerApplicationAttributes.get("subscriptionCapacity")));
+
+			setSubscriptionDiskStoreName(resolveProperty(cacheServerProperty("subscription-disk-store-name"),
+				(String) cacheServerApplicationAttributes.get("subscriptionDiskStoreName")));
+
+			setSubscriptionEvictionPolicy(resolveProperty(cacheServerProperty("subscription-eviction-policy"),
+				SubscriptionEvictionPolicy.class, (SubscriptionEvictionPolicy) cacheServerApplicationAttributes.get("subscriptionEvictionPolicy")));
+
+			setTcpNoDelay(resolveProperty(cacheServerProperty("tcpNoDelay"),
+				(Boolean) cacheServerApplicationAttributes.get("tcpNoDelay")));
 		}
 	}
 
@@ -199,7 +238,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.autoStartup = autoStartup;
 	}
 
-	protected boolean autoStartup() {
+	protected boolean isAutoStartup() {
 		return this.autoStartup;
 	}
 
@@ -208,7 +247,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.bindAddress = bindAddress;
 	}
 
-	protected String bindAddress() {
+	protected String getBindAddress() {
 		return Optional.ofNullable(this.bindAddress).filter(StringUtils::hasText)
 			.orElse(CacheServer.DEFAULT_BIND_ADDRESS);
 	}
@@ -218,7 +257,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.hostnameForClients = hostnameForClients;
 	}
 
-	protected String hostnameForClients() {
+	protected String getHostnameForClients() {
 		return Optional.ofNullable(this.hostnameForClients).filter(StringUtils::hasText)
 			.orElse(CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS);
 	}
@@ -228,7 +267,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.interestRegistrationListeners = interestRegistrationListeners;
 	}
 
-	protected Set<InterestRegistrationListener> interestRegistrationListeners() {
+	protected Set<InterestRegistrationListener> getInterestRegistrationListeners() {
 		return nullSafeSet(this.interestRegistrationListeners);
 	}
 
@@ -237,7 +276,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.loadPollInterval = loadPollInterval;
 	}
 
-	protected Long loadPollInterval() {
+	protected Long getLoadPollInterval() {
 		return Optional.ofNullable(this.loadPollInterval).orElse(CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
 	}
 
@@ -246,7 +285,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.maxConnections = maxConnections;
 	}
 
-	protected Integer maxConnections() {
+	protected Integer getMaxConnections() {
 		return Optional.ofNullable(this.maxConnections).orElse(CacheServer.DEFAULT_MAX_CONNECTIONS);
 	}
 
@@ -255,7 +294,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.maxMessageCount = maxMessageCount;
 	}
 
-	protected Integer maxMessageCount() {
+	protected Integer getMaxMessageCount() {
 		return Optional.ofNullable(this.maxMessageCount).orElse(CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT);
 	}
 
@@ -264,7 +303,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.maxThreads = maxThreads;
 	}
 
-	protected Integer maxThreads() {
+	protected Integer getMaxThreads() {
 		return Optional.ofNullable(this.maxThreads).orElse(CacheServer.DEFAULT_MAX_THREADS);
 	}
 
@@ -273,7 +312,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.maxTimeBetweenPings = maxTimeBetweenPings;
 	}
 
-	protected Integer maxTimeBetweenPings() {
+	protected Integer getMaxTimeBetweenPings() {
 		return Optional.ofNullable(this.maxTimeBetweenPings).orElse(CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
 	}
 
@@ -282,7 +321,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.messageTimeToLive = messageTimeToLive;
 	}
 
-	protected Integer messageTimeToLive() {
+	protected Integer getMessageTimeToLive() {
 		return Optional.ofNullable(this.messageTimeToLive).orElse(CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE);
 	}
 
@@ -291,7 +330,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.port = port;
 	}
 
-	protected Integer port() {
+	protected Integer getPort() {
 		return Optional.ofNullable(this.port).orElse(CacheServer.DEFAULT_PORT);
 	}
 
@@ -300,7 +339,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.serverLoadProbe = serverLoadProbe;
 	}
 
-	protected ServerLoadProbe serverLoadProbe() {
+	protected ServerLoadProbe getServerLoadProbe() {
 		return Optional.ofNullable(this.serverLoadProbe).orElse(CacheServer.DEFAULT_LOAD_PROBE);
 	}
 
@@ -309,7 +348,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.socketBufferSize = socketBufferSize;
 	}
 
-	protected Integer socketBufferSize() {
+	protected Integer getSocketBufferSize() {
 		return Optional.ofNullable(this.socketBufferSize).orElse(CacheServer.DEFAULT_SOCKET_BUFFER_SIZE);
 	}
 
@@ -318,7 +357,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.subscriptionCapacity = subscriptionCapacity;
 	}
 
-	protected Integer subscriptionCapacity() {
+	protected Integer getSubscriptionCapacity() {
 		return Optional.ofNullable(this.subscriptionCapacity).orElse(ClientSubscriptionConfig.DEFAULT_CAPACITY);
 	}
 
@@ -327,7 +366,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.subscriptionDiskStoreName = subscriptionDiskStoreName;
 	}
 
-	protected String subscriptionDiskStoreName() {
+	protected String getSubscriptionDiskStoreName() {
 		return this.subscriptionDiskStoreName;
 	}
 
@@ -336,8 +375,17 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		this.subscriptionEvictionPolicy = subscriptionEvictionPolicy;
 	}
 
-	protected SubscriptionEvictionPolicy subscriptionEvictionPolicy() {
+	protected SubscriptionEvictionPolicy getSubscriptionEvictionPolicy() {
 		return Optional.ofNullable(this.subscriptionEvictionPolicy).orElse(SubscriptionEvictionPolicy.DEFAULT);
+	}
+
+	/* (non-Javadoc) */
+	void setTcpNoDelay(Boolean tcpNoDelay) {
+		this.tcpNoDelay = tcpNoDelay;
+	}
+
+	protected Boolean getTcpNoDelay() {
+		return Optional.ofNullable(this.tcpNoDelay).orElse(CacheServer.DEFAULT_TCP_NO_DELAY);
 	}
 
 	@Override

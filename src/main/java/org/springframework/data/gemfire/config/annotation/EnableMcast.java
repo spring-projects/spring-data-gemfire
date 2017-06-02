@@ -24,14 +24,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableMcast annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to configure and enable GemFire/Geode's multi-cast networking support.
+ * The {@link EnableMcast} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to configure and enable Pivotal GemFire/Apache Geode's multi-cast networking features.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.config.annotation.EnableMcast
+ * @see java.lang.annotation.Annotation
+ * @see org.springframework.context.annotation.Import
+ * @see org.springframework.data.gemfire.config.annotation.McastConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)

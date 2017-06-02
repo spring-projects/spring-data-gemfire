@@ -33,6 +33,8 @@ import org.springframework.beans.factory.FactoryBean;
  * encapsulating operations common to SDG's {@link FactoryBean} implementations.
  *
  * @author John Blum
+ * @see org.apache.commons.logging.Log
+ * @see org.apache.commons.logging.LogFactory
  * @see org.springframework.beans.factory.BeanClassLoaderAware
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
@@ -40,8 +42,9 @@ import org.springframework.beans.factory.FactoryBean;
  * @see org.springframework.beans.factory.FactoryBean
  * @since 1.0.0
  */
-public abstract class AbstractFactoryBeanSupport<T> implements FactoryBean<T>,
-		BeanClassLoaderAware, BeanFactoryAware, BeanNameAware {
+@SuppressWarnings("unused")
+public abstract class AbstractFactoryBeanSupport<T>
+		implements FactoryBean<T>, BeanClassLoaderAware, BeanFactoryAware, BeanNameAware {
 
 	protected static final boolean DEFAULT_SINGLETON = true;
 
@@ -49,9 +52,18 @@ public abstract class AbstractFactoryBeanSupport<T> implements FactoryBean<T>,
 
 	private BeanFactory beanFactory;
 
-	private final Log log = newLog();
+	private final Log log;
 
 	private String beanName;
+
+	/**
+	 * Constructs a new instance of {@link AbstractFactoryBeanSupport} and initialized the logger.
+	 *
+	 * @see #newLog()
+	 */
+	protected AbstractFactoryBeanSupport() {
+		this.log = newLog();
+	}
 
 	/**
 	 * Constructs a new instance of {@link Log} to log statements printed by Spring Data GemFire/Geode.

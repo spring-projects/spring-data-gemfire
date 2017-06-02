@@ -104,7 +104,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
  */
 @SuppressWarnings("unused")
-public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
+public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		implements DisposableBean, InitializingBean, PersistenceExceptionTranslator, Phased {
 
 	private boolean close = true;
@@ -119,7 +119,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	private Boolean pdxReadSerialized;
 	private Boolean useClusterConfiguration;
 
-	private Cache cache;
+	private GemFireCache cache;
 
 	private CacheFactoryInitializer<?> cacheFactoryInitializer;
 
@@ -247,10 +247,10 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 * @see org.apache.geode.cache.Cache
 	 * @see #resolveCache()
 	 * @see #postProcess(GemFireCache)
-	 * @see #setCache(Cache)
+	 * @see #setCache(GemFireCache)
 	 */
 	@SuppressWarnings("deprecation")
-	Cache init() {
+	GemFireCache init() {
 
 		ClassLoader currentThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -260,7 +260,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 
 			setCache(postProcess(resolveCache()));
 
-			Optional.ofNullable(this.<Cache>getCache()).ifPresent(cache -> {
+			Optional.ofNullable(this.<GemFireCache>getCache()).ifPresent(cache -> {
 
 				Optional.ofNullable(cache.getDistributedSystem()).map(DistributedSystem::getDistributedMember)
 					.ifPresent(member ->
@@ -289,6 +289,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 * If an existing {@link Cache} could not be found, then this method proceeds in attempting to create
 	 * a new {@link Cache} instance.
 	 *
+	 * @param <T> parameterized {@link Class} type extension of {@link GemFireCache}.
 	 * @return the resolved {@link Cache} instance.
 	 * @see org.apache.geode.cache.Cache
 	 * @see #fetchCache()
@@ -297,15 +298,16 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 * @see #prepareFactory(Object)
 	 * @see #createCache(Object)
 	 */
-	protected Cache resolveCache() {
+	@SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T resolveCache() {
 		try {
 			this.cacheResolutionMessagePrefix = "Found existing";
-			return (Cache) fetchCache();
+			return (T) fetchCache();
 		}
 		catch (CacheClosedException ex) {
 			this.cacheResolutionMessagePrefix = "Created new";
 			initDynamicRegionFactory();
-			return (Cache) createCache(prepareFactory(initializeFactory(createFactory(resolveProperties()))));
+			return (T) createCache(prepareFactory(initializeFactory(createFactory(resolveProperties()))));
 		}
 	}
 
@@ -442,6 +444,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 * @see #registerTransactionListeners(org.apache.geode.cache.GemFireCache)
 	 * @see #registerTransactionWriter(org.apache.geode.cache.GemFireCache)
 	 */
+	@SuppressWarnings("all")
 	protected <T extends GemFireCache> T postProcess(T cache) {
 
 		// load cache.xml Resource and initialize the cache
@@ -456,11 +459,14 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 		});
 
 		Optional.ofNullable(getCopyOnRead()).ifPresent(cache::setCopyOnRead);
-		Optional.ofNullable(getGatewayConflictResolver()).ifPresent(((Cache) cache)::setGatewayConflictResolver);
-		Optional.ofNullable(getLockLease()).ifPresent(((Cache) cache)::setLockLease);
-		Optional.ofNullable(getLockTimeout()).ifPresent(((Cache) cache)::setLockTimeout);
-		Optional.ofNullable(getMessageSyncInterval()).ifPresent(((Cache) cache)::setMessageSyncInterval);
-		Optional.ofNullable(getSearchTimeout()).ifPresent(((Cache) cache)::setSearchTimeout);
+
+		if (cache instanceof Cache) {
+			Optional.ofNullable(getGatewayConflictResolver()).ifPresent(((Cache) cache)::setGatewayConflictResolver);
+			Optional.ofNullable(getLockLease()).ifPresent(((Cache) cache)::setLockLease);
+			Optional.ofNullable(getLockTimeout()).ifPresent(((Cache) cache)::setLockTimeout);
+			Optional.ofNullable(getMessageSyncInterval()).ifPresent(((Cache) cache)::setMessageSyncInterval);
+			Optional.ofNullable(getSearchTimeout()).ifPresent(((Cache) cache)::setSearchTimeout);
+		}
 
 		configureHeapPercentages(cache);
 		registerTransactionListeners(cache);
@@ -576,6 +582,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 * @see org.springframework.dao.DataAccessException
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public DataAccessException translateExceptionIfPossible(RuntimeException exception) {
 
 		if (exception instanceof IllegalArgumentException) {
@@ -619,7 +626,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 * @param cache {@link Cache} created by this {@link CacheFactoryBean}.
 	 * @see org.apache.geode.cache.Cache
 	 */
-	protected void setCache(Cache cache) {
+	protected void setCache(GemFireCache cache) {
 		this.cache = cache;
 	}
 
@@ -700,8 +707,9 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 * @see #getCache()
 	 */
 	@Override
-	public Cache getObject() throws Exception {
-		return Optional.ofNullable(this.<Cache>getCache()).orElseGet(this::init);
+	@SuppressWarnings("all")
+	public GemFireCache getObject() throws Exception {
+		return Optional.ofNullable(this.<GemFireCache>getCache()).orElseGet(this::init);
 	}
 
 	/**
@@ -713,7 +721,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	@Override
 	@SuppressWarnings("unchecked")
 	public Class<? extends GemFireCache> getObjectType() {
-		return Optional.ofNullable(getCache()).<Class>map(Object::getClass).orElse(Cache.class);
+		return Optional.ofNullable(this.<Cache>getCache()).<Class>map(Object::getClass).orElse(Cache.class);
 	}
 
 	/**

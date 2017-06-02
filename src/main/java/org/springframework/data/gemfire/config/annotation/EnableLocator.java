@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -24,13 +25,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.geode.distributed.Locator;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The EnableLocator annotation configures a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to start an embedded GemFire Locator service in this GemFire server/data node.
+ * The {@link EnableLocator} annotation configures a Spring {@link Configuration @Configuration} annotated {@link Class}
+ * to start an embedded Pivotal GemFire/Apache Geode {@link Locator} service in this cluster member.
+ *
+ * However, the embedded Pivotal GemFire/Apache Geode Locator service can be enabled/disabled externally
+ * in {@literal application.properties} with the {@literal spring.data.gemfire.service.http.enabled} property
+ * even when this {@link Annotation} is present, thereby serving as a toggle.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.LocatorConfiguration
  * @since 1.9.0
@@ -47,7 +55,9 @@ public @interface EnableLocator {
 	 * Configures the host/IP address on which the embedded Locator service will bind to for accepting connections
 	 * from clients sending Locator requests.
 	 *
-	 * Default is {@literal localhost}.
+	 * Defaults to {@literal localhost}.
+	 *
+	 * Use the {@literal spring.data.gemfire.locator.host} property in {@literal application.properties}.
 	 */
 	String host() default LocatorConfiguration.DEFAULT_HOST;
 
@@ -55,7 +65,9 @@ public @interface EnableLocator {
 	 * Configures the port on which the embedded Locator service will bind to listening for client connections
 	 * sending Locator requests.
 	 *
-	 * Default is {@literal 10334}.
+	 * Defaults to {@literal 10334}.
+	 *
+	 * Use the {@literal spring.data.gemfire.locator.host} property in {@literal application.properties}.
 	 */
 	int port() default LocatorConfiguration.DEFAULT_LOCATOR_PORT;
 

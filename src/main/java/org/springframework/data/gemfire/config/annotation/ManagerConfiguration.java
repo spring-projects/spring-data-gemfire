@@ -20,16 +20,18 @@ package org.springframework.data.gemfire.config.annotation;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The ManagerConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * that applies additional GemFire configuration using GemFire System {@link Properties} to configure
- * an embedded GemFire Manager.
+ * The {@link ManagerConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that applies
+ * additional configuration using Pivotal GemFire/Apache Geode {@link Properties} to configure an embedded Manager
+ * in this cluster member.
  *
  * @author John Blum
- * @see EnableManager
+ * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+ * @see org.springframework.data.gemfire.config.annotation.EnableManager
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
@@ -37,24 +39,52 @@ public class ManagerConfiguration extends EmbeddedServiceConfigurationSupport {
 
 	protected static final int DEFAULT_JMX_MANAGER_PORT = 1099;
 
+	/**
+	 * Returns the {@link EnableManager} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 *
+	 * @return the {@link EnableManager} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableManager
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableManager.class;
 	}
 
+	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
+
 		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
-		gemfireProperties.setProperty("jmx-manager", Boolean.TRUE.toString());
-		gemfireProperties.setProperty("jmx-manager-access-file", annotationAttributes.get("accessFile"));
-		gemfireProperties.setProperty("jmx-manager-bind-address", annotationAttributes.get("bindAddress"));
-		gemfireProperties.setProperty("jmx-manager-hostname-for-clients", annotationAttributes.get("hostnameForClients"));
-		gemfireProperties.setProperty("jmx-manager-password-file", annotationAttributes.get("passwordFile"));
+		gemfireProperties.setProperty("jmx-manager",
+			resolveProperty(managerProperty("enabled"), Boolean.TRUE));
+
+		gemfireProperties.setProperty("jmx-manager-access-file",
+			resolveProperty(managerProperty("access-file"),
+				(String) annotationAttributes.get("accessFile")));
+
+		gemfireProperties.setProperty("jmx-manager-bind-address",
+			resolveProperty(managerProperty("bind-address"),
+				(String) annotationAttributes.get("bindAddress")));
+
+		gemfireProperties.setProperty("jmx-manager-hostname-for-clients",
+			resolveProperty(managerProperty("hostname-for-clients"),
+				(String) annotationAttributes.get("hostnameForClients")));
+
+		gemfireProperties.setProperty("jmx-manager-password-file",
+			resolveProperty(managerProperty("password-file"),
+				(String) annotationAttributes.get("passwordFile")));
+
 		gemfireProperties.setProperty("jmx-manager-port",
-			resolvePort((Integer) annotationAttributes.get("port"), DEFAULT_JMX_MANAGER_PORT));
-		gemfireProperties.setProperty("jmx-manager-start", annotationAttributes.get("start"));
-		gemfireProperties.setProperty("jmx-manager-update-rate", annotationAttributes.get("updateRate"));
+			resolvePort(resolveProperty(managerProperty("port"),
+				(Integer) annotationAttributes.get("port")), DEFAULT_JMX_MANAGER_PORT));
+
+		gemfireProperties.setProperty("jmx-manager-start",
+			resolveProperty(managerProperty("start"), (Boolean) annotationAttributes.get("start")));
+
+		gemfireProperties.setProperty("jmx-manager-update-rate",
+			resolveProperty(managerProperty("update-rate"),
+				(Integer) annotationAttributes.get("updateRate")));
 
 		return gemfireProperties.build();
 	}

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.server.CacheServer;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -37,10 +38,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.config.support.ClientRegionPoolBeanFactoryPostProcessor;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
+import org.springframework.util.StringUtils;
 
 /**
  * Spring {@link Configuration} class used to construct, configure and initialize
@@ -122,35 +125,36 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		ClientCacheFactoryBean gemfireCache = constructCacheFactoryBean();
 
 		gemfireCache.setClientCacheConfigurers(resolveClientCacheConfigurers());
-		gemfireCache.setDurableClientId(durableClientId());
-		gemfireCache.setDurableClientTimeout(durableClientTimeout());
-		gemfireCache.setFreeConnectionTimeout(freeConnectionTimeout());
-		gemfireCache.setIdleTimeout(idleTimeout());
-		gemfireCache.setKeepAlive(keepAlive());
-		gemfireCache.setLocators(poolLocators());
-		gemfireCache.setLoadConditioningInterval(loadConditioningInterval());
-		gemfireCache.setMaxConnections(maxConnections());
-		gemfireCache.setMinConnections(minConnections());
-		gemfireCache.setMultiUserAuthentication(multiUserAuthentication());
-		gemfireCache.setPingInterval(pingInterval());
-		gemfireCache.setPrSingleHopEnabled(prSingleHopEnabled());
-		gemfireCache.setReadTimeout(readTimeout());
-		gemfireCache.setReadyForEvents(readyForEvents());
-		gemfireCache.setRetryAttempts(retryAttempts());
-		gemfireCache.setServerGroup(serverGroup());
-		gemfireCache.setServers(poolServers());
-		gemfireCache.setSocketBufferSize(socketBufferSize());
-		gemfireCache.setStatisticsInterval(statisticsInterval());
-		gemfireCache.setSubscriptionAckInterval(subscriptionAckInterval());
-		gemfireCache.setSubscriptionEnabled(subscriptionEnabled());
-		gemfireCache.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout());
-		gemfireCache.setSubscriptionRedundancy(subscriptionRedundancy());
-		gemfireCache.setThreadLocalConnections(threadLocalConnections());
+		gemfireCache.setDurableClientId(getDurableClientId());
+		gemfireCache.setDurableClientTimeout(getDurableClientTimeout());
+		gemfireCache.setFreeConnectionTimeout(getFreeConnectionTimeout());
+		gemfireCache.setIdleTimeout(getIdleTimeout());
+		gemfireCache.setKeepAlive(getKeepAlive());
+		gemfireCache.setLocators(getPoolLocators());
+		gemfireCache.setLoadConditioningInterval(getLoadConditioningInterval());
+		gemfireCache.setMaxConnections(getMaxConnections());
+		gemfireCache.setMinConnections(getMinConnections());
+		gemfireCache.setMultiUserAuthentication(getMultiUserAuthentication());
+		gemfireCache.setPingInterval(getPingInterval());
+		gemfireCache.setPrSingleHopEnabled(getPrSingleHopEnabled());
+		gemfireCache.setReadTimeout(getReadTimeout());
+		gemfireCache.setReadyForEvents(getReadyForEvents());
+		gemfireCache.setRetryAttempts(getRetryAttempts());
+		gemfireCache.setServerGroup(getServerGroup());
+		gemfireCache.setServers(getPoolServers());
+		gemfireCache.setSocketBufferSize(getSocketBufferSize());
+		gemfireCache.setStatisticsInterval(getStatisticsInterval());
+		gemfireCache.setSubscriptionAckInterval(getSubscriptionAckInterval());
+		gemfireCache.setSubscriptionEnabled(getSubscriptionEnabled());
+		gemfireCache.setSubscriptionMessageTrackingTimeout(getSubscriptionMessageTrackingTimeout());
+		gemfireCache.setSubscriptionRedundancy(getSubscriptionRedundancy());
+		gemfireCache.setThreadLocalConnections(getThreadLocalConnections());
 
 		return gemfireCache;
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("all")
 	private List<ClientCacheConfigurer> resolveClientCacheConfigurers() {
 
 		return Optional.ofNullable(this.clientCacheConfigurers)
@@ -159,10 +163,12 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 				Optional.of(this.beanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
+
 						Map<String, ClientCacheConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
 							.getBeansOfType(ClientCacheConfigurer.class, true, true);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+
 					})
 					.orElseGet(Collections::emptyList)
 			);
@@ -227,28 +233,109 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 			Map<String, Object> clientCacheApplicationAttributes =
 				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
-			setDurableClientId((String) clientCacheApplicationAttributes.get("durableClientId"));
-			setDurableClientTimeout((Integer) clientCacheApplicationAttributes.get("durableClientTimeout"));
-			setFreeConnectionTimeout((Integer) clientCacheApplicationAttributes.get("freeConnectionTimeout"));
-			setIdleTimeout((Long) clientCacheApplicationAttributes.get("idleTimeout"));
-			setKeepAlive(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("keepAlive")));
-			setLoadConditioningInterval((Integer) clientCacheApplicationAttributes.get("loadConditioningInterval"));
-			setMaxConnections((Integer) clientCacheApplicationAttributes.get("maxConnections"));
-			setMinConnections((Integer) clientCacheApplicationAttributes.get("minConnections"));
-			setMultiUserAuthentication(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("multiUserAuthentication")));
-			setPingInterval((Long) clientCacheApplicationAttributes.get("pingInterval"));
-			setPrSingleHopEnabled(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("prSingleHopEnabled")));
-			setReadTimeout((Integer) clientCacheApplicationAttributes.get("readTimeout"));
-			setReadyForEvents(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("readyForEvents")));
-			setRetryAttempts((Integer) clientCacheApplicationAttributes.get("retryAttempts"));
-			setServerGroup((String) clientCacheApplicationAttributes.get("serverGroup"));
-			setSocketBufferSize((Integer) clientCacheApplicationAttributes.get("socketBufferSize"));
-			setStatisticsInterval((Integer) clientCacheApplicationAttributes.get("statisticInterval"));
-			setSubscriptionAckInterval((Integer) clientCacheApplicationAttributes.get("subscriptionAckInterval"));
-			setSubscriptionEnabled(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("subscriptionEnabled")));
-			setSubscriptionMessageTrackingTimeout((Integer) clientCacheApplicationAttributes.get("subscriptionMessageTrackingTimeout"));
-			setSubscriptionRedundancy((Integer) clientCacheApplicationAttributes.get("subscriptionRedundancy"));
-			setThreadLocalConnections(Boolean.TRUE.equals(clientCacheApplicationAttributes.get("threadLocalConnections")));
+			setDurableClientId(resolveProperty(cacheClientProperty("durable-client-id"),
+				(String) clientCacheApplicationAttributes.get("durableClientId")));
+
+			setDurableClientTimeout(resolveProperty(cacheClientProperty("durable-client-timeout"),
+				(Integer) clientCacheApplicationAttributes.get("durableClientTimeout")));
+
+			setFreeConnectionTimeout(
+				resolveProperty(namedPoolProperty("default", "free-connection-timeout"),
+				resolveProperty(poolProperty("free-connection-timeout"),
+				(Integer) clientCacheApplicationAttributes.get("freeConnectionTimeout"))));
+
+			setIdleTimeout(
+				resolveProperty(namedPoolProperty("default", "idle-timeout"),
+				resolveProperty(poolProperty("idle-timeout"),
+				(Long) clientCacheApplicationAttributes.get("idleTimeout"))));
+
+			setKeepAlive(resolveProperty(cacheClientProperty("keep-alive"),
+				Boolean.TRUE.equals(clientCacheApplicationAttributes.get("keepAlive"))));
+
+			setLoadConditioningInterval(
+				resolveProperty(namedPoolProperty("default","load-conditioning-interval"),
+				resolveProperty(poolProperty("load-conditioning-interval"),
+				(Integer) clientCacheApplicationAttributes.get("loadConditioningInterval"))));
+
+			setMaxConnections(
+				resolveProperty(namedPoolProperty("default", "max-connections"),
+				resolveProperty(poolProperty("max-connections"),
+				(Integer) clientCacheApplicationAttributes.get("maxConnections"))));
+
+			setMinConnections(
+				resolveProperty(namedPoolProperty("default", "min-connections"),
+				resolveProperty(poolProperty("min-connections"),
+				(Integer) clientCacheApplicationAttributes.get("minConnections"))));
+
+			setMultiUserAuthentication(
+				resolveProperty(namedPoolProperty("default", "multi-user-authentication"),
+				resolveProperty(poolProperty("multi-user-authentication"),
+				Boolean.TRUE.equals(clientCacheApplicationAttributes.get("multiUserAuthentication")))));
+
+			setPingInterval(
+				resolveProperty(namedPoolProperty("default", "ping-interval"),
+				resolveProperty(poolProperty("ping-interval"),
+				(Long) clientCacheApplicationAttributes.get("pingInterval"))));
+
+			setPrSingleHopEnabled(
+				resolveProperty(namedPoolProperty("default", "pr-single-hop-enabled"),
+				resolveProperty(poolProperty("pr-single-hop-enabled"),
+				Boolean.TRUE.equals(clientCacheApplicationAttributes.get("prSingleHopEnabled")))));
+
+			setReadTimeout(
+				resolveProperty(namedPoolProperty("default", "read-timeout"),
+				resolveProperty(poolProperty("read-timeout"),
+				(Integer) clientCacheApplicationAttributes.get("readTimeout"))));
+
+			setReadyForEvents(
+				resolveProperty(namedPoolProperty("default", "ready-for-events"),
+				resolveProperty(poolProperty("ready-for-events"),
+				Boolean.TRUE.equals(clientCacheApplicationAttributes.get("readyForEvents")))));
+
+			setRetryAttempts(
+				resolveProperty(namedPoolProperty("default", "retry-attempts"),
+				resolveProperty(poolProperty("retry-attempts"),
+				(Integer) clientCacheApplicationAttributes.get("retryAttempts"))));
+
+			setServerGroup(
+				resolveProperty(namedPoolProperty("default", "server-group"),
+				resolveProperty(poolProperty("server-group"),
+				(String) clientCacheApplicationAttributes.get("serverGroup"))));
+
+			setSocketBufferSize(
+				resolveProperty(namedPoolProperty("default", "socket-buffer-size"),
+				resolveProperty(poolProperty("socket-buffer-size"),
+				(Integer) clientCacheApplicationAttributes.get("socketBufferSize"))));
+
+			setStatisticsInterval(
+				resolveProperty(namedPoolProperty("default", "statistic-interval"),
+				resolveProperty(poolProperty("statistic-interval"),
+				(Integer) clientCacheApplicationAttributes.get("statisticInterval"))));
+
+			setSubscriptionAckInterval(
+				resolveProperty(namedPoolProperty("default", "subscription-ack-interval"),
+				resolveProperty(poolProperty("subscription-ack-interval"),
+				(Integer) clientCacheApplicationAttributes.get("subscriptionAckInterval"))));
+
+			setSubscriptionEnabled(
+				resolveProperty(namedPoolProperty("default", "subscription-enabled"),
+				resolveProperty(poolProperty("subscription-enabled"),
+				Boolean.TRUE.equals(clientCacheApplicationAttributes.get("subscriptionEnabled")))));
+
+			setSubscriptionMessageTrackingTimeout(
+				resolveProperty(namedPoolProperty("default", "subscription-message-tracking-timeout"),
+				resolveProperty(poolProperty("subscription-message-tracking-timeout"),
+				(Integer) clientCacheApplicationAttributes.get("subscriptionMessageTrackingTimeout"))));
+
+			setSubscriptionRedundancy(
+				resolveProperty(namedPoolProperty("default", "subscription-redundancy"),
+				resolveProperty(poolProperty("subscription-redundancy"),
+				(Integer) clientCacheApplicationAttributes.get("subscriptionRedundancy"))));
+
+			setThreadLocalConnections(
+				resolveProperty(namedPoolProperty("default", "thread-local-connections"),
+				resolveProperty(poolProperty("thread-local-connections"),
+				Boolean.TRUE.equals(clientCacheApplicationAttributes.get("threadLocalConnections")))));
 
 			configureLocatorsAndServers(clientCacheApplicationAttributes);
 		}
@@ -265,22 +352,44 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	 */
 	private void configureLocatorsAndServers(Map<String, Object> clientCacheApplicationAttributes) {
 
-		ConnectionEndpointList poolLocators = new ConnectionEndpointList();
+		ConnectionEndpointList poolLocators;
 
-		AnnotationAttributes[] locators = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("locators");
+		String locatorsFromProperty = resolveProperty(namedPoolProperty("default", "locators"),
+			resolveProperty(poolProperty("locators"), (String) null));
 
-		for (AnnotationAttributes locator : locators) {
-			poolLocators.add(newConnectionEndpoint((String) locator.get("host"), (Integer) locator.get("port")));
+		if (StringUtils.hasText(locatorsFromProperty)) {
+			String[] locatorHostsPorts = locatorsFromProperty.split(",");
+			poolLocators = ConnectionEndpointList.parse(GemfireUtils.DEFAULT_LOCATOR_PORT, locatorHostsPorts);
+		}
+		else {
+			poolLocators = new ConnectionEndpointList();
+
+			AnnotationAttributes[] locators = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("locators");
+
+			for (AnnotationAttributes locator : locators) {
+				poolLocators.add(newConnectionEndpoint((String) locator.get("host"), (Integer) locator.get("port")));
+			}
 		}
 
 		setPoolLocators(poolLocators);
 
-		ConnectionEndpointList poolServers = new ConnectionEndpointList();
+		ConnectionEndpointList poolServers;
 
-		AnnotationAttributes[] servers = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("servers");
+		String serversFromProperty = resolveProperty(namedPoolProperty("default", "servers"),
+			resolveProperty(poolProperty("servers"), (String) null));
 
-		for (AnnotationAttributes server : servers) {
-			poolServers.add(newConnectionEndpoint((String) server.get("host"), (Integer) server.get("port")));
+		if (StringUtils.hasText(serversFromProperty)) {
+			String[] serverHostsPorts = serversFromProperty.split(",");
+			poolServers = ConnectionEndpointList.parse(CacheServer.DEFAULT_PORT, serverHostsPorts);
+		}
+		else {
+			poolServers = new ConnectionEndpointList();
+
+			AnnotationAttributes[] servers = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("servers");
+
+			for (AnnotationAttributes server : servers) {
+				poolServers.add(newConnectionEndpoint((String) server.get("host"), (Integer) server.get("port")));
+			}
 		}
 
 		setPoolServers(poolServers);
@@ -304,7 +413,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.durableClientId = durableClientId;
 	}
 
-	protected String durableClientId() {
+	protected String getDurableClientId() {
 		return this.durableClientId;
 	}
 
@@ -313,7 +422,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.durableClientTimeout = durableClientTimeout;
 	}
 
-	protected Integer durableClientTimeout() {
+	protected Integer getDurableClientTimeout() {
 		return this.durableClientTimeout;
 	}
 
@@ -322,7 +431,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.freeConnectionTimeout = freeConnectionTimeout;
 	}
 
-	protected Integer freeConnectionTimeout() {
+	protected Integer getFreeConnectionTimeout() {
 		return this.freeConnectionTimeout;
 	}
 
@@ -331,7 +440,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.idleTimeout = idleTimeout;
 	}
 
-	protected Long idleTimeout() {
+	protected Long getIdleTimeout() {
 		return this.idleTimeout;
 	}
 
@@ -340,7 +449,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.keepAlive = keepAlive;
 	}
 
-	protected Boolean keepAlive() {
+	protected Boolean getKeepAlive() {
 		return this.keepAlive;
 	}
 
@@ -349,7 +458,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.loadConditioningInterval = loadConditioningInterval;
 	}
 
-	protected Integer loadConditioningInterval() {
+	protected Integer getLoadConditioningInterval() {
 		return this.loadConditioningInterval;
 	}
 
@@ -358,7 +467,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.maxConnections = maxConnections;
 	}
 
-	protected Integer maxConnections() {
+	protected Integer getMaxConnections() {
 		return this.maxConnections;
 	}
 
@@ -367,7 +476,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.minConnections = minConnections;
 	}
 
-	protected Integer minConnections() {
+	protected Integer getMinConnections() {
 		return this.minConnections;
 	}
 
@@ -376,7 +485,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.multiUserAuthentication = multiUserAuthentication;
 	}
 
-	protected Boolean multiUserAuthentication() {
+	protected Boolean getMultiUserAuthentication() {
 		return this.multiUserAuthentication;
 	}
 
@@ -385,7 +494,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.pingInterval = pingInterval;
 	}
 
-	protected Long pingInterval() {
+	protected Long getPingInterval() {
 		return this.pingInterval;
 	}
 
@@ -394,7 +503,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.locators = locators;
 	}
 
-	protected Iterable<ConnectionEndpoint> poolLocators() {
+	protected Iterable<ConnectionEndpoint> getPoolLocators() {
 		return this.locators;
 	}
 
@@ -403,7 +512,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.servers = servers;
 	}
 
-	protected Iterable<ConnectionEndpoint> poolServers() {
+	protected Iterable<ConnectionEndpoint> getPoolServers() {
 		return this.servers;
 	}
 
@@ -412,7 +521,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.prSingleHopEnabled = prSingleHopEnabled;
 	}
 
-	protected Boolean prSingleHopEnabled() {
+	protected Boolean getPrSingleHopEnabled() {
 		return this.prSingleHopEnabled;
 	}
 
@@ -421,7 +530,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.readTimeout = readTimeout;
 	}
 
-	protected Integer readTimeout() {
+	protected Integer getReadTimeout() {
 		return this.readTimeout;
 	}
 
@@ -430,7 +539,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.readyForEvents = readyForEvents;
 	}
 
-	protected boolean readyForEvents() {
+	protected boolean getReadyForEvents() {
 		return this.readyForEvents;
 	}
 
@@ -439,7 +548,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.retryAttempts = retryAttempts;
 	}
 
-	protected Integer retryAttempts() {
+	protected Integer getRetryAttempts() {
 		return this.retryAttempts;
 	}
 
@@ -448,7 +557,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.serverGroup = serverGroup;
 	}
 
-	protected String serverGroup() {
+	protected String getServerGroup() {
 		return this.serverGroup;
 	}
 
@@ -457,7 +566,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.socketBufferSize = socketBufferSize;
 	}
 
-	protected Integer socketBufferSize() {
+	protected Integer getSocketBufferSize() {
 		return this.socketBufferSize;
 	}
 
@@ -466,7 +575,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.statisticsInterval = statisticsInterval;
 	}
 
-	protected Integer statisticsInterval() {
+	protected Integer getStatisticsInterval() {
 		return this.statisticsInterval;
 	}
 
@@ -475,7 +584,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.subscriptionAckInterval = subscriptionAckInterval;
 	}
 
-	protected Integer subscriptionAckInterval() {
+	protected Integer getSubscriptionAckInterval() {
 		return this.subscriptionAckInterval;
 	}
 
@@ -484,7 +593,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.subscriptionEnabled = subscriptionEnabled;
 	}
 
-	protected Boolean subscriptionEnabled() {
+	protected Boolean getSubscriptionEnabled() {
 		return this.subscriptionEnabled;
 	}
 
@@ -493,7 +602,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
 	}
 
-	protected Integer subscriptionMessageTrackingTimeout() {
+	protected Integer getSubscriptionMessageTrackingTimeout() {
 		return this.subscriptionMessageTrackingTimeout;
 	}
 
@@ -502,7 +611,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.subscriptionRedundancy = subscriptionRedundancy;
 	}
 
-	protected Integer subscriptionRedundancy() {
+	protected Integer getSubscriptionRedundancy() {
 		return this.subscriptionRedundancy;
 	}
 
@@ -511,7 +620,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		this.threadLocalConnections = threadLocalConnections;
 	}
 
-	protected Boolean threadLocalConnections() {
+	protected Boolean getThreadLocalConnections() {
 		return this.threadLocalConnections;
 	}
 

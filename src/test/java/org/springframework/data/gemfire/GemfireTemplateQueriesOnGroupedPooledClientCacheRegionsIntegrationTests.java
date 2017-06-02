@@ -54,7 +54,7 @@ import org.springframework.data.gemfire.support.ConnectionEndpointList;
 import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import lombok.Data;
 import lombok.NonNull;
@@ -75,11 +75,15 @@ import lombok.RequiredArgsConstructor;
  * with the data of interest are targeted.
  *
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.junit.runner.RunWith
  * @see org.springframework.data.gemfire.GemfireTemplate
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see <a href="https://jira.spring.io/browse/SGF-555">Repository queries on client Regions associated with a Pool configured with a specified server group can lead to a RegionNotFoundException.</a>
  * @since 1.9.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes =
 	GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationTests.GemFireClientCacheConfiguration.class)
 @SuppressWarnings("unused")
@@ -147,6 +151,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 	static class GemFireClientCacheConfiguration {
 
 		Properties gemfireProperties() {
+
 			return PropertiesBuilder.create()
 				.setProperty("name", applicationName())
 				.setProperty("log-level", logLevel())
@@ -163,6 +168,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 
 		@Bean
 		ClientCacheFactoryBean gemfireCache() {
+
 			ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -174,6 +180,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 
 		@Bean(name = "ServerOnePool")
 		PoolFactoryBean serverOnePool() {
+
 			PoolFactoryBean serverOnePool = new PoolFactoryBean();
 
 			serverOnePool.setMaxConnections(2);
@@ -188,6 +195,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 
 		@Bean(name = "ServerTwoPool")
 		PoolFactoryBean serverTwoPool() {
+
 			PoolFactoryBean serverOnePool = new PoolFactoryBean();
 
 			serverOnePool.setMaxConnections(2);
@@ -248,6 +256,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 	static abstract class AbstractGemFireCacheServerConfiguration {
 
 		Properties gemfireProperties() {
+
 			return PropertiesBuilder.create()
 				.setProperty("name", applicationName())
 				.setProperty("mcast-port", "0")
@@ -276,6 +285,7 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 
 		@Bean
 		CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -285,11 +295,12 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		}
 
 		@Bean
-		CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache) {
+		CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache) {
+
 			CacheServerFactoryBean gemfireCacheServer = new CacheServerFactoryBean();
 
 			gemfireCacheServer.setAutoStartup(true);
-			gemfireCacheServer.setCache(gemfireCache);
+			gemfireCacheServer.setCache((Cache) gemfireCache);
 			gemfireCacheServer.setMaxTimeBetweenPings(Long.valueOf(TimeUnit.SECONDS.toMillis(60)).intValue());
 			gemfireCacheServer.setPort(cacheServerPort());
 
@@ -337,7 +348,8 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		}
 
 		@Bean(name = "Cats")
-		LocalRegionFactoryBean catsRegion(Cache gemfireCache) {
+		LocalRegionFactoryBean catsRegion(GemFireCache gemfireCache) {
+
 			LocalRegionFactoryBean catsRegion = new LocalRegionFactoryBean();
 
 			catsRegion.setCache(gemfireCache);
@@ -382,7 +394,8 @@ public class GemfireTemplateQueriesOnGroupedPooledClientCacheRegionsIntegrationT
 		}
 
 		@Bean(name = "Dogs")
-		LocalRegionFactoryBean<String, Dog> dogsRegion(Cache gemfireCache) {
+		LocalRegionFactoryBean<String, Dog> dogsRegion(GemFireCache gemfireCache) {
+
 			LocalRegionFactoryBean<String, Dog> dogsRegion = new LocalRegionFactoryBean<String, Dog>();
 
 			dogsRegion.setCache(gemfireCache);

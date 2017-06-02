@@ -20,15 +20,17 @@ package org.springframework.data.gemfire.config.annotation;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
- * The LoggingConfiguration class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * that applies additional GemFire/Geode configuration by way of GemFire/Geode System properties to configure
- * GemFire/Geode logging.
+ * The {@link LoggingConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that applies
+ * additional configuration using Pivotal GemFire/Apache Geode {@link Properties} to configure
+ * Pivotal GemFire/Apache Geode logging.
  *
  * @author John Blum
+ * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @see org.springframework.data.gemfire.config.annotation.EnableLogging
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
@@ -40,7 +42,12 @@ public class LoggingConfiguration extends EmbeddedServiceConfigurationSupport {
 
 	public static final String DEFAULT_LOG_LEVEL = "config";
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns the {@link EnableLogging} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 *
+	 * @return the {@link EnableLogging} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableLogging
+	 */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableLogging.class;
@@ -49,18 +56,24 @@ public class LoggingConfiguration extends EmbeddedServiceConfigurationSupport {
 	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
+
 		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
 		gemfireProperties.setPropertyIfNotDefault("log-disk-space-limit",
-			annotationAttributes.get("logDiskSpaceLimit"), DEFAULT_LOG_DISK_SPACE_LIMIT);
+			resolveProperty(loggingProperty("log-disk-space-limit"),
+				(Integer) annotationAttributes.get("logDiskSpaceLimit")), DEFAULT_LOG_DISK_SPACE_LIMIT);
 
-		gemfireProperties.setProperty("log-file", annotationAttributes.get("logFile"));
+		gemfireProperties.setProperty("log-file",
+			resolveProperty(loggingProperty("log-file"),
+				(String) annotationAttributes.get("logFile")));
 
 		gemfireProperties.setPropertyIfNotDefault("log-file-size-limit",
-			annotationAttributes.get("logFileSizeLimit"), DEFAULT_LOG_FILE_SIZE_LIMIT);
+			resolveProperty(loggingProperty("log-file-size-limit"),
+				(Integer) annotationAttributes.get("logFileSizeLimit")), DEFAULT_LOG_FILE_SIZE_LIMIT);
 
 		gemfireProperties.setPropertyIfNotDefault("log-level",
-			annotationAttributes.get("logLevel"), DEFAULT_LOG_LEVEL);
+			resolveProperty(loggingProperty("level"),
+				(String) annotationAttributes.get("logLevel")), DEFAULT_LOG_LEVEL);
 
 		return gemfireProperties.build();
 	}
