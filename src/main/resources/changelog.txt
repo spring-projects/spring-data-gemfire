@@ -3,6 +3,13 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.4.RELEASE (2017-06-08)
+---------------------------------------------
+* SGF-630 - Upgrade to Pivotal GemFire 8.2.5.
+* SGF-628 - Ensure locators and servers are configured correctly when using <gfe:pool> attributes.
+* SGF-619 - Release 1.9.4 (Ingalls SR4).
+
+
 Changes in version 1.8.11.RELEASE (2017-06-07)
 ----------------------------------------------
 * SGF-628 - Ensure locators and servers are configured correctly when using <gfe:pool> attributes.
