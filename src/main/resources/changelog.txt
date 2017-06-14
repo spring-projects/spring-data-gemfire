@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.0.M4 (2017-06-14)
+----------------------------------------
+* SGF-629 - Upgrade to Pivotal GemFire 9.0.4.
+* SGF-628 - Ensure locators and servers are configured correctly when using <gfe:pool> attributes.
+* SGF-627 - Release 2.0 M4 (Kay).
+* SGF-626 - Javadoc is not part of the distribution build.
+* SGF-604 - Add Configurers to enable dynamic configuration in the new SDG Annotation configuration model.
+* SGF-586 - Allow dynamic configuration with property placeholders and SpEL expressions when using SDG Annotation config for String-based attributes.
+
+
 Changes in version 1.9.4.RELEASE (2017-06-08)
 ---------------------------------------------
 * SGF-630 - Upgrade to Pivotal GemFire 8.2.5.
