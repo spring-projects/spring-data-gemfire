@@ -30,9 +30,12 @@
 
 	<gfe:replicated-region id="IndexedRegion" persistent="false"/>
 
-	<gfe:index id="simple" expression="status" from="/IndexedRegion" type="functional"/>
+	<gfe:index id="basic" expression="status" from="/IndexedRegion" type="functional"/>
 
 	<gfe:index id="complex" name="complex-index" expression="tsi.name" from="/IndexedRegion tsi"
 			   imports="import java.util" type="${index.complex.type}"/>
+
+	<gfe:index id="index-with-ignore-and-override" expression="id" from="/IndexedRegion"
+			   ignore-if-exists="true" override="true" type="PRIMARY_KEY"/>
 
 </beans>

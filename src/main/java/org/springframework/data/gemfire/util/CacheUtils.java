@@ -126,14 +126,14 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		try {
 			return ClientCacheFactory.getAnyInstance();
 		}
-		catch (CacheClosedException ignore) {
+		catch (CacheClosedException | IllegalStateException ignore) {
 			return null;
 		}
 	}
 
 	/* (non-Javadoc) */
 	public static GemFireCache resolveGemFireCache() {
-		return Optional.<GemFireCache>ofNullable(getCache()).orElseGet(CacheUtils::getClientCache);
+		return Optional.<GemFireCache>ofNullable(getClientCache()).orElseGet(CacheUtils::getCache);
 	}
 
 	/* (non-Javadoc) */

@@ -129,6 +129,7 @@ public class LuceneOperationsIntegrationTests {
 
 	@Test
 	public void findsDoctorDoesAsTypePersonSuccessfully() {
+
 		Collection<Person> doctorDoes = template.queryForValues("title: Doctor*", "title");
 
 		assertThat(doctorDoes).isNotNull();
@@ -139,6 +140,7 @@ public class LuceneOperationsIntegrationTests {
 	@Test
 	@SuppressWarnings("all")
 	public void findsMasterDoesAsTypeUserSuccessfully() {
+
 		List<User> masterDoes = template.query("title: Master*", "title", User.class);
 
 		assertThat(masterDoes).isNotNull();

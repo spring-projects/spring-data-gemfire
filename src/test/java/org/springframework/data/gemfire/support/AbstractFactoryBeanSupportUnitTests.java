@@ -134,6 +134,26 @@ public class AbstractFactoryBeanSupportUnitTests {
 	}
 
 	@Test
+	public void logsWarningWhenWarnIsEnabled() {
+		when(mockLog.isWarnEnabled()).thenReturn(true);
+
+		factoryBeanSupport.logWarning("%s log test", "warn");
+
+		verify(mockLog, times(1)).isWarnEnabled();
+		verify(mockLog, times(1)).warn(eq("warn log test"));
+	}
+
+	@Test
+	public void logsWarningWhenErrorIsEnabled() {
+		when(mockLog.isErrorEnabled()).thenReturn(true);
+
+		factoryBeanSupport.logError("%s log test", "error");
+
+		verify(mockLog, times(1)).isErrorEnabled();
+		verify(mockLog, times(1)).error(eq("error log test"));
+	}
+
+	@Test
 	public void suppressesDebugLoggingWhenDebugIsDisabled() {
 		when(mockLog.isDebugEnabled()).thenReturn(false);
 
@@ -151,6 +171,26 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 		verify(mockLog, times(1)).isInfoEnabled();
 		verify(mockLog, never()).info(any());
+	}
+
+	@Test
+	public void suppressesWarnLoggingWhenWarnIsDisabled() {
+		when(mockLog.isWarnEnabled()).thenReturn(false);
+
+		factoryBeanSupport.logWarning(() -> "test");
+
+		verify(mockLog, times(1)).isWarnEnabled();
+		verify(mockLog, never()).warn(any());
+	}
+
+	@Test
+	public void suppressesErrorLoggingWhenInfoIsDisabled() {
+		when(mockLog.isErrorEnabled()).thenReturn(false);
+
+		factoryBeanSupport.logError(() -> "test");
+
+		verify(mockLog, times(1)).isErrorEnabled();
+		verify(mockLog, never()).error(any());
 	}
 
 	private static class TestFactoryBeanSupport<T> extends AbstractFactoryBeanSupport<T> {

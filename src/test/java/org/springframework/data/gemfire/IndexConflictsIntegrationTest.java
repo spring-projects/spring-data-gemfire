@@ -16,25 +16,21 @@
 
 package org.springframework.data.gemfire;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexNameConflictException;
+import org.apache.geode.cache.query.QueryService;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -43,26 +39,49 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 
 /**
- * The IndexConflictsIntegrationTest class...
+ * Integration tests with test cases testing the numerous conflicting {@link Index} configurations.
+ *
+ * An {@link IndexExistsException} is thrown when 2 or more {@link Index Indexes} share the same definition
+ * but have different names.
+ *
+ * An {@link IndexNameConflictException} is thrown when 2 or more {@link Index Indexes} share the same name
+ * but have potentially different definitions.
  *
  * @author John Blum
  * @see org.junit.Test
- * @link https://jira.spring.io/browse/SGF-432
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.query.Index
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.context.annotation.Import
+ * @see <a href="https://jira.spring.io/browse/SGF-432">IndexFactoryBean traps IndexExistsException instead of IndexNameConflictException</a>
+ * @see <a href="https://jira.spring.io/browse/SGF-637">Improve IndexFactoryBean's resilience and options for handling GemFire IndexExistsExceptions and IndexNameConflictExceptions</a>
  * @since 1.6.3
  */
 public class IndexConflictsIntegrationTest {
 
-	protected void assertIndex(Index index, String expectedName, String expectedExpression, String expectedFromClause,
+	private static final AtomicBoolean IGNORE = new AtomicBoolean(false);
+	private static final AtomicBoolean OVERRIDE = new AtomicBoolean(false);
+
+	private ConfigurableApplicationContext applicationContext;
+
+	private void assertIndex(Index index, String expectedName, String expectedExpression, String expectedFromClause,
 			IndexType expectedType) {
 
-		assertThat(index, is(notNullValue()));
-		assertThat(index.getName(), is(equalTo(expectedName)));
-		assertThat(index.getIndexedExpression(), is(equalTo(expectedExpression)));
-		assertThat(index.getFromClause(), is(equalTo(expectedFromClause)));
-		assertThat(IndexType.valueOf(index.getType()), is(equalTo(expectedType)));
+		assertThat(index).isNotNull();
+		assertThat(index.getName()).isEqualTo(expectedName);
+		assertThat(index.getIndexedExpression()).isEqualTo(expectedExpression);
+		assertThat(index.getFromClause()).isEqualTo(expectedFromClause);
+		assertThat(IndexType.valueOf(index.getType())).isEqualTo(expectedType);
 	}
 
-	protected boolean close(ConfigurableApplicationContext applicationContext) {
+	private void assertIndexCount(int count) {
+		assertThat(getIndexCount()).isEqualTo(count);
+	}
+
+	private boolean close(ConfigurableApplicationContext applicationContext) {
+
 		if (applicationContext != null) {
 			applicationContext.close();
 			return !(applicationContext.isActive() || applicationContext.isRunning());
@@ -71,185 +90,260 @@ public class IndexConflictsIntegrationTest {
 		return true;
 	}
 
+	private Index getIndex(String indexName) {
+
+		for (Index index : nullSafeCollection(getQueryService().getIndexes())) {
+			if (index.getName().equalsIgnoreCase(indexName)) {
+				return index;
+			}
+		}
+
+		return null;
+	}
+
+	private int getIndexCount() {
+		return nullSafeCollection(getQueryService().getIndexes()).size();
+	}
+
+	private QueryService getQueryService() {
+		return this.applicationContext.getBean("gemfireCache", GemFireCache.class).getQueryService();
+	}
+
+	private boolean hasIndex(String indexName) {
+		return (getIndex(indexName) != null);
+	}
+
+	private ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
+		return new AnnotationConfigApplicationContext(annotatedClasses);
+	}
+
 	@Before
 	public void setup() {
-		System.getProperties().remove("gemfire.cache.region.index.override");
-
-		assertThat(System.getProperties().containsKey("gemfire.cache.region.index.override"), is(false));
+		assertThat(IGNORE.get()).isFalse();
+		assertThat(OVERRIDE.get()).isFalse();
 	}
 
-	@Test(expected = BeanCreationException.class)
-	public void indexDefinitionConflictThrowsException() {
-		ConfigurableApplicationContext applicationContext = null;
+	@After
+	public void tearDown() {
 
+		OVERRIDE.set(false);
+		IGNORE.set(false);
+
+		assertThat(close(this.applicationContext)).isTrue();
+	}
+
+	@Test
+	public void indexDefinitionConflictIgnoresIndex() {
+
+		assertThat(IGNORE.compareAndSet(false, true)).isTrue();
+
+		this.applicationContext = newApplicationContext(IndexDefinitionConflictConfiguration.class);
+
+		assertThat(this.applicationContext.containsBean("customerIdIndex")).isTrue();
+		assertThat(this.applicationContext.containsBean("customerIdentifierIndex")).isTrue();
+		assertIndexCount(1);
+		assertThat(hasIndex("customerIdIndex")).isTrue();
+		assertThat(hasIndex("customerIdentifierIndex")).isFalse();
+
+		Index customersIdIndex = getIndex("customerIdIndex");
+
+		assertIndex(customersIdIndex, "customerIdIndex",
+			"id", "/Customers", IndexType.PRIMARY_KEY);
+	}
+
+	@Test
+	public void indexDefinitionConflictOverridesIndex() {
+
+		assertThat(OVERRIDE.compareAndSet(false, true)).isTrue();
+
+		this.applicationContext = newApplicationContext(IndexDefinitionConflictConfiguration.class);
+
+		assertThat(this.applicationContext.containsBean("customerIdIndex")).isTrue();
+		assertThat(this.applicationContext.containsBean("customerIdentifierIndex")).isTrue();
+		assertIndexCount(1);
+		assertThat(hasIndex("customerIdIndex")).isFalse();
+		assertThat(hasIndex("customerIdentifierIndex")).isTrue();
+
+		Index customersIdentifierIndex = getIndex("customerIdentifierIndex");
+
+		assertIndex(customersIdentifierIndex, "customerIdentifierIndex",
+			"id", "/Customers", IndexType.PRIMARY_KEY);
+	}
+
+	@Test(expected = IndexExistsException.class)
+	public void indexDefinitionConflictThrowsIndexExistsException() throws Throwable {
 		try {
-			applicationContext = new AnnotationConfigApplicationContext(
-				IndexDefinitionConflictGemFireConfiguration.class);
+			this.applicationContext = newApplicationContext(IndexDefinitionConflictConfiguration.class);
 		}
 		catch (BeanCreationException expected) {
-			assertThat(expected.getMessage(), containsString("Error creating bean with name 'customerIdentityIndex'"
-				+ " defined in org.springframework.data.gemfire.IndexConflictsIntegrationTest$IndexDefinitionConflictGemFireConfiguration:"
-				+ " Invocation of init method failed"));
-			assertThat(expected.getCause(), is(instanceOf(GemfireIndexException.class)));
-			assertThat(expected.getCause().getMessage(),
-				containsString("An Index with a different name having the same definition"
-					+ " as this Index (customerIdentityIndex) already exists"));
-			assertThat(expected.getCause().getCause(), is(instanceOf(IndexExistsException.class)));
-			assertThat(expected.getCause().getCause().getMessage(), is(equalTo("Similar Index Exists")));
 
-			throw expected;
-		}
-		finally {
-			assertThat(close(applicationContext), is(true));
-		}
-	}
+			assertThat(expected).hasMessageStartingWith("Error creating bean with name 'customerIdentifierIndex'");
 
-	@Test
-	public void indexNameConflictOverridesExistingIndex() {
-		ConfigurableApplicationContext applicationContext = null;
+			assertThat(expected).hasCauseInstanceOf(GemfireIndexException.class);
 
-		try {
-			applicationContext = new AnnotationConfigApplicationContext(IndexNameConflictGemFireConfiguration.class);
+			String existingIndexDefinition = String.format(IndexFactoryBean.BASIC_INDEX_DEFINITION,
+				"id", "/Customers", IndexType.PRIMARY_KEY);
 
-			assertThat(applicationContext.getBeansOfType(Index.class).size(), is(equalTo(2)));
+			assertThat(expected.getCause()).hasMessageStartingWith(String.format(
+				"An Index with a different name [customerIdIndex] having the same definition [%s] already exists",
+					existingIndexDefinition));
 
-			Cache gemfireCache = applicationContext.getBean("gemfireCache", Cache.class);
+			assertThat(expected.getCause()).hasCauseInstanceOf(IndexExistsException.class);
 
-			assertThat(gemfireCache.getQueryService().getIndexes().size(), is(equalTo(1)));
+			assertThat(expected.getCause().getCause()).hasMessage("Similar Index Exists");
 
-			Index customerLastNameIndex = applicationContext.getBean("customerLastNameIndex", Index.class);
+			assertThat(expected.getCause().getCause()).hasNoCause();
 
-			assertIndex(customerLastNameIndex, IndexNameConflictGemFireConfiguration.INDEX_NAME,
-				"lastName", "/Customers", IndexType.HASH);
-
-			Index customerFirstNameIndex = applicationContext.getBean("customerFirstNameIndex", Index.class);
-
-			assertIndex(customerFirstNameIndex, IndexNameConflictGemFireConfiguration.INDEX_NAME,
-				"firstName", "/Customers", IndexType.FUNCTIONAL);
-
-			assertThat(customerFirstNameIndex, is(not(sameInstance(customerLastNameIndex))));
-			assertThat(gemfireCache.getQueryService().getIndexes().iterator().next(),
-				is(sameInstance(customerFirstNameIndex)));
-		}
-		finally {
-			assertThat(close(applicationContext), is(true));
+			throw expected.getCause().getCause();
 		}
 	}
 
 	@Test
-	public void indexNameConflictReturnsExistingIndex() {
-		ConfigurableApplicationContext applicationContext = null;
+	public void indexNameConflictIgnoresIndex() {
 
+		assertThat(IGNORE.compareAndSet(false, true)).isTrue();
+
+		this.applicationContext = newApplicationContext(IndexNameConflictConfiguration.class);
+
+		assertThat(this.applicationContext.containsBean("customerLastNameIndex")).isTrue();
+		assertThat(this.applicationContext.containsBean("customerFirstNameIndex")).isTrue();
+		assertIndexCount(1);
+		assertThat(hasIndex(IndexNameConflictConfiguration.INDEX_NAME)).isTrue();
+
+		Index customerLastNameIndex = getIndex(IndexNameConflictConfiguration.INDEX_NAME);
+
+		assertIndex(customerLastNameIndex, IndexNameConflictConfiguration.INDEX_NAME,
+			"lastName", "/Customers", IndexType.HASH);
+	}
+
+	@Test
+	public void indexNameConflictOverridesIndex() {
+
+		assertThat(OVERRIDE.compareAndSet(false, true)).isTrue();
+
+		this.applicationContext = newApplicationContext(IndexNameConflictConfiguration.class);
+
+		assertThat(this.applicationContext.getBeansOfType(Index.class)).hasSize(2);
+		assertThat(this.applicationContext.containsBean("customerLastNameIndex")).isTrue();
+		assertThat(this.applicationContext.containsBean("customerFirstNameIndex")).isTrue();
+		assertIndexCount(1);
+		assertThat(hasIndex(IndexNameConflictConfiguration.INDEX_NAME)).isTrue();
+
+		Index customerFirstNameIndex = getIndex(IndexNameConflictConfiguration.INDEX_NAME);
+
+		assertIndex(customerFirstNameIndex, IndexNameConflictConfiguration.INDEX_NAME,
+			"firstName", "/Customers", IndexType.FUNCTIONAL);
+	}
+
+	@Test(expected = IndexNameConflictException.class)
+	public void indexNameConflictThrowsIndexNameConflictException() throws Throwable {
 		try {
-			System.setProperty("gemfire.cache.region.index.override", Boolean.FALSE.toString());
-
-			assertThat(System.getProperty("gemfire.cache.region.index.override", "true"),
-				is(equalTo(Boolean.FALSE.toString())));
-
-			applicationContext = new AnnotationConfigApplicationContext(IndexNameConflictGemFireConfiguration.class);
-
-			assertThat(applicationContext.getBeansOfType(Index.class).size(), is(equalTo(2)));
-
-			Cache gemfireCache = applicationContext.getBean("gemfireCache", Cache.class);
-
-			assertThat(gemfireCache.getQueryService().getIndexes().size(), is(equalTo(1)));
-
-			Index customerLastNameIndex = applicationContext.getBean("customerLastNameIndex", Index.class);
-
-			assertIndex(customerLastNameIndex, IndexNameConflictGemFireConfiguration.INDEX_NAME,
-				"lastName", "/Customers", IndexType.HASH);
-
-			Index customerFirstNameIndex = applicationContext.getBean("customerFirstNameIndex", Index.class);
-
-			assertIndex(customerFirstNameIndex, IndexNameConflictGemFireConfiguration.INDEX_NAME,
-				"lastName", "/Customers", IndexType.HASH);
-
-			assertThat(customerFirstNameIndex, is(sameInstance(customerLastNameIndex)));
-			assertThat(gemfireCache.getQueryService().getIndexes().iterator().next(),
-				is(sameInstance(customerLastNameIndex)));
+			this.applicationContext = newApplicationContext(IndexNameConflictConfiguration.class);
 		}
-		finally {
-			System.getProperties().remove("gemfire.cache.region.index.override");
+		catch (BeanCreationException expected) {
 
-			if (applicationContext != null) {
-				applicationContext.close();
-			}
+			assertThat(expected).hasMessageStartingWith("Error creating bean with name 'customerFirstNameIndex'");
+
+			assertThat(expected).hasCauseInstanceOf(GemfireIndexException.class);
+
+			assertThat(expected.getCause()).hasMessageStartingWith(String.format(
+				"An Index with the same name [%s] having possibly a different definition already exists;",
+					IndexNameConflictConfiguration.INDEX_NAME));
+
+			assertThat(expected.getCause()).hasCauseInstanceOf(IndexNameConflictException.class);
+
+			assertThat(expected.getCause().getCause()).hasMessage(String.format("Index named ' %s ' already exists.",
+				IndexNameConflictConfiguration.INDEX_NAME));
+
+			assertThat(expected.getCause().getCause()).hasNoCause();
+
+			throw expected.getCause().getCause();
 		}
 	}
 
 	@Configuration
 	@SuppressWarnings("unused")
-	public static class BaseGemFireConfiguration {
+	public static class GemFireConfiguration {
 
-		@Bean
 		public Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
+
 			gemfireProperties.setProperty("name", IndexConflictsIntegrationTest.class.getSimpleName());
 			gemfireProperties.setProperty("mcast-port", "0");
 			gemfireProperties.setProperty("log-level", "warning");
+
 			return gemfireProperties;
 		}
 
 		@Bean
 		public CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+			cacheFactoryBean.setClose(true);
 			cacheFactoryBean.setProperties(gemfireProperties());
-			cacheFactoryBean.setUseBeanFactoryLocator(false);
+
 			return cacheFactoryBean;
 		}
 
 		@Bean(name = "Customers")
-		public ReplicatedRegionFactoryBean customersRegion(Cache gemfireCache) {
+		public ReplicatedRegionFactoryBean customersRegion(GemFireCache gemfireCache) {
+
 			ReplicatedRegionFactoryBean customersRegionFactory = new ReplicatedRegionFactoryBean();
+
 			customersRegionFactory.setCache(gemfireCache);
-			customersRegionFactory.setName("Customers");
+			customersRegionFactory.setClose(false);
 			customersRegionFactory.setPersistent(false);
+
 			return customersRegionFactory;
 		}
 	}
 
 	@Configuration
-	@Import(BaseGemFireConfiguration.class)
+	@Import(GemFireConfiguration.class)
 	@SuppressWarnings("unused")
-	public static class IndexDefinitionConflictGemFireConfiguration {
+	public static class IndexDefinitionConflictConfiguration {
 
 		@Bean
-		public IndexFactoryBean customerIdIndex(Cache gemfireCache) {
+		public IndexFactoryBean customerIdIndex(GemFireCache gemfireCache) {
+
 			IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
+
 			indexFactoryBean.setCache(gemfireCache);
 			indexFactoryBean.setExpression("id");
 			indexFactoryBean.setFrom("/Customers");
 			indexFactoryBean.setType(IndexType.PRIMARY_KEY);
+
 			return indexFactoryBean;
 		}
 
 		@Bean
 		@DependsOn("customerIdIndex")
-		public IndexFactoryBean customerIdentityIndex(Cache gemfireCache) {
+		public IndexFactoryBean customerIdentifierIndex(GemFireCache gemfireCache) {
+
 			IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
+
 			indexFactoryBean.setCache(gemfireCache);
 			indexFactoryBean.setExpression("id");
+			indexFactoryBean.setIgnoreIfExists(IGNORE.get());
 			indexFactoryBean.setFrom("/Customers");
+			indexFactoryBean.setOverride(OVERRIDE.get());
 			indexFactoryBean.setType(IndexType.PRIMARY_KEY);
+
 			return indexFactoryBean;
 		}
 	}
 
 	@Configuration
-	@Import(BaseGemFireConfiguration.class)
+	@Import(GemFireConfiguration.class)
 	@SuppressWarnings("unused")
-	public static class IndexNameConflictGemFireConfiguration {
+	public static class IndexNameConflictConfiguration {
 
 		protected static final String INDEX_NAME = "CustomerNameIdx";
 
 		@Bean
-		public PropertyPlaceholderConfigurer propertyPlaceholderConfigurer() {
-			return new PropertyPlaceholderConfigurer();
-		}
-
-		@Bean
-		public IndexFactoryBean customerLastNameIndex(Cache gemfireCache,
-				@Value("${gemfire.cache.region.index.override:true}") boolean override) {
+		public IndexFactoryBean customerLastNameIndex(GemFireCache gemfireCache) {
 
 			IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
 
@@ -257,7 +351,6 @@ public class IndexConflictsIntegrationTest {
 			indexFactoryBean.setExpression("lastName");
 			indexFactoryBean.setFrom("/Customers");
 			indexFactoryBean.setName(INDEX_NAME);
-			indexFactoryBean.setOverride(override);
 			indexFactoryBean.setType(IndexType.HASH);
 
 			return indexFactoryBean;
@@ -265,20 +358,19 @@ public class IndexConflictsIntegrationTest {
 
 		@Bean
 		@DependsOn("customerLastNameIndex")
-		public IndexFactoryBean customerFirstNameIndex(Cache gemfireCache,
-				@Value("${gemfire.cache.region.index.override:true}") boolean override) {
+		public IndexFactoryBean customerFirstNameIndex(GemFireCache gemfireCache) {
 
 			IndexFactoryBean indexFactoryBean = new IndexFactoryBean();
 
 			indexFactoryBean.setCache(gemfireCache);
 			indexFactoryBean.setExpression("firstName");
 			indexFactoryBean.setFrom("/Customers");
+			indexFactoryBean.setIgnoreIfExists(IGNORE.get());
 			indexFactoryBean.setName(INDEX_NAME);
-			indexFactoryBean.setOverride(override);
+			indexFactoryBean.setOverride(OVERRIDE.get());
 			indexFactoryBean.setType(IndexType.FUNCTIONAL);
 
 			return indexFactoryBean;
 		}
 	}
-
 }

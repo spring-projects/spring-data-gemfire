@@ -2358,11 +2358,27 @@ Corresponds to the regionPath parameter in createIndex methods.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="imports" type="xsd:string" use="optional" />
-			<xsd:attribute name="override" type="xsd:string" use="optional" default="true">
+			<xsd:attribute name="ignore-if-exists" type="xsd:string" use="optional" default="false">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-Indicates whether the index is created even if there is an index with the same name (default) or not.
+Indicates whether this Index is ignored when there exists an Index with the same name, but possibly
+different definition.
+
+You should use this setting with care.  See Javadoc for more details.
+
+Defaults to false.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="imports" type="xsd:string" use="optional" />
+			<xsd:attribute name="override" type="xsd:string" use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates whether the Index is created even if there exists an Index with the same definition, different name.
+
+You should use this setting with care.  See Javadoc for more details.
+
+Defaults to false.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>

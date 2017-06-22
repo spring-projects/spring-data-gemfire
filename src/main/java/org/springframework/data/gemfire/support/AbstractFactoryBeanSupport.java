@@ -203,4 +203,54 @@ public abstract class AbstractFactoryBeanSupport<T> implements FactoryBean<T>,
 			.filter(Log::isInfoEnabled)
 			.ifPresent(log -> log.info(message.get()));
 	}
+
+	/**
+	 * Logs the {@link String message} formatted with the array of {@link Object arguments} at warn level.
+	 *
+	 * @param message {@link String} containing the message to log.
+	 * @param args array of {@link Object arguments} used to format the {@code message}.
+	 * @see #logWarning(Supplier)
+	 */
+	protected void logWarning(String message, Object... args) {
+		logWarning(() -> String.format(message, args));
+	}
+
+	/**
+	 * Logs the {@link String message} supplied by the given {@link Supplier} at warn level.
+	 *
+	 * @param message {@link Supplier} containing the {@link String message} and arguments to log.
+	 * @see org.apache.commons.logging.Log#isWarnEnabled()
+	 * @see org.apache.commons.logging.Log#warn(Object)
+	 * @see #getLog()
+	 */
+	protected void logWarning(Supplier<String> message) {
+		Optional.ofNullable(getLog())
+			.filter(Log::isWarnEnabled)
+			.ifPresent(log -> log.warn(message.get()));
+	}
+
+	/**
+	 * Logs the {@link String message} formatted with the array of {@link Object arguments} at error level.
+	 *
+	 * @param message {@link String} containing the message to log.
+	 * @param args array of {@link Object arguments} used to format the {@code message}.
+	 * @see #logError(Supplier)
+	 */
+	protected void logError(String message, Object... args) {
+		logError(() -> String.format(message, args));
+	}
+
+	/**
+	 * Logs the {@link String message} supplied by the given {@link Supplier} at error level.
+	 *
+	 * @param message {@link Supplier} containing the {@link String message} and arguments to log.
+	 * @see org.apache.commons.logging.Log#isErrorEnabled()
+	 * @see org.apache.commons.logging.Log#error(Object)
+	 * @see #getLog()
+	 */
+	protected void logError(Supplier<String> message) {
+		Optional.ofNullable(getLog())
+			.filter(Log::isErrorEnabled)
+			.ifPresent(log -> log.error(message.get()));
+	}
 }

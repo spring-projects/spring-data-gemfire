@@ -25,6 +25,7 @@ package org.springframework.data.gemfire;
  */
 @SuppressWarnings({ "deprecation", "unused" })
 public enum IndexType {
+
 	FUNCTIONAL(org.apache.geode.cache.query.IndexType.FUNCTIONAL),
 	HASH(org.apache.geode.cache.query.IndexType.HASH),
 	PRIMARY_KEY(org.apache.geode.cache.query.IndexType.PRIMARY_KEY),
@@ -49,7 +50,7 @@ public enum IndexType {
 	 * @return a boolean value indicating whether the IndexType is a "FUNCTIONAL" Index.
 	 * @see #isFunctional()
 	 */
-	public static boolean isFunctional(final IndexType indexType) {
+	public static boolean isFunctional(IndexType indexType) {
 		return (indexType != null && indexType.isFunctional());
 	}
 
@@ -60,7 +61,7 @@ public enum IndexType {
 	 * @return a boolean value indicating whether the IndexType is a "HASH" Index.
 	 * @see #isHash()
 	 */
-	public static boolean isHash(final IndexType indexType) {
+	public static boolean isHash(IndexType indexType) {
 		return (indexType != null && indexType.isHash());
 	}
 
@@ -71,7 +72,7 @@ public enum IndexType {
 	 * @return a boolean value indicating whether the IndexType is a "KEY" Index.
 	 * @see #isFunctional()
 	 */
-	public static boolean isKey(final IndexType indexType) {
+	public static boolean isKey(IndexType indexType) {
 		return (indexType != null && indexType.isKey());
 	}
 
@@ -84,7 +85,8 @@ public enum IndexType {
 	 * any IndexType in this enumeration.
 	 * @see org.apache.geode.cache.query.IndexType
 	 */
-	public static IndexType valueOf(final org.apache.geode.cache.query.IndexType gemfireIndexType) {
+	public static IndexType valueOf(org.apache.geode.cache.query.IndexType gemfireIndexType) {
+
 		for (IndexType indexType : values()) {
 			if (indexType.getGemfireIndexType().equals(gemfireIndexType)) {
 				return indexType;
@@ -101,7 +103,8 @@ public enum IndexType {
 	 * @return an IndexType matching the given String.
 	 * @see java.lang.String#equalsIgnoreCase(String)
 	 */
-	public static IndexType valueOfIgnoreCase(final String value) {
+	public static IndexType valueOfIgnoreCase(String value) {
+
 		for (IndexType indexType : values()) {
 			if (indexType.name().equalsIgnoreCase(value)) {
 				return indexType;
@@ -147,5 +150,4 @@ public enum IndexType {
 	public boolean isKey() {
 		return (this.equals(KEY) || this.equals(PRIMARY_KEY));
 	}
-
 }

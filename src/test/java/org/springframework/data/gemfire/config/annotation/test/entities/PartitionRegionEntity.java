@@ -42,7 +42,7 @@ public class PartitionRegionEntity {
 	@Id
 	private Long id;
 
-	@Indexed(expression = "first_name", from = "/LoyalCustomers", override = true, type = IndexType.FUNCTIONAL)
+	@Indexed(expression = "first_name", from = "/LoyalCustomers", type = IndexType.FUNCTIONAL)
 	private String firstName;
 
 	@Indexed(name = "LastNameIdx", expression = "surname")
