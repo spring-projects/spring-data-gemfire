@@ -17,20 +17,21 @@
 
 package org.springframework.data.gemfire.util;
 
-import org.springframework.util.StringUtils;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
+import org.springframework.util.StringUtils;
+
 /**
- * CacheUtils is an abstract utility class encapsulating common operations for working with GemFire Cache
- * and ClientCache instances.
+ * {@link CacheUtils} is an abstract utility class encapsulating common operations for working with
+ * GemFire {@link Cache} and {@link ClientCache} instances.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.util.DistributedSystemUtils
@@ -52,6 +53,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static boolean isClient(GemFireCache cache) {
+
 		boolean client = (cache instanceof ClientCache);
 
 		if (cache instanceof GemFireCacheImpl) {
@@ -63,6 +65,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 
 	/* (non-Javadoc) */
 	public static boolean isDurable(ClientCache clientCache) {
+
 		DistributedSystem distributedSystem = getDistributedSystem(clientCache);
 
 		// NOTE technically the following code snippet would be more useful/valuable but is not "testable"!
@@ -75,6 +78,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static boolean isPeer(GemFireCache cache) {
+
 		boolean peer = (cache instanceof Cache);
 
 		if (cache instanceof GemFireCacheImpl) {
@@ -124,5 +128,21 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		catch (CacheClosedException ignore) {
 			return null;
 		}
+		catch (IllegalStateException ignore) {
+			return null;
+		}
+	}
+
+	/* (non-Javadoc) */
+	public static GemFireCache resolveGemFireCache() {
+
+		GemFireCache resolvedGemFireCache = getClientCache();
+
+		return (resolvedGemFireCache != null ? resolvedGemFireCache : getCache());
+	}
+
+	/* (non-Javadoc) */
+	public static String toRegionPath(String regionName) {
+		return String.format("%1$s%2$s", Region.SEPARATOR, regionName);
 	}
 }

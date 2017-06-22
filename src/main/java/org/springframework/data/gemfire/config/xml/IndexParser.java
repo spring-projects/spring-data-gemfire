@@ -42,8 +42,10 @@ class IndexParser extends AbstractSimpleBeanDefinitionParser {
 	private static final AtomicBoolean REGISTERED = new AtomicBoolean(false);
 
 	/* (non-Javadoc) */
-	protected static void registerDefinedIndexesApplicationListener(ParserContext parserContext) {
+	private static void registerDefinedIndexesApplicationListener(ParserContext parserContext) {
+
 		if (REGISTERED.compareAndSet(false, true)) {
+
 			AbstractBeanDefinition createDefinedIndexesApplicationListener = BeanDefinitionBuilder
 				.rootBeanDefinition(DefinedIndexesApplicationListener.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)

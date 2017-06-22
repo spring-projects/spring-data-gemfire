@@ -20,17 +20,21 @@ package org.springframework.data.gemfire.config.annotation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 
 import org.junit.After;
 import org.junit.Test;
@@ -42,6 +46,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.annotation.test.entities.ClientRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.CollocatedPartitionRegionEntity;
@@ -62,7 +67,21 @@ import org.springframework.data.gemfire.config.annotation.test.entities.Replicat
  */
 public class EnableIndexesConfigurationUnitTests {
 
+	private static final Set<Index> indexes = new ConcurrentHashSet<Index>();
+
 	private ConfigurableApplicationContext applicationContext;
+
+	/* (non-Javadoc) */
+	private static Index findIndexByName(String indexName) {
+
+		for (Index index : indexes) {
+			if (index.getName().equalsIgnoreCase(indexName)) {
+				return index;
+			}
+		}
+
+		return null;
+	}
 
 	@After
 	public void tearDown() {
@@ -115,22 +134,46 @@ public class EnableIndexesConfigurationUnitTests {
 		assertThat(indexes.isEmpty()).isTrue();
 	}
 
+	@Test
+	public void indexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameDefinition() {
+
+		applicationContext = newApplicationContext(
+			IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameDefinitionConfiguration.class);
+
+		Index firstNameIndex = applicationContext.getBean("LoyalCustomersFirstNameFunctionalIdx", Index.class);
+
+		assertIndex(firstNameIndex, "LoyalCustomersFirstNameFunctionalIdx",
+			"first_name", "/LoyalCustomers", IndexType.FUNCTIONAL);
+
+		assertThat(findIndexByName("CustomersFirstNameFunctionalIdx")).isNull();
+	}
+
+	@Test
+	public void indexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameName() {
+
+		applicationContext = newApplicationContext(
+			IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameNameConfiguration.class);
+
+		Index lastNameIndex = applicationContext.getBean("LastNameIdx", Index.class);
+
+		assertIndex(lastNameIndex, "LastNameIdx", "last_name", "/People", IndexType.HASH);
+	}
+
 	@Configuration
 	@SuppressWarnings("unused")
-	static class CacheConfiguration {
+	static class GemFireConfiguration {
 
 		@Bean
 		@SuppressWarnings("unchecked")
 		Cache gemfireCache() throws Exception {
-			Cache mockCache = mock(Cache.class);
+			return mockQueryService(mockRegionFactory(mock(Cache.class, "MockGemFireCache")));
+		}
+
+		Cache mockQueryService(Cache mockCache) throws Exception {
+
 			QueryService mockQueryService = mock(QueryService.class);
-			RegionFactory mockRegionFactory = mock(RegionFactory.class);
 
 			when(mockCache.getQueryService()).thenReturn(mockQueryService);
-			when(mockCache.createRegionFactory()).thenReturn(mockRegionFactory);
-			when(mockCache.createRegionFactory(any(RegionAttributes.class))).thenReturn(mockRegionFactory);
-			when(mockCache.createRegionFactory(any(RegionShortcut.class))).thenReturn(mockRegionFactory);
-			when(mockCache.createRegionFactory(anyString())).thenReturn(mockRegionFactory);
 
 			when(mockQueryService.createHashIndex(anyString(), anyString(), anyString()))
 				.thenAnswer(new HashIndexAnswer());
@@ -140,6 +183,34 @@ public class EnableIndexesConfigurationUnitTests {
 
 			when(mockQueryService.createKeyIndex(anyString(), anyString(), anyString()))
 				.thenAnswer(new KeyIndexAnswer());
+
+			when(mockQueryService.getIndexes()).thenReturn(indexes);
+
+			doAnswer(new Answer<Void>() {
+
+				@Override
+				public Void answer(InvocationOnMock invocation) throws Throwable {
+					Index indexToRemove = invocation.getArgumentAt(0, Index.class);
+
+					indexes.remove(findIndexByName(indexToRemove.getName()));
+
+					return null;
+				}
+
+			}).when(mockQueryService).removeIndex(any(Index.class));
+
+			return mockCache;
+		}
+
+		@SuppressWarnings("unchecked")
+		Cache mockRegionFactory(Cache mockCache) {
+
+			RegionFactory mockRegionFactory = mock(RegionFactory.class);
+
+			when(mockCache.createRegionFactory()).thenReturn(mockRegionFactory);
+			when(mockCache.createRegionFactory(any(RegionAttributes.class))).thenReturn(mockRegionFactory);
+			when(mockCache.createRegionFactory(any(RegionShortcut.class))).thenReturn(mockRegionFactory);
+			when(mockCache.createRegionFactory(anyString())).thenReturn(mockRegionFactory);
 
 			return mockCache;
 		}
@@ -196,7 +267,7 @@ public class EnableIndexesConfigurationUnitTests {
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
-	static class IndexedPersistentEntityConfiguration extends CacheConfiguration {
+	static class IndexedPersistentEntityConfiguration extends GemFireConfiguration {
 
 	}
 
@@ -204,7 +275,55 @@ public class EnableIndexesConfigurationUnitTests {
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
-	static class NoIndexesCreatedForIndexedPersistentEntityConfiguration extends CacheConfiguration {
+	static class NoIndexesCreatedForIndexedPersistentEntityConfiguration extends GemFireConfiguration {
 
+	}
+
+	@EnableIndexes
+	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
+			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
+			LocalRegionEntity.class, ReplicateRegionEntity.class }))
+	static class IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameDefinitionConfiguration
+		extends GemFireConfiguration {
+
+		@Bean
+		@SuppressWarnings("unused")
+		IndexFactoryBean firstNameIndex(GemFireCache gemfireCache) {
+
+			IndexFactoryBean firstNameIndex = new IndexFactoryBean();
+
+			firstNameIndex.setCache(gemfireCache);
+			firstNameIndex.setName("LoyalCustomersFirstNameFunctionalIdx");
+			firstNameIndex.setExpression("first_name");
+			firstNameIndex.setFrom("/LoyalCustomers");
+			firstNameIndex.setType(IndexType.FUNCTIONAL);
+
+			return firstNameIndex;
+		}
+	}
+
+	@EnableIndexes
+	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
+			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
+			LocalRegionEntity.class, ReplicateRegionEntity.class }))
+	static class IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameNameConfiguration
+		extends GemFireConfiguration {
+
+		@Bean
+		@SuppressWarnings("unused")
+		IndexFactoryBean lastNameIndex(GemFireCache gemfireCache) {
+
+			IndexFactoryBean lastNameIndex = new IndexFactoryBean();
+
+			lastNameIndex.setCache(gemfireCache);
+			lastNameIndex.setName("LastNameIdx");
+			lastNameIndex.setExpression("last_name");
+			lastNameIndex.setFrom("/People");
+			lastNameIndex.setType(IndexType.HASH);
+
+			return lastNameIndex;
+		}
 	}
 }

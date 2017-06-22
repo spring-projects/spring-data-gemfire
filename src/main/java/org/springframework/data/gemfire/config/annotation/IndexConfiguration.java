@@ -111,12 +111,15 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 			super.postProcess(importingClassMetadata, registry, persistentEntity);
 
 		if (isAnnotationPresent(importingClassMetadata, getEnableIndexesAnnotationTypeName())) {
+
 			final AnnotationAttributes enableIndexesAttributes =
 				getAnnotationAttributes(importingClassMetadata, getEnableIndexesAnnotationTypeName());
 
 			localPersistentEntity.doWithProperties(new PropertyHandler<GemfirePersistentProperty>() {
+
 				@Override
 				public void doWithPersistentProperty(GemfirePersistentProperty persistentProperty) {
+
 					Id idAnnotation = persistentProperty.findAnnotation(Id.class);
 
 					if (idAnnotation != null) {
@@ -162,6 +165,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 			IndexType indexType, Annotation indexAnnotation, BeanDefinitionRegistry registry) {
 
 		if (indexAnnotation != null) {
+
 			AnnotationAttributes indexAnnotationAttributes = AnnotationAttributes.fromMap(
 				AnnotationUtils.getAnnotationAttributes(indexAnnotation));
 
@@ -181,7 +185,11 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 			indexFactoryBeanBuilder.addPropertyValue("from",
 				resolveFrom(persistentEntity, persistentProperty, indexAnnotationAttributes));
 
+			indexFactoryBeanBuilder.addPropertyValue("ignoreIfExists", Boolean.TRUE);
+
 			indexFactoryBeanBuilder.addPropertyValue("name", indexName);
+
+			indexFactoryBeanBuilder.addPropertyValue("override", Boolean.FALSE);
 
 			indexFactoryBeanBuilder.addPropertyValue("type",
 				resolveType(persistentEntity, persistentProperty, indexAnnotationAttributes, indexType).toString());
@@ -199,6 +207,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	/* (non-Javadoc) */
 	@SuppressWarnings("unused")
 	private String resolveExpression(GemfirePersistentEntity<?> persistentEntity,
+
 		GemfirePersistentProperty persistentProperty, AnnotationAttributes indexAnnotationAttributes) {
 
 		String expression = (indexAnnotationAttributes.containsKey("expression")
@@ -210,6 +219,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	/* (non-Javadoc) */
 	@SuppressWarnings("unused")
 	private String resolveFrom(GemfirePersistentEntity<?> persistentEntity,
+
 		GemfirePersistentProperty persistentProperty, AnnotationAttributes indexAnnotationAttributes) {
 
 		String from = (indexAnnotationAttributes.containsKey("from")
