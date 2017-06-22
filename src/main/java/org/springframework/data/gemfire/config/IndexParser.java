@@ -23,12 +23,13 @@ import org.springframework.data.gemfire.IndexFactoryBean;
 import org.w3c.dom.Element;
 
 /**
- * Namespace parser for &lt;index;gt; bean definitions.
- * 
+ * Namespace parser for &lt;gfe:index;gt; bean definitions.
+ *
  * @author Costin Leau
  * @author John Blum
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser
+ * @see org.springframework.beans.factory.xml.ParserContext
  * @see org.springframework.data.gemfire.IndexFactoryBean
  * @since 1.1.0
  */
@@ -48,5 +49,4 @@ class IndexParser extends AbstractSimpleBeanDefinitionParser {
 		ParsingUtils.setPropertyReference(element, builder, "cache-ref", "cache");
 		super.doParse(element, parserContext, builder);
 	}
-
 }

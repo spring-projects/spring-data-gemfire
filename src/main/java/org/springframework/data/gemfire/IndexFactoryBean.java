@@ -16,14 +16,8 @@
 
 package org.springframework.data.gemfire;
 
-import java.util.Collection;
-
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.gemfire.util.CollectionUtils;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
+import static org.springframework.data.gemfire.util.SpringUtils.defaultIfNull;
 
 import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -32,23 +26,40 @@ import com.gemstone.gemfire.cache.query.IndexExistsException;
 import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 import com.gemstone.gemfire.cache.query.QueryService;
 
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 /**
- * Spring FactoryBean for easy declarative creation of GemFire Indexes.
- * 
+ * Spring {@link FactoryBean} for simple and easy declarative creation of GemFire Indexes.
+ *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
- * @see org.springframework.beans.factory.InitializingBean
- * @see org.springframework.beans.factory.BeanNameAware
  * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
+ * @see com.gemstone.gemfire.cache.Region
  * @see com.gemstone.gemfire.cache.RegionService
  * @see com.gemstone.gemfire.cache.query.Index
  * @see com.gemstone.gemfire.cache.query.QueryService
  * @since 1.0.0
  */
-public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, BeanNameAware {
+public class IndexFactoryBean extends AbstractFactoryBeanSupport<Index> implements InitializingBean {
 
-	private boolean override = true;
+	public static final String BASIC_INDEX_DEFINITION = "{ expression = '%1$s', from = '%2$s', type = %3$s }";
+
+	public static final String DETAILED_INDEX_DEFINITION =
+		"{ name = '%1$s', expression = '%2$s', from = '%3$s', imports = '%4$s', type = %5$s }";
+
+	private boolean ignoreIfExists = false;
+	private boolean override = false;
 
 	private Index index;
 
@@ -58,53 +69,105 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 
 	private RegionService cache;
 
-	private String beanName;
 	private String expression;
 	private String from;
 	private String imports;
 	private String name;
 
+	@Override
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(cache, "The GemFire Cache reference must not be null!");
 
-		queryService = lookupQueryService();
+		this.cache = resolveCache();
 
-		Assert.notNull(queryService, "QueryService is required to create an Index");
-		Assert.hasText(expression, "Index 'expression' is required");
-		Assert.hasText(from, "Index 'from clause' is required");
+		String indexName = resolveIndexName();
 
-		if (IndexType.isKey(indexType)) {
-			Assert.isNull(imports, "The 'imports' property is not supported for a Key Index.");
-		}
+		this.queryService = resolveQueryService();
 
-		String indexName = (StringUtils.hasText(name) ? name : beanName);
+		assertIndexDefinitionConfiguration();
 
-		Assert.hasText(indexName, "The Index bean id or name is required!");
+		this.index = createIndex(this.queryService, indexName);
 
-		index = createIndex(queryService, indexName);
+		registerAlias(getBeanName(), indexName);
 	}
 
+	/* (non-Javadoc) */
+	private void assertIndexDefinitionConfiguration() {
+
+		Assert.hasText(this.expression, "Index expression is required");
+		Assert.hasText(this.from, "Index from clause is required");
+
+		if (IndexType.isKey(this.indexType)) {
+			Assert.isTrue(StringUtils.isEmpty(this.imports), "Imports are not supported with a KEY Index");
+		}
+	}
+
+	/* (non-Javadoc) */
+	RegionService resolveCache() {
+
+		RegionService resolvedCache = (this.cache != null ? this.cache : GemfireUtils.resolveGemFireCache());
+
+		Assert.state(resolvedCache != null, "Cache is required");
+
+		return resolvedCache;
+	}
+
+	/* (non-Javadoc) */
+	String resolveIndexName() {
+
+		String resolvedIndexName = (StringUtils.hasText(this.name) ? this.name : getBeanName());
+
+		Assert.hasText(resolvedIndexName, "Index name is required");
+
+		return resolvedIndexName;
+	}
+
+	/* (non-Javadoc) */
+	QueryService resolveQueryService() {
+
+		QueryService resolvedQueryService = (this.queryService != null ? this.queryService : lookupQueryService());
+
+		Assert.state(resolvedQueryService != null, "QueryService is required to create an Index");
+
+		return resolvedQueryService;
+	}
+
+	/* (non-Javadoc) */
 	QueryService lookupQueryService() {
+
 		return (queryService != null ? queryService
 			: (cache instanceof ClientCache ? ((ClientCache) cache).getLocalQueryService()
 				: cache.getQueryService()));
 	}
 
-	Index createIndex(QueryService queryService, String indexName) throws Exception {
-		Index existingIndex = getExistingIndex(queryService, indexName);
+	/* (non-Javadoc) */
+	void registerAlias(String beanName, String indexName) {
 
-		if (existingIndex != null) {
-			if (override) {
-				queryService.removeIndex(existingIndex);
-			}
-			else {
-				return existingIndex;
+		BeanFactory beanFactory = getBeanFactory();
+
+		if (beanFactory instanceof ConfigurableBeanFactory) {
+			if (beanName != null && !beanName.equals(indexName)) {
+				((ConfigurableBeanFactory) beanFactory).registerAlias(beanName, indexName);
 			}
 		}
+	}
+
+	/* (non-Javadoc) */
+	Index createIndex(QueryService queryService, String indexName) throws Exception {
+		return createIndex(queryService, indexName, false);
+	}
+
+	/* (non-Javadoc) */
+	private Index createIndex(QueryService queryService, String indexName, boolean retryAttempted) throws Exception {
+
+		IndexType indexType = this.indexType;
+
+		String expression = this.expression;
+		String from = this.from;
+		String imports = this.imports;
 
 		try {
 			if (IndexType.isKey(indexType)) {
-				return queryService.createKeyIndex(indexName, expression, from);
+				return createKeyIndex(queryService, indexName, expression, from);
 			}
 			else if (IndexType.isHash(indexType)) {
 				return createHashIndex(queryService, indexName, expression, from, imports);
@@ -113,36 +176,199 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 				return createFunctionalIndex(queryService, indexName, expression, from, imports);
 			}
 		}
-		catch (IndexExistsException e) {
-			throw new GemfireIndexException(String.format(
-				"An Index with a different name having the same definition as this Index (%1$s) already exists",
-					indexName), e);
-		}
-		catch (IndexNameConflictException e) {
-			// NOTE technically, the only way for an IndexNameConflictException to be thrown is if
-			// queryService.remove(existingIndex) above silently fails, since otherwise, when override is 'false',
-			// the existingIndex is already being returned.  Given this state of affairs, an Index with the provided
-			// name is unresolvable based on what the user intended to happen, so just rethrow an Exception.
-			throw new GemfireIndexException(String.format(
-				"Failed to remove the existing Index%1$sbefore re-creating Index with name (%2$s)",
-					(override ? " on override " : " "), indexName), e);
-		}
-		catch (Exception e) {
-			if (existingIndex != null) {
-				Collection<Index> indexes = queryService.getIndexes();
+		catch (IndexExistsException cause) {
 
-				if (CollectionUtils.isEmpty(indexes) || !indexes.contains(existingIndex)) {
-					queryService.getIndexes().add(existingIndex);
-					return existingIndex;
-				}
+			// Same definition, different name
+
+			Index existingIndexByDefinition =
+				tryToFindExistingIndexByDefinition(queryService, expression, from, indexType);
+
+			if (isIgnorable(existingIndexByDefinition)) {
+
+				logWarning("WARNING! You are choosing to ignore this Index [%1$s] and return the existing"
+						+ " Index having the same basic definition [%2$s] but with a different name [%3$s];"
+						+ " Make sure no OQL Query Hints refer to this Index by name [%1$s]",
+					indexName, toBasicIndexDefinition(), existingIndexByDefinition.getName());
+
+				return handleIgnore(existingIndexByDefinition);
 			}
+			else if (isOverridable(existingIndexByDefinition, retryAttempted)) {
 
-			throw e;
+				// Log an informational warning to caution the user about using the override
+				logWarning("WARNING! You are attempting to 'override' an existing Index [%1$s]"
+						+ " having the same basic definition [%2$s] as the Index that will be created"
+						+ " by this IndexFactoryBean [%3$s]; 'Override' effectively 'renames' the existing"
+						+ " Index [%1$s] by removing it then recreating it under the new name [%3$s] with"
+						+ " the same definition; You should be careful to update any existing OQL Query"
+						+ " Hints referring to the old Index name [%1$s] to now use the new name [%3$s]",
+					existingIndexByDefinition.getName(), toBasicIndexDefinition(), indexName);
+
+				return handleOverride(existingIndexByDefinition, queryService, indexName);
+			}
+			else {
+
+				String existingIndexName = (existingIndexByDefinition != null
+					? existingIndexByDefinition.getName() : "unknown");
+
+				throw new GemfireIndexException(String.format(
+					"An Index with a different name [%1$s] having the same definition [%2$s] already exists;"
+						+ " You may attempt to override the existing Index [%1$s] with the new name [%3$s]"
+						+ " by setting the 'override' property to 'true'",
+					existingIndexName, toBasicIndexDefinition(), indexName), cause);
+			}
+		}
+		catch (IndexNameConflictException cause) {
+
+			// Same name; possibly different definition
+
+ 			Index existingIndexByName = tryToFindExistingIndexByName(queryService, indexName);
+
+ 			if (isIgnorable(existingIndexByName)) {
+ 				return handleIgnore(warnOnIndexDefinitionMismatch(existingIndexByName, indexName, "Returning"));
+			}
+			else if (isOverridable(existingIndexByName, retryAttempted)) {
+ 				return handleSmartOverride(warnOnIndexDefinitionMismatch(existingIndexByName, indexName,
+					"Overriding"), queryService, indexName);
+			}
+			else {
+
+				String existingIndexDefinition = (existingIndexByName != null
+					? String.format(DETAILED_INDEX_DEFINITION, existingIndexByName.getName(),
+						existingIndexByName.getIndexedExpression(), existingIndexByName.getFromClause(), "unknown",
+							existingIndexByName.getType())
+					: "unknown");
+
+				throw new GemfireIndexException(String.format(
+					"An Index with the same name [%1$s] having possibly a different definition already exists;"
+						+ " you may choose to ignore this Index definition [%2$s] and use the existing Index"
+						+ " definition [%3$s] by setting the 'ignoreIfExists' property to 'true'",
+					indexName, toDetailedIndexDefinition(), existingIndexDefinition), cause);
+			}
+		}
+		catch (Exception cause) {
+			throw new GemfireIndexException(String.format("Failed to create Index [%s]",
+				toDetailedIndexDefinition()), cause);
 		}
 	}
 
+	/* (non-Javadoc) */
+	private boolean isIgnorable(Index existingIndex) {
+		return (isIgnoreIfExists() && existingIndex != null);
+	}
+
+	/* (non-Javadoc) */
+	@SuppressWarnings("all")
+	private boolean isIndexDefinitionMatch(Index index) {
+
+		boolean result = false;
+
+		if (index != null) {
+
+			IndexType thisIndexType = defaultIfNull(this.indexType, IndexType.FUNCTIONAL);
+
+			result = ObjectUtils.nullSafeEquals(index.getIndexedExpression(), this.expression)
+				&& ObjectUtils.nullSafeEquals(index.getFromClause(), this.from)
+				&& ObjectUtils.nullSafeEquals(IndexType.valueOf(index.getType()), thisIndexType);
+
+		}
+
+		return result;
+	}
+
+	/* (non-Javadoc) */
+	private boolean isNotIndexDefinitionMatch(Index index) {
+		return !isIndexDefinitionMatch(index);
+	}
+
+	/* (non-Javadoc) */
+	private boolean isOverridable(Index existingIndex, boolean retryAttempted) {
+		return (isOverride() && existingIndex != null && !retryAttempted);
+	}
+
+	/* (non-Javadoc) */
+	private Index warnOnIndexDefinitionMismatch(Index existingIndex, String indexName, String action) {
+
+		if (isNotIndexDefinitionMatch(existingIndex)) {
+
+			String existingIndexDefinition = String.format(BASIC_INDEX_DEFINITION, existingIndex.getIndexedExpression(),
+				existingIndex.getFromClause(), IndexType.valueOf(existingIndex.getType()));
+
+			logWarning("WARNING! %1$s existing Index [%2$s] having a definition [%3$s]"
+					+ " that does not match the Index defined [%4$s] by this IndexFactoryBean [%5$s]",
+				action, existingIndex.getName(), existingIndexDefinition, toBasicIndexDefinition(), indexName);
+		}
+
+		return existingIndex;
+	}
+
+	/* (non-Javadoc) */
+	private Index handleIgnore(Index existingIndex) {
+
+		registerAlias(getBeanName(), existingIndex.getName());
+
+		return existingIndex;
+	}
+
+	/* (non-Javadoc) */
+	private Index handleOverride(Index existingIndex, QueryService queryService, String indexName) {
+		try {
+			// No way to tell whether the QueryService.remove(:Index) was successful or not! o.O
+			// Should return a boolean! Does it throw an RuntimeException? Javadoc is useless; #sigh
+			queryService.removeIndex(existingIndex);
+
+			return createIndex(queryService, indexName, true);
+		}
+		catch (Exception cause) {
+			throw new GemfireIndexException(String.format(
+				"Attempt to 'override' existing Index [%1$s] with the Index that would be created"
+					+ " by this IndexFactoryBean [%2$s] failed; you should verify the state of"
+					+ " your system and make sure the previously existing Index [%1$s] still exits",
+				existingIndex.getName(), indexName), cause);
+		}
+	}
+
+	/* (non-Javadoc) */
+	private Index handleSmartOverride(Index existingIndex, QueryService queryService, String indexName) {
+
+		return (existingIndex.getName().equalsIgnoreCase(indexName) && isIndexDefinitionMatch(existingIndex)
+			? existingIndex
+			: handleOverride(existingIndex, queryService, indexName));
+	}
+
+	/* (non-Javadoc) */
+	String toBasicIndexDefinition() {
+		return String.format(BASIC_INDEX_DEFINITION, this.expression, this.from, this.indexType);
+	}
+
+	/* (non-Javadoc) */
+	String toDetailedIndexDefinition() {
+		return String.format(DETAILED_INDEX_DEFINITION,
+			this.name, this.expression, this.from, this.imports, this.indexType);
+	}
+
+	/* (non-Javadoc) */
+	Index createKeyIndex(QueryService queryService, String indexName, String expression, String from) throws Exception {
+		return queryService.createKeyIndex(indexName, expression, from);
+	}
+
+	/* (non-Javadoc) */
+	Index createHashIndex(QueryService queryService, String indexName, String expression, String from, String imports)
+			throws Exception {
+
+		boolean hasImports = StringUtils.hasText(imports);
+
+		if (hasImports) {
+			return queryService.createHashIndex(indexName, expression, from, imports);
+		}
+		else {
+			return queryService.createHashIndex(indexName, expression, from);
+		}
+	}
+
+	/* (non-Javadoc) */
 	Index createFunctionalIndex(QueryService queryService, String indexName, String expression, String from,
 			String imports) throws Exception {
+
 		if (StringUtils.hasText(imports)) {
 			return queryService.createIndex(indexName, expression, from, imports);
 		}
@@ -151,18 +377,26 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 		}
 	}
 
-	Index createHashIndex(QueryService queryService, String indexName, String expression, String from,
-			String imports) throws Exception {
-		if (StringUtils.hasText(imports)) {
-			return queryService.createHashIndex(indexName, expression, from, imports);
+	/* (non-Javadoc) */
+	Index tryToFindExistingIndexByDefinition(QueryService queryService,
+			String expression, String fromClause, IndexType indexType) {
+
+		for (Index index : nullSafeCollection(queryService.getIndexes())) {
+			if (index.getIndexedExpression().equalsIgnoreCase(expression)
+				&& index.getFromClause().equalsIgnoreCase(fromClause)
+				&& indexType.equals(IndexType.valueOf(index.getType()))) {
+
+				return index;
+			}
 		}
-		else {
-			return queryService.createHashIndex(indexName, expression, from);
-		}
+
+		return null;
 	}
 
-	Index getExistingIndex(QueryService queryService, String indexName) {
-		for (Index index : CollectionUtils.nullSafeCollection(queryService.getIndexes())) {
+	/* (non-Javadoc) */
+	Index tryToFindExistingIndexByName(QueryService queryService, String indexName) {
+
+		for (Index index : nullSafeCollection(queryService.getIndexes())) {
 			if (index.getName().equalsIgnoreCase(indexName)) {
 				return index;
 			}
@@ -171,91 +405,227 @@ public class IndexFactoryBean implements InitializingBean, FactoryBean<Index>, B
 		return null;
 	}
 
-	public Index getObject() {
-		return index;
+	/**
+	 * Returns a reference to the {@link Index} created by this {@link IndexFactoryBean}.
+	 *
+	 * @return a reference to the {@link Index} created by this {@link IndexFactoryBean}.
+	 * @see com.gemstone.gemfire.cache.query.Index
+	 */
+	public Index getIndex() {
+		return this.index;
 	}
 
+	/* (non-Javadoc) */
+	@Override
+	public Index getObject() {
+
+		this.index = (this.index != null ? this.index
+			: tryToFindExistingIndexByName(resolveQueryService(), resolveIndexName()));
+
+		return this.index;
+	}
+
+	/* (non-Javadoc) */
+	@Override
 	public Class<?> getObjectType() {
+		Index index = getIndex();
 		return (index != null ? index.getClass() : Index.class);
 	}
 
-	public boolean isSingleton() {
-		return true;
-	}
-
 	/**
-	 * Sets the underlying cache used for creating indexes.
-	 * 
-	 * @param cache cache used for creating indexes.
+	 * Sets a reference to the {@link RegionService}.
+	 *
+	 * @param cache reference to the {@link RegionService}.
+	 * @see com.gemstone.gemfire.cache.RegionService
 	 */
 	public void setCache(RegionService cache) {
 		this.cache = cache;
 	}
 
 	/**
-	 * Sets the query service used for creating indexes.
-	 * 
-	 * @param service query service used for creating indexes.
-	 */
-	public void setQueryService(QueryService service) {
-		this.queryService = service;
-	}
-
-	public void setBeanName(String name) {
-		this.beanName = name;
-	}
-
-	/**
-	 * @param name the name to set
+	 * Sets the name of the {@link Index}.
+	 *
+	 * @param name {@link String} containing the name given to the {@link Index}.
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * @param expression the expression to set
+	 * Sets the {@link QueryService} used to create the {@link Index}.
+	 *
+	 * @param service {@link QueryService} used to create the {@link Index}.
+	 * @see com.gemstone.gemfire.cache.query.QueryService
+	 */
+	public void setQueryService(QueryService service) {
+		this.queryService = service;
+	}
+
+	/**
+	 * @param expression Index expression to set
 	 */
 	public void setExpression(String expression) {
 		this.expression = expression;
 	}
 
 	/**
-	 * @param from the from to set
+	 * @param from Index from clause to set
 	 */
 	public void setFrom(String from) {
 		this.from = from;
 	}
 
 	/**
-	 * @param imports the imports to set
+	 * @param imports Index imports to set
 	 */
 	public void setImports(String imports) {
 		this.imports = imports;
 	}
 
 	/**
-	 * @param override the override to set
+	 * Configures whether to ignore the {@link Index} defined by this {@link IndexFactoryBean}
+	 * when an {@link IndexExistsException} or {@link IndexNameConflictException} is thrown.
+	 *
+	 * An {@link IndexExistsException} is thrown when there exists another {@link Index} with the same definition
+	 * but with another name.
+	 *
+	 * An {@link IndexNameConflictException} is thrown when there exists another {@link Index} with the same name
+	 * but possibly a different definition.
+	 *
+	 * When {@literal ignoreIfExists} is set to {@literal true} and an {@link IndexExistsException} is thrown,
+	 * then the existing {@link Index} will be returned as the object of this {@link IndexFactoryBean} creation
+	 * and the name of the existing {@link Index} is added as an alias for this bean.
+	 *
+	 * When {@literal ignoreIfExists} is set to {@literal true} and {@link IndexNameConflictException} is thrown,
+	 * then the existing {@link Index} will be returned as the object of this {@link IndexFactoryBean} creation.
+	 * A warning is logged if the definition of this {@link IndexFactoryBean} and the existing {@link Index}
+	 * are different.
+	 *
+	 * {@literal ignoreIfExists} takes precedence over {@link #isOverride() override}.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * @param ignore boolean value indicating whether to ignore the {@link Index} defined by
+	 * this {@link IndexFactoryBean}. Default is {@literal false}.
+	 * @see #setOverride(boolean)
+	 */
+	public void setIgnoreIfExists(boolean ignore) {
+		this.ignoreIfExists = ignore;
+	}
+
+	/**
+	 * Determines whether to ignore the {@link Index} defined by this {@link IndexFactoryBean}
+	 * when an {@link IndexExistsException} or {@link IndexNameConflictException} is thrown.
+	 *
+	 * An {@link IndexExistsException} is thrown when there exists another {@link Index} with the same definition
+	 * but with another name.
+	 *
+	 * An {@link IndexNameConflictException} is thrown when there exists another {@link Index} with the same name
+	 * but possibly a different definition.
+	 *
+	 * When {@literal ignoreIfExists} is set to {@literal true} and an {@link IndexExistsException} is thrown,
+	 * then the existing {@link Index} will be returned as the object of this {@link IndexFactoryBean} creation
+	 * and the name of the existing {@link Index} is added as an alias for this bean.
+	 *
+	 * When {@literal ignoreIfExists} is set to {@literal true} and {@link IndexNameConflictException} is thrown,
+	 * then the existing {@link Index} will be returned as the object of this {@link IndexFactoryBean} creation.
+	 * A warning is logged if the definition of this {@link IndexFactoryBean} and the existing {@link Index}
+	 * are different.
+	 *
+	 * {@literal ignoreIfExists} takes precedence over {@link #isOverride() override}.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * @return a boolean value indicating whether to ignore the {@link Index} defined by this {@link IndexFactoryBean}.
+	 * Default is {@literal false}.
+	 * @see #setIgnoreIfExists(boolean)
+	 */
+	public boolean isIgnoreIfExists() {
+		return this.ignoreIfExists;
+	}
+
+	/**
+	 * Configures whether to override an existing {@link Index} having the same definition but different name
+	 * as the {@link Index} that would be created by this {@link IndexFactoryBean}.
+	 *
+	 * An {@link IndexExistsException} is thrown when there exists another {@link Index} with the same definition
+	 * but with another name.
+	 *
+	 * An {@link IndexNameConflictException} is thrown when there exists another {@link Index} with the same name
+	 * but possibly a different definition.
+	 *
+	 * With {@literal override} set to {@literal true} when an {@link IndexExistsException} is thrown, then override
+	 * is effectively the same as "renaming" the existing {@link Index}.  In other words, the existing {@link Index}
+	 * will be {@link QueryService#removeIndex(Index) removed} and recreated by this {@link IndexFactoryBean}
+	 * under the new {@link #resolveIndexName() name} having the same definition.
+	 *
+	 * With {@literal override} set to {@literal true} when an {@link IndexNameConflictException} is thrown,
+	 * then overriding the existing {@link Index} is equivalent to changing the existing {@link Index} definition.
+	 * When this happens, a warning is logged.  If the existing {@link Index} definition is the same then overriding
+	 * effectively just rebuilds the {@link Index}.
+	 *
+	 * {@literal ignoreIfExists} takes precedence over {@literal override}.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * @param override boolean value indicating whether an existing {@link Index} will be removed and recreated
+	 * by this {@link IndexFactoryBean}. Default is {@literal false}.
+	 * @see #setIgnoreIfExists(boolean)
 	 */
 	public void setOverride(boolean override) {
 		this.override = override;
 	}
 
 	/**
-	 * @param type the type to set
+	 * Determines whether to override an existing {@link Index} having the same definition but different name
+	 * as the {@link Index} that would be created by this {@link IndexFactoryBean}.
+	 *
+	 * An {@link IndexExistsException} is thrown when there exists another {@link Index} with the same definition
+	 * but with another name.
+	 *
+	 * An {@link IndexNameConflictException} is thrown when there exists another {@link Index} with the same name
+	 * but possibly a different definition.
+	 *
+	 * With {@literal override} set to {@literal true} when an {@link IndexExistsException} is thrown, then override
+	 * is effectively the same as "renaming" the existing {@link Index}.  In other words, the existing {@link Index}
+	 * will be {@link QueryService#removeIndex(Index) removed} and recreated by this {@link IndexFactoryBean}
+	 * under the new {@link #resolveIndexName() name} having the same definition.
+	 *
+	 * With {@literal override} set to {@literal true} when an {@link IndexNameConflictException} is thrown,
+	 * then overriding the existing {@link Index} is equivalent to changing the existing {@link Index} definition.
+	 * When this happens, a warning is logged.  If the existing {@link Index} definition is the same then overriding
+	 * effectively just rebuilds the {@link Index}.
+	 *
+	 * {@literal ignoreIfExists} takes precedence over {@literal override}.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * @return a boolean value indicating whether an existing {@link Index} will be removed and recreated
+	 * by this {@link IndexFactoryBean}. Default is {@literal false}.
+	 * @see #setOverride(boolean)
+	 */
+	public boolean isOverride() {
+		return this.override;
+	}
+
+	/**
+	 * Set the {@link IndexType type} of the {@link Index} as a {@link String}.
+	 *
+	 * @param type {@link String} specifying the {@link IndexType type} of the {@link Index}.
+	 * @see org.springframework.data.gemfire.IndexType#valueOf(String)
+	 * @see #setType(IndexType)
 	 */
 	public void setType(String type) {
 		setType(IndexType.valueOfIgnoreCase(type));
 	}
 
 	/**
-	 * Sets the type of GemFire Index to create.
+	 * Set the {@link IndexType type} of the {@link Index}.
 	 *
-	 * @param indexType the IndexType enumerated value indicating the type of GemFire Index
-	 * that will be created by this Spring FactoryBean.
+	 * @param type {@link IndexType} indicating the type of the {@link Index}.
 	 * @see org.springframework.data.gemfire.IndexType
 	 */
-	public void setType(IndexType indexType) {
-		this.indexType = indexType;
+	public void setType(IndexType type) {
+		this.indexType = type;
 	}
-
 }

@@ -38,6 +38,14 @@ import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 @SuppressWarnings({ "serial", "unused" })
 public class GemfireIndexException extends DataIntegrityViolationException {
 
+	public GemfireIndexException(Exception cause) {
+		this(cause.getMessage(), cause);
+	}
+
+	public GemfireIndexException(String message, Exception cause) {
+		super(message, cause);
+	}
+
 	public GemfireIndexException(IndexCreationException cause) {
 		this(cause.getMessage(), cause);
 	}
@@ -77,5 +85,4 @@ public class GemfireIndexException extends DataIntegrityViolationException {
 	public GemfireIndexException(String message, IndexNameConflictException cause) {
 		super(message, cause);
 	}
-
 }

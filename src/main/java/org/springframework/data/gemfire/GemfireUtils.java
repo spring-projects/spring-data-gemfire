@@ -18,12 +18,11 @@ package org.springframework.data.gemfire;
 
 import java.util.concurrent.ConcurrentMap;
 
-import org.springframework.data.gemfire.util.DistributedSystemUtils;
-import org.springframework.util.ClassUtils;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+
+import org.springframework.data.gemfire.util.CacheUtils;
+import org.springframework.util.ClassUtils;
 
 /**
  * GemfireUtils is an abstract utility class encapsulating common functionality to access features and capabilities
@@ -34,29 +33,9 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
  * @since 1.3.3
  */
 @SuppressWarnings("unused")
-public abstract class GemfireUtils extends DistributedSystemUtils {
+public abstract class GemfireUtils extends CacheUtils {
 
 	public final static String GEMFIRE_VERSION = CacheFactory.getVersion();
-
-	public static boolean closeCache() {
-		try {
-			CacheFactory.getAnyInstance().close();
-			return true;
-		}
-		catch (Exception ignore) {
-			return false;
-		}
-	}
-
-	public static boolean closeClientCache() {
-		try {
-			ClientCacheFactory.getAnyInstance().close();
-			return true;
-		}
-		catch (Exception ignore) {
-			return false;
-		}
-	}
 
 	public static boolean isGemfireVersionGreaterThanEqual(double expectedVersion) {
 		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
@@ -103,5 +82,4 @@ public abstract class GemfireUtils extends DistributedSystemUtils {
 		//System.out.printf("Is GemFire Version 6.5 of Above? %1$s%n", isGemfireVersion65OrAbove());
 		//System.out.printf("Is GemFire Version 7.0 of Above? %1$s%n", isGemfireVersion7OrAbove());
 	}
-
 }

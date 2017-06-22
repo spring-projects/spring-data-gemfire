@@ -16,22 +16,26 @@
 
 package org.springframework.data.gemfire.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import javax.annotation.Resource;
 
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.Index;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.Index;
-
 /**
- * The IndexNamespaceTest is a test suite of test cases testing the functionality of GemFire Index creation using
- * the Spring Data GemFire XML namespace (XSD).
+ * Integration tests with test cases testing the functionality of GemFire Index creation using
+ * the Spring Data GemFire XML namespace (XSD) and the {@link IndexParser}.
  *
  * @author Costin Leau
  * @author David Turanski
@@ -50,23 +54,35 @@ public class IndexNamespaceTest {
 
 	private static final String TEST_REGION_NAME = "IndexedRegion";
 
-	@Resource(name = "simple")
-	private Index simple;
+	@Autowired
+	private ApplicationContext applicationContext;
+
+	@Resource(name = "basic")
+	private Index basic;
 
 	@Resource(name = "complex")
 	private Index complex;
 
 	@Test
-	public void testBasicIndex() throws Exception {
-		assertEquals("simple", simple.getName());
-		assertEquals("status", simple.getIndexedExpression());
-		assertEquals(Region.SEPARATOR + TEST_REGION_NAME, simple.getFromClause());
-		assertEquals(TEST_REGION_NAME, simple.getRegion().getName());
-		assertEquals(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, simple.getType());
+	public void basicIndexIsCorrect() throws Exception {
+		assertEquals("basic", basic.getName());
+		assertEquals("status", basic.getIndexedExpression());
+		assertEquals(Region.SEPARATOR + TEST_REGION_NAME, basic.getFromClause());
+		assertEquals(TEST_REGION_NAME, basic.getRegion().getName());
+		assertEquals(com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL, basic.getType());
 	}
 
 	@Test
-	public void testComplexIndex() throws Exception {
+	public void basicIndexFactoryBeanIsCorrect() {
+
+		IndexFactoryBean basicIndexFactoryBean = applicationContext.getBean("&basic", IndexFactoryBean.class);
+
+		assertThat(basicIndexFactoryBean.isIgnoreIfExists()).isFalse();
+		assertThat(basicIndexFactoryBean.isOverride()).isFalse();
+	}
+
+	@Test
+	public void complexIndexIsCorrect() throws Exception {
 		assertEquals("complex-index", complex.getName());
 		assertEquals("tsi.name", complex.getIndexedExpression());
 		assertEquals(Region.SEPARATOR + TEST_REGION_NAME + " tsi", complex.getFromClause());
@@ -74,4 +90,13 @@ public class IndexNamespaceTest {
 		assertEquals(com.gemstone.gemfire.cache.query.IndexType.HASH, complex.getType());
 	}
 
+	@Test
+	public void indexWithIgnoreAndOverrideIsCorrect() {
+
+		IndexFactoryBean indexFactoryBean =
+			applicationContext.getBean("&index-with-ignore-and-override", IndexFactoryBean.class);
+
+		assertThat(indexFactoryBean.isIgnoreIfExists()).isTrue();
+		assertThat(indexFactoryBean.isOverride()).isTrue();
+	}
 }
