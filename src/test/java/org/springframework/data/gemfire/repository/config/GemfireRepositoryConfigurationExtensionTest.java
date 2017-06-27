@@ -23,6 +23,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +38,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.PassThroughSourceExtractor;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -90,20 +92,25 @@ public class GemfireRepositoryConfigurationExtensionTest {
 	}
 
 	protected ParserContext mockParserContext() {
+
 		XmlReaderContext xmlReaderContext = mockXmlReaderContext();
 
 		return new ParserContext(xmlReaderContext, newBeanDefinitionParserDelegate(xmlReaderContext));
 	}
 
 	protected XmlReaderContext mockXmlReaderContext() {
+
+		BeanDefinitionRegistry mockRegistry = mock(BeanDefinitionRegistry.class);
+
 		ResourceLoader mockResourceLoader = mock(ResourceLoader.class);
-		XmlBeanDefinitionReader mockXmlBeanDefinitionReader = mock(XmlBeanDefinitionReader.class);
+
+		XmlBeanDefinitionReader beanDefinitionReader = spy(new XmlBeanDefinitionReader(mockRegistry));
 
 		when(mockResourceLoader.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
-		when(mockXmlBeanDefinitionReader.getResourceLoader()).thenReturn(mockResourceLoader);
+		when(beanDefinitionReader.getResourceLoader()).thenReturn(mockResourceLoader);
 
-		return new XmlReaderContext(null, null, null, new PassThroughSourceExtractor(),
-			mockXmlBeanDefinitionReader, null);
+		return new XmlReaderContext(null, null, null,
+			new PassThroughSourceExtractor(), beanDefinitionReader, null);
 	}
 
 	protected BeanDefinitionParserDelegate newBeanDefinitionParserDelegate(XmlReaderContext readerContext) {
@@ -181,6 +188,7 @@ public class GemfireRepositoryConfigurationExtensionTest {
 
 	@Test
 	public void postProcessWithXmlRepositoryConfigurationSource() {
+
 		Element mockElement = mockElement();
 
 		when(mockElement.getAttribute(eq("mapping-context-ref"))).thenReturn("testMappingContext");
