@@ -65,15 +65,16 @@ or `<gfe:client-cache>` declaration, which acts as an exception translator and i
 the _Spring_ infrastructure and used accordingly.
 
 [[apis:transaction-management]]
-== Transaction Management
+== Local, Cache Transaction Management
 
 One of the most popular features of the _Spring Framework_ is
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management].
 
 If you are not familiar with _Spring's_ transaction abstraction then we strongly recommend
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-motivation[reading]
-about it as it offers a _consistent programming model_ that works transparently across multiple APIs
-and can be configured either programmatically or declaratively (the most popular choice).
+about _Spring's Transaction Management_ infrastructure as it offers a consistent _programming model_ that works
+transparently across multiple APIs and can be configured either programmatically or declaratively
+(the most popular choice).
 
 For Pivotal GemFire, _Spring Data GemFire_ provides a dedicated, per-cache, `PlatformTransactionManager` that,
 once declared, allows Region operations to be executed atomically through _Spring_:
@@ -86,19 +87,227 @@ once declared, allows Region operations to be executed atomically through _Sprin
 NOTE: The example above can be simplified even further by eliminating the `cache-ref` attribute if the GemFire cache
 is defined under the default name, `gemfireCache`. As with the other _Spring Data GemFire_ namespace elements,
 if the cache bean name is not configured, the aforementioned naming convention will be used.
-Additionally, the transaction manager name is `"gemfireTransactionManager"` if not explicitly specified.
+Additionally, the transaction manager name is "`gemfireTransactionManager`" if not explicitly specified.
 
 Currently, Pivotal GemFire supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee
 this isolation, developers should avoid making *in-place* changes that manually modify values present in the cache.
-To prevent this from happening, the transaction manager configures the cache to use *copy on read* semantics,
+To prevent this from happening, the transaction manager configures the cache to use *copy on read* semantics by default,
 meaning a clone of the actual value is created each time a read is performed. This behavior can be disabled if needed
 through the `copyOnRead` property.
 
-For more information on the semantics and bevior of the underlying GemFire transaction manager, please refer to the GemFire
+For more information on the semantics and behavior of the underlying Geode transaction manager, please refer to the Geode
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheTransactionManager.html[CacheTransactionManager Javadoc]
 as well as the http://geode.apache.org/docs/guide/11/developing/transactions/chapter_overview.html[documentation].
 
-:leveloffset: +1
+[[apis:global-transaction-management]]
+== Global, JTA Transaction Management
+
+It is also possible for Pivotal GemFire to participate in a Global, JTA based transaction, such as a transaction managed
+by an Java EE Application Server (e.g. WebSphere Application Server, a.k.a. WAS) using Container Managed Transactions
+(CMT) along with other JTA resources.
+
+However, unlike many other JTA "compliant" resources (e.g. JMS Message Brokers like ActiveMQ), Pivotal GemFire is *not*
+an XA compliant resource.  Therefore, Pivotal GemFire must be positioned as the "_Last Resource_" in a JTA transaction
+(_prepare phase_) since it does not implement the 2-phase commit protocol, or rather does not handle
+distributed transactions.
+
+Many managed environments with CMT maintain support for "_Last Resource_", non-XA compliant resources in JTA transactions
+though it is not actually required in the JTA spec.  More information on what a non-XA compliant, "_Last Resource_" means
+can be found in Red Hat's https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/5/html/Administration_And_Configuration_Guide/lrco-overview.html[documentation].
+In fact, Red Hat's JBoss project, http://narayana.io/[Narayana] is one such LGPL Open Source implementation.  _Narayana_
+refers to this as "_Last Resource Commit Optimization_" (LRCO).  More details can be found
+http://narayana.io//docs/project/index.html#d0e1859[here].
+
+However, whether you are using Pivotal GemFire in a standalone environment with an Open Source JTA Transaction Management
+implementation that supports "_Last Resource_", or a managed environment (e.g. Java EE AS such as WAS),
+_Spring Data Geode_ has you covered.
+
+There are a series of steps you must complete to properly use Pivotal GemFire as a "_Last Resource_" in a JTA transaction
+involving more than 1 transactional resource.  Additionally, there can only be 1 non-XA compliant resource
+(e.g. Pivotal GemFire) in such an arrangement.
+
+1) First, you must complete Steps 1-4 in GemFire's documentation
+http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
+
+NOTE: #1 above is independent of your _Spring [Boot] and/or [Data GemFire]_ application
+and must be completed successfully.
+
+2) Referring to Step 5 in GemFire's http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
+_Spring Data GemFire's_ Annotation support will attempt to set the `GemFireCache`, http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/cache/GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
+property for you when using the `@EnableGemFireAsLastResource` annotation.
+
+However, if SDG's auto-configuration is unsuccessful then you must explicitly set the `copy-on-read` attribute on the
+`<gfe:cache>` or `<gfe:client-cache>` element in XML or the `copyOnRead` property of the SDG `CacheFactoryBean` class
+in JavaConfig to *true*.  For example...
+
+Peer Cache XML:
+
+[source,xml]
+----
+  <gfe:cache ... copy-on-read="true"/>
+----
+
+Peer Cache JavaConfig:
+
+[source,java]
+----
+  @Bean
+  CacheFacatoryBean gemfireCache() {
+
+    CacheFactoryBean gemfireCache = new CacheFactoryBean();
+
+    gemfireCache.setClose(true);
+    gemfireCache.setCopyOnRead(true);
+
+    return gemfireCache;
+  }
+----
+
+Client Cache XML:
+
+[source,xml]
+----
+  <gfe:client-cache ... copy-on-read="true"/>
+----
+
+Client Cache JavaConfig:
+
+[source,java]
+----
+  @Bean
+  ClientCacheFacatoryBean gemfireCache() {
+
+    ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
+
+    gemfireCache.setClose(true);
+    gemfireCache.setCopyOnRead(true);
+
+    return gemfireCache;
+  }
+----
+
+NOTE: explicitly setting the `copy-on-read` attribute or optionally the `copyOnRead` property
+really should not be necessary.
+
+3) At this point, you *skip* Steps 6-8 in GemFire's http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation]
+and let _Spring Data Geode_ work its magic.  All you need do is annotate your _Spring_ `@Configuration` class
+with _Spring Data GemFire's_ *new* `@EnableGemFireAsLastResource` annotation and a combination of _Spring's_
+http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management]
+infrastructure and _Spring Data GemFire's_ `@EnableGemFireAsLastResource` configuration does the trick.
+
+The configuration looks like this...
+
+[source,java]
+----
+@Configuration
+@EnableGemFireAsLastResource
+@EnableTransactionManagement(order = 1)
+class GeodeConfiguration {
+
+  ...
+}
+----
+
+The only requirements are...
+
+3.1) The `@EnableGemFireAsLastResource` annotation must be declared on the same _Spring_ `@Configuration` class
+where _Spring's_ `@EnableTransactionManagement` annotation is also specified.
+
+3.2) The `order` attribute of the `@EnableTransactionManagement` annotation must be explicitly set to an integer value
+that is not `Integer.MAX_VALUE` or `Integer.MIN_VALUE` (defaults to `Integer.MAX_VALUE`).
+
+Of course, hopefully you are aware that you also need to configure _Spring's_ `JtaTransactionManager`
+when using JTA Transactions like so..
+
+[source,java]
+----
+@Bean
+public JtaTransactionManager transactionManager(UserTransaction userTransaction) {
+
+   JtaTransactionManager transactionManager = new JtaTransactionManager();
+
+   transactionManager.setUserTransaction(userTransaction);
+
+   return transactionManager;
+}
+----
+
+NOTE: The configuration in section <<apis:transaction-management>> does *not* apply here.
+The use of _Spring Data GemFire's_ `GemfireTransactionManager` is applicable only in "Local", Cache Transactions,
+*not* "Global", JTA Transactions.  Therefore, you do *not* configure the SDG `GemfireTransactionManager` in this case.
+You configure _Spring's_ `JtaTransactionManager` as shown above.
+
+For more details on using _Spring's Transaction Management_ with JTA,
+see http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-application-server-integration[here].
+
+Effectively, _Spring Data GemFire's_ `@EnableGemFireAsLastResource` annotation imports configuration containing 2 Aspect
+bean definitions that handles the GemFire `o.a.g.ra.GFConnectionFactory.getConnection()`
+and `o.a.g.ra.GFConnection.close()` operations at the appropriate points during the transactional operation.
+
+Specifically, the correct sequence of events are...
+
+1. `jtaTransation.begin()`
+
+2. `GFConnectionFactory.getConnection()`
+
+3. Call the application's `@Transactional` service method
+
+4. Either `jtaTransaction.commit()` or `jtaTransaction.rollback()`
+
+5. Finally, `GFConnection.close()`
+
+This is consistent with how you, as the application developer, would code this manually if you had to use the JTA API
++ GemFire API yourself, as shown in the
+GemFire http://gemfire90.docs.pivotal.io/geode/developing/transactions/jca_adapter_example.html#concept_swv_z2p_wk[example].
+
+Thankfully, _Spring_ does the heavy lifting for you and all you need do after applying the appropriate configuration
+(shown above) is...
+
+[source,java]
+----
+@Service
+class MyTransactionalService ... {
+
+  @Transactional
+  public <Return-Type> someTransactionalMethod() {
+    // perform business logic interacting with and accessing multiple JTA resources atomically, here
+  }
+
+  ...
+}
+----
+
+#1 & #4 above are appropriately handled for you by _Spring's_ JTA based `PlatformTransactionManager` once the
+`@Transactional` boundary is entered by your application (i.e. when the `MyTransactionSerivce.someTransactionalMethod()`
+is called).
+
+#2 & #3 are handled by _Spring Data GemFire's_ new Aspects enabled with the `@EnableGemFireAsLastResource` annotation.
+
+#3 of course is the responsibility of your application.
+
+Indeed, with the appropriate logging configured, you will see the correct sequence of events...
+
+[source,xml]
+----
+2017-Jun-22 11:11:37 TRACE TransactionInterceptor - Getting transaction for [example.app.service.MessageService.send]
+
+2017-Jun-22 11:11:37 TRACE GemFireAsLastResourceConnectionAcquiringAspect - Acquiring GemFire Connection
+from GemFire JCA ResourceAdapter registered at [gfe/jca]
+
+2017-Jun-22 11:11:37 TRACE MessageService - PRODUCER [ Message :
+[{ @type = example.app.domain.Message, id= MSG0000000000, message = SENT }],
+JSON : [{"id":"MSG0000000000","message":"SENT"}] ]
+
+2017-Jun-22 11:11:37 TRACE TransactionInterceptor - Completing transaction for [example.app.service.MessageService.send]
+
+2017-Jun-22 11:11:37 TRACE GemFireAsLastResourceConnectionClosingAspect - Closed GemFire Connection @ [Reference [...]]
+----
+
+For more details on using Pivotal GemFire in JTA transactions,
+see http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html[here].
+
+For more details on configuring Pivotal GemFire as a "_Last Resource_",
+see http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
 
 include::{basedocdir}/reference/cq-container.adoc[]
 
