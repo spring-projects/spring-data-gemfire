@@ -22,7 +22,6 @@ import static org.springframework.data.gemfire.util.ArrayUtils.defaultIfEmpty;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -241,9 +240,7 @@ public class EntityDefinedRegionsConfiguration
 
 	/* (non-Javadoc) */
 	protected GemfirePersistentEntity<?> getPersistentEntity(Class<?> persistentEntityType) {
-
-		return resolveMappingContext().getPersistentEntity(persistentEntityType).orElseThrow(
-			() -> newIllegalStateException("PersistentEntity for type [%s] not found", persistentEntityType));
+		return resolveMappingContext().getPersistentEntity(persistentEntityType);
 	}
 
 	/* (non-Javadoc) */
@@ -529,9 +526,9 @@ public class EntityDefinedRegionsConfiguration
 	@SuppressWarnings("unchecked")
 	protected Class<?> resolveIdType(GemfirePersistentEntity persistentEntity) {
 
-		return (Class<?>) persistentEntity.getIdProperty()
+		return Optional.ofNullable(persistentEntity.getIdProperty())
 			.map(idProperty -> ((GemfirePersistentProperty) idProperty).getActualType())
-			.orElse(Object.class);
+			.orElse((Class) Object.class);
 	}
 
 	/* (non-Javadoc) */

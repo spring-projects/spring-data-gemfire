@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.mapping;
 
-import java.util.Optional;
-
 import org.apache.geode.pdx.PdxReader;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.util.Assert;
@@ -49,7 +47,7 @@ class GemfirePropertyValueProvider implements PropertyValueProvider<GemfirePersi
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> Optional<T> getPropertyValue(GemfirePersistentProperty property) {
-		return Optional.ofNullable((T) reader.readField(property.getName()));
+	public <T> T getPropertyValue(GemfirePersistentProperty property) {
+		return (T) reader.readField(property.getName());
 	}
 }

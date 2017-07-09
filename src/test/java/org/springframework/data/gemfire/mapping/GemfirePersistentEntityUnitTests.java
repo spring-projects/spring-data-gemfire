@@ -19,11 +19,9 @@ package org.springframework.data.gemfire.mapping;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +29,7 @@ import org.junit.rules.ExpectedException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.mapping.IdentifierAccessor;
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
@@ -62,8 +60,7 @@ public class GemfirePersistentEntityUnitTests {
 
 	@SuppressWarnings("unchecked")
 	protected <T> GemfirePersistentEntity<T> getMappingContextPersistentEntity(Class<T> type) {
-		return (GemfirePersistentEntity<T>) this.mappingContext.getPersistentEntity(type).orElseThrow(
-			() -> newIllegalStateException("Unable to resolve PersistentEntity for type [%s]", type));
+		return (GemfirePersistentEntity<T>) this.mappingContext.getPersistentEntity(type);
 	}
 
 	protected <T> GemfirePersistentEntity<T> newPersistentEntity(Class<T> type) {
@@ -96,25 +93,26 @@ public class GemfirePersistentEntityUnitTests {
 		assertThat(entity).isNotNull();
 		assertThat(entity.getRegionName()).isEqualTo("Example");
 
-		Optional<GemfirePersistentProperty> currency = entity.getPersistentProperty("currency");
+		GemfirePersistentProperty currency = entity.getPersistentProperty("currency");
 
-		assertThat(currency.isPresent()).isTrue();
-		assertThat(currency.get().isEntity()).isFalse();
+		assertThat(currency).isNotNull();
+		assertThat(currency.isEntity()).isFalse();
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void bigIntegerPersistentPropertyIsNotAnEntity() {
+
 		GemfirePersistentEntity<ExampleDomainObject> entity =
 			getMappingContextPersistentEntity(ExampleDomainObject.class);
 
 		assertThat(entity).isNotNull();
 		assertThat(entity.getRegionName()).isEqualTo("Example");
 
-		Optional<GemfirePersistentProperty> bigNumber = entity.getPersistentProperty("bigNumber");
+		GemfirePersistentProperty bigNumber = entity.getPersistentProperty("bigNumber");
 
-		assertThat(bigNumber.isPresent()).isTrue();
-		assertThat(bigNumber.get().isEntity()).isFalse();
+		assertThat(bigNumber).isNotNull();
+		assertThat(bigNumber.isEntity()).isFalse();
 	}
 
 	/**
@@ -122,9 +120,10 @@ public class GemfirePersistentEntityUnitTests {
 	 */
 	@Test
 	public void identifierForNonIdAnnotatedEntityWithNoIdFieldOrPropertyIsNull() {
+
 		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonRegionAnnotatedEntity());
 
-		assertThat(identifierAccessor.getIdentifier().orElse(null)).isNull();
+		assertThat(identifierAccessor.getIdentifier()).isNull();
 	}
 
 	/**
@@ -132,9 +131,10 @@ public class GemfirePersistentEntityUnitTests {
 	 */
 	@Test
 	public void identifierForNonIdAnnotatedEntityWithIdFieldIsNotNull() {
+
 		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonIdAnnotatedIdFieldEntity());
 
-		assertThat(identifierAccessor.getIdentifier().orElse(null)).isEqualTo(123L);
+		assertThat(identifierAccessor.getIdentifier()).isEqualTo(123L);
 	}
 
 	/**
@@ -142,22 +142,25 @@ public class GemfirePersistentEntityUnitTests {
 	 */
 	@Test
 	public void identifierForNonIdAnnotatedEntityWithIdPropertyIsNotNull() {
+
 		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new NonIdAnnotatedIdGetterEntity());
 
-		assertThat(identifierAccessor.getIdentifier().orElse(null)).isEqualTo(456L);
+		assertThat(identifierAccessor.getIdentifier()).isEqualTo(456L);
 	}
 
 	@Test
 	public void identifierForIdAnnotatedFieldAndPropertyEntityShouldNotConflict() {
+
 		IdentifierAccessor identifierAccessor = getIdentifierAccessor(new IdAnnotatedFieldAndPropertyEntity());
 
-		assertThat(identifierAccessor.getIdentifier().orElse(null)).isEqualTo(1L);
+		assertThat(identifierAccessor.getIdentifier()).isEqualTo(1L);
 	}
 
 	@Test
 	public void identifierForAmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntityThrowsMappingException() {
-		AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity entity
-			= new AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity();
+
+		AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity entity =
+			new AmbiguousIdAnnotatedFieldAndIdAnnotatedPropertyEntity();
 
 		String expectedMessage = String.format("Attempt to add explicit id property [ssn] but already have id property [id] registered as explicit;"
 			+ " Please check your object [%s] mapping configuration", entity.getClass().getName());

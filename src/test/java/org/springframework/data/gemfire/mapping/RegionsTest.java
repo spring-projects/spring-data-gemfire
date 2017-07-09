@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.junit.After;
@@ -101,30 +100,34 @@ public class RegionsTest {
 
 	@Test
 	public void getRegionByEntityTypeReturnsRegionForEntityRegionName() {
+
 		GemfirePersistentEntity<User> mockPersistentEntity = mock(GemfirePersistentEntity.class);
 
 		when(mockPersistentEntity.getRegionName()).thenReturn("Users");
-		when(mockMappingContext.getPersistentEntity(eq(User.class))).thenReturn(Optional.of(mockPersistentEntity));
+		when(mockMappingContext.getPersistentEntity(eq(User.class))).thenReturn(mockPersistentEntity);
 
 		assertThat(regions.getRegion(User.class)).isEqualTo(mockUsers);
 	}
 
 	@Test
 	public void getRegionByEntityTypeReturnsRegionForEntityTypeSimpleName() {
-		when(mockMappingContext.getPersistentEntity(any(Class.class))).thenReturn(Optional.empty());
+
+		when(mockMappingContext.getPersistentEntity(any(Class.class))).thenReturn(null);
 
 		assertThat(regions.getRegion(Users.class)).isEqualTo(mockUsers);
 	}
 
 	@Test
 	public void getRegionByEntityTypeReturnsNull() {
-		when(mockMappingContext.getPersistentEntity(any(Class.class))).thenReturn(Optional.empty());
+
+		when(mockMappingContext.getPersistentEntity(any(Class.class))).thenReturn(null);
 
 		assertThat(regions.getRegion(Object.class)).isNull();
 	}
 
 	@Test
 	public void getRegionWithNullEntityTypeThrowsIllegalArgumentException() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("Entity type must not be null");
@@ -158,6 +161,7 @@ public class RegionsTest {
 
 	@Test
 	public void getRegionWithNullNameNullPathThrowsIllegalArgumentException() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("Region name/path is required");
@@ -167,6 +171,7 @@ public class RegionsTest {
 
 	@Test
 	public void iterateRegions() {
+
 		List<Region> actualRegions = new ArrayList<>(3);
 
 		for (Region region : regions) {

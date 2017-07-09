@@ -16,12 +16,11 @@
 
 package org.springframework.data.gemfire.mapping;
 
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.springframework.data.mapping.context.MappingContext;
@@ -74,10 +73,11 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Region<?, T> getRegion(Class<T> entityType) {
+
 		Assert.notNull(entityType, "Entity type must not be null");
 
-		String regionName = this.mappingContext.getPersistentEntity(entityType).map((entity) -> entity.getRegionName())
-			.orElseGet(entityType::getSimpleName);
+		String regionName = Optional.ofNullable(this.mappingContext.getPersistentEntity(entityType))
+			.map(entity -> entity.getRegionName()).orElseGet(entityType::getSimpleName);
 
 		return (Region<?, T>) this.regions.get(regionName);
 	}
@@ -92,6 +92,7 @@ public class Regions implements Iterable<Region<?, ?>> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <S, T> Region<S, T> getRegion(String namePath) {
+
 		Assert.hasText(namePath, "Region name/path is required");
 
 		return (Region<S, T>) this.regions.get(namePath);

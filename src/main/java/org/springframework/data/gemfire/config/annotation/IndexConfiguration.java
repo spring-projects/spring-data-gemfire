@@ -137,17 +137,25 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 
 			localPersistentEntity.doWithProperties((PropertyHandler<GemfirePersistentProperty>) persistentProperty -> {
 
-				persistentProperty.findAnnotation(Id.class).ifPresent(idAnnotation ->
-					registerIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity, persistentProperty,
-						IndexType.KEY, idAnnotation, registry));
+				Optional<Id> idAnnotation = Optional.ofNullable(persistentProperty.findAnnotation(Id.class));
 
-				persistentProperty.findAnnotation(Indexed.class).ifPresent(indexedAnnotation ->
+				idAnnotation.ifPresent(id ->
 					registerIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity, persistentProperty,
-						indexedAnnotation.type(), indexedAnnotation, registry));
+						IndexType.KEY, id, registry));
 
-				persistentProperty.findAnnotation(LuceneIndexed.class).ifPresent( luceneIndexAnnotation ->
+				Optional<Indexed> indexedAnnotation =
+					Optional.ofNullable(persistentProperty.findAnnotation(Indexed.class));
+
+				indexedAnnotation.ifPresent(indexed ->
+					registerIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity, persistentProperty,
+						indexed.type(), indexed, registry));
+
+				Optional<LuceneIndexed> luceneIndexedAnnotation =
+					Optional.ofNullable(persistentProperty.findAnnotation(LuceneIndexed.class));
+
+				luceneIndexedAnnotation.ifPresent(luceneIndexed ->
 					registerLuceneIndexBeanDefinition(enableIndexingAttributes, localPersistentEntity,
-						persistentProperty, luceneIndexAnnotation, registry));
+						persistentProperty, luceneIndexed, registry));
 
 			});
 		}

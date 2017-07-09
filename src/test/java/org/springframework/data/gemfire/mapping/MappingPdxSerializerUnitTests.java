@@ -28,7 +28,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.util.Collections;
 
@@ -47,7 +46,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.gemfire.repository.sample.Address;
 import org.springframework.data.gemfire.repository.sample.Person;
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 
 /**
@@ -78,7 +77,7 @@ public class MappingPdxSerializerUnitTests {
 	MappingPdxSerializer serializer;
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
 	EntityInstantiator mockInstantiator;
@@ -102,6 +101,7 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	public void createFullyInitialized() {
+
 		ConversionService mockConversionService = mock(ConversionService.class);
 		GemfireMappingContext mockMappingContext = mock(GemfireMappingContext.class);
 
@@ -114,6 +114,7 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	public void createWithNullConversionService() {
+
 		GemfireMappingContext mockMappingContext = mock(GemfireMappingContext.class);
 
 		MappingPdxSerializer pdxSerializer = MappingPdxSerializer.create(mockMappingContext, null);
@@ -125,6 +126,7 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	public void createWithNullMappingContext() {
+
 		ConversionService mockConversionService = mock(ConversionService.class);
 
 		MappingPdxSerializer pdxSerializer = MappingPdxSerializer.create(null, mockConversionService);
@@ -136,6 +138,7 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	public void createWithNullConversionServiceAndNullMappingContext() {
+
 		MappingPdxSerializer pdxSerializer = MappingPdxSerializer.create(null, null);
 
 		assertThat(pdxSerializer).isNotNull();
@@ -146,11 +149,14 @@ public class MappingPdxSerializerUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void usesRegisteredInstantiator() {
+
 		Address address = new Address();
+
 		address.city = "London";
 		address.zipCode = "01234";
 
 		Person person = new Person(1L, "Oliver", "Gierke");
+
 		person.address = address;
 
 		when(mockInstantiator.createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class)))
@@ -160,18 +166,18 @@ public class MappingPdxSerializerUnitTests {
 
 		serializer.fromData(Person.class, mockReader);
 
-		GemfirePersistentEntity<?> persistentEntity = context.getPersistentEntity(Person.class)
-			.orElseThrow(() -> newIllegalStateException("Unable to resolve PersistentEntity for type [%s]",
-				Person.class.getName()));
+		GemfirePersistentEntity<?> persistentEntity = context.getPersistentEntity(Person.class);
 
 		verify(mockInstantiator, times(1)).createInstance(eq(persistentEntity),
 			any(ParameterValueProvider.class));
+
 		verify(mockAddressSerializer, times(1)).fromData(eq(Address.class), any(PdxReader.class));
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void fromDataMapsPdxDataToApplicationDomainObject() {
+
 		Address expectedAddress = new Address();
 
 		expectedAddress.city = "Portland";
@@ -207,6 +213,7 @@ public class MappingPdxSerializerUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void fromDataHandlesExceptionProperly() {
+
 		when(mockInstantiator.createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class)))
 			.thenReturn(new Person(null, null, null));
 
@@ -215,9 +222,9 @@ public class MappingPdxSerializerUnitTests {
 		serializer.setGemfireInstantiators(Collections.singletonMap(Person.class, mockInstantiator));
 
 		try {
-			expectedException.expect(MappingException.class);
-			expectedException.expectCause(isA(IllegalArgumentException.class));
-			expectedException.expectMessage(String.format(
+			exception.expect(MappingException.class);
+			exception.expectCause(isA(IllegalArgumentException.class));
+			exception.expectMessage(String.format(
 				"While setting value [null] of property [id] for entity of type [%s] from PDX", Person.class));
 
 			serializer.fromData(Person.class, mockReader);
@@ -225,17 +232,21 @@ public class MappingPdxSerializerUnitTests {
 		finally {
 			verify(mockInstantiator, times(1))
 				.createInstance(any(GemfirePersistentEntity.class), any(ParameterValueProvider.class));
+
 			verify(mockReader, times(1)).readField(eq("id"));
 		}
 	}
 
 	@Test
 	public void toDataSerializesApplicationDomainObjectToPdx() {
+
 		Address address = new Address();
+
 		address.city = "Portland";
 		address.zipCode = "12345";
 
 		Person jonDoe = new Person(1L, "Jon", "Doe");
+
 		jonDoe.address = address;
 
 		serializer.setCustomSerializers(Collections.singletonMap(Address.class, mockAddressSerializer));
@@ -251,20 +262,23 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	public void toDataHandlesExceptionProperly() {
+
 		Address address = new Address();
+
 		address.city = "Portland";
 		address.zipCode = "12345";
 
 		Person jonDoe = new Person(1L, "Jon", "Doe");
+
 		jonDoe.address = address;
 
 		when(mockWriter.writeField(eq("address"), eq(address), eq(Address.class)))
 			.thenThrow(newIllegalArgumentException("test"));
 
 		try {
-			expectedException.expect(MappingException.class);
-			expectedException.expectCause(isA(IllegalArgumentException.class));
-			expectedException.expectMessage(String.format(
+			exception.expect(MappingException.class);
+			exception.expectCause(isA(IllegalArgumentException.class));
+			exception.expectMessage(String.format(
 				"While serializing entity property [address] value [Portland, 12345] of type [%s] to PDX",
 					Person.class));
 

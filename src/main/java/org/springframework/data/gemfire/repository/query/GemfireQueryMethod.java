@@ -67,9 +67,8 @@ public class GemfireQueryMethod extends QueryMethod {
 		assertNonPagingQueryMethod(method);
 
 		this.method = method;
-		this.entity = mappingContext.getPersistentEntity(getDomainClass()).orElseThrow(
-			() -> new IllegalArgumentException(String.format("Failed to resolve PersistentEntity for type [%s]",
-				getDomainClass())));
+
+		this.entity = mappingContext.getPersistentEntity(getDomainClass());
 	}
 
 	/**

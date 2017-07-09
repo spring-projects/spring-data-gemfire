@@ -25,10 +25,10 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.gemfire.mapping.annotation.Region;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -149,11 +149,10 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 			GemfirePersistentProperty property) {
 
 		if (property.isIdProperty()) {
-			Optional<GemfirePersistentProperty> optionalIdProperty = getIdProperty();
 
-			if (optionalIdProperty.isPresent()) {
-				GemfirePersistentProperty idProperty = getIdProperty().get();
+			GemfirePersistentProperty idProperty = getIdProperty();
 
+			if (idProperty != null) {
 				if (idProperty.isExplicitIdProperty()) {
 					if (property.isExplicitIdProperty()) {
 						throw new MappingException(String.format(

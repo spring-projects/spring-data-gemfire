@@ -16,17 +16,15 @@
 
 package org.springframework.data.gemfire.mapping;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.*;
-
-import lombok.Data;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.data.gemfire.mapping.annotation.Region;
+
+import lombok.Data;
 
 /**
  * Unit tests for {@link GemfireMappingContext} class.
@@ -43,32 +41,29 @@ public class GemfireMappingContextUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getPersistentEntityForPerson() throws Exception {
-		
+
 		GemfirePersistentEntity<Person> personPersistentEntity =
-			(GemfirePersistentEntity<Person>) mappingContext.getPersistentEntity(Person.class).orElseThrow(
-				() -> newIllegalStateException("Unable to resolve PersistentEntity for type [%s]",
-					Person.class.getName()));
+			(GemfirePersistentEntity<Person>) mappingContext.getPersistentEntity(Person.class);
 
 		assertThat(personPersistentEntity).isNotNull();
 		assertThat(personPersistentEntity.getRegionName()).isEqualTo("People");
 
-		Optional<GemfirePersistentProperty> namePersistentProperty =
-			personPersistentEntity.getPersistentProperty("name");
+		GemfirePersistentProperty namePersistentProperty = personPersistentEntity.getPersistentProperty("name");
 
-		assertThat(namePersistentProperty.isPresent()).isTrue();
-		assertThat(namePersistentProperty.get().isEntity()).isFalse();
-		assertThat(namePersistentProperty.get().getName()).isEqualTo("name");
-		assertThat(namePersistentProperty.get().getOwner()).isEqualTo(personPersistentEntity);
+		assertThat(namePersistentProperty).isNotNull();
+		assertThat(namePersistentProperty.isEntity()).isFalse();
+		assertThat(namePersistentProperty.getName()).isEqualTo("name");
+		assertThat(namePersistentProperty.getOwner()).isEqualTo(personPersistentEntity);
 	}
 
 	@Test
 	public void getPersistentEntityForBigDecimal() {
-		assertThat(mappingContext.getPersistentEntity(BigDecimal.class).isPresent()).isFalse();
+		assertThat(mappingContext.getPersistentEntity(BigDecimal.class)).isNull();
 	}
 
 	@Test
 	public void getPersistentEntityForBigInteger() {
-		assertThat(mappingContext.getPersistentEntity(BigInteger.class).isPresent()).isFalse();
+		assertThat(mappingContext.getPersistentEntity(BigInteger.class)).isNull();
 	}
 
 	@Data

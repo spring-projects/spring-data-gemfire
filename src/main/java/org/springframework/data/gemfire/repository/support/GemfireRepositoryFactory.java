@@ -16,7 +16,6 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.io.Serializable;
@@ -84,9 +83,8 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	@SuppressWarnings("unchecked")
 	public <T, ID> GemfireEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
 
-		GemfirePersistentEntity<T> entity = (GemfirePersistentEntity<T>) mappingContext.getPersistentEntity(domainClass)
-			.orElseThrow(() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%s]",
-				domainClass));
+		GemfirePersistentEntity<T> entity =
+			(GemfirePersistentEntity<T>) mappingContext.getPersistentEntity(domainClass);
 
 		return new DefaultGemfireEntityInformation<>(entity);
 	}
@@ -108,9 +106,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 	GemfireTemplate getTemplate(RepositoryMetadata metadata) {
 
-		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(metadata.getDomainType())
-			.orElseThrow(() -> newIllegalArgumentException("Unable to resolve PersistentEntity for type [%s]",
-				metadata.getDomainType()));
+		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(metadata.getDomainType());
 
 		String entityRegionName = entity.getRegionName();
 		String repositoryRegionName = getRepositoryRegionName(metadata.getRepositoryInterface());
