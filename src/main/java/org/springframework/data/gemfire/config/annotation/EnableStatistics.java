@@ -44,6 +44,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import(StatisticsConfiguration.class)
+@UsesGemFireProperties
 @SuppressWarnings("unused")
 public @interface EnableStatistics {
 

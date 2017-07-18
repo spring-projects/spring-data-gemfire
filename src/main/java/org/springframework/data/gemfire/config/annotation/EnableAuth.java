@@ -50,6 +50,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import(AuthConfiguration.class)
+@UsesGemFireProperties
 @SuppressWarnings({ "deprecation", "unused" })
 public @interface EnableAuth {
 

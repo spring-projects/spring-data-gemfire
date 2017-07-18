@@ -42,6 +42,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import(SslConfiguration.class)
+@UsesGemFireProperties
 @SuppressWarnings("unused")
 public @interface EnableSsl {
 

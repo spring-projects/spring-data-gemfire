@@ -48,6 +48,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import({ ApacheShiroSecurityConfiguration.class, GeodeIntegratedSecurityConfiguration.class })
+@UsesGemFireProperties
 @SuppressWarnings({ "unused" })
 public @interface EnableSecurity {
 

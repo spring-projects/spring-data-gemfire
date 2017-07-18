@@ -52,6 +52,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import(HttpServiceConfiguration.class)
+@UsesGemFireProperties
 @SuppressWarnings("unused")
 public @interface EnableHttpService {
 

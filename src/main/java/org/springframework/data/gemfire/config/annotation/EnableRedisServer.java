@@ -50,6 +50,7 @@ import org.springframework.context.annotation.Import;
 @Documented
 @Inherited
 @Import(RedisServerConfiguration.class)
+@UsesGemFireProperties
 @SuppressWarnings("unused")
 public @interface EnableRedisServer {
 

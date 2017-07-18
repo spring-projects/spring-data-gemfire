@@ -41,6 +41,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import(GemFirePropertiesConfiguration.class)
+@UsesGemFireProperties
 @SuppressWarnings("unused")
 public @interface EnableGemFireProperties {
 

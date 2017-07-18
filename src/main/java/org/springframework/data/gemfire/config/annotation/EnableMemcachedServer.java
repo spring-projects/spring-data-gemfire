@@ -50,6 +50,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import(MemcachedServerConfiguration.class)
+@UsesGemFireProperties
 @SuppressWarnings("unused")
 public @interface EnableMemcachedServer {
 

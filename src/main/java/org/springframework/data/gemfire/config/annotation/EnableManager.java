@@ -50,6 +50,7 @@ import org.springframework.context.annotation.Import;
 @Inherited
 @Documented
 @Import(ManagerConfiguration.class)
+@UsesGemFireProperties
 @SuppressWarnings("unused")
 public @interface EnableManager {
 
