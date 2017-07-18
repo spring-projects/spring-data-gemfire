@@ -136,7 +136,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 
 	/* (non-Javadoc) */
 	private void applyClientCacheConfigurers() {
-		applyClientCacheConfigurers(this.compositeClientCacheConfigurer);
+		applyClientCacheConfigurers(getCompositeClientCacheConfigurer());
 	}
 
 	/**
@@ -193,6 +193,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	protected Properties resolveProperties() {
 
 		Properties gemfireProperties = super.resolveProperties();
+
 		DistributedSystem distributedSystem = getDistributedSystem();
 
 		if (GemfireUtils.isConnected(distributedSystem)) {

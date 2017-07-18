@@ -46,6 +46,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.util.GatewayConflictResolver;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.datasource.ConfigProperty;
@@ -63,6 +64,7 @@ import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer;
 import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -118,6 +120,8 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	private Boolean useClusterConfiguration;
 
 	private Cache cache;
+
+	private CacheFactoryInitializer<?> cacheFactoryInitializer;
 
 	private DynamicRegionSupport dynamicRegionSupport;
 
@@ -257,6 +261,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 			setCache(postProcess(resolveCache()));
 
 			Optional.ofNullable(this.<Cache>getCache()).ifPresent(cache -> {
+
 				Optional.ofNullable(cache.getDistributedSystem()).map(DistributedSystem::getDistributedMember)
 					.ifPresent(member ->
 						logInfo(() -> String.format("Connected to Distributed System [%1$s] as Member [%2$s]"
@@ -266,6 +271,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 
 				logInfo(() -> String.format("%1$s %2$s version [%3$s] Cache [%4$s]", this.cacheResolutionMessagePrefix,
 					apacheGeodeProductName(), apacheGeodeVersion(), cache.getName()));
+
 			});
 
 			return getCache();
@@ -299,7 +305,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 		catch (CacheClosedException ex) {
 			this.cacheResolutionMessagePrefix = "Created new";
 			initDynamicRegionFactory();
-			return (Cache) createCache(prepareFactory(createFactory(resolveProperties())));
+			return (Cache) createCache(prepareFactory(initializeFactory(createFactory(resolveProperties()))));
 		}
 	}
 
@@ -352,6 +358,23 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 */
 	protected Object createFactory(Properties gemfireProperties) {
 		return new CacheFactory(gemfireProperties);
+	}
+
+	/**
+	 * Initializes the given cache factory with the configured {@link CacheFactoryInitializer}.
+	 *
+	 * @param factory cache factory to initialize; may be {@literal null}.
+	 * @return the given cache factory.
+	 * @see org.springframework.data.gemfire.CacheFactoryBean.CacheFactoryInitializer#initialize(Object)
+	 * @see #getCacheFactoryInitializer()
+	 */
+	@Nullable
+	@SuppressWarnings("unchecked")
+	protected Object initializeFactory(Object factory) {
+
+		return Optional.ofNullable(getCacheFactoryInitializer())
+			.map(cacheFactoryInitializer -> cacheFactoryInitializer.initialize(factory))
+			.orElse(factory);
 	}
 
 	/**
@@ -751,6 +774,28 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	}
 
 	/**
+	 * Set the {@link CacheFactoryInitializer} that will be called to initialize the cache factory used to create
+	 * the cache constructed by this {@link CacheFactoryBean}.
+	 *
+	 * @param cacheFactoryInitializer {@link CacheFactoryInitializer} configured to initialize the cache factory.
+	 * @see org.springframework.data.gemfire.CacheFactoryBean.CacheFactoryInitializer
+	 */
+	public void setCacheFactoryInitializer(CacheFactoryInitializer cacheFactoryInitializer) {
+		this.cacheFactoryInitializer = cacheFactoryInitializer;
+	}
+
+	/**
+	 * Return the {@link CacheFactoryInitializer} that will be called to initialize the cache factory used to create
+	 * the cache constructed by this {@link CacheFactoryBean}.
+	 *
+	 * @return the {@link CacheFactoryInitializer} configured to initialize the cache factory.
+	 * @see org.springframework.data.gemfire.CacheFactoryBean.CacheFactoryInitializer
+	 */
+	public CacheFactoryInitializer getCacheFactoryInitializer() {
+		return this.cacheFactoryInitializer;
+	}
+
+	/**
 	 * Sets a value to indicate whether the cache will be closed on shutdown of the Spring container.
 	 *
 	 * @param close boolean value indicating whether the cache will be closed on shutdown of the Spring container.
@@ -1147,6 +1192,26 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<Cache>
 	 */
 	public Boolean getUseClusterConfiguration() {
 		return this.useClusterConfiguration;
+	}
+
+	/**
+	 * Callback interface for initializing either a {@link CacheFactory} or a {@link ClientCacheFactory} instance,
+	 * which is used to create an instance of {@link GemFireCache}.
+	 *
+	 * @see org.apache.geode.cache.CacheFactory
+	 * @see org.apache.geode.cache.client.ClientCacheFactory
+	 */
+	public interface CacheFactoryInitializer<T> {
+
+		/**
+		 * Initialize the given cache factory.
+		 *
+		 * @param cacheFactory cache factory to initialize.
+		 * @return the given cache factory.
+		 * @see org.apache.geode.cache.CacheFactory
+		 * @see org.apache.geode.cache.client.ClientCacheFactory
+		 */
+		T initialize(T cacheFactory);
 	}
 
 	/* (non-Javadoc) */
