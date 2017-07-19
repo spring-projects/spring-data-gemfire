@@ -18,18 +18,30 @@ package org.springframework.data.gemfire.test.mock.config;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.PoolFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
+import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
 import org.springframework.lang.Nullable;
 
 /**
- * The MockGemFireObjectsBeanPostProcessor class...
+ * The {@link MockGemFireObjectsBeanPostProcessor} class is a Spring {@link BeanPostProcessor} that applies
+ * mocks and spies to Spring Data GemFire / Spring Data Geode and Pivotal GemFire / Apache Geode objects
+ * and components.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.apache.geode.cache.CacheFactory
+ * @see org.apache.geode.cache.client.ClientCacheFactory
+ * @see org.apache.geode.cache.client.PoolFactory
+ * @see org.springframework.beans.factory.config.BeanPostProcessor
+ * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+ * @see org.springframework.data.gemfire.client.PoolFactoryBean
+ * @see org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport
+ * @since 2.0.0
  */
 public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 
@@ -37,7 +49,10 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 
 	@Nullable @Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		return (bean instanceof CacheFactoryBean ?  spyOnCacheFactoryBean((CacheFactoryBean) bean) : bean);
+
+		return (bean instanceof CacheFactoryBean ?  spyOnCacheFactoryBean((CacheFactoryBean) bean)
+			: (bean instanceof PoolFactoryBean ? mockThePoolFactoryBean((PoolFactoryBean) bean)
+			: bean));
 	}
 
 	private Object spyOnCacheFactoryBean(CacheFactoryBean bean) {
@@ -45,6 +60,10 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 		return (bean instanceof ClientCacheFactoryBean
 			? SpyingClientCacheFactoryInitializer.spyOn((ClientCacheFactoryBean) bean)
 			: SpyingCacheFactoryInitializer.spyOn(bean));
+	}
+
+	private Object mockThePoolFactoryBean(PoolFactoryBean bean) {
+		return MockingPoolFactoryInitializer.mock(bean);
 	}
 
 	protected static class SpyingCacheFactoryInitializer
@@ -72,6 +91,19 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 		@Override
 		public ClientCacheFactory initialize(ClientCacheFactory clientCacheFactory) {
 			return MockGemFireObjectsSupport.spyOn(clientCacheFactory);
+		}
+	}
+
+	protected static class MockingPoolFactoryInitializer implements PoolFactoryBean.PoolFactoryInitializer {
+
+		public static PoolFactoryBean mock(PoolFactoryBean poolFactoryBean) {
+			poolFactoryBean.setPoolFactoryInitializer(new MockingPoolFactoryInitializer());
+			return poolFactoryBean;
+		}
+
+		@Override
+		public PoolFactory initialize(PoolFactory poolFactory) {
+			return MockGemFireObjectsSupport.mockPoolFactory();
 		}
 	}
 }

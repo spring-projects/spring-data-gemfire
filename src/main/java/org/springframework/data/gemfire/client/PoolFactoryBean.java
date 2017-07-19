@@ -110,6 +110,8 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	private PoolConfigurer compositePoolConfigurer = (beanName, bean) ->
 		nullSafeCollection(poolConfigurers).forEach(poolConfigurer ->  poolConfigurer.configure(beanName, bean));
 
+	private PoolFactoryInitializer poolFactoryInitializer;
+
 	private String name;
 	private String serverGroup = PoolFactory.DEFAULT_SERVER_GROUP;
 
@@ -232,7 +234,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			eagerlyInitializeClientCacheIfNotPresent();
 
-			PoolFactory poolFactory = configure(createPoolFactory());
+			PoolFactory poolFactory = configure(initialize(createPoolFactory()));
 
 			this.pool = create(poolFactory, getName());
 
@@ -315,6 +317,20 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		});
 
 		return poolFactory;
+	}
+
+	/**
+	 * Initializes the given {@link PoolFactory} with any configured {@link PoolFactoryInitializer}.
+	 *
+	 * @param poolFactory {@link PoolFactory} to initialize.
+	 * @return the initialized {@link PoolFactory}.
+	 * @see org.apache.geode.cache.client.PoolFactory
+	 */
+	protected PoolFactory initialize(PoolFactory poolFactory) {
+
+		return Optional.ofNullable(this.poolFactoryInitializer)
+			.map(initializer -> initializer.initialize(poolFactory))
+			.orElse(poolFactory);
 	}
 
 	/**
@@ -622,6 +638,18 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		this.poolConfigurers = Optional.ofNullable(poolConfigurers).orElseGet(Collections::emptyList);
 	}
 
+	/**
+	 * Sets the {@link PoolFactoryInitializer} to initialize the {@link PoolFactory} used by
+	 * this {@link PoolFactoryBean} to create a {@link Pool}.
+	 *
+	 * @param poolFactoryInitializer {@link PoolFactoryInitializer} user provided callback interface invoked
+	 * by this {@link PoolFactoryBean} to initialize the {@link PoolFactory} constructed to create the {@link Pool}.
+	 * @see org.springframework.data.gemfire.client.PoolFactoryBean.PoolFactoryInitializer
+	 */
+	public void setPoolFactoryInitializer(PoolFactoryInitializer poolFactoryInitializer) {
+		this.poolFactoryInitializer = poolFactoryInitializer;
+	}
+
 	/* (non-Javadoc) */
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
@@ -705,5 +733,23 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	 * internal framework use only
 	 */
 	public final void setServersConfiguration(Object serversConfiguration) {
+	}
+
+	/**
+	 * Callback interface to initialize the {@link PoolFactory} used by this {@link PoolFactoryBean}
+	 * to create a {@link Pool} by providing additional or alternative configuration for the factory.
+	 *
+	 * @see org.apache.geode.cache.client.PoolFactory
+	 */
+	public interface PoolFactoryInitializer {
+
+		/**
+		 * Initializes the given {@link PoolFactory}.
+		 *
+		 * @param poolFactory {@link PoolFactory} to initialize.
+		 * @return the given {@link PoolFactory}.
+		 * @see org.apache.geode.cache.client.PoolFactory
+		 */
+		PoolFactory initialize(PoolFactory poolFactory);
 	}
 }
