@@ -94,7 +94,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void afterPropertiesSetInitializesLuceneAccessorProperly() throws Exception {
-
 		assertThat(luceneAccessor.getCache()).isNull();
 		assertThat(luceneAccessor.getLuceneService()).isNull();
 		assertThat(luceneAccessor.getIndexName()).isNullOrEmpty();
@@ -122,7 +121,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void createLuceneQueryFactory() {
-
 		doReturn(mockLuceneService).when(luceneAccessor).resolveLuceneService();
 		when(mockLuceneService.createLuceneQueryFactory()).thenReturn(mockLuceneQueryFactory);
 
@@ -134,15 +132,13 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	@SuppressWarnings("deprecation")
-	public void createLuceneQueryFactoryWithProjectionFields() {
-
+	public void createLuceneQueryFactoryWithResultLimit() {
 		doReturn(mockLuceneService).when(luceneAccessor).resolveLuceneService();
 		when(mockLuceneService.createLuceneQueryFactory()).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 		when(mockLuceneQueryFactory.setPageSize(anyInt())).thenReturn(mockLuceneQueryFactory);
+		when(mockLuceneQueryFactory.setLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 
-		assertThat(luceneAccessor.createLuceneQueryFactory("fieldOne", "fieldTwo"))
-			.isEqualTo(mockLuceneQueryFactory);
+		assertThat(luceneAccessor.createLuceneQueryFactory(1000)).isEqualTo(mockLuceneQueryFactory);
 
 		verify(luceneAccessor).resolveLuceneService();
 		verify(mockLuceneService, times(1)).createLuceneQueryFactory();
@@ -153,14 +149,13 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	@SuppressWarnings("deprecation")
-	public void createLuceneQueryFactoryWithResultLimitAndProjectionFields() {
-
+	public void createLuceneQueryFactoryWithResultLimitAndPageSize() {
 		doReturn(mockLuceneService).when(luceneAccessor).resolveLuceneService();
 		when(mockLuceneService.createLuceneQueryFactory()).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 		when(mockLuceneQueryFactory.setPageSize(anyInt())).thenReturn(mockLuceneQueryFactory);
+		when(mockLuceneQueryFactory.setLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 
-		assertThat(luceneAccessor.createLuceneQueryFactory(1000))
+		assertThat(luceneAccessor.createLuceneQueryFactory(1000, 20))
 			.isEqualTo(mockLuceneQueryFactory);
 
 		verify(luceneAccessor).resolveLuceneService();
@@ -171,7 +166,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void resolveCacheReturnsConfiguredCache() {
-
 		luceneAccessor.setCache(mockCache);
 
 		assertThat(luceneAccessor.getCache()).isSameAs(mockCache);
@@ -180,7 +174,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void resolveLuceneServiceReturnsConfiguredLuceneService() {
-
 		luceneAccessor.setLuceneService(mockLuceneService);
 
 		assertThat(luceneAccessor.getLuceneService()).isSameAs(mockLuceneService);
@@ -189,7 +182,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void resolveLuceneServiceLooksUpLuceneService() {
-
 		doReturn(mockCache).when(luceneAccessor).resolveCache();
 		doReturn(mockLuceneService).when(luceneAccessor).resolveLuceneService(eq(mockCache));
 
@@ -202,7 +194,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void resolveLuceneServiceThrowsIllegalArgumentExceptionWhenCacheIsNull() {
-
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("Cache reference was not properly configured");
@@ -213,7 +204,6 @@ public class LuceneAccessorUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveIndexNameReturnsConfiguredIndexName() {
-
 		luceneAccessor.setIndexName("TestIndex");
 
 		assertThat(luceneAccessor.getIndexName()).isEqualTo("TestIndex");
@@ -225,7 +215,6 @@ public class LuceneAccessorUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveIndexNameReturnsLuceneIndexName() {
-
 		luceneAccessor.setLuceneIndex(mockLuceneIndex);
 
 		when(mockLuceneIndex.getName()).thenReturn("MockIndex");
@@ -240,7 +229,6 @@ public class LuceneAccessorUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveIndexNameThrowsIllegalStateExceptionWhenIndexNameIsUnresolvable() {
-
 		assertThat(luceneAccessor.getIndexName()).isNullOrEmpty();
 		assertThat(luceneAccessor.getLuceneIndex()).isNull();
 
@@ -253,7 +241,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void resolveRegionPathReturnsConfiguredRegionPath() {
-
 		luceneAccessor.setRegionPath("/Example");
 
 		assertThat(luceneAccessor.getRegionPath()).isEqualTo("/Example");
@@ -263,7 +250,6 @@ public class LuceneAccessorUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveRegionPathReturnsRegionFullPath() {
-
 		when(mockRegion.getFullPath()).thenReturn("/Example");
 
 		luceneAccessor.setRegion(mockRegion);
@@ -277,7 +263,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void resolveRegionPathThrowsIllegalStatueExceptionWhenRegionPathIsUnresolvable() {
-
 		assertThat(luceneAccessor.getRegion()).isNull();
 		assertThat(luceneAccessor.getRegionPath()).isNullOrEmpty();
 
@@ -291,7 +276,6 @@ public class LuceneAccessorUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void doFind() throws LuceneQueryException {
-
 		LuceneQueryExecutor<String> mockQueryExecutor = mock(LuceneQueryExecutor.class);
 
 		when(mockQueryExecutor.execute()).thenReturn("test");
@@ -305,7 +289,6 @@ public class LuceneAccessorUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void doFindHandlesLuceneQueryException() throws LuceneQueryException {
-
 		LuceneQueryExecutor<String> mockQueryExecutor = mock(LuceneQueryExecutor.class);
 
 		when(mockQueryExecutor.execute()).thenThrow(new LuceneQueryException("test"));
@@ -326,7 +309,6 @@ public class LuceneAccessorUnitTests {
 
 	@Test
 	public void luceneAccessorInitializedCorrectly() {
-
 		luceneAccessor.setCache(mockCache);
 		luceneAccessor.setIndexName("ExampleIndex");
 		luceneAccessor.setLuceneIndex(mockLuceneIndex);

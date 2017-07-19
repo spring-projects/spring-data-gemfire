@@ -25,7 +25,6 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -73,9 +72,6 @@ public class LuceneOperationsIntegrationTests {
 
 	private static final AtomicLong IDENTIFIER = new AtomicLong(0L);
 
-	private static final int LUCENE_INDEX_WAIT_UNTIL_FLUSHED_TIMEOUT =
-		Long.valueOf(TimeUnit.SECONDS.toMillis(15L)).intValue();
-
 	protected static final String LOG_LEVEL = "none";
 
 	private Person jonDoe;
@@ -115,8 +111,12 @@ public class LuceneOperationsIntegrationTests {
 	}
 
 	protected void flushLuceneIndex() {
-		Optional.ofNullable(this.luceneService.getIndex("PersonTitleIndex", "/People"))
-			.ifPresent(luceneIndex -> luceneIndex.waitUntilFlushed(LUCENE_INDEX_WAIT_UNTIL_FLUSHED_TIMEOUT));
+		try {
+			this.luceneService.waitUntilFlushed("PersonTitleIndex", "/People",
+				15L, TimeUnit.SECONDS);
+		}
+		catch (Throwable ignore) {
+		}
 	}
 
 	private List<String> asNames(List<? extends Nameable> nameables) {

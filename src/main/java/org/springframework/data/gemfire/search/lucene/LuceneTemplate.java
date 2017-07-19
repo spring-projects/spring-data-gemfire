@@ -36,6 +36,7 @@ import org.springframework.data.gemfire.search.lucene.support.LuceneAccessorSupp
  * @author John Blum
  * @see org.springframework.data.gemfire.search.lucene.LuceneAccessor
  * @see org.springframework.data.gemfire.search.lucene.LuceneOperations
+ * @see org.springframework.data.gemfire.search.lucene.support.LuceneAccessorSupport
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.lucene.LuceneIndex
  * @see org.apache.geode.cache.lucene.LuceneQuery
@@ -91,13 +92,12 @@ public class LuceneTemplate extends LuceneAccessorSupport implements LuceneOpera
 	 * @inheritDoc
 	 */
 	@Override
-	public <K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField,
-			int resultLimit, String... projectionFields) {
+	public <K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField, int resultLimit) {
 
 		String indexName = resolveIndexName();
 		String regionPath = resolveRegionPath();
 
-		LuceneQueryFactory queryFactory = createLuceneQueryFactory(resultLimit, projectionFields);
+		LuceneQueryFactory queryFactory = createLuceneQueryFactory(resultLimit);
 
 		LuceneQuery<K, V> queryWrapper = queryFactory.create(indexName, regionPath, query, defaultField);
 
@@ -109,12 +109,13 @@ public class LuceneTemplate extends LuceneAccessorSupport implements LuceneOpera
 	 */
 	@Override
 	public <K, V> PageableLuceneQueryResults<K, V> query(String query, String defaultField,
-			int resultLimit, int pageSize, String... projectionFields) {
+
+		int resultLimit, int pageSize) {
 
 		String indexName = resolveIndexName();
 		String regionPath = resolveRegionPath();
 
-		LuceneQueryFactory queryFactory = createLuceneQueryFactory(resultLimit, pageSize, projectionFields);
+		LuceneQueryFactory queryFactory = createLuceneQueryFactory(resultLimit, pageSize);
 
 		LuceneQuery<K, V> queryWrapper = queryFactory.create(indexName, regionPath, query, defaultField);
 
@@ -125,13 +126,12 @@ public class LuceneTemplate extends LuceneAccessorSupport implements LuceneOpera
 	 * @inheritDoc
 	 */
 	@Override
-	public <K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider,
-			int resultLimit, String... projectionFields) {
+	public <K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider, int resultLimit) {
 
 		String indexName = resolveIndexName();
 		String regionPath = resolveRegionPath();
 
-		LuceneQueryFactory queryFactory = createLuceneQueryFactory(resultLimit, projectionFields);
+		LuceneQueryFactory queryFactory = createLuceneQueryFactory(resultLimit);
 
 		LuceneQuery<K, V> queryWrapper = queryFactory.create(indexName, regionPath, queryProvider);
 
@@ -143,12 +143,12 @@ public class LuceneTemplate extends LuceneAccessorSupport implements LuceneOpera
 	 */
 	@Override
 	public <K, V> PageableLuceneQueryResults<K, V> query(LuceneQueryProvider queryProvider,
-			int resultLimit, int pageSize, String... projectionFields) {
+			int resultLimit, int pageSize) {
 
 		String indexName = resolveIndexName();
 		String regionPath = resolveRegionPath();
 
-		LuceneQueryFactory queryFactory = createLuceneQueryFactory(resultLimit, pageSize, projectionFields);
+		LuceneQueryFactory queryFactory = createLuceneQueryFactory(resultLimit, pageSize);
 
 		LuceneQuery<K, V> queryWrapper = queryFactory.create(indexName, regionPath, queryProvider);
 
@@ -160,6 +160,7 @@ public class LuceneTemplate extends LuceneAccessorSupport implements LuceneOpera
 	 */
 	@Override
 	public <K> Collection<K> queryForKeys(String query, String defaultField, int resultLimit) {
+
 		String indexName = resolveIndexName();
 		String regionPath = resolveRegionPath();
 
@@ -175,6 +176,7 @@ public class LuceneTemplate extends LuceneAccessorSupport implements LuceneOpera
 	 */
 	@Override
 	public <K> Collection<K> queryForKeys(LuceneQueryProvider queryProvider, int resultLimit) {
+
 		String indexName = resolveIndexName();
 		String regionPath = resolveRegionPath();
 
@@ -190,6 +192,7 @@ public class LuceneTemplate extends LuceneAccessorSupport implements LuceneOpera
 	 */
 	@Override
 	public <V> Collection<V> queryForValues(String query, String defaultField, int resultLimit) {
+
 		String indexName = resolveIndexName();
 		String regionPath = resolveRegionPath();
 
@@ -205,6 +208,7 @@ public class LuceneTemplate extends LuceneAccessorSupport implements LuceneOpera
 	 */
 	@Override
 	public <V> Collection<V> queryForValues(LuceneQueryProvider queryProvider, int resultLimit) {
+
 		String indexName = resolveIndexName();
 		String regionPath = resolveRegionPath();
 

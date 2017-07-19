@@ -50,16 +50,13 @@ public interface LuceneOperations {
 	 * @param query {@link String} containing the Lucene query to execute.
 	 * @param defaultField {@link String} specifying the default field used in Lucene queries when a field
 	 * is not explicitly defined in the Lucene query clause.
-	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link List} of {@link LuceneResultStruct} containing the query results.
 	 * @see org.apache.geode.cache.lucene.LuceneResultStruct
-	 * @see #query(String, String, int, String...)
+	 * @see #query(String, String, int)
 	 * @see java.util.List
 	 */
-	default <K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField,
-			String... projectionFields) {
-
-		return query(query, defaultField, DEFAULT_RESULT_LIMIT, projectionFields);
+	default <K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField) {
+		return query(query, defaultField, DEFAULT_RESULT_LIMIT);
 	}
 
 	/**
@@ -71,13 +68,11 @@ public interface LuceneOperations {
 	 * @param defaultField {@link String} specifying the default field used in Lucene queries when a field
 	 * is not explicitly defined in the Lucene query clause.
 	 * @param resultLimit limit on the number of query results to return.
-	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link List} of {@link LuceneResultStruct} containing the query results.
 	 * @see org.apache.geode.cache.lucene.LuceneResultStruct
 	 * @see java.util.List
 	 */
-	<K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField,
-			int resultLimit, String... projectionFields);
+	<K, V> List<LuceneResultStruct<K, V>> query(String query, String defaultField, int resultLimit);
 
 	/**
 	 * Executes the given Lucene {@link String query} with a limit on the number of results returned
@@ -90,12 +85,10 @@ public interface LuceneOperations {
 	 * is not explicitly defined in the Lucene query clause.
 	 * @param resultLimit limit on the number of query results to return.
 	 * @param pageSize number of results per page.
-	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link PageableLuceneQueryResults} data structure containing the results of the Lucene query.
 	 * @see org.apache.geode.cache.lucene.PageableLuceneQueryResults
 	 */
-	<K, V> PageableLuceneQueryResults<K, V> query(String query, String defaultField,
-			int resultLimit, int pageSize, String... projectionFields);
+	<K, V> PageableLuceneQueryResults<K, V> query(String query, String defaultField, int resultLimit, int pageSize);
 
 	/**
 	 * Executes the given Lucene {@link String query}.
@@ -104,17 +97,14 @@ public interface LuceneOperations {
 	 * @param <V> {@link Class} type of the value.
 	 * @param queryProvider {@link LuceneQueryProvider} is a provider implementation supplying the Lucene query
 	 * to execute as well as de/serialize to distribute across the cluster.
-	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link List} of {@link LuceneResultStruct} containing the query results.
 	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see org.apache.geode.cache.lucene.LuceneResultStruct
-	 * @see #query(LuceneQueryProvider, int, String...)
+	 * @see #query(LuceneQueryProvider, int)
 	 * @see java.util.List
 	 */
-	default <K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider,
-			String... projectionFields) {
-
-		return query(queryProvider, DEFAULT_RESULT_LIMIT, projectionFields);
+	default <K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider) {
+		return query(queryProvider, DEFAULT_RESULT_LIMIT);
 	}
 
 	/**
@@ -125,14 +115,12 @@ public interface LuceneOperations {
 	 * @param queryProvider {@link LuceneQueryProvider} is a provider implementation supplying the Lucene query
 	 * to execute as well as de/serialize to distribute across the cluster.
 	 * @param resultLimit limit on the number of query results to return.
-	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link List} of {@link LuceneResultStruct} containing the query results.
 	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see org.apache.geode.cache.lucene.LuceneResultStruct
 	 * @see java.util.List
 	 */
-	<K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider,
-			int resultLimit, String... projectionFields);
+	<K, V> List<LuceneResultStruct<K, V>> query(LuceneQueryProvider queryProvider, int resultLimit);
 
 	/**
 	 * Executes the given Lucene {@link String query} with a limit on the number of results returned
@@ -144,13 +132,11 @@ public interface LuceneOperations {
 	 * to execute as well as de/serialize to distribute across the cluster.
 	 * @param resultLimit limit on the number of query results to return.
 	 * @param pageSize number of results per page.
-	 * @param projectionFields array of {@link String} values specifying the query projection.
 	 * @return a {@link PageableLuceneQueryResults} data structure containing the results of the Lucene query.
 	 * @see org.apache.geode.cache.lucene.LuceneQueryProvider
 	 * @see org.apache.geode.cache.lucene.PageableLuceneQueryResults
 	 */
-	<K, V> PageableLuceneQueryResults<K, V> query(LuceneQueryProvider queryProvider,
-			int resultLimit, int pageSize, String... projectionFields);
+	<K, V> PageableLuceneQueryResults<K, V> query(LuceneQueryProvider queryProvider, int resultLimit, int pageSize);
 
 	/**
 	 * Executes the given Lucene {@link String query} returning a {@link Collection} of keys

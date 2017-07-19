@@ -62,6 +62,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @see org.apache.geode.cache.lucene.LuceneQueryFactory
  * @see org.apache.geode.cache.lucene.LuceneQueryProvider
  * @see org.apache.geode.cache.lucene.LuceneResultStruct
+ * @see org.apache.geode.cache.lucene.LuceneService
  * @see org.apache.geode.cache.lucene.PageableLuceneQueryResults
  * @since 1.0.0
  */
@@ -95,18 +96,16 @@ public class LuceneTemplateUnitTests {
 	@Before
 	@SuppressWarnings("deprecation")
 	public void setup() {
-
 		luceneTemplate.setLuceneService(mockLuceneService);
 
 		when(mockLuceneService.createLuceneQueryFactory()).thenReturn(mockLuceneQueryFactory);
-		when(mockLuceneQueryFactory.setLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 		when(mockLuceneQueryFactory.setPageSize(anyInt())).thenReturn(mockLuceneQueryFactory);
+		when(mockLuceneQueryFactory.setLimit(anyInt())).thenReturn(mockLuceneQueryFactory);
 	}
 
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void stringQueryReturnsList() throws LuceneQueryException {
-
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"), anyString(), anyString()))
 			.thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findResults()).thenReturn(asList(mockLuceneResultStructOne, mockLuceneResultStructTwo));
@@ -115,8 +114,7 @@ public class LuceneTemplateUnitTests {
 		doReturn("/Example").when(luceneTemplate).resolveRegionPath();
 
 		List<LuceneResultStruct<Object, Object>> results =  luceneTemplate.query(
-			"title : Up Shit Creek Without a Paddle", "title", 100,
-				"content");
+			"title : Up Shit Creek Without a Paddle", "title", 100);
 
 		assertThat(results).isNotNull();
 		assertThat(results).hasSize(2);
@@ -137,7 +135,6 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void stringQueryWithPageSizeReturnsPageableResults() throws LuceneQueryException {
-
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"), anyString(), anyString()))
 			.thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findPages()).thenReturn(mockPageableLuceneQueryResults);
@@ -146,8 +143,7 @@ public class LuceneTemplateUnitTests {
 		doReturn("/Example").when(luceneTemplate).resolveRegionPath();
 
 		PageableLuceneQueryResults<Object, Object> results =  luceneTemplate.query(
-			"title : Up Shit Creek Without a Paddle", "title", 100, 20,
-				"content");
+			"title : Up Shit Creek Without a Paddle", "title", 100, 20);
 
 		assertThat(results).isSameAs(mockPageableLuceneQueryResults);
 
@@ -166,7 +162,6 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void queryProviderQueryReturnsList() throws LuceneQueryException {
-
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"),
 			any(LuceneQueryProvider.class))).thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findResults()).thenReturn(asList(mockLuceneResultStructOne, mockLuceneResultStructTwo));
@@ -174,8 +169,8 @@ public class LuceneTemplateUnitTests {
 		doReturn("TestIndex").when(luceneTemplate).resolveIndexName();
 		doReturn("/Example").when(luceneTemplate).resolveRegionPath();
 
-		List<LuceneResultStruct<Object, Object>> results =  luceneTemplate.query(mockLuceneQueryProvider,
-			100, "content");
+		List<LuceneResultStruct<Object, Object>> results =
+			luceneTemplate.query(mockLuceneQueryProvider, 100);
 
 		assertThat(results).isNotNull();
 		assertThat(results).hasSize(2);
@@ -196,7 +191,6 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void queryProviderQueryWithPageSizeReturnsPageableResults() throws LuceneQueryException {
-
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"),
 			any(LuceneQueryProvider.class))).thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findPages()).thenReturn(mockPageableLuceneQueryResults);
@@ -205,7 +199,7 @@ public class LuceneTemplateUnitTests {
 		doReturn("/Example").when(luceneTemplate).resolveRegionPath();
 
 		PageableLuceneQueryResults<Object, Object> results =  luceneTemplate.query(mockLuceneQueryProvider,
-			100, 20, "content");
+			100, 20);
 
 		assertThat(results).isSameAs(mockPageableLuceneQueryResults);
 
@@ -224,7 +218,6 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void stringQueryForKeysReturnsKeys() throws LuceneQueryException {
-
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"), anyString(), anyString()))
 			.thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findKeys()).thenReturn(asList("keyOne", "keyTwo"));
@@ -254,7 +247,6 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void queryProviderQueryForKeysReturnsKeys() throws LuceneQueryException {
-
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"),
 			any(LuceneQueryProvider.class))).thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findKeys()).thenReturn(asList("keyOne", "keyTwo"));
@@ -283,7 +275,6 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void stringQueryForValuesReturnsValues() throws LuceneQueryException {
-
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"), anyString(), anyString()))
 			.thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findValues()).thenReturn(asList("valueOne", "valueTwo"));
@@ -313,7 +304,6 @@ public class LuceneTemplateUnitTests {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void queryProviderQueryForValuesReturnsValues() throws LuceneQueryException {
-
 		when(mockLuceneQueryFactory.create(eq("TestIndex"), eq("/Example"),
 			any(LuceneQueryProvider.class))).thenReturn(mockLuceneQuery);
 		when(mockLuceneQuery.findValues()).thenReturn(asList("valueOne", "valueTwo"));

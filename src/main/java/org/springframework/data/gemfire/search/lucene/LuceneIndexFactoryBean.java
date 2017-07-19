@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.lucene.analysis.Analyzer;
@@ -56,6 +57,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.lucene.LuceneIndex
+ * @see org.apache.geode.cache.lucene.LuceneIndexFactory
  * @see org.apache.geode.cache.lucene.LuceneService
  * @see org.apache.geode.cache.lucene.LuceneServiceProvider
  * @see org.apache.lucene.analysis.Analyzer
@@ -68,7 +70,7 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneIndex>
-		implements DisposableBean, InitializingBean {
+	implements DisposableBean, InitializingBean {
 
 	protected static final boolean DEFAULT_DESTROY = false;
 
@@ -180,8 +182,7 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 	 * @param regionPath {@link String} containing the fully-qualified pathname to
 	 * the {@link GemFireCache} {@link Region}.
 	 * @return a new instance of {@link LuceneIndex} with the given {@code indexName} on the named {@link Region}.
-	 * @see org.apache.geode.cache.lucene.LuceneService#createIndex(String, String, Map)
-	 * @see org.apache.geode.cache.lucene.LuceneService#createIndex(String, String, String...)
+	 * @see org.apache.geode.cache.lucene.LuceneIndexFactory#create(String, String)
 	 * @see org.apache.geode.cache.lucene.LuceneService#getIndex(String, String)
 	 * @see #resolveLuceneService()
 	 * @see #getFieldAnalyzers()
@@ -192,13 +193,15 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 
 		LuceneService luceneService = resolveLuceneService();
 
+		LuceneIndexFactory indexFactory = luceneService.createIndexFactory();
+
 		Map<String, Analyzer> fieldAnalyzers = getFieldAnalyzers();
 
 		if (isEmpty(fieldAnalyzers)) {
-			luceneService.createIndex(indexName, regionPath, asArray(resolveFields(getFields())));
+			indexFactory.setFields(asArray(resolveFields(getFields()))).create(indexName, regionPath);
 		}
 		else {
-			luceneService.createIndex(indexName, regionPath, fieldAnalyzers);
+			indexFactory.setFields(fieldAnalyzers).create(indexName, regionPath);
 		}
 
 		return luceneService.getIndex(indexName, regionPath);
@@ -225,7 +228,7 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 		LuceneIndex luceneIndex = getObject();
 
 		if (isLuceneIndexDestroyable(luceneIndex)) {
-			resolveLuceneService().destroyIndex(luceneIndex);
+			resolveLuceneService().destroyIndex(luceneIndex.getName(), luceneIndex.getRegionPath());
 		}
 	}
 
@@ -251,7 +254,7 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 		if (this.luceneIndex == null) {
 			setLuceneIndex(Optional.ofNullable(resolveLuceneService())
 				.map((luceneService) -> luceneService.getIndex(getIndexName(), resolveRegionPath()))
-					.orElse(null));
+				.orElse(null));
 		}
 
 		return this.luceneIndex;
@@ -285,6 +288,16 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 	 */
 	protected List<String> resolveFields(List<String> fields) {
 		return (!isEmpty(fields) ? fields : Collections.singletonList(LuceneService.REGION_VALUE_FIELD));
+	}
+
+	/**
+	 * Resolves the appropriate {@link LuceneIndexFactory} from the {@link LuceneService}.
+	 *
+	 * @return a newly created instance of the {@link LuceneIndexFactory} from the resolved {@link LuceneService}.
+	 * @see #resolveLuceneService()
+	 */
+	protected LuceneIndexFactory resolveLuceneIndexFactory() {
+		return resolveLuceneService().createIndexFactory();
 	}
 
 	/**
