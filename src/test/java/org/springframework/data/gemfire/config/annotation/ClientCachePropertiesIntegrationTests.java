@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.Optional;
+import java.util.Properties;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
@@ -33,6 +34,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
+import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
 import org.springframework.mock.env.MockPropertySource;
 
@@ -133,6 +135,106 @@ public class ClientCachePropertiesIntegrationTests {
 		assertThat(resourceManager.getEvictionHeapPercentage()).isEqualTo(90.0f);
 	}
 
+	@Test
+	public void dynamicClientCacheConfiguration() {
+
+		MockPropertySource testPropertySource = new MockPropertySource()
+			.withProperty("spring.data.gemfire.cache.copy-on-read", true)
+			.withProperty("spring.data.gemfire.cache.critical-heap-percentage", 90.0f)
+			.withProperty("spring.data.gemfire.cache.eviction-heap-percentage", 75.0f)
+			.withProperty("spring.data.gemfire.cache.log-level", "info")
+			.withProperty("spring.data.gemfire.cache.name", "ABC123")
+			.withProperty("spring.data.gemfire.cache.client.durable-client-id", "123")
+			.withProperty("spring.data.gemfire.cache.client.durable-client-timeout", 600)
+			.withProperty("spring.data.gemfire.cache.client.keep-alive", true)
+			.withProperty("spring.data.gemfire.pool.default.free-connection-timeout", 5000)
+			.withProperty("spring.data.gemfire.pool.default.idle-timeout", 15000)
+			.withProperty("spring.data.gemfire.pool.default.load-conditioning-interval", 120000)
+			.withProperty("spring.data.gemfire.pool.default.max-connections", 100)
+			.withProperty("spring.data.gemfire.pool.default.min-connections", 10)
+			.withProperty("spring.data.gemfire.pool.default.multi-user-authentication", true)
+			.withProperty("spring.data.gemfire.pool.default.ping-interval", 15000L)
+			.withProperty("spring.data.gemfire.pool.default.pr-single-hop-enabled", false)
+			.withProperty("spring.data.gemfire.pool.default.read-timeout", 5000)
+			.withProperty("spring.data.gemfire.pool.default.ready-for-events", true)
+			.withProperty("spring.data.gemfire.pool.default.retry-attempts", 2)
+			.withProperty("spring.data.gemfire.pool.default.server-group", "testGroup")
+			.withProperty("spring.data.gemfire.pool.default.socket-buffer-size", 65535)
+			.withProperty("spring.data.gemfire.pool.default.statistic-interval", 100)
+			.withProperty("spring.data.gemfire.pool.default.subscription-ack-interval", 250)
+			.withProperty("spring.data.gemfire.pool.default.subscription-enabled", true)
+			.withProperty("spring.data.gemfire.pool.default.subscription-message-tracking-timeout", 300000)
+			.withProperty("spring.data.gemfire.pool.default.subscription-redundancy", 2)
+			.withProperty("spring.data.gemfire.pool.default.thread-local-connections", true)
+			.withProperty("spring.data.gemfire.pdx.disk-store-name", "TestPdxDiskStore")
+			.withProperty("spring.data.gemfire.pdx.ignore-unread-fields", false)
+			.withProperty("spring.data.gemfire.pdx.persistent", true)
+			.withProperty("spring.data.gemfire.pdx.read-serialized", true);
+
+		this.applicationContext = newApplicationContext(testPropertySource, TestDynamicClientCacheConfiguration.class);
+
+		assertThat(this.applicationContext).isNotNull();
+		assertThat(this.applicationContext.containsBean("gemfireCache")).isTrue();
+		assertThat(this.applicationContext.containsBean("mockPdxSerializer")).isTrue();
+
+		PdxSerializer mockPdxSerializer = this.applicationContext.getBean("mockPdxSerializer", PdxSerializer.class);
+
+		ClientCacheFactoryBean clientCacheFactoryBean =
+			this.applicationContext.getBean("&gemfireCache", ClientCacheFactoryBean.class);
+
+		ClientCache clientCache = this.applicationContext.getBean("gemfireCache", ClientCache.class);
+
+		assertThat(mockPdxSerializer).isNotNull();
+		assertThat(clientCacheFactoryBean).isNotNull();
+		assertThat(clientCacheFactoryBean.getDurableClientId()).isEqualTo("123");
+		assertThat(clientCacheFactoryBean.getDurableClientTimeout()).isEqualTo(600);
+		assertThat(clientCacheFactoryBean.isKeepAlive()).isTrue();
+		assertThat(clientCacheFactoryBean.isReadyForEvents()).isTrue();
+		assertThat(clientCache).isNotNull();
+		assertThat(clientCache.getCopyOnRead()).isTrue();
+		assertThat(clientCache.getDistributedSystem()).isNotNull();
+		assertThat(clientCache.getPdxDiskStore()).isEqualTo("TestPdxDiskStore");
+		assertThat(clientCache.getPdxIgnoreUnreadFields()).isFalse();
+		assertThat(clientCache.getPdxPersistent()).isTrue();
+		assertThat(clientCache.getPdxReadSerialized()).isTrue();
+		assertThat(clientCache.getPdxSerializer()).isSameAs(mockPdxSerializer);
+
+		Properties gemfireProperties = clientCache.getDistributedSystem().getProperties();
+
+		assertThat(gemfireProperties).isNotNull();
+		assertThat(gemfireProperties.getProperty("log-level")).isEqualTo("info");
+		assertThat(gemfireProperties.getProperty("name")).isEqualTo("ABC123");
+
+		Pool defaultPool = clientCache.getDefaultPool();
+
+		assertThat(defaultPool).isNotNull();
+		assertThat(defaultPool.getFreeConnectionTimeout()).isEqualTo(5000);
+		assertThat(defaultPool.getIdleTimeout()).isEqualTo(15000L);
+		assertThat(defaultPool.getLoadConditioningInterval()).isEqualTo(120000);
+		assertThat(defaultPool.getMaxConnections()).isEqualTo(100);
+		assertThat(defaultPool.getMinConnections()).isEqualTo(10);
+		assertThat(defaultPool.getMultiuserAuthentication()).isTrue();
+		assertThat(defaultPool.getName()).isEqualTo("DEFAULT");
+		assertThat(defaultPool.getPingInterval()).isEqualTo(15000L);
+		assertThat(defaultPool.getPRSingleHopEnabled()).isFalse();
+		assertThat(defaultPool.getReadTimeout()).isEqualTo(5000);
+		assertThat(defaultPool.getRetryAttempts()).isEqualTo(2);
+		assertThat(defaultPool.getServerGroup()).isEqualTo("testGroup");
+		assertThat(defaultPool.getSocketBufferSize()).isEqualTo(65535);
+		assertThat(defaultPool.getStatisticInterval()).isEqualTo(100);
+		assertThat(defaultPool.getSubscriptionAckInterval()).isEqualTo(250);
+		assertThat(defaultPool.getSubscriptionEnabled()).isTrue();
+		assertThat(defaultPool.getSubscriptionMessageTrackingTimeout()).isEqualTo(300000);
+		assertThat(defaultPool.getSubscriptionRedundancy()).isEqualTo(2);
+		assertThat(defaultPool.getThreadLocalConnections()).isTrue();
+
+		ResourceManager resourceManager = clientCache.getResourceManager();
+
+		assertThat(resourceManager).isNotNull();
+		assertThat(resourceManager.getCriticalHeapPercentage()).isEqualTo(90.0f);
+		assertThat(resourceManager.getEvictionHeapPercentage()).isEqualTo(75.0f);
+	}
+
 	// TODO add more tests!
 
 	@EnableGemFireMocking
@@ -141,6 +243,7 @@ public class ClientCachePropertiesIntegrationTests {
 		criticalHeapPercentage = 95.0f, evictionHeapPercentage = 80.0f, idleTimeout = 15000L,
 		maxConnections = 100, minConnections = 10, pingInterval = 15000L, readTimeout = 15000, retryAttempts = 1,
 		subscriptionEnabled = true, subscriptionRedundancy = 1)
+	@SuppressWarnings("unused")
 	static class TestClientCacheConfiguration {
 
 		@Bean
@@ -153,6 +256,18 @@ public class ClientCachePropertiesIntegrationTests {
 				factoryBean.setStatisticsInterval(500);
 			};
 		}
+
+		@Bean
+		PdxSerializer mockPdxSerializer() {
+			return mock(PdxSerializer.class);
+		}
+	}
+
+	@EnableGemFireMocking
+	@EnablePdx(serializerBeanName = "mockPdxSerializer")
+	@ClientCacheApplication(name = "TestClientCache")
+	@SuppressWarnings("unused")
+	static class TestDynamicClientCacheConfiguration {
 
 		@Bean
 		PdxSerializer mockPdxSerializer() {

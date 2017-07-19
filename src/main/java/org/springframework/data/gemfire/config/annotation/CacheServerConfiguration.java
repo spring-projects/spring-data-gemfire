@@ -220,7 +220,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 			setSubscriptionEvictionPolicy(resolveProperty(cacheServerProperty("subscription-eviction-policy"),
 				SubscriptionEvictionPolicy.class, (SubscriptionEvictionPolicy) cacheServerApplicationAttributes.get("subscriptionEvictionPolicy")));
 
-			setTcpNoDelay(resolveProperty(cacheServerProperty("tcpNoDelay"),
+			setTcpNoDelay(resolveProperty(cacheServerProperty("tcp-no-delay"),
 				(Boolean) cacheServerApplicationAttributes.get("tcpNoDelay")));
 		}
 	}

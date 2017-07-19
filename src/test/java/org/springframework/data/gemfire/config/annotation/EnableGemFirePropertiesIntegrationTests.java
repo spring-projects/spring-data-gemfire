@@ -33,9 +33,10 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockin
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * Unit tests for {@link EnableAuth}, {@link EnableGemFireProperties}, {@link EnableHttpService}, {@link EnableLocator},
- * {@link EnableLogging}, {@link EnableManager}, {@link EnableMemcachedServer}, {@link EnableOffHeap},
- * {@link EnableRedisServer}, {@link EnableSecurity}, {@link EnableSsl}, {@link EnableStatistics}.
+ * Integration tests for {@link EnableAuth}, {@link EnableGemFireProperties}, {@link EnableHttpService},
+ * {@link EnableLocator}, {@link EnableLogging}, {@link EnableManager}, {@link EnableMemcachedServer},
+ * {@link EnableOffHeap}, {@link EnableRedisServer}, {@link EnableSecurity}, {@link EnableSsl},
+ * {@link EnableStatistics}.
  *
  * @author John Blum
  * @see java.util.Properties

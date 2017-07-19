@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
-import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.junit.After;
@@ -28,18 +27,26 @@ import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
-import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * The CacheServerPropertiesIntegrationTests class...
+ * Integration tests for {@link CacheServerApplication} and {@link EnableCacheServer}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.apache.geode.cache.server.CacheServer
+ * @see org.apache.geode.cache.server.ClientSubscriptionConfig
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.core.env.PropertySource
+ * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
+ * @see org.springframework.data.gemfire.server.SubscriptionEvictionPolicy
+ * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking
+ * @since 2.0.0
  */
 public class CacheServerPropertiesIntegrationTests {
 
@@ -66,8 +73,33 @@ public class CacheServerPropertiesIntegrationTests {
 		return applicationContext;
 	}
 
+	private void assertCacheServer(CacheServer cacheServer, String bindAddress, String hostnameForClients,
+			long loadPollInterval, int maxConnections, int maxMessageCount, int maxThreads, int maxTimeBetweenPings,
+			int messageTimeToLive, int port, int socketBufferSize, int subscriptionCapacity,
+			String subscriptionDiskStoreName, SubscriptionEvictionPolicy subscriptionEvictionPolicy, boolean tcpNoDelay) {
+
+		assertThat(cacheServer).isNotNull();
+		assertThat(cacheServer.getBindAddress()).isEqualTo(bindAddress);
+		assertThat(cacheServer.getHostnameForClients()).isEqualTo(hostnameForClients);
+		assertThat(cacheServer.getLoadPollInterval()).isEqualTo(loadPollInterval);
+		assertThat(cacheServer.getMaxConnections()).isEqualTo(maxConnections);
+		assertThat(cacheServer.getMaximumMessageCount()).isEqualTo(maxMessageCount);
+		assertThat(cacheServer.getMaxThreads()).isEqualTo(maxThreads);
+		assertThat(cacheServer.getMaximumTimeBetweenPings()).isEqualTo(maxTimeBetweenPings);
+		assertThat(cacheServer.getMessageTimeToLive()).isEqualTo(messageTimeToLive);
+		assertThat(cacheServer.getPort()).isEqualTo(port);
+		assertThat(cacheServer.getSocketBufferSize()).isEqualTo(socketBufferSize);
+		assertThat(cacheServer.getTcpNoDelay()).isEqualTo(tcpNoDelay);
+
+		ClientSubscriptionConfig clientSubscriptionConfig = cacheServer.getClientSubscriptionConfig();
+
+		assertThat(clientSubscriptionConfig).isNotNull();
+		assertThat(clientSubscriptionConfig.getCapacity()).isEqualTo(subscriptionCapacity);
+		assertThat(clientSubscriptionConfig.getDiskStoreName()).isEqualTo(subscriptionDiskStoreName);
+		assertThat(clientSubscriptionConfig.getEvictionPolicy()).isEqualTo(subscriptionEvictionPolicy.toString().toLowerCase());
+	}
 	@Test
-	public void cacheServerConfigurationIsCorrect() {
+	public void cacheServerConfiguration() {
 
 		MockPropertySource testPropertySource = new MockPropertySource()
 			.withProperty("gemfire.cache.server.port", "12480")
@@ -107,18 +139,66 @@ public class CacheServerPropertiesIntegrationTests {
 		assertThat(testClientSubscriptionConfig.getEvictionPolicy()).isEqualTo("mem");
 	}
 
-	// TODO add more tests!
+	@Test
+	public void cacheServersConfiguration() {
 
-	@Configuration
+		MockPropertySource testPropertySource = new MockPropertySource()
+			.withProperty("spring.data.gemfire.cache.server.bind-address", "192.168.0.2")
+			.withProperty("spring.data.gemfire.cache.server.hostname-for-clients", "skullbox")
+			.withProperty("spring.data.gemfire.cache.server.load-poll-interval", 10000L)
+			.withProperty("spring.data.gemfire.cache.server.max-connections", 500)
+			.withProperty("spring.data.gemfire.cache.server.max-message-count", 451000)
+			.withProperty("spring.data.gemfire.cache.server.max-threads", 8)
+			.withProperty("spring.data.gemfire.cache.server.max-time-between-pings", 30000)
+			.withProperty("spring.data.gemfire.cache.server.message-time-to-live", 60)
+			.withProperty("spring.data.gemfire.cache.server.port", 41414)
+			.withProperty("spring.data.gemfire.cache.server.socket-buffer-size", 16384)
+			.withProperty("spring.data.gemfire.cache.server.subscription-capacity", 21)
+			.withProperty("spring.data.gemfire.cache.server.subscription-disk-store-name", "TestDiskStore")
+			.withProperty("spring.data.gemfire.cache.server.subscription-eviction-policy", "MEM")
+			.withProperty("spring.data.gemfire.cache.server.tcp-no-delay", false)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.bind-address", "10.121.12.1")
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.hostname-for-clients", "jambox")
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.load-poll-interval", "15000")
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.max-connections", 200)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.max-message-count", 651000)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.max-threads", 16)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.max-time-between-pings", 15000)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.message-time-to-live", 120)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.port", 42424)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.socket-buffer-size", 65536)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.subscription-capacity", 42)
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.subscription-disk-store-name", "JunkDiskStore")
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.subscription-eviction-policy", "ENTRY")
+			.withProperty("spring.data.gemfire.cache.server.TestCacheServer.tcp-no-delay", true);
+
+		this.applicationContext = newApplicationContext(testPropertySource, TestCacheServersConfiguration.class);
+
+		assertThat(this.applicationContext).isNotNull();
+		assertThat(this.applicationContext.containsBean("TestCacheServer")).isTrue();
+
+		CacheServer gemfirCacheServer = this.applicationContext.getBean("gemfireCacheServer", CacheServer.class);
+
+		assertCacheServer(gemfirCacheServer, "192.168.0.2", "skullbox", 10000L,
+			500, 451000, 8, 30000,
+			60, 41414, 16384, 21,
+			"TestDiskStore", SubscriptionEvictionPolicy.MEM, false);
+
+		CacheServer testCacheServer = this.applicationContext.getBean("TestCacheServer", CacheServer.class);
+
+		assertCacheServer(testCacheServer, "10.121.12.1", "jambox", 15000L,
+			200, 651000, 16, 15000,
+			120, 42424, 65536, 42,
+			"JunkDiskStore", SubscriptionEvictionPolicy.ENTRY, true);
+	}
+
+	@PeerCacheApplication
+	@EnableGemFireMocking
 	@EnableCacheServer(name = "TestCacheServer", bindAddress = "192.16.0.22", hostnameForClients = "skullbox",
 		maxConnections = 100, maxThreads = 8, messageTimeToLive = 300, port = 11235, subscriptionCapacity = 100,
 		subscriptionEvictionPolicy = SubscriptionEvictionPolicy.ENTRY)
+	@SuppressWarnings("unused")
 	static class TestCacheServerConfiguration {
-
-		@Bean("gemfireCache")
-		GemFireCache mockGemFireCache() {
-			return MockGemFireObjectsSupport.mockPeerCache();
-		}
 
 		@Bean
 		CacheServerConfigurer testCacheServerConfigurer() {
@@ -128,5 +208,11 @@ public class CacheServerPropertiesIntegrationTests {
 				beanFactory.setMessageTimeToLive(600);
 			};
 		}
+	}
+
+	@CacheServerApplication
+	@EnableGemFireMocking
+	@EnableCacheServer(name = "TestCacheServer")
+	static class TestCacheServersConfiguration {
 	}
 }

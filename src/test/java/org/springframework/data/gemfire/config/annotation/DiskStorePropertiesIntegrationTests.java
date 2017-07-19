@@ -22,16 +22,14 @@ import java.util.Optional;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.GemFireCache;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
@@ -65,8 +63,26 @@ public class DiskStorePropertiesIntegrationTests {
 		return applicationContext;
 	}
 
+	@SuppressWarnings("all")
+	private void assertDiskStore(DiskStore diskStore, String name, boolean allowForceCompaction, boolean autoCompact,
+			int compactionThreshold, float diskUsageCriticalPercentage, float diskUsageWarningPercentage,
+			long maxOplogSize, int queueSize, long timeInterval, int writeBufferSize) {
+
+		assertThat(diskStore).isNotNull();
+		assertThat(diskStore.getAllowForceCompaction()).isEqualTo(allowForceCompaction);
+		assertThat(diskStore.getAutoCompact()).isEqualTo(autoCompact);
+		assertThat(diskStore.getCompactionThreshold()).isEqualTo(compactionThreshold);
+		assertThat(diskStore.getDiskUsageCriticalPercentage()).isEqualTo(diskUsageCriticalPercentage);
+		assertThat(diskStore.getDiskUsageWarningPercentage()).isEqualTo(diskUsageWarningPercentage);
+		assertThat(diskStore.getMaxOplogSize()).isEqualTo(maxOplogSize);
+		assertThat(diskStore.getName()).isEqualTo(name);
+		assertThat(diskStore.getQueueSize()).isEqualTo(queueSize);
+		assertThat(diskStore.getTimeInterval()).isEqualTo(timeInterval);
+		assertThat(diskStore.getWriteBufferSize()).isEqualTo(writeBufferSize);
+	}
+
 	@Test
-	public void diskStoreConfigurationIsCorrect() {
+	public void diskStoreConfiguration() {
 
 		MockPropertySource testPropertySource = new MockPropertySource()
 			.withProperty("spring.data.gemfire.disk.store.compaction-threshold", 85)
@@ -96,18 +112,54 @@ public class DiskStorePropertiesIntegrationTests {
 		assertThat(testDiskStore.getWriteBufferSize()).isEqualTo(DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE);
 	}
 
-	// TODO add more tests!
+	@Test
+	public void diskStoresConfiguration() {
 
-	@Configuration
+		MockPropertySource testPropertySource = new MockPropertySource()
+			.withProperty("spring.data.gemfire.disk.store.allow-force-compaction", true)
+			.withProperty("spring.data.gemfire.disk.store.auto-compact", false)
+			.withProperty("spring.data.gemfire.disk.store.compaction-threshold", 60)
+			.withProperty("spring.data.gemfire.disk.store.disk-usage-critical-percentage", 90.0f)
+			.withProperty("spring.data.gemfire.disk.store.disk-usage-warning-percentage", 75.0f)
+			.withProperty("spring.data.gemfire.disk.store.max-oplog-size", 512L)
+			.withProperty("spring.data.gemfire.disk.store.queue-size", 1024)
+			.withProperty("spring.data.gemfire.disk.store.time-interval", 500L)
+			.withProperty("spring.data.gemfire.disk.store.write-buffer-size", 16384)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.allow-force-compaction", true)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.auto-compact", false)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.compaction-threshold", 75)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.disk-usage-critical-percentage", 95.0f)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.disk-usage-warning-percentage", 80.0f)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.max-oplog-size", 2048L)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.queue-size", 512)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.time-interval", 250L)
+			.withProperty("spring.data.gemfire.disk.store.TestDiskStoreTwo.write-buffer-size", 65535);
+
+		this.applicationContext = newApplicationContext(testPropertySource, TestDiskStoresConfiguration.class);
+
+		assertThat(this.applicationContext).isNotNull();
+		assertThat(this.applicationContext.containsBean("TestDiskStoreOne")).isTrue();
+		assertThat(this.applicationContext.containsBean("TestDiskStoreTwo")).isTrue();
+
+		DiskStore testDiskStoreOne = this.applicationContext.getBean("TestDiskStoreOne", DiskStore.class);
+
+		assertDiskStore(testDiskStoreOne, "TestDiskStoreOne", true, false,
+			60, 90.0f, 75.0f, 512L,
+			1024, 500L, 16384);
+
+		DiskStore testDiskStoreTwo = this.applicationContext.getBean("TestDiskStoreTwo", DiskStore.class);
+
+		assertDiskStore(testDiskStoreTwo, "TestDiskStoreTwo", true, false,
+			75, 95.0f, 80.0f, 2048L,
+			512, 250L, 65535);
+	}
+
+	@PeerCacheApplication
+	@EnableGemFireMocking
 	@EnableDiskStore(name = "TestDiskStore", allowForceCompaction = true, compactionThreshold = 65,
 		diskUsageCriticalPercentage = 95.0f, diskUsageWarningPercentage = 75.0f, maxOplogSize = 2048L)
 	@SuppressWarnings("unused")
 	static class TestDiskStoreConfiguration {
-
-		@Bean("gemfireCache")
-		GemFireCache mockGemFireCache() {
-			return MockGemFireObjectsSupport.mockGemFireCache();
-		}
 
 		@Bean
 		DiskStoreConfigurer testDiskStoreConfigurer() {
@@ -117,5 +169,13 @@ public class DiskStorePropertiesIntegrationTests {
 				factoryBean.setMaxOplogSize(512L);
 			};
 		}
+	}
+
+	@PeerCacheApplication
+	@EnableGemFireMocking
+	@EnableDiskStores(diskStores = {
+		@EnableDiskStore(name = "TestDiskStoreOne"), @EnableDiskStore(name = "TestDiskStoreTwo")
+	})
+	static class TestDiskStoresConfiguration {
 	}
 }
