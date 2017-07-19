@@ -16,7 +16,13 @@
 
 package org.springframework.data.gemfire.test.mock.config;
 
+import static org.mockito.Mockito.when;
+
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.PoolFactory;
 import org.springframework.beans.BeansException;
@@ -47,12 +53,39 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 
 	public static final MockGemFireObjectsBeanPostProcessor INSTANCE = new MockGemFireObjectsBeanPostProcessor();
 
+	private static final String GEMFIRE_PROPERTIES_BEAN_NAME = "gemfireProperties";
+
+	private final AtomicReference<Properties> gemfireProperties = new AtomicReference<>(new Properties());
+
 	@Nullable @Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-		return (bean instanceof CacheFactoryBean ?  spyOnCacheFactoryBean((CacheFactoryBean) bean)
+		return (isGemFireProperties(bean, beanName) ?  set((Properties) bean)
+			: (bean instanceof CacheFactoryBean ? spyOnCacheFactoryBean((CacheFactoryBean) bean)
 			: (bean instanceof PoolFactoryBean ? mockThePoolFactoryBean((PoolFactoryBean) bean)
-			: bean));
+			: bean)));
+	}
+
+	@Nullable @Override
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+
+		if (bean instanceof GemFireCache) {
+
+			GemFireCache gemfireCache = (GemFireCache) bean;
+
+			when(gemfireCache.getDistributedSystem().getProperties()).thenReturn(this.gemfireProperties.get());
+		}
+
+		return bean;
+	}
+
+	private boolean isGemFireProperties(Object bean, String beanName) {
+		return (bean instanceof Properties && GEMFIRE_PROPERTIES_BEAN_NAME.equals(beanName));
+	}
+
+	private Object set(Properties gemfireProperties) {
+		this.gemfireProperties.set(gemfireProperties);
+		return gemfireProperties;
 	}
 
 	private Object spyOnCacheFactoryBean(CacheFactoryBean bean) {
