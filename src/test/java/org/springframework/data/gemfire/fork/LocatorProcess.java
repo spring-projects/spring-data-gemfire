@@ -25,7 +25,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.process.support.ProcessUtils;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
@@ -141,32 +140,12 @@ public class LocatorProcess {
 			Locator locator = GemfireUtils.getLocator();
 
 			if (locator != null) {
-				stopClusterConfigurationService(locator).stop();
+				locator.stop();
 			}
 		}));
 	}
 
-	private static boolean isClusterConfigurationEnabled(Locator locator) {
-		return (locator instanceof InternalLocator && Boolean.valueOf(
-			locator.getDistributedSystem().getProperties().getProperty(
-				DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME)));
-	}
-
-	private static Locator stopClusterConfigurationService(Locator locator) {
-		if (isClusterConfigurationEnabled(locator)) {
-			SharedConfiguration sharedConfiguration = ((InternalLocator) locator).getSharedConfiguration();
-
-			if (sharedConfiguration != null) {
-				if (Boolean.valueOf(getProperty("spring.data.gemfire.fork.clean", Boolean.TRUE.toString()))) {
-					sharedConfiguration.destroySharedConfiguration();
-				}
-			}
-		}
-
-		return locator;
-	}
-
-	private static void waitForLocatorStart(long milliseconds) {
+	private static void waitForLocatorStart(final long milliseconds) {
 		InternalLocator locator = InternalLocator.getLocator();
 
 		if (isClusterConfigurationEnabled(locator)) {
@@ -176,5 +155,10 @@ public class LocatorProcess {
 			LocatorLauncher.getInstance().waitOnStatusResponse(
 				milliseconds, Math.min(500L, milliseconds), TimeUnit.MILLISECONDS);
 		}
+	}
+
+	private static boolean isClusterConfigurationEnabled(final InternalLocator locator) {
+		return (locator != null && Boolean.valueOf(locator.getDistributedSystem().getProperties().getProperty(
+			DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME)));
 	}
 }
