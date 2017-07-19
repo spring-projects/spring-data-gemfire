@@ -25,6 +25,10 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -35,15 +39,16 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+import org.apache.lucene.analysis.Analyzer;
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -83,6 +88,23 @@ public class EnableIndexingConfigurationUnitTests {
 		indexes.clear();
 	}
 
+	private static String[] asArray(List<String> list) {
+		return list.toArray(new String[list.size()]);
+	}
+
+	private static String[] toStringArray(Object[] array) {
+
+		String[] stringArray = new String[array.length];
+
+		int index = 0;
+
+		for (Object element : array) {
+			stringArray[index++] = String.valueOf(element);
+		}
+
+		return stringArray;
+	}
+
 	/* (non-Javadoc) */
 	private static Index findIndexByName(String indexName) {
 
@@ -100,8 +122,8 @@ public class EnableIndexingConfigurationUnitTests {
 		assertThat(index).isNotNull();
 		assertThat(index.getName()).isEqualTo(name);
 		assertThat(index.getRegionPath()).isEqualTo(regionPath);
-		assertThat(index.getFieldNames()).contains(fields);
 		assertThat(index.getFieldNames()).hasSize(fields.length);
+		assertThat(index.getFieldNames()).contains(fields);
 	}
 
 	/* (non-Javadoc) */
@@ -242,34 +264,47 @@ public class EnableIndexingConfigurationUnitTests {
 		}
 
 		@Bean
+		@SuppressWarnings("unchecked")
 		LuceneService luceneService() {
-
 			LuceneService mockLuceneService = mock(LuceneService.class);
 
-			doAnswer(invocation -> {
+			when(mockLuceneService.createIndexFactory()).thenAnswer(invocation -> {
+				LuceneIndexFactory mockLuceneIndexFactory = mock(LuceneIndexFactory.class);
 
-				LuceneIndex mockLuceneIndex = mock(LuceneIndex.class);
+				List<String> fieldNames = new ArrayList<>();
 
-				String indexName = invocation.getArgument(0);
-				String regionPath = invocation.getArgument(1);
+				when(mockLuceneIndexFactory.setFields((String[]) any())).thenAnswer(setFieldsInvocation -> {
+					Collections.addAll(fieldNames, toStringArray(setFieldsInvocation.getArguments()));
+					return mockLuceneIndexFactory;
+				});
 
-				when(mockLuceneIndex.getName()).thenReturn(indexName);
-				when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);
-				when(mockLuceneIndex.getFieldNames()).thenReturn(resolveFieldNames(invocation));
-				when(mockLuceneService.getIndex(eq(indexName), eq(regionPath))).thenReturn(mockLuceneIndex);
+				Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
 
-				return mockLuceneIndex;
+				when(mockLuceneIndexFactory.setFields(any(Map.class))).thenAnswer(setFieldsInvocation -> {
+					fieldAnalyzers.putAll(setFieldsInvocation.getArgument(0));
+					return mockLuceneIndexFactory;
+				});
 
-			}).when(mockLuceneService).createIndex(anyString(), anyString(), Matchers.<String[]>anyVararg());
+				doAnswer(createInvocation -> {
+					LuceneIndex mockLuceneIndex = mock(LuceneIndex.class);
+
+					String indexName = createInvocation.getArgument(0);
+					String regionPath = createInvocation.getArgument(1);
+
+					when(mockLuceneIndex.getName()).thenReturn(indexName);
+					when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);
+					when(mockLuceneIndex.getFieldAnalyzers()).thenReturn(fieldAnalyzers);
+					when(mockLuceneIndex.getFieldNames()).thenReturn(asArray(fieldNames));
+
+					when(mockLuceneService.getIndex(eq(indexName), eq(regionPath))).thenReturn(mockLuceneIndex);
+
+					return mockLuceneIndex;
+				}).when(mockLuceneIndexFactory).create(anyString(), anyString());
+
+				return mockLuceneIndexFactory;
+			});
 
 			return mockLuceneService;
-		}
-
-		@SuppressWarnings("all")
-		String[] resolveFieldNames(InvocationOnMock invocation) {
-			String[] fieldNames = new String[invocation.getArguments().length - 2];
-			System.arraycopy(invocation.getArguments(), 2, fieldNames, 0, fieldNames.length);
-			return fieldNames;
 		}
 	}
 
@@ -302,7 +337,7 @@ public class EnableIndexingConfigurationUnitTests {
 		abstract IndexType getType();
 
 		private void validateIndexDefinition(String name, String expression, String fromClause, IndexType type)
-				throws IndexExistsException {
+			throws IndexExistsException {
 
 			for (Index index : indexes) {
 				if (index.getIndexedExpression().equalsIgnoreCase(expression)
@@ -311,7 +346,7 @@ public class EnableIndexingConfigurationUnitTests {
 
 					throw new IndexExistsException(String.format(
 						"Index [%1$s] has the same definition as existing Index [%2$s]",
-							name, index.getName()));
+						name, index.getName()));
 
 				}
 			}
@@ -374,7 +409,7 @@ public class EnableIndexingConfigurationUnitTests {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
 	static class IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameDefinitionConfiguration
-			extends GemFireConfiguration {
+		extends GemFireConfiguration {
 
 		@Bean
 		@SuppressWarnings("unused")
@@ -398,7 +433,7 @@ public class EnableIndexingConfigurationUnitTests {
 			ClientRegionEntity.class, CollocatedPartitionRegionEntity.class, GenericRegionEntity.class,
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
 	static class IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameNameConfiguration
-			extends GemFireConfiguration {
+		extends GemFireConfiguration {
 
 		@Bean
 		@SuppressWarnings("unused")
