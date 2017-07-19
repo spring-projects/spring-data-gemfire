@@ -26,7 +26,6 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.IncompatibleSystemException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidValueException;
-import org.apache.geode.LicenseException;
 import org.apache.geode.NoSystemException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemIsRunningException;
@@ -194,9 +193,6 @@ public abstract class GemfireCacheUtils {
 		if (ex instanceof CopyException) {
 			return new GemfireSystemException(ex);
 		}
-		if (ex instanceof org.apache.geode.cache.EntryNotFoundInRegion) {
-			return new DataRetrievalFailureException(ex.getMessage(), ex);
-		}
 		if (ex instanceof FunctionException) {
 			return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
 		}
@@ -223,9 +219,6 @@ public abstract class GemfireCacheUtils {
 		}
 		if (ex instanceof LeaseExpiredException) {
 			return new PessimisticLockingFailureException(ex.getMessage(), ex);
-		}
-		if (ex instanceof LicenseException) {
-			return new GemfireSystemException(ex);
 		}
 		if (ex instanceof NoSystemException) {
 			return new GemfireSystemException(ex);
