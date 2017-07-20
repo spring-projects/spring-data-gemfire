@@ -27,15 +27,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
+import org.springframework.data.gemfire.transaction.config.EnableGemfireCacheTransactions;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -54,11 +52,10 @@ import org.springframework.util.Assert;
  * @since 1.9.1
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes =
-	GemfireTransactionManagerIntegrationTests.GemfireTransactionManagerIntegrationTestsConfiguration.class)
+@ContextConfiguration
 public class GemfireTransactionManagerIntegrationTests {
 
-	static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = "warning";
 
 	@Resource(name = "Example")
 	@SuppressWarnings("unused")
@@ -88,45 +85,35 @@ public class GemfireTransactionManagerIntegrationTests {
 		}
 	}
 
-	@Configuration
-	@EnableTransactionManagement
-	@Import(GemFireConfiguration.class)
 	@SuppressWarnings("unused")
-	static class GemfireTransactionManagerIntegrationTestsConfiguration {
-
-		@Bean
-		GemfireTransactionManager transactionManager(GemFireCache gemfireCache) {
-			return new GemfireTransactionManager(gemfireCache);
-		}
-
-		@Bean
-		SuspendAndResumeCacheTransactionsRepository suspendAndResumeCacheTransactionsRepository(
-				GemFireCache gemFireCache) {
-
-			return new SuspendAndResumeCacheTransactionsRepository(gemFireCache.getRegion("Example"));
-		}
-
-		@Bean
-		SuspendAndResumeCacheTransactionsService suspendAndResumeCacheTransactionsService(
-				SuspendAndResumeCacheTransactionsRepository repository) {
-
-			return new SuspendAndResumeCacheTransactionsService(repository);
-		}
-	}
-
-	@SuppressWarnings("unused")
+	@EnableGemfireCacheTransactions
 	@PeerCacheApplication(name = "GemfireTransactionManagerIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
-	static class GemFireConfiguration {
+	static class TestConfiguration {
 
 		@Bean(name = "Example")
 		LocalRegionFactoryBean<Object, Object> exampleRegion(GemFireCache gemfireCache) {
-			LocalRegionFactoryBean<Object, Object> example = new LocalRegionFactoryBean<Object, Object>();
+
+			LocalRegionFactoryBean<Object, Object> example = new LocalRegionFactoryBean<>();
 
 			example.setCache(gemfireCache);
 			example.setClose(false);
 			example.setPersistent(false);
 
 			return example;
+		}
+
+		@Bean
+		SuspendAndResumeCacheTransactionsRepository suspendAndResumeCacheTransactionsRepository(
+			GemFireCache gemFireCache) {
+
+			return new SuspendAndResumeCacheTransactionsRepository(gemFireCache.getRegion("Example"));
+		}
+
+		@Bean
+		SuspendAndResumeCacheTransactionsService suspendAndResumeCacheTransactionsService(
+			SuspendAndResumeCacheTransactionsRepository repository) {
+
+			return new SuspendAndResumeCacheTransactionsService(repository);
 		}
 	}
 
