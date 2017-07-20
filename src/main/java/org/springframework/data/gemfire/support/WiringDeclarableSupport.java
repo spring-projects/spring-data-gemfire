@@ -85,6 +85,7 @@ public abstract class WiringDeclarableSupport extends DeclarableSupport {
 	 * @see #newBeanConfigurer(BeanFactory, String)
 	 */
 	protected boolean configureThis(BeanFactory beanFactory, String templateBeanName) {
+
 		BeanConfigurerSupport beanConfigurer = newBeanConfigurer(beanFactory, templateBeanName);
 
 		beanConfigurer.configureBean(this);
@@ -122,11 +123,13 @@ public abstract class WiringDeclarableSupport extends DeclarableSupport {
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	protected BeanConfigurerSupport newBeanConfigurer(BeanFactory beanFactory, String templateBeanName) {
+
 		BeanConfigurerSupport beanConfigurer = new BeanConfigurerSupport();
 
 		beanConfigurer.setBeanFactory(beanFactory);
 
 		if (StringUtils.hasText(templateBeanName)) {
+
 			Assert.isTrue(beanFactory.containsBean(templateBeanName),
 				String.format("Cannot find bean with name [%s]", templateBeanName));
 

@@ -77,8 +77,11 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 * @see #afterPropertiesSet()
 	 */
 	public static GemfireBeanFactoryLocator newBeanFactoryLocator() {
+
 		GemfireBeanFactoryLocator beanFactoryLocator = new GemfireBeanFactoryLocator();
+
 		beanFactoryLocator.afterPropertiesSet();
+
 		return beanFactoryLocator;
 	}
 
@@ -99,6 +102,7 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 * @see #afterPropertiesSet()
 	 */
 	public static GemfireBeanFactoryLocator newBeanFactoryLocator(BeanFactory beanFactory, String associatedBeanName) {
+
 		Assert.isTrue(beanFactory == null || StringUtils.hasText(associatedBeanName),
 			"associatedBeanName must be specified when BeanFactory is not null");
 
@@ -121,6 +125,7 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	protected static BeanFactory resolveBeanFactory(String beanFactoryKey) {
+
 		BeanFactory beanFactory = BEAN_FACTORIES.get(beanFactoryKey);
 
 		Assert.isTrue(BEAN_FACTORIES.isEmpty() || beanFactory != null,
@@ -142,12 +147,15 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	protected static synchronized BeanFactory resolveSingleBeanFactory() {
+
 		if (!BEAN_FACTORIES.isEmpty()) {
+
 			boolean allTheSameBeanFactory = true;
 
 			BeanFactory currentBeanFactory = null;
 
 			for (BeanFactory beanFactory : BEAN_FACTORIES.values()) {
+
 				allTheSameBeanFactory &= nullOrEquals(currentBeanFactory, beanFactory);
 				currentBeanFactory = beanFactory;
 
@@ -178,10 +186,12 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	protected static synchronized void registerAliases(Set<String> names, BeanFactory beanFactory) {
+
 		Assert.isTrue(nullSafeSet(names).isEmpty() || beanFactory != null,
 			"BeanFactory must not be null when aliases are specified");
 
 		for (String name : nullSafeSet(names)) {
+
 			BeanFactory existingBeanFactory = BEAN_FACTORIES.putIfAbsent(name, beanFactory);
 
 			Assert.isTrue(nullOrEquals(existingBeanFactory, beanFactory),
@@ -204,6 +214,7 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 */
 	@Override
 	public void afterPropertiesSet() {
+
 		BeanFactory beanFactory = getBeanFactory();
 
 		registerAliases(resolveAndInitializeBeanNamesWithAliases(beanFactory), beanFactory);
@@ -221,9 +232,11 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 * @see #getAssociatedBeanName()
 	 */
 	Set<String> resolveAndInitializeBeanNamesWithAliases(BeanFactory beanFactory) {
+
 		String associatedBeanName = getAssociatedBeanName();
 
 		if (beanFactory != null && StringUtils.hasText(associatedBeanName)) {
+
 			String[] beanAliases = beanFactory.getAliases(associatedBeanName);
 
 			this.associatedBeanNameWithAliases = new TreeSet<>();
@@ -272,8 +285,8 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 * @see #resolveSingleBeanFactory()
 	 */
 	public BeanFactory useBeanFactory(String beanFactoryKey) {
-		return newBeanFactoryReference(StringUtils.hasText(beanFactoryKey) ? resolveBeanFactory(beanFactoryKey)
-			: resolveSingleBeanFactory()).get();
+		return newBeanFactoryReference(StringUtils.hasText(beanFactoryKey)
+			? resolveBeanFactory(beanFactoryKey) : resolveSingleBeanFactory()).get();
 	}
 
 	/**
@@ -380,6 +393,7 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 		 * @see org.springframework.beans.factory.BeanFactory
 		 */
 		public BeanFactory get() {
+
 			BeanFactory beanFactory = this.beanFactory.get();
 
 			Assert.state(beanFactory != null, UNINITIALIZED_BEAN_FACTORY_REFERENCE_MESSAGE);

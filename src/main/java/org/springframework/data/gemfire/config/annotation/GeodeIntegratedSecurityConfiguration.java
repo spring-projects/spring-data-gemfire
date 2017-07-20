@@ -61,7 +61,6 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 	 */
 	protected boolean isShiroSecurityConfigured() {
 		try {
-			// NOTE experimental...
 			//return resolveBean(ApacheShiroSecurityConfiguration.class).isRealmsPresent();
 			return false;
 		}

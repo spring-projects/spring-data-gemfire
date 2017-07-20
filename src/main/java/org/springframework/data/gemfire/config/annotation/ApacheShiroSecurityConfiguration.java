@@ -99,6 +99,7 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 
 		super.setBeanFactory(Optional.ofNullable(beanFactory)
@@ -197,10 +198,12 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	protected List<Realm> resolveRealms() {
 
 		try {
-			Map<String, Realm> realmBeans = getListableBeanFactory()
-				.getBeansOfType(Realm.class, false, true);
+			Map<String, Realm> realmBeans = getListableBeanFactory().getBeansOfType(Realm.class, false, true);
+
 			List<Realm> realms = new ArrayList<>(CollectionUtils.nullSafeMap(realmBeans).values());
-			Collections.sort(realms, OrderComparator.INSTANCE);
+
+			realms.sort(OrderComparator.INSTANCE);
+
 			return realms;
 		}
 		catch (Exception ignore) {
@@ -278,6 +281,7 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 		 * @inheritDoc
 		 */
 		@Override
+		@SuppressWarnings("all")
 		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 			return ClassUtils.isPresent(APACHE_SHIRO_LIFECYCLE_BEAN_POST_PROCESSOR_CLASS_NAME,
 				context.getClassLoader());

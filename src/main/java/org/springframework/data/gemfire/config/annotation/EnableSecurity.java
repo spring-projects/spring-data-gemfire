@@ -47,7 +47,8 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import({ ApacheShiroSecurityConfiguration.class, GeodeIntegratedSecurityConfiguration.class })
+@Import({ ApacheShiroSecurityConfiguration.class, AutoConfiguredAuthenticationConfiguration.class,
+		  GeodeIntegratedSecurityConfiguration.class })
 @UsesGemFireProperties
 @SuppressWarnings({ "unused" })
 public @interface EnableSecurity {
@@ -116,6 +117,24 @@ public @interface EnableSecurity {
 	 * in {@literal application.properties}.
 	 */
 	String securityPostProcessorClassName() default "";
+
+	/**
+	 * The {@literal security-username} used by a GemFire cache client application required to authenticate.
+	 *
+	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.username} in {@literal application.properties}.
+	 */
+	String securityUsername() default "";
+
+	/**
+	 * The {@literal security-password} used by a GemFire cache client application required to authenticate.
+	 *
+	 * Defaults to unset.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.password} in {@literal application.properties}.
+	 */
+	String securityPassword() default "";
 
 	/**
 	 * Sets the Geode System Property referring to the location of an Apache Shiro INI file used to configure
