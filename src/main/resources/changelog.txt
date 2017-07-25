@@ -3,6 +3,23 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.0.RC1 (2017-07-25)
+-----------------------------------------
+* SGF-648 - Enhance @EnableSecurity to provide a default implementation of the GemFire AuthInitialize interface.
+* SGF-647 - Add EnableBeanFactoryLocator annotation to enable the GemfireBeanFactoryLocator on Cache creation.
+* SGF-646 - Add Annotation to configure and enable Spring's Transaction Management with Local, GemFire Cache Transactions.
+* SGF-645 - Add Annotation to configure and enable the Spring Cache Abstraction with the GemfireCacheManager.
+* SGF-644 - Upgrade to Pivotal GemFire 9.1.0.
+* SGF-643 - Meta-annotate all uses of GemFire-based property configuration in the Annotation config model.
+* SGF-642 - Introduce new Pivotal GemFire Mock Objects infrastructure for Unit Testing.
+* SGF-641 - Introduce well-known, documented properties for Annotation config attributes.
+* SGF-640 - Adapt to API changes in mapping subsystem.
+* SGF-638 - Adapt to API changes in RepositoryConfigurationSourceSupport.
+* SGF-637 - Improve IndexFactoryBean's resilience and options for handling GemFire IndexExistsExceptions and IndexNameConflictExceptions.
+* SGF-636 - Add support for GemFire JCA ResourceAdapter.
+* SGF-635 - Release 2.0 RC1 (Kay).
+
+
 Changes in version 1.9.5.RELEASE (2017-07-24)
 ---------------------------------------------
 * SGF-638 - Adapt to API changes in RepositoryConfigurationSourceSupport.
