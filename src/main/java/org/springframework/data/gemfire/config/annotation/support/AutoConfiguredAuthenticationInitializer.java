@@ -35,6 +35,8 @@ public class AutoConfiguredAuthenticationInitializer extends AbstractAuthInitial
 	public static final String SECURITY_USERNAME_PROPERTY = "security-username";
 	public static final String SECURITY_PASSWORD_PROPERTY = "security-password";
 
+	protected static final Properties NO_PARAMETERS = new Properties();
+
 	/**
 	 * Factory method used to construct a new instance of {@link AutoConfiguredAuthenticationInitializer}.
 	 *
@@ -42,7 +44,13 @@ public class AutoConfiguredAuthenticationInitializer extends AbstractAuthInitial
 	 * @see org.springframework.data.gemfire.config.annotation.support.AutoConfiguredAuthenticationInitializer
 	 */
 	public static AutoConfiguredAuthenticationInitializer newAuthenticationInitializer() {
-		return new AutoConfiguredAuthenticationInitializer();
+
+		AutoConfiguredAuthenticationInitializer authenticationInitializer =
+			new AutoConfiguredAuthenticationInitializer();
+
+		authenticationInitializer.init(NO_PARAMETERS);
+
+		return authenticationInitializer;
 	}
 
 	/* (non-Javadoc) */

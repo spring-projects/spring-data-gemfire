@@ -16,16 +16,19 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.config.annotation.TestSecurityManager.TestPrincipal.newPrincipal;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
 import java.security.Principal;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.security.AuthenticationFailedException;
-import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * The {@link TestSecurityManager} class is an Apache Geode / Pivotal GemFire
@@ -34,16 +37,17 @@ import org.springframework.util.ObjectUtils;
  * @author John Blum
  * @see java.security.Principal
  * @see java.util.Properties
+ * @see javax.security.auth.Subject
  * @see org.apache.geode.security.SecurityManager
  * @since 2.0.0
  */
 public final class TestSecurityManager implements org.apache.geode.security.SecurityManager {
 
+	public static final String SECURITY_USERNAME = "testUser";
+	public static final String SECURITY_PASSWORD = "&t35t9@55w0rd!";
+
 	public static final String SECURITY_USERNAME_PROPERTY = "security-username";
 	public static final String SECURITY_PASSWORD_PROPERTY = "security-password";
-
-	public static final String SECURITY_USERNAME = "testUser";
-	public static final String SECURITY_PASSWORD = "testP@55w0rd";
 
 	private final ConcurrentMap<String, String> authorizedUsers;
 
@@ -52,34 +56,49 @@ public final class TestSecurityManager implements org.apache.geode.security.Secu
 		this.authorizedUsers.putIfAbsent(SECURITY_USERNAME, SECURITY_PASSWORD);
 	}
 
+	protected Map<String, String> getAuthorizedUsers() {
+		return Collections.unmodifiableMap(this.authorizedUsers);
+	}
+
 	@Override
-	public Object authenticate(Properties properties) throws AuthenticationFailedException {
+	public Object authenticate(Properties credentials) throws AuthenticationFailedException {
 
-		String username = properties.getProperty(SECURITY_USERNAME_PROPERTY);
-		String password = properties.getProperty(SECURITY_PASSWORD_PROPERTY);
+		String username = credentials.getProperty(SECURITY_USERNAME_PROPERTY);
+		String password = credentials.getProperty(SECURITY_PASSWORD_PROPERTY);
 
-		return validateIdentified(isIdentified(username, password) ? newPrincipal(username) : null, username);
+		return Optional.ofNullable(identify(username, password)).orElseThrow(() ->
+			new AuthenticationFailedException(String.format("User [%s] is not authorized", username)));
+	}
+
+	private Principal identify(String username, String password) {
+		return (isIdentified(username, password) ? newPrincipal(username) : null);
 	}
 
 	private boolean isIdentified(String username, String password) {
-		return ObjectUtils.nullSafeEquals(this.authorizedUsers.get(String.valueOf(username)), password);
+
+		return Optional.ofNullable(username)
+			.filter(StringUtils::hasText)
+			.map(user -> getAuthorizedUsers().get(user))
+			.map(userPassword -> userPassword.equals(password))
+			.orElse(false);
 	}
 
-	private Principal newPrincipal(String username) {
+	public static final class TestPrincipal implements java.security.Principal, java.io.Serializable {
 
-		Principal mockPrincipal = mock(Principal.class, username);
+		private final String name;
 
-		when(mockPrincipal.getName()).thenReturn(username);
-
-		return mockPrincipal;
-	}
-
-	private Principal validateIdentified(Principal principal, String username) {
-
-		if (principal == null) {
-			throw new AuthenticationFailedException(String.format("User [%s] is not valid", username));
+		public static TestPrincipal newPrincipal(String username) {
+			return new TestPrincipal(username);
 		}
 
-		return principal;
+		public TestPrincipal(String name) {
+			this.name = Optional.ofNullable(name).filter(StringUtils::hasText)
+				.orElseThrow(() -> newIllegalArgumentException("Name is required"));
+		}
+
+		@Override
+		public String getName() {
+			return this.name;
+		}
 	}
 }

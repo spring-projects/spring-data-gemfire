@@ -16,19 +16,18 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.data.gemfire.config.annotation.support.AutoConfiguredAuthenticationInitializer;
-import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
-import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.util.StringUtils;
 
 /**
@@ -40,9 +39,11 @@ import org.springframework.util.StringUtils;
  * @author John Blum
  * @see java.util.Properties
  * @see org.apache.geode.security.AuthInitialize
+ * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Condition
  * @see org.springframework.context.annotation.Conditional
  * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.core.env.Environment
  * @see org.springframework.data.gemfire.config.annotation.EnableBeanFactoryLocator
  * @see org.springframework.data.gemfire.config.annotation.support.AutoConfiguredAuthenticationInitializer
@@ -51,9 +52,10 @@ import org.springframework.util.StringUtils;
  * @since 2.0.0
  */
 @Configuration
-@EnableBeanFactoryLocator
+@Import(BeanFactoryLocatorConfiguration.class)
 @Conditional(AutoConfiguredAuthenticationConfiguration.AutoConfiguredAuthenticationCondition.class)
-public class AutoConfiguredAuthenticationConfiguration extends EmbeddedServiceConfigurationSupport {
+@SuppressWarnings("unused")
+public class AutoConfiguredAuthenticationConfiguration {
 
 	protected static final String AUTO_CONFIGURED_AUTH_INIT_STATIC_FACTORY_METHOD =
 		AutoConfiguredAuthenticationInitializer.class.getName().concat(".newAuthenticationInitializer");
@@ -61,29 +63,34 @@ public class AutoConfiguredAuthenticationConfiguration extends EmbeddedServiceCo
 	protected static final String SECURITY_CLIENT_AUTH_INIT = "security-client-auth-init";
 	protected static final String SECURITY_PEER_AUTH_INIT = "security-peer-auth-init";
 
-	/* (non-Javadoc) */
-	@Override
-	protected Class getAnnotationType() {
-		return EnableSecurity.class;
+	@Bean
+	public ClientCacheConfigurer authenticationCredentialsSettingClientCacheConfigurer(Environment environment) {
+		return (beanName, beanFactory) -> setAuthenticationCredentials(beanFactory.getProperties(), environment);
+	}
+
+	@Bean
+	public PeerCacheConfigurer authenticationCredentialsSettingPeerCacheConfigurer(Environment environment) {
+		return (beanName, beanFactory) -> setAuthenticationCredentials(beanFactory.getProperties(), environment);
 	}
 
 	/* (non-Javadoc) */
-	@Override
-	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
+	private void setAuthenticationCredentials(Properties gemfireProperties, Environment environment) {
 
-		return Optional.of(PropertiesBuilder.create())
-			.filter(builder -> isMatch(environment()))
-			.map(builder -> builder
-				.setProperty(SECURITY_CLIENT_AUTH_INIT, AUTO_CONFIGURED_AUTH_INIT_STATIC_FACTORY_METHOD)
-				.setProperty(SECURITY_PEER_AUTH_INIT, AUTO_CONFIGURED_AUTH_INIT_STATIC_FACTORY_METHOD))
-			.map(PropertiesBuilder::build)
-			.orElse(null);
+		Optional.ofNullable(gemfireProperties)
+			.filter(properties -> isMatch(environment))
+			.ifPresent(properties -> {
+				properties.setProperty(SECURITY_CLIENT_AUTH_INIT, AUTO_CONFIGURED_AUTH_INIT_STATIC_FACTORY_METHOD);
+				properties.setProperty(SECURITY_PEER_AUTH_INIT, AUTO_CONFIGURED_AUTH_INIT_STATIC_FACTORY_METHOD);
+			});
 	}
 
 	/* (non-Javadoc) */
 	private static boolean isMatch(Environment environment) {
-		return StringUtils.hasText(environment.getProperty(
-			AutoConfiguredAuthenticationInitializer.SDG_SECURITY_USERNAME_PROPERTY));
+
+		return Optional.ofNullable(environment)
+			.map(env -> env.getProperty(AutoConfiguredAuthenticationInitializer.SDG_SECURITY_USERNAME_PROPERTY))
+			.map(StringUtils::hasText)
+			.isPresent();
 	}
 
 	public static class AutoConfiguredAuthenticationCondition implements Condition {

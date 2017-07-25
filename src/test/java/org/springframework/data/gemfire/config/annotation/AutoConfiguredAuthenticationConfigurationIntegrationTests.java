@@ -31,7 +31,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -50,6 +49,7 @@ import org.springframework.mock.env.MockPropertySource;
  * @author John Blum
  * @since 1.0.0
  */
+@SuppressWarnings("unused")
 public class AutoConfiguredAuthenticationConfigurationIntegrationTests extends ClientServerIntegrationTestsSupport {
 
 	private static final int PORT = 42124;
@@ -64,7 +64,8 @@ public class AutoConfiguredAuthenticationConfigurationIntegrationTests extends C
 		gemfireServerProcess = run(TestGemFireServerConfiguration.class, String.format("-Dgemfire.name=%1$s",
 			asApplicationName(AutoConfiguredAuthenticationConfigurationIntegrationTests.class)));
 
-		waitForServerToStart("localhost", PORT);
+		Optional.ofNullable(gemfireServerProcess)
+			.ifPresent(server -> waitForServerToStart("localhost", PORT));
 	}
 
 	@AfterClass
@@ -78,7 +79,7 @@ public class AutoConfiguredAuthenticationConfigurationIntegrationTests extends C
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(PropertySource<?> testPropertySource,
-		Class<?>... annotatedClasses) {
+			Class<?>... annotatedClasses) {
 
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
@@ -94,9 +95,8 @@ public class AutoConfiguredAuthenticationConfigurationIntegrationTests extends C
 	}
 
 	@Test
-	@Ignore
 	@SuppressWarnings("unchecked")
-	public void clientAuthenticatedWithServer() {
+	public void clientAuthenticatesWithServer() {
 
 		MockPropertySource testPropertySource = new MockPropertySource()
 			.withProperty("spring.data.gemfire.security.username", SECURITY_USERNAME)
@@ -109,11 +109,13 @@ public class AutoConfiguredAuthenticationConfigurationIntegrationTests extends C
 
 		Region<Object, Object> echo = this.applicationContext.getBean("Echo", Region.class);
 
+		assertThat(echo.get("Hello")).isEqualTo("Hello");
 		assertThat(echo.get("TEST")).isEqualTo("TEST");
+		assertThat(echo.get("Good-Bye")).isEqualTo("Good-Bye");
 	}
 
 	@EnableSecurity
-	@ClientCacheApplication(servers = @ClientCacheApplication.Server(port = PORT))
+	@ClientCacheApplication(logLevel = TEST_GEMFIRE_LOG_LEVEL, servers = @ClientCacheApplication.Server(port = PORT))
 	static class TestGemFireClientConfiguration {
 
 		@Bean("Echo")
@@ -129,16 +131,12 @@ public class AutoConfiguredAuthenticationConfigurationIntegrationTests extends C
 		}
 	}
 
-	@CacheServerApplication(port = PORT)
+	@CacheServerApplication(logLevel = TEST_GEMFIRE_LOG_LEVEL, port = PORT)
 	@EnableSecurity(securityManagerClassName = "org.springframework.data.gemfire.config.annotation.TestSecurityManager")
 	static class TestGemFireServerConfiguration {
 
 		public static void main(String[] args) {
-
-			ConfigurableApplicationContext applicationContext =
-				new AnnotationConfigApplicationContext(TestGemFireServerConfiguration.class);
-
-			applicationContext.registerShutdownHook();
+			runSpringApplication(TestGemFireServerConfiguration.class, args);
 		}
 
 		@Bean("Echo")

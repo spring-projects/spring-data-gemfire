@@ -18,9 +18,6 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -35,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.GemFireCache;
@@ -43,17 +39,12 @@ import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.security.AuthInitialize;
-import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +54,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.AbstractAuthInitialize;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
 import org.springframework.data.gemfire.util.CollectionUtils;
@@ -80,10 +72,15 @@ import lombok.RequiredArgsConstructor;
  * Abstract base test class for implementing Apache Geode Integrated Security Integration Tests.
  *
  * @author John Blum
+ * @see java.security.Principal
+ * @see java.util.Properties
  * @see org.junit.FixMethodOrder
  * @see org.junit.Test
  * @see lombok
  * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractAuthInitialize
+ * @see org.springframework.data.gemfire.process.ProcessWrapper
  * @see org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport
  * @since 1.0.0
  */
@@ -106,6 +103,7 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 
 	@BeforeClass
 	public static void runGeodeServer() throws IOException {
+
 		String geodeSecurityProfile = System.getProperty(GEODE_SECURITY_PROFILE_PROPERTY);
 
 		if (StringUtils.hasText(geodeSecurityProfile)) {
@@ -114,13 +112,17 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 	}
 
 	protected static ProcessWrapper runGeodeServer(String geodeSecurityProfile) throws IOException {
-		Assert.hasText(geodeSecurityProfile, String.format("The '%s' System property must be set",
+
+		Assert.hasText(geodeSecurityProfile, String.format("[%s] System property is required",
 			GEODE_SECURITY_PROFILE_PROPERTY));
+
+		String debugEndpoint = Boolean.getBoolean(DEBUGGING_ENABLED_PROPERTY) ? DEBUG_ENDPOINT : null;
 
 		geodeServerProcess = run(GeodeServerConfiguration.class,
 			String.format("-Dgemfire.log-file=%s", logFile()),
 			String.format("-Dgemfire.log-level=%s", logLevel(TEST_GEMFIRE_LOG_LEVEL)),
-			String.format("-Dspring.profiles.active=apache-geode-server,%s", geodeSecurityProfile));
+			String.format("-Dspring.profiles.active=apache-geode-server,%s", geodeSecurityProfile),
+			debugEndpoint);
 
 		waitForServerToStart(CACHE_SERVER_HOST, CACHE_SERVER_PORT);
 
@@ -133,9 +135,6 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 		stop(geodeServerProcess);
 	}
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
 	@Resource(name = "Echo")
 	private Region<String, String> echo;
 
@@ -147,45 +146,24 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 		assertThat(echo.get("two")).isEqualTo("four");
 	}
 
-	@Test
+	@Test(expected = NotAuthorizedException.class)
 	public void unauthorizedUser() {
-		assertThat(echo.get("one")).isEqualTo("one");
-
-		exception.expect(ServerOperationException.class);
-		exception.expectCause(is(instanceOf(NotAuthorizedException.class)));
-		exception.expectMessage(containsString("analyst not authorized for DATA:WRITE:Echo:two"));
-
-		echo.put("two", "four");
-	}
-
-	protected static abstract class AuthInitializeSupport implements AuthInitialize {
-
-		/**
-		 * @inheritDoc
-		 */
-		@Override
-		public void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
+		try {
+			assertThat(echo.get("one")).isEqualTo("one");
+			echo.put("two", "four");
 		}
+		catch (ServerOperationException expected) {
+			assertThat(expected).hasMessageContaining("analyst not authorized for DATA:WRITE:Echo:two");
+			assertThat(expected).hasCauseInstanceOf(NotAuthorizedException.class);
 
-		/**
-		 * @inheritDoc
-		 */
-		@Override
-		public Properties getCredentials(Properties securityProperties, DistributedMember server, boolean isPeer)
-				throws AuthenticationFailedException {
-
-			return getCredentials(securityProperties);
+			throw (NotAuthorizedException) expected.getCause();
 		}
-
-		/**
-		 * @inheritDoc
-		 */
-		@Override
-		public void close() {
+		finally {
+			assertThat(echo).doesNotContainKey("two");
 		}
 	}
 
-	public static class GeodeClientAuthInitialize extends AuthInitializeSupport {
+	public static class GeodeClientAuthInitialize extends AbstractAuthInitialize {
 
 		protected static final User ANALYST = User.newUser("analyst").with("p@55w0rd");
 		protected static final User SCIENTIST = User.newUser("scientist").with("w0rk!ng4u");
@@ -203,11 +181,10 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 			this.user = user;
 		}
 
-		/**
-		 * @inheritDoc
-		 */
+		/* (non-Javadoc) */
 		@Override
-		public Properties getCredentials(Properties securityProperties) {
+		protected Properties doGetCredentials(Properties securityProperties) {
+
 			User user = getUser();
 
 			return new PropertiesBuilder()
@@ -226,19 +203,23 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 		 */
 		@Override
 		public String toString() {
+
 			User user = getUser();
+
 			return String.format("%1$s:%2$s", user.getName(), user.getCredentials());
 		}
 	}
 
 	@ClientCacheApplication(name = "GeodeSecurityIntegrationTestsClient", logLevel = TEST_GEMFIRE_LOG_LEVEL,
 		servers = { @ClientCacheApplication.Server(port = CACHE_SERVER_PORT) })
-	@EnableAuth(clientAuthenticationInitializer = "org.springframework.data.gemfire.config.annotation.AbstractGeodeSecurityIntegrationTests$GeodeClientAuthInitialize.create")
+	@EnableAuth(clientAuthenticationInitializer =
+		"org.springframework.data.gemfire.config.annotation.AbstractGeodeSecurityIntegrationTests$GeodeClientAuthInitialize.create")
 	@Profile("apache-geode-client")
 	static class GeodeClientConfiguration {
 
 		@Bean("Echo")
 		ClientRegionFactoryBean<String, String> echoRegion(GemFireCache gemfireCache) {
+
 			ClientRegionFactoryBean<String, String> echoRegion = new ClientRegionFactoryBean<>();
 
 			echoRegion.setCache(gemfireCache);
@@ -268,6 +249,7 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 
 		@Bean("Echo")
 		LocalRegionFactoryBean<String, String> echoRegion(GemFireCache gemfireCache) {
+
 			LocalRegionFactoryBean<String, String> echoRegion = new LocalRegionFactoryBean<>();
 
 			echoRegion.setCache(gemfireCache);
@@ -279,7 +261,9 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 		}
 
 		CacheLoader<String, String> echoCacheLoader() {
+
 			return new CacheLoader<String, String>() {
+
 				@Override
 				public String load(LoaderHelper<String, String> helper) throws CacheLoaderException {
 					return helper.getKey();
@@ -314,6 +298,7 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 
 		/* (non-Javadoc) */
 		public boolean hasPermission(ResourcePermission permission) {
+
 			for (Role role : this) {
 				if (role.hasPermission(permission)) {
 					return true;
@@ -346,13 +331,17 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 
 		/* (non-Javadoc) */
 		public User with(String credentials) {
+
 			this.credentials = credentials;
+
 			return this;
 		}
 
 		/* (non-Javadoc) */
 		public User with(Role... roles) {
+
 			Collections.addAll(this.roles, roles);
+
 			return this;
 		}
 	}
@@ -370,6 +359,7 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 
 		/* (non-Javadoc) */
 		public boolean hasPermission(ResourcePermission permission) {
+
 			for (ResourcePermission thisPermission : this) {
 				if (thisPermission.implies(permission)) {
 					return true;
@@ -383,6 +373,7 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 		 * @inheritDoc
 		 */
 		@Override
+		@SuppressWarnings("all")
 		public Iterator<ResourcePermission> iterator() {
 			return Collections.unmodifiableSet(this.permissions).iterator();
 		}
@@ -397,7 +388,9 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 
 		/* (non-Javadoc) */
 		public Role with(ResourcePermission... permissions) {
+
 			Collections.addAll(this.permissions, permissions);
+
 			return this;
 		}
 	}

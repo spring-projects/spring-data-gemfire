@@ -58,7 +58,8 @@ public class ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests extends Abs
 	}
 
 	@Configuration
-	@EnableSecurity(securityManagerClassName = "org.springframework.data.gemfire.config.annotation.ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests$TestGeodeSecurityManager")
+	@EnableSecurity(securityManagerClassName =
+		"org.springframework.data.gemfire.config.annotation.ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests$TestGeodeSecurityManager")
 	@Profile(GEODE_SECURITY_MANAGER_PROPERTY_CONFIGURATION_PROFILE)
 	public static class ApacheGeodeSecurityManagerConfiguration {
 	}
@@ -87,28 +88,11 @@ public class ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests extends Abs
 		Set<User> users = new HashSet<>(Arrays.asList(root, scientist, analyst, guest));
 
 		default User findBy(String username) {
-			return users.stream().filter((user) -> user.getName().equals(username)).findFirst().get();
+			return users.stream().filter((user) -> user.getName().equals(username)).findFirst().orElse(null);
 		}
 	}
 
-	public static abstract class GeodeSecurityManagerSupport implements org.apache.geode.security.SecurityManager {
-
-		/**
-		 * @inheritDoc
-		 */
-		@Override
-		public void init(Properties securityProps) {
-		}
-
-		/**
-		 * @inheritDoc
-		 */
-		@Override
-		public void close() {
-		}
-	}
-
-	public static class TestGeodeSecurityManager extends GeodeSecurityManagerSupport {
+	public static class TestGeodeSecurityManager implements org.apache.geode.security.SecurityManager {
 
 		private final GeodeSecurityRepository securityRepository;
 
@@ -121,6 +105,7 @@ public class ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests extends Abs
 		 */
 		@Override
 		public Object authenticate(Properties credentials) throws AuthenticationFailedException {
+
 			String username = credentials.getProperty(SECURITY_USERNAME_PROPERTY);
 			String password = credentials.getProperty(SECURITY_PASSWORD_PROPERTY);
 

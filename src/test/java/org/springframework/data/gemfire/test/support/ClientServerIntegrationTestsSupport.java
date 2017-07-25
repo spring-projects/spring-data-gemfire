@@ -27,6 +27,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -58,13 +59,15 @@ public class ClientServerIntegrationTestsSupport {
 	protected static final long DEFAULT_WAIT_DURATION = TimeUnit.SECONDS.toMillis(30);
 	protected static final long DEFAULT_WAIT_INTERVAL = 500L; // milliseconds
 
+	protected static final String DEBUG_ENDPOINT = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005";
+	protected static final String DEBUGGING_ENABLED_PROPERTY = "spring.data.gemfire.debugging.enabled";
 	protected static final String DEFAULT_HOSTNAME = "localhost";
 	protected static final String DIRECTORY_DELETE_ON_EXIT_PROPERTY = "spring.data.gemfire.directory.delete-on-exit";
 	protected static final String GEMFIRE_CACHE_SERVER_PORT_PROPERTY = "spring.data.gemfire.cache.server.port";
 	protected static final String GEMFIRE_LOG_FILE = "gemfire-server.log";
-	protected static final String GEMFIRE_LOG_FILE_PROPERTY = "spring.data.gemfire.gemfire.log.file";
+	protected static final String GEMFIRE_LOG_FILE_PROPERTY = "spring.data.gemfire.log.file";
 	protected static final String GEMFIRE_LOG_LEVEL = "warning";
-	protected static final String GEMFIRE_LOG_LEVEL_PROPERTY = "spring.data.gemfire.gemfire.log.level";
+	protected static final String GEMFIRE_LOG_LEVEL_PROPERTY = "spring.data.gemfire.log.level";
 	protected static final String PROCESS_RUN_MANUAL_PROPERTY = "spring.data.gemfire.process.run-manual";
 	protected static final String SYSTEM_PROPERTIES_LOG_FILE = "system-properties.log";
 	protected static final String TEST_GEMFIRE_LOG_LEVEL = "warning";
@@ -87,6 +90,7 @@ public class ClientServerIntegrationTestsSupport {
 
 	/* (non-Javadoc) */
 	protected static File createDirectory(File directory) {
+
 		assertThat(directory.isDirectory() || directory.mkdirs())
 			.as(String.format("Failed to create directory [%s]", directory)).isTrue();
 
@@ -99,6 +103,7 @@ public class ClientServerIntegrationTestsSupport {
 
 	/* (non-Javadoc) */
 	protected static int findAvailablePort() throws IOException {
+
 		ServerSocket serverSocket = null;
 
 		try {
@@ -232,17 +237,19 @@ public class ClientServerIntegrationTestsSupport {
 
 	/* (non-Javadoc) */
 	protected static boolean stop(ProcessWrapper process, long duration) {
-		if (process != null) {
-			process.stop(duration);
 
-			if (process.isNotRunning() && isDeleteDirectoryOnExit()) {
-				FileSystemUtils.deleteRecursive(process.getWorkingDirectory());
-			}
+		return Optional.ofNullable(process)
+			.map(it -> {
 
-			return process.isRunning();
-		}
+				it.stop(duration);
 
-		return true;
+				if (it.isNotRunning() && isDeleteDirectoryOnExit()) {
+					FileSystemUtils.deleteRecursive(it.getWorkingDirectory());
+				}
+
+				return it.isRunning();
+			})
+			.orElse(true);
 	}
 
 	/* (non-Javadoc) */
@@ -262,10 +269,13 @@ public class ClientServerIntegrationTestsSupport {
 
 	/* (non-Javadoc) */
 	protected static boolean waitForServerToStart(final String host, final int port, long duration) {
+
 		return ThreadUtils.timedWait(duration, DEFAULT_WAIT_INTERVAL, new ThreadUtils.WaitCondition() {
+
 			AtomicBoolean connected = new AtomicBoolean(false);
 
 			public boolean waiting() {
+
 				Socket socket = null;
 
 				try {
@@ -291,6 +301,7 @@ public class ClientServerIntegrationTestsSupport {
 
 	@SuppressWarnings("all")
 	protected static boolean waitOn(Condition condition, long duration) {
+
 		long timeout = (System.currentTimeMillis() + duration);
 
 		try {
