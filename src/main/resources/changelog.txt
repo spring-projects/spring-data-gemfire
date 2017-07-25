@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.0.RC2 (2017-07-25)
+-----------------------------------------
+* SGF-650 - Release 2.0 RC2 (Kay).
+
+
 Changes in version 2.0.0.RC1 (2017-07-25)
 -----------------------------------------
 * SGF-648 - Enhance @EnableSecurity to provide a default implementation of the GemFire AuthInitialize interface.
