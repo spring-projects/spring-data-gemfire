@@ -940,7 +940,7 @@ naming conventions to wire the cache):
 ----
 
 Here, a local Region is created (if one doesn't exist already). The name of the Region is the same as the bean id
-(`myLocalRegion`) and the bean assumes the existence of a GemFire cache named `gemfireCache`.
+(`exampleLocalRegion`) and the bean assumes the existence of a GemFire cache named `gemfireCache`.
 
 [[bootstrap:region:replicate]]
 == Replicated Region
