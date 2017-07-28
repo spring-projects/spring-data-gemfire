@@ -310,6 +310,8 @@ see http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transacti
 For more details on configuring Pivotal GemFire as a "_Last Resource_",
 see http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
 
+:leveloffset: +1
+
 include::{basedocdir}/reference/cq-container.adoc[]
 
 :leveloffset: -1
