@@ -47,6 +47,7 @@ public class DiskStoreDirectoryBeanPostProcessor implements BeanPostProcessor {
 	 */
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
 		if (log.isDebugEnabled()) {
 			log.debug(String.format("Processing Bean [%1$s] of Type [%2$s] with Name [%3$s] before initialization%n",
 				bean, ObjectUtils.nullSafeClassName(bean), beanName));
@@ -59,16 +60,9 @@ public class DiskStoreDirectoryBeanPostProcessor implements BeanPostProcessor {
 		return bean;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-		return bean;
-	}
-
 	/* (non-Javadoc) */
 	private void createIfNotExists(DiskDir diskDirectory) {
+
 		String location = readField(diskDirectory, "location");
 
 		File diskDirectoryFile = new File(location);
@@ -84,7 +78,9 @@ public class DiskStoreDirectoryBeanPostProcessor implements BeanPostProcessor {
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	private <T> T readField(Object obj, String fieldName) {
+
 		try {
+
 			Class type = obj.getClass();
 			Field field;
 

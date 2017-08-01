@@ -16,7 +16,10 @@
 
 package org.springframework.data.gemfire.config.support;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.GemFireCache;
@@ -28,20 +31,22 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
- * The AutoRegionLookupBeanPostProcessor class is a Spring {@link BeanPostProcessor} that post processes
- * a {@link GemFireCache} by registering all cache {@link Region Regions} that have not been explicitly
- * defined in the Spring application context.  This is usually the case for {@link Region Regions} that
- * have been defined in GemFire's native {@literal cache.xml} or defined using GemFire 8's cluster-based
- * configuration service.
+ * The {@link AutoRegionLookupBeanPostProcessor} class is a Spring {@link BeanPostProcessor} that post processes
+ * a {@link GemFireCache} by registering all cache {@link Region Regions} that have not been explicitly defined
+ * in the Spring application context.
+ *
+ * This is usually the case for {@link Region Regions} that have been defined in GemFire's native {@literal cache.xml}
+ * or defined using GemFire Cluster-based Configuration Service.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.config.BeanPostProcessor
- * @see org.apache.geode.cache.GemFireCache
- * @see org.apache.geode.cache.Region
  * @since 1.5.0
  */
 public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware {
@@ -52,7 +57,9 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 	 * {@inheritDoc}
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public final void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+
 		Assert.isInstanceOf(ConfigurableListableBeanFactory.class, beanFactory,
 			String.format("BeanFactory [%1$s] must be an instance of %2$s",
 				ObjectUtils.nullSafeClassName(beanFactory), ConfigurableListableBeanFactory.class.getSimpleName()));
@@ -62,16 +69,8 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 
 	/* (non-Javadoc) */
 	protected ConfigurableListableBeanFactory getBeanFactory() {
-		Assert.state(this.beanFactory != null, "BeanFactory was not properly initialized");
-		return this.beanFactory;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		return bean;
+		return Optional.ofNullable(this.beanFactory).orElseThrow(() ->
+			newIllegalStateException("BeanFactory was not properly configured"));
 	}
 
 	/**
@@ -79,6 +78,7 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 	 */
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+
 		if (bean instanceof GemFireCache) {
 			registerCacheRegionsAsBeans((GemFireCache) bean);
 		}
@@ -88,14 +88,14 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 
 	/* (non-Javadoc) */
 	void registerCacheRegionsAsBeans(GemFireCache cache) {
-		for (Region region : cache.rootRegions()) {
-			registerCacheRegionAsBean(region);
-		}
+		cache.rootRegions().forEach(this::registerCacheRegionAsBean);
 	}
 
 	/* (non-Javadoc) */
 	void registerCacheRegionAsBean(Region<?, ?> region) {
+
 		if (region != null) {
+
 			String regionBeanName = getBeanName(region);
 
 			if (!getBeanFactory().containsBean(regionBeanName)) {
@@ -110,13 +110,15 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 
 	/* (non-Javadoc) */
 	String getBeanName(Region region) {
-		String regionFullPath = region.getFullPath();
-		return (regionFullPath.lastIndexOf(Region.SEPARATOR) > 0 ? regionFullPath : region.getName());
+
+		return Optional.ofNullable(region.getFullPath())
+			.filter(StringUtils::hasText)
+			.filter(regionFullPath -> regionFullPath.lastIndexOf(Region.SEPARATOR) > 0)
+			.orElseGet(region::getName);
 	}
 
 	/* (non-Javadoc) */
 	Set<Region<?, ?>> nullSafeSubregions(Region<?, ?> parentRegion) {
-		Set<Region<?, ?>> subregions = parentRegion.subregions(false);
-		return (subregions != null ? subregions : Collections.<Region<?, ?>>emptySet());
+		return Optional.ofNullable(parentRegion.subregions(false)).orElse(Collections.emptySet());
 	}
 }

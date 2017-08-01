@@ -16,6 +16,10 @@
 
 package org.springframework.data.gemfire.config.support;
 
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
+import java.util.Arrays;
+
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -45,7 +49,7 @@ import org.springframework.util.Assert;
  */
 public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
-	protected static final String[] EMPTY_STRING_ARRAY = new String[0];
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
 	private final String pdxDiskStoreName;
 
@@ -57,7 +61,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	 * @throws IllegalArgumentException if the GemFire PDX {@link DiskStore} name is unspecified.
 	 */
 	public PdxDiskStoreAwareBeanFactoryPostProcessor(String pdxDiskStoreName) {
-		Assert.hasText(pdxDiskStoreName, "The PDX DiskStore name must be specified");
+		Assert.hasText(pdxDiskStoreName, "PDX DiskStore name is required");
 		this.pdxDiskStoreName = pdxDiskStoreName;
 	}
 
@@ -67,13 +71,14 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	 * @return the name of the GemFire PDX {@link DiskStore}.
 	 */
 	public String getPdxDiskStoreName() {
-		return pdxDiskStoreName;
+		return this.pdxDiskStoreName;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		postProcessPdxDiskStoreDependencies(beanFactory, AsyncEventQueue.class, DiskStore.class, Region.class);
 	}
@@ -89,10 +94,13 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	 * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory#getBeanNamesForType(Class)
 	 */
 	private void postProcessPdxDiskStoreDependencies(ConfigurableListableBeanFactory beanFactory,
-			final Class<?>... beanTypes) {
-		for (Class<?> beanType : beanTypes) {
+			Class<?>... beanTypes) {
+
+		Arrays.stream(nullSafeArray(beanTypes, Class.class)).forEach(beanType -> {
+
 			for (String beanName : beanFactory.getBeanNamesForType(beanType)) {
 				if (!beanName.equalsIgnoreCase(getPdxDiskStoreName())) {
+
 					BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
 
 					// NOTE for simplicity sake, we add a bean dependency to any bean definition for a bean
@@ -104,7 +112,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 					addPdxDiskStoreDependency(beanDefinition);
 				}
 			}
-		}
+		});
 	}
 
 	/**

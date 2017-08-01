@@ -34,8 +34,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -68,49 +66,49 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorUnitTests {
 	}
 
 	protected ConfigurableListableBeanFactory mockBeanFactory(final Map<String, BeanDefinition> beanDefinitions) {
-		final ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
+
+		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
 
 		when(mockBeanFactory.getBeanDefinitionNames()).thenReturn(toStringArray(beanDefinitions.keySet()));
 
-		when(mockBeanFactory.getBeanNamesForType(isA(Class.class))).then(new Answer<String[]>() {
-			@Override
-			public String[] answer(InvocationOnMock invocation) throws Throwable {
-				Object[] arguments = invocation.getArguments();
+		when(mockBeanFactory.getBeanNamesForType(isA(Class.class))).then(invocation -> {
 
-				assertThat(arguments).isNotNull();
-				assertThat(arguments.length).isEqualTo(1);
-				assertThat(arguments[0]).isInstanceOf(Class.class);
+			Object[] arguments = invocation.getArguments();
 
-				Class beanType = (Class) arguments[0];
+			assertThat(arguments).isNotNull();
+			assertThat(arguments.length).isEqualTo(1);
+			assertThat(arguments[0]).isInstanceOf(Class.class);
 
-				List<String> beanNames = new ArrayList<String>(beanDefinitions.size());
+			Class beanType = (Class) arguments[0];
 
-				for (Map.Entry<String, BeanDefinition> entry : beanDefinitions.entrySet()) {
-					BeanDefinition beanDefinition = entry.getValue();
+			List<String> beanNames = new ArrayList<>(beanDefinitions.size());
 
-					if (isBeanType(beanDefinition, beanType)) {
-						beanNames.add(entry.getKey());
-					}
+			for (Map.Entry<String, BeanDefinition> entry : beanDefinitions.entrySet()) {
+				BeanDefinition beanDefinition = entry.getValue();
+
+				if (isBeanType(beanDefinition, beanType)) {
+					beanNames.add(entry.getKey());
 				}
-
-				return toStringArray(beanNames);
 			}
+
+			return toStringArray(beanNames);
 		});
 
-		when(mockBeanFactory.getBeanDefinition(anyString())).then(new Answer<BeanDefinition>() {
-			@Override
-			public BeanDefinition answer(InvocationOnMock invocation) throws Throwable {
-				Object[] arguments = invocation.getArguments();
-				assertThat(arguments).isNotNull();
-				assertThat(arguments.length).isEqualTo(1);
-				return beanDefinitions.get(String.valueOf(arguments[0]));
-			}
+		when(mockBeanFactory.getBeanDefinition(anyString())).then(invocation -> {
+
+			Object[] arguments = invocation.getArguments();
+
+			assertThat(arguments).isNotNull();
+			assertThat(arguments.length).isEqualTo(1);
+
+			return beanDefinitions.get(String.valueOf(arguments[0]));
 		});
 
 		return mockBeanFactory;
 	}
 
 	protected static BeanDefinitionBuilder newBeanDefinitionBuilder(Object beanClassObject, String... dependencies) {
+
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
 
 		if (beanClassObject instanceof Class) {
@@ -124,6 +122,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorUnitTests {
 	}
 
 	protected static BeanDefinitionBuilder addDependsOn(BeanDefinitionBuilder builder, String... dependencies) {
+
 		for (String dependency : dependencies) {
 			builder.addDependsOn(dependency);
 		}
@@ -181,6 +180,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorUnitTests {
 
 	@Test
 	public void initializedPdxDiskStoreAwareBeanFactoryPostProcessor() {
+
 		PdxDiskStoreAwareBeanFactoryPostProcessor postProcessor =
 			new PdxDiskStoreAwareBeanFactoryPostProcessor("testPdxDiskStoreName");
 
@@ -191,6 +191,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessorUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void postProcessBeanFactory() {
+
 		Map<String, BeanDefinition> beanDefinitions = new HashMap<String, BeanDefinition>(13);
 
 		beanDefinitions.put("someBean", defineBean("org.company.app.domain.SomeBean", "someOtherBean"));

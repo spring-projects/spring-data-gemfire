@@ -87,7 +87,7 @@ import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
  * @since 1.9.0
  */
-public class EnableEntityDefinedRegionsConfigurationUnitTests {
+public class EnableEntityDefinedRegionsUnitTests {
 
 	private static final AtomicInteger MOCK_ID = new AtomicInteger(0);
 

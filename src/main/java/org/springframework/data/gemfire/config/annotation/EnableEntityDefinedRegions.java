@@ -32,7 +32,7 @@ import org.springframework.core.annotation.AliasFor;
 
 /**
  * The {@link EnableEntityDefinedRegions} annotation marks a Spring {@link Configuration @Configuration} application
- * annotated class to enable the creation of the GemFire/Geode {@link Region Regions} based on
+ * annotated class to enable the creation of GemFire/Geode {@link Region Regions} based on
  * the application persistent entities.
  *
  * @author John Blum
@@ -53,7 +53,6 @@ import org.springframework.core.annotation.AliasFor;
 @Inherited
 @Documented
 @Import(IndexConfiguration.class)
-@SuppressWarnings({ "unused" })
 public @interface EnableEntityDefinedRegions {
 
 	/**

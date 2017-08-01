@@ -56,14 +56,15 @@ import org.springframework.data.gemfire.wan.OrderPolicyConverter;
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
  * @since 1.6.0
  */
-@SuppressWarnings({ "deprecation", "unused" })
 public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+
 		beanFactory.registerCustomEditor(ConnectionEndpoint.class, StringToConnectionEndpointConverter.class);
 		//beanFactory.registerCustomEditor(ConnectionEndpoint[].class, ConnectionEndpointArrayToIterableConverter.class);
 		beanFactory.registerCustomEditor(ConnectionEndpointList.class, StringToConnectionEndpointListConverter.class);
@@ -87,6 +88,7 @@ public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProc
 		 * {@inheritDoc}
 		 */
 		@Override
+		@SuppressWarnings("all")
 		public Iterable convert(ConnectionEndpoint[] source) {
 			return ConnectionEndpointList.from(source);
 		}
@@ -100,6 +102,7 @@ public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProc
 		 * {@inheritDoc}
 		 */
 		@Override
+		@SuppressWarnings("all")
 		public ConnectionEndpoint convert(String source) {
 			return assertConverted(source, ConnectionEndpoint.parse(source), ConnectionEndpoint.class);
 		}
@@ -113,6 +116,7 @@ public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProc
 		 * {@inheritDoc}
 		 */
 		@Override
+		@SuppressWarnings("all")
 		public ConnectionEndpointList convert(String source) {
 			return assertConverted(source, ConnectionEndpointList.parse(0, source.split(",")),
 				ConnectionEndpointList.class);

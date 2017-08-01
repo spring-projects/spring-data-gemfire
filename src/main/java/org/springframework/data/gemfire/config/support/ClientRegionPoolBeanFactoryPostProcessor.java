@@ -17,17 +17,21 @@
 
 package org.springframework.data.gemfire.config.support;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link ClientRegionPoolBeanFactoryPostProcessor} is a Spring {@link BeanFactoryPostProcessor} implementation
@@ -48,11 +52,14 @@ public class ClientRegionPoolBeanFactoryPostProcessor implements BeanFactoryPost
 	 * {@inheritDoc}
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		Set<String> clientRegionBeanNames = new HashSet<String>();
-		Set<String> poolBeanNames = new HashSet<String>();
 
-		for (String beanName : beanFactory.getBeanDefinitionNames()) {
+		Set<String> clientRegionBeanNames = new HashSet<>();
+		Set<String> poolBeanNames = new HashSet<>();
+
+		Arrays.stream(beanFactory.getBeanDefinitionNames()).forEach(beanName -> {
+
 			BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
 
 			if (isClientRegionBean(beanDefinition)) {
@@ -61,26 +68,44 @@ public class ClientRegionPoolBeanFactoryPostProcessor implements BeanFactoryPost
 			else if (isPoolBean(beanDefinition)) {
 				poolBeanNames.add(beanName);
 			}
-		}
+		});
 
-		for (String clientRegionBeanName : clientRegionBeanNames) {
+		clientRegionBeanNames.forEach(clientRegionBeanName -> {
+
 			BeanDefinition clientRegionBean = beanFactory.getBeanDefinition(clientRegionBeanName);
+
 			String poolName = getPoolName(clientRegionBean);
 
 			if (poolBeanNames.contains(poolName)) {
 				SpringUtils.addDependsOn(clientRegionBean, poolName);
 			}
-		}
+		});
+	}
+
+	boolean isBeanDefinitionOfType(BeanDefinition beanDefinition, Class<?> type) {
+
+		return Optional.of(beanDefinition)
+			.map(it -> beanDefinition.getBeanClassName())
+			.filter(StringUtils::hasText)
+			.map(beanClassName -> type.getName().equals(beanClassName))
+			.orElseGet(() ->
+				Optional.ofNullable(beanDefinition.getFactoryMethodName())
+					.filter(StringUtils::hasText)
+					.filter(it -> beanDefinition instanceof AnnotatedBeanDefinition)
+					.map(it -> ((AnnotatedBeanDefinition) beanDefinition).getFactoryMethodMetadata())
+					.map(methodMetadata -> type.getName().equals(methodMetadata.getReturnTypeName()))
+					.orElse(false)
+			);
 	}
 
 	/* (non-Javadoc)*/
 	boolean isClientRegionBean(BeanDefinition beanDefinition) {
-		return ClientRegionFactoryBean.class.getName().equals(beanDefinition.getBeanClassName());
+		return isBeanDefinitionOfType(beanDefinition, ClientRegionFactoryBean.class);
 	}
 
 	/* (non-Javadoc)*/
 	boolean isPoolBean(BeanDefinition beanDefinition) {
-		return PoolFactoryBean.class.getName().equals(beanDefinition.getBeanClassName());
+		return isBeanDefinitionOfType(beanDefinition, PoolFactoryBean.class);
 	}
 
 	/* (non-Javadoc) */

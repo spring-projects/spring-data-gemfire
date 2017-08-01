@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.config.support;
 
+import java.util.Optional;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.query.MultiIndexCreationException;
@@ -52,17 +54,19 @@ public class DefinedIndexesApplicationListener implements ApplicationListener<Co
 	 * @see #getQueryService(ContextRefreshedEvent)
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		try {
-			QueryService queryService = getQueryService(event);
 
-			if (queryService != null) {
-				queryService.createDefinedIndexes();
-			}
-		}
-		catch (MultiIndexCreationException ignore) {
-			logger.warn(String.format("Failed to create pre-defined Indexes: %s", ignore.getMessage()), ignore);
-		}
+		Optional.ofNullable(getQueryService(event))
+			.ifPresent(queryService -> {
+				try {
+					queryService.createDefinedIndexes();
+				}
+				catch (MultiIndexCreationException cause) {
+					logger.warn(String.format("Failed to create pre-defined Indexes: %s", cause.getMessage()), cause);
+
+				}
+			});
 	}
 
 	/* (non-Javadoc) */
@@ -72,11 +76,13 @@ public class DefinedIndexesApplicationListener implements ApplicationListener<Co
 
 	/* (non-Javadoc) */
 	private QueryService getQueryService(ContextRefreshedEvent event) {
+
 		ApplicationContext applicationContext = event.getApplicationContext();
+
 		String queryServiceBeanName = getQueryServiceBeanName();
 
-		return (applicationContext.containsBean(queryServiceBeanName) ?
-			applicationContext.getBean(queryServiceBeanName, QueryService.class) : null);
+		return (applicationContext.containsBean(queryServiceBeanName)
+			? applicationContext.getBean(queryServiceBeanName, QueryService.class) : null);
 	}
 
 	/* (non-Javadoc) */

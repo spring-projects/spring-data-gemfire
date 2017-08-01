@@ -77,9 +77,12 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 	}
 
 	protected Region<?, ?> mockRegion(String regionFullPath) {
+
 		Region<?, ?> mockRegion = mock(Region.class);
+
 		when(mockRegion.getFullPath()).thenReturn(regionFullPath);
 		when(mockRegion.getName()).thenReturn(toRegionName(regionFullPath));
+
 		return mockRegion;
 	}
 
@@ -90,6 +93,7 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void setAndGetBeanFactory() {
+
 		autoRegionLookupBeanPostProcessor.setBeanFactory(mockBeanFactory);
 
 		assertThat(autoRegionLookupBeanPostProcessor.getBeanFactory()).isSameAs(mockBeanFactory);
@@ -97,6 +101,7 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void setBeanFactoryToIncompatibleBeanFactoryType() {
+
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
 		exception.expect(IllegalArgumentException.class);
@@ -108,7 +113,9 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void setBeanFactoryToNull() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(String.format("BeanFactory [null] must be an instance of %s",
@@ -119,15 +126,17 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void getBeanFactoryUninitialized() {
+
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("BeanFactory was not properly initialized");
+		exception.expectMessage("BeanFactory was not properly configured");
 
 		autoRegionLookupBeanPostProcessor.getBeanFactory();
 	}
 
 	@Test
 	public void postProcessBeforeInitializationReturnsBean() {
+
 		Object bean = new Object();
 
 		assertThat(autoRegionLookupBeanPostProcessor.postProcessBeforeInitialization(bean, "test")).isSameAs(bean);
@@ -135,6 +144,7 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void postProcessAfterInitializationWithNonGemFireCacheBean() {
+
 		Object bean = new Object();
 
 		AutoRegionLookupBeanPostProcessor autoRegionLookupBeanPostProcessorSpy =
@@ -147,8 +157,11 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void registerCacheRegionsAsBeansIsSuccessful() {
-		Set<Region<?, ?>> expected = CollectionUtils.asSet(mockRegion("one"), mockRegion("two"), mockRegion("three"));
-		final Set<Region<?, ?>> actual = new HashSet<Region<?, ?>>(expected.size());
+
+		Set<Region<?, ?>> expected = CollectionUtils.asSet(mockRegion("one"),
+			mockRegion("two"), mockRegion("three"));
+
+		Set<Region<?, ?>> actual = new HashSet<>(expected.size());
 
 		AutoRegionLookupBeanPostProcessor autoRegionLookupBeanPostProcessor = new AutoRegionLookupBeanPostProcessor() {
 			@Override void registerCacheRegionAsBean(Region<?, ?> region) {
@@ -173,9 +186,10 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void registerCacheRegionAsBeanIsSuccessful() {
+
 		Region<?, ?> mockRegion = mockRegion("Example");
 
-		when(mockRegion.subregions(anyBoolean())).thenReturn(Collections.<Region<?, ?>>emptySet());
+		when(mockRegion.subregions(anyBoolean())).thenReturn(Collections.emptySet());
 		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
 
 		autoRegionLookupBeanPostProcessor.setBeanFactory(mockBeanFactory);
@@ -190,11 +204,12 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void registerCacheRegionAsBeanRegistersSubRegionIgnoresRootRegion() {
+
 		Region<?, ?> mockRootRegion = mockRegion("Root");
 		Region<?, ?> mockSubRegion = mockRegion("/Root/Sub");
 
-		when(mockRootRegion.subregions(anyBoolean())).thenReturn(CollectionUtils.<Region<?, ?>>asSet(mockSubRegion));
-		when(mockSubRegion.subregions(anyBoolean())).thenReturn(Collections.<Region<?, ?>>emptySet());
+		when(mockRootRegion.subregions(anyBoolean())).thenReturn(CollectionUtils.asSet(mockSubRegion));
+		when(mockSubRegion.subregions(anyBoolean())).thenReturn(Collections.emptySet());
 		when(mockBeanFactory.containsBean(eq("Root"))).thenReturn(true);
 		when(mockBeanFactory.containsBean(eq("/Root/Sub"))).thenReturn(false);
 
@@ -215,6 +230,7 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void registerNullCacheRegionAsBeanDoesNothing() {
+
 		autoRegionLookupBeanPostProcessor.setBeanFactory(mockBeanFactory);
 		autoRegionLookupBeanPostProcessor.registerCacheRegionAsBean(null);
 
@@ -223,6 +239,7 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void getBeanNameReturnsRegionFullPath() {
+
 		Region mockRegion = mockRegion("/Parent/Child");
 
 		assertThat(autoRegionLookupBeanPostProcessor.getBeanName(mockRegion)).isEqualTo("/Parent/Child");
@@ -233,6 +250,7 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void getBeanNameReturnsRegionName() {
+
 		Region mockRegion = mockRegion("/Example");
 
 		assertThat(autoRegionLookupBeanPostProcessor.getBeanName(mockRegion)).isEqualTo("Example");
@@ -243,7 +261,10 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void nullSafeSubRegionsWhenSubRegionsIsNotNull() {
-		Set<Region<?, ?>> mockSubRegions = CollectionUtils.asSet(mockRegion("one"), mockRegion("two"));
+
+		Set<Region<?, ?>> mockSubRegions =
+			CollectionUtils.asSet(mockRegion("one"), mockRegion("two"));
+
 		Region mockRegion = mockRegion("parent");
 
 		when(mockRegion.subregions(anyBoolean())).thenReturn(mockSubRegions);
@@ -255,6 +276,7 @@ public class AutoRegionLookupBeanPostProcessorUnitTests {
 
 	@Test
 	public void nullSafeSubRegionsWhenSubRegionsIsNull() {
+
 		Region mockRegion = mockRegion("parent");
 
 		when(mockRegion.subregions(anyBoolean())).thenReturn(null);
