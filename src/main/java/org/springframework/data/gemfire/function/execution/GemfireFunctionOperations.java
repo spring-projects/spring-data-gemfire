@@ -10,8 +10,8 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.data.gemfire.function.execution;
 
+package org.springframework.data.gemfire.function.execution;
 
 import org.apache.geode.cache.execute.Function;
 
@@ -31,7 +31,7 @@ public interface GemfireFunctionOperations {
 	 * @param args an array of Object arguments to the Function call.
 	 * @return the contents of the ResultsCollector.
 	 */
-	public abstract <T> Iterable<T> execute(Function function, Object... args);
+	<T> Iterable<T> execute(Function function, Object... args);
 
 	/**
 	 * Execute a GemFire Function registered with the given ID.
@@ -41,7 +41,7 @@ public interface GemfireFunctionOperations {
 	 * @param args an array of Object arguments to the Function call.
 	 * @return the results
 	 */
-	public abstract <T> Iterable<T> execute(String functionId, Object... args);
+	<T> Iterable<T> execute(String functionId, Object... args);
 
     /**
      * Execute an unregistered GemFire Function with the expected singleton result.
@@ -52,7 +52,7 @@ public interface GemfireFunctionOperations {
 	 * @return the first item in the ResultsCollector.
 	 * @see org.apache.geode.cache.execute.Function
      */
-	public abstract <T> T executeAndExtract(Function function, Object... args);
+	<T> T executeAndExtract(Function function, Object... args);
 
 	/**
 	 * Execute a GemFire Function registered with an ID and with an expected singleton result
@@ -62,7 +62,7 @@ public interface GemfireFunctionOperations {
 	 * @param args an array of Object arguments to the Function call.
 	 * @return the first item in the results collector
 	 */
-	public abstract <T> T executeAndExtract(String functionId, Object... args);
+	<T> T executeAndExtract(String functionId, Object... args);
 
 	/**
 	 * Execute a GemFire Function registered with the given ID having no return value.
@@ -70,7 +70,7 @@ public interface GemfireFunctionOperations {
 	 * @param functionId the ID under which the GemFire function is registered.
 	 * @param args an array of Object arguments to the Function call.
 	 */
-	public void executeWithNoResult(String functionId, Object... args);
+	void executeWithNoResult(String functionId, Object... args);
 
     /**
      * Execute a GemFire Function using a native GemFire {@link org.apache.geode.cache.execute.Execution} instance.
@@ -80,6 +80,6 @@ public interface GemfireFunctionOperations {
      * @return the Function execution result.
 	 * @see org.springframework.data.gemfire.function.execution.GemfireFunctionCallback
      */
-	public abstract <T> T execute(GemfireFunctionCallback<T> callback);
+	<T> T execute(GemfireFunctionCallback<T> callback);
 
 }

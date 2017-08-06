@@ -542,6 +542,11 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/* (non-Javadoc) */
+	protected String clusterProperty(String propertyNameSuffix) {
+		return String.format("%1$s%2$s", propertyName("cluster."), propertyNameSuffix);
+	}
+
+	/* (non-Javadoc) */
 	protected String diskStoreProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("disk.store."), propertyNameSuffix);
 	}
@@ -559,6 +564,11 @@ public abstract class AbstractAnnotationConfigSupport
 	/* (non-Javadoc) */
 	protected String loggingProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("logging."), propertyNameSuffix);
+	}
+
+	/* (non-Javadoc) */
+	protected String managementProperty(String propertyNameSuffix) {
+		return String.format("%1$s%2$s", propertyName("management."), propertyNameSuffix);
 	}
 
 	/* (non-Javadoc) */

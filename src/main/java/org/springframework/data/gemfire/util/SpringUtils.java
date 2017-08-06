@@ -43,6 +43,7 @@ public abstract class SpringUtils {
 
 	/* (non-Javadoc) */
 	public static BeanDefinition addDependsOn(BeanDefinition bean, String... beanNames) {
+
 		List<String> dependsOnList = new ArrayList<>();
 
 		Collections.addAll(dependsOnList, nullSafeArray(bean.getDependsOn(), String.class));

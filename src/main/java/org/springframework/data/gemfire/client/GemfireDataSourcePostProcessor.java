@@ -78,6 +78,7 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	}
 
 	/* (non-Javadoc) */
+	// TODO remove this logic and delegate to o.s.d.g.config.remote.GemfireAdminOperations
 	Iterable<String> regionNames() {
 		try {
 			return execute(new ListRegionsOnServerFunction());

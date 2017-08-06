@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -24,16 +25,22 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Invokes a POJO's given method as a Gemfire remote function.
- * If the POJO has a constructor that takes a Map, and the function context is Region, the
- * region will be injected. The delegate class name, the method name, and the method arguments
- * are part of a remote function invocation, therefore all arguments must be serializable
- * or an alternate serialization method must be used.
- * The delegate class must be the class path of the remote cache(s)
- * @author David Turanski
+ * Invokes a given {@link Object POJO} {@link Method} as a (remote) GemFire/Geode {@link Function}.
  *
+ * If the {@link Object POJO} has a constructor that takes a {@link java.util.Map}, and the {@link Function} context
+ * is a {@link Region}, the {@link Region} will be injected.
+ *
+ * The delegate {@link Class#getName() class name}, the {@link Method#getName() method name},
+ * and {@link Method} arguments are part of the {@link Function} invocation, therefore all arguments
+ * must be {@link java.io.Serializable} or an alternate serialization strategy must be used.
+ *
+ * The delegate {@link Class} must be on the class path of the remote cache(s).
+ *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.apache.geode.cache.execute.Function
+ * @since 1.2.0
  */
-
 @SuppressWarnings("serial")
 public class PojoFunctionWrapper implements Function {
 
@@ -59,7 +66,7 @@ public class PojoFunctionWrapper implements Function {
 		this.method = method;
 		this.id = (StringUtils.hasText(id) ? id : method.getName());
 		this.HA = false;
-		this.hasResult = !(method.getReturnType().equals(void.class));
+		this.hasResult = !method.getReturnType().equals(void.class);
 		this.optimizeForWrite = false;
 	}
 
@@ -100,7 +107,9 @@ public class PojoFunctionWrapper implements Function {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void execute(final FunctionContext functionContext) {
+
 		Object[] args = this.functionArgumentResolver.resolveFunctionArguments(functionContext);
 
 		Object result = invokeTargetMethod(args);
@@ -111,19 +120,22 @@ public class PojoFunctionWrapper implements Function {
 	}
 
 	protected final Object invokeTargetMethod(Object[] args) {
+
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("about to invoke method %s on class %s as function %s", method.getName(),
-				target.getClass().getName(), this.id));
+
+			logger.debug(String.format("About to invoke method [%s] on class [%s] as Function [%s]",
+				this.method.getName(), this.target.getClass().getName(), getId()));
 
 			for (Object arg : args) {
-				logger.debug("arg:" + arg.getClass().getName() + " " + arg.toString());
+				logger.debug(String.format("Argument of type [%s] is [%s]", arg.getClass().getName(), arg.toString()));
 			}
 		}
 
-		return ReflectionUtils.invokeMethod(method, target, (Object[]) args);
+		return ReflectionUtils.invokeMethod(this.method, this.target, (Object[]) args);
 	}
 
 	private void sendResults(ResultSender<Object> resultSender, Object result) {
+
 		if (result == null) {
 			resultSender.lastResult(null);
 		}
@@ -139,5 +151,4 @@ public class PojoFunctionWrapper implements Function {
 			}
 		}
 	}
-
 }
