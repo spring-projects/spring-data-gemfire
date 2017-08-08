@@ -126,7 +126,9 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	private DynamicRegionSupport dynamicRegionSupport;
 
 	private Float criticalHeapPercentage;
+	private Float criticalOffHeapPercentage;
 	private Float evictionHeapPercentage;
+	private Float evictionOffHeapPercentage;
 
 	private GatewayConflictResolver gatewayConflictResolver;
 
@@ -260,7 +262,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 
 			setCache(postProcess(resolveCache()));
 
-			Optional.ofNullable(this.<GemFireCache>getCache()).ifPresent(cache -> {
+			Optional.<GemFireCache>ofNullable(this.getCache()).ifPresent(cache -> {
 
 				Optional.ofNullable(cache.getDistributedSystem()).map(DistributedSystem::getDistributedMember)
 					.ifPresent(member ->
@@ -469,32 +471,56 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		}
 
 		configureHeapPercentages(cache);
+		configureOffHeapPercentages(cache);
+		registerJndiDataSources();
 		registerTransactionListeners(cache);
 		registerTransactionWriter(cache);
-		registerJndiDataSources();
 
 		return cache;
 	}
 
 	/* (non-Javadoc) */
 	private boolean isHeapPercentageValid(Float heapPercentage) {
-		return (heapPercentage > 0.0f && heapPercentage <= 100.0f);
+		return (heapPercentage >= 0.0f && heapPercentage <= 100.0f);
 	}
 
 	/* (non-Javadoc) */
 	private void configureHeapPercentages(GemFireCache cache) {
+
 		Optional.ofNullable(getCriticalHeapPercentage()).ifPresent(criticalHeapPercentage -> {
+
 			Assert.isTrue(isHeapPercentageValid(criticalHeapPercentage), String.format(
-				"criticalHeapPercentage [%s] is not valid; must be > 0.0 and <= 100.0", criticalHeapPercentage));
+				"criticalHeapPercentage [%s] is not valid; must be >= 0.0 and <= 100.0", criticalHeapPercentage));
 
 			cache.getResourceManager().setCriticalHeapPercentage(criticalHeapPercentage);
 		});
 
 		Optional.ofNullable(getEvictionHeapPercentage()).ifPresent(evictionHeapPercentage -> {
+
 			Assert.isTrue(isHeapPercentageValid(evictionHeapPercentage), String.format(
-				"evictionHeapPercentage [%s] is not valid; must be > 0.0 and <= 100.0", evictionHeapPercentage));
+				"evictionHeapPercentage [%s] is not valid; must be >= 0.0 and <= 100.0", evictionHeapPercentage));
 
 			cache.getResourceManager().setEvictionHeapPercentage(evictionHeapPercentage);
+		});
+	}
+
+	/* (non-Javadoc) */
+	private void configureOffHeapPercentages(GemFireCache cache) {
+
+		Optional.ofNullable(getCriticalOffHeapPercentage()).ifPresent(criticalOffHeapPercentage -> {
+
+			Assert.isTrue(isHeapPercentageValid(criticalOffHeapPercentage), String.format(
+				"criticalOffHeapPercentage [%s] is not valid; must be >= 0.0 and <= 100.0", criticalOffHeapPercentage));
+
+			cache.getResourceManager().setCriticalOffHeapPercentage(criticalOffHeapPercentage);
+		});
+
+		Optional.ofNullable(getEvictionOffHeapPercentage()).ifPresent(evictionOffHeapPercentage -> {
+
+			Assert.isTrue(isHeapPercentageValid(evictionOffHeapPercentage), String.format(
+				"evictionOffHeapPercentage [%s] is not valid; must be >= 0.0 and <= 100.0", evictionOffHeapPercentage));
+
+			cache.getResourceManager().setEvictionOffHeapPercentage(evictionOffHeapPercentage);
 		});
 	}
 
@@ -865,6 +891,22 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	}
 
 	/**
+	 * Set the cache's critical off-heap percentage property.
+	 *
+	 * @param criticalOffHeapPercentage floating point value indicating the critical off-heap percentage.
+	 */
+	public void setCriticalOffHeapPercentage(Float criticalOffHeapPercentage) {
+		this.criticalOffHeapPercentage = criticalOffHeapPercentage;
+	}
+
+	/**
+	 * @return the criticalOffHeapPercentage
+	 */
+	public Float getCriticalOffHeapPercentage() {
+		return this.criticalOffHeapPercentage;
+	}
+
+	/**
 	 * Sets an instance of the DynamicRegionSupport to support Dynamic Regions in this GemFire Cache.
 	 *
 	 * @param dynamicRegionSupport the DynamicRegionSupport class to setup Dynamic Regions in this Cache.
@@ -914,6 +956,22 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 */
 	public Float getEvictionHeapPercentage() {
 		return evictionHeapPercentage;
+	}
+
+	/**
+	 * Set the cache's eviction off-heap percentage property.
+	 *
+	 * @param evictionOffHeapPercentage float-point value indicating the percentage of off-heap use triggering eviction.
+	 */
+	public void setEvictionOffHeapPercentage(Float evictionOffHeapPercentage) {
+		this.evictionOffHeapPercentage = evictionOffHeapPercentage;
+	}
+
+	/**
+	 * @return the evictionOffHeapPercentage
+	 */
+	public Float getEvictionOffHeapPercentage() {
+		return this.evictionOffHeapPercentage;
 	}
 
 	/**

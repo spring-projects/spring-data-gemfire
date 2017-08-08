@@ -41,27 +41,36 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
+ * Unit tests for {@link CacheParser}.
+ *
  * @author Costin Leau
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.springframework.data.gemfire.config.xml.CacheParser
+ * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(locations = "cache-ns.xml")
 @SuppressWarnings("unused")
 public class CacheNamespaceTest{
 
 	@Autowired
-	private ApplicationContext context;
+	private ApplicationContext applicationContext;
 
 	@Test
 	public void testNoNamedCache() throws Exception {
-		assertTrue(context.containsBean("gemfireCache"));
-		assertTrue(context.containsBean("gemfire-cache")); // assert alias is registered
 
-		Cache gemfireCache = context.getBean("gemfireCache", Cache.class);
+		assertTrue(applicationContext.containsBean("gemfireCache"));
+		assertTrue(applicationContext.containsBean("gemfire-cache")); // assert alias is registered
+
+		Cache gemfireCache = applicationContext.getBean("gemfireCache", Cache.class);
 
 		assertNotNull(gemfireCache);
 		assertNotNull(gemfireCache.getDistributedSystem());
@@ -69,7 +78,7 @@ public class CacheNamespaceTest{
 		assertTrue(Boolean.parseBoolean(gemfireCache.getDistributedSystem().getProperties()
 			.getProperty("disable-auto-reconnect")));
 
-		CacheFactoryBean cacheFactoryBean = context.getBean("&gemfireCache", CacheFactoryBean.class);
+		CacheFactoryBean cacheFactoryBean = applicationContext.getBean("&gemfireCache", CacheFactoryBean.class);
 
 		assertNull(TestUtils.readField("cacheXml", cacheFactoryBean));
 
@@ -83,14 +92,15 @@ public class CacheNamespaceTest{
 
 	@Test
 	public void testNamedCache() throws Exception {
-		assertTrue(context.containsBean("cache-with-name"));
 
-		Cache gemfireCache = context.getBean("gemfireCache", Cache.class);
+		assertTrue(applicationContext.containsBean("cache-with-name"));
+
+		Cache gemfireCache = applicationContext.getBean("gemfireCache", Cache.class);
 
 		assertTrue(Boolean.parseBoolean(gemfireCache.getDistributedSystem().getProperties()
 			.getProperty("disable-auto-reconnect")));
 
-		CacheFactoryBean cacheFactoryBean = context.getBean("&cache-with-name", CacheFactoryBean.class);
+		CacheFactoryBean cacheFactoryBean = applicationContext.getBean("&cache-with-name", CacheFactoryBean.class);
 
 		assertNull(TestUtils.readField("cacheXml", cacheFactoryBean));
 
@@ -104,14 +114,16 @@ public class CacheNamespaceTest{
 
 	@Test
 	public void testCacheWithXmlAndProperties() throws Exception {
-		assertTrue(context.containsBean("cache-with-xml-and-props"));
 
-		CacheFactoryBean cacheFactoryBean = context.getBean("&cache-with-xml-and-props", CacheFactoryBean.class);
+		assertTrue(applicationContext.containsBean("cache-with-xml-and-props"));
+
+		CacheFactoryBean cacheFactoryBean = applicationContext.getBean("&cache-with-xml-and-props", CacheFactoryBean.class);
+
 		Resource cacheXmlResource = TestUtils.readField("cacheXml", cacheFactoryBean);
 
 		assertEquals("gemfire-cache.xml", cacheXmlResource.getFilename());
-		assertTrue(context.containsBean("gemfireProperties"));
-		assertEquals(context.getBean("gemfireProperties"), TestUtils.readField("properties", cacheFactoryBean));
+		assertTrue(applicationContext.containsBean("gemfireProperties"));
+		assertEquals(applicationContext.getBean("gemfireProperties"), TestUtils.readField("properties", cacheFactoryBean));
 		assertEquals(Boolean.TRUE, TestUtils.readField("pdxReadSerialized", cacheFactoryBean));
 		assertEquals(Boolean.FALSE, TestUtils.readField("pdxIgnoreUnreadFields", cacheFactoryBean));
 		assertEquals(Boolean.TRUE, TestUtils.readField("pdxPersistent", cacheFactoryBean));
@@ -120,57 +132,79 @@ public class CacheNamespaceTest{
 
 	@Test
 	public void testCacheWithGatewayConflictResolver() {
-		Cache cache = context.getBean("cache-with-gateway-conflict-resolver", Cache.class);
+
+		Cache cache = applicationContext.getBean("cache-with-gateway-conflict-resolver", Cache.class);
 
 		assertTrue(cache.getGatewayConflictResolver() instanceof TestGatewayConflictResolver);
 	}
 
 	@Test
 	public void testCacheWithAutoReconnectDisabled() throws Exception {
-		assertTrue(context.containsBean("cache-with-auto-reconnect-disabled"));
 
-		Cache gemfireCache = context.getBean("cache-with-auto-reconnect-disabled", Cache.class);
+		assertTrue(applicationContext.containsBean("cache-with-auto-reconnect-disabled"));
+
+		Cache gemfireCache = applicationContext.getBean("cache-with-auto-reconnect-disabled", Cache.class);
 
 		assertTrue(Boolean.parseBoolean(gemfireCache.getDistributedSystem().getProperties()
 			.getProperty("disable-auto-reconnect")));
 
-		CacheFactoryBean cacheFactoryBean = context.getBean("&cache-with-auto-reconnect-disabled", CacheFactoryBean.class);
+		CacheFactoryBean cacheFactoryBean =
+			applicationContext.getBean("&cache-with-auto-reconnect-disabled", CacheFactoryBean.class);
 
 		assertFalse(cacheFactoryBean.getEnableAutoReconnect());
 	}
 
 	@Test
 	public void testCacheWithAutoReconnectEnabled() throws Exception {
-		assertTrue(context.containsBean("cache-with-auto-reconnect-enabled"));
 
-		Cache gemfireCache = context.getBean("cache-with-auto-reconnect-enabled", Cache.class);
+		assertTrue(applicationContext.containsBean("cache-with-auto-reconnect-enabled"));
+
+		Cache gemfireCache = applicationContext.getBean("cache-with-auto-reconnect-enabled", Cache.class);
 
 		assertFalse(Boolean.parseBoolean(gemfireCache.getDistributedSystem().getProperties()
 			.getProperty("disable-auto-reconnect")));
 
-		CacheFactoryBean cacheFactoryBean = context.getBean("&cache-with-auto-reconnect-enabled", CacheFactoryBean.class);
+		CacheFactoryBean cacheFactoryBean =
+			applicationContext.getBean("&cache-with-auto-reconnect-enabled", CacheFactoryBean.class);
 
 		assertTrue(cacheFactoryBean.getEnableAutoReconnect());
 	}
 
 	@Test
 	public void testHeapTunedCache() throws Exception {
-		assertTrue(context.containsBean("heap-tuned-cache"));
 
-		CacheFactoryBean cacheFactoryBean = context.getBean("&heap-tuned-cache", CacheFactoryBean.class);
+		assertTrue(applicationContext.containsBean("heap-tuned-cache"));
 
-		Float criticalHeapPercentage = TestUtils.readField("criticalHeapPercentage", cacheFactoryBean);
-		Float evictionHeapPercentage = TestUtils.readField("evictionHeapPercentage", cacheFactoryBean);
+		CacheFactoryBean cacheFactoryBean = applicationContext.getBean("&heap-tuned-cache", CacheFactoryBean.class);
+
+		Float criticalHeapPercentage = cacheFactoryBean.getCriticalHeapPercentage();
+		Float evictionHeapPercentage = cacheFactoryBean.getEvictionHeapPercentage();
 
 		assertEquals(70.0f, criticalHeapPercentage, 0.0001);
 		assertEquals(60.0f, evictionHeapPercentage, 0.0001);
 	}
 
+	@Test
+	public void testOffHeapTunedCache() throws Exception {
+
+		assertTrue(applicationContext.containsBean("off-heap-tuned-cache"));
+
+		CacheFactoryBean cacheFactoryBean = applicationContext.getBean("&off-heap-tuned-cache", CacheFactoryBean.class);
+
+		Float criticalOffHeapPercentage = cacheFactoryBean.getCriticalOffHeapPercentage();
+		Float evictionOffHeapPercentage = cacheFactoryBean.getEvictionOffHeapPercentage();
+
+		assertEquals(90.0f, criticalOffHeapPercentage, 0.0001);
+		assertEquals(50.0f, evictionOffHeapPercentage, 0.0001);
+	}
+
 	@Test(expected = IllegalStateException.class)
 	public void testNoBeanFactoryLocator() throws Exception {
-		assertTrue(context.containsBean("no-bean-factory-locator-cache"));
 
-		CacheFactoryBean cacheFactoryBean = context.getBean("&no-bean-factory-locator-cache", CacheFactoryBean.class);
+		assertTrue(applicationContext.containsBean("no-bean-factory-locator-cache"));
+
+		CacheFactoryBean cacheFactoryBean =
+			applicationContext.getBean("&no-bean-factory-locator-cache", CacheFactoryBean.class);
 
 		assertThat(ReflectionTestUtils.getField(cacheFactoryBean, "beanFactoryLocator"), is(nullValue()));
 
@@ -179,9 +213,11 @@ public class CacheNamespaceTest{
 
 	@Test
 	public void namedClientCacheWithNoProperties() throws Exception {
-		assertTrue(context.containsBean("client-cache-with-name"));
 
-		ClientCacheFactoryBean clientCacheFactoryBean = context.getBean("&client-cache-with-name", ClientCacheFactoryBean.class);
+		assertTrue(applicationContext.containsBean("client-cache-with-name"));
+
+		ClientCacheFactoryBean clientCacheFactoryBean =
+			applicationContext.getBean("&client-cache-with-name", ClientCacheFactoryBean.class);
 
 		assertNull(TestUtils.readField("cacheXml", clientCacheFactoryBean));
 
@@ -193,9 +229,12 @@ public class CacheNamespaceTest{
 
 	@Test
 	public void clientCacheWithXmlNoProperties() throws Exception {
-		assertTrue(context.containsBean("client-cache-with-xml"));
 
-		ClientCacheFactoryBean clientCacheFactoryBean = context.getBean("&client-cache-with-xml", ClientCacheFactoryBean.class);
+		assertTrue(applicationContext.containsBean("client-cache-with-xml"));
+
+		ClientCacheFactoryBean clientCacheFactoryBean =
+			applicationContext.getBean("&client-cache-with-xml", ClientCacheFactoryBean.class);
+
 		Resource cacheXmlResource = TestUtils.readField("cacheXml", clientCacheFactoryBean);
 
 		assertEquals("gemfire-client-cache.xml", cacheXmlResource.getFilename());
@@ -207,6 +246,7 @@ public class CacheNamespaceTest{
 	}
 
 	public static class TestGatewayConflictResolver implements GatewayConflictResolver {
+
 		@Override
 		public void onEvent(TimestampedEntryEvent arg0, GatewayConflictHelper arg1) {
 			throw new UnsupportedOperationException("Not Implemented!");

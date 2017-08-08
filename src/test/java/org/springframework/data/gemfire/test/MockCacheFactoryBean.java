@@ -38,9 +38,11 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 			setClose(it.isClose());
 			setCopyOnRead(it.getCopyOnRead());
 			setCriticalHeapPercentage(it.getCriticalHeapPercentage());
+			setCriticalOffHeapPercentage(it.getCriticalOffHeapPercentage());
 			setDynamicRegionSupport(it.getDynamicRegionSupport());
 			setEnableAutoReconnect(it.getEnableAutoReconnect());
 			setEvictionHeapPercentage(it.getEvictionHeapPercentage());
+			setEvictionOffHeapPercentage(it.getEvictionOffHeapPercentage());
 			setGatewayConflictResolver(it.getGatewayConflictResolver());
 			setJndiDataSources(it.getJndiDataSources());
 			setLockLease(it.getLockLease());

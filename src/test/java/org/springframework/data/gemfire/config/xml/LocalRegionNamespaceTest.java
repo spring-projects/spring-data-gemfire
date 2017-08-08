@@ -40,7 +40,7 @@ import org.springframework.data.gemfire.SimpleCacheListener;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -53,19 +53,19 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.LocalRegionFactoryBean
  * @see org.springframework.data.gemfire.config.xml.LocalRegionParser
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(locations="local-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
 public class LocalRegionNamespaceTest {
 
 	@Autowired
-	private ApplicationContext context;
-
+	private ApplicationContext applicationContext;
 
 	@Test
 	public void testSimpleLocalRegion() throws Exception {
-		assertTrue(context.containsBean("simple"));
 
-		Region<?, ?> simple = context.getBean("simple", Region.class);
+		assertTrue(applicationContext.containsBean("simple"));
+
+		Region<?, ?> simple = applicationContext.getBean("simple", Region.class);
 
 		assertNotNull("The 'simple' Region was not properly configured or initialized!", simple);
 		assertEquals("simple", simple.getName());
@@ -77,9 +77,10 @@ public class LocalRegionNamespaceTest {
 	@Test
 	@SuppressWarnings({ "deprecation", "rawtypes" })
 	public void testPublisherLocalRegion() throws Exception {
-		assertTrue(context.containsBean("pub"));
 
-		RegionFactoryBean publisherRegionFactoryBean = context.getBean("&pub", RegionFactoryBean.class);
+		assertTrue(applicationContext.containsBean("pub"));
+
+		RegionFactoryBean publisherRegionFactoryBean = applicationContext.getBean("&pub", RegionFactoryBean.class);
 
 		assertNotNull(publisherRegionFactoryBean);
 		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", publisherRegionFactoryBean));
@@ -95,9 +96,10 @@ public class LocalRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testComplexLocal() throws Exception {
-		assertTrue(context.containsBean("complex"));
 
-		RegionFactoryBean complexRegionFactoryBean = context.getBean("&complex", RegionFactoryBean.class);
+		assertTrue(applicationContext.containsBean("complex"));
+
+		RegionFactoryBean complexRegionFactoryBean = applicationContext.getBean("&complex", RegionFactoryBean.class);
 
 		assertNotNull(complexRegionFactoryBean);
 
@@ -105,19 +107,20 @@ public class LocalRegionNamespaceTest {
 
 		assertFalse(ObjectUtils.isEmpty(cacheListeners));
 		assertEquals(2, cacheListeners.length);
-		assertSame(context.getBean("c-listener"), cacheListeners[0]);
+		assertSame(applicationContext.getBean("c-listener"), cacheListeners[0]);
 		assertTrue(cacheListeners[1] instanceof SimpleCacheListener);
 		assertNotSame(cacheListeners[0], cacheListeners[1]);
-		assertSame(context.getBean("c-loader"), TestUtils.readField("cacheLoader", complexRegionFactoryBean));
-		assertSame(context.getBean("c-writer"), TestUtils.readField("cacheWriter", complexRegionFactoryBean));
+		assertSame(applicationContext.getBean("c-loader"), TestUtils.readField("cacheLoader", complexRegionFactoryBean));
+		assertSame(applicationContext.getBean("c-writer"), TestUtils.readField("cacheWriter", complexRegionFactoryBean));
 	}
 
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testLocalWithAttributes() throws Exception {
-		assertTrue(context.containsBean("local-with-attributes"));
 
-		Region region = context.getBean("local-with-attributes", Region.class);
+		assertTrue(applicationContext.containsBean("local-with-attributes"));
+
+		Region region = applicationContext.getBean("local-with-attributes", Region.class);
 
 		assertNotNull("The 'local-with-attributes' Region was not properly configured and initialized!", region);
 		assertEquals("local-with-attributes", region.getName());
@@ -132,27 +135,28 @@ public class LocalRegionNamespaceTest {
 		assertEquals(10, localRegionAttributes.getInitialCapacity());
 		assertEquals(String.class, localRegionAttributes.getKeyConstraint());
 		assertEquals("0.9", String.valueOf(localRegionAttributes.getLoadFactor()));
+		assertTrue(localRegionAttributes.getOffHeap());
 		assertEquals(String.class, localRegionAttributes.getValueConstraint());
 	}
 
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testRegionLookup() throws Exception {
-		Cache cache = context.getBean(Cache.class);
+		Cache cache = applicationContext.getBean(Cache.class);
 		Region existing = cache.createRegionFactory().create("existing");
 
-		assertTrue(context.containsBean("lookup"));
+		assertTrue(applicationContext.containsBean("lookup"));
 
-		RegionLookupFactoryBean localRegionFactoryBean = context.getBean("&lookup", RegionLookupFactoryBean.class);
+		RegionLookupFactoryBean localRegionFactoryBean = applicationContext.getBean("&lookup", RegionLookupFactoryBean.class);
 
 		assertEquals("existing", TestUtils.readField("name", localRegionFactoryBean));
-		assertSame(existing, context.getBean("lookup"));
+		assertSame(existing, applicationContext.getBean("lookup"));
 	}
 
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testLocalPersistent() {
-		Region persistentLocalRegion = context.getBean("persistent", Region.class);
+		Region persistentLocalRegion = applicationContext.getBean("persistent", Region.class);
 
 		assertNotNull("The 'persistent' Local Region was not properly configured and initialized!", persistentLocalRegion);
 		assertEquals("persistent", persistentLocalRegion.getName());
@@ -166,9 +170,9 @@ public class LocalRegionNamespaceTest {
 
 	@Test
 	public void testCompressedLocalRegion() {
-		assertTrue(context.containsBean("Compressed"));
+		assertTrue(applicationContext.containsBean("Compressed"));
 
-		Region<?, ?> compressed = context.getBean("Compressed", Region.class);
+		Region<?, ?> compressed = applicationContext.getBean("Compressed", Region.class);
 
 		assertNotNull("The 'Compressed' Local Region was not properly configured and initialized!", compressed);
 		assertEquals("Compressed", compressed.getName());

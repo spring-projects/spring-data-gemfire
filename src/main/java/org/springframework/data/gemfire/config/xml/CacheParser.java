@@ -63,6 +63,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		super.doParse(element, builder);
 
 		registerGemFireBeanFactoryPostProcessors(getRegistry(parserContext));
@@ -73,7 +74,9 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "close");
 		ParsingUtils.setPropertyValue(element, builder, "copy-on-read");
 		ParsingUtils.setPropertyValue(element, builder, "critical-heap-percentage");
+		ParsingUtils.setPropertyValue(element, builder, "critical-off-heap-percentage");
 		ParsingUtils.setPropertyValue(element, builder, "eviction-heap-percentage");
+		ParsingUtils.setPropertyValue(element, builder, "eviction-off-heap-percentage");
 		ParsingUtils.setPropertyValue(element, builder, "enable-auto-reconnect");
 		ParsingUtils.setPropertyValue(element, builder, "lock-lease");
 		ParsingUtils.setPropertyValue(element, builder, "lock-timeout");
@@ -125,15 +128,18 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	void registerGemFireBeanFactoryPostProcessors(BeanDefinitionRegistry registry) {
-		BeanDefinitionReaderUtils.registerWithGeneratedName(BeanDefinitionBuilder.genericBeanDefinition(
-			CustomEditorBeanFactoryPostProcessor.class).getBeanDefinition(), registry);
+
+		BeanDefinitionReaderUtils.registerWithGeneratedName(
+			BeanDefinitionBuilder.genericBeanDefinition(CustomEditorBeanFactoryPostProcessor.class)
+				.getBeanDefinition(), registry);
 	}
 
 	/* (non-Javadoc) */
 	private void parsePdxDiskStore(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		ParsingUtils.setPropertyValue(element, builder, "pdx-disk-store", "pdxDiskStoreName");
 
-		final String pdxDiskStoreName = element.getAttribute("pdx-disk-store");
+		String pdxDiskStoreName = element.getAttribute("pdx-disk-store");
 
 		if (!StringUtils.isEmpty(pdxDiskStoreName)) {
 			registerPdxDiskStoreAwareBeanFactoryPostProcessor(getRegistry(parserContext), pdxDiskStoreName);
@@ -142,20 +148,25 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	void registerPdxDiskStoreAwareBeanFactoryPostProcessor(BeanDefinitionRegistry registry, String pdxDiskStoreName) {
+
 		BeanDefinitionReaderUtils.registerWithGeneratedName(
 			createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(pdxDiskStoreName), registry);
 	}
 
 	/* (non-Javadoc) */
 	private AbstractBeanDefinition createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(String pdxDiskStoreName) {
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
-			PdxDiskStoreAwareBeanFactoryPostProcessor.class);
+
+		BeanDefinitionBuilder builder =
+			BeanDefinitionBuilder.genericBeanDefinition(PdxDiskStoreAwareBeanFactoryPostProcessor.class);
+
 		builder.addConstructorArgValue(pdxDiskStoreName);
+
 		return builder.getBeanDefinition();
 	}
 
 	/* (non-Javadoc) */
 	private void parseDynamicRegionFactory(Element element, BeanDefinitionBuilder builder) {
+
 		Element dynamicRegionFactory = DomUtils.getChildElementByTagName(element, "dynamic-region-factory");
 
 		if (dynamicRegionFactory != null) {
@@ -167,7 +178,9 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	private BeanDefinitionBuilder buildDynamicRegionSupport(Element dynamicRegionFactory) {
+
 		if (dynamicRegionFactory != null) {
+
 			BeanDefinitionBuilder dynamicRegionSupport = BeanDefinitionBuilder.genericBeanDefinition(
 				CacheFactoryBean.DynamicRegionSupport.class);
 
@@ -203,17 +216,21 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	private void parseJndiBindings(Element element, BeanDefinitionBuilder builder) {
+
 		List<Element> jndiBindings = DomUtils.getChildElementsByTagName(element, "jndi-binding");
 
 		if (!CollectionUtils.isEmpty(jndiBindings)) {
+
 			ManagedList<Object> jndiDataSources = new ManagedList<Object>(jndiBindings.size());
 
 			for (Element jndiBinding : jndiBindings) {
+
 				BeanDefinitionBuilder jndiDataSource = BeanDefinitionBuilder.genericBeanDefinition(
 					CacheFactoryBean.JndiDataSource.class);
 
 				// NOTE 'jndi-name' and 'type' are required by the XSD so we should have at least 2 attributes.
 				NamedNodeMap attributes = jndiBinding.getAttributes();
+
 				ManagedMap<String, String> jndiAttributes = new ManagedMap<String, String>(attributes.getLength());
 
 				for (int index = 0, length = attributes.getLength(); index < length; index++) {
@@ -257,7 +274,8 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
-			throws BeanDefinitionStoreException {
+		throws BeanDefinitionStoreException {
+
 		String name = super.resolveId(element, definition, parserContext);
 
 		if (!StringUtils.hasText(name)) {

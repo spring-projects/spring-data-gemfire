@@ -187,6 +187,17 @@ JavaDocs for org.apache.geode.cache.control.ResourceManager for more information
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="critical-off-heap-percentage">
+			<xsd:annotation>
+				<xsd:documentation
+					source="org.apache.geode.cache.control.ResourceManager"><![CDATA[
+Set the percentage of off-heap at or above which the cache is considered in danger of becoming inoperable
+due to out of memory errors. Changing this value can cause LowMemoryException to be thrown. Only one change
+to this attribute or the eviction off-heap percentage will be allowed at any given time and its effect will be
+fully realized before the next change is allowed.
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="eviction-heap-percentage">
 			<xsd:annotation>
 				<xsd:documentation
@@ -194,6 +205,16 @@ JavaDocs for org.apache.geode.cache.control.ResourceManager for more information
 Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction.
 This feature requires additional VM flags to perform properly (see the
 JavaDocs for org.apache.geode.cache.control.ResourceManager for more information).
+            ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="eviction-off-heap-percentage">
+			<xsd:annotation>
+				<xsd:documentation
+					source="org.apache.geode.cache.control.ResourceManager"><![CDATA[
+Set the percentage of off-heap at or above which the eviction should begin on Regions configured for HeapLRU eviction.
+Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical off-heap
+percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed.
             ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -1028,25 +1049,20 @@ use inner bean declarations.
 						</xsd:element>
 					</xsd:choice>
 				</xsd:sequence>
-				<xsd:attribute name="enable-gateway" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Specifies if WAN Gateway communications are enabled for this Region (true or false) (Deprecated since Gemfire v 7.0)
-                                ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="hub-id" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Specifies if WAN Gateway hub id if enable-gateway is true. (Deprecated since Gemfire v 7.0)
-                                ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
 				<xsd:attribute name="index-update-type" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
 Specifies whether Region indexes are maintained synchronously with Region modifications, or asynchronously
 in a background thread.  GemFire default is synchronous.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="off-heap" type="xsd:string" use="optional" default="false">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Specifies that the region uses off-heap memory to store entry values, including values for region entries
+and queue entries. The region will still use heap memory for everything else, such as entry keys
+and the ConcurrentHashMap.  GemFire default is false.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>

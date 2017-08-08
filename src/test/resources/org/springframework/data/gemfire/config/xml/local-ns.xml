@@ -41,6 +41,7 @@
 					  initial-capacity="10"
 					  key-constraint="java.lang.String"
 					  load-factor="0.90"
+					  off-heap="true"
 					  value-constraint="java.lang.String"
 	/>
 

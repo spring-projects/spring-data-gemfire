@@ -336,7 +336,7 @@ abstract class ParsingUtils {
 
 	@SuppressWarnings("unused")
 	static void parseOptionalRegionAttributes(Element element, ParserContext parserContext,
-		BeanDefinitionBuilder regionAttributesBuilder) {
+			BeanDefinitionBuilder regionAttributesBuilder) {
 
 		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
 		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
@@ -350,6 +350,7 @@ abstract class ParsingUtils {
 		setPropertyValue(element, regionAttributesBuilder, "key-constraint");
 		setPropertyValue(element, regionAttributesBuilder, "load-factor");
 		setPropertyValue(element, regionAttributesBuilder, "multicast-enabled");
+		setPropertyValue(element, regionAttributesBuilder, "off-heap");
 		setPropertyValue(element, regionAttributesBuilder, "publisher");
 		setPropertyValue(element, regionAttributesBuilder, "value-constraint");
 
