@@ -16,10 +16,17 @@
 
 package org.springframework.data.gemfire.listener;
 
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeSet;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -52,6 +59,7 @@ import org.springframework.data.gemfire.GemfireQueryException;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter;
 import org.springframework.data.gemfire.client.support.DelegatingPoolAdapter;
+import org.springframework.data.gemfire.config.annotation.ContinuousQueryListenerContainerConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.util.Assert;
 import org.springframework.util.ErrorHandler;
@@ -82,13 +90,13 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter
  * @see org.springframework.data.gemfire.client.support.DelegatingPoolAdapter
  * @see org.springframework.util.ErrorHandler
- * @since 1.1
+ * @since 1.1.0
  */
 @SuppressWarnings("unused")
 public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanNameAware,
 		InitializingBean, DisposableBean, SmartLifecycle {
 
-	// Default Thread name prefix is "ContinuousQueryListenerContainer-".
+	// Default Thread name prefix is "ContinuousQueryListenerContainer-"
 	public static final String DEFAULT_THREAD_NAME_PREFIX =
 		String.format("%s-", ContinuousQueryListenerContainer.class.getSimpleName());
 
@@ -106,6 +114,12 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 
 	private Executor taskExecutor;
 
+	private List<ContinuousQueryListenerContainerConfigurer> cqListenerContainerConfigurers = Collections.emptyList();
+
+	private ContinuousQueryListenerContainerConfigurer compositeCqListenerContainerConfigurer =
+		(beanName, container) -> nullSafeList(cqListenerContainerConfigurers).forEach(configurer ->
+			configurer.configure(beanName, container));
+
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private Queue<CqQuery> continuousQueries = new ConcurrentLinkedQueue<>();
@@ -120,6 +134,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	@Override
 	public void afterPropertiesSet() {
 
+		applyContinuousQueryListenerContainerConfigurers();
 		validateQueryService(initQueryService(eagerlyInitializePool(resolvePoolName())));
 		initExecutor();
 		initContinuousQueries();
@@ -128,11 +143,46 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/* (non-Javadoc) */
+	private void applyContinuousQueryListenerContainerConfigurers() {
+		applyContinuousQueryListenerContainerConfigurers(getCompositeContinuousQueryListenerContainerConfigurer());
+	}
+
+	/* (non-Javadoc) */
 	private QueryService validateQueryService(QueryService queryService) {
 
 		Assert.state(queryService != null, "QueryService was not properly initialized");
 
 		return queryService;
+	}
+
+	/**
+	 * Applies the array of {@link ContinuousQueryListenerContainerConfigurer} objects to customize the configuration
+	 * of this {@link ContinuousQueryListenerContainer}.
+	 *
+	 * @param configurers array of {@link ContinuousQueryListenerContainerConfigurer} used to customize
+	 * the configuration of this {@link ContinuousQueryListenerContainer}.
+	 * @see org.springframework.data.gemfire.config.annotation.ContinuousQueryListenerContainerConfigurer
+	 */
+	protected void applyContinuousQueryListenerContainerConfigurers(
+			ContinuousQueryListenerContainerConfigurer... configurers) {
+
+		applyContinuousQueryListenerContainerConfigurers(Arrays.asList(
+			nullSafeArray(configurers, ContinuousQueryListenerContainerConfigurer.class)));
+	}
+
+	/**
+	 * Applies the {@link Iterable} of {@link ContinuousQueryListenerContainerConfigurer} objects to customize
+	 * the configuration of this {@link ContinuousQueryListenerContainer}.
+	 *
+	 * @param configurers {@link Iterable} of {@link ContinuousQueryListenerContainerConfigurer} used to customize
+	 * the configuration of this {@link ContinuousQueryListenerContainer}.
+	 * @see org.springframework.data.gemfire.config.annotation.ContinuousQueryListenerContainerConfigurer
+	 */
+	protected void applyContinuousQueryListenerContainerConfigurers(
+			Iterable<ContinuousQueryListenerContainerConfigurer> configurers) {
+
+		stream(nullSafeIterable(configurers).spliterator(), false)
+			.forEach(configurer -> configurer.configure(getBeanName(), this));
 	}
 
 	/**
@@ -175,6 +225,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		};
 
 		return Optional.ofNullable(getBeanFactory())
+			.filter(it -> it.containsBean(poolName))
 			.filter(it -> it.isTypeMatch(poolName, Pool.class))
 			.map(it -> {
 				try {
@@ -372,6 +423,45 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 */
 	protected Queue<CqQuery> getContinuousQueries() {
 		return this.continuousQueries;
+	}
+
+	/**
+	 * Null-safe operation setting an array of {@link ContinuousQueryListenerContainerConfigurer} objects used to
+	 * customize the configuration of this {@link ContinuousQueryListenerContainer}.
+	 *
+	 * @param configurers array of {@link ContinuousQueryListenerContainerConfigurer} objects used to customize
+	 * the configuration of this {@link ContinuousQueryListenerContainer}.
+	 * @see org.springframework.data.gemfire.config.annotation.ContinuousQueryListenerContainerConfigurer
+	 * @see #setContinuousQueryListenerContainerConfigurers(List)
+	 */
+	public void setContinuousQueryListenerContainerConfigurers(ContinuousQueryListenerContainerConfigurer... configurers) {
+		setContinuousQueryListenerContainerConfigurers(Arrays.asList(
+			nullSafeArray(configurers, ContinuousQueryListenerContainerConfigurer.class)));
+	}
+
+	/**
+	 * Null-safe operation setting an {@link Iterable} of {@link ContinuousQueryListenerContainerConfigurer} objects
+	 * used to customize the configuration of this {@link ContinuousQueryListenerContainer}.
+	 *
+	 * @param configurers {@link Iterable} of {@link ContinuousQueryListenerContainerConfigurer} objects used to
+	 * customize the configuration of this {@link ContinuousQueryListenerContainer}.
+	 * @see org.springframework.data.gemfire.config.annotation.ContinuousQueryListenerContainerConfigurer
+	 */
+	public void setContinuousQueryListenerContainerConfigurers(List<ContinuousQueryListenerContainerConfigurer> configurers) {
+		this.cqListenerContainerConfigurers = Optional.ofNullable(configurers).orElseGet(Collections::emptyList);
+	}
+
+	/**
+	 * Returns a <a href="https://en.wikipedia.org/wiki/Composite_pattern">Composite</a> object containing
+	 * the collection of {@link ContinuousQueryListenerContainerConfigurer} objects used to customize the configuration
+	 * of this {@link ContinuousQueryListenerContainer}.
+	 *
+	 * @return a Composite object containing a collection of {@link ContinuousQueryListenerContainerConfigurer} objects
+	 * used to customize the configuration of this {@link ContinuousQueryListenerContainer}.
+	 * @see org.springframework.data.gemfire.config.annotation.ContinuousQueryListenerContainerConfigurer
+	 */
+	protected ContinuousQueryListenerContainerConfigurer getCompositeContinuousQueryListenerContainerConfigurer() {
+		return this.compositeCqListenerContainerConfigurer;
 	}
 
 	/**

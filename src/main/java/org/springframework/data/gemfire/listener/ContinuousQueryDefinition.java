@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.listener;
 
+import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.geode.cache.query.CqAttributes;
@@ -24,6 +26,8 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.shiro.util.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
+import org.springframework.data.gemfire.listener.annotation.ContinuousQuery;
 import org.springframework.util.Assert;
 
 /**
@@ -42,6 +46,30 @@ public class ContinuousQueryDefinition implements InitializingBean {
 
 	private final String name;
 	private final String query;
+
+	public static ContinuousQueryDefinition from(Object delegate, Method method) {
+
+		Assert.notNull(method, "Method must not be null");
+
+		ContinuousQuery continuousQuery = method.getAnnotation(ContinuousQuery.class);
+
+		Assert.notNull(continuousQuery, () -> String.format("Method [%1$s] must be annotated with [%2$s]",
+			method, ContinuousQuery.class.getName()));
+
+		String name = Optional.of(continuousQuery.name())
+			.filter(org.springframework.util.StringUtils::hasText)
+			.orElseGet(() -> String.format("%1$s.%2$s", method.getDeclaringClass().getName(), method.getName()));
+
+		String query = continuousQuery.query();
+
+		ContinuousQueryListenerAdapter listener = new ContinuousQueryListenerAdapter(delegate);
+
+		listener.setDefaultListenerMethod(method.getName());
+
+		boolean durable = continuousQuery.durable();
+
+		return new ContinuousQueryDefinition(name, query, listener, durable);
+	}
 
 	public ContinuousQueryDefinition(String query, ContinuousQueryListener listener) {
 		this(query, listener, false);

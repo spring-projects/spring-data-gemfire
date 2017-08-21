@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,34 +34,31 @@ import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 import org.springframework.data.gemfire.listener.GemfireListenerExecutionFailedException;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.MethodCallback;
-import org.springframework.util.ReflectionUtils.MethodFilter;
+import org.springframework.util.StringUtils;
 
 /**
- * Event listener adapter that delegates the handling of messages to target
- * listener methods via reflection, with flexible event type conversion.
- * Allows listener methods to operate on event content types, completely
- * independent from the GemFire API.
+ * Event listener adapter that delegates the handling of messages to target listener methods via reflection,
+ * with flexible event type conversion.
  *
- * <p>Modeled as much as possible after the JMS MessageListenerAdapter in
- * Spring Framework.
+ * Allows listener methods to operate on event content types, completely independent from the GemFire/Geode API.
  *
- * <p>By default, the content of incoming GemFire events gets extracted before
- * being passed into the target listener method, to let the target method
- * operate on event content types such as Object or Operation instead of
- * the raw {@link CqEvent}.</p>
+ * <p>Modeled as much as possible after the JMS MessageListenerAdapter in the core Spring Framework.
  *
- * <p>Find below some examples of method signatures compliant with this
- * adapter class. This first example handles all <code>CqEvent</code> types
- * and gets passed the contents of each <code>event</code> type as an
- * argument.</p>
+ * <p>By default, the content of incoming GemFire/Geode CQ events gets extracted before being passed into
+ * the target listener method, to let the target method operate on event content types such as Object or Operation
+ * instead of the raw {@link CqEvent}.</p>
+ *
+ * <p>Find below some examples of method signatures compliant with this adapter class.
+ *
+ * This first example handles all <code>CqEvent</code> types and gets passed the contents of each
+ * <code>event</code> type as an argument.</p>
  *
  * <pre class="code">public interface PojoListener {
  *    void handleEvent(CqEvent event);
  *    void handleEvent(Operation baseOp);
  *    void handleEvent(Object key);
  *    void handleEvent(Object key, Object newValue);
- *    void handleEvent(Throwable th);
+ *    void handleEvent(Throwable cause);
  *    void handleEvent(CqEvent event, Operation baseOp, byte[] deltaValue);
  *    void handleEvent(CqEvent event, Operation baseOp, Operation queryOp, Object key, Object newValue);
  * }</pre>
@@ -69,6 +67,12 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
  * @author Costin Leau
  * @author Oliver Gierke
  * @author John Blum
+ * @see java.lang.reflect.Method
+ * @see org.apache.geode.cache.Operation
+ * @see org.apache.geode.cache.query.CqEvent
+ * @see org.apache.geode.cache.query.CqQuery
+ * @see org.springframework.data.gemfire.listener.ContinuousQueryListener
+ * @since 1.1.0
  */
 public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
@@ -84,40 +88,45 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	private String defaultListenerMethod = DEFAULT_LISTENER_METHOD_NAME;
 
 	/**
-	 * Create a new {@link ContinuousQueryListenerAdapter} with default settings.
+	 * Constructs a new instance of {@link ContinuousQueryListenerAdapter} with default settings.
 	 */
 	public ContinuousQueryListenerAdapter() {
 		setDelegate(this);
 	}
 
 	/**
-	 * Create a new {@link ContinuousQueryListenerAdapter} for the given delegate.
+	 * Constructs a new instance of {@link ContinuousQueryListenerAdapter} initialized with
+	 * the given {@link Object delegate}.
 	 *
-	 * @param delegate the delegate object
+	 * @param delegate {@link Object delegate} of the listener method event callback.
+	 * @see #setDelegate(Object)
 	 */
 	public ContinuousQueryListenerAdapter(Object delegate) {
 		setDelegate(delegate);
 	}
 
 	/**
-	 * Set a target object to delegate events listening to.
-	 * Specified listener methods have to be present on this target object.
-	 * <p>If no explicit delegate object has been specified, listener
-	 * methods are expected to present on this adapter instance, that is,
-	 * on a custom subclass of this adapter, defining listener methods.
+	 * Sets the target object to which CQ events are delegated.
 	 *
-	 * @param delegate delegate object
+	 * Specified listener methods have to be present on this target object.  If no explicit delegate object
+	 * has been configured then listener methods are expected to present on this adapter instance.
+	 * In other words, on a custom subclass of this adapter, defining listener methods.
+	 *
+	 * @param delegate {@link Object} to delegate listening for CQ events.
+	 * @throws IllegalArgumentException if {@link Object delegate} is {@literal null}.
 	 */
-	public void setDelegate(Object delegate) {
-		Assert.notNull(delegate, "'delegate' must not be null");
+	public final void setDelegate(Object delegate) {
+
+		Assert.notNull(delegate, "Delegate is required");
+
 		this.delegate = delegate;
 		this.invoker = null;
 	}
 
 	/**
-	 * Returns the target object to delegate event listening to.
+	 * Returns a reference to the target object used to listen for and handle CQ events.
 	 *
-	 * @return event listening delegation
+	 * @return a reference to the target object used to listen for and handle CQ events.
 	 */
 	public Object getDelegate() {
 		return this.delegate;
@@ -145,43 +154,6 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	}
 
 	/**
-	 * Standard {@link ContinuousQueryListener} entry point.
-	 * <p>Delegates the event to the target listener method, with appropriate
-	 * conversion of the event argument. In case of an exception, the
-	 * {@link #handleListenerException(Throwable)} method will be invoked.
-	 *
-	 * @param event the incoming GemFire event
-	 * @see #handleListenerException
-	 */
-	public void onEvent(CqEvent event) {
-		try {
-			// Check whether the delegate is a ContinuousQueryListener implementation itself.
-			// If so, this adapter will simply act as a pass-through.
-			if (delegate != this && delegate instanceof ContinuousQueryListener) {
-				((ContinuousQueryListener) delegate).onEvent(event);
-			}
-			// Else... find the listener handler method reflectively.
-			else {
-				String methodName = getListenerMethodName(event);
-
-				if (methodName == null) {
-					throw new InvalidDataAccessApiUsageException("No default listener method specified."
-						+ " Either specify a non-null value for the 'defaultListenerMethod' property"
-						+ " or override the 'getListenerMethodName' method.");
-				}
-
-				invoker = (invoker != null ? invoker : new MethodInvoker(delegate, methodName));
-
-				invokeListenerMethod(event, methodName);
-			}
-
-		}
-		catch (Throwable cause) {
-			handleListenerException(cause);
-		}
-	}
-
-	/**
 	 * Determine the name of the listener method that is supposed to
 	 * handle the given event.
 	 * <p>The default implementation simply returns the configured
@@ -196,12 +168,51 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	}
 
 	/**
+	 * Standard {@link ContinuousQueryListener} callback method for handling CQ events.
+	 *
+	 * <p>Delegates the CQ event to the target listener method, with appropriate conversion of the event arguments.
+	 * In case of an exception, the {@link #handleListenerException(Throwable)} method will be invoked.
+	 *
+	 * @param event incoming {@link CqEvent CQ event}.
+	 * @see #handleListenerException
+	 */
+	@Override
+	public void onEvent(CqEvent event) {
+
+		try {
+			// Determine whether the delegate is a ContinuousQueryListener implementation;
+			// If so, this adapter will simply act as a pass-through
+			if (this.delegate != this && this.delegate instanceof ContinuousQueryListener) {
+				((ContinuousQueryListener) this.delegate).onEvent(event);
+			}
+			// Else, find the listener method handler reflectively
+			else {
+
+				String methodName = Optional.ofNullable(getListenerMethodName(event))
+					.filter(StringUtils::hasText)
+					.orElseThrow(() -> new InvalidDataAccessApiUsageException("No default listener method specified;"
+						+ " Either specify a non-null value for the 'defaultListenerMethod' property"
+						+ " or override the 'getListenerMethodName' method."));
+
+				this.invoker = Optional.ofNullable(this.invoker)
+					.orElseGet(() -> new MethodInvoker(this.delegate, methodName));
+
+				invokeListenerMethod(event, methodName);
+			}
+
+		}
+		catch (Throwable cause) {
+			handleListenerException(cause);
+		}
+	}
+
+	/**
 	 * Handle the given exception that arose during listener execution.
 	 * The default implementation logs the exception at error level.
 	 * @param cause the exception to handle
 	 */
 	protected void handleListenerException(Throwable cause) {
-		logger.error("Listener execution failed...", cause);
+		logger.error("Listener method execution failed", cause);
 	}
 
 	/**
@@ -212,20 +223,20 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	 */
 	protected void invokeListenerMethod(CqEvent event, String methodName) {
 		try {
-			invoker.invoke(event);
+			this.invoker.invoke(event);
 		}
-		catch (InvocationTargetException e) {
-			if (e.getTargetException() instanceof DataAccessException) {
-				throw (DataAccessException) e.getTargetException();
+		catch (InvocationTargetException cause) {
+			if (cause.getTargetException() instanceof DataAccessException) {
+				throw (DataAccessException) cause.getTargetException();
 			}
 			else {
 				throw new GemfireListenerExecutionFailedException(
-					String.format("Listener method [%1$s] threw Exception...", methodName), e.getTargetException());
+					String.format("Listener method [%s] threw Exception...", methodName), cause.getTargetException());
 			}
 		}
-		catch (Throwable e) {
+		catch (Throwable cause) {
 			throw new GemfireListenerExecutionFailedException(
-				String.format("Failed to invoke the target listener method [%1$s]", methodName), e);
+				String.format("Failed to invoke the target listener method [%s]", methodName), cause);
 		}
 	}
 
@@ -233,33 +244,30 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 
 		private final Object delegate;
 
-		List<Method> methods;
+		private final List<Method> methods;
 
-		MethodInvoker(Object delegate, final String methodName) {
-			Class<?> c = delegate.getClass();
+		MethodInvoker(Object delegate, String methodName) {
+
+			Class<?> delegateType = delegate.getClass();
 
 			this.delegate = delegate;
-			methods = new ArrayList<Method>();
+			this.methods = new ArrayList<>();
 
-			ReflectionUtils.doWithMethods(c, new MethodCallback() {
-					public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-						ReflectionUtils.makeAccessible(method);
-						methods.add(method);
-					}
-				}, new MethodFilter() {
-					public boolean matches(Method method) {
-						return isValidEventMethodSignature(method, methodName);
-					}
-				});
+			ReflectionUtils.doWithMethods(delegateType, method -> {
+				ReflectionUtils.makeAccessible(method);
+				this.methods.add(method);
+			}, method -> isValidEventMethodSignature(method, methodName));
 
-			Assert.isTrue(!methods.isEmpty(), String.format(
-				"Cannot find a suitable method named [%1$s#%2$s] - is the method public and does it have the proper arguments?",
-					c.getName(), methodName));
+			Assert.isTrue(!this.methods.isEmpty(), String.format("Cannot find a suitable method named [%1$s#%2$s];"
+				+ " Is the method public and does it have the proper arguments?",
+					delegateType.getName(), methodName));
 		}
 
 		@SuppressWarnings("all")
-		boolean isValidEventMethodSignature(Method method, String methodName) {
-			if (Modifier.isPublic(method.getModifiers()) && methodName.equals(method.getName())) {
+		private boolean isValidEventMethodSignature(Method method, String methodName) {
+
+			if (isEventHandlerMethod(method, methodName)) {
+
 				Class<?>[] parameterTypes = method.getParameterTypes();
 
 				int objects = 0;
@@ -297,20 +305,32 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 			return false;
 		}
 
-		void invoke(CqEvent event) throws InvocationTargetException, IllegalAccessException {
-			for (Method method : methods) {
-				method.invoke(delegate, getMethodArguments(method, event));
+		private boolean isEventHandlerMethod(Method method, String methodName) {
+
+			return Optional.ofNullable(method)
+				.filter(it -> Modifier.isPublic(it.getModifiers()))
+				.filter(it -> method.getName().equals(methodName))
+				.isPresent();
+		}
+
+		void invoke(CqEvent event) throws IllegalAccessException, InvocationTargetException {
+
+			for (Method method : this.methods) {
+				method.invoke(this.delegate, getMethodArguments(method, event));
 			}
 		}
 
-		Object[] getMethodArguments(Method method, CqEvent event) {
+		private Object[] getMethodArguments(Method method, CqEvent event) {
+
 			Class<?>[] parameterTypes = method.getParameterTypes();
+
 			Object[] args = new Object[parameterTypes.length];
 
 			boolean query = false;
 			boolean value = false;
 
 			for (int index = 0; index < parameterTypes.length; index++) {
+
 				Class<?> parameterType = parameterTypes[index];
 
 				if (Object.class.equals(parameterType)) {
@@ -338,5 +358,4 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 			return args;
 		}
 	}
-
 }

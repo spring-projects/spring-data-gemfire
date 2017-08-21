@@ -50,19 +50,18 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ErrorHandler;
 
 /**
- * The ContinuousQueryListenerContainerNamespaceTest class is a test suite of test cases testing the SDG XML namespace
- * for proper configuration and initialization of a ContinuousQueryListenerContainer bean component
- * in the Spring context.
+ * Integration tests for the configuration and initialization of the SDG {@link ContinuousQueryListenerContainer}
+ * using the SDG XML namespace.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
- * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
- * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.CqListener
  * @see org.apache.geode.cache.query.CqQuery
+ * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @since 1.4.0
  */
 @RunWith(SpringRunner.class)
@@ -74,6 +73,7 @@ public class ContinuousQueryListenerContainerNamespaceTest extends ClientServerI
 
 	@BeforeClass
 	public static void startGemFireServer() throws Exception {
+
 		int availablePort = findAvailablePort();
 
 		gemfireServer = run(CqCacheServerProcess.class,
@@ -104,6 +104,7 @@ public class ContinuousQueryListenerContainerNamespaceTest extends ClientServerI
 
 	@Test
 	public void testContainerConfiguration() throws Exception {
+
 		assertNotNull("The ContinuousQueryListenerContainer was not properly configured!", container);
 		assertTrue("The CQ Listener Container should be active (initialized)!", container.isActive());
 		assertFalse("The CQ Listener container should not be configured to auto-start!", container.isAutoStartup());
@@ -122,6 +123,7 @@ public class ContinuousQueryListenerContainerNamespaceTest extends ClientServerI
 		List<String> actualNames = new ArrayList<>(3);
 
 		for (CqQuery query : queries) {
+
 			actualNames.add(query.getName());
 
 			assertEquals("SELECT * FROM /test-cq", query.getQueryString());
@@ -129,12 +131,9 @@ public class ContinuousQueryListenerContainerNamespaceTest extends ClientServerI
 
 			CqListener cqListener = query.getCqAttributes().getCqListener();
 
-			assertNotNull(cqListener);
-
-			// the CqListener object should be an instance of...
-			// org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer.EventDispatcherAdapter
-			// So, get the SDG "ContinuousQueryListener"...
-			ContinuousQueryListener listener = TestUtils.readField("delegate", cqListener);
+			// The CqListener should be an instance of o.s.d.g.listener.ContinuousQueryListenerContainer.EventDispatcherAdapter
+			// So, get the SDG "ContinuousQueryListener"
+			ContinuousQueryListener listener = TestUtils.readField("listener", cqListener);
 
 			assertTrue(listener instanceof ContinuousQueryListenerAdapter);
 			assertTrue(((ContinuousQueryListenerAdapter) listener).getDelegate() instanceof GemfireMDP);
