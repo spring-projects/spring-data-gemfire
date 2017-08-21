@@ -16,13 +16,18 @@
 
 package org.springframework.data.gemfire.listener;
 
+import java.util.function.Function;
+
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
+import org.apache.shiro.util.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 /**
- * Basic holder class for defining an {@link CqQuery}. Useful for configuring GemFire {@link CqQuery}s by mean of
- * XML or using JavaBeans.
+ * Class type for defining a {@link CqQuery}.
  *
  * @author Costin Leau
  * @author John Blum
@@ -31,25 +36,19 @@ import org.springframework.util.Assert;
 @SuppressWarnings("unused")
 public class ContinuousQueryDefinition implements InitializingBean {
 
-	private boolean durable = false;
+	private final boolean durable;
 
-	private ContinuousQueryListener listener;
+	private final ContinuousQueryListener listener;
 
-	private String name;
-	private String query;
-
-	public ContinuousQueryDefinition() {
-	}
+	private final String name;
+	private final String query;
 
 	public ContinuousQueryDefinition(String query, ContinuousQueryListener listener) {
 		this(query, listener, false);
 	}
 
 	public ContinuousQueryDefinition(String query, ContinuousQueryListener listener, boolean durable) {
-		this.query = query;
-		this.listener = listener;
-		this.durable = durable;
-		afterPropertiesSet();
+		this(null, query, listener, durable);
 	}
 
 	public ContinuousQueryDefinition(String name, String query, ContinuousQueryListener listener) {
@@ -57,16 +56,13 @@ public class ContinuousQueryDefinition implements InitializingBean {
 	}
 
 	public ContinuousQueryDefinition(String name, String query, ContinuousQueryListener listener, boolean durable) {
+
 		this.name = name;
 		this.query = query;
 		this.listener = listener;
 		this.durable = durable;
-		afterPropertiesSet();
-	}
 
-	public void afterPropertiesSet() {
-		Assert.hasText(query, "A non-empty query is required.");
-		Assert.notNull(listener, "A non-null listener is required.");
+		afterPropertiesSet();
 	}
 
 	/**
@@ -75,34 +71,58 @@ public class ContinuousQueryDefinition implements InitializingBean {
 	 * @return a boolean indicating if the CQ is durable.
 	 */
 	public boolean isDurable() {
-		return durable;
+		return this.durable;
 	}
 
 	/**
-	 * Gets the name for the CQ.
+	 * Determines whether the CQ was named.
 	 *
-	 * @return a String name for the CQ.
+	 * @return a boolean value indicating whether the CQ is named.
+	 * @see #getName()
 	 */
-	public String getName() {
-		return name;
+	public boolean isNamed() {
+		return StringUtils.hasText(getName());
 	}
 
 	/**
-	 * Gets the query string that will be executed for the CQ.
+	 * Returns a reference to the {@link ContinuousQueryListener} that will process/handle CQ event notifications.
 	 *
-	 * @return a String value with the query to be executed for the CQ.
-	 */
-	public String getQuery() {
-		return query;
-	}
-
-	/**
-	 * The CQ Listener receiving events and notifications with changes from the CQ.
-	 *
-	 * @return the listener to be registered for the CQ.
+	 * @return the CQ listener registered with the CQ to handle CQ events.
 	 */
 	public ContinuousQueryListener getListener() {
-		return listener;
+		return this.listener;
 	}
 
+	/**
+	 * Gets the {@link String name} of the CQ.
+	 *
+	 * @return the {@link String name} of the CQ.
+	 */
+	public String getName() {
+		return this.name;
+	}
+
+	/**
+	 * Gets the {@link String query} executed by the CQ.
+	 *
+	 * @return the {@link String query} executed by the CQ.
+	 */
+	public String getQuery() {
+		return this.query;
+	}
+
+	@Override
+	public void afterPropertiesSet() {
+		Assert.hasText(query, "Query is required");
+		Assert.notNull(listener, "Listener is required");
+	}
+
+	public CqAttributes toCqAttributes(Function<ContinuousQueryListener, CqListener> listenerFunction) {
+
+		CqAttributesFactory attributesFactory = new CqAttributesFactory();
+
+		attributesFactory.addCqListener(listenerFunction.apply(getListener()));
+
+		return attributesFactory.create();
+	}
 }

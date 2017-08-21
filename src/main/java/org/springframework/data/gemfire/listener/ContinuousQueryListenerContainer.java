@@ -16,11 +16,16 @@
 
 package org.springframework.data.gemfire.listener;
 
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeSet;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,8 +33,8 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.CqAttributes;
-import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryException;
@@ -49,15 +54,15 @@ import org.springframework.data.gemfire.client.support.DefaultableDelegatingPool
 import org.springframework.data.gemfire.client.support.DelegatingPoolAdapter;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ErrorHandler;
 import org.springframework.util.StringUtils;
 
 /**
- * Container providing asynchronous behaviour for GemFire Continuous Queries (CQ).
+ * Container providing asynchronous processing/handling for Pivotal GemFire / Apache Geode Continuous Queries (CQ).
  *
  * @author Costin Leau
  * @author John Blum
+ * @see java.util.concurrent.Executor
  * @see org.apache.geode.cache.RegionService
  * @see org.apache.geode.cache.client.Pool
  * @see org.apache.geode.cache.client.PoolManager
@@ -76,14 +81,16 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.core.task.TaskExecutor
  * @see org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter
  * @see org.springframework.data.gemfire.client.support.DelegatingPoolAdapter
+ * @see org.springframework.util.ErrorHandler
+ * @since 1.1
  */
 @SuppressWarnings("unused")
 public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanNameAware,
 		InitializingBean, DisposableBean, SmartLifecycle {
 
 	// Default Thread name prefix is "ContinuousQueryListenerContainer-".
-	public static final String DEFAULT_THREAD_NAME_PREFIX = String.format("%s-", ClassUtils.getShortName(
-		ContinuousQueryListenerContainer.class));
+	public static final String DEFAULT_THREAD_NAME_PREFIX =
+		String.format("%s-", ContinuousQueryListenerContainer.class.getSimpleName());
 
 	private boolean autoStartup = true;
 
@@ -110,192 +117,167 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	private String beanName;
 	private String poolName;
 
+	@Override
 	public void afterPropertiesSet() {
-		initQueryService(eagerlyInitializePool(resolvePoolName()));
+
+		validateQueryService(initQueryService(eagerlyInitializePool(resolvePoolName())));
 		initExecutor();
-		initContinuousQueries(continuousQueryDefinitions);
+		initContinuousQueries();
+
+		this.initialized = true;
+	}
+
+	/* (non-Javadoc) */
+	private QueryService validateQueryService(QueryService queryService) {
 
 		Assert.state(queryService != null, "QueryService was not properly initialized");
-
-		initialized = true;
-	}
-
-	/* (non-Javadoc) */
-	String resolvePoolName() {
-		String poolName = this.poolName;
-
-		if (!StringUtils.hasText(poolName)) {
-			String defaultPoolName = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
-			poolName = (beanFactory != null && beanFactory.containsBean(defaultPoolName) ? defaultPoolName
-				: GemfireUtils.DEFAULT_POOL_NAME);
-		}
-
-		return poolName;
-	}
-
-	/* (non-Javadoc) */
-	String eagerlyInitializePool(String poolName) {
-		try {
-			if (beanFactory != null && beanFactory.isTypeMatch(poolName, Pool.class)) {
-				beanFactory.getBean(poolName, Pool.class);
-			}
-		}
-		catch (BeansException ignore) {
-			Assert.notNull(PoolManager.find(poolName),
-				String.format("No GemFire Pool with name [%s] was found", poolName));
-		}
-
-		return poolName;
-	}
-
-	/* (non-Javadoc) */
-	QueryService initQueryService(String poolName) {
-		if (queryService == null || StringUtils.hasText(poolName)) {
-			queryService = DefaultableDelegatingPoolAdapter.from(DelegatingPoolAdapter.from(
-				PoolManager.find(poolName))).preferPool().getQueryService(queryService);
-		}
 
 		return queryService;
 	}
 
-	/* (non-Javadoc) */
-	Executor initExecutor() {
-		if (taskExecutor == null) {
-			taskExecutor = createDefaultTaskExecutor();
-			manageExecutor = true;
-		}
+	/**
+	 * Resolves the name of the {@link Pool} configured to handle the registered Continuous Queries.
+	 *
+	 * Note, the {@link Pool} must have subscription enabled.
+	 *
+	 * @return the {@link String name} of the {@link Pool} configured to handle the registered Continuous Queries.
+	 */
+	String resolvePoolName() {
 
-		return taskExecutor;
+		return Optional.ofNullable(getPoolName())
+			.filter(StringUtils::hasText)
+			.orElseGet(() ->
+				Optional.ofNullable(getBeanFactory())
+					.filter(it -> it.containsBean(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME))
+					.map(it -> GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)
+					.orElse(GemfireUtils.DEFAULT_POOL_NAME));
 	}
 
 	/**
-	 * Creates a default TaskExecutor. Called if no explicit TaskExecutor has been configured.
-	 * <p>The default implementation builds a {@link org.springframework.core.task.SimpleAsyncTaskExecutor}
-	 * with the specified bean name (or the class name, if no bean name is specified) as thread name prefix.</p>
+	 * Eagerly initializes the {@link Pool} with the given {@link String name}.
 	 *
-	 * @return an instance of the TaskExecutor used to process CQ events asynchronously.
-	 * @see org.springframework.core.task.SimpleAsyncTaskExecutor#SimpleAsyncTaskExecutor(String)
+	 * First, this method attempts to use the configured {@link BeanFactory}, if not {@literal null}, to find a bean
+	 * in the Spring container of type {@link Pool} having the given {@link String name }and fetch the bean,
+	 * thereby causing the {@link Pool} bean to be initialized.
+	 *
+	 * However, if the {@link BeanFactory} was not configured, or no bean exists in the Spring container
+	 * with the given {@link String name} or of the {@link Pool} type, then the named {@link Pool} is looked up
+	 * in GemFire/Geode's {@link PoolManager}.
+	 *
+	 * @param poolName {@link String} containing the name of the {@link Pool} to initialize.
+	 * @return the given {@link Pool} name.
 	 */
-	protected TaskExecutor createDefaultTaskExecutor() {
-		return new SimpleAsyncTaskExecutor(beanName != null ? String.format("%s-", beanName)
-			: DEFAULT_THREAD_NAME_PREFIX);
+	String eagerlyInitializePool(String poolName) {
+
+		Supplier<String> poolNameResolver = () -> {
+			Assert.notNull(PoolManager.find(poolName), String.format("No Pool with name [%s] was found", poolName));
+			return poolName;
+		};
+
+		return Optional.ofNullable(getBeanFactory())
+			.filter(it -> it.isTypeMatch(poolName, Pool.class))
+			.map(it -> {
+				try {
+					it.getBean(poolName, Pool.class);
+					return poolName;
+				}
+				catch (BeansException ignore) {
+					return poolNameResolver.get();
+				}
+			})
+			.orElseGet(poolNameResolver);
 	}
 
+	/**
+	 * Initializes the {@link QueryService} used to register Continuous Queries (CQ).
+	 *
+	 * @param poolName {@link String} containing the name of the {@link Pool} used obtain the {@link QueryService}
+	 * if CQs are tied to a specific {@link Pool}.
+	 * @return the initialized {@link QueryService}.
+	 * @see org.apache.geode.cache.query.QueryService
+	 */
+	QueryService initQueryService(String poolName) {
+
+		QueryService queryService = getQueryService();
+
+		if (queryService == null || StringUtils.hasText(poolName)) {
+			setQueryService(DefaultableDelegatingPoolAdapter.from(
+				DelegatingPoolAdapter.from(PoolManager.find(poolName)))
+					.preferPool().getQueryService(queryService));
+		}
+
+		return getQueryService();
+	}
+
+	/**
+	 * Initialize the {@link Executor} used to process CQ events asynchronously.
+	 *
+	 * @return a new isntance of {@link Executor} used to process CQ events asynchronously.
+	 * @see java.util.concurrent.Executor
+	 */
+	Executor initExecutor() {
+
+		if (getTaskExecutor() == null) {
+			setTaskExecutor(createDefaultTaskExecutor());
+			this.manageExecutor = true;
+		}
+
+		return getTaskExecutor();
+	}
+
+	/**
+	 * Creates a default {@link TaskExecutor}.
+	 *
+	 * <p>Called if no explicit {@link TaskExecutor} has been configured.
+	 *
+	 * <p>The default implementation builds a {@link SimpleAsyncTaskExecutor} with the specified bean name
+	 * (or the class name, if no bean name is specified) as the Thread name prefix.</p>
+	 *
+	 * @return an instance of the {@link TaskExecutor} used to process CQ events asynchronously.
+	 * @see org.springframework.core.task.SimpleAsyncTaskExecutor
+	 */
+	protected Executor createDefaultTaskExecutor() {
+
+		String threadNamePrefix = Optional.ofNullable(getBeanName())
+			.filter(StringUtils::hasText)
+			.map(it -> String.format("%s-", it))
+			.orElse(DEFAULT_THREAD_NAME_PREFIX);
+
+		return new SimpleAsyncTaskExecutor(threadNamePrefix);
+	}
+
+	/**
+	 * Initializes all the {@link CqQuery Continuous Queries} defined by the {@link ContinuousQueryDefinition defintions}.
+	 */
+	private void initContinuousQueries() {
+		initContinuousQueries(this.continuousQueryDefinitions);
+	}
+
+	/* (non-Javadoc) */
 	private void initContinuousQueries(Set<ContinuousQueryDefinition> continuousQueryDefinitions) {
-		// stop the continuous query listener container if currently running...
+
+		// Stop the ContinuousQueryListenerContainer if currently running...
 		if (isRunning()) {
 			stop();
 		}
 
-		// close any existing continuous queries...
+		// Close any existing continuous queries...
 		closeQueries();
 
-		// add current continuous queries based on the definitions from the configuration...
+		// Add current continuous queries based on the definitions from the configuration...
 		for (ContinuousQueryDefinition definition : continuousQueryDefinitions) {
 			addContinuousQuery(definition);
 		}
 	}
 
-	public synchronized void start() {
-		if (!isRunning()) {
-			doStart();
-			running = true;
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Started ContinuousQueryListenerContainer");
-			}
-		}
-	}
-
-	private void doStart() {
-		for (CqQuery cq : continuousQueries) {
-			executeQuery(cq);
-		}
-	}
-
-	private void executeQuery(CqQuery cq) {
-		try {
-			cq.execute();
-		}
-		catch (QueryException e) {
-			throw new GemfireQueryException(String.format("Could not execute query [%1$s]; state is [%2$s]",
-				cq.getName(), cq.getState()), e);
-		}
-	}
-
-	@Override
-	public void stop(Runnable callback) {
-		stop();
-		callback.run();
-	}
-
-	@Override
-	public synchronized void stop() {
-		if (isRunning()) {
-			doStop();
-			running = false;
-		}
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("Stopped ContinuousQueryListenerContainer");
-		}
-	}
-
-	private void doStop() {
-		for (CqQuery cq : continuousQueries) {
-			try {
-				cq.stop();
-			}
-			catch (Exception e) {
-				logger.warn(String.format("Cannot stop query [%1$s]; state is [%2$s]", cq.getName(), cq.getState()), e);
-			}
-		}
-	}
-
-	@Override
-	public void destroy() throws Exception {
-		stop();
-		closeQueries();
-		destroyExecutor();
-		initialized = false;
-	}
-
-	private void closeQueries() {
-		for (CqQuery cq : continuousQueries) {
-			try {
-				if (!cq.isClosed()) {
-					cq.close();
-				}
-			}
-			catch (Exception e) {
-				logger.warn(String.format("Cannot close query [%1$s]; state is [%2$s]",
-					cq.getName(), cq.getState()), e);
-			}
-		}
-
-		continuousQueries.clear();
-	}
-
-	private void destroyExecutor() throws Exception {
-		if (manageExecutor) {
-			if (taskExecutor instanceof DisposableBean) {
-				((DisposableBean) taskExecutor).destroy();
-
-				if (logger.isDebugEnabled()) {
-					logger.debug("Stopped internally-managed Task Executor.");
-				}
-			}
-		}
-	}
-
 	/**
-	 * Determines whether this container is currently active, that is, whether it has been setup (initialized)
+	 * Determines whether this container is currently active, i.e., whether it has been setup and initialized
 	 * but not shutdown yet.
 	 *
 	 * @return a boolean indicating whether the container is active.
 	 */
-	public final boolean isActive() {
-		return initialized;
+	public boolean isActive() {
+		return this.initialized;
 	}
 
 	/**
@@ -315,7 +297,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 */
 	@Override
 	public boolean isAutoStartup() {
-		return autoStartup;
+		return this.autoStartup;
 	}
 
 	/**
@@ -323,8 +305,9 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 *
 	 * @return a boolean value indicating whether the container has been started and is currently running.
 	 */
+	@Override
 	public synchronized boolean isRunning() {
-		return running;
+		return this.running;
 	}
 
 	/**
@@ -336,6 +319,16 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+	}
+
+	/**
+	 * Returns a reference to the configured {@link BeanFactory}.
+	 *
+	 * @return a reference to the configured {@link BeanFactory}.
+	 * @see org.springframework.beans.factory.BeanFactory
+	 */
+	protected BeanFactory getBeanFactory() {
+		return this.beanFactory;
 	}
 
 	/**
@@ -352,6 +345,15 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
+	 * Returns the configured {@link String bean name} of this container.
+	 *
+	 * @return the configured {@link String bean name} of this container.
+	 */
+	protected String getBeanName() {
+		return this.beanName;
+	}
+
+	/**
 	 * Set the underlying RegionService (GemFire Cache) used for registering Queries.
 	 *
 	 * @param cache the RegionService (GemFire Cache) used for registering Queries.
@@ -362,14 +364,39 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
-	 * Set an ErrorHandler to be invoked in case of any uncaught exceptions thrown while processing a CQ event.
-	 * By default there will be <b>no</b> ErrorHandler so that error-level logging is the only result.
+	 * Returns a reference to all the configured/registered {@link CqQuery Continuous Queries}.
 	 *
-	 * @param errorHandler the ErrorHandler invoked when uncaught exceptions are thrown while processing the CQ event.
+	 * @return a reference to all the configured/registered {@link CqQuery Continuous Queries}.
+	 * @see java.util.Queue
+	 * @see org.apache.geode.cache.query.CqQuery
+	 */
+	protected Queue<CqQuery> getContinuousQueries() {
+		return this.continuousQueries;
+	}
+
+	/**
+	 * Set an {@link ErrorHandler} to be invoked in case of any uncaught {@link Exception Exceptions} thrown
+	 * while processing a CQ event.
+	 *
+	 * By default there is <b>no</b> {@link ErrorHandler} configured so error-level logging is the only result.
+	 *
+	 * @param errorHandler {@link ErrorHandler} invoked when uncaught {@link Exception Exceptions} are thrown
+	 * while processing the CQ event.
 	 * @see org.springframework.util.ErrorHandler
 	 */
 	public void setErrorHandler(ErrorHandler errorHandler) {
 		this.errorHandler = errorHandler;
+	}
+
+	/**
+	 * Returns an {@link Optional} reference to the configured {@link ErrorHandler} invoked when
+	 * any unhandled {@link Exception Exceptions} are thrown when invoking CQ listeners processing CQ events.
+	 *
+	 * @return an {@link Optional} reference to the configured {@link ErrorHandler}.
+	 * @see org.springframework.util.ErrorHandler
+	 */
+	protected Optional<ErrorHandler> getErrorHandler() {
+		return Optional.ofNullable(this.errorHandler);
 	}
 
 	/**
@@ -388,7 +415,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @see org.springframework.context.Phased#getPhase()
 	 */
 	public int getPhase() {
-		return phase;
+		return this.phase;
 	}
 
 	/**
@@ -401,23 +428,42 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
+	 * Returns the configured {@link String pool name}.
+	 *
+	 * @return the configured {@link String pool name}.
+	 */
+	protected String getPoolName() {
+		return this.poolName;
+	}
+
+	/**
 	 * Attaches the given query definitions.
 	 *
 	 * @param queries set of queries
 	 */
 	public void setQueryListeners(Set<ContinuousQueryDefinition> queries) {
-		continuousQueryDefinitions.clear();
-		continuousQueryDefinitions.addAll(queries);
+		this.continuousQueryDefinitions.clear();
+		this.continuousQueryDefinitions.addAll(nullSafeSet(queries));
 	}
 
 	/**
 	 * Set the GemFire QueryService used by this container to create ContinuousQueries (CQ).
 	 *
-	 * @param service the GemFire QueryService object used by the container to create ContinuousQueries (CQ).
+	 * @param queryService the GemFire QueryService object used by the container to create ContinuousQueries (CQ).
 	 * @see org.apache.geode.cache.query.QueryService
 	 */
-	public void setQueryService(QueryService service) {
-		this.queryService = service;
+	public void setQueryService(QueryService queryService) {
+		this.queryService = queryService;
+	}
+
+	/**
+	 * Returns a reference to the configured {@link QueryService}.
+	 *
+	 * @return a reference to the configured {@link QueryService}.
+	 * @see org.apache.geode.cache.query.QueryService
+	 */
+	protected QueryService getQueryService() {
+		return this.queryService;
 	}
 
 	/**
@@ -434,115 +480,264 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
-	 * Adds a Continuous Query (CQ) definition to the (potentially running) container. If the container is running,
-	 * the listener starts receiving (matching) messages as soon as possible.
+	 * Returns a reference to the configured {@link Executor TaskExecutor}.
 	 *
-	 * @param definition Continuous Query (CQ) definition
-	 * @see org.springframework.data.gemfire.listener.ContinuousQueryDefinition
-	 * @see #doAddListener(ContinuousQueryDefinition)
+	 * @return a reference to the configured {@link Executor TaskExecutor}.
+	 * @see java.util.concurrent.Executor
 	 */
-	public void addListener(ContinuousQueryDefinition definition) {
-		doAddListener(definition);
-	}
-
-	private void doAddListener(ContinuousQueryDefinition definition) {
-		CqQuery cq = addContinuousQuery(definition);
-
-		if (isRunning()) {
-			executeQuery(cq);
-		}
-	}
-
-	private CqQuery addContinuousQuery(ContinuousQueryDefinition definition) {
-		try {
-			CqAttributesFactory continuousQueryAttributesFactory = new CqAttributesFactory();
-
-			continuousQueryAttributesFactory.addCqListener(new EventDispatcherAdapter(definition.getListener()));
-
-			CqAttributes continuousQueryAttributes = continuousQueryAttributesFactory.create();
-
-			CqQuery cq =  (StringUtils.hasText(definition.getName())
-				? queryService.newCq(definition.getName(), definition.getQuery(), continuousQueryAttributes, definition.isDurable())
-				: queryService.newCq(definition.getQuery(), continuousQueryAttributes, definition.isDurable()));
-
-			continuousQueries.add(cq);
-
-			return cq;
-		}
-		catch (QueryException e) {
-			throw new GemfireQueryException("Cannot create query", e);
-		}
-	}
-
-	private void dispatchEvent(final ContinuousQueryListener listener, final CqEvent event) {
-		taskExecutor.execute(() -> executeListener(listener, event));
+	protected Executor getTaskExecutor() {
+		return this.taskExecutor;
 	}
 
 	/**
-	 * Execute the specified listener.
+	 * Adds a {@link ContinuousQueryDefinition Continuous Query (CQ) definition} to the (potentially running) container.
 	 *
-	 * @param listener the ContinuousQueryListener to notify of the CQ event.
-	 * @param event the CQ event.
-	 * @see #handleListenerException(Throwable)
+	 * If the container is running, the listener starts receiving (matching) messages as soon as possible.
+	 *
+	 * @param definition {@link ContinuousQueryDefinition Continuous Query (CQ) definition} to register.
+	 * @see org.springframework.data.gemfire.listener.ContinuousQueryDefinition
 	 */
-	protected void executeListener(ContinuousQueryListener listener, CqEvent event) {
+	public void addListener(ContinuousQueryDefinition definition) {
+
+		CqQuery query = addContinuousQuery(definition);
+
+		if (isRunning()) {
+			execute(query);
+		}
+	}
+
+	/* (non-Javadoc) */
+	CqQuery addContinuousQuery(ContinuousQueryDefinition definition) {
+
+		try {
+			CqAttributes attributes = definition.toCqAttributes(this::newCqListener);
+
+			CqQuery query = (definition.isNamed() ? newNamedContinuousQuery(definition, attributes)
+				: newUnnamedContinuousQuery(definition, attributes));
+
+			return manage(query);
+		}
+		catch (QueryException cause) {
+			throw new GemfireQueryException(String.format("Unable to create query [%s]", definition.getQuery()), cause);
+		}
+	}
+
+	/* (non-Javadoc) */
+	protected CqListener newCqListener(ContinuousQueryListener listener) {
+		return new EventDispatcherAdapter(listener);
+	}
+
+	/* (non-Javadoc) */
+	private CqQuery newNamedContinuousQuery(ContinuousQueryDefinition definition, CqAttributes attributes)
+			throws QueryException {
+
+		return getQueryService().newCq(definition.getName(), definition.getQuery(), attributes, definition.isDurable());
+	}
+
+	/* (non-Javadoc) */
+	private CqQuery newUnnamedContinuousQuery(ContinuousQueryDefinition definition, CqAttributes attributes)
+			throws CqException {
+
+		return getQueryService().newCq(definition.getQuery(), attributes, definition.isDurable());
+	}
+
+	/* (non-Javadoc) */
+	private CqQuery manage(CqQuery query) {
+		getContinuousQueries().add(query);
+		return query;
+	}
+
+	@Override
+	public synchronized void start() {
+
+		if (!isRunning()) {
+			doStart();
+			this.running = true;
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Started ContinuousQueryListenerContainer");
+			}
+		}
+	}
+
+	/* (non-Javadoc) */
+	void doStart() {
+		getContinuousQueries().forEach(this::execute);
+	}
+
+	/* (non-Javadoc) */
+	private void execute(CqQuery query) {
+		try {
+			query.execute();
+		}
+		catch (QueryException cause) {
+			throw new GemfireQueryException(String.format("Could not execute query [%1$s]; state is [%2$s]",
+				query.getName(), query.getState()), cause);
+		}
+	}
+
+	/**
+	 * Asynchronously dispatches the {@link CqEvent CQ event} to the targeted {@link ContinuousQueryListener}.
+	 *
+	 * @param listener {@link ContinuousQueryListener} which will process/handle the {@link CqEvent CQ event}.
+	 * @param event {@link CqEvent CQ event} to process.
+	 * @see org.springframework.data.gemfire.listener.ContinuousQueryListener
+	 * @see org.apache.geode.cache.query.CqEvent
+	 */
+	protected void dispatchEvent(ContinuousQueryListener listener, CqEvent event) {
+		getTaskExecutor().execute(() -> notify(listener, event));
+	}
+
+	/**
+	 * Invoke the specified {@link ContinuousQueryListener listener} to process/handle the {@link CqEvent CQ event}.
+	 *
+	 * @param listener {@link ContinuousQueryListener} to notify of the {@link CqEvent CQ event}.
+	 * @param event {@link CqEvent CQ event} to process/handle.
+	 * @see #handleListenerError(Throwable)
+	 */
+	private void notify(ContinuousQueryListener listener, CqEvent event) {
 		try {
 			listener.onEvent(event);
 		}
-		catch (Throwable ex) {
-			handleListenerException(ex);
+		catch (Throwable cause) {
+			handleListenerError(cause);
 		}
 	}
 
 	/**
-	 * Handle the given exception that arose during listener execution.
-	 * <p>The default implementation logs the exception at error level.
-	 * This can be overridden in subclasses.
+	 * Invokes the configured {@link ErrorHandler} (if any) to handle the {@link Exception} thrown by the CQ listener.
 	 *
-	 * @param e the exception to handle
+	 * Logs at warning level if no {@link ErrorHandler} was configured.
+	 *
+	 * Logs at debug level if the CQ listener container was shutdown at the time when the CQ listener
+	 * {@link Exception} was thrown.
+	 *
+	 * @param cause {@link Throwable uncaught error} thrown during normal CQ event processing.
+	 * @see #setErrorHandler(ErrorHandler)
+	 * @see #getErrorHandler()
 	 */
-	protected void handleListenerException(Throwable e) {
-		if (isActive()) {
-			// Regular case: failed while active.
-			// Invoke ErrorHandler if available.
-			invokeErrorHandler(e);
-		}
-		else {
-			// Rare case: listener thread failed after container shutdown.
-			// Log at debug level, to avoid spamming the shutdown logger.
-			logger.debug("Listener exception after container shutdown", e);
+	private void handleListenerError(Throwable cause) {
+
+		getErrorHandler()
+			.filter(errorHandler -> {
+
+				boolean active = this.isActive();
+
+				if (!active && logger.isDebugEnabled()) {
+					logger.debug("A CQ listener exception occurred after container shutdown;"
+						+ " ErrorHandler will not be invoked", cause);
+				}
+
+				return active;
+			})
+			.ifPresent(errorHandler -> errorHandler.handleError(cause));
+
+		if (!getErrorHandler().isPresent() && logger.isWarnEnabled()) {
+			logger.warn("Execution of CQ listener failed; No ErrorHandler was configured", cause);
 		}
 	}
 
-	/**
-	 * Invoke the registered ErrorHandler, if any. Log at error level otherwise.
-	 *
-	 * @param e the uncaught error that arose during event processing.
-	 * @see #setErrorHandler
-	 */
-	protected void invokeErrorHandler(Throwable e) {
-		if (this.errorHandler != null) {
-			this.errorHandler.handleError(e);
+	@Override
+	@SuppressWarnings("all")
+	public void stop(Runnable callback) {
+		stop();
+		callback.run();
+	}
+
+	@Override
+	public synchronized void stop() {
+
+		if (isRunning()) {
+			doStop();
+			this.running = false;
 		}
-		else if (logger.isWarnEnabled()) {
-			logger.warn("Execution of the CQ event listener failed, and no ErrorHandler has been set.", e);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Stopped ContinuousQueryListenerContainer");
 		}
 	}
 
-	private class EventDispatcherAdapter implements CqListener {
+	/* (non-Javadoc) */
+	void doStop() {
 
-		private final ContinuousQueryListener delegate;
+		getContinuousQueries().forEach(query -> {
+			try {
+				query.stop();
+			}
+			catch (Exception cause) {
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Cannot stop query [%1$s]; state is [%2$s]",
+						query.getName(), query.getState()), cause);
+				}
+			}
+		});
+	}
 
-		private EventDispatcherAdapter(ContinuousQueryListener delegate) {
-			this.delegate = delegate;
+	@Override
+	public void destroy() throws Exception {
+		stop();
+		closeQueries();
+		destroyExecutor();
+		this.initialized = false;
+	}
+
+	/* (non-Javadoc) */
+	private void closeQueries() {
+
+		getContinuousQueries().stream().filter(query -> !query.isClosed()).forEach(query -> {
+			try {
+				query.close();
+			}
+			catch (Exception cause) {
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Cannot close query [%1$s]; state is [%2$s]",
+						query.getName(), query.getState()), cause);
+				}
+			}
+		});
+
+		getContinuousQueries().clear();
+	}
+
+	/* (non-Javadoc) */
+	private void destroyExecutor() {
+
+		Optional.ofNullable(getTaskExecutor())
+			.filter(it -> this.manageExecutor)
+			.filter(it -> it instanceof DisposableBean)
+			.ifPresent(it -> {
+				try {
+					((DisposableBean) it).destroy();
+
+					if (logger.isDebugEnabled()) {
+						logger.debug(String.format("Stopped internally-managed TaskExecutor [%s]", it));
+					}
+				}
+				catch (Exception ignore) {
+					logger.warn(String.format("Failed to properly destroy the managed TaskExecutor [%s]", it));
+				}
+			});
+	}
+
+	protected class EventDispatcherAdapter implements CqListener {
+
+		private final ContinuousQueryListener listener;
+
+		protected EventDispatcherAdapter(ContinuousQueryListener listener) {
+			this.listener = Optional.ofNullable(listener)
+				.orElseThrow(() -> newIllegalArgumentException("ContinuousQueryListener is required"));
+		}
+
+		protected ContinuousQueryListener getListener() {
+			return this.listener;
 		}
 
 		public void onError(CqEvent event) {
-			dispatchEvent(delegate, event);
+			dispatchEvent(getListener(), event);
 		}
 
 		public void onEvent(CqEvent event) {
-			dispatchEvent(delegate, event);
+			dispatchEvent(getListener(), event);
 		}
 
 		public void close() {
