@@ -23,6 +23,8 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.apache.geode.cache.Region;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
@@ -51,12 +53,15 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
+ * @author Rob Hardt
  */
 public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 	private final MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext;
 
 	private final Regions regions;
+
+	private BeanFactory _beanFactory;
 
 	/**
 	 * Creates a new {@link GemfireRepositoryFactory}.
@@ -113,6 +118,20 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		String resolvedRegionName = StringUtils.hasText(repositoryRegionName) ? repositoryRegionName : entityRegionName;
 
 		Region<?, ?> region = regions.getRegion(resolvedRegionName);
+
+		if (region ==  null) {
+			try {
+				region = this._beanFactory.getBean(resolvedRegionName, Region.class);
+			}
+			catch (NoSuchBeanDefinitionException nsbde) {
+				//ok to ignore this, region will remain null
+				//and the IllegalStateException will kick in
+				//and give an accurate message
+			}
+			catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 
 		if (region == null) {
 			throw newIllegalStateException("No Region [%1$s] was found for domain class [%2$s];"
@@ -176,4 +195,11 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 				return new PartTreeGemfireRepositoryQuery(queryMethod, template);
 			});
 	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) {
+		super.setBeanFactory(beanFactory);
+		this._beanFactory = beanFactory;
+	}
+
 }

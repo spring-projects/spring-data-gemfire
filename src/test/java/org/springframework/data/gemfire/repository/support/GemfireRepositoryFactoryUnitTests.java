@@ -16,12 +16,9 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -40,11 +37,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.GemfireRepository;
@@ -58,6 +58,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  *
  * @author Oliver Gierke
  * @author John Blum
+ * @author Rob Hardt
  * @see org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -189,6 +190,35 @@ public class GemfireRepositoryFactoryUnitTests {
 	}
 
 	@Test
+	public void getTemplateReturnsGemfireTemplateForArbitraryRegionWhenPeopleRegionBeanExists() {
+		RepositoryMetadata mockRepositoryMetadata = mockRepositoryMetadata(Person.class, Long.class,
+				PersonRepository.class);
+
+		Region<Long, Person> mockPeopleRegion = mockRegion("ArbitraryName", Long.class, Person.class);
+
+		Iterable<Region<?, ?>> regions = Arrays.asList(mockRegion, mockPeopleRegion);
+
+		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
+				regions, gemfireMappingContext);
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+		when(mockBeanFactory.getBean("People", Region.class)).thenReturn(mockPeopleRegion);
+		gemfireRepositoryFactory.setBeanFactory(mockBeanFactory);
+
+		GemfireTemplate gemfireTemplate = gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);
+
+		assertThat(gemfireTemplate, is(notNullValue(GemfireTemplate.class)));
+		assertThat(gemfireTemplate.<Long, Person>getRegion(), is(equalTo(mockPeopleRegion)));
+
+		verify(mockPeopleRegion, times(1)).getAttributes();
+		verify(mockPeopleRegion, times(1)).getFullPath();
+		verify(mockPeopleRegion, times(1)).getName();
+		verify(mockRegionAttributes, times(1)).getKeyConstraint();
+		verify(mockRepositoryMetadata, times(1)).getDomainType();
+		verify(mockRepositoryMetadata, times(1)).getIdType();
+	}
+
+	@Test
 	public void getTemplateReturnsGemfireTemplateForSimpleRegion() {
 		RepositoryMetadata mockRepositoryMetadata = mockRepositoryMetadata(Person.class, Long.class,
 			SampleCustomGemfireRepository.class);
@@ -243,6 +273,12 @@ public class GemfireRepositoryFactoryUnitTests {
 
 		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
 			Collections.<Region<?, ?>>singleton(mockRegion), gemfireMappingContext);
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+		when(mockBeanFactory.getBean("People", Region.class)).thenThrow(new NoSuchBeanDefinitionException("bean doesn't exist"));
+
+		gemfireRepositoryFactory.setBeanFactory(mockBeanFactory);
+
 
 		try {
 			exception.expect(IllegalStateException.class);
