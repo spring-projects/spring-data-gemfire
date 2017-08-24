@@ -17,14 +17,9 @@
 package org.springframework.data.gemfire.repository.support;
 
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -37,7 +32,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -189,6 +183,10 @@ public class GemfireRepositoryFactoryUnitTests {
 		verify(mockRepositoryMetadata, times(1)).getIdType();
 	}
 
+
+	/**
+	 * @link https://jira.spring.io/browse/SGF-659
+	 */
 	@Test
 	public void getTemplateReturnsGemfireTemplateForArbitraryRegionWhenPeopleRegionBeanExists() {
 		RepositoryMetadata mockRepositoryMetadata = mockRepositoryMetadata(Person.class, Long.class,
@@ -198,8 +196,7 @@ public class GemfireRepositoryFactoryUnitTests {
 
 		Iterable<Region<?, ?>> regions = Arrays.asList(mockRegion, mockPeopleRegion);
 
-		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
-				regions, gemfireMappingContext);
+		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(regions, gemfireMappingContext);
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 		when(mockBeanFactory.getBean("People", Region.class)).thenReturn(mockPeopleRegion);
@@ -208,7 +205,7 @@ public class GemfireRepositoryFactoryUnitTests {
 		GemfireTemplate gemfireTemplate = gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);
 
 		assertThat(gemfireTemplate, is(notNullValue(GemfireTemplate.class)));
-		assertThat(gemfireTemplate.<Long, Person>getRegion(), is(equalTo(mockPeopleRegion)));
+		assertThat(gemfireTemplate.<Long, Person> getRegion(), is(equalTo(mockPeopleRegion)));
 
 		verify(mockPeopleRegion, times(1)).getAttributes();
 		verify(mockPeopleRegion, times(1)).getFullPath();
@@ -274,12 +271,6 @@ public class GemfireRepositoryFactoryUnitTests {
 		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
 			Collections.<Region<?, ?>>singleton(mockRegion), gemfireMappingContext);
 
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-		when(mockBeanFactory.getBean("People", Region.class)).thenThrow(new NoSuchBeanDefinitionException("bean doesn't exist"));
-
-		gemfireRepositoryFactory.setBeanFactory(mockBeanFactory);
-
-
 		try {
 			exception.expect(IllegalStateException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
@@ -297,6 +288,41 @@ public class GemfireRepositoryFactoryUnitTests {
 			verifyZeroInteractions(mockRegionAttributes);
 		}
 	}
+
+
+	/**
+	 * @link https://jira.spring.io/browse/SGF-659
+	 */
+	@Test
+	public void getTemplateThrowsIllegalStateExceptionForRegionNotFoundAndSpringBeanDoesNotExist() {
+		RepositoryMetadata mockRepositoryMetadata = mockRepositoryMetadata(Person.class, Long.class,
+				PersonRepository.class);
+
+		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
+				Collections.<Region<?, ?>> singleton(mockRegion), gemfireMappingContext);
+
+		try {
+			exception.expect(IllegalStateException.class);
+			exception.expectCause(is(nullValue(Throwable.class)));
+			exception.expectMessage(String.format(
+					"No Region [People] was found for domain class [%s]; Make sure you have configured a GemFire Region of that name in your application context",
+					Person.class.getName()));
+
+			BeanFactory mockBeanFactory = mock(BeanFactory.class);
+			when(mockBeanFactory.getBean("People", Region.class))
+					.thenThrow(new NoSuchBeanDefinitionException("bean doesn't exist"));
+			gemfireRepositoryFactory.setBeanFactory(mockBeanFactory);
+			gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);
+		} finally {
+			verify(mockRepositoryMetadata, times(2)).getDomainType();
+			verify(mockRepositoryMetadata, never()).getIdType();
+			verify(mockRegion, times(1)).getFullPath();
+			verify(mockRegion, times(1)).getName();
+			verifyZeroInteractions(mockRegionAttributes);
+		}
+	}
+
+
 
 	/**
 	 * @link https://jira.spring.io/browse/SGF-112

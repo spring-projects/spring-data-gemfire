@@ -29,11 +29,7 @@ import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
 import org.springframework.data.gemfire.mapping.Regions;
-import org.springframework.data.gemfire.repository.query.DefaultGemfireEntityInformation;
-import org.springframework.data.gemfire.repository.query.GemfireEntityInformation;
-import org.springframework.data.gemfire.repository.query.GemfireQueryMethod;
-import org.springframework.data.gemfire.repository.query.PartTreeGemfireRepositoryQuery;
-import org.springframework.data.gemfire.repository.query.StringBasedGemfireRepositoryQuery;
+import org.springframework.data.gemfire.repository.query.*;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
@@ -119,14 +115,13 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 		Region<?, ?> region = regions.getRegion(resolvedRegionName);
 
-		if (region ==  null && this._beanFactory != null) {
+		if (region == null && this._beanFactory != null) {
 			try {
 				region = this._beanFactory.getBean(resolvedRegionName, Region.class);
-			}
-			catch (NoSuchBeanDefinitionException nsbde) {
-				//ok to ignore this, region will remain null
-				//and the IllegalStateException will kick in
-				//and give an accurate message
+			} catch (NoSuchBeanDefinitionException nsbde) {
+				// ok to ignore this, region will remain null
+				// and the IllegalStateException will kick in
+				// and give an accurate message
 			}
 		}
 
