@@ -119,7 +119,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 		Region<?, ?> region = regions.getRegion(resolvedRegionName);
 
-		if (region ==  null) {
+		if (region ==  null && this._beanFactory != null) {
 			try {
 				region = this._beanFactory.getBean(resolvedRegionName, Region.class);
 			}
