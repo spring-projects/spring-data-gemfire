@@ -128,9 +128,6 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 				//and the IllegalStateException will kick in
 				//and give an accurate message
 			}
-			catch (Exception ex) {
-				ex.printStackTrace();
-			}
 		}
 
 		if (region == null) {
