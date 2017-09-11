@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.7.RELEASE (2017-09-11)
+---------------------------------------------
+* SGF-658 - Upgrade to Pivotal GemFire 8.2.6.
+* SGF-655 - Move custom Asciidoctor Maven build plugin configuration testing HTML doc generation into profile.
+* SGF-654 - Fix Reference Guide formatting.
+* SGF-653 - Release 1.9.7 (Ingalls SR7).
+
+
 Changes in version 1.9.6.RELEASE (2017-07-26)
 ---------------------------------------------
 * SGF-649 - Release 1.9.6 (Ingalls SR6).
