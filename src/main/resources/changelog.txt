@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.0.RC3 (2017-09-11)
+-----------------------------------------
+* SGF-657 - Add missing configuration support for Off-Heap.
+* SGF-656 - Add EnableCachingDefinedRegions annotation to configure GemFire Regions based on Spring Caching annotations.
+* SGF-655 - Move custom Asciidoctor Maven build plugin configuration testing HTML doc generation into profile.
+* SGF-654 - Fix Reference Guide formatting.
+* SGF-652 - Typo in documentation.
+* SGF-651 - Release 2.0 RC3 (Kay).
+
+
 Changes in version 1.9.7.RELEASE (2017-09-11)
 ---------------------------------------------
 * SGF-658 - Upgrade to Pivotal GemFire 8.2.6.
