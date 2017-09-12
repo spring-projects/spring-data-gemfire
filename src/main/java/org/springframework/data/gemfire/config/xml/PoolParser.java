@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config.xml;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -40,7 +41,7 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Bean definition parser for the &lt;gfe:pool&gt; SDG XML namespace (XSD) element.
+ * Bean definition parser for &lt;gfe:pool&gt; SDG XML namespace (XSD) elements.
  *
  * @author Costin Leau
  * @author David Turanski
@@ -52,19 +53,20 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	static final AtomicBoolean INFRASTRUCTURE_COMPONENTS_REGISTERED = new AtomicBoolean(false);
 
-	protected static final int DEFAULT_LOCATOR_PORT = GemfireUtils.DEFAULT_LOCATOR_PORT;
-	protected static final int DEFAULT_SERVER_PORT = GemfireUtils.DEFAULT_CACHE_SERVER_PORT;
+	static final int DEFAULT_LOCATOR_PORT = GemfireUtils.DEFAULT_LOCATOR_PORT;
+	static final int DEFAULT_SERVER_PORT = GemfireUtils.DEFAULT_CACHE_SERVER_PORT;
 
-	protected static final String DEFAULT_HOST = "localhost";
-	protected static final String HOST_ATTRIBUTE_NAME = "host";
-	protected static final String LOCATOR_ELEMENT_NAME = "locator";
-	protected static final String LOCATORS_ATTRIBUTE_NAME = "locators";
-	protected static final String PORT_ATTRIBUTE_NAME = "port";
-	protected static final String SERVER_ELEMENT_NAME = "server";
-	protected static final String SERVERS_ATTRIBUTE_NAME = "servers";
+	static final String DEFAULT_HOST = "localhost";
+	static final String HOST_ATTRIBUTE_NAME = "host";
+	static final String LOCATOR_ELEMENT_NAME = "locator";
+	static final String LOCATORS_ATTRIBUTE_NAME = "locators";
+	static final String PORT_ATTRIBUTE_NAME = "port";
+	static final String SERVER_ELEMENT_NAME = "server";
+	static final String SERVERS_ATTRIBUTE_NAME = "servers";
 
 	/* (non-Javadoc) */
-	static void registerInfrastructureComponents(ParserContext parserContext) {
+	private static void registerInfrastructureComponents(ParserContext parserContext) {
+
 		if (INFRASTRUCTURE_COMPONENTS_REGISTERED.compareAndSet(false, true)) {
 			AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
 				.rootBeanDefinition(ClientRegionPoolBeanFactoryPostProcessor.class)
@@ -113,10 +115,11 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 		List<Element> childElements = DomUtils.getChildElements(element);
 
-		ManagedList<BeanDefinition> locators = new ManagedList<BeanDefinition>(childElements.size());
-		ManagedList<BeanDefinition> servers = new ManagedList<BeanDefinition>(childElements.size());
+		ManagedList<BeanDefinition> locators = new ManagedList<>(childElements.size());
+		ManagedList<BeanDefinition> servers = new ManagedList<>(childElements.size());
 
 		for (Element childElement : childElements) {
+
 			String childElementName = childElement.getLocalName();
 
 			if (LOCATOR_ELEMENT_NAME.equals(childElementName)) {
@@ -131,7 +134,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		boolean locatorsSet = parseLocators(element, builder, getRegistry(parserContext));
 		boolean serversSet = parseServers(element, builder, getRegistry(parserContext));
 
-		// NOTE: if neither Locators nor Servers were configured, then setup a connection to a Server
+		// if neither Locators nor Servers were explicitly configured, then setup a connection to a CacheServer
 		// running on localhost, listening on the default CacheServer port 40404
 		if (childElements.isEmpty() && !(locatorsSet || serversSet)) {
 			servers.add(buildConnection(DEFAULT_HOST, String.valueOf(DEFAULT_SERVER_PORT), true));
@@ -153,6 +156,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	BeanDefinition buildConnection(String host, String port, boolean server) {
+
 		BeanDefinitionBuilder connectionEndpointBuilder =
 			BeanDefinitionBuilder.genericBeanDefinition(ConnectionEndpoint.class);
 
@@ -164,6 +168,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	BeanDefinition buildConnections(String expression, boolean server) {
+
 		BeanDefinitionBuilder connectionEndpointListBuilder =
 			BeanDefinitionBuilder.genericBeanDefinition(ConnectionEndpointList.class);
 
@@ -193,9 +198,11 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	boolean parseLocators(Element element, BeanDefinitionBuilder poolBuilder, BeanDefinitionRegistry registry) {
+
 		String locatorsAttributeValue = element.getAttribute(LOCATORS_ATTRIBUTE_NAME);
 
 		if (StringUtils.hasText(locatorsAttributeValue)) {
+
 			BeanDefinitionBuilder addLocatorsMethodInvokingBeanBuilder =
 				BeanDefinitionBuilder.genericBeanDefinition(MethodInvokingBean.class);
 
@@ -224,9 +231,11 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	boolean parseServers(Element element, BeanDefinitionBuilder poolBuilder, BeanDefinitionRegistry registry) {
+
 		String serversAttributeValue = element.getAttribute(SERVERS_ATTRIBUTE_NAME);
 
 		if (StringUtils.hasText(serversAttributeValue)) {
+
 			BeanDefinitionBuilder addServersMethodInvokingBeanBuilder =
 				BeanDefinitionBuilder.genericBeanDefinition(MethodInvokingBean.class);
 
@@ -249,8 +258,9 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	String resolveId(Element element) {
-		String id = element.getAttribute(ID_ATTRIBUTE);
-		return (StringUtils.hasText(id) ? id : GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+		return Optional.ofNullable(element.getAttribute(ID_ATTRIBUTE))
+			.filter(StringUtils::hasText)
+			.orElse(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
 	}
 
 	/* (non-Javadoc) */

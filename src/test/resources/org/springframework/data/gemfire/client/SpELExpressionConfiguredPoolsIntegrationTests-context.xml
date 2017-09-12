@@ -24,9 +24,9 @@
 
 	<context:property-placeholder properties-ref="clientProperties"/>
 
-	<bean class="org.springframework.data.gemfire.client.PoolsConfiguredWithLocatorsAndServersExpressionsIntegrationTests.TestBeanFactoryPostProcessor"/>
+	<bean class="org.springframework.data.gemfire.client.SpELExpressionConfiguredPoolsIntegrationTests.TestBeanFactoryPostProcessor"/>
 
-	<bean id="spelBean" class="org.springframework.data.gemfire.client.PoolsConfiguredWithLocatorsAndServersExpressionsIntegrationTests.SpELBoundBean">
+	<bean id="spelBean" class="org.springframework.data.gemfire.client.SpELExpressionConfiguredPoolsIntegrationTests.SpELBoundBean">
 		<constructor-arg index="0" ref="clientProperties"/>
 	</bean>
 
