@@ -33,7 +33,6 @@ import javax.annotation.Resource;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,6 +92,7 @@ public class LuceneOperationsIntegrationTests {
 
 	@Before
 	public void setup() {
+
 		jonDoe = save(Person.newPerson(LocalDate.of(1969, Month.JULY, 4), "Jon", "Doe").with("Master of Science"));
 		janeDoe = save(Person.newPerson(LocalDate.of(1969, Month.AUGUST, 16), "Jane", "Doe").with("Doctor of Astrophysics"));
 		cookieDoe = save(Person.newPerson(LocalDate.of(1991, Month.APRIL, 2), "Cookie", "Doe").with("Bachelor of Physics"));
@@ -104,13 +104,13 @@ public class LuceneOperationsIntegrationTests {
 		flushLuceneIndex();
 	}
 
-	protected Person save(Person person) {
+	private Person save(Person person) {
 		person.setId(IDENTIFIER.incrementAndGet());
 		people.put(person.getId(), person);
 		return person;
 	}
 
-	protected void flushLuceneIndex() {
+	private void flushLuceneIndex() {
 		try {
 			this.luceneService.waitUntilFlushed("PersonTitleIndex", "/People",
 				15L, TimeUnit.SECONDS);
@@ -151,11 +151,12 @@ public class LuceneOperationsIntegrationTests {
 
 	@SuppressWarnings("unused")
 	@PeerCacheApplication(name = "LuceneOperationsIntegrationTests", logLevel = LOG_LEVEL)
-	static class LuceneOperationsIntegrationTestConfiguration {
+	static class TestConfiguration {
 
 		@Bean(name = "People")
 		@DependsOn("personTitleIndex")
 		PartitionedRegionFactoryBean<Long, Person> peopleRegion(GemFireCache gemfireCache) {
+
 			PartitionedRegionFactoryBean<Long, Person> peopleRegion = new PartitionedRegionFactoryBean<>();
 
 			peopleRegion.setCache(gemfireCache);
@@ -166,17 +167,21 @@ public class LuceneOperationsIntegrationTests {
 		}
 
 		@Bean
-		LuceneServiceFactoryBean luceneService(GemFireCache gemFireCache) {
+		LuceneServiceFactoryBean luceneService(GemFireCache gemfireCache) {
+
 			LuceneServiceFactoryBean luceneService = new LuceneServiceFactoryBean();
-			luceneService.setCache(gemFireCache);
+
+			luceneService.setCache(gemfireCache);
+
 			return luceneService;
 		}
 
 		@Bean
-		LuceneIndexFactoryBean personTitleIndex(GemFireCache gemFireCache) {
+		LuceneIndexFactoryBean personTitleIndex(GemFireCache gemfireCache) {
+
 			LuceneIndexFactoryBean luceneIndex = new LuceneIndexFactoryBean();
 
-			luceneIndex.setCache(gemFireCache);
+			luceneIndex.setCache(gemfireCache);
 			luceneIndex.setFields("title");
 			luceneIndex.setIndexName("PersonTitleIndex");
 			luceneIndex.setRegionPath("/People");
@@ -185,7 +190,8 @@ public class LuceneOperationsIntegrationTests {
 		}
 
 		@Bean
-		ProjectingLuceneOperations luceneTemplate(LuceneIndex luceneIndex) {
+		@DependsOn("personTitleIndex")
+		ProjectingLuceneOperations luceneTemplate() {
 			return new ProjectingLuceneTemplate("personTitleIndex", "/People");
 		}
 	}
