@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 
 package org.springframework.data.gemfire.repository.cdi;
 
+import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -26,8 +29,6 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.webbeans.cditest.CdiTestContainer;
-import org.apache.webbeans.cditest.CdiTestContainerLoader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,26 +38,28 @@ import org.springframework.data.gemfire.repository.sample.Person;
  * The CdiExtensionIntegrationTest class...
  *
  * @author John Blum
+ * @author Mark Paluch
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.repository.cdi.GemfireRepositoryBean
  * @see org.springframework.data.gemfire.repository.cdi.GemfireRepositoryExtension
- * @see org.apache.webbeans.cditest.CdiTestContainer
- * @see org.apache.webbeans.cditest.CdiTestContainerLoader
  * @since 1.8.0
  */
 public class CdiExtensionIntegrationTest {
 
-	static CdiTestContainer container;
+	static SeContainer container;
 
 	@BeforeClass
-	public static void setUp() throws Exception {
-		container = CdiTestContainerLoader.getCdiContainer();
-		container.bootContainer();
+	public static void setUp() {
+
+		container = SeContainerInitializer.newInstance() //
+				.disableDiscovery() //
+				.addPackages(RepositoryClient.class) //
+				.initialize();
 	}
 
 	@AfterClass
-	public static void tearDown() throws Exception {
-		container.shutdownContainer();
+	public static void tearDown() {
+		container.close();
 		closeGemfireCache();
 	}
 
@@ -74,9 +77,10 @@ public class CdiExtensionIntegrationTest {
 		assertThat(actual.getLastname(), is(equalTo(expected.getLastname())));
 	}
 
-	@Test
+	@Test // SGF-669
 	public void bootstrapsRepositoryCorrectly() {
-		RepositoryClient repositoryClient = container.getInstance(RepositoryClient.class);
+
+		RepositoryClient repositoryClient = container.select(RepositoryClient.class).get();
 
 		assertThat(repositoryClient.getPersonRepository(), is(notNullValue()));
 
@@ -98,9 +102,10 @@ public class CdiExtensionIntegrationTest {
 		assertThat(repositoryClient.find(foundJonDoe.getId()), is(nullValue()));
 	}
 
-	@Test
+	@Test // SGF-669
 	public void returnOneFromCustomImplementation() {
-		RepositoryClient repositoryClient = container.getInstance(RepositoryClient.class);
+
+		RepositoryClient repositoryClient = container.select(RepositoryClient.class).get();
 
 		assertThat(repositoryClient.getPersonRepository().returnOne(), is(equalTo(1)));
 	}
