@@ -24,6 +24,7 @@
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<springdata.commons>2.0.0.BUILD-SNAPSHOT</springdata.commons>
 		<spring-shell.version>1.2.0.RELEASE</spring-shell.version>
+		<java-module-name>spring.data.gemfire</java-module-name>
 	</properties>
 
 	<repositories>
