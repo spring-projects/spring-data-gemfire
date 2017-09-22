@@ -290,6 +290,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	protected PoolFactory configure(PoolFactory poolFactory) {
 
 		Optional.ofNullable(poolFactory).ifPresent(it -> {
+
 			it.setFreeConnectionTimeout(this.freeConnectionTimeout);
 			it.setIdleTimeout(this.idleTimeout);
 			it.setLoadConditioningInterval(this.loadConditioningInterval);
@@ -395,7 +396,9 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 	/* (non-Javadoc) */
 	public Pool getPool() {
+
 		return Optional.ofNullable(this.pool).orElseGet(() -> new PoolAdapter() {
+
 			@Override
 			public boolean isDestroyed() {
 				Pool pool = PoolFactoryBean.this.pool;

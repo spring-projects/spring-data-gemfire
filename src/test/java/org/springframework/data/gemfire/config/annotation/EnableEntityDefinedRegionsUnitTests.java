@@ -71,7 +71,6 @@ import org.springframework.data.gemfire.config.annotation.test.entities.LocalReg
 import org.springframework.data.gemfire.config.annotation.test.entities.NonEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.PartitionRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.ReplicateRegionEntity;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
@@ -192,20 +191,21 @@ public class EnableEntityDefinedRegionsUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void entityClientRegionsDefined() {
+
 		applicationContext = newApplicationContext(ClientPersistentEntitiesConfiguration.class);
 
 		Region<String, ClientRegionEntity> sessions = applicationContext.getBean("Sessions", Region.class);
 
 		assertRegion(sessions, "Sessions", String.class, ClientRegionEntity.class);
 		assertRegionAttributes(sessions.getAttributes(), DataPolicy.NORMAL, null, true,
-			false, GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, null);
+			false, null, null);
 
 		Region<Long, GenericRegionEntity> genericRegionEntity =
 			applicationContext.getBean("GenericRegionEntity", Region.class);
 
 		assertRegion(genericRegionEntity, "GenericRegionEntity", Long.class, GenericRegionEntity.class);
 		assertRegionAttributes(genericRegionEntity.getAttributes(), DataPolicy.EMPTY, null,
-			true, false, GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, null);
+			true, false, null, null);
 
 		assertThat(applicationContext.containsBean("CollocatedPartitionRegionEntity")).isFalse();
 		assertThat(applicationContext.containsBean("ContactEvents")).isFalse();

@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The LocalOnlyClientCacheIntegrationTest class...
@@ -50,7 +50,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author John Blum
  * @since 1.0.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class LocalOnlyClientCacheIntegrationTest {
@@ -71,26 +71,27 @@ public class LocalOnlyClientCacheIntegrationTest {
 
 	@Test
 	public void getAndPutsAreSuccessful() {
-		assertThat(example.put(1l, "one"), is(nullValue()));
-		assertThat(example.put(2l, "two"), is(nullValue()));
-		assertThat(example.put(3l, "three"), is(nullValue()));
-		assertThat(example.get(1l), is(equalTo("one")));
-		assertThat(example.get(2l), is(equalTo("two")));
-		assertThat(example.get(3l), is(equalTo("three")));
-		assertThat(example.get(0l), is(nullValue()));
-		assertThat(example.get(4l), is(nullValue()));
+		assertThat(example.put(1L, "one"), is(nullValue()));
+		assertThat(example.put(2L, "two"), is(nullValue()));
+		assertThat(example.put(3L, "three"), is(nullValue()));
+		assertThat(example.get(1L), is(equalTo("one")));
+		assertThat(example.get(2L), is(equalTo("two")));
+		assertThat(example.get(3L), is(equalTo("three")));
+		assertThat(example.get(0L), is(nullValue()));
+		assertThat(example.get(4L), is(nullValue()));
 	}
 
 	@Configuration
 	static class GemFireClientCacheConfiguration {
 
 		@Bean
-		PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
+		static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
 			return new PropertySourcesPlaceholderConfigurer();
 		}
 
 		@Bean
 		Properties gemfireProperties(@Value("${spring.data.gemfire.log.level:warning}") String logLevel) {
+
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", LocalOnlyClientCacheIntegrationTest.class.getSimpleName());
@@ -101,6 +102,7 @@ public class LocalOnlyClientCacheIntegrationTest {
 
 		@Bean
 		ClientCacheFactoryBean gemfireCache(@Qualifier("gemfireProperties") Properties gemfireProperties) {
+
 			ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -128,6 +130,7 @@ public class LocalOnlyClientCacheIntegrationTest {
 		@Bean
 		@SuppressWarnings("unchecked")
 		RegionAttributesFactoryBean exampleRegionAttributes() {
+
 			RegionAttributesFactoryBean exampleRegionAttributes = new RegionAttributesFactoryBean();
 
 			exampleRegionAttributes.setKeyConstraint(Long.class);

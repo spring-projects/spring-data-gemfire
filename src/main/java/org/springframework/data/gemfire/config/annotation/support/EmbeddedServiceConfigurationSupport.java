@@ -133,11 +133,6 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	/* (non-Javadoc) */
-	protected Map<String, Object> getAnnotationAttributes(AnnotationMetadata importingClassMetadata) {
-		return importingClassMetadata.getAnnotationAttributes(getAnnotationTypeName());
-	}
-
-	/* (non-Javadoc) */
 	protected void registerGemFirePropertiesBeanPostProcessor(BeanDefinitionRegistry registry,
 			Properties customGemFireProperties) {
 

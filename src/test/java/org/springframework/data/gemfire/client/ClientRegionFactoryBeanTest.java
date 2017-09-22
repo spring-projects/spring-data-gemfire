@@ -79,10 +79,13 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void testLookupFallbackUsingDefaultShortcut() throws Exception {
+
 		String testRegionName = "TestRegion";
 
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		ClientRegionFactory mockClientRegionFactory = mock(ClientRegionFactory.class);
+
 		Region mockRegion = mock(Region.class);
 
 		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.LOCAL))).thenReturn(mockClientRegionFactory);
@@ -114,6 +117,7 @@ public class ClientRegionFactoryBeanTest {
 		Pool mockPool = mock(Pool.class);
 		Resource mockSnapshot = mock(Resource.class, "Snapshot");
 
+		when(mockBeanFactory.containsBean(eq("TestPoolTwo"))).thenReturn(true);
 		when(mockBeanFactory.isTypeMatch(eq("TestPoolTwo"), eq(Pool.class))).thenReturn(true);
 		when(mockBeanFactory.getBean(eq("TestPoolTwo"))).thenReturn(mockPool);
 		when(mockPool.getName()).thenReturn("TestPoolTwo");
@@ -154,8 +158,8 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientRegionFactory, times(1)).setRegionTimeToLive(any(ExpirationAttributes.class));
 		verify(mockClientRegionFactory, times(1)).setStatisticsEnabled(eq(true));
 		verify(mockClientRegionFactory, times(1)).setValueConstraint(eq(Number.class));
-		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolTwo"));
 		verify(mockClientRegionFactory, times(1)).setDiskStoreName(eq("TestDiskStoreTwo"));
+		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolTwo"));
 		verify(mockClientRegionFactory, times(1)).create(eq(testRegionName));
 		verify(mockRegion, never()).loadSnapshot(any(InputStream.class));
 	}
@@ -163,8 +167,11 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void testLookupFallbackUsingDefaultPersistentShortcut() throws Exception {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+
 		Region<Object, Object> mockRegion = mock(Region.class);
 
 		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_PERSISTENT))).thenReturn(mockClientRegionFactory);
@@ -172,6 +179,7 @@ public class ClientRegionFactoryBeanTest {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
+		when(mockBeanFactory.containsBean(eq("TestPool"))).thenReturn(true);
 		when(mockBeanFactory.isTypeMatch(eq("TestPool"), eq(Pool.class))).thenReturn(false);
 
 		factoryBean.setAttributes(null);
@@ -187,6 +195,7 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_PERSISTENT));
 		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPool"));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
+		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
 		verify(mockBeanFactory, never()).getBean(eq("TestPool"));
 		verify(mockRegion, never()).loadSnapshot(any(InputStream.class));
 	}
@@ -194,9 +203,13 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testLookupFallbackWithSpecifiedShortcut() throws Exception {
+
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+
 		Region<Object, Object> mockRegion = mock(Region.class);
 
 		when(mockBeanFactory.containsBean(anyString())).thenReturn(true);
@@ -220,9 +233,13 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testLookupFallbackWithSubRegionCreation() throws Exception {
+
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+
 		Region<Object, Object> mockRegion = mock(Region.class, "RootRegion");
 		Region<Object, Object> mockSubRegion = mock(Region.class, "SubRegion");
 
@@ -247,9 +264,13 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testLookupFallbackWithUnspecifiedPool() throws Exception {
+
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+
 		Region<Object, Object> mockRegion = mock(Region.class);
 
 		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
@@ -273,6 +294,7 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("deprecation")
 	public void testSetDataPolicyName() throws Exception {
+
 		factoryBean.setDataPolicyName("NORMAL");
 		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", factoryBean));
 	}
@@ -280,6 +302,7 @@ public class ClientRegionFactoryBeanTest {
 	@Test(expected = IllegalArgumentException.class)
 	@SuppressWarnings("deprecation")
 	public void testSetDataPolicyNameWithInvalidName() throws Exception {
+
 		try {
 			factoryBean.setDataPolicyName("INVALID");
 		}
@@ -294,6 +317,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testIsPersistent() {
+
 		assertFalse(factoryBean.isPersistent());
 		factoryBean.setPersistent(false);
 		assertFalse(factoryBean.isPersistent());
@@ -303,6 +327,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testIsPersistentUnspecified() {
+
 		assertTrue(factoryBean.isPersistentUnspecified());
 		factoryBean.setPersistent(true);
 		assertTrue(factoryBean.isPersistent());
@@ -314,6 +339,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testIsNotPersistent() {
+
 		assertFalse(factoryBean.isNotPersistent());
 		factoryBean.setPersistent(true);
 		assertFalse(factoryBean.isNotPersistent());
@@ -323,7 +349,8 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testCloseDestroySettings() {
-		final ClientRegionFactoryBean<Object, Object> factory = new ClientRegionFactoryBean<>();
+
+		ClientRegionFactoryBean<Object, Object> factory = new ClientRegionFactoryBean<>();
 
 		assertNotNull(factory);
 		assertFalse(factory.isClose());
@@ -372,6 +399,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcut() throws Exception {
+
 		assertNull(TestUtils.readField("dataPolicy", factoryBean));
 		assertNull(TestUtils.readField("persistent", factoryBean));
 		assertNull(TestUtils.readField("shortcut", factoryBean));
@@ -380,6 +408,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutWhenNotPersistent() throws Exception {
+
 		factoryBean.setPersistent(false);
 
 		assertNull(TestUtils.readField("dataPolicy", factoryBean));
@@ -390,6 +419,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutWhenPersistent() throws Exception {
+
 		factoryBean.setPersistent(true);
 
 		assertNull(TestUtils.readField("dataPolicy", factoryBean));
@@ -400,6 +430,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutUsingShortcut() throws Exception {
+
 		factoryBean.setShortcut(ClientRegionShortcut.CACHING_PROXY_OVERFLOW);
 
 		assertNull(TestUtils.readField("dataPolicy", factoryBean));
@@ -409,6 +440,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutUsingShortcutWhenNotPersistent() throws Exception {
+
 		factoryBean.setPersistent(false);
 		factoryBean.setShortcut(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
 
@@ -419,6 +451,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testResolveClientRegionShortcutUsingShortcutWhenPersistent() throws Exception {
+
 		try {
 			factoryBean.setPersistent(true);
 			factoryBean.setShortcut(ClientRegionShortcut.CACHING_PROXY);
@@ -437,6 +470,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutUsingPersistentShortcut() throws Exception {
+
 		factoryBean.setShortcut(ClientRegionShortcut.LOCAL_PERSISTENT);
 
 		assertNull(TestUtils.readField("dataPolicy", factoryBean));
@@ -446,6 +480,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testResolveClientRegionShortcutUsingPersistentShortcutWhenNotPersistent() throws Exception {
+
 		try {
 			factoryBean.setPersistent(false);
 			factoryBean.setShortcut(ClientRegionShortcut.LOCAL_PERSISTENT);
@@ -464,6 +499,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutUsingPersistentShortcutWhenPersistent() throws Exception {
+
 		factoryBean.setPersistent(true);
 		factoryBean.setShortcut(ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
 
@@ -474,6 +510,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutUsingEmptyDataPolicy() throws Exception {
+
 		factoryBean.setDataPolicy(DataPolicy.EMPTY);
 
 		assertNull(TestUtils.readField("persistent", factoryBean));
@@ -483,6 +520,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutUsingNormalDataPolicyWhenNotPersistent() throws Exception {
+
 		factoryBean.setDataPolicy(DataPolicy.NORMAL);
 		factoryBean.setPersistent(false);
 
@@ -493,6 +531,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testResolveClientRegionShortcutUsingNormalDataPolicyWhenPersistent() throws Exception {
+
 		try {
 			factoryBean.setDataPolicy(DataPolicy.NORMAL);
 			factoryBean.setPersistent(true);
@@ -510,6 +549,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutUsingPersistentReplicateDataPolicy() throws Exception {
+
 		factoryBean.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
 
 		assertNull(TestUtils.readField("persistent", factoryBean));
@@ -519,6 +559,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testResolveClientRegionShortcutUsingPersistentReplicateDataPolicyWhenNotPersistent() throws Exception {
+
 		try {
 			factoryBean.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
 			factoryBean.setPersistent(false);
@@ -536,6 +577,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void testResolveClientRegionShortcutUsingPersistentReplicateDataPolicyWhenPersistent() throws Exception {
+
 		factoryBean.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
 		factoryBean.setPersistent(true);
 
@@ -551,7 +593,8 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void destroyCallsRegionClose() throws Exception {
-		final Region mockRegion = mock(Region.class, "MockRegion");
+
+		Region mockRegion = mock(Region.class, "MockRegion");
 
 		RegionService mockRegionService = mock(RegionService.class, "MockRegionService");
 
@@ -585,7 +628,8 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void destroyCallsRegionDestroy() throws Exception {
-		final Region mockRegion = mock(Region.class, "MockRegion");
+
+		Region mockRegion = mock(Region.class, "MockRegion");
 
 		RegionService mockRegionService = mock(RegionService.class, "MockRegionService");
 
@@ -620,7 +664,8 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void destroyDoesNothingWhenClientRegionFactoryBeanCloseIsTrueButRegionServiceIsClosed() throws Exception {
-		final Region mockRegion = mock(Region.class, "MockRegion");
+
+		Region mockRegion = mock(Region.class, "MockRegion");
 
 		RegionService mockRegionService = mock(RegionService.class, "MockRegionService");
 
@@ -654,7 +699,8 @@ public class ClientRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void destroyDoesNothingWhenClientRegionFactoryBeanCloseAndDestroyAreFalse() throws Exception {
-		final Region mockRegion = mock(Region.class, "MockRegion");
+
+		Region mockRegion = mock(Region.class, "MockRegion");
 
 		ClientRegionFactoryBean clientRegionFactoryBean = new ClientRegionFactoryBean() {
 			@Override public Region getObject() throws Exception {
@@ -673,6 +719,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	public void destroyDoesNothingWhenRegionIsNull() throws Exception {
+
 		ClientRegionFactoryBean clientRegionFactoryBean = new ClientRegionFactoryBean() {
 			@Override public Region getObject() throws Exception {
 				return null;

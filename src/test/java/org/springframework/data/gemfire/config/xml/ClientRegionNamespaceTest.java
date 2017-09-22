@@ -236,6 +236,7 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testClientRegionWithAttributes() {
+
 		assertTrue(applicationContext.containsBean("client-with-attributes"));
 
 		Region<Long, String> clientRegion = applicationContext.getBean("client-with-attributes", Region.class);

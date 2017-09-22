@@ -36,6 +36,6 @@ public class MockGemFireObjectsApplicationContextInitializer
 	@Override
 	@SuppressWarnings("all")
 	public void initialize(ConfigurableApplicationContext applicationContext) {
-		applicationContext.getBeanFactory().addBeanPostProcessor(MockGemFireObjectsBeanPostProcessor.INSTANCE);
+		applicationContext.getBeanFactory().addBeanPostProcessor(MockGemFireObjectsBeanPostProcessor.newInstance());
 	}
 }

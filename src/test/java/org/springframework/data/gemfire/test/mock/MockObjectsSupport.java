@@ -17,13 +17,18 @@
 package org.springframework.data.gemfire.test.mock;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.util.StringUtils;
 
 /**
  * The {@link MockObjectsSupport} class is an abstract base class encapsulating common operations and utilities
@@ -34,6 +39,19 @@ import org.mockito.stubbing.Answer;
  */
 @SuppressWarnings("unused")
 public abstract class MockObjectsSupport {
+
+	private static final AtomicLong mockObjectIdentifier = new AtomicLong(0L);
+
+	private static final String DEFAULT_MOCK_OBJECT_NAME = "MockObject";
+
+	protected static String mockObjectIdentifier() {
+		return mockObjectIdentifier(DEFAULT_MOCK_OBJECT_NAME);
+	}
+
+	protected static String mockObjectIdentifier(String mockObjectName) {
+		return String.format("%s%d", Optional.ofNullable(mockObjectName).filter(StringUtils::hasText)
+			.orElse(DEFAULT_MOCK_OBJECT_NAME), mockObjectIdentifier.incrementAndGet());
+	}
 
 	/* (non-Javadoc) */
 	protected static Answer<Boolean> newGetter(AtomicBoolean returnValue) {
@@ -57,6 +75,16 @@ public abstract class MockObjectsSupport {
 
 	/* (non-Javadoc) */
 	protected static <R, S> Answer<S> newGetter(AtomicReference<R> returnValue, Function<R, S> converter) {
+		return invocation -> converter.apply(returnValue.get());
+	}
+
+	/* (non-Javadoc) */
+	protected static <R> Answer<R> newGetter(Supplier<R> returnValue) {
+		return invocation -> returnValue.get();
+	}
+
+	/* (non-Javadoc) */
+	protected static <R, S> Answer<S> newGetter(Supplier<R> returnValue, Function<R, S> converter) {
 		return invocation -> converter.apply(returnValue.get());
 	}
 
@@ -137,6 +165,14 @@ public abstract class MockObjectsSupport {
 		return invocation -> {
 			argument.put(invocation.getArgument(0), invocation.getArgument(1));
 			return returnValue;
+		};
+	}
+
+	/* (non-Javadoc) */
+	protected static <T> Answer<Void> newVoidAnswer(Consumer<InvocationOnMock> methodInvocation) {
+		return invocation -> {
+			methodInvocation.accept(invocation);
+			return null;
 		};
 	}
 }

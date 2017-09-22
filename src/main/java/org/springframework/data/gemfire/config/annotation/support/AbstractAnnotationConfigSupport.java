@@ -20,6 +20,7 @@ package org.springframework.data.gemfire.config.annotation.support;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +41,10 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.EnvironmentAccessor;
 import org.springframework.context.expression.MapAccessor;
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.expression.spel.support.StandardTypeConverter;
@@ -186,12 +190,39 @@ public abstract class AbstractAnnotationConfigSupport
 		return LogFactory.getLog(getClass());
 	}
 
+	/* (non-Javadoc) */
+	protected boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata) {
+		return isAnnotationPresent(importingClassMetadata, getAnnotationTypeName());
+	}
+
+	/* (non-Javadoc) */
+	protected boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata, String annotationName) {
+		return importingClassMetadata.hasAnnotation(annotationName);
+	}
+
+	/* (non-Javadoc) */
+	protected AnnotationAttributes getAnnotationAttributes(Annotation annotation) {
+		return AnnotationAttributes.fromMap(AnnotationUtils.getAnnotationAttributes(annotation));
+	}
+
+	/* (non-Javadoc) */
+	protected AnnotationAttributes getAnnotationAttributes(AnnotationMetadata importingClassMetadata) {
+		return getAnnotationAttributes(importingClassMetadata, getAnnotationTypeName());
+	}
+
+	/* (non-Javadoc) */
+	protected AnnotationAttributes getAnnotationAttributes(AnnotationMetadata importingClassMetadata,
+			String annotationName) {
+
+		return AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(annotationName));
+	}
+
 	/**
 	 * Returns the cache application {@link java.lang.annotation.Annotation} type pertaining to this configuration.
 	 *
 	 * @return the cache application {@link java.lang.annotation.Annotation} type used by this application.
 	 */
-	protected abstract Class getAnnotationType();
+	protected abstract Class<? extends Annotation> getAnnotationType();
 
 	/**
 	 * Returns the fully-qualified {@link Class#getName() class name} of the cache application
@@ -239,6 +270,19 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/**
+	 * Resolves the {@link ClassLoader bean ClassLoader} to the configured {@link ClassLoader}
+	 * or the {@link Thread#getContextClassLoader() Thread Context ClassLoader}.
+	 *
+	 * @return the configured {@link ClassLoader} or the
+	 * {@link Thread#getContextClassLoader() Thread Context ClassLoader}.
+	 * @see java.lang.Thread#getContextClassLoader()
+	 * @see #beanClassLoader()
+	 */
+	protected ClassLoader resolveBeanClassLoader() {
+		return Optional.ofNullable(beanClassLoader()).orElseGet(() -> Thread.currentThread().getContextClassLoader());
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -282,8 +326,10 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/**
+	 * Returns a reference to the {@link EvaluationContext} used to evaluate SpEL expressions.
 	 *
-	 * @return
+	 * @return a reference to the {@link EvaluationContext} used to evaluate SpEL expressions.
+	 * @see org.springframework.expression.EvaluationContext
 	 */
 	protected EvaluationContext evaluationContext() {
 		return this.evaluationContext;

@@ -79,7 +79,7 @@ public @interface LocalRegion {
 	String diskStoreName() default "";
 
 	/**
-	 * Determines whether disk-based operations (used in overflow and persistent) are synchronous or asynchronous.
+	 * Determines whether disk-based operations (used in overflow and persistence) are synchronous or asynchronous.
 	 *
 	 * Defaults to {@literal synchronous}.
 	 */

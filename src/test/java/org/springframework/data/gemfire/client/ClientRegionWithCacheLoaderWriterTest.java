@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The ClientRegionWithCacheLoaderWriterTest class is a test suite of test cases testing the addition of CacheLoaders
@@ -54,8 +54,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.apache.geode.cache.Region
  * @since 1.3.3
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "clientcache-with-region-using-cache-loader-writer.xml")
+@RunWith(SpringRunner.class)
+@ContextConfiguration
 @SuppressWarnings("unused")
 public class ClientRegionWithCacheLoaderWriterTest {
 
@@ -69,6 +69,7 @@ public class ClientRegionWithCacheLoaderWriterTest {
 
 	@Test
 	public void testCacheLoaderWriter() {
+
 		assertNotNull(localAppData);
 		assertEquals(0, localAppData.size());
 
@@ -107,7 +108,7 @@ public class ClientRegionWithCacheLoaderWriterTest {
 
 	public static class LocalAppDataCacheWriter extends CacheWriterAdapter<Integer, Integer> {
 
-		private static final Map<Integer, Integer> data = new ConcurrentHashMap<Integer, Integer>(REGION_SIZE);
+		private static final Map<Integer, Integer> data = new ConcurrentHashMap<>(REGION_SIZE);
 
 		@Override
 		public void beforeUpdate(final EntryEvent<Integer, Integer> event) throws CacheWriterException {

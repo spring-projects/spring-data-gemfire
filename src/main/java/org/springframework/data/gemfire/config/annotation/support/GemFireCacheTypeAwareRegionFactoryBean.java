@@ -30,13 +30,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.PoolManager;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.GenericRegionFactoryBean;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.util.StringUtils;
 
 /**
@@ -47,7 +47,6 @@ import org.springframework.util.StringUtils;
  * @author John Blum
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
- * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.data.gemfire.GenericRegionFactoryBean
  * @see org.springframework.data.gemfire.RegionLookupFactoryBean
  * @see org.springframework.data.gemfire.RegionFactoryBean
@@ -109,11 +108,12 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 		clientRegionFactory.setCache(gemfireCache);
 		clientRegionFactory.setClose(isClose());
 		clientRegionFactory.setKeyConstraint(getKeyConstraint());
-		clientRegionFactory.setPoolName(getPoolName());
 		clientRegionFactory.setRegionConfigurers(this.regionConfigurers);
 		clientRegionFactory.setRegionName(regionName);
 		clientRegionFactory.setShortcut(getClientRegionShortcut());
 		clientRegionFactory.setValueConstraint(getValueConstraint());
+
+		resolvePoolName().ifPresent(clientRegionFactory::setPoolName);
 
 		clientRegionFactory.afterPropertiesSet();
 
@@ -137,6 +137,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 		GenericRegionFactoryBean<K, V> serverRegionFactory = new GenericRegionFactoryBean<>();
 
 		serverRegionFactory.setAttributes(getRegionAttributes());
+		serverRegionFactory.setBeanFactory(getBeanFactory());
 		serverRegionFactory.setCache(gemfireCache);
 		serverRegionFactory.setClose(isClose());
 		serverRegionFactory.setDataPolicy(getDataPolicy());
@@ -201,7 +202,15 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFa
 
 	protected String getPoolName() {
 		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText)
-			.orElse(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+			.orElse(ClientRegionFactoryBean.GEMFIRE_POOL_NAME);
+	}
+
+	protected Optional<String> resolvePoolName() {
+		return Optional.of(getPoolName()).filter(this::isPoolResolvable);
+	}
+
+	private boolean isPoolResolvable(String poolName) {
+		return (getBeanFactory().containsBean(poolName) || (PoolManager.find(poolName) != null));
 	}
 
 	/**

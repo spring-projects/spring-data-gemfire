@@ -47,30 +47,40 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.pdx.PdxSerializer;
+import org.mockito.ArgumentMatchers;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 
@@ -97,11 +107,24 @@ import org.springframework.data.gemfire.test.support.FileSystemUtils;
 @SuppressWarnings("unused")
 public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 
+	private static final boolean DEFAULT_USE_SINGLETON_CACHE = false;
+
+	private static final AtomicReference<GemFireCache> singletonCache = new AtomicReference<>(null);
+
 	private static final Map<String, DiskStore> diskStores = new ConcurrentHashMap<>();
 
 	private static final Map<String, Region<Object, Object>> regions = new ConcurrentHashMap<>();
 
 	private static final Map<String, RegionAttributes<Object, Object>> regionAttributes = new ConcurrentHashMap<>();
+
+	private static final String REPEATING_REGION_SEPARATOR = Region.SEPARATOR + "{2,}";
+
+	public static void destroy() {
+		singletonCache.set(null);
+		diskStores.clear();
+		regions.clear();
+		regionAttributes.clear();
+	}
 
 	/* (non-Javadoc) */
 	private static boolean isRootRegion(Region<?, ?> region) {
@@ -113,9 +136,38 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		return (regionPath.lastIndexOf(Region.SEPARATOR) <= 0);
 	}
 
+	/* (non-Javadoc) */
+	private static String normalizeRegionPath(String regionPath) {
+
+		regionPath = regionPath.replaceAll(REPEATING_REGION_SEPARATOR, Region.SEPARATOR);
+		regionPath = regionPath.endsWith(Region.SEPARATOR)
+			? regionPath.substring(0, regionPath.length() - 1) : regionPath;
+
+		return regionPath;
+	}
+
+	/* (non-Javadoc) */
+	private static String toRegionName(String regionName) {
+
+		return Optional.ofNullable(regionName)
+			.map(String::trim)
+			.map(it -> {
+				int lastIndexOfRegionSeparator = it.lastIndexOf(Region.SEPARATOR);
+				return lastIndexOfRegionSeparator < 0 ? it : it.substring(lastIndexOfRegionSeparator);
+			})
+			.filter(it -> !it.isEmpty())
+			.orElseThrow(() -> newIllegalArgumentException("Region name [%s] is required", regionName));
+	}
+
+	/* (non-Javadoc) */
 	private static String toRegionPath(String regionPath) {
-		return (StringUtils.startsWith(regionPath, Region.SEPARATOR) ? regionPath
-			: String.format("%1$s%2$s", Region.SEPARATOR, regionPath));
+
+		return Optional.ofNullable(regionPath)
+			.map(String::trim)
+			.map(it -> it.startsWith(Region.SEPARATOR) ? it : String.format("%1$s%2$s", Region.SEPARATOR, it))
+			.map(MockGemFireObjectsSupport::normalizeRegionPath)
+			.filter(it -> !it.isEmpty())
+			.orElseThrow(() -> newIllegalArgumentException("Region path [%s] is required", regionPath));
 	}
 
 	/* (non-Javadoc) */
@@ -183,18 +235,8 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		when(mockRegionService.createPdxInstanceFactory(anyString()))
 			.thenThrow(newUnsupportedOperationException(NOT_SUPPORTED));
 
-		when(mockRegionService.rootRegions()).thenAnswer(invocation -> {
-
-			Set<Region<Object, Object>> rootRegions = new HashSet<>();
-
-			for (Region<Object, Object> region : regions.values()) {
-				if (isRootRegion(region)) {
-					rootRegions.add(region);
-				}
-			}
-
-			return rootRegions;
-		});
+		when(mockRegionService.rootRegions()).thenAnswer(invocation ->
+			regions.values().stream().filter(MockGemFireObjectsSupport::isRootRegion).collect(Collectors.toSet()));
 
 		return mockRegionService;
 	}
@@ -203,7 +245,9 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
 
-		return mockCacheApi(mockClientCache);
+		doAnswer(newVoidAnswer(invocation -> mockClientCache.close())).when(mockClientCache).close(anyBoolean());
+
+		return mockClientRegionFactory(mockCacheApi(mockClientCache));
 	}
 
 	public static GemFireCache mockGemFireCache() {
@@ -318,6 +362,131 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		when(mockCacheServer.getClientSubscriptionConfig()).thenReturn(mockClientSubsriptionConfig);
 
 		return mockCacheServer;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <K, V> ClientCache mockClientRegionFactory(ClientCache mockClientCache) {
+
+		ClientRegionFactory<K, V> mockClientRegionFactory =
+			mock(ClientRegionFactory.class, mockObjectIdentifier("MockClientRegionFactory"));
+
+		when(mockClientCache.<K, V>createClientRegionFactory(any(ClientRegionShortcut.class)))
+			.thenReturn(mockClientRegionFactory);
+
+		ExpirationAttributes DEFAULT_EXPIRATION_ATTRIBUTES =
+			new ExpirationAttributes(0, ExpirationAction.INVALIDATE);
+
+		AtomicBoolean cloningEnabled = new AtomicBoolean(false);
+		AtomicBoolean concurrencyChecksEnabled = new AtomicBoolean(false);
+		AtomicBoolean diskSynchronous = new AtomicBoolean(true);
+		AtomicBoolean statisticsEnabled = new AtomicBoolean(false);
+
+		AtomicInteger concurrencyLevel = new AtomicInteger(16);
+		AtomicInteger initialCapacity = new AtomicInteger(16);
+
+		AtomicReference<Compressor> compressor = new AtomicReference<>(null);
+		AtomicReference<CustomExpiry<K, V>> customEntryIdleTimeout = new AtomicReference<>(null);
+		AtomicReference<CustomExpiry<K, V>> customEntryTimeToLive = new AtomicReference<>(null);
+		AtomicReference<String> diskStoreName = new AtomicReference<>(null);
+		AtomicReference<ExpirationAttributes> entryIdleTimeout = new AtomicReference<>(DEFAULT_EXPIRATION_ATTRIBUTES);
+		AtomicReference<ExpirationAttributes> entryTimeToLive = new AtomicReference<>(DEFAULT_EXPIRATION_ATTRIBUTES);
+		AtomicReference<EvictionAttributes> evictionAttributes =
+			new AtomicReference<>(EvictionAttributes.createLRUEntryAttributes());
+		AtomicReference<Class<K>> keyConstraint = new AtomicReference<>();
+		AtomicReference<Float> loadFactor = new AtomicReference<>(0.75f);
+		AtomicReference<String> poolName = new AtomicReference<>(null);
+		AtomicReference<ExpirationAttributes> regionIdleTimeout = new AtomicReference<>(DEFAULT_EXPIRATION_ATTRIBUTES);
+		AtomicReference<ExpirationAttributes> regionTimeToLive = new AtomicReference<>(DEFAULT_EXPIRATION_ATTRIBUTES);
+		AtomicReference<Class<K>> valueConstraint = new AtomicReference<>();
+
+		when(mockClientRegionFactory.setCloningEnabled(anyBoolean()))
+			.thenAnswer(newSetter(cloningEnabled, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setCompressor(any(Compressor.class)))
+			.thenAnswer(newSetter(compressor, mockClientRegionFactory));
+
+		doAnswer(newSetter(concurrencyChecksEnabled, mockClientRegionFactory))
+			.when(mockClientRegionFactory).setConcurrencyChecksEnabled(anyBoolean());
+
+		when(mockClientRegionFactory.setConcurrencyLevel(anyInt()))
+			.thenAnswer(newSetter(concurrencyLevel, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setCustomEntryIdleTimeout(any(CustomExpiry.class)))
+			.thenAnswer(newSetter(customEntryIdleTimeout, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setCustomEntryTimeToLive(any(CustomExpiry.class)))
+			.thenAnswer(newSetter(customEntryTimeToLive, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setDiskStoreName(anyString()))
+			.thenAnswer(newSetter(diskStoreName, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setDiskSynchronous(anyBoolean()))
+			.thenAnswer(newSetter(diskSynchronous, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setEntryIdleTimeout(any(ExpirationAttributes.class)))
+			.thenAnswer(newSetter(entryIdleTimeout, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setEntryTimeToLive(any(ExpirationAttributes.class)))
+			.thenAnswer(newSetter(entryTimeToLive, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setEvictionAttributes(any(EvictionAttributes.class)))
+			.thenAnswer(newSetter(evictionAttributes, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setInitialCapacity(anyInt()))
+			.thenAnswer(newSetter(initialCapacity, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setKeyConstraint(any(Class.class)))
+			.thenAnswer(newSetter(keyConstraint, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setLoadFactor(anyFloat()))
+			.thenAnswer(newSetter(loadFactor, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setPoolName(anyString()))
+			.thenAnswer(newSetter(poolName, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setRegionIdleTimeout(any(ExpirationAttributes.class)))
+			.thenAnswer(newSetter(regionIdleTimeout, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setRegionTimeToLive(any(ExpirationAttributes.class)))
+			.thenAnswer(newSetter(regionTimeToLive, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setStatisticsEnabled(anyBoolean()))
+			.thenAnswer(newSetter(statisticsEnabled, mockClientRegionFactory));
+
+		when(mockClientRegionFactory.setValueConstraint(any(Class.class)))
+			.thenAnswer(newSetter(valueConstraint, mockClientRegionFactory));
+
+		RegionAttributes<K, V> mockRegionAttributes =
+			mock(RegionAttributes.class, mockObjectIdentifier("MockRegionAttributes"));
+
+		when(mockRegionAttributes.getCloningEnabled()).thenAnswer(newGetter(cloningEnabled));
+		when(mockRegionAttributes.getCompressor()).thenAnswer(newGetter(compressor));
+		when(mockRegionAttributes.getConcurrencyChecksEnabled()).thenAnswer(newGetter(concurrencyChecksEnabled));
+		when(mockRegionAttributes.getConcurrencyLevel()).thenAnswer(newGetter(concurrencyLevel));
+		when(mockRegionAttributes.getCustomEntryIdleTimeout()).thenAnswer(newGetter(customEntryIdleTimeout));
+		when(mockRegionAttributes.getCustomEntryTimeToLive()).thenAnswer(newGetter(customEntryTimeToLive));
+		when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
+		when(mockRegionAttributes.getDiskStoreName()).thenAnswer(newGetter(diskStoreName));
+		when(mockRegionAttributes.isDiskSynchronous()).thenAnswer(newGetter(diskSynchronous));
+		when(mockRegionAttributes.getEntryIdleTimeout()).thenAnswer(newGetter(entryIdleTimeout));
+		when(mockRegionAttributes.getEntryTimeToLive()).thenAnswer(newGetter(entryTimeToLive));
+		when(mockRegionAttributes.getEvictionAttributes()).thenAnswer(newGetter(evictionAttributes));
+		when(mockRegionAttributes.getInitialCapacity()).thenAnswer(newGetter(initialCapacity));
+		when(mockRegionAttributes.getKeyConstraint()).thenAnswer(newGetter(keyConstraint));
+		when(mockRegionAttributes.getLoadFactor()).thenAnswer(newGetter(loadFactor));
+		when(mockRegionAttributes.getPoolName()).thenAnswer(newGetter(poolName));
+		when(mockRegionAttributes.getRegionIdleTimeout()).thenAnswer(newGetter(regionIdleTimeout));
+		when(mockRegionAttributes.getRegionTimeToLive()).thenAnswer(newGetter(regionTimeToLive));
+		when(mockRegionAttributes.getStatisticsEnabled()).thenAnswer(newGetter(statisticsEnabled));
+		when(mockRegionAttributes.getValueConstraint()).thenAnswer(newGetter(valueConstraint));
+
+		when(mockClientRegionFactory.create(anyString())).thenAnswer(invocation ->
+			mockRegion(mockClientCache, invocation.getArgument(0), mockRegionAttributes));
+
+		when(mockClientRegionFactory.createSubregion(any(Region.class), anyString())).thenAnswer(invocation ->
+			mockSubRegion(invocation.getArgument(0), invocation.getArgument(1), mockRegionAttributes));
+
+		return mockClientCache;
 	}
 
 	public static ClientSubscriptionConfig mockClientSubscriptionConfig() {
@@ -604,7 +773,66 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		});
 
 		return mockPoolFactory;
+	}
 
+	@SuppressWarnings("unchecked")
+	public static <K, V> Region<K, V> mockRegion(RegionService regionService, String name,
+			RegionAttributes<K, V> regionAttributes) {
+
+		Map<K, V> data = new ConcurrentHashMap<>();
+
+		Region<K, V> mockRegion = mock(Region.class, name);
+
+		Set<Region<?, ?>> subRegions = new CopyOnWriteArraySet<>();
+
+		when(mockRegion.getAttributes()).thenReturn(regionAttributes);
+		when(mockRegion.getFullPath()).thenReturn(toRegionPath(name));
+		when(mockRegion.getName()).thenReturn(toRegionName(name));
+		when(mockRegion.getRegionService()).thenReturn(regionService);
+
+		when(mockRegion.getSubregion(anyString())).thenAnswer(invocation -> {
+
+			String subRegionPath = toRegionPath(invocation.getArgument(0));
+			String subRegionFullPath = String.format("%1$s%2$s", mockRegion.getFullPath(), subRegionPath);
+
+			return regions.get(subRegionFullPath);
+		});
+
+		when(mockRegion.get(ArgumentMatchers.<K>any())).thenAnswer(invocation ->
+			data.get(invocation.<K>getArgument(0)));
+
+		when(mockRegion.getEntry(ArgumentMatchers.<K>any())).thenAnswer(invocation ->
+			data.entrySet().stream().filter(entry -> entry.getKey().equals(invocation.getArgument(0))).findFirst());
+
+		when(mockRegion.put(any(), any())).thenAnswer(invocation ->
+			data.put(invocation.getArgument(0), invocation.getArgument(1)));
+
+		when(mockRegion.size()).thenAnswer(invocation -> data.size());
+
+		when(mockRegion.subregions(anyBoolean())).thenAnswer(invocation -> {
+
+			boolean recursive = invocation.getArgument(0);
+
+			return recursive ? subRegions.stream()
+					.flatMap(subRegion -> subRegion.subregions(true).stream()).collect(Collectors.toSet())
+				: subRegions;
+		});
+
+		regions.put(mockRegion.getFullPath(), (Region) mockRegion);
+
+		return mockRegion;
+	}
+
+	public static <K, V> Region<K, V> mockSubRegion(Region<K, V> parent, String name,
+			RegionAttributes<K, V> regionAttributes) {
+
+		String subRegionName = String.format("%1$s%2$s", parent.getFullPath(), toRegionPath(name));
+
+		Region<K, V> mockSubRegion = mockRegion(parent.getRegionService(), subRegionName, regionAttributes);
+
+		parent.subregions(false).add(mockSubRegion);
+
+		return mockSubRegion;
 	}
 
 	public static ResourceManager mockResourceManager() {
@@ -644,195 +872,235 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		return mockResourceManager;
 	}
 
+	private static <T extends GemFireCache> T rememberMockedGemFireCache(T mockedGemFireCache,
+			boolean useSingletonCache) {
+
+		return Optional.ofNullable(mockedGemFireCache)
+			.map(it -> {
+				if (useSingletonCache) {
+					singletonCache.compareAndSet(null, mockedGemFireCache);
+				}
+
+				return mockedGemFireCache;
+			})
+			.orElseThrow(() -> newIllegalArgumentException("GemFireCache is required"));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T extends GemFireCache> Optional<T> resolveMockedGemFireCache(boolean useSingletonCache) {
+		return Optional.ofNullable((T) singletonCache.get()).filter(it -> useSingletonCache);
+	}
+
 	public static CacheFactory spyOn(CacheFactory cacheFactory) {
+		return spyOn(cacheFactory, DEFAULT_USE_SINGLETON_CACHE);
+	}
+
+	public static CacheFactory spyOn(CacheFactory cacheFactory, boolean useSingletonCache) {
 
 		CacheFactory cacheFactorySpy = spy(cacheFactory);
 
-		Cache mockCache = mockPeerCache();
+		Cache resolvedMockCache = MockGemFireObjectsSupport.<Cache>resolveMockedGemFireCache(useSingletonCache)
+			.orElseGet(() -> {
 
-		AtomicBoolean pdxIgnoreUnreadFields = new AtomicBoolean(false);
-		AtomicBoolean pdxPersistent = new AtomicBoolean(false);
-		AtomicBoolean pdxReadSerialized = new AtomicBoolean(false);
+				Cache mockCache = mockPeerCache();
 
-		AtomicReference<String> pdxDiskStoreName = new AtomicReference<>(null);
-		AtomicReference<PdxSerializer> pdxSerializer = new AtomicReference<>(null);
+				AtomicBoolean pdxIgnoreUnreadFields = new AtomicBoolean(false);
+				AtomicBoolean pdxPersistent = new AtomicBoolean(false);
+				AtomicBoolean pdxReadSerialized = new AtomicBoolean(false);
 
-		doAnswer(newSetter(pdxDiskStoreName, cacheFactorySpy))
-			.when(cacheFactorySpy).setPdxDiskStore(anyString());
+				AtomicReference<String> pdxDiskStoreName = new AtomicReference<>(null);
+				AtomicReference<PdxSerializer> pdxSerializer = new AtomicReference<>(null);
 
-		doAnswer(newSetter(pdxIgnoreUnreadFields, cacheFactorySpy))
-			.when(cacheFactorySpy).setPdxIgnoreUnreadFields(anyBoolean());
+				doAnswer(newSetter(pdxDiskStoreName, cacheFactorySpy))
+					.when(cacheFactorySpy).setPdxDiskStore(anyString());
 
-		doAnswer(newSetter(pdxPersistent, cacheFactorySpy))
-			.when(cacheFactorySpy).setPdxPersistent(anyBoolean());
+				doAnswer(newSetter(pdxIgnoreUnreadFields, cacheFactorySpy))
+					.when(cacheFactorySpy).setPdxIgnoreUnreadFields(anyBoolean());
 
-		doAnswer(newSetter(pdxReadSerialized, cacheFactorySpy))
-			.when(cacheFactorySpy).setPdxReadSerialized(anyBoolean());
+				doAnswer(newSetter(pdxPersistent, cacheFactorySpy))
+					.when(cacheFactorySpy).setPdxPersistent(anyBoolean());
 
-		doAnswer(newSetter(pdxSerializer, cacheFactorySpy))
-			.when(cacheFactorySpy).setPdxSerializer(any(PdxSerializer.class));
+				doAnswer(newSetter(pdxReadSerialized, cacheFactorySpy))
+					.when(cacheFactorySpy).setPdxReadSerialized(anyBoolean());
 
-		doReturn(mockCache).when(cacheFactorySpy).create();
+				doAnswer(newSetter(pdxSerializer, cacheFactorySpy))
+					.when(cacheFactorySpy).setPdxSerializer(any(PdxSerializer.class));
 
-		when(mockCache.getPdxDiskStore()).thenAnswer(newGetter(pdxDiskStoreName));
-		when(mockCache.getPdxIgnoreUnreadFields()).thenAnswer(newGetter(pdxIgnoreUnreadFields));
-		when(mockCache.getPdxPersistent()).thenAnswer(newGetter(pdxPersistent));
-		when(mockCache.getPdxReadSerialized()).thenAnswer(newGetter(pdxReadSerialized));
-		when(mockCache.getPdxSerializer()).thenAnswer(newGetter(pdxSerializer));
+				when(mockCache.getPdxDiskStore()).thenAnswer(newGetter(pdxDiskStoreName));
+				when(mockCache.getPdxIgnoreUnreadFields()).thenAnswer(newGetter(pdxIgnoreUnreadFields));
+				when(mockCache.getPdxPersistent()).thenAnswer(newGetter(pdxPersistent));
+				when(mockCache.getPdxReadSerialized()).thenAnswer(newGetter(pdxReadSerialized));
+				when(mockCache.getPdxSerializer()).thenAnswer(newGetter(pdxSerializer));
+
+				return mockCache;
+			});
+
+		doReturn(rememberMockedGemFireCache(resolvedMockCache, useSingletonCache)).when(cacheFactorySpy).create();
 
 		return cacheFactorySpy;
 	}
 
 	public static ClientCacheFactory spyOn(ClientCacheFactory clientCacheFactory) {
+		return spyOn(clientCacheFactory, DEFAULT_USE_SINGLETON_CACHE);
+	}
+
+	public static ClientCacheFactory spyOn(ClientCacheFactory clientCacheFactory, boolean useSingletonCache) {
 
 		ClientCacheFactory clientCacheFactorySpy = spy(clientCacheFactory);
 
-		ClientCache mockClientCache = mockClientCache();
+		ClientCache resolvedMockedClientCache =
+			MockGemFireObjectsSupport.<ClientCache>resolveMockedGemFireCache(useSingletonCache).orElseGet(() -> {
 
-		AtomicBoolean pdxIgnoreUnreadFields = new AtomicBoolean(false);
-		AtomicBoolean pdxPersistent = new AtomicBoolean(false);
-		AtomicBoolean pdxReadSerialized = new AtomicBoolean(false);
+				ClientCache mockClientCache = mockClientCache();
 
-		AtomicReference<String> pdxDiskStoreName = new AtomicReference<>(null);
-		AtomicReference<PdxSerializer> pdxSerializer = new AtomicReference<>(null);
-		AtomicReference<Pool> defaultPool = new AtomicReference<>(null);
+				AtomicBoolean pdxIgnoreUnreadFields = new AtomicBoolean(false);
+				AtomicBoolean pdxPersistent = new AtomicBoolean(false);
+				AtomicBoolean pdxReadSerialized = new AtomicBoolean(false);
 
-		doAnswer(newSetter(pdxDiskStoreName, clientCacheFactorySpy))
-			.when(clientCacheFactorySpy).setPdxDiskStore(anyString());
+				AtomicReference<String> pdxDiskStoreName = new AtomicReference<>(null);
+				AtomicReference<PdxSerializer> pdxSerializer = new AtomicReference<>(null);
+				AtomicReference<Pool> defaultPool = new AtomicReference<>(null);
 
-		doAnswer(newSetter(pdxIgnoreUnreadFields, clientCacheFactorySpy))
-			.when(clientCacheFactorySpy).setPdxIgnoreUnreadFields(anyBoolean());
+				doAnswer(newSetter(pdxDiskStoreName, clientCacheFactorySpy))
+					.when(clientCacheFactorySpy).setPdxDiskStore(anyString());
 
-		doAnswer(newSetter(pdxPersistent, clientCacheFactorySpy))
-			.when(clientCacheFactorySpy).setPdxPersistent(anyBoolean());
+				doAnswer(newSetter(pdxIgnoreUnreadFields, clientCacheFactorySpy))
+					.when(clientCacheFactorySpy).setPdxIgnoreUnreadFields(anyBoolean());
 
-		doAnswer(newSetter(pdxReadSerialized, clientCacheFactorySpy))
-			.when(clientCacheFactorySpy).setPdxReadSerialized(anyBoolean());
+				doAnswer(newSetter(pdxPersistent, clientCacheFactorySpy))
+					.when(clientCacheFactorySpy).setPdxPersistent(anyBoolean());
 
-		doAnswer(newSetter(pdxSerializer, clientCacheFactorySpy))
-			.when(clientCacheFactorySpy).setPdxSerializer(any(PdxSerializer.class));
+				doAnswer(newSetter(pdxReadSerialized, clientCacheFactorySpy))
+					.when(clientCacheFactorySpy).setPdxReadSerialized(anyBoolean());
 
-		PoolFactory mockPoolFactory = mockPoolFactory();
+				doAnswer(newSetter(pdxSerializer, clientCacheFactorySpy))
+					.when(clientCacheFactorySpy).setPdxSerializer(any(PdxSerializer.class));
 
-		doAnswer(invocation -> {
-			mockPoolFactory.addLocator(invocation.getArgument(0), invocation.getArgument(1));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).addPoolLocator(anyString(), anyInt());
+				PoolFactory mockPoolFactory = mockPoolFactory();
 
-		doAnswer(invocation -> {
-			mockPoolFactory.addServer(invocation.getArgument(0), invocation.getArgument(1));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).addPoolServer(anyString(), anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.addLocator(invocation.getArgument(0), invocation.getArgument(1));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).addPoolLocator(anyString(), anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setFreeConnectionTimeout(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolFreeConnectionTimeout(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.addServer(invocation.getArgument(0), invocation.getArgument(1));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).addPoolServer(anyString(), anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setIdleTimeout(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolIdleTimeout(anyLong());
+				doAnswer(invocation -> {
+					mockPoolFactory.setFreeConnectionTimeout(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolFreeConnectionTimeout(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setLoadConditioningInterval(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolLoadConditioningInterval(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setIdleTimeout(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolIdleTimeout(anyLong());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setMaxConnections(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolMaxConnections(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setLoadConditioningInterval(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolLoadConditioningInterval(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setMinConnections(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolMinConnections(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setMaxConnections(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolMaxConnections(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setMultiuserAuthentication(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolMultiuserAuthentication(anyBoolean());
+				doAnswer(invocation -> {
+					mockPoolFactory.setMinConnections(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolMinConnections(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setPingInterval(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolPingInterval(anyLong());
+				doAnswer(invocation -> {
+					mockPoolFactory.setMultiuserAuthentication(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolMultiuserAuthentication(anyBoolean());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setPRSingleHopEnabled(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolPRSingleHopEnabled(anyBoolean());
+				doAnswer(invocation -> {
+					mockPoolFactory.setPingInterval(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolPingInterval(anyLong());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setReadTimeout(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolReadTimeout(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setPRSingleHopEnabled(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolPRSingleHopEnabled(anyBoolean());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setRetryAttempts(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolRetryAttempts(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setReadTimeout(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolReadTimeout(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setServerGroup(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolServerGroup(anyString());
+				doAnswer(invocation -> {
+					mockPoolFactory.setRetryAttempts(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolRetryAttempts(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setSocketBufferSize(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolSocketBufferSize(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setServerGroup(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolServerGroup(anyString());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setStatisticInterval(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolStatisticInterval(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setSocketBufferSize(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolSocketBufferSize(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setSubscriptionAckInterval(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolSubscriptionAckInterval(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setStatisticInterval(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolStatisticInterval(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setSubscriptionEnabled(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolSubscriptionEnabled(anyBoolean());
+				doAnswer(invocation -> {
+					mockPoolFactory.setSubscriptionAckInterval(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolSubscriptionAckInterval(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setSubscriptionMessageTrackingTimeout(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolSubscriptionMessageTrackingTimeout(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setSubscriptionEnabled(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolSubscriptionEnabled(anyBoolean());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setSubscriptionRedundancy(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolSubscriptionRedundancy(anyInt());
+				doAnswer(invocation -> {
+					mockPoolFactory.setSubscriptionMessageTrackingTimeout(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolSubscriptionMessageTrackingTimeout(anyInt());
 
-		doAnswer(invocation -> {
-			mockPoolFactory.setThreadLocalConnections(invocation.getArgument(0));
-			return clientCacheFactorySpy;
-		}).when(clientCacheFactorySpy).setPoolThreadLocalConnections(anyBoolean());
+				doAnswer(invocation -> {
+					mockPoolFactory.setSubscriptionRedundancy(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolSubscriptionRedundancy(anyInt());
 
-		doReturn(mockClientCache).when(clientCacheFactorySpy).create();
+				doAnswer(invocation -> {
+					mockPoolFactory.setThreadLocalConnections(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolThreadLocalConnections(anyBoolean());
 
-		when(mockClientCache.getCurrentServers()).thenAnswer(invocation ->
-			Collections.unmodifiableSet(new HashSet<>(defaultPool.get().getServers())));
+				when(mockClientCache.getCurrentServers()).thenAnswer(invocation ->
+					Collections.unmodifiableSet(new HashSet<>(defaultPool.get().getServers())));
 
-		when(mockClientCache.getDefaultPool()).thenAnswer(invocation -> {
+				when(mockClientCache.getDefaultPool()).thenAnswer(invocation -> {
 
-			if (defaultPool.get() == null) {
-				defaultPool.set(mockPoolFactory.create("DEFAULT"));
-			}
+					if (defaultPool.get() == null) {
+						defaultPool.set(mockPoolFactory.create("DEFAULT"));
+					}
 
-			return defaultPool.get();
-		});
+					return defaultPool.get();
+				});
 
-		when(mockClientCache.getPdxDiskStore()).thenAnswer(newGetter(pdxDiskStoreName));
-		when(mockClientCache.getPdxIgnoreUnreadFields()).thenAnswer(newGetter(pdxIgnoreUnreadFields));
-		when(mockClientCache.getPdxPersistent()).thenAnswer(newGetter(pdxPersistent));
-		when(mockClientCache.getPdxReadSerialized()).thenAnswer(newGetter(pdxReadSerialized));
-		when(mockClientCache.getPdxSerializer()).thenAnswer(newGetter(pdxSerializer));
+				when(mockClientCache.getPdxDiskStore()).thenAnswer(newGetter(pdxDiskStoreName));
+				when(mockClientCache.getPdxIgnoreUnreadFields()).thenAnswer(newGetter(pdxIgnoreUnreadFields));
+				when(mockClientCache.getPdxPersistent()).thenAnswer(newGetter(pdxPersistent));
+				when(mockClientCache.getPdxReadSerialized()).thenAnswer(newGetter(pdxReadSerialized));
+				when(mockClientCache.getPdxSerializer()).thenAnswer(newGetter(pdxSerializer));
+
+				return mockClientCache;
+			});
+
+		doReturn(rememberMockedGemFireCache(resolvedMockedClientCache, useSingletonCache))
+			.when(clientCacheFactorySpy).create();
 
 		return clientCacheFactorySpy;
 	}

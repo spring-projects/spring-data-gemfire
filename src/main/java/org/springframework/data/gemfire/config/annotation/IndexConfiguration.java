@@ -276,7 +276,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 		return Optional.ofNullable(this.indexConfigurers)
 			.filter(indexConfigurers -> !indexConfigurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(getBeanFactory())
+				Optional.of(beanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 						Map<String, IndexConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)

@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -87,17 +88,27 @@ public abstract class SpringUtils {
 	}
 
 	/* (non-Javadoc) */
-	public static <T> T safeGetValue(Supplier<T> supplier) {
-		return safeGetValue(supplier, null);
+	public static <T> T safeGetValue(Supplier<T> valueSupplier) {
+		return safeGetValue(valueSupplier, (T) null);
 	}
 
 	/* (non-Javadoc) */
-	public static <T> T safeGetValue(Supplier<T> supplier, T defaultValue) {
+	public static <T> T safeGetValue(Supplier<T> valueSupplier, T defaultValue) {
+		return safeGetValue(valueSupplier, (Supplier<T>) () -> defaultValue);
+	}
+
+	/* (non-Javadoc) */
+	public static <T> T safeGetValue(Supplier<T> valueSupplier, Supplier<T> defaultValueSupplier) {
+		return safeGetValue(valueSupplier, (Function<Throwable, T>) exception -> defaultValueSupplier.get());
+	}
+
+	/* (non-Javadoc) */
+	public static <T> T safeGetValue(Supplier<T> valueSupplier, Function<Throwable, T> exceptionHandler) {
 		try {
-			return supplier.get();
+			return valueSupplier.get();
 		}
-		catch (Throwable ignore) {
-			return defaultValue;
+		catch (Throwable cause) {
+			return exceptionHandler.apply(cause);
 		}
 	}
 }

@@ -25,10 +25,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.Pool;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 
 /**
  * The {@link EnableEntityDefinedRegions} annotation marks a Spring {@link Configuration @Configuration} application
@@ -46,6 +49,11 @@ import org.springframework.core.annotation.AliasFor;
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
  * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration
  * @see org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean
+ * @see org.springframework.data.gemfire.mapping.annotation.ClientRegion
+ * @see org.springframework.data.gemfire.mapping.annotation.LocalRegion
+ * @see org.springframework.data.gemfire.mapping.annotation.PartitionRegion
+ * @see org.springframework.data.gemfire.mapping.annotation.Region
+ * @see org.springframework.data.gemfire.mapping.annotation.ReplicateRegion
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
@@ -110,6 +118,16 @@ public @interface EnableEntityDefinedRegions {
 	 * to be included during the component scan.
 	 */
 	ComponentScan.Filter[] includeFilters() default {};
+
+	/**
+	 * When this annotation is applied in a cache client application, the {@literal poolName} attribute refers to
+	 * the default name of the GemFire/Geode {@link Pool} assigned to the client {@link Region Region(s)}.
+	 *
+	 * This value can be overridden by annotating entities with th e{@link ClientRegion} annotation.
+	 *
+	 * Defaults to {@literal DEFAULT}.
+	 */
+	String poolName() default ClientRegionFactoryBean.DEFAULT_POOL_NAME;
 
 	/**
 	 * Determines whether the created {@link Region} will have strongly-typed key and value constraints

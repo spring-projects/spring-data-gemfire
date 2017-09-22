@@ -51,17 +51,32 @@ import org.springframework.lang.Nullable;
  */
 public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 
-	public static final MockGemFireObjectsBeanPostProcessor INSTANCE = new MockGemFireObjectsBeanPostProcessor();
+	private static final boolean DEFAULT_USE_SINGLETON_CACHE = false;
 
 	private static final String GEMFIRE_PROPERTIES_BEAN_NAME = "gemfireProperties";
 
+	private volatile boolean useSingletonCache;
+
 	private final AtomicReference<Properties> gemfireProperties = new AtomicReference<>(new Properties());
+
+	public static MockGemFireObjectsBeanPostProcessor newInstance() {
+		return newInstance(DEFAULT_USE_SINGLETON_CACHE);
+	}
+
+	public static MockGemFireObjectsBeanPostProcessor newInstance(boolean useSingletonCache) {
+
+		MockGemFireObjectsBeanPostProcessor beanPostProcessor = new MockGemFireObjectsBeanPostProcessor();
+
+		beanPostProcessor.useSingletonCache = useSingletonCache;
+
+		return beanPostProcessor;
+	}
 
 	@Nullable @Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
 		return (isGemFireProperties(bean, beanName) ?  set((Properties) bean)
-			: (bean instanceof CacheFactoryBean ? spyOnCacheFactoryBean((CacheFactoryBean) bean)
+			: (bean instanceof CacheFactoryBean ? spyOnCacheFactoryBean((CacheFactoryBean) bean, this.useSingletonCache)
 			: (bean instanceof PoolFactoryBean ? mockThePoolFactoryBean((PoolFactoryBean) bean)
 			: bean)));
 	}
@@ -88,11 +103,11 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 		return gemfireProperties;
 	}
 
-	private Object spyOnCacheFactoryBean(CacheFactoryBean bean) {
+	private Object spyOnCacheFactoryBean(CacheFactoryBean bean, boolean useSingletonCache) {
 
 		return (bean instanceof ClientCacheFactoryBean
-			? SpyingClientCacheFactoryInitializer.spyOn((ClientCacheFactoryBean) bean)
-			: SpyingCacheFactoryInitializer.spyOn(bean));
+			? SpyingClientCacheFactoryInitializer.spyOn((ClientCacheFactoryBean) bean, useSingletonCache)
+			: SpyingCacheFactoryInitializer.spyOn(bean, useSingletonCache));
 	}
 
 	private Object mockThePoolFactoryBean(PoolFactoryBean bean) {
@@ -102,28 +117,44 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 	protected static class SpyingCacheFactoryInitializer
 			implements CacheFactoryBean.CacheFactoryInitializer<CacheFactory> {
 
-		public static CacheFactoryBean spyOn(CacheFactoryBean cacheFactoryBean) {
-			cacheFactoryBean.setCacheFactoryInitializer(new SpyingCacheFactoryInitializer());
+		public static CacheFactoryBean spyOn(CacheFactoryBean cacheFactoryBean, boolean useSingletonCache) {
+			cacheFactoryBean.setCacheFactoryInitializer(new SpyingCacheFactoryInitializer(useSingletonCache));
 			return cacheFactoryBean;
+		}
+
+		private final boolean useSingletonCache;
+
+		protected SpyingCacheFactoryInitializer(boolean useSingletonCache) {
+			this.useSingletonCache = useSingletonCache;
 		}
 
 		@Override
 		public CacheFactory initialize(CacheFactory cacheFactory) {
-			return MockGemFireObjectsSupport.spyOn(cacheFactory);
+			return MockGemFireObjectsSupport.spyOn(cacheFactory, useSingletonCache);
 		}
 	}
 
 	protected static class SpyingClientCacheFactoryInitializer
 			implements CacheFactoryBean.CacheFactoryInitializer<ClientCacheFactory> {
 
-		public static ClientCacheFactoryBean spyOn(ClientCacheFactoryBean clientCacheFactoryBean) {
-			clientCacheFactoryBean.setCacheFactoryInitializer(new SpyingClientCacheFactoryInitializer());
+		public static ClientCacheFactoryBean spyOn(ClientCacheFactoryBean clientCacheFactoryBean,
+				boolean useSingletonCache) {
+
+			clientCacheFactoryBean.setCacheFactoryInitializer(
+				new SpyingClientCacheFactoryInitializer(useSingletonCache));
+
 			return clientCacheFactoryBean;
+		}
+
+		private final boolean useSingletonCache;
+
+		protected SpyingClientCacheFactoryInitializer(boolean useSingletonCache) {
+			this.useSingletonCache = useSingletonCache;
 		}
 
 		@Override
 		public ClientCacheFactory initialize(ClientCacheFactory clientCacheFactory) {
-			return MockGemFireObjectsSupport.spyOn(clientCacheFactory);
+			return MockGemFireObjectsSupport.spyOn(clientCacheFactory, this.useSingletonCache);
 		}
 	}
 

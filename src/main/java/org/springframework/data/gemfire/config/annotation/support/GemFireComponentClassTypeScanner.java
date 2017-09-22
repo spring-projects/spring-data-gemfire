@@ -17,23 +17,29 @@
 
 package org.springframework.data.gemfire.config.annotation.support;
 
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.data.gemfire.util.ArrayUtils;
-import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * The {@link GemFireComponentClassTypeScanner} class is a classpath component scanner used to search
@@ -44,6 +50,7 @@ import org.springframework.util.ClassUtils;
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
  * @see org.springframework.core.env.Environment
+ * @see org.springframework.core.type.filter.TypeFilter
  * @since 1.9.0
  */
 @SuppressWarnings("unused")
@@ -59,8 +66,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 * @see #GemFireComponentClassTypeScanner(Set)
 	 */
 	public static GemFireComponentClassTypeScanner from(String... basePackages) {
-		return new GemFireComponentClassTypeScanner(CollectionUtils.asSet(
-			ArrayUtils.nullSafeArray(basePackages, String.class)));
+		return new GemFireComponentClassTypeScanner(asSet(nullSafeArray(basePackages, String.class)));
 	}
 
 	/**
@@ -73,21 +79,16 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 * @see #GemFireComponentClassTypeScanner(Set)
 	 */
 	public static GemFireComponentClassTypeScanner from(Iterable<String> basePackages) {
-		Set<String> basePackageSet = new HashSet<String>();
-
-		for (String basePackage : CollectionUtils.nullSafeIterable(basePackages)) {
-			basePackageSet.add(basePackage);
-		}
-
-		return new GemFireComponentClassTypeScanner(basePackageSet);
+		return new GemFireComponentClassTypeScanner(stream(basePackages.spliterator(), false)
+			.collect(Collectors.toSet()));
 	}
 
 	private ClassLoader entityClassLoader;
 
 	private ConfigurableApplicationContext applicationContext;
 
-	private Set<TypeFilter> excludes = new HashSet<TypeFilter>();
-	private Set<TypeFilter> includes = new HashSet<TypeFilter>();
+	private Set<TypeFilter> excludes = new HashSet<>();
+	private Set<TypeFilter> includes = new HashSet<>();
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -102,7 +103,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 * @see java.util.Set
 	 */
 	protected GemFireComponentClassTypeScanner(Set<String> basePackages) {
-		Assert.notEmpty(basePackages, "Base packages must be specified");
+		Assert.notEmpty(basePackages, "Base packages is required");
 		this.basePackages = basePackages;
 	}
 
@@ -120,21 +121,24 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 * Returns an unmodifiable {@link Set} of base packages to scan for GemFire components.
 	 *
 	 * @return an unmodifiable {@link Set} of base packages to scan for GemFire components.
+	 * @see java.util.Set
 	 */
 	protected Set<String> getBasePackages() {
 		return Collections.unmodifiableSet(this.basePackages);
 	}
 
 	/**
-	 * Returns a reference to the {@link ClassLoader} to find and load GemFire application persistent entity classes.
+	 * Returns a reference to the {@link ClassLoader} used to find and load GemFire application
+	 * persistent entity classes.
 	 *
-	 * @return a {@link ClassLoader} to find and load GemFire application persistent entity classes.
+	 * @return the {@link ClassLoader} used to find and load GemFire application persistent entity classes.
 	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#getBeanClassLoader()
 	 * @see java.lang.Thread#getContextClassLoader()
 	 * @see java.lang.ClassLoader
 	 * @see #getApplicationContext()
 	 */
 	protected ClassLoader getEntityClassLoader() {
+
 		ConfigurableApplicationContext applicationContext = getApplicationContext();
 
 		return (this.entityClassLoader != null ? this.entityClassLoader
@@ -152,8 +156,10 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 * @see #getApplicationContext()
 	 */
 	protected Environment getEnvironment() {
-		ConfigurableApplicationContext applicationContext = getApplicationContext();
-		return (applicationContext != null ? applicationContext.getEnvironment() : new StandardEnvironment());
+
+		return Optional.ofNullable(getApplicationContext())
+			.map(ConfigurableApplicationContext::getEnvironment)
+			.orElse(new StandardEnvironment());
 	}
 
 	/**
@@ -162,6 +168,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 *
 	 * @return a collection of {@link TypeFilter} objects
 	 * @see org.springframework.core.type.filter.TypeFilter
+	 * @see java.lang.Iterable
 	 */
 	protected Iterable<TypeFilter> getExcludes() {
 		return this.excludes;
@@ -173,46 +180,49 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 *
 	 * @return a collection of {@link TypeFilter} objects
 	 * @see org.springframework.core.type.filter.TypeFilter
+	 * @see java.lang.Iterable
 	 */
 	protected Iterable<TypeFilter> getIncludes() {
 		return this.includes;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public Iterator<String> iterator() {
 		return getBasePackages().iterator();
 	}
 
 	/**
-	 * Scans the {@link Set} of base packages searching for GemFire application components accepted by the filters
-	 * of this scanner.
+	 * Scans the {@link Set} of base packages searching for GemFire application components
+	 * accepted by the filters of this scanner.
 	 *
-	 * @return a {@link Set} of GemFire application component {@link Class} types.
+	 * @return a {@link Set} of GemFire application component {@link Class} types found on the classpath.
 	 * @see #newClassPathScanningCandidateComponentProvider(boolean)
 	 * @see java.util.Set
 	 */
 	public Set<Class<?>> scan() {
-		Set<Class<?>> componentClasses = new HashSet<Class<?>>();
+
+		Set<Class<?>> componentClasses = new CopyOnWriteArraySet<>();
 
 		ClassLoader entityClassLoader = getEntityClassLoader();
 
 		ClassPathScanningCandidateComponentProvider componentProvider =
 			newClassPathScanningCandidateComponentProvider();
 
-		for (String packageName : this) {
-			for (BeanDefinition beanDefinition : componentProvider.findCandidateComponents(packageName)) {
-				try {
-					componentClasses.add(ClassUtils.forName(beanDefinition.getBeanClassName(), entityClassLoader));
-				}
-				catch (ClassNotFoundException ignore) {
-					log.warn(String.format("Class not found for component type [%s]",
-						beanDefinition.getBeanClassName()));
-				}
-			}
-		}
+		stream(this.spliterator(), true)
+			.flatMap(packageName -> componentProvider.findCandidateComponents(packageName).stream())
+			.forEach(beanDefinition -> {
+				Optional.ofNullable(beanDefinition.getBeanClassName())
+					.filter(StringUtils::hasText)
+					.ifPresent(beanClassName -> {
+						try {
+							componentClasses.add(ClassUtils.forName(beanClassName, entityClassLoader));
+						}
+						catch (ClassNotFoundException ignore) {
+							log.warn(String.format("Class for component type [%s] not found",
+								beanDefinition.getBeanClassName()));
+						}
+					});
+			});
 
 		return componentClasses;
 	}
@@ -245,13 +255,8 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 		ClassPathScanningCandidateComponentProvider componentProvider =
 			new ClassPathScanningCandidateComponentProvider(useDefaultFilters, getEnvironment());
 
-		for (TypeFilter exclude : excludes) {
-			componentProvider.addExcludeFilter(exclude);
-		}
-
-		for (TypeFilter include : includes) {
-			componentProvider.addIncludeFilter(include);
-		}
+		this.excludes.forEach(componentProvider::addExcludeFilter);
+		this.includes.forEach(componentProvider::addIncludeFilter);
 
 		return componentProvider;
 	}
@@ -270,29 +275,23 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 
 	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner withExcludes(TypeFilter... excludes) {
-		return withExcludes(CollectionUtils.asSet(ArrayUtils.nullSafeArray(excludes, TypeFilter.class)));
+		return withExcludes(asSet(nullSafeArray(excludes, TypeFilter.class)));
 	}
 
 	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner withExcludes(Iterable<TypeFilter> excludes) {
-		for (TypeFilter exclude : CollectionUtils.nullSafeIterable(excludes)) {
-			this.excludes.add(exclude);
-		}
-
+		stream(nullSafeIterable(excludes).spliterator(), false).forEach(this.excludes::add);
 		return this;
 	}
 
 	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner withIncludes(TypeFilter... includes) {
-		return withIncludes(CollectionUtils.asSet(ArrayUtils.nullSafeArray(includes, TypeFilter.class)));
+		return withIncludes(asSet(nullSafeArray(includes, TypeFilter.class)));
 	}
 
 	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner withIncludes(Iterable<TypeFilter> includes) {
-		for (TypeFilter include : CollectionUtils.nullSafeIterable(includes)) {
-			this.includes.add(include);
-		}
-
+		stream(nullSafeIterable(includes).spliterator(), false).forEach(this.includes::add);
 		return this;
 	}
 }

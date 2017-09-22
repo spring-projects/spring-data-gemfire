@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.springframework.core.annotation.AliasFor;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 
 /**
  * {@link Annotation} defining the Client {@link org.apache.geode.cache.Region} in which the application
@@ -83,7 +83,7 @@ public @interface ClientRegion {
 	String diskStoreName() default "";
 
 	/**
-	 * Determines whether disk-based operations (used in overflow and persistent) are synchronous or asynchronous.
+	 * Determines whether disk-based operations (used in overflow and persistence) are synchronous or asynchronous.
 	 *
 	 * Defaults to {@literal synchronous}.
 	 */
@@ -102,9 +102,9 @@ public @interface ClientRegion {
 	 * data access operations sent to the corresponding {@link org.apache.geode.cache.Region}
 	 * on the GemFire/Geode Server.
 	 *
-	 * Defaults to {@literal gemfirePool}.
+	 * Defaults to {@literal DEFAULT}.
 	 */
-	String poolName() default GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
+	String poolName() default ClientRegionFactoryBean.DEFAULT_POOL_NAME;
 
 	/**
 	 * {@link ClientRegionShortcut} used by this persistent entity's client {@link org.apache.geode.cache.Region}

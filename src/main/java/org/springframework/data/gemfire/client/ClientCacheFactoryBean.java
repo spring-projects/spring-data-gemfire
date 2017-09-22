@@ -337,6 +337,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @see #findPool(String)
 	 */
 	Pool resolvePool() {
+
 		Pool localPool = getPool();
 
 		if (localPool == null) {
@@ -411,6 +412,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 */
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
+
 		if (isReadyForEvents()) {
 			try {
 				this.<ClientCache>fetchCache().readyForEvents();
@@ -772,6 +774,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @see #getReadyForEvents()
 	 */
 	public boolean isReadyForEvents() {
+
 		Boolean readyForEvents = getReadyForEvents();
 
 		if (readyForEvents != null) {

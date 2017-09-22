@@ -95,6 +95,7 @@
 							result-policy="${client.regex.interests.result-policy}"/>
 	</gfe:client-region>
 
+	<bean id="gemfire-pool" class="java.lang.Object" lazy-init="true"/>
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
 	<bean id="testCompressor" class="org.springframework.data.gemfire.config.xml.ClientRegionNamespaceTest$TestCompressor" p:name="STD"/>
 

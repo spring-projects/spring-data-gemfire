@@ -24,7 +24,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.junit.Test;
@@ -206,18 +209,72 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
-	public void safeGetValueReturnsSupplierValue() {
-		assertThat(SpringUtils.safeGetValue(() -> "test", null)).isEqualTo("test");
-	}
-
-	@Test
-	public void safeGetValueReturnsDefaultValue() {
-		assertThat(SpringUtils.safeGetValue(() -> { throw new RuntimeException("error"); },  "test"))
-			.isEqualTo("test");
+	public void safeGetValueReturnsSuppliedValue() {
+		assertThat(SpringUtils.safeGetValue(() -> "test")).isEqualTo("test");
 	}
 
 	@Test
 	public void safeGetValueReturnsNull() {
-		assertThat(SpringUtils.<Object>safeGetValue(() -> { throw new RuntimeException("error"); })).isNull();
+		assertThat(SpringUtils.<Object>safeGetValue(() -> { throw newRuntimeException("error"); })).isNull();
+	}
+
+	@Test
+	public void safeGetValueReturnsDefaultValue() {
+		assertThat(SpringUtils.safeGetValue(() -> { throw newRuntimeException("error"); },  "test"))
+			.isEqualTo("test");
+	}
+
+	@Test
+	public void safeGetValueReturnsSuppliedDefaultValue() {
+
+		Supplier<String> exceptionThrowingSupplier = () -> { throw newRuntimeException("error"); };
+		Supplier<String> defaultValueSupplier = () -> "test";
+
+		assertThat(SpringUtils.safeGetValue(exceptionThrowingSupplier, defaultValueSupplier)).isEqualTo("test");
+	}
+
+	@Test
+	public void safeGetValueHandlesExceptionReturnsValue() {
+
+		Supplier<String> exceptionThrowingSupplier = () -> { throw newRuntimeException("error"); };
+
+		Function<Throwable, String> exceptionHandler = exception -> {
+
+			assertThat(exception).isInstanceOf(RuntimeException.class);
+			assertThat(exception).hasMessage("error");
+			assertThat(exception).hasNoCause();
+
+			return "test";
+		};
+
+		assertThat(SpringUtils.safeGetValue(exceptionThrowingSupplier, exceptionHandler)).isEqualTo("test");
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void safeGetValueHandlesExceptionAndCanThrowException() {
+
+		Supplier<String> exceptionThrowingSupplier = () -> { throw newRuntimeException("error"); };
+
+		Function<Throwable, String> exceptionHandler = exception -> {
+
+			assertThat(exception).isInstanceOf(RuntimeException.class);
+			assertThat(exception).hasMessage("error");
+			assertThat(exception).hasNoCause();
+
+			throw newIllegalStateException(exception, "test");
+		};
+
+		try {
+			SpringUtils.safeGetValue(exceptionThrowingSupplier, exceptionHandler);
+		}
+		catch (IllegalStateException expected) {
+
+			assertThat(expected).hasMessage("test");
+			assertThat(expected).hasCauseInstanceOf(RuntimeException.class);
+			assertThat(expected.getCause()).hasMessage("error");
+			assertThat(expected.getCause()).hasNoCause();
+
+			throw expected;
+		}
 	}
 }

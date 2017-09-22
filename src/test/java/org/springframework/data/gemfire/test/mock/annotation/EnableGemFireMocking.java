@@ -23,6 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.geode.cache.GemFireCache;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -33,6 +34,7 @@ import org.springframework.context.annotation.Import;
  * @see java.lang.annotation.Inherited
  * @see java.lang.annotation.Retention
  * @see java.lang.annotation.Target
+ * @see org.apache.geode.cache.GemFireCache
  * @see org.springframework.context.annotation.Import
  * @since 2.0.0
  */
@@ -43,5 +45,14 @@ import org.springframework.context.annotation.Import;
 @Import(GemFireMockingConfiguration.class)
 @SuppressWarnings("unused")
 public @interface EnableGemFireMocking {
+
+	/**
+	 * Determines whether the mock {@link GemFireCache} created for Unit Tests is a Singleton.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * @return a boolean value indicating whether the mock {@link GemFireCache} created for Unit Tests is a Singleton.
+	 */
+	boolean useSingletonCache() default false;
 
 }

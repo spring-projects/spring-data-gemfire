@@ -16,9 +16,17 @@
 
 package org.springframework.data.gemfire.test.mock.annotation;
 
+import java.lang.annotation.Annotation;
+
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportAware;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
 import org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanPostProcessor;
 
 /**
@@ -26,16 +34,64 @@ import org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanP
  * containing bean definitions to configure GemFire Object mocking.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see org.springframework.beans.factory.config.BeanPostProcessor
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.context.annotation.ImportAware
+ * @see org.springframework.core.annotation.AnnotationAttributes
+ * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanPostProcessor
  * @since 2.0.0
  */
 @SuppressWarnings("unused")
 @Configuration
-public class GemFireMockingConfiguration {
+public class GemFireMockingConfiguration implements ImportAware {
+
+	private boolean useSingletonCache = false;
+
+	@Override
+	public void setImportMetadata(AnnotationMetadata importingClassMetadata) {
+
+		if (isAnnotationPresent(importingClassMetadata)) {
+
+			AnnotationAttributes enableGemFireMockingAttributes = getAnnotationAttributes(importingClassMetadata);
+
+			this.useSingletonCache = enableGemFireMockingAttributes.getBoolean("useSingletonCache");
+		}
+	}
+
+	private Class<? extends Annotation> getAnnotationType() {
+		return EnableGemFireMocking.class;
+	}
+
+	private boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata) {
+		return isAnnotationPresent(importingClassMetadata, getAnnotationType());
+	}
+
+	private boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata,
+			Class<? extends Annotation> annotationType) {
+
+		return importingClassMetadata.hasAnnotation(annotationType.getName());
+	}
+
+	private AnnotationAttributes getAnnotationAttributes(AnnotationMetadata importingClassMetadata) {
+		return getAnnotationAttributes(importingClassMetadata, getAnnotationType());
+	}
+
+	private AnnotationAttributes getAnnotationAttributes(AnnotationMetadata importingClassMetadata,
+			Class<? extends Annotation> annotationType) {
+
+		return AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(annotationType.getName()));
+	}
 
 	@Bean
 	public BeanPostProcessor mockGemFireObjectsBeanPostProcessor() {
-		return MockGemFireObjectsBeanPostProcessor.INSTANCE;
+		return MockGemFireObjectsBeanPostProcessor.newInstance(this.useSingletonCache);
+	}
+
+	@EventListener
+	public void releaseMockResources(ContextClosedEvent event) {
+		MockGemFireObjectsSupport.destroy();
 	}
 }

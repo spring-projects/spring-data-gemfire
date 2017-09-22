@@ -40,6 +40,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -74,6 +75,9 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
+
+	public static final String DEFAULT_POOL_NAME = "DEFAULT";
+	public static final String GEMFIRE_POOL_NAME = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
 
 	private boolean close = false;
 	private boolean destroy = false;
@@ -278,8 +282,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				}
 			}
 			else {
-				resolvedShortcut = (isPersistent() ? ClientRegionShortcut.LOCAL_PERSISTENT
-					: ClientRegionShortcut.LOCAL);
+				resolvedShortcut = (isPersistent() ? ClientRegionShortcut.LOCAL_PERSISTENT : ClientRegionShortcut.LOCAL);
 			}
 		}
 
@@ -292,14 +295,17 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	/* (non-Javadoc) */
 	private String resolvePoolName() {
-		String poolName = this.poolName;
+		return Optional.of(getPoolName()).filter(this::isPoolResolvable).orElse(null);
+	}
 
-		if (!StringUtils.hasText(poolName)) {
-			String defaultPoolName = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
-			poolName = (getBeanFactory().containsBean(defaultPoolName) ? defaultPoolName : poolName);
-		}
+	/* (non-Javadoc) */
+	private String getPoolName() {
+		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText).orElse(GEMFIRE_POOL_NAME);
+	}
 
-		return poolName;
+	/* (non-Javadoc) */
+	private boolean isPoolResolvable(String poolName) {
+		return (getBeanFactory().containsBean(poolName) || (PoolManager.find(poolName) != null));
 	}
 
 	/* (non-Javadoc) */
@@ -424,6 +430,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	private Region<K, V> registerInterests(Region<K, V> region) {
 
 		stream(nullSafeArray(this.interests, Interest.class)).forEach(interest -> {
+
 			if (interest.isRegexType()) {
 				region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(),
 					interest.isDurable(), interest.isReceiveValues());
@@ -447,6 +454,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	public void destroy() throws Exception {
 
 		Optional.ofNullable(getObject()).ifPresent(region -> {
+
 			if (isClose()) {
 				if (!region.getRegionService().isClosed()) {
 					try {

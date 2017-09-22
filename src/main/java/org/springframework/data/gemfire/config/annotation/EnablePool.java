@@ -146,9 +146,9 @@ public @interface EnablePool {
 
 	/**
 	 * Specifies the {@link String name} of the client {@link Pool} in Pivotal GemFire/Apache Geode, which is also
-	 * used as the Spring bean name in the container as well as the name
-	 * (e.g. {@literal spring.data.gemfire.pool.<poolName>.max-connections} used in the resolution of {@link Pool}
-	 * properties from {@literal application.properties} that are specific to this {@link Pool}.
+	 * used as the name of the bean registered in the Spring container as well as the name used in the resolution
+	 * of {@link Pool} properties from {@literal application.properties}
+	 * (e.g. {@literal spring.data.gemfire.pool.<poolName>.max-connections}), that are specific to this {@link Pool}.
 	 */
 	String name();
 
