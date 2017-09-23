@@ -33,14 +33,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * The PeerCachePropertiesIntegrationTests class...
+ * Integration tests for {@link PeerCacheApplication}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+ * @since 2.0.0
  */
 public class PeerCachePropertiesIntegrationTests {
 
@@ -161,7 +163,7 @@ public class PeerCachePropertiesIntegrationTests {
 
 	//TODO add more tests
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnablePdx(ignoreUnreadFields = true, readSerialized = true, serializerBeanName = "mockPdxSerializer")
 	@PeerCacheApplication(name = "TestPeerCache", criticalHeapPercentage = 90.0f, evictionHeapPercentage = 75.0f,
 		lockLease = 300, lockTimeout = 120)
@@ -179,7 +181,7 @@ public class PeerCachePropertiesIntegrationTests {
 		}
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication(name = "TestPeerCache")
 	@SuppressWarnings("unused")
 	static class TestDynamicPeerCacheConfiguration {

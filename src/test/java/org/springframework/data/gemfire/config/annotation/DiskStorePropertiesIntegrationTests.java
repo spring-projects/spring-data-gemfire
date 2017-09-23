@@ -29,14 +29,16 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * The DiskStorePropertiesIntegrationTests class...
+ * Integration tests for {@link EnableDiskStore}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.springframework.data.gemfire.config.annotation.EnableDiskStore
+ * @since 2.0.0
  */
 public class DiskStorePropertiesIntegrationTests {
 
@@ -155,7 +157,7 @@ public class DiskStorePropertiesIntegrationTests {
 	}
 
 	@PeerCacheApplication
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnableDiskStore(name = "TestDiskStore", allowForceCompaction = true, compactionThreshold = 65,
 		diskUsageCriticalPercentage = 95.0f, diskUsageWarningPercentage = 75.0f, maxOplogSize = 2048L)
 	@SuppressWarnings("unused")
@@ -172,7 +174,7 @@ public class DiskStorePropertiesIntegrationTests {
 	}
 
 	@PeerCacheApplication
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnableDiskStores(diskStores = {
 		@EnableDiskStore(name = "TestDiskStoreOne"), @EnableDiskStore(name = "TestDiskStoreTwo")
 	})

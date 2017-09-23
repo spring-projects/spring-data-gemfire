@@ -173,7 +173,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 		return Optional.ofNullable(this.configurers)
 			.filter(configurers -> !configurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(this.beanFactory())
+				Optional.of(this.getBeanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 
@@ -191,7 +191,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 
 		return Optional.ofNullable(getErrorHandlerBeanName())
 			.filter(StringUtils::hasText)
-			.map(errorHandlerBeanName -> beanFactory().getBean(errorHandlerBeanName, ErrorHandler.class));
+			.map(errorHandlerBeanName -> getBeanFactory().getBean(errorHandlerBeanName, ErrorHandler.class));
 	}
 
 	protected Optional<Integer> resolvePhase() {
@@ -206,7 +206,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 
 		return Optional.ofNullable(getTaskExecutorBeanName())
 			.filter(StringUtils::hasText)
-			.map(taskExecutorBeanName -> beanFactory().getBean(taskExecutorBeanName, Executor.class));
+			.map(taskExecutorBeanName -> getBeanFactory().getBean(taskExecutorBeanName, Executor.class));
 	}
 
 	public void setErrorHandlerBeanName(String errorHandlerBeanName) {

@@ -204,7 +204,7 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 		return Optional.ofNullable(this.poolConfigurers)
 			.filter(poolConfigurers -> !poolConfigurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(this.beanFactory())
+				Optional.of(this.getBeanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 						Map<String, PoolConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)

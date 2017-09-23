@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 
 /**
  * Integration test for {@link EnableBeanFactoryLocator} and {@link BeanFactoryLocatorConfiguration}.
@@ -36,7 +36,7 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockin
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.BeanFactoryLocatorConfiguration
  * @see org.springframework.data.gemfire.config.annotation.EnableBeanFactoryLocator
- * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking
+ * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
  * @since 2.0.0
  */
 public class EnableBeanFactoryLocatorConfigurationIntegrationTests {
@@ -82,12 +82,12 @@ public class EnableBeanFactoryLocatorConfigurationIntegrationTests {
 		assertThat(gemfireCache.isUseBeanFactoryLocator()).isTrue();
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	static class TestBeanFactoryLocatorDisabledConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnableBeanFactoryLocator
 	@PeerCacheApplication
 	static class TestBeanFactoryLocatorEnabledConfiguration {

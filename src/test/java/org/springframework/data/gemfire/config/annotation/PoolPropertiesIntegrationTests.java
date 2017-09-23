@@ -31,14 +31,17 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * The PoolPropertiesIntegrationTests class...
+ * Integration tests for {@link EnablePool} and {@link EnablePools}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.springframework.data.gemfire.config.annotation.EnablePool
+ * @see org.springframework.data.gemfire.config.annotation.EnablePools
+ * @since 2.0.0
  */
 public class PoolPropertiesIntegrationTests {
 
@@ -237,7 +240,7 @@ public class PoolPropertiesIntegrationTests {
 			300000, 4, true);
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@ClientCacheApplication
 	@EnablePool(name = "TestPool", idleTimeout = 10000L, maxConnections = 200, minConnections = 20)
 	static class TestPoolConfiguration {
@@ -251,7 +254,7 @@ public class PoolPropertiesIntegrationTests {
 		}
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@ClientCacheApplication
 	@EnablePools(pools = { @EnablePool(name = "TestPoolOne"), @EnablePool(name = "TestPoolTwo") })
 	static class TestPoolsConfiguration {

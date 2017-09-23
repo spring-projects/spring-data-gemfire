@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 
 /**
  * Unit tests for the {@link EnableDiskStore} and {@link EnableDiskStores} annotations as well as
@@ -44,6 +44,7 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockin
  * @see org.springframework.data.gemfire.config.annotation.EnableDiskStores
  * @see org.springframework.data.gemfire.config.annotation.DiskStoreConfiguration
  * @see org.springframework.data.gemfire.config.annotation.DiskStoresConfiguration
+ * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
  * @since 1.9.0
  */
 public class EnableDiskStoresConfigurationUnitTests {
@@ -166,7 +167,7 @@ public class EnableDiskStoresConfigurationUnitTests {
 	}
 
 	@PeerCacheApplication
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnableDiskStore(name = "TestDiskStore", allowForceCompaction = true, autoCompact = true, compactionThreshold = 75,
 		diskUsageCriticalPercentage = 95.0f, diskUsageWarningPercentage = 75.0f, maxOplogSize = 8192L, queueSize = 100,
 		timeInterval = 2000L, writeBufferSize = 65536, diskDirectories = {
@@ -178,7 +179,7 @@ public class EnableDiskStoresConfigurationUnitTests {
 	}
 
 	@PeerCacheApplication
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnableDiskStores(autoCompact = true, compactionThreshold = 75, maxOplogSize = 2048L, diskStores = {
 		@EnableDiskStore(name = "TestDiskStoreOne", queueSize = 100),
 		@EnableDiskStore(name = "TestDiskStoreTwo", allowForceCompaction = true,

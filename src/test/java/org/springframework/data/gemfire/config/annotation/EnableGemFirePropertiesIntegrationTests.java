@@ -29,7 +29,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
@@ -44,7 +44,7 @@ import org.springframework.mock.env.MockPropertySource;
  * @see org.apache.geode.cache.GemFireCache
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.core.env.PropertySource
- * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking
+ * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
  * @since 2.0.0
  */
 public class EnableGemFirePropertiesIntegrationTests {
@@ -551,70 +551,70 @@ public class EnableGemFirePropertiesIntegrationTests {
 		assertThat(gemfireProperties.getProperty("statistic-sample-rate")).isEqualTo("100");
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableAuth
 	@EnableGemFireProperties
 	static class TestAuthGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableHttpService
 	static class TestHttpGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableLocator
 	static class TestLocatorGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableLogging
 	static class TestLoggingGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableManager
 	static class TestManagerGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableMemcachedServer
 	static class TestMemcachedServerGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableOffHeap(memorySize = "64g")
 	static class TestOffHeapGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableRedisServer
 	static class TestRedisServerGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableSecurity
 	static class TestSecurityGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableSsl(components = { EnableSsl.Component.CLUSTER, EnableSsl.Component.GATEWAY, EnableSsl.Component.HTTP,
@@ -622,7 +622,7 @@ public class EnableGemFirePropertiesIntegrationTests {
 	static class TestSslGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableSsl(components = { EnableSsl.Component.GATEWAY, EnableSsl.Component.JMX, EnableSsl.Component.LOCATOR,
@@ -630,7 +630,7 @@ public class EnableGemFirePropertiesIntegrationTests {
 	static class TestInheritedSslGemFirePropertiesConfiguration {
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableStatistics

@@ -330,7 +330,7 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 
 		return Optional.ofNullable(this.mappingContext).orElseGet(() -> {
 			try {
-				this.mappingContext = beanFactory().getBean(GemfireMappingContext.class);
+				this.mappingContext = getBeanFactory().getBean(GemfireMappingContext.class);
 			}
 			catch (Throwable ignore) {
 				this.mappingContext = new GemfireMappingContext();
@@ -382,7 +382,7 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		return Optional.ofNullable(this.regionConfigurers)
 			.filter(regionConfigurers -> !regionConfigurers.isEmpty())
 			.orElseGet(() ->
-				Optional.ofNullable(beanFactory())
+				Optional.of(getBeanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 						Map<String, RegionConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)

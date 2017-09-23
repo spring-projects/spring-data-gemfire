@@ -78,7 +78,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	 * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
 	 */
 	@SuppressWarnings("unchecked")
-	protected <T extends AbstractCacheConfiguration> T cacheConfiguration() {
+	protected <T extends AbstractCacheConfiguration> T getCacheConfiguration() {
 		return Optional.ofNullable((T) this.cacheConfiguration)
 			.orElseThrow(() -> newIllegalStateException("AbstractCacheConfiguration is required"));
 	}
@@ -111,7 +111,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 		if (hasProperties(gemfireProperties)) {
 			try {
-				cacheConfiguration().add(gemfireProperties);
+				getCacheConfiguration().add(gemfireProperties);
 			}
 			catch (Exception ignore) {
 				registerGemFirePropertiesBeanPostProcessor(registry, gemfireProperties);
@@ -179,15 +179,17 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	 * @return a Spring managed bean instance for the given, required {@link Class} type, or {@literal null}
 	 * if no bean instance of the given, required {@link Class} type could be found.
 	 * @throws BeansException if the Spring manage bean of the required {@link Class} type could not be resolved.
-	 * @see #beanFactory()
+	 * @see #getBeanFactory()
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T> T resolveBean(Class<T> beanType) {
 
-		BeanFactory beanFactory = beanFactory();
+		BeanFactory beanFactory = getBeanFactory();
 
 		if (beanFactory instanceof AutowireCapableBeanFactory) {
+
 			AutowireCapableBeanFactory autowiringBeanFactory = (AutowireCapableBeanFactory) beanFactory;
+
 			NamedBeanHolder<T> beanHolder = autowiringBeanFactory.resolveNamedBean(beanType);
 
 			return (T) autowiringBeanFactory.configureBean(beanHolder.getBeanInstance(), beanHolder.getBeanName());

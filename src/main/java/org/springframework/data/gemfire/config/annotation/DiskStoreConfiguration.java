@@ -211,7 +211,7 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 		return Optional.ofNullable(this.diskStoreConfigurers)
 			.filter(diskStoreConfigurers -> !diskStoreConfigurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(this.beanFactory())
+				Optional.of(this.getBeanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 

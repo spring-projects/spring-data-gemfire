@@ -35,14 +35,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * The ClientCachePropertiesIntegrationTests class...
+ * Integration tests for {@link ClientCacheApplication}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+ * @since 2.0.0
  */
 public class ClientCachePropertiesIntegrationTests {
 
@@ -237,7 +239,7 @@ public class ClientCachePropertiesIntegrationTests {
 
 	// TODO add more tests!
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnablePdx(ignoreUnreadFields = true, readSerialized = true, serializerBeanName = "mockPdxSerializer")
 	@ClientCacheApplication(name = "TestClientCache", copyOnRead = true,
 		criticalHeapPercentage = 95.0f, evictionHeapPercentage = 80.0f, idleTimeout = 15000L,
@@ -263,7 +265,7 @@ public class ClientCachePropertiesIntegrationTests {
 		}
 	}
 
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnablePdx(serializerBeanName = "mockPdxSerializer")
 	@ClientCacheApplication(name = "TestClientCache")
 	@SuppressWarnings("unused")

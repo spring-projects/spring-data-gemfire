@@ -97,7 +97,7 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return Optional.ofNullable(this.peerCacheConfigurers)
             .filter(peerCacheConfigurers -> !peerCacheConfigurers.isEmpty())
             .orElseGet(() ->
-                Optional.of(this.beanFactory())
+                Optional.of(this.getBeanFactory())
                     .filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
                     .map(beanFactory -> {
                         Map<String, PeerCacheConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)

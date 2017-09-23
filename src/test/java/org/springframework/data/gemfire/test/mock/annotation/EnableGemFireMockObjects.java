@@ -27,7 +27,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableGemFireMocking} annotation enables mocking of GemFire Objects in Unit Tests.
+ * The {@link EnableGemFireMockObjects} annotation enables mocking of GemFire Objects in Unit Tests.
  *
  * @author John Blum
  * @see java.lang.annotation.Documented
@@ -42,9 +42,9 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(GemFireMockingConfiguration.class)
+@Import(GemFireMockObjectsConfiguration.class)
 @SuppressWarnings("unused")
-public @interface EnableGemFireMocking {
+public @interface EnableGemFireMockObjects {
 
 	/**
 	 * Determines whether the mock {@link GemFireCache} created for Unit Tests is a Singleton.

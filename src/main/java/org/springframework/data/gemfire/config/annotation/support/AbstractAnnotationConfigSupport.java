@@ -148,7 +148,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @return a new {@link EvaluationContext}.
 	 * @see org.springframework.beans.factory.BeanFactory
 	 * @see org.springframework.expression.EvaluationContext
-	 * @see #beanFactory()
+	 * @see #getBeanFactory()
 	 */
 	protected EvaluationContext newEvaluationContext(BeanFactory beanFactory) {
 
@@ -157,7 +157,7 @@ public abstract class AbstractAnnotationConfigSupport
 		evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
 		evaluationContext.addPropertyAccessor(new EnvironmentAccessor());
 		evaluationContext.addPropertyAccessor(new MapAccessor());
-		evaluationContext.setTypeLocator(new StandardTypeLocator(beanClassLoader()));
+		evaluationContext.setTypeLocator(new StandardTypeLocator(getBeanClassLoader()));
 
 		configureTypeConverter(evaluationContext, beanFactory);
 
@@ -265,7 +265,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @return the {@link ClassLoader} used by the Spring {@link BeanFactory} to load classes for bean definitions.
 	 * @see #setBeanClassLoader(ClassLoader)
 	 */
-	protected ClassLoader beanClassLoader() {
+	protected ClassLoader getBeanClassLoader() {
 		return this.beanClassLoader;
 	}
 
@@ -276,10 +276,10 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @return the configured {@link ClassLoader} or the
 	 * {@link Thread#getContextClassLoader() Thread Context ClassLoader}.
 	 * @see java.lang.Thread#getContextClassLoader()
-	 * @see #beanClassLoader()
+	 * @see #getBeanClassLoader()
 	 */
 	protected ClassLoader resolveBeanClassLoader() {
-		return Optional.ofNullable(beanClassLoader()).orElseGet(() -> Thread.currentThread().getContextClassLoader());
+		return Optional.ofNullable(getBeanClassLoader()).orElseGet(() -> Thread.currentThread().getContextClassLoader());
 	}
 
 	/**
@@ -288,7 +288,7 @@ public abstract class AbstractAnnotationConfigSupport
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
-		configureTypeConverter(evaluationContext(), beanFactory);
+		configureTypeConverter(getEvaluationContext(), beanFactory);
 	}
 
 	/**
@@ -298,7 +298,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @throws IllegalStateException if the Spring {@link BeanFactory} was not properly configured.
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
-	protected BeanFactory beanFactory() {
+	protected BeanFactory getBeanFactory() {
 		return Optional.ofNullable(this.beanFactory)
 			.orElseThrow(() -> newIllegalStateException("BeanFactory is required"));
 	}
@@ -321,7 +321,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @return a reference to the Spring {@link Environment}.
 	 * @see org.springframework.core.env.Environment
 	 */
-	protected Environment environment() {
+	protected Environment getEnvironment() {
 		return this.environment;
 	}
 
@@ -331,7 +331,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @return a reference to the {@link EvaluationContext} used to evaluate SpEL expressions.
 	 * @see org.springframework.expression.EvaluationContext
 	 */
-	protected EvaluationContext evaluationContext() {
+	protected EvaluationContext getEvaluationContext() {
 		return this.evaluationContext;
 	}
 
@@ -454,11 +454,11 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition
 	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 * @see org.springframework.beans.factory.support.BeanDefinitionReaderUtils#registerWithGeneratedName(AbstractBeanDefinition, BeanDefinitionRegistry)
-	 * @see #beanFactory()
+	 * @see #getBeanFactory()
 	 */
 	protected AbstractBeanDefinition register(AbstractBeanDefinition beanDefinition) {
 
-		BeanFactory beanFactory = beanFactory();
+		BeanFactory beanFactory = getBeanFactory();
 
 		return (beanFactory instanceof BeanDefinitionRegistry
 			? register(beanDefinition, (BeanDefinitionRegistry) beanFactory)
@@ -500,7 +500,7 @@ public abstract class AbstractAnnotationConfigSupport
 
 			String propertyName = asArrayProperty(propertyNamePrefix, index, propertyNameSuffix);
 
-			found = environment().containsProperty(propertyName);
+			found = getEnvironment().containsProperty(propertyName);
 
 			if (found) {
 				propertyNames.add(propertyName);
@@ -766,11 +766,11 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @param defaultValue default value to return if the property is not defined or not set.
 	 * @return the value of the property identified by {@link String name} or default value if the property
 	 * is not defined or not set.
-	 * @see #environment()
+	 * @see #getEnvironment()
 	 */
 	protected <T> T resolveProperty(String propertyName, Class<T> targetType, T defaultValue) {
 
-		return Optional.ofNullable(environment())
+		return Optional.ofNullable(getEnvironment())
 			.filter(environment -> environment.containsProperty(propertyName))
 			.map(environment -> environment.getProperty(environment.resolveRequiredPlaceholders(propertyName),
 				targetType, defaultValue))

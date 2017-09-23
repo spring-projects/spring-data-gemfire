@@ -117,7 +117,7 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
 	protected ListableBeanFactory getListableBeanFactory() {
-		return (ListableBeanFactory) beanFactory();
+		return (ListableBeanFactory) getBeanFactory();
 	}
 
 	/**

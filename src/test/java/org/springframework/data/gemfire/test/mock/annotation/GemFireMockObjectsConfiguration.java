@@ -30,7 +30,7 @@ import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
 import org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanPostProcessor;
 
 /**
- * The {@link GemFireMockingConfiguration} class is a Spring {@link Configuration @Configuration} class
+ * The {@link GemFireMockObjectsConfiguration} class is a Spring {@link Configuration @Configuration} class
  * containing bean definitions to configure GemFire Object mocking.
  *
  * @author John Blum
@@ -46,7 +46,7 @@ import org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanP
  */
 @SuppressWarnings("unused")
 @Configuration
-public class GemFireMockingConfiguration implements ImportAware {
+public class GemFireMockObjectsConfiguration implements ImportAware {
 
 	private boolean useSingletonCache = false;
 
@@ -62,7 +62,7 @@ public class GemFireMockingConfiguration implements ImportAware {
 	}
 
 	private Class<? extends Annotation> getAnnotationType() {
-		return EnableGemFireMocking.class;
+		return EnableGemFireMockObjects.class;
 	}
 
 	private boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata) {

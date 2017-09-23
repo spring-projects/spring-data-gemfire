@@ -146,7 +146,7 @@ public class AutoRegionLookupConfiguration extends AbstractAnnotationConfigSuppo
 			}
 			catch (ParseException ignore) {
 				// try resolving as a Spring property placeholder expression...
-				return environment().getProperty(enabled, Boolean.TYPE, false);
+				return getEnvironment().getProperty(enabled, Boolean.TYPE, false);
 			}
 		}
 

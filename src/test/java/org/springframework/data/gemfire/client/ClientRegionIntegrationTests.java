@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -54,7 +54,7 @@ public class ClientRegionIntegrationTests {
 	}
 
 	@ClientCacheApplication
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	static class ClientRegionConfiguration {
 
 		@Bean("Example")

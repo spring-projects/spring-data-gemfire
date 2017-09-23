@@ -26,7 +26,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.data.gemfire.test.support.IOUtils;
 
 /**
@@ -42,7 +42,7 @@ import org.springframework.data.gemfire.test.support.IOUtils;
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
- * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking
+ * @see EnableGemFireMockObjects
  */
 public class ClientCacheIntegrationTests {
 
@@ -108,7 +108,7 @@ public class ClientCacheIntegrationTests {
 	}
 
 	@Configuration
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	static class ClosingClientCacheConfiguration {
 
 		@Bean
@@ -123,7 +123,7 @@ public class ClientCacheIntegrationTests {
 	}
 
 	@Configuration
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	static class CloseSuppressingClientCacheConfiguration {
 
 		@Bean
@@ -138,7 +138,7 @@ public class ClientCacheIntegrationTests {
 	}
 
 	@Configuration
-	@EnableGemFireMocking(useSingletonCache = true)
+	@EnableGemFireMockObjects(useSingletonCache = true)
 	static class MultiClientCacheConfiguration {
 
 		@Bean

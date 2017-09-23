@@ -189,7 +189,7 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 		return Optional.ofNullable(this.cacheServerConfigurers)
 			.filter(cacheServerConfigurers -> !cacheServerConfigurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(this.beanFactory())
+				Optional.of(this.getBeanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 						Map<String, CacheServerConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)

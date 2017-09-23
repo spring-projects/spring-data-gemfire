@@ -324,11 +324,11 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 * @return the resolved {@link PdxSerializer} from configuration.
 	 * @see org.apache.geode.pdx.PdxSerializer
 	 * @see #newPdxSerializer(BeanFactory)
-	 * @see #beanFactory()
+	 * @see #getBeanFactory()
 	 */
 	protected PdxSerializer resolvePdxSerializer(String pdxSerializerBeanName) {
 
-		BeanFactory beanFactory = beanFactory();
+		BeanFactory beanFactory = getBeanFactory();
 
 		return Optional.ofNullable(pdxSerializerBeanName)
 			.filter(beanFactory::containsBean)
@@ -346,7 +346,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends PdxSerializer> T newPdxSerializer() {
-		return newPdxSerializer(beanFactory());
+		return newPdxSerializer(getBeanFactory());
 	}
 
 	/**
@@ -443,8 +443,8 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 */
 	protected <T extends CacheFactoryBean> T configureCacheFactoryBean(T gemfireCache) {
 
-		gemfireCache.setBeanClassLoader(beanClassLoader());
-		gemfireCache.setBeanFactory(beanFactory());
+		gemfireCache.setBeanClassLoader(getBeanClassLoader());
+		gemfireCache.setBeanFactory(getBeanFactory());
 		gemfireCache.setCacheXml(getCacheXml());
 		gemfireCache.setClose(isClose());
 		gemfireCache.setCopyOnRead(getCopyOnRead());

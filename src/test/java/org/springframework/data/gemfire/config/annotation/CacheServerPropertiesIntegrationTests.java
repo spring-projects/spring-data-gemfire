@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
-import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
@@ -45,7 +45,7 @@ import org.springframework.mock.env.MockPropertySource;
  * @see org.springframework.core.env.PropertySource
  * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
  * @see org.springframework.data.gemfire.server.SubscriptionEvictionPolicy
- * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMocking
+ * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
  * @since 2.0.0
  */
 public class CacheServerPropertiesIntegrationTests {
@@ -193,7 +193,7 @@ public class CacheServerPropertiesIntegrationTests {
 	}
 
 	@PeerCacheApplication
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnableCacheServer(name = "TestCacheServer", bindAddress = "192.16.0.22", hostnameForClients = "skullbox",
 		maxConnections = 100, maxThreads = 8, messageTimeToLive = 300, port = 11235, subscriptionCapacity = 100,
 		subscriptionEvictionPolicy = SubscriptionEvictionPolicy.ENTRY)
@@ -211,7 +211,7 @@ public class CacheServerPropertiesIntegrationTests {
 	}
 
 	@CacheServerApplication
-	@EnableGemFireMocking
+	@EnableGemFireMockObjects
 	@EnableCacheServer(name = "TestCacheServer")
 	static class TestCacheServersConfiguration {
 	}
