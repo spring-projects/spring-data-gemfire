@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>2.0.0.RELEASE</version>
+		<version>2.1.0.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
@@ -22,15 +22,15 @@
 		<gemfire.version>9.1.1</gemfire.version>
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
-		<springdata.commons>2.0.0.RELEASE</springdata.commons>
+		<springdata.commons>2.1.0.BUILD-SNAPSHOT</springdata.commons>
 		<spring-shell.version>1.2.0.RELEASE</spring-shell.version>
 		<java-module-name>spring.data.gemfire</java-module-name>
 	</properties>
 
 	<repositories>
 		<repository>
-			<id>spring-libs-release</id>
-			<url>https://repo.spring.io/libs-release</url>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 		<repository>
 			<id>apache-snapshots</id>
