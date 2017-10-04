@@ -511,7 +511,7 @@ These aspects can easily be configured and changed through the _Spring_ containe
 the `DBLoader` code.
 
 [[apis:spring-cache-abstraction]]
-== Support for Spring Cache Abstraction
+== Support for the Spring Cache Abstraction
 
 _Spring Data GemFire_ provides an implementation of the _Spring_
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[Cache Abstraction]
