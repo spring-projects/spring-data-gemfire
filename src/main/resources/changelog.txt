@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.8.RELEASE (2017-10-11)
+---------------------------------------------
+* SGF-678 - Upgrade to Pivotal GemFire 8.2.7.
+* SGF-661 - Release 1.9.8 (Ingalls SR8).
+
+
 Changes in version 2.0.0.RELEASE (2017-10-02)
 ---------------------------------------------
 * SGF-674 - Add EnableClusterConfiguration annotation to push cluster configuration meta-data from the client to the server.
