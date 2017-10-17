@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -75,13 +76,22 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.QueryStatistics;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.pdx.PdxSerializer;
 import org.mockito.ArgumentMatchers;
+import org.mockito.stubbing.Answer;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
+import org.springframework.data.gemfire.test.mock.support.MockObjectInvocationException;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 
 /**
@@ -116,6 +126,9 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 	private static final Map<String, Region<Object, Object>> regions = new ConcurrentHashMap<>();
 
 	private static final Map<String, RegionAttributes<Object, Object>> regionAttributes = new ConcurrentHashMap<>();
+
+	private static final String FROM_KEYWORD = "FROM";
+	private static final String WHERE_KEYWORD = "WHERE";
 
 	private static final String REPEATING_REGION_SEPARATOR = Region.SEPARATOR + "{2,}";
 
@@ -247,14 +260,17 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 
 		doAnswer(newVoidAnswer(invocation -> mockClientCache.close())).when(mockClientCache).close(anyBoolean());
 
-		return mockClientRegionFactory(mockCacheApi(mockClientCache));
+		when(mockClientCache.createClientRegionFactory(any(ClientRegionShortcut.class)))
+			.thenAnswer(invocation -> mockClientRegionFactory(mockClientCache));
+
+		return mockQueryService(mockCacheApi(mockClientCache));
 	}
 
 	public static GemFireCache mockGemFireCache() {
 
 		GemFireCache mockGemFireCache = mock(GemFireCache.class);
 
-		return mockCacheApi(mockGemFireCache);
+		return mockQueryService(mockCacheApi(mockGemFireCache));
 	}
 
 	public static Cache mockPeerCache() {
@@ -290,7 +306,7 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		when(mockCache.getReconnectedCache()).thenAnswer(invocation -> mockPeerCache());
 		when(mockCache.getSearchTimeout()).thenAnswer(newGetter(searchTimeout));
 
-		return mockCacheApi(mockCache);
+		return mockQueryService(mockCacheApi(mockCache));
 	}
 
 	public static CacheServer mockCacheServer() {
@@ -365,13 +381,10 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <K, V> ClientCache mockClientRegionFactory(ClientCache mockClientCache) {
+	public static <K, V> ClientRegionFactory<K, V> mockClientRegionFactory(ClientCache mockClientCache) {
 
 		ClientRegionFactory<K, V> mockClientRegionFactory =
 			mock(ClientRegionFactory.class, mockObjectIdentifier("MockClientRegionFactory"));
-
-		when(mockClientCache.<K, V>createClientRegionFactory(any(ClientRegionShortcut.class)))
-			.thenReturn(mockClientRegionFactory);
 
 		ExpirationAttributes DEFAULT_EXPIRATION_ATTRIBUTES =
 			new ExpirationAttributes(0, ExpirationAction.INVALIDATE);
@@ -486,7 +499,7 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		when(mockClientRegionFactory.createSubregion(any(Region.class), anyString())).thenAnswer(invocation ->
 			mockSubRegion(invocation.getArgument(0), invocation.getArgument(1), mockRegionAttributes));
 
-		return mockClientCache;
+		return mockClientRegionFactory;
 	}
 
 	public static ClientSubscriptionConfig mockClientSubscriptionConfig() {
@@ -773,6 +786,180 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		});
 
 		return mockPoolFactory;
+	}
+
+	public static Pool mockQueryService(Pool pool) {
+
+		QueryService mockQueryService = mockQueryService();
+
+		when(pool.getQueryService()).thenReturn(mockQueryService);
+
+		return pool;
+	}
+
+	public static <T extends RegionService> T mockQueryService(T regionService) {
+
+		QueryService mockQueryService = mockQueryService();
+
+		when(regionService.getQueryService()).thenReturn(mockQueryService);
+
+		if (regionService instanceof ClientCache) {
+			when(((ClientCache) regionService).getLocalQueryService()).thenReturn(mockQueryService);
+		}
+
+		return regionService;
+	}
+
+	// TODO write more mocking logic for the QueryService interface
+	public static QueryService mockQueryService() {
+
+		QueryService mockQueryService = mock(QueryService.class);
+
+		Set<CqQuery> cqQueries = new ConcurrentHashSet<>();
+
+		try {
+			when(mockQueryService.getCqs()).thenAnswer(invocation -> cqQueries.toArray(new CqQuery[cqQueries.size()]));
+
+			when(mockQueryService.getCq(anyString())).thenAnswer(invocation ->
+				cqQueries.stream().filter(cqQuery -> invocation.getArgument(0).equals(cqQuery.getName()))
+					.findFirst().orElse(null));
+
+			when(mockQueryService.getCqs(anyString())).thenAnswer(invocation -> {
+
+				List<CqQuery> cqQueriesByRegion = cqQueries.stream().filter(cqQuery -> {
+
+					String queryString = cqQuery.getQueryString();
+
+					int indexOfFromClause = queryString.indexOf(FROM_KEYWORD);
+					int indexOfWhereClause = queryString.indexOf(WHERE_KEYWORD);
+
+					queryString = (indexOfFromClause > -1
+						? queryString.substring(indexOfFromClause + FROM_KEYWORD.length()) : queryString);
+
+					queryString = (indexOfWhereClause > 0 ? queryString.substring(0, indexOfWhereClause) : queryString);
+
+					queryString = (queryString.startsWith(Region.SEPARATOR) ? queryString.substring(1) : queryString);
+
+					return invocation.getArgument(0).equals(queryString.trim());
+
+				}).collect(Collectors.toList());
+
+				return cqQueriesByRegion.toArray(new CqQuery[cqQueriesByRegion.size()]);
+			});
+
+			when(mockQueryService.newCq(anyString(), any(CqAttributes.class))).thenAnswer(invocation ->
+				add(cqQueries, mockCqQuery(null, invocation.getArgument(0), invocation.getArgument(1),
+					false)));
+
+			when(mockQueryService.newCq(anyString(), any(CqAttributes.class), anyBoolean())).thenAnswer(invocation ->
+				add(cqQueries, mockCqQuery(null, invocation.getArgument(0), invocation.getArgument(1),
+					invocation.getArgument(2))));
+
+			when(mockQueryService.newCq(anyString(), anyString(), any(CqAttributes.class))).thenAnswer(invocation ->
+				add(cqQueries, mockCqQuery(invocation.getArgument(0), invocation.getArgument(1),
+					invocation.getArgument(2), false)));
+
+			when(mockQueryService.newCq(anyString(), anyString(), any(CqAttributes.class), anyBoolean()))
+				.thenAnswer(invocation -> add(cqQueries, mockCqQuery(invocation.getArgument(0),
+					invocation.getArgument(1), invocation.getArgument(2), invocation.getArgument(3))));
+		}
+		catch (Exception cause) {
+			throw new MockObjectInvocationException(cause);
+		}
+
+		return mockQueryService;
+	}
+
+	private static CqQuery add(Collection<CqQuery> cqQueries, CqQuery cqQuery) {
+		cqQueries.add(cqQuery);
+		return cqQuery;
+	}
+
+	private static CqQuery mockCqQuery(String name, String queryString, CqAttributes cqAttributes, boolean durable) {
+
+		CqQuery mockCqQuery = mock(CqQuery.class);
+
+		Query mockQuery = mockQuery(queryString);
+
+		AtomicBoolean closed = new AtomicBoolean(false);
+		AtomicBoolean running = new AtomicBoolean(false);
+		AtomicBoolean stopped = new AtomicBoolean(true);
+
+		when(mockCqQuery.getCqAttributes()).thenReturn(cqAttributes);
+		when(mockCqQuery.getName()).thenReturn(name);
+		when(mockCqQuery.getQuery()).thenReturn(mockQuery);
+		when(mockCqQuery.getQueryString()).thenReturn(queryString);
+
+		try {
+			doAnswer(newSetter(closed, true, null)).when(mockCqQuery).close();
+
+			doAnswer(invocation -> {
+
+				running.set(true);
+				stopped.set(false);
+
+				return null;
+
+			}).when(mockCqQuery).execute();
+
+			doAnswer(invocation -> {
+
+				running.set(false);
+				stopped.set(true);
+
+				return null;
+
+			}).when(mockCqQuery).stop();
+		}
+		catch (Exception cause) {
+			throw new MockObjectInvocationException(cause);
+		}
+
+		when(mockCqQuery.isClosed()).thenAnswer(newGetter(closed));
+		when(mockCqQuery.isDurable()).thenReturn(durable);
+		when(mockCqQuery.isRunning()).thenAnswer(newGetter(running));
+		when(mockCqQuery.isStopped()).thenAnswer(newGetter(stopped));
+
+		return mockCqQuery;
+	}
+
+	private static Query mockQuery(String queryString) {
+
+		Query mockQuery = mock(Query.class);
+
+		QueryStatistics mockQueryStatistics = mockQueryStatistics(mockQuery);
+
+		when(mockQuery.getQueryString()).thenReturn(queryString);
+		when(mockQuery.getStatistics()).thenReturn(mockQueryStatistics);
+
+		return mockQuery;
+	}
+
+	private static QueryStatistics mockQueryStatistics(Query query) {
+
+		QueryStatistics mockQueryStatistics = mock(QueryStatistics.class);
+
+		AtomicLong numberOfExecutions = new AtomicLong(0L);
+
+		Answer<Object> executeAnswer = invocation -> {
+			numberOfExecutions.incrementAndGet();
+			return null;
+		};
+
+		try {
+			when(query.execute()).thenAnswer(executeAnswer);
+			when(query.execute(any(Object[].class))).thenAnswer(executeAnswer);
+			when(query.execute(any(RegionFunctionContext.class))).thenAnswer(executeAnswer);
+			when(query.execute(any(RegionFunctionContext.class), any(Object[].class))).thenAnswer(executeAnswer);
+		}
+		catch (Exception cause) {
+			throw new MockObjectInvocationException(cause);
+		}
+
+		when(mockQueryStatistics.getNumExecutions()).thenAnswer(newGetter(numberOfExecutions));
+		when(mockQueryStatistics.getTotalExecutionTime()).thenReturn(0L);
+
+		return mockQueryStatistics;
 	}
 
 	@SuppressWarnings("unchecked")

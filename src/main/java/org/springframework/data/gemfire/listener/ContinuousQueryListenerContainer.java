@@ -117,7 +117,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	private List<ContinuousQueryListenerContainerConfigurer> cqListenerContainerConfigurers = Collections.emptyList();
 
 	private ContinuousQueryListenerContainerConfigurer compositeCqListenerContainerConfigurer =
-		(beanName, container) -> nullSafeList(cqListenerContainerConfigurers).forEach(configurer ->
+		(beanName, container) -> nullSafeList(this.cqListenerContainerConfigurers).forEach(configurer ->
 			configurer.configure(beanName, container));
 
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -145,14 +145,6 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	/* (non-Javadoc) */
 	private void applyContinuousQueryListenerContainerConfigurers() {
 		applyContinuousQueryListenerContainerConfigurers(getCompositeContinuousQueryListenerContainerConfigurer());
-	}
-
-	/* (non-Javadoc) */
-	private QueryService validateQueryService(QueryService queryService) {
-
-		Assert.state(queryService != null, "QueryService was not properly initialized");
-
-		return queryService;
 	}
 
 	/**
@@ -260,6 +252,14 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		return getQueryService();
 	}
 
+	/* (non-Javadoc) */
+	private QueryService validateQueryService(QueryService queryService) {
+
+		Assert.state(queryService != null, "QueryService is required");
+
+		return queryService;
+	}
+
 	/**
 	 * Initialize the {@link Executor} used to process CQ events asynchronously.
 	 *
@@ -301,7 +301,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * Initializes all the {@link CqQuery Continuous Queries} defined by the {@link ContinuousQueryDefinition defintions}.
 	 */
 	private void initContinuousQueries() {
-		initContinuousQueries(this.continuousQueryDefinitions);
+		initContinuousQueries(getContinuousQueryDefinitions());
 	}
 
 	/* (non-Javadoc) */
@@ -418,11 +418,22 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * Returns a reference to all the configured/registered {@link CqQuery Continuous Queries}.
 	 *
 	 * @return a reference to all the configured/registered {@link CqQuery Continuous Queries}.
-	 * @see java.util.Queue
 	 * @see org.apache.geode.cache.query.CqQuery
+	 * @see java.util.Queue
 	 */
 	protected Queue<CqQuery> getContinuousQueries() {
 		return this.continuousQueries;
+	}
+
+	/**
+	 * Returns a reference to all the configured {@link ContinuousQueryDefinition ContinuousQueryDefinitions}.
+	 *
+	 * @return a reference to all the configured {@link ContinuousQueryDefinition ContinuousQueryDefinitions}.
+	 * @see org.springframework.data.gemfire.listener.ContinuousQueryDefinition
+	 * @see java.util.Set
+	 */
+	protected Set<ContinuousQueryDefinition> getContinuousQueryDefinitions() {
+		return this.continuousQueryDefinitions;
 	}
 
 	/**
@@ -504,6 +515,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @return the phase value of this CQ listener container.
 	 * @see org.springframework.context.Phased#getPhase()
 	 */
+	@Override
 	public int getPhase() {
 		return this.phase;
 	}
@@ -532,8 +544,8 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @param queries set of queries
 	 */
 	public void setQueryListeners(Set<ContinuousQueryDefinition> queries) {
-		this.continuousQueryDefinitions.clear();
-		this.continuousQueryDefinitions.addAll(nullSafeSet(queries));
+		getContinuousQueryDefinitions().clear();
+		getContinuousQueryDefinitions().addAll(nullSafeSet(queries));
 	}
 
 	/**
@@ -596,6 +608,10 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		}
 	}
 
+	public boolean addContinuousQueryDefinition(ContinuousQueryDefinition definition) {
+		return Optional.ofNullable(definition).map(it -> getContinuousQueryDefinitions().add(it)).orElse(false);
+	}
+
 	/* (non-Javadoc) */
 	CqQuery addContinuousQuery(ContinuousQueryDefinition definition) {
 
@@ -641,6 +657,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	public synchronized void start() {
 
 		if (!isRunning()) {
+
 			doStart();
 			this.running = true;
 
@@ -657,6 +674,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 
 	/* (non-Javadoc) */
 	private void execute(CqQuery query) {
+
 		try {
 			query.execute();
 		}
@@ -686,6 +704,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @see #handleListenerError(Throwable)
 	 */
 	private void notify(ContinuousQueryListener listener, CqEvent event) {
+
 		try {
 			listener.onEvent(event);
 		}
@@ -708,8 +727,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 */
 	private void handleListenerError(Throwable cause) {
 
-		getErrorHandler()
-			.filter(errorHandler -> {
+		getErrorHandler().filter(errorHandler -> {
 
 				boolean active = this.isActive();
 

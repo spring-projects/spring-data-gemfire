@@ -27,7 +27,6 @@ import java.util.concurrent.Executor;
 import org.apache.geode.cache.client.Pool;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 import org.springframework.util.ErrorHandler;
 
@@ -75,9 +74,9 @@ public @interface EnableContinuousQueries {
 	/**
 	 * Refers to the name of the {@link Pool} over which CQs are registered and CQ events are received.
 	 *
-	 * Defaults to {@literal gemfirePool}.
+	 * Defaults to unset.
 	 */
-	String poolName() default GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
+	String poolName() default "";
 
 	/**
 	 * Refers to the name of the {@link Executor} bean used to process CQ events asynchronously.
