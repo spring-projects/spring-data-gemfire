@@ -111,11 +111,11 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 			private List<ContinuousQueryDefinition> continuousQueryDefinitions = new ArrayList<>();
 
 			@Nullable @Override
-			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
 				if (bean instanceof ContinuousQueryListenerContainer) {
 					this.container = (ContinuousQueryListenerContainer) bean;
-					this.continuousQueryDefinitions.forEach(definition -> this.container.addListener(definition));
+					this.continuousQueryDefinitions.forEach(this.container::addListener);
 					this.continuousQueryDefinitions.clear();
 				}
 				else if (isApplicationBean(bean)) {
@@ -182,6 +182,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 								true, true);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+
 					})
 					.orElseGet(Collections::emptyList)
 			);

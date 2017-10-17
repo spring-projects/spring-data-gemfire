@@ -48,6 +48,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 import org.springframework.data.gemfire.listener.annotation.ContinuousQuery;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
@@ -60,8 +61,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Integration tests for {@link EnableContinuousQueries}, {@link ContinuousQueryConfiguration}
- * and {@link ContinuousQuery}.
+ * Integration tests for {@link EnableContinuousQueries}, {@link ContinuousQueryConfiguration}, {@link ContinuousQuery}
+ * and {@link ContinuousQueryListenerContainer}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -216,7 +217,7 @@ public class EnableContinuousQueriesConfigurationIntegrationTests extends Client
 
 		@Bean
 		CacheServerConfigurer cacheServerPortConfigurer(
-			@Value("${" + GEMFIRE_CACHE_SERVER_PORT_PROPERTY + ":40404}") int port) {
+				@Value("${" + GEMFIRE_CACHE_SERVER_PORT_PROPERTY + ":40404}") int port) {
 
 			return (bean, cacheServerFactoryBean) -> cacheServerFactoryBean.setPort(port);
 		}
@@ -273,6 +274,7 @@ public class EnableContinuousQueriesConfigurationIntegrationTests extends Client
 					catch (InterruptedException ignore) {
 					}
 				}
+
 				@Override
 				public void close() {
 				}
