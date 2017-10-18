@@ -148,17 +148,17 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 			AnnotationAttributes enableClusterConfigurationAttributes = getAnnotationAttributes(importMetadata);
 
-			setManagementHttpHost(resolveProperty(managementProperty("http.hostname"),
-				DEFAULT_MANAGEMENT_HTTP_HOST));
+			setManagementHttpHost(resolveProperty(managementProperty("http.host"),
+				enableClusterConfigurationAttributes.getString("host")));
 
 			setManagementHttpPort(resolveProperty(managementProperty("http.port"),
-				DEFAULT_MANAGEMENT_HTTP_PORT));
+				enableClusterConfigurationAttributes.<Integer>getNumber("port")));
 
 			setManagementUseHttp(resolveProperty(managementProperty("use-http"),
-				DEFAULT_MANAGEMENT_USE_HTTP));
+				enableClusterConfigurationAttributes.getBoolean("useHttp")));
 
 			setServerRegionShortcut(resolveProperty(clusterProperty("region.type"),
-				RegionShortcut.class, DEFAULT_SERVER_REGION_SHORTCUT));
+				RegionShortcut.class, enableClusterConfigurationAttributes.getEnum("serverRegionShortcut")));
 		}
 	}
 
