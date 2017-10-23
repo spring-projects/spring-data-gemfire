@@ -11,6 +11,7 @@ Changes in version 1.9.8.RELEASE (2017-10-11)
 
 Changes in version 2.0.0.RELEASE (2017-10-02)
 ---------------------------------------------
+* SGF-675 - Add documentation in SDG's Reference Guide for the new Annotation-based configuration model.
 * SGF-674 - Add EnableClusterConfiguration annotation to push cluster configuration meta-data from the client to the server.
 * SGF-673 - Refactor API names used in the Annotation config and GemFire Mock Objects support.
 * SGF-672 - Use GemFire's DEFAULT Pool when a Pool cannot be resolved from the Spring context.
@@ -732,7 +733,7 @@ Changes in version 1.4 M1 (2014-03-31)
     * [SGF-246] - execute function always assumes arguments are passed
     * [SGF-247] - boolean based repository queries generate UnsupportedOperationException in non PDX serialized entities
     * [SGF-249] - The SDG XSD is restricting the use of property placeholder values on <gfe:disk-store/>, compaction-threshold attributes given the attribute type is a short and not string.
-    * [SGF-251] - Creating and using GemFire Repositories based on the Spring Data Commons Repository abstraction does not work properly for domain objects stored in Subregions. 
+    * [SGF-251] - Creating and using GemFire Repositories based on the Spring Data Commons Repository abstraction does not work properly for domain objects stored in Subregions.
     * [SGF-252] - Spring GemFire's Repository extension does not properly handle multiple, identically named Subregions for persisting corresponding application domain objects associated by way of the @Region annotation.
     * [SGF-255] - The <gfe:eviction> element's 'threshold' attribute is required even when the Eviction type is 'HEAP_PERCENTAGE'.
     * [SGF-258] - The SDG XML namespace <partitioned-region> element is missing the 'data-policy' attribute.
@@ -742,7 +743,7 @@ Changes in version 1.4 M1 (2014-03-31)
     * [SGF-88] - Create Regions in Spring Context with Region Shortcuts
     * [SGF-187] - Consider appending to the list of listener a new listener defined by another peer member
     * [SGF-201] - Create a Spring Boot Starter POM for Spring Data GemFire
-    * [SGF-204] - The existing RegionFactoryBean does a lookup of a Region before trying to create one. 
+    * [SGF-204] - The existing RegionFactoryBean does a lookup of a Region before trying to create one.
     * [SGF-209] - GemfireTemplate creates a temporary object for every operation.
     * [SGF-210] - GemfireRepository requires that there be an attribute in the entity class for the key.
     * [SGF-236] - Sub-Region Bean names require prepended "/" (vs. previous use of gfe:lookup-region for sub-regions)
@@ -829,7 +830,7 @@ Changes in version 1.3.1.RELEASE(2013-04-18)
 ** Bug
     * [SGF-159] - isRollbackOnCommitFailure flag is ignored by GemfireTransactionManager when transaction fails.
     * [SGF-169] - Unidirectional Gateway hubs cannot be created and fail with an exception
-    * [SGF-173] - Function Execution throws exception on void return. 
+    * [SGF-173] - Function Execution throws exception on void return.
 
 
 Changes in version 1.3.0.RELEASE (2013-03-14)
@@ -900,7 +901,7 @@ General
 Package org.springframework.data.gemfire
 * Fixed incorrect parsing of pdx-serializer (from value to reference)
 * Fixed incorrect parsing of use-bean-factory-locator
-* Fixed GemfireTransactionCommitException class hierarchy 
+* Fixed GemfireTransactionCommitException class hierarchy
 * Improved handling of GemFire 6.5+ transaction exceptions
 
 Package org.springframework.data.gemfire.client
