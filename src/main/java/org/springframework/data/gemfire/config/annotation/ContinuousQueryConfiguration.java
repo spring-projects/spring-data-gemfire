@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config.annotation;
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +29,8 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.GemFireCache;
-import org.apache.shiro.util.Assert;
+import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,7 @@ import org.springframework.data.gemfire.listener.ContinuousQueryListenerContaine
 import org.springframework.data.gemfire.listener.annotation.ContinuousQuery;
 import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.ErrorHandler;
 import org.springframework.util.StringUtils;
 
@@ -63,6 +66,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.listener.ContinuousQueryDefinition
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListener
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
+ * @see org.springframework.data.gemfire.listener.annotation.ContinuousQuery
  * @since 2.0.0
  */
 @Configuration
@@ -82,7 +86,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 	private String taskExecutorBeanName;
 
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableContinuousQueries.class;
 	}
 
@@ -118,11 +122,14 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 					this.continuousQueryDefinitions.forEach(this.container::addListener);
 					this.continuousQueryDefinitions.clear();
 				}
-				else if (isApplicationBean(bean)) {
+				else if (isApplicationBean(bean, beanName)) {
 
-					List<ContinuousQueryDefinition> definitions = stream(bean.getClass().getMethods())
+					//Object resolvedBean = resolveTargetObject(bean);
+					Object resolvedBean = bean;
+
+					List<ContinuousQueryDefinition> definitions = stream(resolvedBean.getClass().getMethods())
 						.filter(method -> method.isAnnotationPresent(ContinuousQuery.class))
-						.map(method -> ContinuousQueryDefinition.from(bean, method))
+						.map(method -> ContinuousQueryDefinition.from(resolvedBean, method))
 						.collect(Collectors.toList());
 
 					Optional.ofNullable(this.container).map(container -> {
@@ -140,13 +147,34 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 		};
 	}
 
-	private boolean isApplicationBean(Object bean) {
+	private boolean isApplicationBean(Object bean, String beanName) {
 
 		return Optional.ofNullable(bean)
+			//.filter(this::isNotProxy)
+			//.map(this::resolveTargetObject)
 			.map(Object::getClass)
-			.filter(type -> type.getPackage().getName().startsWith(ORG_SPRINGFRAMEWORK_DATA_GEMFIRE_PACKAGE_NAME)
-				|| !type.getPackage().getName().startsWith(ORG_SPRINGFRAMEWORK_PACKAGE_NAME))
+			.map(Class::getPackage)
+			.map(Package::getName)
+			.filter(StringUtils::hasText)
+			.filter(packageName -> packageName.startsWith(ORG_SPRINGFRAMEWORK_DATA_GEMFIRE_PACKAGE_NAME)
+				|| !packageName.startsWith(ORG_SPRINGFRAMEWORK_PACKAGE_NAME))
 			.isPresent();
+	}
+
+	private boolean isNotProxy(Object bean) {
+		return !isProxy(bean);
+	}
+
+	private boolean isProxy(Object bean) {
+		return AopUtils.isAopProxy(bean);
+	}
+
+	private Object resolveTargetObject(Object bean) {
+
+		return Optional.ofNullable(bean)
+			.filter(this::isProxy)
+			.map(proxy -> AopProxyUtils.getSingletonTarget(proxy))
+			.orElse(bean);
 	}
 
 	@Bean

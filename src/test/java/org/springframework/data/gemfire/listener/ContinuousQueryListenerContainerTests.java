@@ -181,7 +181,7 @@ public class ContinuousQueryListenerContainerTests {
 		}
 		catch (IllegalStateException expected) {
 
-			assertThat(expected).hasMessage("QueryService was not properly initialized");
+			assertThat(expected).hasMessage("QueryService is required");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
