@@ -166,7 +166,6 @@ public class EnableContinuousQueriesConfigurationUnitTests {
 	@SuppressWarnings("unused")
 	static class TestContinuousQueryRegistrationAndExecutionOnProxiedBeanConfiguration {
 
-		/*
 		@Bean
 		BeanPostProcessor proxyTestContinuousQueryComponentPostProcessor() {
 
@@ -183,7 +182,6 @@ public class EnableContinuousQueriesConfigurationUnitTests {
 				}
 			};
 		}
-		*/
 
 		@Bean("People")
 		Region<Long, Person> mockPeopleRegion(GemFireCache gemfireCache,

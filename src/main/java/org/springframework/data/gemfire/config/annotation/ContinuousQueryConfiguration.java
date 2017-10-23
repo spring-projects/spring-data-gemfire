@@ -124,8 +124,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 				}
 				else if (isApplicationBean(bean, beanName)) {
 
-					//Object resolvedBean = resolveTargetObject(bean);
-					Object resolvedBean = bean;
+					Object resolvedBean = resolveTargetObject(bean);
 
 					List<ContinuousQueryDefinition> definitions = stream(resolvedBean.getClass().getMethods())
 						.filter(method -> method.isAnnotationPresent(ContinuousQuery.class))
@@ -151,7 +150,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 
 		return Optional.ofNullable(bean)
 			//.filter(this::isNotProxy)
-			//.map(this::resolveTargetObject)
+			.map(this::resolveTargetObject)
 			.map(Object::getClass)
 			.map(Class::getPackage)
 			.map(Package::getName)
