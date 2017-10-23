@@ -31,14 +31,21 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The Person class...
+ * The {@link Person} class is an Abstract Data Type (ADT) modeling a person.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see java.lang.Comparable
+ * @see java.util.Calendar
+ * @see java.util.Date
+ * @see org.springframework.data.annotation.Id
+ * @see org.springframework.data.annotation.PersistenceConstructor
+ * @see org.springframework.data.gemfire.mapping.annotation.Region
+ * @see org.springframework.data.gemfire.test.support.IdentifierSequence
+ * @since 2.0.0
  */
 @Region("People")
 @SuppressWarnings("unused")
-public class Person implements Serializable {
+public class Person implements Comparable<Person>, Serializable {
 
 	protected static final String BIRTH_DATE_PATTERN = "yyyy/MM/dd";
 
@@ -53,11 +60,14 @@ public class Person implements Serializable {
 	private final String lastName;
 
 	public static Date newBirthDate(int year, int month, int dayOfMonth) {
+
 		Calendar birthDate = Calendar.getInstance();
+
 		birthDate.clear();
 		birthDate.set(Calendar.YEAR, year);
 		birthDate.set(Calendar.MONTH, month);
 		birthDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
 		return birthDate.getTime();
 	}
 
@@ -71,8 +81,9 @@ public class Person implements Serializable {
 
 	@PersistenceConstructor
 	public Person(String firstName, String lastName, Date birthDate, Gender gender) {
-		Assert.hasText(firstName, "firstName must be specified");
-		Assert.hasText(lastName, "lastName must be specified");
+
+		Assert.hasText(firstName, "firstName is required");
+		Assert.hasText(lastName, "lastName is required");
 
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -122,8 +133,24 @@ public class Person implements Serializable {
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
-		if (obj == this) {
+	public int compareTo(Person that) {
+
+		int result = nullSafeCompareTo(this.getLastName(), that.getLastName());
+
+		result = (result != 0 ? result : nullSafeCompareTo(this.getFirstName(), that.getLastName()));
+		result = (result != 0 ? result : nullSafeCompareTo(this.getBirthDate(), that.getBirthDate()));
+
+		return result;
+	}
+
+	private <T extends Comparable<T>> int nullSafeCompareTo(T comparableOne, T comparableTwo) {
+		return (comparableOne == null ? 1 : (comparableTwo == null ? -1 : comparableOne.compareTo(comparableTwo)));
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+
+		if (this == obj) {
 			return true;
 		}
 
@@ -142,11 +169,14 @@ public class Person implements Serializable {
 
 	@Override
 	public int hashCode() {
+
 		int hashValue = 17;
+
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getId());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getBirthDate());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getFirstName());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getLastName());
+
 		return hashValue;
 	}
 
