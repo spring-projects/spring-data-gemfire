@@ -3,6 +3,15 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.1.RELEASE (2017-10-27)
+---------------------------------------------
+* SGF-682 - Beans proxied by the Spring container with declared CQs are not registered and triggered.
+* SGF-681 - EnableClusterConfiguration annotation attributes are silently ignored.
+* SGF-680 - Using SD Repositories and @EnableContinuousQueries causes errors with Spring container initialization.
+* SGF-676 - Release 2.0.1 (Kay SR1).
+* SGF-660 - Spring Cache Abstraction annotations do not trigger CQ.
+
+
 Changes in version 1.9.8.RELEASE (2017-10-11)
 ---------------------------------------------
 * SGF-678 - Upgrade to Pivotal GemFire 8.2.7.
