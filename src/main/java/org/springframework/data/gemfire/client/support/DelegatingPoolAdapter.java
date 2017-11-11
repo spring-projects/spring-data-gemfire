@@ -182,6 +182,13 @@ public abstract class DelegatingPoolAdapter extends FactoryDefaultsPoolAdapter {
 
 	/* (non-Javadoc) */
 	@Override
+	public int getSocketConnectTimeout() {
+		return Optional.ofNullable(getDelegate()).map(Pool::getSocketConnectTimeout)
+			.orElseGet(super::getSocketConnectTimeout);
+	}
+
+	/* (non-Javadoc) */
+	@Override
 	public int getStatisticInterval() {
 		return Optional.ofNullable(getDelegate()).map(Pool::getStatisticInterval)
 			.orElseGet(super::getStatisticInterval);

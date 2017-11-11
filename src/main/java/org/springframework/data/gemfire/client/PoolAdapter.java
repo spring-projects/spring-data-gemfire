@@ -139,6 +139,11 @@ public abstract class PoolAdapter implements Pool {
 	}
 
 	/* (non-Javadoc) */
+	public int getSocketConnectTimeout() {
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
+	}
+
+	/* (non-Javadoc) */
 	public int getStatisticInterval() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}

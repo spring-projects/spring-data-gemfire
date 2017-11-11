@@ -54,7 +54,7 @@ public abstract class DefaultableDelegatingPoolAdapter {
 
 	/* (non-Javadoc) */
 	protected Pool getDelegate() {
-		return delegate;
+		return this.delegate;
 	}
 
 	/* (non-Javadoc) */
@@ -76,6 +76,7 @@ public abstract class DefaultableDelegatingPoolAdapter {
 
 	/* (non-Javadoc) */
 	protected <E, T extends Collection<E>> T defaultIfEmpty(T defaultValue, ValueProvider<T> valueProvider) {
+
 		if (prefersPool()) {
 			T value = valueProvider.getValue();
 			return (value == null || value.isEmpty() ? defaultValue : value);
@@ -112,65 +113,37 @@ public abstract class DefaultableDelegatingPoolAdapter {
 
 	/* (non-Javadoc) */
 	public int getFreeConnectionTimeout(Integer defaultFreeConnectionTimeout) {
-		return defaultIfNull(defaultFreeConnectionTimeout, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getFreeConnectionTimeout();
-			}
-		});
+		return defaultIfNull(defaultFreeConnectionTimeout, () -> getDelegate().getFreeConnectionTimeout());
 	}
 
 	/* (non-Javadoc) */
 	public long getIdleTimeout(Long defaultIdleTimeout) {
-		return defaultIfNull(defaultIdleTimeout, new ValueProvider<Long>() {
-			@Override public Long getValue() {
-				return getDelegate().getIdleTimeout();
-			}
-		});
+		return defaultIfNull(defaultIdleTimeout, () -> getDelegate().getIdleTimeout());
 	}
 
 	/* (non-Javadoc) */
 	public int getLoadConditioningInterval(Integer defaultLoadConditioningInterval) {
-		return defaultIfNull(defaultLoadConditioningInterval, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getLoadConditioningInterval();
-			}
-		});
+		return defaultIfNull(defaultLoadConditioningInterval, () -> getDelegate().getLoadConditioningInterval());
 	}
 
 	/* (non-Javadoc) */
 	public List<InetSocketAddress> getLocators(List<InetSocketAddress> defaultLocators) {
-		return defaultIfEmpty(defaultLocators, new ValueProvider<List<InetSocketAddress>>() {
-			@Override public List<InetSocketAddress> getValue() {
-				return getDelegate().getLocators();
-			}
-		});
+		return defaultIfEmpty(defaultLocators, () -> getDelegate().getLocators());
 	}
 
 	/* (non-Javadoc) */
 	public int getMaxConnections(Integer defaultMaxConnections) {
-		return defaultIfNull(defaultMaxConnections, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getMaxConnections();
-			}
-		});
+		return defaultIfNull(defaultMaxConnections, () -> getDelegate().getMaxConnections());
 	}
 
 	/* (non-Javadoc) */
 	public int getMinConnections(Integer defaultMinConnections) {
-		return defaultIfNull(defaultMinConnections, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getMinConnections();
-			}
-		});
+		return defaultIfNull(defaultMinConnections, () -> getDelegate().getMinConnections());
 	}
 
 	/* (non-Javadoc) */
 	public boolean getMultiuserAuthentication(Boolean defaultMultiUserAuthentication) {
-		return defaultIfNull(defaultMultiUserAuthentication, new ValueProvider<Boolean>() {
-			@Override public Boolean getValue() {
-				return getDelegate().getMultiuserAuthentication();
-			}
-		});
+		return defaultIfNull(defaultMultiUserAuthentication, () -> getDelegate().getMultiuserAuthentication());
 	}
 
 	/* (non-Javadoc) */
@@ -185,128 +158,78 @@ public abstract class DefaultableDelegatingPoolAdapter {
 
 	/* (non-Javadoc) */
 	public long getPingInterval(Long defaultPingInterval) {
-		return defaultIfNull(defaultPingInterval, new ValueProvider<Long>() {
-			@Override public Long getValue() {
-				return getDelegate().getPingInterval();
-			}
-		});
+		return defaultIfNull(defaultPingInterval, () -> getDelegate().getPingInterval());
 	}
 
 	/* (non-Javadoc) */
 	public boolean getPRSingleHopEnabled(Boolean defaultPrSingleHopEnabled) {
-		return defaultIfNull(defaultPrSingleHopEnabled, new ValueProvider<Boolean>() {
-			@Override public Boolean getValue() {
-				return getDelegate().getPRSingleHopEnabled();
-			}
-		});
+		return defaultIfNull(defaultPrSingleHopEnabled, () -> getDelegate().getPRSingleHopEnabled());
 	}
 
 	/* (non-Javadoc) */
 	public QueryService getQueryService(QueryService defaultQueryService) {
-		return defaultIfNull(defaultQueryService, new ValueProvider<QueryService>() {
-			@Override public QueryService getValue() {
-				return getDelegate().getQueryService();
-			}
-		});
+		return defaultIfNull(defaultQueryService, () -> getDelegate().getQueryService());
 	}
 
 	/* (non-Javadoc) */
 	public int getReadTimeout(Integer defaultReadTimeout) {
-		return defaultIfNull(defaultReadTimeout, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getReadTimeout();
-			}
-		});
+		return defaultIfNull(defaultReadTimeout, () -> getDelegate().getReadTimeout());
 	}
 
 	/* (non-Javadoc) */
 	public int getRetryAttempts(Integer defaultRetryAttempts) {
-		return defaultIfNull(defaultRetryAttempts, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getRetryAttempts();
-			}
-		});
+		return defaultIfNull(defaultRetryAttempts, () -> getDelegate().getRetryAttempts());
 	}
 
 	/* (non-Javadoc) */
 	public String getServerGroup(String defaultServerGroup) {
-		return defaultIfNull(defaultServerGroup, new ValueProvider<String>() {
-			@Override public String getValue() {
-				return getDelegate().getServerGroup();
-			}
-		});
+		return defaultIfNull(defaultServerGroup, () -> getDelegate().getServerGroup());
 	}
 
 	/* (non-Javadoc) */
 	public List<InetSocketAddress> getServers(List<InetSocketAddress> defaultServers) {
-		return defaultIfEmpty(defaultServers, new ValueProvider<List<InetSocketAddress>>() {
-			@Override public List<InetSocketAddress> getValue() {
-				return getDelegate().getServers();
-			}
-		});
+		return defaultIfEmpty(defaultServers, () -> getDelegate().getServers());
 	}
 
 	/* (non-Javadoc) */
 	public int getSocketBufferSize(Integer defaultSocketBufferSize) {
-		return defaultIfNull(defaultSocketBufferSize, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getSocketBufferSize();
-			}
-		});
+		return defaultIfNull(defaultSocketBufferSize, () -> getDelegate().getSocketBufferSize());
+	}
+
+	/* (non-Javadoc) */
+	public int getSocketConnectTimeout(Integer defaultSocketConnectTimeout) {
+		return defaultIfNull(defaultSocketConnectTimeout, () -> getDelegate().getSocketConnectTimeout());
 	}
 
 	/* (non-Javadoc) */
 	public int getStatisticInterval(Integer defaultStatisticInterval) {
-		return defaultIfNull(defaultStatisticInterval, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getStatisticInterval();
-			}
-		});
+		return defaultIfNull(defaultStatisticInterval, () -> getDelegate().getStatisticInterval());
 	}
 
 	/* (non-Javadoc) */
 	public int getSubscriptionAckInterval(Integer defaultSubscriptionAckInterval) {
-		return defaultIfNull(defaultSubscriptionAckInterval, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getSubscriptionAckInterval();
-			}
-		});
+		return defaultIfNull(defaultSubscriptionAckInterval, () -> getDelegate().getSubscriptionAckInterval());
 	}
 
 	/* (non-Javadoc) */
 	public boolean getSubscriptionEnabled(Boolean defaultSubscriptionEnabled) {
-		return defaultIfNull(defaultSubscriptionEnabled, new ValueProvider<Boolean>() {
-			@Override public Boolean getValue() {
-				return getDelegate().getSubscriptionEnabled();
-			}
-		});
+		return defaultIfNull(defaultSubscriptionEnabled, () -> getDelegate().getSubscriptionEnabled());
 	}
 
 	/* (non-Javadoc) */
 	public int getSubscriptionMessageTrackingTimeout(Integer defaultSubscriptionMessageTrackingTimeout) {
-		return defaultIfNull(defaultSubscriptionMessageTrackingTimeout, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getSubscriptionMessageTrackingTimeout();
-			}
-		});
+		return defaultIfNull(defaultSubscriptionMessageTrackingTimeout,
+			() -> getDelegate().getSubscriptionMessageTrackingTimeout());
 	}
 
 	/* (non-Javadoc) */
 	public int getSubscriptionRedundancy(Integer defaultSubscriptionRedundancy) {
-		return defaultIfNull(defaultSubscriptionRedundancy, new ValueProvider<Integer>() {
-			@Override public Integer getValue() {
-				return getDelegate().getSubscriptionRedundancy();
-			}
-		});
+		return defaultIfNull(defaultSubscriptionRedundancy, () -> getDelegate().getSubscriptionRedundancy());
 	}
 
 	/* (non-Javadoc) */
 	public boolean getThreadLocalConnections(Boolean defaultThreadLocalConnections) {
-		return defaultIfNull(defaultThreadLocalConnections, new ValueProvider<Boolean>() {
-			@Override public Boolean getValue() {
-				return getDelegate().getThreadLocalConnections();
-			}
-		});
+		return defaultIfNull(defaultThreadLocalConnections, () -> getDelegate().getThreadLocalConnections());
 	}
 
 	/* (non-Javadoc) */
@@ -326,13 +249,13 @@ public abstract class DefaultableDelegatingPoolAdapter {
 
 	/* (non-Javadoc) */
 	enum Preference {
+
 		PREFER_DEFAULT,
-		PREFER_POOL;
+		PREFER_POOL
 	}
 
 	/* (non-Javadoc) */
 	interface ValueProvider<T> {
 		T getValue();
 	}
-
 }

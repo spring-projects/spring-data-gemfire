@@ -58,95 +58,102 @@ public class FactoryDefaultsPoolAdapterTest {
 
 	@Test
 	public void defaultPoolAdapterConfigurationPropertiesReturnDefaultFactorySettings() {
-		assertThat(poolAdapter.getFreeConnectionTimeout(), is(equalTo(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT)));
-		assertThat(poolAdapter.getIdleTimeout(), is(equalTo(PoolFactory.DEFAULT_IDLE_TIMEOUT)));
-		assertThat(poolAdapter.getLoadConditioningInterval(), is(equalTo(PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL)));
-		assertThat(poolAdapter.getMaxConnections(), is(equalTo(PoolFactory.DEFAULT_MAX_CONNECTIONS)));
-		assertThat(poolAdapter.getMinConnections(), is(equalTo(PoolFactory.DEFAULT_MIN_CONNECTIONS)));
-		assertThat(poolAdapter.getMultiuserAuthentication(), is(equalTo(PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION)));
-		assertThat(poolAdapter.getPRSingleHopEnabled(), is(equalTo(PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED)));
-		assertThat(poolAdapter.getPingInterval(), is(equalTo(PoolFactory.DEFAULT_PING_INTERVAL)));
-		assertThat(poolAdapter.getReadTimeout(), is(equalTo(PoolFactory.DEFAULT_READ_TIMEOUT)));
-		assertThat(poolAdapter.getRetryAttempts(), is(equalTo(PoolFactory.DEFAULT_RETRY_ATTEMPTS)));
-		assertThat(poolAdapter.getServerGroup(), is(equalTo(PoolFactory.DEFAULT_SERVER_GROUP)));
-		assertThat(poolAdapter.getSocketBufferSize(), is(equalTo(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE)));
-		assertThat(poolAdapter.getStatisticInterval(), is(equalTo(PoolFactory.DEFAULT_STATISTIC_INTERVAL)));
-		assertThat(poolAdapter.getSubscriptionAckInterval(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL)));
-		assertThat(poolAdapter.getSubscriptionEnabled(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED)));
-		assertThat(poolAdapter.getSubscriptionMessageTrackingTimeout(),
+
+		assertThat(this.poolAdapter.getFreeConnectionTimeout(), is(equalTo(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT)));
+		assertThat(this.poolAdapter.getIdleTimeout(), is(equalTo(PoolFactory.DEFAULT_IDLE_TIMEOUT)));
+		assertThat(this.poolAdapter.getLoadConditioningInterval(), is(equalTo(PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL)));
+		assertThat(this.poolAdapter.getMaxConnections(), is(equalTo(PoolFactory.DEFAULT_MAX_CONNECTIONS)));
+		assertThat(this.poolAdapter.getMinConnections(), is(equalTo(PoolFactory.DEFAULT_MIN_CONNECTIONS)));
+		assertThat(this.poolAdapter.getMultiuserAuthentication(), is(equalTo(PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION)));
+		assertThat(this.poolAdapter.getPRSingleHopEnabled(), is(equalTo(PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED)));
+		assertThat(this.poolAdapter.getPingInterval(), is(equalTo(PoolFactory.DEFAULT_PING_INTERVAL)));
+		assertThat(this.poolAdapter.getReadTimeout(), is(equalTo(PoolFactory.DEFAULT_READ_TIMEOUT)));
+		assertThat(this.poolAdapter.getRetryAttempts(), is(equalTo(PoolFactory.DEFAULT_RETRY_ATTEMPTS)));
+		assertThat(this.poolAdapter.getServerGroup(), is(equalTo(PoolFactory.DEFAULT_SERVER_GROUP)));
+		assertThat(this.poolAdapter.getSocketBufferSize(), is(equalTo(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE)));
+		assertThat(this.poolAdapter.getSocketConnectTimeout(), is(equalTo(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT)));
+		assertThat(this.poolAdapter.getStatisticInterval(), is(equalTo(PoolFactory.DEFAULT_STATISTIC_INTERVAL)));
+		assertThat(this.poolAdapter.getSubscriptionAckInterval(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL)));
+		assertThat(this.poolAdapter.getSubscriptionEnabled(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED)));
+		assertThat(this.poolAdapter.getSubscriptionMessageTrackingTimeout(),
 			is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT)));
-		assertThat(poolAdapter.getSubscriptionRedundancy(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY)));
-		assertThat(poolAdapter.getThreadLocalConnections(), is(equalTo(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS)));
+		assertThat(this.poolAdapter.getSubscriptionRedundancy(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY)));
+		assertThat(this.poolAdapter.getThreadLocalConnections(), is(equalTo(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS)));
 	}
 
 	@Test
 	public void locatorsReturnsEmptyList() {
-		assertThat(poolAdapter.getLocators(), is(equalTo(Collections.<InetSocketAddress>emptyList())));
+		assertThat(this.poolAdapter.getLocators(), is(equalTo(Collections.<InetSocketAddress>emptyList())));
 	}
 
 	@Test
 	public void nameReturnsDefault() {
-		assertThat(poolAdapter.getName(), is(equalTo(FactoryDefaultsPoolAdapter.DEFAULT_POOL_NAME)));
+		assertThat(this.poolAdapter.getName(), is(equalTo(FactoryDefaultsPoolAdapter.DEFAULT_POOL_NAME)));
 	}
 
 	@Test
 	public void onlineLocatorsIsEmptyList() {
-		assertThat(poolAdapter.getOnlineLocators(), is(equalTo(Collections.EMPTY_LIST)));
+		assertThat(this.poolAdapter.getOnlineLocators(), is(equalTo(Collections.EMPTY_LIST)));
 	}
 
 	@Test
 	public void queryServiceIsNull() {
-		assertThat(poolAdapter.getQueryService(), is(nullValue()));
+		assertThat(this.poolAdapter.getQueryService(), is(nullValue()));
 	}
 
 	@Test
 	public void serversReturnsLocalhostListeningOnDefaultCacheServerPort() {
-		assertThat(poolAdapter.getServers(), is(equalTo(Collections.singletonList(
+		assertThat(this.poolAdapter.getServers(), is(equalTo(Collections.singletonList(
 			newSocketAddress("localhost", DEFAULT_CACHE_SERVER_PORT)))));
 	}
 
 	@Test
 	public void isDestroyedIsUnsupported() {
+
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
 
-		poolAdapter.isDestroyed();
+		this.poolAdapter.isDestroyed();
 	}
 
 	@Test
 	public void getPendingEventCountIsUnsupported() {
+
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
 
-		poolAdapter.getPendingEventCount();
+		this.poolAdapter.getPendingEventCount();
 	}
 
 	@Test
 	public void destroyedIsUnsupported() {
+
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
 
-		poolAdapter.destroy();
+		this.poolAdapter.destroy();
 	}
 
 	@Test
 	public void destroyedWithKeepAliveIsUnsupported() {
+
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
 
-		poolAdapter.destroy(false);
+		this.poolAdapter.destroy(false);
 	}
 
 	@Test
 	public void releaseThreadLocalConnectionsIsUnsupported() {
+
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(FactoryDefaultsPoolAdapter.NOT_IMPLEMENTED);
 
-		poolAdapter.releaseThreadLocalConnection();
+		this.poolAdapter.releaseThreadLocalConnection();
 	}
 }

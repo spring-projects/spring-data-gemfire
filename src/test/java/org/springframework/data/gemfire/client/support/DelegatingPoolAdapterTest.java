@@ -79,41 +79,44 @@ public class DelegatingPoolAdapterTest {
 
 	@Before
 	public void setup() {
-		when(mockPool.isDestroyed()).thenReturn(false);
-		when(mockPool.getFreeConnectionTimeout()).thenReturn(10000);
-		when(mockPool.getIdleTimeout()).thenReturn(120000L);
-		when(mockPool.getLoadConditioningInterval()).thenReturn(300000);
-		when(mockPool.getLocators()).thenReturn(Collections.singletonList(newSocketAddress("skullbox", 11235)));
-		when(mockPool.getMaxConnections()).thenReturn(500);
-		when(mockPool.getMinConnections()).thenReturn(50);
-		when(mockPool.getMultiuserAuthentication()).thenReturn(true);
-		when(mockPool.getName()).thenReturn("MockPool");
-		when(mockPool.getOnlineLocators()).thenReturn(Collections.singletonList(newSocketAddress("trinity", 10101)));
-		when(mockPool.getPendingEventCount()).thenReturn(2);
-		when(mockPool.getPingInterval()).thenReturn(15000L);
-		when(mockPool.getPRSingleHopEnabled()).thenReturn(true);
-		when(mockPool.getQueryService()).thenReturn(mockQueryService);
-		when(mockPool.getReadTimeout()).thenReturn(30000);
-		when(mockPool.getRetryAttempts()).thenReturn(1);
-		when(mockPool.getServerGroup()).thenReturn("TestGroup");
-		when(mockPool.getServers()).thenReturn(Collections.singletonList(newSocketAddress("xghost", 12480)));
-		when(mockPool.getSocketBufferSize()).thenReturn(16384);
-		when(mockPool.getStatisticInterval()).thenReturn(1000);
-		when(mockPool.getSubscriptionAckInterval()).thenReturn(200);
-		when(mockPool.getSubscriptionEnabled()).thenReturn(true);
-		when(mockPool.getSubscriptionMessageTrackingTimeout()).thenReturn(60000);
-		when(mockPool.getSubscriptionRedundancy()).thenReturn(2);
-		when(mockPool.getThreadLocalConnections()).thenReturn(false);
+
+		when(this.mockPool.isDestroyed()).thenReturn(false);
+		when(this.mockPool.getFreeConnectionTimeout()).thenReturn(10000);
+		when(this.mockPool.getIdleTimeout()).thenReturn(120000L);
+		when(this.mockPool.getLoadConditioningInterval()).thenReturn(300000);
+		when(this.mockPool.getLocators()).thenReturn(Collections.singletonList(newSocketAddress("skullbox", 11235)));
+		when(this.mockPool.getMaxConnections()).thenReturn(500);
+		when(this.mockPool.getMinConnections()).thenReturn(50);
+		when(this.mockPool.getMultiuserAuthentication()).thenReturn(true);
+		when(this.mockPool.getName()).thenReturn("MockPool");
+		when(this.mockPool.getOnlineLocators()).thenReturn(Collections.singletonList(newSocketAddress("trinity", 10101)));
+		when(this.mockPool.getPendingEventCount()).thenReturn(2);
+		when(this.mockPool.getPingInterval()).thenReturn(15000L);
+		when(this.mockPool.getPRSingleHopEnabled()).thenReturn(true);
+		when(this.mockPool.getQueryService()).thenReturn(this.mockQueryService);
+		when(this.mockPool.getReadTimeout()).thenReturn(30000);
+		when(this.mockPool.getRetryAttempts()).thenReturn(1);
+		when(this.mockPool.getServerGroup()).thenReturn("TestGroup");
+		when(this.mockPool.getServers()).thenReturn(Collections.singletonList(newSocketAddress("xghost", 12480)));
+		when(this.mockPool.getSocketBufferSize()).thenReturn(16384);
+		when(this.mockPool.getSocketConnectTimeout()).thenReturn(5000);
+		when(this.mockPool.getStatisticInterval()).thenReturn(1000);
+		when(this.mockPool.getSubscriptionAckInterval()).thenReturn(200);
+		when(this.mockPool.getSubscriptionEnabled()).thenReturn(true);
+		when(this.mockPool.getSubscriptionMessageTrackingTimeout()).thenReturn(60000);
+		when(this.mockPool.getSubscriptionRedundancy()).thenReturn(2);
+		when(this.mockPool.getThreadLocalConnections()).thenReturn(false);
 	}
 
 	@Test
 	public void delegateEqualsMockPool() {
-		assertThat(DelegatingPoolAdapter.from(mockPool).getDelegate(), is(equalTo(mockPool)));
+		assertThat(DelegatingPoolAdapter.from(this.mockPool).getDelegate(), is(equalTo(this.mockPool)));
 	}
 
 	@Test
 	public void mockPoolDelegateUsesMockPool() {
-		Pool pool = DelegatingPoolAdapter.from(mockPool);
+
+		Pool pool = DelegatingPoolAdapter.from(this.mockPool);
 
 		assertThat(pool.isDestroyed(), is(equalTo(false)));
 		assertThat(pool.getFreeConnectionTimeout(), is(equalTo(10000)));
@@ -128,12 +131,13 @@ public class DelegatingPoolAdapterTest {
 		assertThat(pool.getPendingEventCount(), is(equalTo(2)));
 		assertThat(pool.getPingInterval(), is(equalTo(15000L)));
 		assertThat(pool.getPRSingleHopEnabled(), is(equalTo(true)));
-		assertThat(pool.getQueryService(), is(equalTo(mockQueryService)));
+		assertThat(pool.getQueryService(), is(equalTo(this.mockQueryService)));
 		assertThat(pool.getReadTimeout(), is(equalTo(30000)));
 		assertThat(pool.getRetryAttempts(), is(equalTo(1)));
 		assertThat(pool.getServerGroup(), is(equalTo("TestGroup")));
 		assertThat(pool.getServers(), is(equalTo(Collections.singletonList(newSocketAddress("xghost", 12480)))));
 		assertThat(pool.getSocketBufferSize(), is(equalTo(16384)));
+		assertThat(pool.getSocketConnectTimeout(), is(equalTo(5000)));
 		assertThat(pool.getStatisticInterval(), is(equalTo(1000)));
 		assertThat(pool.getSubscriptionAckInterval(), is(equalTo(200)));
 		assertThat(pool.getSubscriptionEnabled(), is(equalTo(true)));
@@ -141,52 +145,54 @@ public class DelegatingPoolAdapterTest {
 		assertThat(pool.getSubscriptionRedundancy(), is(equalTo(2)));
 		assertThat(pool.getThreadLocalConnections(), is(equalTo(false)));
 
-		verify(mockPool, times(1)).isDestroyed();
-		verify(mockPool, times(1)).getFreeConnectionTimeout();
-		verify(mockPool, times(1)).getIdleTimeout();
-		verify(mockPool, times(1)).getLoadConditioningInterval();
-		verify(mockPool, times(1)).getLocators();
-		verify(mockPool, times(1)).getMaxConnections();
-		verify(mockPool, times(1)).getMinConnections();
-		verify(mockPool, times(1)).getMultiuserAuthentication();
-		verify(mockPool, times(1)).getName();
-		verify(mockPool, times(1)).getPendingEventCount();
-		verify(mockPool, times(1)).getPingInterval();
-		verify(mockPool, times(1)).getPRSingleHopEnabled();
-		verify(mockPool, times(1)).getQueryService();
-		verify(mockPool, times(1)).getReadTimeout();
-		verify(mockPool, times(1)).getRetryAttempts();
-		verify(mockPool, times(1)).getServerGroup();
-		verify(mockPool, times(1)).getServers();
-		verify(mockPool, times(1)).getSocketBufferSize();
-		verify(mockPool, times(1)).getStatisticInterval();
-		verify(mockPool, times(1)).getSubscriptionAckInterval();
-		verify(mockPool, times(1)).getSubscriptionEnabled();
-		verify(mockPool, times(1)).getSubscriptionMessageTrackingTimeout();
-		verify(mockPool, times(1)).getSubscriptionRedundancy();
-		verify(mockPool, times(1)).getThreadLocalConnections();
+		verify(this.mockPool, times(1)).isDestroyed();
+		verify(this.mockPool, times(1)).getFreeConnectionTimeout();
+		verify(this.mockPool, times(1)).getIdleTimeout();
+		verify(this.mockPool, times(1)).getLoadConditioningInterval();
+		verify(this.mockPool, times(1)).getLocators();
+		verify(this.mockPool, times(1)).getMaxConnections();
+		verify(this.mockPool, times(1)).getMinConnections();
+		verify(this.mockPool, times(1)).getMultiuserAuthentication();
+		verify(this.mockPool, times(1)).getName();
+		verify(this.mockPool, times(1)).getPendingEventCount();
+		verify(this.mockPool, times(1)).getPingInterval();
+		verify(this.mockPool, times(1)).getPRSingleHopEnabled();
+		verify(this.mockPool, times(1)).getQueryService();
+		verify(this.mockPool, times(1)).getReadTimeout();
+		verify(this.mockPool, times(1)).getRetryAttempts();
+		verify(this.mockPool, times(1)).getServerGroup();
+		verify(this.mockPool, times(1)).getServers();
+		verify(this.mockPool, times(1)).getSocketBufferSize();
+		verify(this.mockPool, times(1)).getSocketConnectTimeout();
+		verify(this.mockPool, times(1)).getStatisticInterval();
+		verify(this.mockPool, times(1)).getSubscriptionAckInterval();
+		verify(this.mockPool, times(1)).getSubscriptionEnabled();
+		verify(this.mockPool, times(1)).getSubscriptionMessageTrackingTimeout();
+		verify(this.mockPool, times(1)).getSubscriptionRedundancy();
+		verify(this.mockPool, times(1)).getThreadLocalConnections();
 	}
 
 	@Test
 	public void destroyWithDelegateCallsDestroy() {
-		DelegatingPoolAdapter.from(mockPool).destroy();
-		verify(mockPool, times(1)).destroy();
+		DelegatingPoolAdapter.from(this.mockPool).destroy();
+		verify(this.mockPool, times(1)).destroy();
 	}
 
 	@Test
 	public void destroyWithKeepAliveUsingDelegateCallsDestroy() {
-		DelegatingPoolAdapter.from(mockPool).destroy(true);
-		verify(mockPool, times(1)).destroy(eq(true));
+		DelegatingPoolAdapter.from(this.mockPool).destroy(true);
+		verify(this.mockPool, times(1)).destroy(eq(true));
 	}
 
 	@Test
 	public void releaseThreadLocalConnectionWithDelegateCallsReleaseThreadLocalConnection() {
-		DelegatingPoolAdapter.from(mockPool).releaseThreadLocalConnection();
-		verify(mockPool, times(1)).releaseThreadLocalConnection();
+		DelegatingPoolAdapter.from(this.mockPool).releaseThreadLocalConnection();
+		verify(this.mockPool, times(1)).releaseThreadLocalConnection();
 	}
 
 	@Test
 	public void nullDelegateUsesDefaultFactorySettings() {
+
 		Pool pool = DelegatingPoolAdapter.from(null);
 
 		assertThat(pool.getFreeConnectionTimeout(), is(equalTo(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT)));
@@ -202,6 +208,7 @@ public class DelegatingPoolAdapterTest {
 		assertThat(pool.getRetryAttempts(), is(equalTo(PoolFactory.DEFAULT_RETRY_ATTEMPTS)));
 		assertThat(pool.getServerGroup(), is(equalTo(PoolFactory.DEFAULT_SERVER_GROUP)));
 		assertThat(pool.getSocketBufferSize(), is(equalTo(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE)));
+		assertThat(pool.getSocketConnectTimeout(), is(equalTo(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT)));
 		assertThat(pool.getStatisticInterval(), is(equalTo(PoolFactory.DEFAULT_STATISTIC_INTERVAL)));
 		assertThat(pool.getSubscriptionAckInterval(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL)));
 		assertThat(pool.getSubscriptionEnabled(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED)));
@@ -209,11 +216,12 @@ public class DelegatingPoolAdapterTest {
 		assertThat(pool.getSubscriptionRedundancy(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY)));
 		assertThat(pool.getThreadLocalConnections(), is(equalTo(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS)));
 
-		verifyZeroInteractions(mockPool);
+		verifyZeroInteractions(this.mockPool);
 	}
 
 	@Test
 	public void destroyedWithNullIsUnsupported() {
+
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(is(equalTo(DelegatingPoolAdapter.NOT_IMPLEMENTED)));
@@ -250,18 +258,18 @@ public class DelegatingPoolAdapterTest {
 	@Test
 	public void destroyWithNullIsNoOp() {
 		DelegatingPoolAdapter.from(null).destroy();
-		verify(mockPool, never()).destroy();
+		verify(this.mockPool, never()).destroy();
 	}
 
 	@Test
 	public void destroyWithKeepAliveUsingNullIsNoOp() {
 		DelegatingPoolAdapter.from(null).destroy(false);
-		verify(mockPool, never()).destroy(anyBoolean());
+		verify(this.mockPool, never()).destroy(anyBoolean());
 	}
 
 	@Test
 	public void releaseThreadLocalConnectionWithNullIsNoOp() {
 		DelegatingPoolAdapter.from(null).releaseThreadLocalConnection();
-		verify(mockPool, never()).releaseThreadLocalConnection();
+		verify(this.mockPool, never()).releaseThreadLocalConnection();
 	}
 }

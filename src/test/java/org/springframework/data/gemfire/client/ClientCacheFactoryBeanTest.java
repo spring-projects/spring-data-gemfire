@@ -115,10 +115,11 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePropertiesWhenDistributedSystemIsConnected() {
+
 		Properties gemfireProperties = createProperties("gf", "test");
 		Properties distributedSystemProperties = createProperties("ds", "mock");
 
-		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		when(mockDistributedSystem.isConnected()).thenReturn(true);
 		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
@@ -148,13 +149,14 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePropertiesWhenDistributedSystemIsConnectedAndClientIsDurable() {
+
 		Properties gemfireProperties = DistributedSystemUtils.configureDurableClient(
 			createProperties("gf", "test"), "123", 600);
 
 		Properties distributedSystemProperties = DistributedSystemUtils.configureDurableClient(
 			createProperties("ds", "mock"), "987", 300);
 
-		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		when(mockDistributedSystem.isConnected()).thenReturn(true);
 		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
@@ -186,10 +188,11 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePropertiesWhenDistributedSystemIsDisconnected() {
+
 		Properties gemfireProperties = createProperties("gf", "test");
 		Properties distributedSystemProperties = createProperties("ds", "mock");
 
-		final DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		when(mockDistributedSystem.isConnected()).thenReturn(false);
 		when(mockDistributedSystem.getProperties()).thenReturn(distributedSystemProperties);
@@ -212,6 +215,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePropertiesWhenDistributedSystemIsNull() {
+
 		Properties gemfireProperties = createProperties("gf", "test");
 
 		assertThat(gemfireProperties.size(), is(equalTo(1)));
@@ -236,6 +240,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void createClientCacheFactory() {
+
 		Properties gemfireProperties = new Properties();
 
 		Object clientCacheFactoryReference = new ClientCacheFactoryBean().createFactory(gemfireProperties);
@@ -253,8 +258,9 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void prepareClientCacheFactoryCallsInitializePdxAndInitializePool() {
-		final AtomicBoolean initializePdxCalled = new AtomicBoolean(false);
-		final AtomicBoolean initializePoolCalled = new AtomicBoolean(false);
+
+		AtomicBoolean initializePdxCalled = new AtomicBoolean(false);
+		AtomicBoolean initializePoolCalled = new AtomicBoolean(false);
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
@@ -281,6 +287,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void initializePdxWithAllPdxOptions() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
@@ -311,6 +318,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void initializePdxWithPartialPdxOptions() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		clientCacheFactoryBean.setPdxReadSerialized(true);
@@ -336,6 +344,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void initializePdxWithNoPdxOptions() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		assertThat(clientCacheFactoryBean.getPdxDiskStoreName(), is(nullValue()));
@@ -354,6 +363,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void initializePoolWithPool() {
+
 		Pool mockPool = mock(Pool.class);
 
 		when(mockPool.getFreeConnectionTimeout()).thenReturn(10000);
@@ -369,6 +379,7 @@ public class ClientCacheFactoryBeanTest {
 		when(mockPool.getRetryAttempts()).thenReturn(1);
 		when(mockPool.getServerGroup()).thenReturn("TestGroup");
 		when(mockPool.getSocketBufferSize()).thenReturn(8192);
+		when(mockPool.getSocketConnectTimeout()).thenReturn(5000);
 		when(mockPool.getStatisticInterval()).thenReturn(5000);
 		when(mockPool.getSubscriptionAckInterval()).thenReturn(500);
 		when(mockPool.getSubscriptionEnabled()).thenReturn(true);
@@ -398,6 +409,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getServerGroup(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
 		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSocketConnectTimeout(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(nullValue()));
@@ -424,6 +436,7 @@ public class ClientCacheFactoryBeanTest {
 		verify(mockPool, times(1)).getServerGroup();
 		verify(mockPool, times(1)).getServers();
 		verify(mockPool, times(1)).getSocketBufferSize();
+		verify(mockPool, times(1)).getSocketConnectTimeout();
 		verify(mockPool, times(1)).getStatisticInterval();
 		verify(mockPool, times(1)).getSubscriptionAckInterval();
 		verify(mockPool, times(1)).getSubscriptionEnabled();
@@ -442,6 +455,7 @@ public class ClientCacheFactoryBeanTest {
 		verify(mockClientCacheFactory, times(1)).setPoolRetryAttempts(eq(1));
 		verify(mockClientCacheFactory, times(1)).setPoolServerGroup(eq("TestGroup"));
 		verify(mockClientCacheFactory, times(1)).setPoolSocketBufferSize(eq(8192));
+		verify(mockClientCacheFactory, times(1)).setPoolSocketConnectTimeout(eq(5000));
 		verify(mockClientCacheFactory, times(1)).setPoolStatisticInterval(eq(5000));
 		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionAckInterval(eq(500));
 		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionEnabled(eq(true));
@@ -455,6 +469,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void initializePoolWithFactory() {
+
 		Pool mockPool = mock(Pool.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
@@ -472,6 +487,7 @@ public class ClientCacheFactoryBeanTest {
 		clientCacheFactoryBean.setRetryAttempts(2);
 		clientCacheFactoryBean.setServerGroup("TestGroup");
 		clientCacheFactoryBean.setSocketBufferSize(16384);
+		clientCacheFactoryBean.setSocketConnectTimeout(5000);
 		clientCacheFactoryBean.setStatisticsInterval(1000);
 		clientCacheFactoryBean.setSubscriptionAckInterval(100);
 		clientCacheFactoryBean.setSubscriptionEnabled(true);
@@ -497,6 +513,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getServerGroup(), is(equalTo("TestGroup")));
 		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
 		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(equalTo(16384)));
+		assertThat(clientCacheFactoryBean.getSocketConnectTimeout(), is(equalTo(5000)));
 		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(equalTo(1000)));
 		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(equalTo(100)));
 		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(equalTo(true)));
@@ -522,6 +539,7 @@ public class ClientCacheFactoryBeanTest {
 		verify(mockClientCacheFactory, times(1)).setPoolRetryAttempts(eq(2));
 		verify(mockClientCacheFactory, times(1)).setPoolServerGroup(eq("TestGroup"));
 		verify(mockClientCacheFactory, times(1)).setPoolSocketBufferSize(eq(16384));
+		verify(mockClientCacheFactory, times(1)).setPoolSocketConnectTimeout(eq(5000));
 		verify(mockClientCacheFactory, times(1)).setPoolStatisticInterval(eq(1000));
 		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionAckInterval(eq(100));
 		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionEnabled(eq(true));
@@ -535,6 +553,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void initializePoolWithFactoryAndPoolButFactoryOverridesPool() {
+
 		Pool mockPool = mock(Pool.class);
 
 		when(mockPool.getFreeConnectionTimeout()).thenReturn(5000);
@@ -551,6 +570,7 @@ public class ClientCacheFactoryBeanTest {
 		when(mockPool.getServerGroup()).thenReturn("TestServerGroup");
 		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 12480)));
 		when(mockPool.getSocketBufferSize()).thenReturn(8192);
+		when(mockPool.getSocketConnectTimeout()).thenReturn(5000);
 		when(mockPool.getStatisticInterval()).thenReturn(5000);
 		when(mockPool.getSubscriptionAckInterval()).thenReturn(1000);
 		when(mockPool.getSubscriptionEnabled()).thenReturn(false);
@@ -568,6 +588,7 @@ public class ClientCacheFactoryBeanTest {
 		clientCacheFactoryBean.setPrSingleHopEnabled(true);
 		clientCacheFactoryBean.setServerGroup("TestGroup");
 		clientCacheFactoryBean.setSocketBufferSize(16384);
+		clientCacheFactoryBean.setSocketConnectTimeout(10000);
 		clientCacheFactoryBean.setStatisticsInterval(500);
 		clientCacheFactoryBean.setSubscriptionAckInterval(100);
 		clientCacheFactoryBean.setSubscriptionEnabled(true);
@@ -591,6 +612,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getServerGroup(), is(equalTo("TestGroup")));
 		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
 		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(equalTo(16384)));
+		assertThat(clientCacheFactoryBean.getSocketConnectTimeout(), is(equalTo(10000)));
 		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(equalTo(500)));
 		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(equalTo(100)));
 		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(true));
@@ -617,6 +639,7 @@ public class ClientCacheFactoryBeanTest {
 		verify(mockPool, never()).getServerGroup();
 		verify(mockPool, never()).getServers();
 		verify(mockPool, never()).getSocketBufferSize();
+		verify(mockPool, never()).getSocketConnectTimeout();
 		verify(mockPool, never()).getStatisticInterval();
 		verify(mockPool, never()).getSubscriptionAckInterval();
 		verify(mockPool, never()).getSubscriptionEnabled();
@@ -635,6 +658,7 @@ public class ClientCacheFactoryBeanTest {
 		verify(mockClientCacheFactory, times(1)).setPoolRetryAttempts(eq(1));
 		verify(mockClientCacheFactory, times(1)).setPoolServerGroup(eq("TestGroup"));
 		verify(mockClientCacheFactory, times(1)).setPoolSocketBufferSize(eq(16384));
+		verify(mockClientCacheFactory, times(1)).setPoolSocketConnectTimeout(eq(10000));
 		verify(mockClientCacheFactory, times(1)).setPoolStatisticInterval(eq(500));
 		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionAckInterval(eq(100));
 		verify(mockClientCacheFactory, times(1)).setPoolSubscriptionEnabled(eq(true));
@@ -645,34 +669,8 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void initializePoolWithFactoryServer() {
-		Pool mockPool = mock(Pool.class);
-
-		when(mockPool.getLocators()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 21668)));
-		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 41414)));
-
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
-
-		clientCacheFactoryBean.setPool(mockPool);
-		clientCacheFactoryBean.addServers(newConnectionEndpoint("skullbox", 12480));
-
-		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
-		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
-		assertThat(clientCacheFactoryBean.getServers().size(), is(equalTo(1)));
-
-		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
-
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
-			is(sameInstance(mockClientCacheFactory)));
-
-		verify(mockPool, never()).getLocators();
-		verify(mockPool, never()).getServers();
-		verify(mockClientCacheFactory, never()).addPoolLocator(anyString(), anyInt());
-		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("skullbox"), eq(12480));
-	}
-
-	@Test
 	public void initializePoolWithFactoryLocator() {
+
 		Pool mockPool = mock(Pool.class);
 
 		when(mockPool.getLocators()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 21668)));
@@ -699,19 +697,21 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void initializePoolWithPoolServer() {
+	public void initializePoolWithFactoryServer() {
+
 		Pool mockPool = mock(Pool.class);
 
-		when(mockPool.getLocators()).thenReturn(Collections.emptyList());
-		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("boombox", 41414)));
+		when(mockPool.getLocators()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 21668)));
+		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("localhost", 41414)));
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		clientCacheFactoryBean.setPool(mockPool);
+		clientCacheFactoryBean.addServers(newConnectionEndpoint("skullbox", 12480));
 
 		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
 		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
-		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getServers().size(), is(equalTo(1)));
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
@@ -719,13 +719,14 @@ public class ClientCacheFactoryBeanTest {
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockPool, never()).getLocators();
-		verify(mockPool, times(1)).getServers();
+		verify(mockPool, never()).getServers();
 		verify(mockClientCacheFactory, never()).addPoolLocator(anyString(), anyInt());
-		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("boombox"), eq(41414));
+		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("skullbox"), eq(12480));
 	}
 
 	@Test
 	public void initializePoolWithPoolLocator() {
+
 		Pool mockPool = mock(Pool.class);
 
 		when(mockPool.getLocators()).thenReturn(Collections.singletonList(new InetSocketAddress("skullbox", 21668)));
@@ -751,7 +752,35 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
+	public void initializePoolWithPoolServer() {
+
+		Pool mockPool = mock(Pool.class);
+
+		when(mockPool.getLocators()).thenReturn(Collections.emptyList());
+		when(mockPool.getServers()).thenReturn(Collections.singletonList(new InetSocketAddress("boombox", 41414)));
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setPool(mockPool);
+
+		assertThat(clientCacheFactoryBean.getLocators().isEmpty(), is(true));
+		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(clientCacheFactoryBean.getServers().isEmpty(), is(true));
+
+		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
+
+		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+			is(sameInstance(mockClientCacheFactory)));
+
+		verify(mockPool, never()).getLocators();
+		verify(mockPool, times(1)).getServers();
+		verify(mockClientCacheFactory, never()).addPoolLocator(anyString(), anyInt());
+		verify(mockClientCacheFactory, times(1)).addPoolServer(eq("boombox"), eq(41414));
+	}
+
+	@Test
 	public void initializePoolWithDefaultServer() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override Pool resolvePool() {
 				return null;
@@ -774,7 +803,9 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void createCache() {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
 		when(mockClientCacheFactory.create()).thenReturn(mockClientCache);
@@ -789,6 +820,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePoolByReturningProvidedPool() {
+
 		Pool mockPool = mock(Pool.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
@@ -803,7 +835,8 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvesPoolByName() {
-		final Pool mockPool = mock(Pool.class);
+
+		Pool mockPool = mock(Pool.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override Pool findPool(String name) {
@@ -823,7 +856,8 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvesPoolByDefaultName() {
-		final Pool mockPool = mock(Pool.class);
+
+		Pool mockPool = mock(Pool.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override Pool findPool(String name) {
@@ -841,8 +875,11 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvesNamedPoolFromBeanFactory() {
+
 		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
+
 		Pool mockPool = mock(Pool.class);
+
 		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
 
 		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&TestPool", mockPoolFactoryBean);
@@ -867,8 +904,11 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvesUnnamedPoolFromBeanFactory() {
+
 		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
+
 		Pool mockPool = mock(Pool.class);
+
 		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
 
 		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&gemfirePool", mockPoolFactoryBean);
@@ -892,6 +932,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePoolReturnsNullWhenNoBeansOfTypePoolFactoryBeanExists() {
+
 		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
 
 		Map<String, PoolFactoryBean> beans = Collections.emptyMap();
@@ -912,8 +953,11 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePoolReturnsNullWhenNoBeansOfTypePoolFactoryBeanExistsWithPoolName() {
+
 		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
+
 		Pool mockPool = mock(Pool.class);
+
 		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
 
 		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&swimPool", mockPoolFactoryBean);
@@ -938,7 +982,9 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void resolvePoolReturnsNullWhenBeanFactoryIsNotAListableBeanFactory() {
+
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
@@ -954,7 +1000,8 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void onApplicationEventCallsClientCacheReadyForEvents() {
-		final ClientCache mockClientCache = mock(ClientCache.class);
+
+		ClientCache mockClientCache = mock(ClientCache.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override protected <T extends GemFireCache> T fetchCache() {
@@ -974,7 +1021,8 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void onApplicationEventDoesNotCallClientCacheReadyForEventsWhenClientCacheFactoryBeanReadyForEventsIsFalse() {
-		final ClientCache mockClientCache = mock(ClientCache.class);
+
+		ClientCache mockClientCache = mock(ClientCache.class);
 
 		doThrow(new RuntimeException("test")).when(mockClientCache).readyForEvents();
 
@@ -996,7 +1044,8 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void onApplicationEventHandlesIllegalStateException() {
-		final ClientCache mockClientCache = mock(ClientCache.class);
+
+		ClientCache mockClientCache = mock(ClientCache.class);
 
 		doThrow(new IllegalStateException("test")).when(mockClientCache).readyForEvents();
 
@@ -1017,6 +1066,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void onApplicationEventHandlesCacheClosedException() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				throw new CacheClosedException("test");
@@ -1032,6 +1082,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void closeClientCacheWithKeepAlive() {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
@@ -1047,6 +1098,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void closeClientCacheWithoutKeepAlive() {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
@@ -1066,7 +1118,7 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
-	public void enableAutoReconnect() {
+	public void autoReconnectEnabled() {
 		new ClientCacheFactoryBean().setEnableAutoReconnect(true);
 	}
 
@@ -1076,12 +1128,13 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
-	public void useClusterConfiguration() {
+	public void usesClusterConfiguration() {
 		new ClientCacheFactoryBean().setUseClusterConfiguration(true);
 	}
 
 	@Test
 	public void setAndGetKeepAlive() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		assertThat(clientCacheFactoryBean.getKeepAlive(), is(false));
@@ -1100,7 +1153,9 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void setAndGetPool() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
 		Pool mockPool = mock(Pool.class);
 
 		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
@@ -1116,6 +1171,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void setAndGetPoolName() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
@@ -1131,6 +1187,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void setAndGetPoolSettings() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		assertThat(clientCacheFactoryBean.getFreeConnectionTimeout(), is(nullValue()));
@@ -1145,6 +1202,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getRetryAttempts(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getServerGroup(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getSocketConnectTimeout(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(nullValue()));
 		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(nullValue()));
@@ -1164,6 +1222,7 @@ public class ClientCacheFactoryBeanTest {
 		clientCacheFactoryBean.setRetryAttempts(1);
 		clientCacheFactoryBean.setServerGroup("test");
 		clientCacheFactoryBean.setSocketBufferSize(16384);
+		clientCacheFactoryBean.setSocketConnectTimeout(5000);
 		clientCacheFactoryBean.setStatisticsInterval(500);
 		clientCacheFactoryBean.setSubscriptionAckInterval(200);
 		clientCacheFactoryBean.setSubscriptionEnabled(true);
@@ -1183,6 +1242,7 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getRetryAttempts(), is(equalTo(1)));
 		assertThat(clientCacheFactoryBean.getServerGroup(), is(equalTo("test")));
 		assertThat(clientCacheFactoryBean.getSocketBufferSize(), is(16384));
+		assertThat(clientCacheFactoryBean.getSocketConnectTimeout(), is(5000));
 		assertThat(clientCacheFactoryBean.getStatisticsInterval(), is(equalTo(500)));
 		assertThat(clientCacheFactoryBean.getSubscriptionAckInterval(), is(equalTo(200)));
 		assertThat(clientCacheFactoryBean.getSubscriptionEnabled(), is(equalTo(true)));
@@ -1193,6 +1253,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void setAndGetReadyForEvents() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		assertThat(clientCacheFactoryBean.getReadyForEvents(), is(nullValue()));
@@ -1211,6 +1272,7 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	private ClientCache mockClientCache(String durableClientId) {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
@@ -1230,7 +1292,8 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void isReadyForEventsIsTrueWhenClientCacheFactoryBeanReadyForEventsIsTrue() {
-		final ClientCache mockClientCache = mockClientCache("");
+
+		ClientCache mockClientCache = mockClientCache("");
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override protected <T extends GemFireCache> T fetchCache() {
@@ -1249,7 +1312,8 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void isReadyForEventsIsFalseWhenClientCacheFactoryBeanReadyForEventsIsFalse() {
-		final ClientCache mockClientCache = mockClientCache("TestDurableClientId");
+
+		ClientCache mockClientCache = mockClientCache("TestDurableClientId");
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override protected <T extends GemFireCache> T fetchCache() {
@@ -1267,6 +1331,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void isReadyForEventsIsFalseWhenClientCacheNotInitialized() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override protected <T extends GemFireCache> T fetchCache() {
 				throw new CacheClosedException("test");
@@ -1280,7 +1345,8 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void isReadyForEventsIsTrueWhenDurableClientIdIsSet() {
-		final ClientCache mockClientCache = mockClientCache("TestDurableClientId");
+
+		ClientCache mockClientCache = mockClientCache("TestDurableClientId");
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override protected <T extends GemFireCache> T fetchCache() {
@@ -1297,7 +1363,8 @@ public class ClientCacheFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void isReadyForEventsIsFalseWhenDurableClientIdIsNotSet() {
-		final ClientCache mockClientCache = mockClientCache("  ");
+
+		ClientCache mockClientCache = mockClientCache("  ");
 
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 			@Override protected <T extends GemFireCache> T fetchCache() {
@@ -1313,6 +1380,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void addSetAndGetLocators() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		assertThat(clientCacheFactoryBean.getLocators(), is(notNullValue()));
@@ -1348,6 +1416,7 @@ public class ClientCacheFactoryBeanTest {
 
 	@Test
 	public void addSetAndGetServers() {
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		assertThat(clientCacheFactoryBean.getServers(), is(notNullValue()));

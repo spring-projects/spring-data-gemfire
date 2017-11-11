@@ -79,11 +79,12 @@ public class PoolFactoryBeanTest {
 	@Test
 	@SuppressWarnings("deprecation")
 	public void afterPropertiesSet() throws Exception {
+
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
 		Pool mockPool = mock(Pool.class);
 
-		final PoolFactory mockPoolFactory = mock(PoolFactory.class);
+		PoolFactory mockPoolFactory = mock(PoolFactory.class);
 
 		when(mockPoolFactory.create(eq("GemFirePool"))).thenReturn(mockPool);
 
@@ -100,20 +101,21 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setBeanName("GemFirePool");
 		poolFactoryBean.setName(null);
 		poolFactoryBean.setFreeConnectionTimeout(60000);
-		poolFactoryBean.setIdleTimeout(120000l);
+		poolFactoryBean.setIdleTimeout(120000L);
 		poolFactoryBean.setKeepAlive(false);
 		poolFactoryBean.setLoadConditioningInterval(15000);
 		poolFactoryBean.setLocators(Collections.singletonList(newConnectionEndpoint("localhost", 54321)));
 		poolFactoryBean.setMaxConnections(50);
 		poolFactoryBean.setMinConnections(5);
 		poolFactoryBean.setMultiUserAuthentication(false);
-		poolFactoryBean.setPingInterval(5000l);
+		poolFactoryBean.setPingInterval(5000L);
 		poolFactoryBean.setPrSingleHopEnabled(true);
 		poolFactoryBean.setReadTimeout(30000);
 		poolFactoryBean.setRetryAttempts(10);
 		poolFactoryBean.setServerGroup("TestServerGroup");
 		poolFactoryBean.setServers(Collections.singletonList(newConnectionEndpoint("localhost", 12345)));
 		poolFactoryBean.setSocketBufferSize(32768);
+		poolFactoryBean.setSocketConnectTimeout(5000);
 		poolFactoryBean.setStatisticInterval(1000);
 		poolFactoryBean.setSubscriptionAckInterval(500);
 		poolFactoryBean.setSubscriptionEnabled(true);
@@ -127,17 +129,18 @@ public class PoolFactoryBeanTest {
 
 		verify(mockBeanFactory, times(1)).getBean(eq(ClientCache.class));
 		verify(mockPoolFactory, times(1)).setFreeConnectionTimeout(eq(60000));
-		verify(mockPoolFactory, times(1)).setIdleTimeout(eq(120000l));
+		verify(mockPoolFactory, times(1)).setIdleTimeout(eq(120000L));
 		verify(mockPoolFactory, times(1)).setLoadConditioningInterval(eq(15000));
 		verify(mockPoolFactory, times(1)).setMaxConnections(eq(50));
 		verify(mockPoolFactory, times(1)).setMinConnections(eq(5));
 		verify(mockPoolFactory, times(1)).setMultiuserAuthentication(eq(false));
-		verify(mockPoolFactory, times(1)).setPingInterval(eq(5000l));
+		verify(mockPoolFactory, times(1)).setPingInterval(eq(5000L));
 		verify(mockPoolFactory, times(1)).setPRSingleHopEnabled(eq(true));
 		verify(mockPoolFactory, times(1)).setReadTimeout(eq(30000));
 		verify(mockPoolFactory, times(1)).setRetryAttempts(eq(10));
 		verify(mockPoolFactory, times(1)).setServerGroup(eq("TestServerGroup"));
 		verify(mockPoolFactory, times(1)).setSocketBufferSize(eq(32768));
+		verify(mockPoolFactory, times(1)).setSocketConnectTimeout(eq(5000));
 		verify(mockPoolFactory, times(1)).setStatisticInterval(eq(1000));
 		verify(mockPoolFactory, times(1)).setSubscriptionAckInterval(eq(500));
 		verify(mockPoolFactory, times(1)).setSubscriptionEnabled(eq(true));
@@ -150,7 +153,9 @@ public class PoolFactoryBeanTest {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void afterPropertiesSetWithUnspecifiedName() throws Exception {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setBeanName(null);
@@ -168,6 +173,7 @@ public class PoolFactoryBeanTest {
 	@Test
 	@SuppressWarnings("deprecation")
 	public void afterPropertiesSetUsesName() throws Exception {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setBeanName("gemfirePool");
@@ -184,6 +190,7 @@ public class PoolFactoryBeanTest {
 	@Test
 	@SuppressWarnings("deprecation")
 	public void afterPropertiesSetDefaultsToBeanName() throws Exception {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setBeanName("swimPool");
@@ -199,6 +206,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void destroy() throws Exception {
+
 		Pool mockPool = mock(Pool.class);
 
 		when(mockPool.isDestroyed()).thenReturn(false);
@@ -216,6 +224,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void destroyWithNonSpringBasedPool() throws Exception {
+
 		Pool mockPool = mock(Pool.class);
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
@@ -231,6 +240,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void destroyWithUninitializedPool() throws Exception {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setPool(null);
@@ -249,6 +259,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void addGetAndSetLocators() {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		assertThat(poolFactoryBean.getLocators(), is(notNullValue()));
@@ -284,6 +295,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void addGetAndSetServers() {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		assertThat(poolFactoryBean.getServers(), is(notNullValue()));
@@ -319,7 +331,9 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolWhenPoolIsSetIsThePool() {
+
 		Pool mockPool = mock(Pool.class);
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setPool(mockPool);
@@ -329,22 +343,24 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolWhenPoolIsUnsetIsThePoolFactoryBean() {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setFreeConnectionTimeout(5000);
-		poolFactoryBean.setIdleTimeout(120000l);
+		poolFactoryBean.setIdleTimeout(120000L);
 		poolFactoryBean.setLoadConditioningInterval(300000);
 		poolFactoryBean.setLocators(ArrayUtils.asArray(newConnectionEndpoint("skullbox", 11235)));
 		poolFactoryBean.setMaxConnections(500);
 		poolFactoryBean.setMinConnections(50);
 		poolFactoryBean.setMultiUserAuthentication(true);
-		poolFactoryBean.setPingInterval(15000l);
+		poolFactoryBean.setPingInterval(15000L);
 		poolFactoryBean.setPrSingleHopEnabled(true);
 		poolFactoryBean.setReadTimeout(30000);
 		poolFactoryBean.setRetryAttempts(1);
 		poolFactoryBean.setServerGroup("TestGroup");
 		poolFactoryBean.setServers(ArrayUtils.asArray(newConnectionEndpoint("boombox", 12480)));
 		poolFactoryBean.setSocketBufferSize(16384);
+		poolFactoryBean.setSocketConnectTimeout(5000);
 		poolFactoryBean.setStatisticInterval(500);
 		poolFactoryBean.setSubscriptionAckInterval(200);
 		poolFactoryBean.setSubscriptionEnabled(true);
@@ -357,20 +373,21 @@ public class PoolFactoryBeanTest {
 		assertThat(pool, is(instanceOf(PoolAdapter.class)));
 		assertThat(pool.isDestroyed(), is(false));
 		assertThat(pool.getFreeConnectionTimeout(), is(equalTo(5000)));
-		assertThat(pool.getIdleTimeout(), is(equalTo(120000l)));
+		assertThat(pool.getIdleTimeout(), is(equalTo(120000L)));
 		assertThat(pool.getLoadConditioningInterval(), is(equalTo(300000)));
 		assertThat(pool.getLocators(), is(equalTo(Collections.singletonList(newSocketAddress("skullbox", 11235)))));
 		assertThat(pool.getMaxConnections(), is(equalTo(500)));
 		assertThat(pool.getMinConnections(), is(equalTo(50)));
 		assertThat(pool.getMultiuserAuthentication(), is(equalTo(true)));
 		assertThat(pool.getName(), is(nullValue()));
-		assertThat(pool.getPingInterval(), is(equalTo(15000l)));
+		assertThat(pool.getPingInterval(), is(equalTo(15000L)));
 		assertThat(pool.getPRSingleHopEnabled(), is(equalTo(true)));
 		assertThat(pool.getReadTimeout(), is(equalTo(30000)));
 		assertThat(pool.getRetryAttempts(), is(equalTo(1)));
 		assertThat(pool.getServerGroup(), is(equalTo("TestGroup")));
 		assertThat(pool.getServers(), is(equalTo(Collections.singletonList(newSocketAddress("boombox", 12480)))));
 		assertThat(pool.getSocketBufferSize(), is(equalTo(16384)));
+		assertThat(pool.getSocketConnectTimeout(), is(equalTo(5000)));
 		assertThat(pool.getStatisticInterval(), is(equalTo(500)));
 		assertThat(pool.getSubscriptionAckInterval(), is(equalTo(200)));
 		assertThat(pool.getSubscriptionEnabled(), is(equalTo(true)));
@@ -381,6 +398,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolNameWhenBeanNameSet() {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setBeanName("PoolBean");
@@ -391,6 +409,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolNameWhenBeanNameAndNameSet() {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setBeanName("PoolBean");
@@ -401,11 +420,13 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolPendingEventCountWithPool() {
+
 		Pool mockPool = mock(Pool.class);
 
 		when(mockPool.getPendingEventCount()).thenReturn(2);
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
+
 		Pool pool = poolFactoryBean.getPool();
 
 		assertThat(pool, is(not(sameInstance(mockPool))));
@@ -420,6 +441,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolPendingEventCountWithoutPoolThrowsIllegalStateException() {
+
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("The Pool has not been initialized");
@@ -429,7 +451,9 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolQueryServiceWithPool() {
+
 		Pool mockPool = mock(Pool.class);
+
 		QueryService mockQueryService = mock(QueryService.class);
 
 		when(mockPool.getQueryService()).thenReturn(mockQueryService);
@@ -449,6 +473,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolQueryServiceWithoutPoolThrowsIllegalStateException() {
+
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("The Pool has not been initialized");
@@ -458,6 +483,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolAndDestroyWithPool() {
+
 		Pool mockPool = mock(Pool.class);
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean() {
@@ -481,7 +507,8 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolAndDestroyWithoutPool() {
-		final AtomicBoolean destroyCalled = new AtomicBoolean(false);
+
+		AtomicBoolean destroyCalled = new AtomicBoolean(false);
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean() {
 			@Override public void destroy() throws Exception {
@@ -506,6 +533,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolAndReleaseThreadLocalConnectionWithPool() {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		Pool pool = poolFactoryBean.getPool();
@@ -522,6 +550,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getPoolAndReleaseThreadLocalConnectionWithoutPool() {
+
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		Pool pool = poolFactoryBean.getPool();

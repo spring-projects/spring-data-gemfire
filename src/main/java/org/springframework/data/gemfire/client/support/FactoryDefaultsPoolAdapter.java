@@ -149,6 +149,12 @@ public abstract class FactoryDefaultsPoolAdapter extends PoolAdapter {
 
 	/* (non-Javadoc) */
 	@Override
+	public int getSocketConnectTimeout() {
+		return PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT;
+	}
+
+	/* (non-Javadoc) */
+	@Override
 	public int getStatisticInterval() {
 		return PoolFactory.DEFAULT_STATISTIC_INTERVAL;
 	}

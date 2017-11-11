@@ -100,6 +100,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	private Integer readTimeout;
 	private Integer retryAttempts;
 	private Integer socketBufferSize;
+	private Integer socketConnectTimeout;
 	private Integer statisticsInterval;
 	private Integer subscriptionAckInterval;
 	private Integer subscriptionMessageTrackingTimeout;
@@ -296,6 +297,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		clientCacheFactory.setPoolRetryAttempts(pool.getRetryAttempts(getRetryAttempts()));
 		clientCacheFactory.setPoolServerGroup(pool.getServerGroup(getServerGroup()));
 		clientCacheFactory.setPoolSocketBufferSize(pool.getSocketBufferSize(getSocketBufferSize()));
+		clientCacheFactory.setPoolSocketConnectTimeout(pool.getSocketConnectTimeout(getSocketConnectTimeout()));
 		clientCacheFactory.setPoolStatisticInterval(pool.getStatisticInterval(getStatisticsInterval()));
 		clientCacheFactory.setPoolSubscriptionAckInterval(pool.getSubscriptionAckInterval(getSubscriptionAckInterval()));
 		clientCacheFactory.setPoolSubscriptionEnabled(pool.getSubscriptionEnabled(getSubscriptionEnabled()));
@@ -782,7 +784,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		}
 		else {
 			try {
-				return GemfireUtils.isDurable((ClientCache) fetchCache());
+				return GemfireUtils.isDurable(fetchCache());
 			}
 			catch (Throwable ignore) {
 				return false;
@@ -834,6 +836,16 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	/* (non-Javadoc) */
 	public Integer getSocketBufferSize() {
 		return socketBufferSize;
+	}
+
+	/* (non-Javadoc) */
+	public void setSocketConnectTimeout(Integer socketConnectTimeout) {
+		this.socketConnectTimeout = socketConnectTimeout;
+	}
+
+	/* (non-Javadoc) */
+	public Integer getSocketConnectTimeout() {
+		return this.socketConnectTimeout;
 	}
 
 	/* (non-Javadoc) */

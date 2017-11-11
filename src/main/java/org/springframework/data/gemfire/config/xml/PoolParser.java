@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -68,6 +70,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	private static void registerInfrastructureComponents(ParserContext parserContext) {
 
 		if (INFRASTRUCTURE_COMPONENTS_REGISTERED.compareAndSet(false, true)) {
+
 			AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
 				.rootBeanDefinition(ClientRegionPoolBeanFactoryPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
@@ -106,6 +109,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "retry-attempts");
 		ParsingUtils.setPropertyValue(element, builder, "server-group");
 		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
+		ParsingUtils.setPropertyValue(element, builder, "socket-connect-timeout");
 		ParsingUtils.setPropertyValue(element, builder, "statistic-interval");
 		ParsingUtils.setPropertyValue(element, builder, "subscription-ack-interval");
 		ParsingUtils.setPropertyValue(element, builder, "subscription-enabled");
@@ -118,7 +122,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		ManagedList<BeanDefinition> locators = new ManagedList<>(childElements.size());
 		ManagedList<BeanDefinition> servers = new ManagedList<>(childElements.size());
 
-		for (Element childElement : childElements) {
+		nullSafeList(childElements).forEach(childElement -> {
 
 			String childElementName = childElement.getLocalName();
 
@@ -129,13 +133,15 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 			if (SERVER_ELEMENT_NAME.equals(childElementName)) {
 				servers.add(parseServer(childElement));
 			}
-		}
+		});
 
-		boolean locatorsSet = parseLocators(element, builder, getRegistry(parserContext));
-		boolean serversSet = parseServers(element, builder, getRegistry(parserContext));
+		BeanDefinitionRegistry registry = resolveRegistry(parserContext);
 
-		// if neither Locators nor Servers were explicitly configured, then setup a connection to a CacheServer
-		// running on localhost, listening on the default CacheServer port 40404
+		boolean locatorsSet = parseLocators(element, builder, registry);
+		boolean serversSet = parseServers(element, builder, registry);
+
+		// If neither Locators nor Servers were explicitly configured, then setup a connection to a CacheServer
+		// running on localhost, listening on the default CacheServer port, 40404
 		if (childElements.isEmpty() && !(locatorsSet || serversSet)) {
 			servers.add(buildConnection(DEFAULT_HOST, String.valueOf(DEFAULT_SERVER_PORT), true));
 		}
@@ -150,7 +156,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	}
 
 	/* (non-Javadoc) */
-	BeanDefinitionRegistry getRegistry(ParserContext parserContext) {
+	BeanDefinitionRegistry resolveRegistry(ParserContext parserContext) {
 		return parserContext.getRegistry();
 	}
 
@@ -181,17 +187,20 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	String defaultHost(String host) {
+
 		return (StringUtils.hasText(host) ? host : DEFAULT_HOST);
 	}
 
 	/* (non-Javadoc) */
 	String defaultPort(String port, boolean server) {
-		return (StringUtils.hasText(port) ? port : (server ? String.valueOf(DEFAULT_SERVER_PORT)
-			: String.valueOf(DEFAULT_LOCATOR_PORT)));
+
+		return (StringUtils.hasText(port) ? port
+			: (server ? String.valueOf(DEFAULT_SERVER_PORT) : String.valueOf(DEFAULT_LOCATOR_PORT)));
 	}
 
 	/* (non-Javadoc) */
 	BeanDefinition parseLocator(Element element) {
+
 		return buildConnection(element.getAttribute(HOST_ATTRIBUTE_NAME),
 			element.getAttribute(PORT_ATTRIBUTE_NAME), false);
 	}
@@ -225,6 +234,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	BeanDefinition parseServer(Element element) {
+
 		return buildConnection(element.getAttribute(HOST_ATTRIBUTE_NAME),
 			element.getAttribute(PORT_ATTRIBUTE_NAME), true);
 	}
@@ -258,8 +268,8 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	String resolveId(Element element) {
-		return Optional.ofNullable(element.getAttribute(ID_ATTRIBUTE))
-			.filter(StringUtils::hasText)
+
+		return Optional.ofNullable(element.getAttribute(ID_ATTRIBUTE)).filter(StringUtils::hasText)
 			.orElse(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
 	}
 

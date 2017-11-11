@@ -92,6 +92,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	private int readTimeout = PoolFactory.DEFAULT_READ_TIMEOUT;
 	private int retryAttempts = PoolFactory.DEFAULT_RETRY_ATTEMPTS;
 	private int socketBufferSize = PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE;
+	private int socketConnectTimeout = PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT;
 	private int statisticInterval = PoolFactory.DEFAULT_STATISTIC_INTERVAL;
 	private int subscriptionAckInterval = PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
 	private int subscriptionMessageTrackingTimeout = PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT;
@@ -303,6 +304,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			it.setRetryAttempts(this.retryAttempts);
 			it.setServerGroup(this.serverGroup);
 			it.setSocketBufferSize(this.socketBufferSize);
+			it.setSocketConnectTimeout(this.socketConnectTimeout);
 			it.setStatisticInterval(this.statisticInterval);
 			it.setSubscriptionAckInterval(this.subscriptionAckInterval);
 			it.setSubscriptionEnabled(this.subscriptionEnabled);
@@ -500,6 +502,11 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			}
 
 			@Override
+			public int getSocketConnectTimeout() {
+				return PoolFactoryBean.this.socketConnectTimeout;
+			}
+
+			@Override
 			public int getStatisticInterval() {
 				return PoolFactoryBean.this.statisticInterval;
 			}
@@ -690,6 +697,11 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	/* (non-Javadoc) */
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
+	}
+
+	/* (non-Javadoc) */
+	public void setSocketConnectTimeout(int socketConnectTimeout) {
+		this.socketConnectTimeout = socketConnectTimeout;
 	}
 
 	/* (non-Javadoc) */
