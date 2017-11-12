@@ -249,6 +249,7 @@ both in the same definition) is illegal.
 		</xsd:sequence>
 		<xsd:attribute name="filter-ref" type="xsd:string" use="optional"/>
 		<xsd:attribute name="format" type="xsd:string" use="optional" default="GEMFIRE"/>
+		<xsd:attribute name="invoke-callbacks" type="xsd:string" use="optional" default="false"/>
 		<xsd:attribute name="location" type="xsd:string" use="required"/>
 		<xsd:attribute name="parallel" type="xsd:string" use="optional" default="false"/>
 	</xsd:complexType>

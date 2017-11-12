@@ -97,6 +97,7 @@ class SnapshotServiceParser extends AbstractSingleBeanDefinitionParser {
 					true));
 		}
 
+		ParsingUtils.setPropertyValue(snapshotMetadataElement, snapshotMetadataBuilder, "invokeCallbacks");
 		ParsingUtils.setPropertyValue(snapshotMetadataElement, snapshotMetadataBuilder, "parallel");
 
 		return snapshotMetadataBuilder.getBeanDefinition();

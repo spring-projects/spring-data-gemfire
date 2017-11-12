@@ -447,7 +447,9 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		}
 
 		protected SnapshotOptions<K, V> createOptions(SnapshotMetadata<K, V> metadata) {
+
 			return createOptions()
+				.invokeCallbacks(metadata.isInvokeCallbacks())
 				.setFilter(metadata.getFilter())
 				.setParallelMode(metadata.isParallel());
 		}
@@ -531,9 +533,10 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 			}
 		}
 
-		protected void logDebug(Throwable t, String message, Object... arguments) {
+		protected void logDebug(Throwable cause, String message, Object... arguments) {
+
 			if (log.isDebugEnabled()) {
-				log.debug(String.format(message, arguments), t);
+				log.debug(String.format(message, arguments), cause);
 			}
 		}
 
@@ -740,11 +743,13 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	 */
 	public static class SnapshotMetadata<K, V> {
 
+		protected static final boolean DEFAULT_INVOKE_CALLBACKS = false;
 		protected static final boolean DEFAULT_PARALLEL = false;
 
 		protected static final SnapshotFormat DEFAULT_SNAPSHOT_FORMAT = SnapshotFormat.GEMFIRE;
 
-		private boolean parallel;
+		private boolean invokeCallbacks = DEFAULT_INVOKE_CALLBACKS;
+		private boolean parallel = DEFAULT_PARALLEL;
 
 		private final File location;
 
@@ -793,6 +798,14 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 			return this.filter;
 		}
 
+		public void setInvokeCallbacks(boolean invokeCallbacks) {
+			this.invokeCallbacks = invokeCallbacks;
+		}
+
+		public boolean isInvokeCallbacks() {
+			return this.invokeCallbacks;
+		}
+
 		public void setParallel(boolean parallel) {
 			this.parallel = parallel;
 		}
@@ -803,8 +816,11 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 
 		@Override
 		public String toString() {
-			return String.format("{ @type = %1$s, location = %2$s, format = %3$s, filter = %4$s, parallel = %5$s }",
-				getClass().getName(), getLocation().getAbsolutePath(), getFormat(), getFilter(), isParallel());
+
+			return String.format(
+				"{ @type = %1$s, location = %2$s, format = %3$s, filter = %4$s, invokeCallbacks = %5$s, parallel = %6$s }",
+					getClass().getName(), getLocation().getAbsolutePath(), getFormat(), getFilter(),
+						isInvokeCallbacks(), isParallel());
 		}
 	}
 
@@ -828,6 +844,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		}
 
 		protected String getFileExtension(File file) {
+
 			String fileExtension = "";
 
 			if (nullSafeIsFile(file)) {
