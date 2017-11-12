@@ -16,8 +16,11 @@
 
 package org.springframework.data.gemfire.snapshot;
 
+import static java.util.Arrays.stream;
 import static org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -28,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -41,11 +45,11 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotFilter;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent;
 import org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
@@ -68,8 +72,8 @@ import org.springframework.util.StringUtils;
  * @since 1.7.0
  */
 @SuppressWarnings("unused")
-public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotServiceAdapter<K, V>>,
-		InitializingBean, DisposableBean, ApplicationListener<SnapshotApplicationEvent<K, V>> {
+public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport<SnapshotServiceAdapter<K, V>>
+		implements InitializingBean, DisposableBean, ApplicationListener<SnapshotApplicationEvent<K, V>> {
 
 	protected static final SnapshotMetadata[] EMPTY_ARRAY = new SnapshotMetadata[0];
 
@@ -101,6 +105,73 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	}
 
 	/**
+	 * Constructs and initializes the GemFire Snapshot Service used to take a snapshot of the configured Cache
+	 * or Region if initialized.  In addition, this initialization method will perform the actual import.
+	 *
+	 * @throws Exception if the construction and initialization of the GemFire Snapshot Service fails.
+	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 * @see #getSuppressImportOnInit()
+	 * @see #getImports()
+	 * @see #create()
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void afterPropertiesSet() throws Exception {
+
+		this.snapshotServiceAdapter = create();
+
+		if (!getSuppressImportOnInit()) {
+			this.snapshotServiceAdapter.doImport(getImports());
+		}
+	}
+
+	/**
+	 * Constructs an appropriate instance of the SnapshotServiceAdapter based on the FactoryBean configuration. If
+	 * a Region has not been specified, then a GemFire Snapshot Service for the Cache is constructed, otherwise
+	 * the GemFire Snapshot Service for the configured Region is used.
+	 *
+	 * @return a SnapshotServiceAdapter wrapping the appropriate GemFire Snapshot Service (either Cache or Region)
+	 * depending on the FactoryBean configuration.
+	 * @see #wrap(CacheSnapshotService)
+	 * @see #wrap(RegionSnapshotService)
+	 * @see #getRegion()
+	 */
+	protected SnapshotServiceAdapter create() {
+
+		return Optional.ofNullable(getRegion())
+			.<SnapshotServiceAdapter>map(region -> wrap(region.getSnapshotService()))
+			.orElseGet(() -> wrap(getCache().getSnapshotService()));
+	}
+
+	/**
+	 * Wraps the GemFire CacheSnapshotService into an appropriate Adapter to uniformly access snapshot operations
+	 * on the Cache and Regions alike.
+	 *
+	 * @param cacheSnapshotService the GemFire CacheSnapshotService to wrap.
+	 * @return a SnapshotServiceAdapter wrapping the GemFire CacheSnapshotService.
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter
+	 * @see org.apache.geode.cache.snapshot.CacheSnapshotService
+	 */
+	protected SnapshotServiceAdapter<Object, Object> wrap(CacheSnapshotService cacheSnapshotService) {
+		return new CacheSnapshotServiceAdapter(cacheSnapshotService);
+	}
+
+	/**
+	 * Wraps GemFire's RegionSnapshotService into an appropriate Adapter to uniformly access snapshot operations
+	 * on the Cache and Regions alike.
+	 *
+	 * @param regionSnapshotService the GemFire RegionSnapshotService to wrap.
+	 * @return a SnapshotServiceAdapter wrapping the GemFire RegionSnapshotService.
+	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
+	 * @see SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
+	 * @see org.apache.geode.cache.snapshot.RegionSnapshotService
+	 */
+	protected SnapshotServiceAdapter<K, V> wrap(RegionSnapshotService<K, V> regionSnapshotService) {
+		return new RegionSnapshotServiceAdapter<K, V>(regionSnapshotService);
+	}
+
+	/**
 	 * Sets a reference to the GemFire Cache for which the snapshot will be taken.
 	 *
 	 * @param cache the GemFire Cache used to create an instance of CacheSnapshotService.
@@ -109,8 +180,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see #getCache()
 	 */
 	public void setCache(Cache cache) {
-		Assert.notNull(cache, "The GemFire Cache must not be null");
-		this.cache = cache;
+		this.cache = Optional.ofNullable(cache)
+			.orElseThrow(() -> newIllegalArgumentException("The GemFire Cache must not be null"));
 	}
 
 	/**
@@ -122,8 +193,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see #setCache(Cache)
 	 */
 	protected Cache getCache() {
-		Assert.state(cache != null, "The GemFire Cache was not properly initialized");
-		return cache;
+		return Optional.ofNullable(this.cache)
+			.orElseThrow(() -> newIllegalStateException("The GemFire Cache was not properly initialized"));
 	}
 
 	/**
@@ -220,7 +291,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 */
 	@Override
 	public SnapshotServiceAdapter<K, V> getObject() throws Exception {
-		return snapshotServiceAdapter;
+		return this.snapshotServiceAdapter;
 	}
 
 	/**
@@ -232,8 +303,10 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public Class<?> getObjectType() {
-		return (snapshotServiceAdapter != null ? snapshotServiceAdapter.getClass() : SnapshotServiceAdapter.class);
+		return Optional.ofNullable(this.snapshotServiceAdapter).map(Object::getClass)
+			.orElse((Class) SnapshotServiceAdapter.class);
 	}
 
 	/**
@@ -247,70 +320,6 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	}
 
 	/**
-	 * Constructs and initializes the GemFire Snapshot Service used to take a snapshot of the configured Cache
-	 * or Region if initialized.  In addition, this initialization method will perform the actual import.
-	 *
-	 * @throws Exception if the construction and initialization of the GemFire Snapshot Service fails.
-	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
-	 * @see #getSuppressImportOnInit()
-	 * @see #getImports()
-	 * @see #create()
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public void afterPropertiesSet() throws Exception {
-		snapshotServiceAdapter = create();
-
-		if (!getSuppressImportOnInit()) {
-			snapshotServiceAdapter.doImport(getImports());
-		}
-	}
-
-	/**
-	 * Constructs an appropriate instance of the SnapshotServiceAdapter based on the FactoryBean configuration. If
-	 * a Region has not been specified, then a GemFire Snapshot Service for the Cache is constructed, otherwise
-	 * the GemFire Snapshot Service for the configured Region is used.
-	 *
-	 * @return a SnapshotServiceAdapter wrapping the appropriate GemFire Snapshot Service (either Cache or Region)
-	 * depending on the FactoryBean configuration.
-	 * @see #wrap(CacheSnapshotService)
-	 * @see #wrap(RegionSnapshotService)
-	 * @see #getRegion()
-	 */
-	protected SnapshotServiceAdapter create() {
-		Region<K, V> region = getRegion();
-		return (region != null ? wrap(region.getSnapshotService()) : wrap(getCache().getSnapshotService()));
-	}
-
-	/**
-	 * Wraps the GemFire CacheSnapshotService into an appropriate Adapter to uniformly access snapshot operations
-	 * on the Cache and Regions alike.
-	 *
-	 * @param cacheSnapshotService the GemFire CacheSnapshotService to wrap.
-	 * @return a SnapshotServiceAdapter wrapping the GemFire CacheSnapshotService.
-	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
-	 * @see SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter
-	 * @see org.apache.geode.cache.snapshot.CacheSnapshotService
-	 */
-	protected SnapshotServiceAdapter<Object, Object> wrap(CacheSnapshotService cacheSnapshotService) {
-		return new CacheSnapshotServiceAdapter(cacheSnapshotService);
-	}
-
-	/**
-	 * Wraps GemFire's RegionSnapshotService into an appropriate Adapter to uniformly access snapshot operations
-	 * on the Cache and Regions alike.
-	 *
-	 * @param regionSnapshotService the GemFire RegionSnapshotService to wrap.
-	 * @return a SnapshotServiceAdapter wrapping the GemFire RegionSnapshotService.
-	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
-	 * @see SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
-	 * @see org.apache.geode.cache.snapshot.RegionSnapshotService
-	 */
-	protected SnapshotServiceAdapter<K, V> wrap(RegionSnapshotService<K, V> regionSnapshotService) {
-		return new RegionSnapshotServiceAdapter<K, V>(regionSnapshotService);
-	}
-
-	/**
 	 * Performs an export of the GemFire Cache or Region if configured.
 	 *
 	 * @throws Exception if the Cache/Region data export operation fails.
@@ -319,6 +328,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see #getObject()
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void destroy() throws Exception {
 		getObject().doExport(getExports());
 	}
@@ -337,7 +347,9 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see #getObject()
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void onApplicationEvent(SnapshotApplicationEvent<K, V> event) {
+
 		try {
 			if (isMatch(event)) {
 				if (event instanceof ExportSnapshotApplicationEvent) {
@@ -377,6 +389,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see #getImports()
 	 */
 	protected SnapshotMetadata<K, V>[] resolveSnapshotMetadata(SnapshotApplicationEvent<K, V> event) {
+
 		SnapshotMetadata<K, V>[] eventSnapshotMetadata = event.getSnapshotMetadata();
 
 		return (!ObjectUtils.isEmpty(eventSnapshotMetadata) ? eventSnapshotMetadata
@@ -394,8 +407,10 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 		SnapshotOptions<K, V> createOptions();
 
+		@SuppressWarnings("unchecked")
 		void doExport(SnapshotMetadata<K, V>... configurations);
 
+		@SuppressWarnings("unchecked")
 		void doImport(SnapshotMetadata<K, V>... configurations);
 
 		void load(File directory, SnapshotFormat format);
@@ -436,33 +451,35 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 
 		@Override
+		@SuppressWarnings("unchecked")
 		public void doExport(SnapshotMetadata<K, V>... configurations) {
-			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
-				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter()));
-			}
+
+			stream(nullSafeArray(configurations)).forEach(configuration ->
+				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter())));
 		}
 
 		@Override
+		@SuppressWarnings("unchecked")
 		public void doImport(SnapshotMetadata<K, V>... configurations) {
-			for (SnapshotMetadata<K, V> configuration : nullSafeArray(configurations)) {
-				load(configuration.getFormat(), createOptions(configuration.getFilter()), handleLocation(configuration));
-			}
+
+			stream(nullSafeArray(configurations)).forEach(configuration ->
+				load(configuration.getFormat(), createOptions(configuration.getFilter()),
+					handleLocation(configuration)));
 		}
 
 		protected abstract File[] handleLocation(SnapshotMetadata<K, V> configuration);
 
 		protected File[] handleDirectoryLocation(File directory) {
-			return directory.listFiles(new FileFilter() {
-				@Override public boolean accept(File pathname) {
-					return nullSafeIsFile(pathname);
-				}
-			});
+			return directory.listFiles(pathname -> nullSafeIsFile(pathname));
 		}
 
 		protected File[] handleFileLocation(File file) {
+
 			if (ArchiveFileFilter.INSTANCE.accept(file)) {
 				try {
-					File extractedArchiveDirectory = new File(TEMPORARY_DIRECTORY, file.getName().replaceAll("\\.", "-"));
+
+					File extractedArchiveDirectory =
+						new File(TEMPORARY_DIRECTORY, file.getName().replaceAll("\\.", "-"));
 
 					Assert.state(extractedArchiveDirectory.isDirectory() || extractedArchiveDirectory.mkdirs(),
 						String.format("Failed create directory (%1$s) in which to extract archive (%2$s)",
@@ -474,6 +491,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 					for (ZipEntry entry : CollectionUtils.iterable(zipFile.entries())) {
 						if (!entry.isDirectory()) {
+
 							DataInputStream entryInputStream = new DataInputStream(zipFile.getInputStream(entry));
 
 							DataOutputStream entryOutputStream = new DataOutputStream(new FileOutputStream(
@@ -491,9 +509,9 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 					return handleDirectoryLocation(extractedArchiveDirectory);
 				}
-				catch (Throwable t) {
-					throw new ImportSnapshotException(String.format(
-						"Failed to extract archive (%1$s) to import", file), t);
+				catch (Throwable cause) {
+					throw new ImportSnapshotException(
+						String.format("Failed to extract archive [%1$s] to import", file), cause);
 				}
 			}
 
@@ -501,12 +519,13 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 
 		protected boolean exceptionSuppressingClose(Closeable closeable) {
+
 			try {
 				closeable.close();
 				return true;
 			}
 			catch (IOException ignore) {
-				logDebug(ignore, "Failed to close (%1$s)", closeable);
+				logDebug(ignore, "Failed to close [%s]", closeable);
 				return false;
 			}
 		}
@@ -559,7 +578,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 
 		protected CacheSnapshotService getSnapshotService() {
-			return snapshotService;
+			return this.snapshotService;
 		}
 
 		@Override
@@ -569,55 +588,61 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 		@Override
 		protected File[] handleLocation(SnapshotMetadata<Object, Object> configuration) {
-			return (configuration.isFile() ? handleFileLocation(configuration.getLocation())
+
+			return (configuration.isFile()
+				? handleFileLocation(configuration.getLocation())
 				: handleDirectoryLocation(configuration.getLocation()));
 		}
 
 		@Override
 		public void load(File directory, SnapshotFormat format) {
+
 			try {
 				getSnapshotService().load(directory, format);
 			}
-			catch (Throwable t) {
+			catch (Throwable cause) {
 				throw new ImportSnapshotException(String.format(
-					"Failed to load snapshots from directory (%1$s) in format (%2$s)",
-						directory, format), t);
+					"Failed to load snapshots from directory [%1$s] in format [%2$s]",
+						directory, format), cause);
 			}
 		}
 
 		@Override
 		public void load(SnapshotFormat format, SnapshotOptions<Object, Object> options, File... snapshots) {
+
 			try {
 				getSnapshotService().load(snapshots, format, options);
 			}
-			catch (Throwable t) {
+			catch (Throwable cause) {
 				throw new ImportSnapshotException(String.format(
-					"Failed to load snapshots (%1$s) in format (%2$s) using options (%3$s)",
-						Arrays.toString(snapshots), format, options), t);
+					"Failed to load snapshots [%1$s] in format [%2$s] using options [%3$s]",
+						Arrays.toString(snapshots), format, options), cause);
 			}
 		}
 
 		@Override
 		public void save(File directory, SnapshotFormat format) {
+
 			try {
 				getSnapshotService().save(directory, format);
 			}
-			catch (Throwable t) {
+			catch (Throwable cause) {
 				throw new ExportSnapshotException(String.format(
-					"Failed to save snapshots to directory (%1$s) in format (%2$s)",
-						directory, format), t);
+					"Failed to save snapshots to directory [%1$s] in format [%2$s]",
+						directory, format), cause);
 			}
 		}
 
 		@Override
 		public void save(File directory, SnapshotFormat format, SnapshotOptions<Object, Object> options) {
+
 			try {
 				getSnapshotService().save(directory, format, options);
 			}
-			catch (Throwable t) {
+			catch (Throwable cause) {
 				throw new ExportSnapshotException(String.format(
-					"Failed to save snapshots to directory (%1$s) in format (%2$s) using options (%3$s)",
-						directory, format, options), t);
+					"Failed to save snapshots to directory [%1$s] in format [%2$s] using options [%3$s]",
+						directory, format, options), cause);
 			}
 		}
 	}
@@ -637,7 +662,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		}
 
 		protected RegionSnapshotService<K, V> getSnapshotService() {
-			return snapshotService;
+			return this.snapshotService;
 		}
 
 		@Override
@@ -652,51 +677,55 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 		@Override
 		public void load(File snapshot, SnapshotFormat format) {
+
 			try {
 				getSnapshotService().load(snapshot, format);
 			}
-			catch (Throwable t) {
+			catch (Throwable cause) {
 				throw new ImportSnapshotException(String.format(
-					"Failed to load snapshot from file (%1$s) in format (%2$s)",
-						snapshot, format), t);
+					"Failed to load snapshot from file [%1$s] in format [%2$s]",
+						snapshot, format), cause);
 			}
 		}
 
 		@Override
 		public void load(SnapshotFormat format, SnapshotOptions<K, V> options, File... snapshots) {
+
 			try {
 				for (File snapshot : snapshots) {
 					getSnapshotService().load(snapshot, format, options);
 				}
 			}
-			catch (Throwable t) {
+			catch (Throwable cause) {
 				throw new ImportSnapshotException(String.format(
-					"Failed to load snapshots (%1$s) in format (%2$s) using options (%3$s)",
-						Arrays.toString(snapshots), format, options), t);
+					"Failed to load snapshots [%1$s] in format [%2$s] using options [%3$s]",
+						Arrays.toString(snapshots), format, options), cause);
 			}
 		}
 
 		@Override
 		public void save(File snapshot, SnapshotFormat format) {
+
 			try {
 				getSnapshotService().save(snapshot, format);
 			}
-			catch (Throwable t) {
+			catch (Throwable cause) {
 				throw new ExportSnapshotException(String.format(
-					"Failed to save snapshot to file (%1$s) in format (%2$s)",
-						snapshot, format), t);
+					"Failed to save snapshot to file [%1$s] in format [%2$s]",
+						snapshot, format), cause);
 			}
 		}
 
 		@Override
 		public void save(File snapshot, SnapshotFormat format, SnapshotOptions<K, V> options) {
+
 			try {
 				getSnapshotService().save(snapshot, format, options);
 			}
-			catch (Throwable t) {
+			catch (Throwable cause) {
 				throw new ExportSnapshotException(String.format(
-					"Failed to save snapshot to file (%1$s) in format (%2$s) using options (%3$s)",
-						snapshot, format, options), t);
+					"Failed to save snapshot to file [%1$s] in format [%2$s] using options [%3$s]",
+						snapshot, format, options), cause);
 			}
 		}
 	}
@@ -795,5 +824,4 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 			return ACCEPTED_FILE_EXTENSIONS.contains(getFileExtension(pathname));
 		}
 	}
-
 }

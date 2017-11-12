@@ -54,7 +54,7 @@ import org.springframework.util.FileCopyUtils;
 @SuppressWarnings("unused")
 public class SnapshotServiceImportExportIntegrationTest {
 
-	private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+	private static final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
 
 	private static ConfigurableApplicationContext applicationContext;
 
@@ -64,6 +64,7 @@ public class SnapshotServiceImportExportIntegrationTest {
 	private static Region<Long, Person> people;
 
 	protected static void assertPerson(Person expectedPerson, Person actualPerson) {
+
 		assertThat(actualPerson, is(notNullValue()));
 		assertThat(actualPerson.getId(), is(equalTo(expectedPerson.getId())));
 		assertThat(actualPerson.getFirstname(), is(equalTo(expectedPerson.getFirstname())));
@@ -71,23 +72,25 @@ public class SnapshotServiceImportExportIntegrationTest {
 	}
 
 	protected static void assertRegion(Region<?, ?> actualRegion, String expectedName, int expectedSize) {
+
 		assertThat(actualRegion, is(notNullValue()));
 		assertThat(actualRegion.getName(), is(equalTo("People")));
 		assertThat(actualRegion.getFullPath(), is(equalTo(String.format("%1$s%2$s", Region.SEPARATOR, expectedName))));
 		assertThat(actualRegion.size(), is(expectedSize));
 	}
 
-	protected static Person createPerson(String firstName, String lastName) {
-		return createPerson(ID_SEQUENCE.incrementAndGet(), firstName, lastName);
+	protected static Person newPerson(String firstName, String lastName) {
+		return newPerson(ID_SEQUENCE.incrementAndGet(), firstName, lastName);
 	}
 
-	protected static Person createPerson(Long id, String firstName, String lastName) {
+	protected static Person newPerson(Long id, String firstName, String lastName) {
 		return new Person(id, firstName, lastName);
 	}
 
 	@BeforeClass
 	@SuppressWarnings("unchecked")
 	public static void setupBeforeClass() throws Exception {
+
 		snapshotsDirectory = new File(new File(FileSystemUtils.WORKING_DIRECTORY, "gemfire"), "snapshots");
 
 		File exportDirectory = new File(snapshotsDirectory, "export");
@@ -96,7 +99,7 @@ public class SnapshotServiceImportExportIntegrationTest {
 		assertThat(exportDirectory.isDirectory() || exportDirectory.mkdirs(), is(true));
 		assertThat(importDirectory.isDirectory() || importDirectory.mkdirs(), is(true));
 
-		importPeopleSnapshot = new File(importDirectory, "people.snapshot");
+		importPeopleSnapshot = new File(importDirectory, "people-snapshot.gfd");
 
 		FileCopyUtils.copy(new ClassPathResource("/people.snapshot").getFile(), importPeopleSnapshot);
 
@@ -113,9 +116,10 @@ public class SnapshotServiceImportExportIntegrationTest {
 
 	@AfterClass
 	public static void tearDownAfterClass() {
+
 		applicationContext.close();
 
-		File exportPeopleSnapshot = new File(new File(snapshotsDirectory, "export"), "people.snapshot");
+		File exportPeopleSnapshot = new File(new File(snapshotsDirectory, "export"), "people-snapshot.gfd");
 
 		assertThat(exportPeopleSnapshot.isFile(), is(true));
 		assertThat(exportPeopleSnapshot.length(), is(equalTo(importPeopleSnapshot.length())));
@@ -126,23 +130,19 @@ public class SnapshotServiceImportExportIntegrationTest {
 	@Before
 	public void setup() {
 		//setupPeople();
-		ThreadUtils.timedWait(TimeUnit.SECONDS.toMillis(5), 500, new ThreadUtils.WaitCondition() {
-			@Override public boolean waiting() {
-				return !(people.size() > 0);
-			}
-		});
+		ThreadUtils.timedWait(TimeUnit.SECONDS.toMillis(5), 500, () -> !(people.size() > 0));
 	}
 
 	protected void setupPeople() {
-		put(createPerson("Jon", "Doe"));
-		put(createPerson("Jane", "Doe"));
-		put(createPerson("Cookie", "Doe"));
-		put(createPerson("Fro", "Doe"));
-		put(createPerson("Joe", "Doe"));
-		put(createPerson("Lan", "Doe"));
-		put(createPerson("Pie", "Doe"));
-		put(createPerson("Play", "Doe"));
-		put(createPerson("Sour", "Doe"));
+		put(newPerson("Jon", "Doe"));
+		put(newPerson("Jane", "Doe"));
+		put(newPerson("Cookie", "Doe"));
+		put(newPerson("Fro", "Doe"));
+		put(newPerson("Joe", "Doe"));
+		put(newPerson("Lan", "Doe"));
+		put(newPerson("Pie", "Doe"));
+		put(newPerson("Play", "Doe"));
+		put(newPerson("Sour", "Doe"));
 	}
 
 	protected Person put(Person person) {
@@ -153,15 +153,14 @@ public class SnapshotServiceImportExportIntegrationTest {
 	@Test
 	public void peopleRegionIsLoaded() {
 		assertRegion(people, "People", 9);
-		assertPerson(people.get(1l), createPerson(1l, "Jon", "Doe"));
-		assertPerson(people.get(2l), createPerson(2l, "Jane", "Doe"));
-		assertPerson(people.get(3l), createPerson(3l, "Cookie", "Doe"));
-		assertPerson(people.get(4l), createPerson(4l, "Fro", "Doe"));
-		assertPerson(people.get(5l), createPerson(5l, "Joe", "Doe"));
-		assertPerson(people.get(6l), createPerson(6l, "Lan", "Doe"));
-		assertPerson(people.get(7l), createPerson(7l, "Pie", "Doe"));
-		assertPerson(people.get(8l), createPerson(8l, "Play", "Doe"));
-		assertPerson(people.get(9l), createPerson(9l, "Sour", "Doe"));
+		assertPerson(people.get(1L), newPerson(1L, "Jon", "Doe"));
+		assertPerson(people.get(2L), newPerson(2L, "Jane", "Doe"));
+		assertPerson(people.get(3L), newPerson(3L, "Cookie", "Doe"));
+		assertPerson(people.get(4L), newPerson(4L, "Fro", "Doe"));
+		assertPerson(people.get(5L), newPerson(5L, "Joe", "Doe"));
+		assertPerson(people.get(6L), newPerson(6L, "Lan", "Doe"));
+		assertPerson(people.get(7L), newPerson(7L, "Pie", "Doe"));
+		assertPerson(people.get(8L), newPerson(8L, "Play", "Doe"));
+		assertPerson(people.get(9L), newPerson(9L, "Sour", "Doe"));
 	}
-
 }

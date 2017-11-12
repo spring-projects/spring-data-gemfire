@@ -22,8 +22,8 @@
 	<gfe:partitioned-region id="People" persistent="false"/>
 
 	<gfe-data:snapshot-service id="peopleSnapshotService" region-ref="People">
-		<gfe-data:snapshot-import location="gemfire/snapshots/import/people.snapshot"/>
-		<gfe-data:snapshot-export location="gemfire/snapshots/export/people.snapshot" format="GEMFIRE"/>
+		<gfe-data:snapshot-import location="gemfire/snapshots/import/people-snapshot.gfd"/>
+		<gfe-data:snapshot-export location="gemfire/snapshots/export/people-snapshot.gfd" format="GEMFIRE"/>
 	</gfe-data:snapshot-service>
 
 </beans>

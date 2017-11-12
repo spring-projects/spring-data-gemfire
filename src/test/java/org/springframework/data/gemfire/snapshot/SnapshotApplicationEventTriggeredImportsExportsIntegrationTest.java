@@ -16,10 +16,12 @@
 
 package org.springframework.data.gemfire.snapshot;
 
+import static java.util.Arrays.stream;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.io.File;
 import java.util.Map;
@@ -72,7 +74,7 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 
-	protected static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+	protected static final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
 
 	protected static File snapshotsDirectory;
 
@@ -93,12 +95,13 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
+
 		snapshotsDirectory = new File(new File(FileSystemUtils.WORKING_DIRECTORY, "gemfire"), "snapshots");
 
 		assertThat(snapshotsDirectory.isDirectory() || snapshotsDirectory.mkdirs(), is(true));
 
-		File peopleSnapshotFile = new File(snapshotsDirectory, "people.snapshot");
-		File nonHandyNonDoeSnapshotFile = new File(snapshotsDirectory, "nonHandyNonDoePeople.snapshot");
+		File peopleSnapshotFile = new File(snapshotsDirectory, "people-snapshot.gfd");
+		File nonHandyNonDoeSnapshotFile = new File(snapshotsDirectory, "nonHandyNonDoePeople-snapshot.gfd");
 
 		assertThat(peopleSnapshotFile.isFile() || peopleSnapshotFile.createNewFile(), is(true));
 		assertThat(nonHandyNonDoeSnapshotFile.isFile() || nonHandyNonDoeSnapshotFile.createNewFile(), is(true));
@@ -106,83 +109,88 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 
 	@AfterClass
 	public static void tearDownAfterClass() {
-		FileSystemUtils.deleteRecursive(snapshotsDirectory.getParentFile());
+		//FileSystemUtils.deleteRecursive(snapshotsDirectory.getParentFile());
 	}
 
 	protected void assertPeople(Region<Long, Person> targetRegion, Person... people) {
+
 		assertThat(targetRegion.size(), is(equalTo(people.length)));
 
-		for (Person person : people) {
-			assertPerson(person, targetRegion.get(person.getId()));
-		}
+		stream(nullSafeArray(people, Person.class))
+			.forEach(person -> assertPerson(person, targetRegion.get(person.getId())));
 	}
 
 	protected void assertPerson(Person expectedPerson, Person actualPerson) {
-		assertThat(String.format("Expected (%1$s); but was (%2$s)", expectedPerson, actualPerson),
+
+		assertThat(String.format("Expected [%1$s]; but was [%2$s]", expectedPerson, actualPerson),
 			actualPerson, is(notNullValue()));
 		assertThat(actualPerson.getId(), is(equalTo(expectedPerson.getId())));
 		assertThat(actualPerson.getFirstname(), is(equalTo(expectedPerson.getFirstname())));
 		assertThat(actualPerson.getLastname(), is(equalTo(expectedPerson.getLastname())));
 	}
 
-	protected Person createPerson(String firstName, String lastName) {
+	protected Person newPerson(String firstName, String lastName) {
 		return new Person(ID_SEQUENCE.incrementAndGet(), firstName, lastName);
 	}
 
 	protected Person put(Region<Long, Person> targetRegion, Person person) {
+
 		targetRegion.putIfAbsent(person.getId(), person);
+
 		return person;
 	}
 
-	protected void wait(final int seconds, final int expectedDoeSize, final int expectedEveryoneSize,
-			final int expectedHandySize) {
-		ThreadUtils.timedWait(TimeUnit.SECONDS.toMillis(seconds), 500, new ThreadUtils.WaitCondition() {
-			@Override public boolean waiting() {
-				return (doe.size() < expectedDoeSize && everyoneElse.size() < expectedEveryoneSize
-					&& handy.size() < expectedHandySize);
-			}
-		});
+	protected void wait(int seconds, int expectedDoeSize, int expectedEveryoneSize, int expectedHandySize) {
+
+		ThreadUtils.timedWait(TimeUnit.SECONDS.toMillis(seconds), 500,
+			() -> (doe.size() < expectedDoeSize && everyoneElse.size() <
+				expectedEveryoneSize && handy.size() < expectedHandySize));
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void exportsTriggeringImportsOnSnapshotApplicationEvents() {
-		Person jonDoe = put(people, createPerson("Jon", "Doe"));
-		Person janeDoe = put(people, createPerson("Jane", "Doe"));
-		Person jackBlack = put(people, createPerson("Jack", "Black"));
-		Person jackHandy = put(people, createPerson("Jack", "Handy"));
-		Person joeDirt = put(people, createPerson("Joe", "Dirt"));
 
-		SnapshotApplicationEvent event = new ExportSnapshotApplicationEvent<Long, Person>(this, people.getFullPath());
+		Person jonDoe = put(people, newPerson("Jon", "Doe"));
+		Person janeDoe = put(people, newPerson("Jane", "Doe"));
+		Person jackBlack = put(people, newPerson("Jack", "Black"));
+		Person jackHandy = put(people, newPerson("Jack", "Handy"));
+		Person joeDirt = put(people, newPerson("Joe", "Dirt"));
+
+		SnapshotApplicationEvent event =
+			new ExportSnapshotApplicationEvent<Long, Person>(this, people.getFullPath());
 
 		eventPublisher.publishEvent(event);
+
 		wait(5, 2, 2, 1);
 
 		assertPeople(doe, jonDoe, janeDoe);
 		assertPeople(everyoneElse, jackBlack, joeDirt);
 		assertPeople(handy, jackHandy);
 
-		Person cookieDoe = put(people, createPerson("Cookie", "Doe"));
-		Person pieDoe = put(people, createPerson("Pie", "Doe"));
-		Person sourDoe = put(people, createPerson("Sour", "Doe"));
-		Person randyHandy = put(people, createPerson("Randy", "Handy"));
-		Person sandyHandy = put(people, createPerson("Sandy", "Handy"));
-		Person jackHill = put(people, createPerson("Jack", "Hill"));
-		Person jillHill = put(people, createPerson("Jill", "Hill"));
+		Person cookieDoe = put(people, newPerson("Cookie", "Doe"));
+		Person pieDoe = put(people, newPerson("Pie", "Doe"));
+		Person sourDoe = put(people, newPerson("Sour", "Doe"));
+		Person randyHandy = put(people, newPerson("Randy", "Handy"));
+		Person sandyHandy = put(people, newPerson("Sandy", "Handy"));
+		Person jackHill = put(people, newPerson("Jack", "Hill"));
+		Person jillHill = put(people, newPerson("Jill", "Hill"));
 
 		eventPublisher.publishEvent(event);
+
 		wait(10, 5, 4, 3);
 
 		assertPeople(doe, jonDoe, janeDoe, cookieDoe, pieDoe, sourDoe);
 		assertPeople(everyoneElse, jackBlack, joeDirt, jackHill, jillHill);
 		assertPeople(handy, jackHandy, randyHandy, sandyHandy);
 
-		Person bobDoe = put(people, createPerson("Bob", "Doe"));
-		Person mandyHandy = put(people, createPerson("Mandy", "Handy"));
-		Person imaPigg = put(people, createPerson("Ima", "Pigg"));
-		Person benDover = put(people, createPerson("Ben", "Dover"));
+		Person bobDoe = put(people, newPerson("Bob", "Doe"));
+		Person mandyHandy = put(people, newPerson("Mandy", "Handy"));
+		Person imaPigg = put(people, newPerson("Ima", "Pigg"));
+		Person benDover = put(people, newPerson("Ben", "Dover"));
 
 		eventPublisher.publishEvent(event);
+
 		wait(15, 6, 6, 4);
 
 		assertPeople(doe, jonDoe, janeDoe, cookieDoe, pieDoe, sourDoe, bobDoe);
@@ -236,6 +244,7 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 		@Scheduled(fixedDelay = 1000)
 		@SuppressWarnings("unchecked")
 		public void processSnapshots() {
+
 			boolean triggerEvent = false;
 
 			for (File snapshotFile : nullSafeArray(snapshotsDirectory.listFiles(FileSystemUtils.FileOnlyFilter.INSTANCE))) {
@@ -252,6 +261,7 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 		}
 
 		protected boolean isUnprocessedSnapshotFile(File snapshotFile) {
+
 			Long lastModified = snapshotFile.lastModified();
 			Long previousLastModified = snapshotFileLastModifiedMap.get(snapshotFile);
 
@@ -262,5 +272,4 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 			return !previousLastModified.equals(lastModified);
 		}
 	}
-
 }

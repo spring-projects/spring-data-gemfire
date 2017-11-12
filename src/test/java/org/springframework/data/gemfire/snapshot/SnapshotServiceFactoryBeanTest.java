@@ -86,15 +86,18 @@ public class SnapshotServiceFactoryBeanTest {
 	private static File snapshotDat;
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	private SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean();
 
 	protected static File mockFile(String filename) {
+
 		File mockFile = mock(File.class, filename);
+
 		when(mockFile.isFile()).thenReturn(true);
 		when(mockFile.getAbsolutePath()).thenReturn(String.format("/path/to/%1$s", filename));
 		when(mockFile.getName()).thenReturn(filename);
+
 		return mockFile;
 	}
 
@@ -116,6 +119,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	protected <K, V> SnapshotMetadata<K, V> newSnapshotMetadata(File location, SnapshotFilter<K, V> filter,
 			SnapshotFormat format) {
+
 		return new SnapshotMetadata<K, V>(location, filter, format);
 	}
 
@@ -124,6 +128,7 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	protected String toPathname(String... pathElements) {
+
 		StringBuilder pathname = new StringBuilder();
 
 		for (String pathElement : pathElements) {
@@ -147,6 +152,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void nullSafeArrayWithNonNullArray() {
+
 		SnapshotMetadata[] expectedConfigurations = new SnapshotMetadata[0];
 
 		assertThat(SnapshotServiceFactoryBean.nullSafeArray(expectedConfigurations),
@@ -165,8 +171,10 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void nullSafeIsDirectoryWithNonDirectories() {
+
 		assertThat(SnapshotServiceFactoryBean.nullSafeIsDirectory(new File("path/to/non-existing/directory")),
 			is(false));
+
 		assertThat(SnapshotServiceFactoryBean.nullSafeIsDirectory(FileSystemUtils.JAVA_EXE), is(false));
 	}
 
@@ -184,22 +192,27 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void setCacheToNull() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The GemFire Cache must not be null");
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The GemFire Cache must not be null");
+
 		factoryBean.setCache(null);
 	}
 
 	@Test
 	public void getCacheWhenUninitialized() {
-		expectedException.expect(IllegalStateException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The GemFire Cache was not properly initialized");
+
+		exception.expect(IllegalStateException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The GemFire Cache was not properly initialized");
+
 		factoryBean.getCache();
 	}
 
 	@Test
 	public void setAndGetCacheSuccessfully() {
+
 		Cache mockCache = mock(Cache.class, "MockCache");
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean();
 
@@ -210,6 +223,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void setAndGetExports() {
+
 		SnapshotMetadata[] actualExports = factoryBean.getExports();
 
 		assertThat(actualExports, is(notNullValue()));
@@ -232,6 +246,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void setAndGetImports() {
+
 		SnapshotMetadata[] actualImports = factoryBean.getImports();
 
 		assertThat(actualImports, is(notNullValue()));
@@ -254,6 +269,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void setAndGetRegionSuccessfully() {
+
 		assertThat(factoryBean.getRegion(), is(nullValue()));
 
 		Region mockRegion = mock(Region.class, "MockRegion");
@@ -269,6 +285,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void setAndGetSuppressImportOnInitSuccessfully() {
+
 		assertThat(factoryBean.getSuppressImportOnInit(), is(false));
 
 		factoryBean.setSuppressImportOnInit(true);
@@ -291,9 +308,10 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void afterPropertiesSetCreatesSnapshotServiceAdapterAndDoesImportWithConfiguredImports() throws Exception {
+
 		SnapshotMetadata expectedSnapshotMetadata = newSnapshotMetadata();
 
-		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class,
+		SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class,
 			"MockSnapshotServiceAdapter");
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
@@ -312,7 +330,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void afterPropertiesSetCreatesSnapshotServiceAdapterButSuppressesImportOnInit() throws Exception {
-		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
+
+		SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class,
+			"MockSnapshotServiceAdapter");
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
 			@Override protected SnapshotServiceAdapter create() {
@@ -330,6 +350,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void createCacheSnapshotService() {
+
 		Cache mockCache = mock(Cache.class, "MockCache");
 		CacheSnapshotService mockCacheSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
 
@@ -348,6 +369,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void createRegionSnapshotService() {
+
 		Region mockRegion = mock(Region.class, "MockRegion");
 		RegionSnapshotService mockRegionSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
 
@@ -366,25 +388,30 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void wrapNullCacheSnapshotService() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The backing CacheSnapshotService must not be null");
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The backing CacheSnapshotService must not be null");
+
 		factoryBean.wrap((CacheSnapshotService) null);
 	}
 
 	@Test
 	public void wrapNullRegionSnapshotService() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The backing RegionSnapshotService must not be null");
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The backing RegionSnapshotService must not be null");
+
 		factoryBean.wrap((RegionSnapshotService) null);
 	}
 
 	@Test
 	public void destroyPerformsExportWithConfiguredExports() throws Exception {
+
 		SnapshotMetadata expectedSnapshotMetadata = newSnapshotMetadata();
 
-		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class,
+		SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class,
 			"MockSnapshotServiceAdapter");
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
@@ -403,6 +430,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void onApplicationEventWhenMatchUsingEventSnapshotMetadataPerformsExport() throws Exception {
+
 		Region mockRegion = mock(Region.class, "MockRegion");
 
 		SnapshotApplicationEvent mockSnapshotEvent = mock(ExportSnapshotApplicationEvent.class,
@@ -410,7 +438,8 @@ public class SnapshotServiceFactoryBeanTest {
 
 		SnapshotMetadata eventSnapshotMetadata = newSnapshotMetadata(snapshotDat);
 
-		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
+		SnapshotServiceAdapter mockSnapshotService =
+			mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
 
 		when(mockSnapshotEvent.isCacheSnapshotEvent()).thenReturn(false);
 		when(mockSnapshotEvent.matches(eq(mockRegion))).thenReturn(true);
@@ -438,12 +467,14 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void onApplicationEventWhenMatchUsingFactorySnapshotMetadataPerformsImport() throws Exception {
+
 		SnapshotApplicationEvent mockSnapshotEvent = mock(ImportSnapshotApplicationEvent.class,
 			"MockImportSnapshotApplicationEvent");
 
 		SnapshotMetadata factorySnapshotMetadata = newSnapshotMetadata(snapshotDat);
 
-		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
+		SnapshotServiceAdapter mockSnapshotService =
+			mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
 
 		when(mockSnapshotEvent.isCacheSnapshotEvent()).thenReturn(true);
 		when(mockSnapshotEvent.matches(any(Region.class))).thenReturn(false);
@@ -470,6 +501,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void onApplicationEventWhenNoMatchDoesNotPerformExport() throws Exception {
+
 		SnapshotApplicationEvent mockSnapshotEvent = mock(ExportSnapshotApplicationEvent.class,
 			"MockExportSnapshotApplicationEvent");
 
@@ -477,7 +509,8 @@ public class SnapshotServiceFactoryBeanTest {
 		when(mockSnapshotEvent.matches(any(Region.class))).thenReturn(false);
 		when(mockSnapshotEvent.getSnapshotMetadata()).thenReturn(null);
 
-		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
+		SnapshotServiceAdapter mockSnapshotService =
+			mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
 			@Override public SnapshotServiceAdapter getObject() throws Exception {
@@ -500,12 +533,14 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void onApplicationEventWhenNoMatchDoesNotPerformImport() throws Exception {
+
 		Region mockRegion = mock(Region.class, "MockRegion");
 
 		SnapshotApplicationEvent mockSnapshotEvent = mock(ImportSnapshotApplicationEvent.class,
 			"MockImportSnapshotApplicationEvent");
 
-		final SnapshotServiceAdapter mockSnapshotService = mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
+		SnapshotServiceAdapter mockSnapshotService =
+			mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
 
 		when(mockSnapshotEvent.isCacheSnapshotEvent()).thenReturn(false);
 		when(mockSnapshotEvent.matches(any(Region.class))).thenReturn(false);
@@ -533,12 +568,13 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void resolveSnapshotMetadataFromEvent() {
+
 		SnapshotMetadata eventSnapshotMetadata = newSnapshotMetadata(snapshotDat);
 		SnapshotMetadata factoryExportSnapshotMetadata = newSnapshotMetadata();
 		SnapshotMetadata factoryImportSnapshotMetadata = newSnapshotMetadata(FileSystemUtils.USER_HOME);
 
-		SnapshotApplicationEvent mockSnapshotEvent = mock(SnapshotApplicationEvent.class,
-			"MockSnapshotApplicationEvent");
+		SnapshotApplicationEvent mockSnapshotEvent =
+			mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
 
 		when(mockSnapshotEvent.getSnapshotMetadata()).thenReturn(toArray(eventSnapshotMetadata));
 
@@ -554,11 +590,12 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void resolveExportSnapshotMetadataFromFactory() {
+
 		SnapshotMetadata factoryExportSnapshotMetadata = newSnapshotMetadata();
 		SnapshotMetadata factoryImportSnapshotMetadata = newSnapshotMetadata(FileSystemUtils.USER_HOME);
 
-		SnapshotApplicationEvent mockSnapshotEvent = mock(ExportSnapshotApplicationEvent.class,
-			"MockExportSnapshotApplicationEvent");
+		SnapshotApplicationEvent mockSnapshotEvent =
+			mock(ExportSnapshotApplicationEvent.class,"MockExportSnapshotApplicationEvent");
 
 		when(mockSnapshotEvent.getSnapshotMetadata()).thenReturn(null);
 
@@ -574,11 +611,12 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void resolveImportSnapshotMetadataFromFactory() {
+
 		SnapshotMetadata factoryExportSnapshotMetadata = newSnapshotMetadata();
 		SnapshotMetadata factoryImportSnapshotMetadata = newSnapshotMetadata(FileSystemUtils.USER_HOME);
 
-		SnapshotApplicationEvent mockSnapshotEvent = mock(ImportSnapshotApplicationEvent.class,
-			"MockImportSnapshotApplicationEvent");
+		SnapshotApplicationEvent mockSnapshotEvent =
+			mock(ImportSnapshotApplicationEvent.class, "MockImportSnapshotApplicationEvent");
 
 		when(mockSnapshotEvent.getSnapshotMetadata()).thenReturn(toArray());
 
@@ -594,7 +632,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void withCacheBasedSnapshotServiceOnCacheSnapshotEventIsMatch() {
-		SnapshotApplicationEvent mockSnapshotEvent = mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
+
+		SnapshotApplicationEvent mockSnapshotEvent =
+			mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
 
 		when(mockSnapshotEvent.isCacheSnapshotEvent()).thenReturn(true);
 
@@ -607,7 +647,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void withCacheBasedSnapshotServiceOnRegionSnapshotEventIsNotAMatch() {
-		SnapshotApplicationEvent mockSnapshotEvent = mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
+
+		SnapshotApplicationEvent mockSnapshotEvent =
+			mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
 
 		when(mockSnapshotEvent.isCacheSnapshotEvent()).thenReturn(false);
 		when(mockSnapshotEvent.matches(any(Region.class))).thenReturn(false);
@@ -621,7 +663,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void withRegionBasedSnapshotServiceOnCacheSnapshotEventIsMatch() {
-		SnapshotApplicationEvent mockSnapshotEvent = mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
+
+		SnapshotApplicationEvent mockSnapshotEvent =
+			mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
 
 		when(mockSnapshotEvent.isCacheSnapshotEvent()).thenReturn(true);
 
@@ -636,9 +680,11 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void withRegionBasedSnapshotServiceOnRegionSnapshotEventIsMatch() {
+
 		Region mockRegion = mock(Region.class, "MockRegion");
 
-		SnapshotApplicationEvent mockSnapshotEvent = mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
+		SnapshotApplicationEvent mockSnapshotEvent =
+			mock(SnapshotApplicationEvent.class, "MockSnapshotApplicationEvent");
 
 		when(mockSnapshotEvent.isCacheSnapshotEvent()).thenReturn(false);
 		when(mockSnapshotEvent.matches(eq(mockRegion))).thenReturn(true);
@@ -654,9 +700,11 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void importCacheSnapshotOnInitialization() throws Exception {
+
 		Cache mockCache = mock(Cache.class, "MockCache");
 
-		CacheSnapshotService mockCacheSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
+		CacheSnapshotService mockCacheSnapshotService =
+			mock(CacheSnapshotService.class, "MockCacheSnapshotService");
 
 		SnapshotFilter mockSnapshotFilterOne = mock(SnapshotFilter.class, "MockSnapshotFilterOne");
 		SnapshotFilter mockSnapshotFilterTwo = mock(SnapshotFilter.class, "MockSnapshotFilterTwo");
@@ -704,11 +752,13 @@ public class SnapshotServiceFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void importRegionSnapshotOnInitialization() throws Exception {
+
 		Cache mockCache = mock(Cache.class, "MockCache");
 
 		Region mockRegion = mock(Region.class, "MockRegion");
 
-		RegionSnapshotService mockRegionSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
+		RegionSnapshotService mockRegionSnapshotService =
+			mock(RegionSnapshotService.class, "MockRegionSnapshotService");
 
 		SnapshotFilter mockSnapshotFilterOne = mock(SnapshotFilter.class, "MockSnapshotFilterOne");
 		SnapshotFilter mockSnapshotFilterTwo = mock(SnapshotFilter.class, "MockSnapshotFilterTwo");
@@ -757,9 +807,11 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void exportCacheSnapshotOnDestroy() throws Exception {
+
 		Cache mockCache = mock(Cache.class, "MockCache");
 
-		CacheSnapshotService mockCacheSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
+		CacheSnapshotService mockCacheSnapshotService =
+			mock(CacheSnapshotService.class, "MockCacheSnapshotService");
 
 		SnapshotFilter mockSnapshotFilterOne = mock(SnapshotFilter.class, "MockSnapshotFilterOne");
 		SnapshotFilter mockSnapshotFilterTwo = mock(SnapshotFilter.class, "MockSnapshotFilterTwo");
@@ -799,11 +851,13 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void exportRegionSnapshotOnDestroy() throws Exception {
+
 		Cache mockCache = mock(Cache.class, "MockCache");
 
 		Region mockRegion = mock(Region.class, "MockRegion");
 
-		RegionSnapshotService mockRegionSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
+		RegionSnapshotService mockRegionSnapshotService =
+			mock(RegionSnapshotService.class, "MockRegionSnapshotService");
 
 		SnapshotFilter mockSnapshotFilterOne = mock(SnapshotFilter.class, "MockSnapshotFilterOne");
 		SnapshotFilter mockSnapshotFilterTwo = mock(SnapshotFilter.class, "MockSnapshotFilterTwo");
@@ -845,9 +899,10 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void createOptionsWithFilterOnSnapshotServiceAdapterSupport() {
+
 		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, "MockSnapshotFilter");
 
-		final SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapshotOptions");
+		SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapshotOptions");
 
 		when(mockSnapshotOptions.setFilter(any(SnapshotFilter.class))).thenReturn(mockSnapshotOptions);
 
@@ -864,6 +919,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void invokeExceptionSuppressingCloseOnSnapshotServiceAdapterSupportIsSuccessful() throws Exception {
+
 		Closeable mockCloseable = mock(Closeable.class, "MockCloseable");
 
 		assertThat(new TestSnapshotServiceAdapter().exceptionSuppressingClose(mockCloseable), is(true));
@@ -873,6 +929,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void invokeExceptionSuppressingCloseOnSnapshotServiceAdapterSupportIsUnsuccessful() throws Exception {
+
 		Closeable mockCloseable = mock(Closeable.class, "MockCloseable");
 
 		doThrow(new IOException("TEST")).when(mockCloseable).close();
@@ -884,7 +941,8 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void logDebugWhenDebugging() {
-		final Log mockLog = mock(Log.class, "MockLog");
+
+		Log mockLog = mock(Log.class, "MockLog");
 
 		when(mockLog.isDebugEnabled()).thenReturn(true);
 
@@ -904,7 +962,8 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void logDebugWhenNotDebugging() {
-		final Log mockLog = mock(Log.class, "MockLog");
+
+		Log mockLog = mock(Log.class, "MockLog");
 
 		when(mockLog.isDebugEnabled()).thenReturn(false);
 
@@ -922,6 +981,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void toSimpleFilenameUsingVariousPathnames() {
+
 		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter();
 
 		assertThat(snapshotService.toSimpleFilename(toPathname("path", "to", "file.ext")), is(equalTo("file.ext")));
@@ -936,7 +996,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test(expected = ImportSnapshotException.class)
 	public void loadCacheSnapshotWithDirectoryAndFormatHandlesExceptionAppropriately() throws Exception {
-		CacheSnapshotService mockCacheSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
+
+		CacheSnapshotService mockCacheSnapshotService =
+			mock(CacheSnapshotService.class, "MockCacheSnapshotService");
 
 		doThrow(new IOException("TEST")).when(mockCacheSnapshotService).load(any(File.class), any(SnapshotFormat.class));
 
@@ -949,7 +1011,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		catch (ImportSnapshotException expected) {
 			assertThat(expected.getMessage(), is(equalTo(String.format(
-				"Failed to load snapshots from directory (%1$s) in format (GEMFIRE)",
+				"Failed to load snapshots from directory [%1$s] in format [GEMFIRE]",
 					FileSystemUtils.WORKING_DIRECTORY))));
 			assertThat(expected.getCause(), is(instanceOf(IOException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
@@ -963,9 +1025,11 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test(expected = ImportSnapshotException.class)
 	public void loadCacheSnapshotWithFormatOptionsAndSnapshotFilesHandlesExceptionAppropriately() throws Exception {
+
 		SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapshotOptions");
 
-		CacheSnapshotService mockCacheSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
+		CacheSnapshotService mockCacheSnapshotService =
+			mock(CacheSnapshotService.class, "MockCacheSnapshotService");
 
 		doThrow(new ClassCastException("TEST")).when(mockCacheSnapshotService).load(any(File[].class),
 			any(SnapshotFormat.class), any(SnapshotOptions.class));
@@ -979,7 +1043,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		catch (ImportSnapshotException expected) {
 			assertThat(expected.getMessage(), is(equalTo(String.format(
-				"Failed to load snapshots (%1$s) in format (GEMFIRE) using options (%2$s)",
+				"Failed to load snapshots [%1$s] in format [GEMFIRE] using options [%2$s]",
 					Arrays.toString(new File[] { snapshotDat }), mockSnapshotOptions))));
 			assertThat(expected.getCause(), is(instanceOf(ClassCastException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
@@ -993,7 +1057,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test(expected = ExportSnapshotException.class)
 	public void saveCacheSnapshotWithDirectoryAndFormatHandlesExceptionAppropriately() throws Exception {
-		CacheSnapshotService mockCacheSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
+
+		CacheSnapshotService mockCacheSnapshotService =
+			mock(CacheSnapshotService.class, "MockCacheSnapshotService");
 
 		doThrow(new IOException("TEST")).when(mockCacheSnapshotService).save(any(File.class), any(SnapshotFormat.class));
 
@@ -1006,7 +1072,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		catch (ExportSnapshotException expected) {
 			assertThat(expected.getMessage(), is(equalTo(String.format(
-				"Failed to save snapshots to directory (%1$s) in format (GEMFIRE)",
+				"Failed to save snapshots to directory [%1$s] in format [GEMFIRE]",
 					FileSystemUtils.WORKING_DIRECTORY))));
 			assertThat(expected.getCause(), is(instanceOf(IOException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
@@ -1020,9 +1086,11 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test(expected = ExportSnapshotException.class)
 	public void saveCacheSnapshotWithDirectoryFormatAndOptionsHandlesExceptionAppropriately() throws Exception {
+
 		SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapshotOptions");
 
-		CacheSnapshotService mockCacheSnapshotService = mock(CacheSnapshotService.class, "MockCacheSnapshotService");
+		CacheSnapshotService mockCacheSnapshotService =
+			mock(CacheSnapshotService.class, "MockCacheSnapshotService");
 
 		doThrow(new ClassCastException("TEST")).when(mockCacheSnapshotService).save(any(File.class),
 			any(SnapshotFormat.class), any(SnapshotOptions.class));
@@ -1036,7 +1104,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		catch (ExportSnapshotException expected) {
 			assertThat(expected.getMessage(), is(equalTo(String.format(
-				"Failed to save snapshots to directory (%1$s) in format (GEMFIRE) using options (%2$s)",
+				"Failed to save snapshots to directory [%1$s] in format [GEMFIRE] using options [%2$s]",
 					FileSystemUtils.USER_HOME, mockSnapshotOptions))));
 			assertThat(expected.getCause(), is(instanceOf(ClassCastException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
@@ -1050,7 +1118,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test(expected = ImportSnapshotException.class)
 	public void loadRegionSnapshotWithSnapshotFileAndFormatHandlesExceptionAppropriately() throws Exception {
-		RegionSnapshotService mockRegionSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
+
+		RegionSnapshotService mockRegionSnapshotService =
+			mock(RegionSnapshotService.class, "MockRegionSnapshotService");
 
 		doThrow(new IOException("TEST")).when(mockRegionSnapshotService).load(any(File.class),
 			any(SnapshotFormat.class));
@@ -1064,7 +1134,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		catch (ImportSnapshotException expected) {
 			assertThat(expected.getMessage(), is(equalTo(String.format(
-				"Failed to load snapshot from file (%1$s) in format (GEMFIRE)", snapshotDat))));
+				"Failed to load snapshot from file [%1$s] in format [GEMFIRE]", snapshotDat))));
 			assertThat(expected.getCause(), is(instanceOf(IOException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
 			throw expected;
@@ -1076,9 +1146,11 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test(expected = ImportSnapshotException.class)
 	public void loadRegionSnapshotWithFormatOptionsAndSnapshotFilesHandlesExceptionAppropriately() throws Exception {
+
 		SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapshotOptions");
 
-		RegionSnapshotService mockRegionSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
+		RegionSnapshotService mockRegionSnapshotService =
+			mock(RegionSnapshotService.class, "MockRegionSnapshotService");
 
 		doThrow(new ClassCastException("TEST")).when(mockRegionSnapshotService).load(
 			any(File.class), any(SnapshotFormat.class), any(SnapshotOptions.class));
@@ -1092,7 +1164,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		catch (ImportSnapshotException expected) {
 			assertThat(expected.getMessage(), is(equalTo(String.format(
-				"Failed to load snapshots (%1$s) in format (GEMFIRE) using options (%2$s)",
+				"Failed to load snapshots [%1$s] in format [GEMFIRE] using options [%2$s]",
 					Arrays.toString(new File[] { snapshotDat }), mockSnapshotOptions))));
 			assertThat(expected.getCause(), is(instanceOf(ClassCastException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
@@ -1106,7 +1178,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test(expected = ExportSnapshotException.class)
 	public void saveRegionSnapshotWithSnapshotFileAndFormatHandlesExceptionAppropriately() throws Exception {
-		RegionSnapshotService mockRegionSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
+
+		RegionSnapshotService mockRegionSnapshotService =
+			mock(RegionSnapshotService.class, "MockRegionSnapshotService");
 
 		doThrow(new IOException("TEST")).when(mockRegionSnapshotService).save(any(File.class),
 			any(SnapshotFormat.class));
@@ -1120,7 +1194,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		catch (ExportSnapshotException expected) {
 			assertThat(expected.getMessage(), is(equalTo(String.format(
-				"Failed to save snapshot to file (%1$s) in format (GEMFIRE)", snapshotDat))));
+				"Failed to save snapshot to file [%1$s] in format [GEMFIRE]", snapshotDat))));
 			assertThat(expected.getCause(), is(instanceOf(IOException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
 			throw expected;
@@ -1132,7 +1206,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test(expected = ExportSnapshotException.class)
 	public void saveRegionSnapshotWithSnapshotFileFormatAndOptionsHandlesExceptionAppropriately() throws Exception {
-		SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapahotOptions");
+
+		SnapshotOptions mockSnapshotOptions =
+			mock(SnapshotOptions.class, "MockSnapahotOptions");
 
 		RegionSnapshotService mockRegionSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
 
@@ -1148,7 +1224,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		catch (ExportSnapshotException expected) {
 			assertThat(expected.getMessage(), is(equalTo(String.format(
-				"Failed to save snapshot to file (%1$s) in format (GEMFIRE) using options (%2$s)",
+				"Failed to save snapshot to file [%1$s] in format [GEMFIRE] using options [%2$s]",
 					snapshotDat, mockSnapshotOptions))));
 			assertThat(expected.getCause(), is(instanceOf(ClassCastException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
@@ -1162,17 +1238,21 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void createSnapshotMetadataWithNullLocation() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("Location must not be null");
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("Location must not be null");
+
 		new SnapshotMetadata(null, mock(SnapshotFilter.class), SnapshotFormat.GEMFIRE);
 	}
 
 	@Test
 	public void createSnapshotMetadataWithDirectoryFilterAndUnspecifiedFormat() {
+
 		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, "MockSnapshotFilter");
 
-		SnapshotMetadata metadata = new SnapshotMetadata(FileSystemUtils.WORKING_DIRECTORY, mockSnapshotFilter, null);
+		SnapshotMetadata metadata =
+			new SnapshotMetadata(FileSystemUtils.WORKING_DIRECTORY, mockSnapshotFilter, null);
 
 		assertThat(metadata.getLocation(), is(equalTo(FileSystemUtils.WORKING_DIRECTORY)));
 		assertThat(metadata.isDirectory(), is(true));
@@ -1184,6 +1264,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void createSnapshotMetadataWithFileNullFilterAndGemFireFormat() throws Exception {
+
 		SnapshotMetadata snapshotMetadata = new SnapshotMetadata(snapshotDat, null, SnapshotFormat.GEMFIRE);
 
 		assertThat(snapshotMetadata.getLocation(), is(equalTo(snapshotDat)));
@@ -1196,6 +1277,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void isJarFileIsTrue() {
+
 		// JRE
 		File runtimeDotJar = new File(new File(FileSystemUtils.JAVA_HOME, "lib"), "rt.jar");
 
@@ -1210,6 +1292,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void isJarFileIsFalse() throws Exception {
+
 		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new File("/path/to/non-existing/file.jar")), is(false));
 		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new ClassPathResource("/cluster_config.zip").getFile()), is(false));
 		assertThat(ArchiveFileFilter.INSTANCE.isJarFile(new File("to/file.tar")), is(false));
@@ -1221,6 +1304,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void getFileExtensionOfVariousFiles() throws Exception {
+
 		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(new ClassPathResource("/cluster_config.zip").getFile()), is(equalTo("zip")));
 		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(new File("/path/to/non-existing/file.jar")), is(equalTo("")));
 		assertThat(ArchiveFileFilter.INSTANCE.getFileExtension(new File("to/non-existing/file.tar")), is(equalTo("")));
@@ -1247,5 +1331,4 @@ public class SnapshotServiceFactoryBeanTest {
 			throw new UnsupportedOperationException("not implemented");
 		}
 	}
-
 }
