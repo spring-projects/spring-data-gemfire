@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
@@ -71,28 +73,31 @@ class SnapshotServiceParser extends AbstractSingleBeanDefinitionParser {
 	private ManagedList<BeanDefinition> parseSnapshots(Element element, ParserContext parserContext,
 			String childTagName) {
 
-		ManagedList<BeanDefinition> snapshotBeans = new ManagedList<BeanDefinition>();
+		ManagedList<BeanDefinition> snapshotBeans = new ManagedList<>();
 
-		for (Element childElement : DomUtils.getChildElementsByTagName(element, childTagName)) {
-			snapshotBeans.add(parseSnapshotMetadata(childElement, parserContext));
-		}
+		nullSafeList(DomUtils.getChildElementsByTagName(element, childTagName)).forEach(childElement ->
+			snapshotBeans.add(parseSnapshotMetadata(childElement, parserContext)));
 
 		return snapshotBeans;
 	}
 
 	/* (non-Javadoc) */
 	private BeanDefinition parseSnapshotMetadata(Element snapshotMetadataElement, ParserContext parserContext) {
-		BeanDefinitionBuilder snapshotMetadataBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-			SnapshotServiceFactoryBean.SnapshotMetadata.class);
+
+		BeanDefinitionBuilder snapshotMetadataBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(SnapshotServiceFactoryBean.SnapshotMetadata.class);
 
 		snapshotMetadataBuilder.addConstructorArgValue(snapshotMetadataElement.getAttribute("location"));
 
+		snapshotMetadataBuilder.addConstructorArgValue(snapshotMetadataElement.getAttribute("format"));
+
 		if (isSnapshotFilterSpecified(snapshotMetadataElement)) {
 			snapshotMetadataBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(
-				snapshotMetadataElement, parserContext, snapshotMetadataBuilder, "filter-ref", true));
+				snapshotMetadataElement, parserContext, snapshotMetadataBuilder, "filter-ref",
+					true));
 		}
 
-		snapshotMetadataBuilder.addConstructorArgValue(snapshotMetadataElement.getAttribute("format"));
+		ParsingUtils.setPropertyValue(snapshotMetadataElement, snapshotMetadataBuilder, "parallel");
 
 		return snapshotMetadataBuilder.getBeanDefinition();
 	}

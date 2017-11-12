@@ -168,7 +168,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	 * @see org.apache.geode.cache.snapshot.RegionSnapshotService
 	 */
 	protected SnapshotServiceAdapter<K, V> wrap(RegionSnapshotService<K, V> regionSnapshotService) {
-		return new RegionSnapshotServiceAdapter<K, V>(regionSnapshotService);
+		return new RegionSnapshotServiceAdapter<>(regionSnapshotService);
 	}
 
 	/**
@@ -446,8 +446,10 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 			throw new UnsupportedOperationException("not implemented");
 		}
 
-		protected SnapshotOptions<K, V> createOptions(SnapshotFilter<K, V> filter) {
-			return createOptions().setFilter(filter);
+		protected SnapshotOptions<K, V> createOptions(SnapshotMetadata<K, V> metadata) {
+			return createOptions()
+				.setFilter(metadata.getFilter())
+				.setParallelMode(metadata.isParallel());
 		}
 
 		@Override
@@ -455,7 +457,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		public void doExport(SnapshotMetadata<K, V>... configurations) {
 
 			stream(nullSafeArray(configurations)).forEach(configuration ->
-				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration.getFilter())));
+				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration)));
 		}
 
 		@Override
@@ -463,8 +465,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		public void doImport(SnapshotMetadata<K, V>... configurations) {
 
 			stream(nullSafeArray(configurations)).forEach(configuration ->
-				load(configuration.getFormat(), createOptions(configuration.getFilter()),
-					handleLocation(configuration)));
+				load(configuration.getFormat(), createOptions(configuration), handleLocation(configuration)));
 		}
 
 		protected abstract File[] handleLocation(SnapshotMetadata<K, V> configuration);
@@ -671,7 +672,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		}
 
 		@Override
-		protected File[] handleLocation(final SnapshotMetadata<K, V> configuration) {
+		protected File[] handleLocation(SnapshotMetadata<K, V> configuration) {
 			return new File[] { configuration.getLocation() };
 		}
 
@@ -739,22 +740,33 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	 */
 	public static class SnapshotMetadata<K, V> {
 
+		protected static final boolean DEFAULT_PARALLEL = false;
+
+		protected static final SnapshotFormat DEFAULT_SNAPSHOT_FORMAT = SnapshotFormat.GEMFIRE;
+
+		private boolean parallel;
+
 		private final File location;
 
 		private final SnapshotFilter<K, V> filter;
 
 		private final SnapshotFormat format;
 
-		public SnapshotMetadata(File location, SnapshotFormat format) {
-			this(location, null, format);
+		public SnapshotMetadata(File location) {
+			this(location, DEFAULT_SNAPSHOT_FORMAT, null);
 		}
 
-		public SnapshotMetadata(File location, SnapshotFilter<K, V> filter, SnapshotFormat format) {
-			Assert.notNull(location, "Location must not be null");
+		public SnapshotMetadata(File location, SnapshotFormat format) {
+			this(location, format, null);
+		}
+
+		public SnapshotMetadata(File location, SnapshotFormat format, SnapshotFilter<K, V> filter) {
+
+			Assert.notNull(location, "Location is required");
 
 			this.location = location;
-			this.filter = filter;
 			this.format = format;
+			this.filter = filter;
 		}
 
 		public boolean isDirectory() {
@@ -766,7 +778,11 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		}
 
 		public File getLocation() {
-			return location;
+			return this.location;
+		}
+
+		public SnapshotFormat getFormat() {
+			return Optional.ofNullable(this.format).orElse(DEFAULT_SNAPSHOT_FORMAT);
 		}
 
 		public boolean isFilterPresent() {
@@ -774,17 +790,21 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		}
 
 		public SnapshotFilter<K, V> getFilter() {
-			return filter;
+			return this.filter;
 		}
 
-		public SnapshotFormat getFormat() {
-			return (format != null ? format : SnapshotFormat.GEMFIRE);
+		public void setParallel(boolean parallel) {
+			this.parallel = parallel;
+		}
+
+		public boolean isParallel() {
+			return this.parallel;
 		}
 
 		@Override
 		public String toString() {
-			return String.format("{ @type = %1$s, location = %2$s, filter = %2$s, format = %4$s }",
-				getClass().getName(), getLocation().getAbsolutePath(), getFilter(), getFormat());
+			return String.format("{ @type = %1$s, location = %2$s, format = %3$s, filter = %4$s, parallel = %5$s }",
+				getClass().getName(), getLocation().getAbsolutePath(), getFormat(), getFilter(), isParallel());
 		}
 	}
 

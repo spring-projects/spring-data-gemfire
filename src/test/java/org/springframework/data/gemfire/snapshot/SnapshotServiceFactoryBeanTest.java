@@ -27,6 +27,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
@@ -60,7 +61,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent;
 import org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent;
@@ -95,7 +96,7 @@ public class SnapshotServiceFactoryBeanTest {
 		File mockFile = mock(File.class, filename);
 
 		when(mockFile.isFile()).thenReturn(true);
-		when(mockFile.getAbsolutePath()).thenReturn(String.format("/path/to/%1$s", filename));
+		when(mockFile.getAbsolutePath()).thenReturn(String.format("/path/to/%s", filename));
 		when(mockFile.getName()).thenReturn(filename);
 
 		return mockFile;
@@ -106,21 +107,27 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	protected <K, V> SnapshotMetadata<K, V> newSnapshotMetadata(File location) {
-		return newSnapshotMetadata(location, null);
+		return newSnapshotMetadata(location, null, false, SnapshotFormat.GEMFIRE);
 	}
 
-	protected <K, V> SnapshotMetadata<K, V> newSnapshotMetadata(SnapshotFilter<K, V> filter) {
-		return newSnapshotMetadata(FileSystemUtils.WORKING_DIRECTORY, filter);
-	}
-
-	protected <K, V> SnapshotMetadata<K, V> newSnapshotMetadata(File location, SnapshotFilter<K, V> filter) {
-		return newSnapshotMetadata(location, filter, SnapshotFormat.GEMFIRE);
+	protected <K, V> SnapshotMetadata<K, V> newSnapshotMetadata(SnapshotFilter<K, V> filter, boolean parallel) {
+		return newSnapshotMetadata(FileSystemUtils.WORKING_DIRECTORY, filter, parallel);
 	}
 
 	protected <K, V> SnapshotMetadata<K, V> newSnapshotMetadata(File location, SnapshotFilter<K, V> filter,
-			SnapshotFormat format) {
+			boolean parallel) {
 
-		return new SnapshotMetadata<K, V>(location, filter, format);
+		return newSnapshotMetadata(location, filter, parallel, SnapshotFormat.GEMFIRE);
+	}
+
+	protected <K, V> SnapshotMetadata<K, V> newSnapshotMetadata(File location, SnapshotFilter<K, V> filter,
+			boolean parallel, SnapshotFormat format) {
+
+		SnapshotMetadata<K, V> snapshotMetadata = new SnapshotMetadata<>(location, format, filter);
+
+		snapshotMetadata.setParallel(parallel);
+
+		return snapshotMetadata;
 	}
 
 	protected <K, V> SnapshotMetadata<K, V>[] toArray(SnapshotMetadata<K, V>... metadata) {
@@ -716,15 +723,18 @@ public class SnapshotServiceFactoryBeanTest {
 		when(mockCacheSnapshotService.createOptions()).thenReturn(mockSnapshotOptionsOne)
 			.thenReturn(mockSnapshotOptionsTwo);
 		when(mockSnapshotOptionsOne.setFilter(eq(mockSnapshotFilterOne))).thenReturn(mockSnapshotOptionsOne);
+		when(mockSnapshotOptionsOne.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptionsOne);
 		when(mockSnapshotOptionsTwo.setFilter(eq(mockSnapshotFilterTwo))).thenReturn(mockSnapshotOptionsTwo);
+		when(mockSnapshotOptionsTwo.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptionsTwo);
 
-		SnapshotMetadata[] expectedImports = toArray(
-			newSnapshotMetadata(FileSystemUtils.USER_HOME, mockSnapshotFilterOne),
-				newSnapshotMetadata(mockSnapshotFilterTwo));
+		SnapshotMetadata[] expectedImports =
+			toArray(newSnapshotMetadata(FileSystemUtils.USER_HOME, mockSnapshotFilterOne, true),
+				newSnapshotMetadata(mockSnapshotFilterTwo, false));
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean();
 
 		factoryBean.setCache(mockCache);
+		factoryBean.setExports(null);
 		factoryBean.setImports(expectedImports);
 		factoryBean.setRegion(null);
 
@@ -740,13 +750,16 @@ public class SnapshotServiceFactoryBeanTest {
 
 		verify(mockCache, times(1)).getSnapshotService();
 		verify(mockCacheSnapshotService, times(2)).createOptions();
-		verify(mockCacheSnapshotService, times(1)).load(eq(FileSystemUtils.safeListFiles(FileSystemUtils.USER_HOME, FileSystemUtils.FileOnlyFilter.INSTANCE)),
-			eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsOne));
-		verify(mockCacheSnapshotService, times(1)).load(eq(FileSystemUtils.safeListFiles(
-			FileSystemUtils.WORKING_DIRECTORY, FileSystemUtils.FileOnlyFilter.INSTANCE)),
-			eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsTwo));
+		verify(mockCacheSnapshotService, times(1))
+			.load(eq(FileSystemUtils.safeListFiles(FileSystemUtils.USER_HOME, FileSystemUtils.FileOnlyFilter.INSTANCE)),
+				eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsOne));
+		verify(mockCacheSnapshotService, times(1))
+			.load(eq(FileSystemUtils.safeListFiles(FileSystemUtils.WORKING_DIRECTORY, FileSystemUtils.FileOnlyFilter.INSTANCE)),
+				eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsTwo));
 		verify(mockSnapshotOptionsOne, times(1)).setFilter(eq(mockSnapshotFilterOne));
+		verify(mockSnapshotOptionsOne, times(1)).setParallelMode(eq(true));
 		verify(mockSnapshotOptionsTwo, times(1)).setFilter(eq(mockSnapshotFilterTwo));
+		verify(mockSnapshotOptionsTwo, times(1)).setParallelMode(eq(false));
 	}
 
 	@Test
@@ -771,16 +784,20 @@ public class SnapshotServiceFactoryBeanTest {
 		when(mockRegionSnapshotService.createOptions()).thenReturn(mockSnapshotOptionsOne)
 			.thenReturn(mockSnapshotOptionsTwo);
 		when(mockSnapshotOptionsOne.setFilter(eq(mockSnapshotFilterOne))).thenReturn(mockSnapshotOptionsOne);
+		when(mockSnapshotOptionsOne.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptionsOne);
 		when(mockSnapshotOptionsTwo.setFilter(eq(mockSnapshotFilterTwo))).thenReturn(mockSnapshotOptionsTwo);
+		when(mockSnapshotOptionsTwo.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptionsTwo);
 
 		File snapshotDatTwo = mockFile("snapshot-2.dat");
 
-		SnapshotMetadata[] expectedImports = toArray(newSnapshotMetadata(snapshotDat, mockSnapshotFilterOne),
-			newSnapshotMetadata(snapshotDatTwo, mockSnapshotFilterTwo));
+		SnapshotMetadata[] expectedImports =
+			toArray(newSnapshotMetadata(snapshotDat, mockSnapshotFilterOne, true),
+				newSnapshotMetadata(snapshotDatTwo, mockSnapshotFilterTwo, false));
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean();
 
 		factoryBean.setCache(mockCache);
+		factoryBean.setExports(null);
 		factoryBean.setImports(expectedImports);
 		factoryBean.setRegion(mockRegion);
 
@@ -797,12 +814,14 @@ public class SnapshotServiceFactoryBeanTest {
 		verify(mockCache, never()).getSnapshotService();
 		verify(mockRegion, times(1)).getSnapshotService();
 		verify(mockRegionSnapshotService, times(2)).createOptions();
-		verify(mockRegionSnapshotService, times(1)).load(eq(snapshotDat), eq(SnapshotFormat.GEMFIRE),
-			eq(mockSnapshotOptionsOne));
-		verify(mockRegionSnapshotService, times(1)).load(eq(snapshotDatTwo), eq(SnapshotFormat.GEMFIRE),
-			eq(mockSnapshotOptionsTwo));
+		verify(mockRegionSnapshotService, times(1))
+			.load(eq(snapshotDat), eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsOne));
+		verify(mockRegionSnapshotService, times(1))
+			.load(eq(snapshotDatTwo), eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsTwo));
 		verify(mockSnapshotOptionsOne, times(1)).setFilter(eq(mockSnapshotFilterOne));
+		verify(mockSnapshotOptionsOne, times(1)).setParallelMode(eq(true));
 		verify(mockSnapshotOptionsTwo, times(1)).setFilter(eq(mockSnapshotFilterTwo));
+		verify(mockSnapshotOptionsTwo, times(1)).setParallelMode(eq(false));
 	}
 
 	@Test
@@ -823,10 +842,13 @@ public class SnapshotServiceFactoryBeanTest {
 		when(mockCacheSnapshotService.createOptions()).thenReturn(mockSnapshotOptionsOne)
 			.thenReturn(mockSnapshotOptionsTwo);
 		when(mockSnapshotOptionsOne.setFilter(eq(mockSnapshotFilterOne))).thenReturn(mockSnapshotOptionsOne);
+		when(mockSnapshotOptionsOne.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptionsOne);
 		when(mockSnapshotOptionsTwo.setFilter(eq(mockSnapshotFilterTwo))).thenReturn(mockSnapshotOptionsTwo);
+		when(mockSnapshotOptionsTwo.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptionsTwo);
 
-		SnapshotMetadata[] expectedExports = toArray(newSnapshotMetadata(mockSnapshotFilterOne),
-			newSnapshotMetadata(mockSnapshotFilterTwo));
+		SnapshotMetadata[] expectedExports =
+			toArray(newSnapshotMetadata(mockSnapshotFilterOne, true),
+				newSnapshotMetadata(mockSnapshotFilterTwo, false));
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean();
 
@@ -846,7 +868,9 @@ public class SnapshotServiceFactoryBeanTest {
 		verify(mockCacheSnapshotService, times(1)).save(eq(expectedExports[1].getLocation()),
 			eq(expectedExports[1].getFormat()), eq(mockSnapshotOptionsTwo));
 		verify(mockSnapshotOptionsOne, times(1)).setFilter(eq(mockSnapshotFilterOne));
+		verify(mockSnapshotOptionsOne, times(1)).setParallelMode(eq(true));
 		verify(mockSnapshotOptionsTwo, times(1)).setFilter(eq(mockSnapshotFilterTwo));
+		verify(mockSnapshotOptionsTwo, times(1)).setParallelMode(eq(false));
 	}
 
 	@Test
@@ -870,10 +894,13 @@ public class SnapshotServiceFactoryBeanTest {
 		when(mockRegionSnapshotService.createOptions()).thenReturn(mockSnapshotOptionsOne)
 			.thenReturn(mockSnapshotOptionsTwo);
 		when(mockSnapshotOptionsOne.setFilter(eq(mockSnapshotFilterOne))).thenReturn(mockSnapshotOptionsOne);
+		when(mockSnapshotOptionsOne.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptionsOne);
 		when(mockSnapshotOptionsTwo.setFilter(eq(mockSnapshotFilterTwo))).thenReturn(mockSnapshotOptionsTwo);
+		when(mockSnapshotOptionsTwo.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptionsTwo);
 
-		SnapshotMetadata[] expectedExports = toArray(newSnapshotMetadata(mockSnapshotFilterOne),
-			newSnapshotMetadata(mockSnapshotFilterTwo));
+		SnapshotMetadata[] expectedExports =
+			toArray(newSnapshotMetadata(mockSnapshotFilterOne, true),
+				newSnapshotMetadata(mockSnapshotFilterTwo, false));
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean();
 
@@ -894,17 +921,20 @@ public class SnapshotServiceFactoryBeanTest {
 		verify(mockRegionSnapshotService, times(1)).save(eq(expectedExports[1].getLocation()),
 			eq(expectedExports[1].getFormat()), eq(mockSnapshotOptionsTwo));
 		verify(mockSnapshotOptionsOne, times(1)).setFilter(eq(mockSnapshotFilterOne));
+		verify(mockSnapshotOptionsOne, times(1)).setParallelMode(eq(true));
 		verify(mockSnapshotOptionsTwo, times(1)).setFilter(eq(mockSnapshotFilterTwo));
+		verify(mockSnapshotOptionsTwo, times(1)).setParallelMode(eq(false));
 	}
 
 	@Test
-	public void createOptionsWithFilterOnSnapshotServiceAdapterSupport() {
+	public void createOptionsWithParallelModeAndFilterOnSnapshotServiceAdapterSupport() {
 
 		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, "MockSnapshotFilter");
 
 		SnapshotOptions mockSnapshotOptions = mock(SnapshotOptions.class, "MockSnapshotOptions");
 
 		when(mockSnapshotOptions.setFilter(any(SnapshotFilter.class))).thenReturn(mockSnapshotOptions);
+		when(mockSnapshotOptions.setParallelMode(anyBoolean())).thenReturn(mockSnapshotOptions);
 
 		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter() {
 			@Override public SnapshotOptions<Object, Object> createOptions() {
@@ -912,9 +942,16 @@ public class SnapshotServiceFactoryBeanTest {
 			}
 		};
 
-		assertThat(snapshotService.createOptions(mockSnapshotFilter), is(equalTo(mockSnapshotOptions)));
+		SnapshotMetadata<Object, Object> snapshotMetadata =
+			new SnapshotMetadata<>(mockFile("snapshot.gfd"), SnapshotMetadata.DEFAULT_SNAPSHOT_FORMAT,
+				mockSnapshotFilter);
+
+		snapshotMetadata.setParallel(true);
+
+		assertThat(snapshotService.createOptions(snapshotMetadata), is(equalTo(mockSnapshotOptions)));
 
 		verify(mockSnapshotOptions, times(1)).setFilter(eq(mockSnapshotFilter));
+		verify(mockSnapshotOptions, times(1)).setParallelMode(eq(true));
 	}
 
 	@Test
@@ -1051,7 +1088,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		finally {
 			verify(mockCacheSnapshotService, times(1)).load(eq(new File[] { snapshotDat }),
-				eq(SnapshotFormat.GEMFIRE), Matchers.isA(SnapshotOptions.class));
+				eq(SnapshotFormat.GEMFIRE), ArgumentMatchers.isA(SnapshotOptions.class));
 		}
 	}
 
@@ -1112,7 +1149,7 @@ public class SnapshotServiceFactoryBeanTest {
 		}
 		finally {
 			verify(mockCacheSnapshotService, times(1)).save(eq(FileSystemUtils.USER_HOME), eq(SnapshotFormat.GEMFIRE),
-				Matchers.isA(SnapshotOptions.class));
+				ArgumentMatchers.isA(SnapshotOptions.class));
 		}
 	}
 
@@ -1208,9 +1245,10 @@ public class SnapshotServiceFactoryBeanTest {
 	public void saveRegionSnapshotWithSnapshotFileFormatAndOptionsHandlesExceptionAppropriately() throws Exception {
 
 		SnapshotOptions mockSnapshotOptions =
-			mock(SnapshotOptions.class, "MockSnapahotOptions");
+			mock(SnapshotOptions.class, "MockSnapshotOptions");
 
-		RegionSnapshotService mockRegionSnapshotService = mock(RegionSnapshotService.class, "MockRegionSnapshotService");
+		RegionSnapshotService mockRegionSnapshotService =
+			mock(RegionSnapshotService.class, "MockRegionSnapshotService");
 
 		doThrow(new ClassCastException("TEST")).when(mockRegionSnapshotService).save(any(File.class),
 			any(SnapshotFormat.class), any(SnapshotOptions.class));
@@ -1223,16 +1261,18 @@ public class SnapshotServiceFactoryBeanTest {
 			adapter.save(snapshotDat, SnapshotFormat.GEMFIRE, mockSnapshotOptions);
 		}
 		catch (ExportSnapshotException expected) {
+
 			assertThat(expected.getMessage(), is(equalTo(String.format(
 				"Failed to save snapshot to file [%1$s] in format [GEMFIRE] using options [%2$s]",
 					snapshotDat, mockSnapshotOptions))));
 			assertThat(expected.getCause(), is(instanceOf(ClassCastException.class)));
 			assertThat(expected.getCause().getMessage(), is(equalTo("TEST")));
+
 			throw expected;
 		}
 		finally {
-			verify(mockRegionSnapshotService, times(1)).save(eq(snapshotDat), eq(SnapshotFormat.GEMFIRE),
-				eq(mockSnapshotOptions));
+			verify(mockRegionSnapshotService, times(1))
+				.save(eq(snapshotDat), eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptions));
 		}
 	}
 
@@ -1241,38 +1281,40 @@ public class SnapshotServiceFactoryBeanTest {
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Location must not be null");
+		exception.expectMessage("Location is required");
 
-		new SnapshotMetadata(null, mock(SnapshotFilter.class), SnapshotFormat.GEMFIRE);
+		new SnapshotMetadata(null, SnapshotFormat.GEMFIRE, mock(SnapshotFilter.class));
 	}
 
 	@Test
-	public void createSnapshotMetadataWithDirectoryFilterAndUnspecifiedFormat() {
+	public void createSnapshotMetadataWithFileGemFireFormatAndNullFilter() throws Exception {
 
-		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, "MockSnapshotFilter");
-
-		SnapshotMetadata metadata =
-			new SnapshotMetadata(FileSystemUtils.WORKING_DIRECTORY, mockSnapshotFilter, null);
-
-		assertThat(metadata.getLocation(), is(equalTo(FileSystemUtils.WORKING_DIRECTORY)));
-		assertThat(metadata.isDirectory(), is(true));
-		assertThat(metadata.isFile(), is(false));
-		assertThat(metadata.getFilter(), is(equalTo(mockSnapshotFilter)));
-		assertThat(metadata.isFilterPresent(), is(true));
-		assertThat(metadata.getFormat(), is(equalTo(SnapshotFormat.GEMFIRE)));
-	}
-
-	@Test
-	public void createSnapshotMetadataWithFileNullFilterAndGemFireFormat() throws Exception {
-
-		SnapshotMetadata snapshotMetadata = new SnapshotMetadata(snapshotDat, null, SnapshotFormat.GEMFIRE);
+		SnapshotMetadata snapshotMetadata = new SnapshotMetadata(snapshotDat, SnapshotFormat.GEMFIRE, null);
 
 		assertThat(snapshotMetadata.getLocation(), is(equalTo(snapshotDat)));
 		assertThat(snapshotMetadata.isDirectory(), is(false));
 		assertThat(snapshotMetadata.isFile(), is(true));
-		assertThat(snapshotMetadata.getFilter(), is(nullValue()));
-		assertThat(snapshotMetadata.isFilterPresent(), is(false));
 		assertThat(snapshotMetadata.getFormat(), is(equalTo(SnapshotFormat.GEMFIRE)));
+		assertThat(snapshotMetadata.isFilterPresent(), is(false));
+		assertThat(snapshotMetadata.getFilter(), is(nullValue()));
+		assertThat(snapshotMetadata.isParallel(), is(false));
+	}
+
+	@Test
+	public void createSnapshotMetadataWithDirectoryNullFormatAndFilter() {
+
+		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, "MockSnapshotFilter");
+
+		SnapshotMetadata snapshotMetadata =
+			new SnapshotMetadata(FileSystemUtils.WORKING_DIRECTORY, null, mockSnapshotFilter);
+
+		assertThat(snapshotMetadata.getLocation(), is(equalTo(FileSystemUtils.WORKING_DIRECTORY)));
+		assertThat(snapshotMetadata.isDirectory(), is(true));
+		assertThat(snapshotMetadata.isFile(), is(false));
+		assertThat(snapshotMetadata.getFormat(), is(equalTo(SnapshotFormat.GEMFIRE)));
+		assertThat(snapshotMetadata.isFilterPresent(), is(true));
+		assertThat(snapshotMetadata.getFilter(), is(equalTo(mockSnapshotFilter)));
+		assertThat(snapshotMetadata.isParallel(), is(false));
 	}
 
 	@Test
