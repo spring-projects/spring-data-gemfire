@@ -41,7 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = AbstractGeodeSecurityIntegrationTests.GeodeClientConfiguration.class)
 @ActiveProfiles("apache-geode-client")
-public class ApacheShiroRealmGeodeSecurityIntegrationTests extends AbstractGeodeSecurityIntegrationTests {
+public class ApacheShiroRealmSecurityIntegrationTests extends AbstractGeodeSecurityIntegrationTests {
 
 	protected static final String SHIRO_REALM_CONFIGURATION_PROFILE = "shiro-realm-configuration";
 
@@ -58,9 +58,12 @@ public class ApacheShiroRealmGeodeSecurityIntegrationTests extends AbstractGeode
 
 		@Bean
 		public PropertiesRealm shiroRealm() {
+
 			PropertiesRealm propertiesRealm = new PropertiesRealm();
+
 			propertiesRealm.setResourcePath("classpath:shiro.properties");
 			propertiesRealm.setPermissionResolver(new GeodePermissionResolver());
+
 			return propertiesRealm;
 		}
 	}

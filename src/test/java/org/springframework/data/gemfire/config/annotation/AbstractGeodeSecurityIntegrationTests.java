@@ -141,6 +141,7 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 	@Test
 	@DirtiesContext
 	public void authorizedUser() {
+
 		assertThat(echo.get("one")).isEqualTo("one");
 		assertThat(echo.put("two", "four")).isNull();
 		assertThat(echo.get("two")).isEqualTo("four");
@@ -148,11 +149,13 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 
 	@Test(expected = NotAuthorizedException.class)
 	public void unauthorizedUser() {
+
 		try {
 			assertThat(echo.get("one")).isEqualTo("one");
 			echo.put("two", "four");
 		}
 		catch (ServerOperationException expected) {
+
 			assertThat(expected).hasMessageContaining("analyst not authorized for DATA:WRITE:Echo:two");
 			assertThat(expected).hasCauseInstanceOf(NotAuthorizedException.class);
 
@@ -233,9 +236,9 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 	@CacheServerApplication(name = "GeodeSecurityIntegrationTestsServer", logLevel = TEST_GEMFIRE_LOG_LEVEL,
 		port = CACHE_SERVER_PORT)
 	@Import({
-		ApacheShiroIniGeodeSecurityIntegrationTests.ApacheShiroIniConfiguration.class,
-		ApacheShiroRealmGeodeSecurityIntegrationTests.ApacheShiroRealmConfiguration.class,
-		ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests.ApacheGeodeSecurityManagerConfiguration.class
+		ApacheShiroIniSecurityIntegrationTests.ApacheShiroIniConfiguration.class,
+		ApacheShiroRealmSecurityIntegrationTests.ApacheShiroRealmConfiguration.class,
+		ApacheGeodeSecurityManagerSecurityIntegrationTests.ApacheGeodeSecurityManagerConfiguration.class
 	})
 	@Profile("apache-geode-server")
 	public static class GeodeServerConfiguration {

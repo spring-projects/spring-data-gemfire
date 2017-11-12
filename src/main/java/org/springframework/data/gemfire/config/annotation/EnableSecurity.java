@@ -47,8 +47,11 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import({ ApacheShiroSecurityConfiguration.class, AutoConfiguredAuthenticationConfiguration.class,
-		  GeodeIntegratedSecurityConfiguration.class })
+@Import({
+	ApacheShiroSecurityConfiguration.class,
+	AutoConfiguredAuthenticationConfiguration.class,
+	GeodeIntegratedSecurityConfiguration.class
+})
 @UsesGemFireProperties
 @SuppressWarnings({ "unused" })
 public @interface EnableSecurity {

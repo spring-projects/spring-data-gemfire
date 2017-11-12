@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Properties;
 
@@ -47,7 +48,7 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 	 * @see org.springframework.data.gemfire.config.annotation.EnableSecurity
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableSecurity.class;
 	}
 

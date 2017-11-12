@@ -47,7 +47,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = AbstractGeodeSecurityIntegrationTests.GeodeClientConfiguration.class)
 @ActiveProfiles("apache-geode-client")
-public class ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests extends AbstractGeodeSecurityIntegrationTests {
+public class ApacheGeodeSecurityManagerSecurityIntegrationTests extends AbstractGeodeSecurityIntegrationTests {
 
 	protected static final String GEODE_SECURITY_MANAGER_PROPERTY_CONFIGURATION_PROFILE =
 		"geode-security-manager-property-configuration";
@@ -59,7 +59,7 @@ public class ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests extends Abs
 
 	@Configuration
 	@EnableSecurity(securityManagerClassName =
-		"org.springframework.data.gemfire.config.annotation.ApacheGeodeSecurityManagerGeodeSecurityIntegrationTests$TestGeodeSecurityManager")
+		"org.springframework.data.gemfire.config.annotation.ApacheGeodeSecurityManagerSecurityIntegrationTests$TestGeodeSecurityManager")
 	@Profile(GEODE_SECURITY_MANAGER_PROPERTY_CONFIGURATION_PROFILE)
 	public static class ApacheGeodeSecurityManagerConfiguration {
 	}

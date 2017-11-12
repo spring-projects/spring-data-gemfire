@@ -18,9 +18,8 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
-import java.lang.reflect.Field;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
@@ -36,6 +34,7 @@ import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Condition;
@@ -44,13 +43,12 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.type.AnnotatedTypeMetadata;
-import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * The {@link ApacheShiroSecurityConfiguration} class is a Spring {@link Configuration @Configuration} component
@@ -86,7 +84,7 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	 * @see org.springframework.data.gemfire.config.annotation.EnableSecurity
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableSecurity.class;
 	}
 
@@ -118,6 +116,14 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	 */
 	protected ListableBeanFactory getListableBeanFactory() {
 		return (ListableBeanFactory) getBeanFactory();
+	}
+
+	@Bean
+	public BeanFactoryPostProcessor shiroGemFireBeanFactoryPostProcessor() {
+
+		return configurableListableBeanFactory ->
+			SpringUtils.addDependsOn(configurableListableBeanFactory.getBeanDefinition("gemfireCache"),
+				"shiroSecurityManager");
 	}
 
 	/**
@@ -157,29 +163,16 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	 * with the Apache Shiro security framework but Apache Geode security could not be enabled.
 	 * @see org.apache.shiro.mgt.SecurityManager
 	 * @see #registerSecurityManager(org.apache.shiro.mgt.SecurityManager)
-	 * @see #enableApacheGeodeSecurity()
 	 * @see #resolveRealms()
-	 * @see #registerSecurityManager(org.apache.shiro.mgt.SecurityManager)
-	 * @see #enableApacheGeodeSecurity()
 	 */
 	@Bean
-	public org.apache.shiro.mgt.SecurityManager shiroSecurityManager(GemFireCache gemfireCache) {
+	public org.apache.shiro.mgt.SecurityManager shiroSecurityManager() {
 
-		org.apache.shiro.mgt.SecurityManager shiroSecurityManager = null;
-
-		List<Realm> realms = resolveRealms();
-
-		if (!realms.isEmpty()) {
-
-			shiroSecurityManager = registerSecurityManager(new DefaultSecurityManager(realms));
-
-			if (!enableApacheGeodeSecurity()) {
-				throw newIllegalStateException("Failed to enable security services in %s",
-					GemfireUtils.apacheGeodeProductName());
-			}
-		}
-
-		return shiroSecurityManager;
+		return Optional.ofNullable(resolveRealms())
+			.filter(realms -> !realms.isEmpty())
+			.map(realms -> new DefaultSecurityManager(realms))
+			.map(this::registerSecurityManager)
+			.orElse(null);
 	}
 
 	/**
@@ -198,7 +191,9 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	protected List<Realm> resolveRealms() {
 
 		try {
-			Map<String, Realm> realmBeans = getListableBeanFactory().getBeansOfType(Realm.class, false, true);
+
+			Map<String, Realm> realmBeans = getListableBeanFactory().getBeansOfType(Realm.class,
+				false, false);
 
 			List<Realm> realms = new ArrayList<>(CollectionUtils.nullSafeMap(realmBeans).values());
 
@@ -229,40 +224,6 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 		SecurityUtils.setSecurityManager(securityManager);
 
 		return securityManager;
-	}
-
-	/**
-	 * Sets the Apache Geode, Integrated Security {@link SecurityService} property {@literal isIntegratedSecurity}
-	 * to {@literal true} to indicate that Apache Geode security is enabled.
-	 *
-	 * @return a boolean value indicating whether Apache Geode's Integrated Security framework services
-	 * were successfully enabled.
-	 * @see org.apache.geode.internal.security.SecurityService#getSecurityService()
-	 */
-	protected boolean enableApacheGeodeSecurity() {
-
-		SecurityService securityService = SecurityService.getSecurityService();
-
-		if (securityService != null) {
-
-			String isIntegratedSecurityFieldName = "isIntegratedSecurity";
-
-			Field isIntegratedSecurity = ReflectionUtils.findField(securityService.getClass(),
-				isIntegratedSecurityFieldName, Boolean.class);
-
-			isIntegratedSecurity = Optional.ofNullable(isIntegratedSecurity).orElseGet(() ->
-				ReflectionUtils.findField(securityService.getClass(), isIntegratedSecurityFieldName, Boolean.TYPE));
-
-			if (isIntegratedSecurity != null) {
-
-				ReflectionUtils.makeAccessible(isIntegratedSecurity);
-				ReflectionUtils.setField(isIntegratedSecurity, securityService, Boolean.TRUE);
-
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
