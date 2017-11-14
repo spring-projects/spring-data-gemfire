@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.config.annotation;
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
-import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -36,13 +35,13 @@ import java.util.stream.Stream;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
@@ -53,16 +52,16 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.type.MethodMetadata;
-import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.context.annotation.ImportAware;
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.annotation.support.BeanDefinitionRegistryPostProcessorSupport;
 import org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -72,10 +71,18 @@ import org.springframework.util.StringUtils;
  * service classes and methods.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see java.lang.reflect.AnnotatedElement
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionShortcut
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.springframework.beans.factory.annotation.AnnotatedBeanDefinition
  * @see org.springframework.beans.factory.config.BeanDefinition
  * @see org.springframework.beans.factory.config.BeanPostProcessor
+ * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
+ * @see org.springframework.beans.factory.support.AbstractBeanDefinition
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
@@ -86,15 +93,17 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.cache.annotation.Caching
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.context.annotation.ImportAware
  * @see org.springframework.core.annotation.AnnotatedElementUtils
  * @see org.springframework.core.annotation.AnnotationUtils
  * @see org.springframework.data.gemfire.config.annotation.EnableCachingDefinedRegions
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
  * @see org.springframework.data.gemfire.config.annotation.support.BeanDefinitionRegistryPostProcessorSupport
  * @see org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean
  * @since 2.0.0
  */
 @Configuration
-public class CachingDefinedRegionsConfiguration {
+public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfigSupport implements ImportAware {
 
 	private static final Class[] CLASS_CACHE_ANNOTATION_TYPES;
 
@@ -112,11 +121,155 @@ public class CachingDefinedRegionsConfiguration {
 
 	}
 
-	private static final Set<Integer> INFRASTRUCTURE_ROLES =
-		asSet(BeanDefinition.ROLE_INFRASTRUCTURE, BeanDefinition.ROLE_SUPPORT);
+	private ClientRegionShortcut clientRegionShortcut = ClientRegionShortcut.PROXY;
 
-	private static final String ORG_SPRINGFRAMEWORK_DATA_GEMFIRE_PACKAGE = "org.springframework.data.gemfire";
-	private static final String ORG_SPRINGFRAMEWORK_PACKAGE = "org.springframework";
+	private RegionShortcut serverRegionShortcut = RegionShortcut.PARTITION;
+
+	private String poolName = ClientRegionFactoryBean.DEFAULT_POOL_NAME;
+
+	/**
+	 * Returns the {@link Annotation} {@link Class type} that configures and creates {@link Region Regions}
+	 * for application service {@link Method Methods} that are annotated with Spring's Cache Abstraction Annotations.
+	 *
+	 * @return the {@link Annotation} {@link Class type} that configures and creates {@link Region Regions}
+	 * for application service {@link Method Methods} that are annotated with Spring's Cache Abstraction Annotations.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableCachingDefinedRegions
+	 * @see java.lang.annotation.Annotation
+	 * @see java.lang.Class
+	 */
+	@Override
+	protected Class<? extends Annotation> getAnnotationType() {
+		return EnableCachingDefinedRegions.class;
+	}
+
+	/**
+	 * Configures the {@link ClientRegionShortcut} specifying the data management policy to use
+	 * when creating a client {@link Region}.
+	 *
+	 * @param clientRegionShortcut {@link ClientRegionShortcut} specifying the data management policy
+	 * to use when creating a client {@link Region}.
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut
+	 */
+	public void setClientRegionShortcut(ClientRegionShortcut clientRegionShortcut) {
+		this.clientRegionShortcut = clientRegionShortcut;
+	}
+
+	/**
+	 * Returns the configured {@link ClientRegionShortcut} specifying the data management policy to use
+	 * when creating a client {@link Region}.
+	 *
+	 * @return an {@link Optional} {@link ClientRegionShortcut} specifying the data management policy to use
+	 * when creating a client {@link Region}.
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut
+	 * @see #setClientRegionShortcut(ClientRegionShortcut)
+	 * @see java.util.Optional
+	 */
+	protected Optional<ClientRegionShortcut> getClientRegionShortcut() {
+		return Optional.ofNullable(this.clientRegionShortcut);
+	}
+
+	/**
+	 * Resolves the {@link ClientRegionShortcut} specifying the data management policy to use
+	 * when creating a client {@link Region}; defaults to {@link ClientRegionShortcut#PROXY}.
+	 *
+	 * @return the resolved {@link ClientRegionShortcut} specifying the data management policy to use
+	 * when creating a client {@link Region}; defaults to {@link ClientRegionShortcut#PROXY}.
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut
+	 * @see #getClientRegionShortcut()
+	 */
+	protected ClientRegionShortcut resolveClientRegionShortcut() {
+		return getClientRegionShortcut().orElse(ClientRegionShortcut.PROXY);
+	}
+
+	/**
+	 * Configures the name of the dedicated {@link Pool} used by all caching-defined client {@link Region Regions}
+	 * to send and receive data between the client and server.
+	 *
+	 * @param poolName {@link String} containing the name of the dedicated {@link Pool} for all
+	 * caching-defined client {@link Region Regions}.
+	 */
+	public void setPoolName(String poolName) {
+		this.poolName = poolName;
+	}
+
+	/**
+	 * Returns the name of the dedicated {@link Pool} used by all caching-defined client {@link Region Regions}
+	 * to send and receive data between the client and server.
+	 *
+	 * @return an {@link Optional} {@link String name} of the dedicated {@link Pool} used by all caching-defined
+	 * client {@link Region Regions}.
+	 * @see #setPoolName(String)
+	 * @see java.util.Optional
+	 */
+	protected Optional<String> getPoolName() {
+		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText);
+	}
+
+	/**
+	 * Resolves the name of the dedicated {@link Pool} used by all caching-defined client {@link Region Regions}
+	 * to send and receive data between the client and server; defaults to {@literal DEFAULT}.
+	 *
+	 * @return the {@link String name} of the dedicated {@link Pool} used by all caching-defined
+	 * client {@link Region Regions}; defaults to {@literal DEFAULT}.
+	 * @see #getPoolName()
+	 */
+	protected String resolvePoolName() {
+		return getPoolName().orElse(ClientRegionFactoryBean.DEFAULT_POOL_NAME);
+	}
+
+	/**
+	 * Configures the {@link RegionShortcut} specifying the data management policy to use
+	 * when creating a server (peer) {@link Region}.
+	 *
+	 * @param serverRegionShortcut {@link RegionShortcut} specifying the data management policy to use
+	 * when creating a server (peer) {@link Region}.
+	 * @see org.apache.geode.cache.RegionShortcut
+	 */
+	public void setServerRegionShortcut(RegionShortcut serverRegionShortcut) {
+		this.serverRegionShortcut = serverRegionShortcut;
+	}
+
+	/**
+	 * Returns the configured {@link RegionShortcut} specifying the data management policy to use
+	 * when creating a server (peer) {@link Region}.
+	 *
+	 * @return an {@link Optional} {@link RegionShortcut} specifying the data management policy to use
+	 * when creating a server (peer) {@link Region}.
+	 * @see #setServerRegionShortcut(RegionShortcut)
+	 * @see org.apache.geode.cache.RegionShortcut
+	 * @see java.util.Optional
+	 */
+	protected Optional<RegionShortcut> getServerRegionShortcut() {
+		return Optional.ofNullable(this.serverRegionShortcut);
+	}
+
+	/**
+	 * Resolves the {@link RegionShortcut} specifying the data management policy to use
+	 * when creating a server (peer) {@link Region}; defaults to {@link RegionShortcut#PARTITION}.
+	 *
+	 * @return the resolved {@link RegionShortcut} specifying the data management policy to use
+	 * when creating a server (peer) {@link Region}; defaults to {@link RegionShortcut#PARTITION}.
+	 * @see org.apache.geode.cache.RegionShortcut
+	 * @see #getServerRegionShortcut()
+	 */
+	protected RegionShortcut resolveServerRegionShortcut() {
+		return getServerRegionShortcut().orElse(RegionShortcut.PARTITION);
+	}
+
+	@Override
+	public void setImportMetadata(AnnotationMetadata importMetadata) {
+
+		if (isAnnotationPresent(importMetadata)) {
+
+			AnnotationAttributes enableCachingDefinedRegionsAttributes = getAnnotationAttributes(importMetadata);
+
+			setClientRegionShortcut(enableCachingDefinedRegionsAttributes.getEnum("clientRegionShortcut"));
+
+			setPoolName(enableCachingDefinedRegionsAttributes.getString("poolName"));
+
+			setServerRegionShortcut(enableCachingDefinedRegionsAttributes.getEnum("serverRegionShortcut"));
+		}
+	}
 
 	@Bean
 	@SuppressWarnings("all")
@@ -162,35 +315,6 @@ public class CachingDefinedRegionsConfiguration {
 		}
 	}
 
-	private boolean isNotInfrastructureBean(Object bean) {
-		return isNotInfrastructureClass(bean.getClass().getName());
-	}
-
-	boolean isNotInfrastructureBean(BeanDefinition beanDefinition) {
-		return (isNotInfrastructureRole(beanDefinition) && isNotInfrastructureClass(beanDefinition));
-	}
-
-	boolean isNotInfrastructureClass(BeanDefinition beanDefinition) {
-		return resolveBeanClassName(beanDefinition).filter(this::isNotInfrastructureClass).isPresent();
-	}
-
-	boolean isNotInfrastructureClass(String className) {
-		return (className.startsWith(ORG_SPRINGFRAMEWORK_DATA_GEMFIRE_PACKAGE)
-			|| !className.startsWith(ORG_SPRINGFRAMEWORK_PACKAGE));
-	}
-
-	boolean isNotInfrastructureRole(BeanDefinition beanDefinition) {
-		return !INFRASTRUCTURE_ROLES.contains(beanDefinition.getRole());
-	}
-
-	boolean isUserLevelMethod(Method method) {
-
-		return Optional.ofNullable(method)
-			.filter(ClassUtils::isUserLevelMethod)
-			.filter(it -> !Object.class.equals(it.getDeclaringClass()))
-			.isPresent();
-	}
-
 	@SuppressWarnings("unchecked")
 	private Set<String> collectCacheNames(Class<?> type) {
 
@@ -200,7 +324,6 @@ public class CachingDefinedRegionsConfiguration {
 		cacheNames.addAll(collectCacheNames(type, CLASS_CACHE_ANNOTATION_TYPES));
 
 		stream(type.getMethods()).forEach(method -> {
-
 			if (isUserLevelMethod(method)) {
 				cacheNames.addAll(collectCachingCacheNames(method));
 				cacheNames.addAll(collectCacheNames(method, METHOD_CACHE_ANNOTATION_TYPES));
@@ -224,8 +347,8 @@ public class CachingDefinedRegionsConfiguration {
 	private Set<String> collectCacheNames(Annotation annotation) {
 
 		return Optional.ofNullable(annotation)
-			.map(AnnotationUtils::getAnnotationAttributes)
-			.map(annotationAttributes -> (String[]) annotationAttributes.get("cacheNames"))
+			.map(this::getAnnotationAttributes)
+			.map(annotationAttributes -> annotationAttributes.getStringArray("cacheNames"))
 			.map(CollectionUtils::asSet)
 			.orElse(Collections.emptySet());
 	}
@@ -242,11 +365,11 @@ public class CachingDefinedRegionsConfiguration {
 					.collect(Collectors.toSet()));
 
 				cacheNames.addAll(stream(nullSafeArray(caching.evict(), CacheEvict.class))
-					.flatMap(cacheable -> collectCacheNames(cacheable).stream())
+					.flatMap(cacheEvict -> collectCacheNames(cacheEvict).stream())
 					.collect(Collectors.toSet()));
 
 				cacheNames.addAll(stream(nullSafeArray(caching.put(), CachePut.class))
-					.flatMap(cacheable -> collectCacheNames(cacheable).stream())
+					.flatMap(cachePut -> collectCacheNames(cachePut).stream())
 					.collect(Collectors.toSet()));
 
 			});
@@ -257,9 +380,6 @@ public class CachingDefinedRegionsConfiguration {
 	private BeanDefinitionRegistry registerRegionBeanDefinitions(Set<String> cacheNames,
 			BeanDefinitionRegistry registry) {
 
-		boolean containsGemFirePoolBeanDefinition =
-			registry.containsBeanDefinition(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
-
 		cacheNames.forEach(cacheName -> {
 
 			if (!registry.containsBeanDefinition(cacheName)) {
@@ -268,13 +388,10 @@ public class CachingDefinedRegionsConfiguration {
 					BeanDefinitionBuilder.genericBeanDefinition(GemFireCacheTypeAwareRegionFactoryBean.class);
 
 				builder.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
-
-				if (!containsGemFirePoolBeanDefinition) {
-					builder.addPropertyValue("poolName", GemfireUtils.DEFAULT_POOL_NAME);
-				}
-
+				builder.addPropertyValue("clientRegionShortcut", resolveClientRegionShortcut());
+				builder.addPropertyValue("poolName", resolvePoolName());
 				builder.addPropertyValue("regionName", cacheName);
-				builder.addPropertyValue("serverRegionShortcut", RegionShortcut.PARTITION);
+				builder.addPropertyValue("serverRegionShortcut", resolveServerRegionShortcut());
 
 				registry.registerBeanDefinition(cacheName, builder.getBeanDefinition());
 			}
@@ -285,8 +402,6 @@ public class CachingDefinedRegionsConfiguration {
 
 	private ConfigurableBeanFactory registerRegionBeans(Set<String> cacheNames, ConfigurableBeanFactory beanFactory) {
 
-		boolean containsGemFirePoolBean = beanFactory.containsBean(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
-
 		cacheNames.forEach(cacheName -> {
 
 			if (!beanFactory.containsBean(cacheName)) {
@@ -295,14 +410,14 @@ public class CachingDefinedRegionsConfiguration {
 					GemFireCacheTypeAwareRegionFactoryBean<?, ?> regionFactoryBean =
 						new GemFireCacheTypeAwareRegionFactoryBean<>();
 
-					regionFactoryBean.setCache(beanFactory.getBean("gemfireCache", GemFireCache.class));
+					GemFireCache gemfireCache =
+						beanFactory.getBean(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME, GemFireCache.class);
 
-					if (!containsGemFirePoolBean) {
-						regionFactoryBean.setPoolName(GemfireUtils.DEFAULT_POOL_NAME);
-					}
-
+					regionFactoryBean.setCache(gemfireCache);
+					regionFactoryBean.setClientRegionShortcut(resolveClientRegionShortcut());
+					regionFactoryBean.setPoolName(resolvePoolName());
 					regionFactoryBean.setRegionName(cacheName);
-					regionFactoryBean.setServerRegionShortcut(RegionShortcut.PARTITION);
+					regionFactoryBean.setServerRegionShortcut(resolveServerRegionShortcut());
 					regionFactoryBean.afterPropertiesSet();
 
 					Optional.ofNullable(regionFactoryBean.getObject())
@@ -316,71 +431,5 @@ public class CachingDefinedRegionsConfiguration {
 		});
 
 		return beanFactory;
-	}
-
-	/* (non-Javadoc) */
-	<A extends Annotation> A resolveAnnotation(AnnotatedElement annotatedElement, Class<A> annotationType) {
-
-		return (annotatedElement instanceof Class
-			? AnnotatedElementUtils.findMergedAnnotation(annotatedElement, annotationType)
-			: AnnotationUtils.findAnnotation(annotatedElement, annotationType));
-	}
-
-	/* (non-Javadoc) */
-	Optional<Class<?>> resolveBeanClass(BeanDefinition beanDefinition, BeanDefinitionRegistry registry) {
-		return resolveBeanClass(beanDefinition, resolveBeanClassLoader(registry));
-	}
-
-	/* (non-Javadoc) */
-	private Optional<Class<?>> resolveBeanClass(BeanDefinition beanDefinition, ClassLoader classLoader) {
-
-		Class<?> beanClass = (beanDefinition instanceof AbstractBeanDefinition
-			? safeResolveType(() -> ((AbstractBeanDefinition) beanDefinition).resolveBeanClass(classLoader)) : null);
-
-		if (beanClass == null) {
-			beanClass = resolveBeanClassName(beanDefinition).map(beanClassName ->
-				safeResolveType(() -> ClassUtils.forName(beanClassName, classLoader))).orElse(null);
-		}
-
-		return Optional.ofNullable(beanClass);
-	}
-
-	/* (non-Javadoc) */
-	ClassLoader resolveBeanClassLoader(BeanDefinitionRegistry registry) {
-
-		return (registry instanceof ConfigurableBeanFactory
-			? ((ConfigurableBeanFactory) registry).getBeanClassLoader()
-			: Thread.currentThread().getContextClassLoader());
-	}
-
-	/* (non-Javadoc) */
-	Optional<String> resolveBeanClassName(BeanDefinition beanDefinition) {
-
-		Optional<String> beanClassName =
-			Optional.ofNullable(beanDefinition.getBeanClassName()).filter(StringUtils::hasText);
-
-		if (!beanClassName.isPresent()) {
-			beanClassName = Optional.of(beanDefinition)
-				.filter(it -> StringUtils.hasText(it.getFactoryMethodName()))
-				.filter(it -> it instanceof AnnotatedBeanDefinition)
-				.map(it -> ((AnnotatedBeanDefinition) it).getFactoryMethodMetadata())
-				.map(MethodMetadata::getReturnTypeName);
-		}
-
-		return beanClassName;
-	}
-
-	/* (non-Javadoc) */
-	Class<?> safeResolveType(TypeResolver typeResolver) {
-		try {
-			return typeResolver.resolve();
-		}
-		catch (ClassNotFoundException cause) {
-			return null;
-		}
-	}
-
-	interface TypeResolver {
-		Class<?> resolve() throws ClassNotFoundException;
 	}
 }

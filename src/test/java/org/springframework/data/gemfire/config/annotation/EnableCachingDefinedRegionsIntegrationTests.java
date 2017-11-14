@@ -67,12 +67,14 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 
 	@Test
 	public void cacheRegionsExists() {
+
 		assertThat(gemfireCache.getRegion("/Example")).isNotNull();
 		assertThat(gemfireCache.getRegion("/Echo")).isNotNull();
 	}
 
 	@Test
 	public void echoServiceOperationsAreSuccessful() {
+
 		assertThat(echoService.isCacheMiss()).isFalse();
 		assertThat(echoService.echo("one")).isEqualTo("one");
 		assertThat(echoService.isCacheMiss()).isTrue();
@@ -97,7 +99,7 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 
 		@Bean
 		TestService testService() {
-			return new DefaultTestService();
+			return new CachingTestService();
 		}
 	}
 
@@ -121,7 +123,7 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 		Object testMethod(String key);
 	}
 
-	static class DefaultTestService implements TestService {
+	static class CachingTestService implements TestService {
 
 		@CachePut("Example")
 		public Object testMethod(String key) {

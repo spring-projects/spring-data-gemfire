@@ -17,14 +17,18 @@
 
 package org.springframework.data.gemfire.config.annotation.support;
 
+import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
@@ -33,6 +37,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -41,14 +47,17 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.EnvironmentAccessor;
 import org.springframework.context.expression.MapAccessor;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.MethodMetadata;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.expression.spel.support.StandardTypeConverter;
 import org.springframework.expression.spel.support.StandardTypeLocator;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -75,6 +84,11 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractAnnotationConfigSupport
 		implements BeanClassLoaderAware, BeanFactoryAware, EnvironmentAware {
 
+	protected static final Set<Integer> INFRASTRUCTURE_ROLES =
+		asSet(BeanDefinition.ROLE_INFRASTRUCTURE, BeanDefinition.ROLE_SUPPORT);
+
+	protected static final String ORG_SPRINGFRAMEWORK_DATA_GEMFIRE_PACKAGE = "org.springframework.data.gemfire";
+	protected static final String ORG_SPRINGFRAMEWORK_PACKAGE = "org.springframework";
 	protected static final String SPRING_DATA_GEMFIRE_PROPERTY_PREFIX = "spring.data.gemfire.";
 
 	private BeanFactory beanFactory;
@@ -88,17 +102,6 @@ public abstract class AbstractAnnotationConfigSupport
 	private final Log log;
 
 	/**
-	 * Determines whether the given {@link Object} has value.  The {@link Object} is valuable
-	 * if it is not {@literal null}.
-	 *
-	 * @param value {@link Object} to evaluate.
-	 * @return a boolean value indicating whether the given {@link Object} has value.
-	 */
-	protected static boolean hasValue(Object value) {
-		return Optional.ofNullable(value).isPresent();
-	}
-
-	/**
 	 * Determines whether the given {@link Number} has value.  The {@link Number} is valuable
 	 * if it is not {@literal null} and is not equal to 0.0d.
 	 *
@@ -107,6 +110,17 @@ public abstract class AbstractAnnotationConfigSupport
 	 */
 	protected static boolean hasValue(Number value) {
 		return Optional.ofNullable(value).filter(it -> it.doubleValue() != 0.0d).isPresent();
+	}
+
+	/**
+	 * Determines whether the given {@link Object} has value.  The {@link Object} is valuable
+	 * if it is not {@literal null}.
+	 *
+	 * @param value {@link Object} to evaluate.
+	 * @return a boolean value indicating whether the given {@link Object} has value.
+	 */
+	protected static boolean hasValue(Object value) {
+		return Optional.ofNullable(value).isPresent();
 	}
 
 	/**
@@ -190,27 +204,71 @@ public abstract class AbstractAnnotationConfigSupport
 		return LogFactory.getLog(getClass());
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Determines whether the given {@link AnnotationMetadata type meta-data} for a particular {@link Class}
+	 * is annotated with the declared {@link #getAnnotationTypeName()}.
+	 *
+	 * @param importingClassMetadata {@link AnnotationMetadata type meta-data} for a particular {@link Class}.
+	 * @return a boolean indicating whether the particular {@link Class} is annotated with
+	 * the declared {@link #getAnnotationTypeName()}.
+	 * @see #isAnnotationPresent(AnnotationMetadata, String)
+	 * @see #getAnnotationTypeName()
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 */
 	protected boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata) {
 		return isAnnotationPresent(importingClassMetadata, getAnnotationTypeName());
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Determines whether the given {@link AnnotationMetadata type meta-data} for a particular {@link Class}
+	 * is annotated with the given {@link Annotation} defined by {@link String name}.
+	 *
+	 * @param importingClassMetadata {@link AnnotationMetadata type meta-data} for a particular {@link Class}.
+	 * @param annotationName {@link String name} of the {@link Annotation} of interests.
+	 * @return a boolean indicating whether the particular {@link Class} is annotated with
+	 * the given {@link Annotation} defined by {@link String name}.
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 */
 	protected boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata, String annotationName) {
 		return importingClassMetadata.hasAnnotation(annotationName);
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns the {@link AnnotationAttributes} for the given {@link Annotation}.
+	 *
+	 * @param annotation {@link Annotation} to get the {@link AnnotationAttributes} for.
+	 * @return the {@link AnnotationAttributes} for the given {@link Annotation}.
+	 * @see org.springframework.core.annotation.AnnotationAttributes
+	 * @see java.lang.annotation.Annotation
+	 */
 	protected AnnotationAttributes getAnnotationAttributes(Annotation annotation) {
 		return AnnotationAttributes.fromMap(AnnotationUtils.getAnnotationAttributes(annotation));
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns {@link AnnotationAttributes} for the declared {@link #getAnnotationTypeName()}.
+	 *
+	 * @param importingClassMetadata {@link AnnotationMetadata type meta-data} for a particular {@link Class}.
+	 * @return {@link AnnotationAttributes} for the declared {@link #getAnnotationTypeName()}.
+	 * @see org.springframework.core.annotation.AnnotationAttributes
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 * @see #getAnnotationAttributes(AnnotationMetadata, String)
+	 * @see #getAnnotationTypeName()
+	 */
 	protected AnnotationAttributes getAnnotationAttributes(AnnotationMetadata importingClassMetadata) {
 		return getAnnotationAttributes(importingClassMetadata, getAnnotationTypeName());
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns {@link AnnotationAttributes} for the given {@link String named} {@link Annotation} from the given
+	 * {@link AnnotationMetadata type meta-data}.
+	 *
+	 * @param importingClassMetadata {@link AnnotationMetadata type meta-data} for a particular {@link Class}.
+	 * @param annotationName {@link String name} of the {@link Annotation} of interests.
+	 * @return {@link AnnotationAttributes} for the given {@link String named} {@link Annotation}.
+	 * @see org.springframework.core.annotation.AnnotationAttributes
+	 * @see org.springframework.core.type.AnnotationMetadata
+	 */
 	protected AnnotationAttributes getAnnotationAttributes(AnnotationMetadata importingClassMetadata,
 			String annotationName) {
 
@@ -248,6 +306,104 @@ public abstract class AbstractAnnotationConfigSupport
 	 */
 	protected String getAnnotationTypeSimpleName() {
 		return getAnnotationType().getSimpleName();
+	}
+
+	/**
+	 * Null-safe method to determine whether the given {@link Object bean} is a Spring container provided
+	 * infrastructure bean.
+	 *
+	 * @param bean {@link Object} to evaluate.
+	 * @return {@literal true} iff the {@link Object bean} is not a Spring container infrastructure bean.
+	 * @see #isNotInfrastructureClass(String)
+	 */
+	protected boolean isNotInfrastructureBean(Object bean) {
+
+		return Optional.ofNullable(bean)
+			.map(Object::getClass)
+			.map(Class::getName)
+			.filter(this::isNotInfrastructureClass).isPresent();
+	}
+
+	/**
+	 * Null-safe method to determine whether the bean defined in the given {@link BeanDefinition}
+	 * is a Spring container provided infrastructure bean.
+	 *
+	 * @param beanDefinition {@link BeanDefinition} to evaluate.
+	 * @return {@literal true} iff the bean defined in the given {@link BeanDefinition} is not a Spring container
+	 * infrastructure bean.
+	 * @see org.springframework.beans.factory.config.BeanDefinition
+	 * @see #isNotInfrastructureClass(BeanDefinition)
+	 * @see #isNotInfrastructureRole(BeanDefinition)
+	 */
+	protected boolean isNotInfrastructureBean(BeanDefinition beanDefinition) {
+		return (isNotInfrastructureRole(beanDefinition) && isNotInfrastructureClass(beanDefinition));
+	}
+
+	/**
+	 * Null-safe method to determine whether the bean defined in the given {@link BeanDefinition}
+	 * is a Spring container infrastructure bean based on the bean's {@link Class#getName() class type}.
+	 *
+	 * @param beanDefinition {@link BeanDefinition} of the bean to evaluate.
+	 * @return {@literal true} iff the bean defined in the given {@link BeanDefinition} is not a Spring container
+	 * infrastructure bean.
+	 * @see org.springframework.beans.factory.config.BeanDefinition
+	 * @see #resolveBeanClassName(BeanDefinition)
+	 * @see #isNotInfrastructureClass(String)
+	 */
+	protected boolean isNotInfrastructureClass(BeanDefinition beanDefinition) {
+		return resolveBeanClassName(beanDefinition).filter(this::isNotInfrastructureClass).isPresent();
+	}
+
+	/**
+	 * Determines whether the given {@link Class#getName() class type name} is considered a Spring container
+	 * infrastructure type.
+	 *
+	 * The class type name is considered a Spring container infrastructure type if the package name begins with
+	 * 'org.springframework', excluding 'org.springframework.data.gemfire'.
+	 *
+	 * @param className {@link String} containing the name of the class type to evaluate.
+	 * @return {@literal true} iff the given {@link Class#getName() class type name} is not considered a
+	 * Spring container infrastructure type.
+	 */
+	protected boolean isNotInfrastructureClass(String className) {
+		return (className.startsWith(ORG_SPRINGFRAMEWORK_DATA_GEMFIRE_PACKAGE)
+			|| !className.startsWith(ORG_SPRINGFRAMEWORK_PACKAGE));
+	}
+
+	/**
+	 * Null-safe method to determines whether the bean defined by the given {@link BeanDefinition}
+	 * is a Spring container infrastructure bean based on the bean's role.
+	 *
+	 * @param beanDefinition {@link BeanDefinition} of the bean to evaluate.
+	 * @return {@literal true} iff the bean defined in the given {@link BeanDefinition} is not a Spring container
+	 * infrastructure bean.
+	 * @see org.springframework.beans.factory.config.BeanDefinition
+	 */
+	protected boolean isNotInfrastructureRole(BeanDefinition beanDefinition) {
+
+		return Optional.ofNullable(beanDefinition)
+			.map(BeanDefinition::getRole)
+			.filter(role -> !INFRASTRUCTURE_ROLES.contains(role))
+			.isPresent();
+	}
+
+	/**
+	 * Determines whether the given {@link Method} was declared and defined by the user.
+	 *
+	 * A {@link Method} is considered a user-level {@link Method} if the {@link Method} is not
+	 * an {@link Object} class method, is a {@link Method#isBridge() Bridge Method}
+	 * or is not {@link Method#isSynthetic()} nor a Groovy method.
+	 *
+	 * @param method {@link Method} to evaluate.
+	 * @return a boolean value indicating whether the {@link Method} was declared/defined by the user.
+	 * @see java.lang.reflect.Method
+	 */
+	protected boolean isUserLevelMethod(Method method) {
+
+		return Optional.ofNullable(method)
+			.filter(ClassUtils::isUserLevelMethod)
+			.filter(it -> !Object.class.equals(it.getDeclaringClass()))
+			.isPresent();
 	}
 
 	/**
@@ -513,7 +669,7 @@ public abstract class AbstractAnnotationConfigSupport
 	/* (non-Javadoc) */
 	protected String asArrayProperty(String propertyNamePrefix, int index, String propertyNameSuffix) {
 		return String.format("%1$s[%2$d]%3$s", propertyNamePrefix, index,
-			Optional.ofNullable(propertyNamePrefix).filter(StringUtils::hasText).map("."::concat).orElse(""));
+			Optional.ofNullable(propertyNameSuffix).filter(StringUtils::hasText).map("."::concat).orElse(""));
 	}
 
 	/* (non-Javadoc) */
@@ -670,6 +826,109 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/**
+	 * Resolves the {@link Annotation} with the given {@link Class type} from the {@link AnnotatedElement}.
+	 *
+	 * @param <A> {@link Class Subclass type} of the resolved {@link Annotation}.
+	 * @param annotatedElement {@link AnnotatedElement} from which to resolve the {@link Annotation}.
+	 * @param annotationType {@link Class type} of the {@link Annotation} to resolve from the {@link AnnotatedElement}.
+	 * @return the resolved {@link Annotation}.
+	 * @see java.lang.annotation.Annotation
+	 * @see java.lang.reflect.AnnotatedElement
+	 * @see java.lang.Class
+	 */
+	protected <A extends Annotation> A resolveAnnotation(AnnotatedElement annotatedElement, Class<A> annotationType) {
+
+		return (annotatedElement instanceof Class
+			? AnnotatedElementUtils.findMergedAnnotation(annotatedElement, annotationType)
+			: AnnotationUtils.findAnnotation(annotatedElement, annotationType));
+	}
+
+	/**
+	 * Resolves the {@link Class type} of the bean defined by the given {@link BeanDefinition}.
+	 *
+	 * @param beanDefinition {@link BeanDefinition} defining the bean from which the {@link Class type} is resolved.
+	 * @param registry {@link BeanDefinitionRegistry} used to resolve the {@link ClassLoader} used to resolve
+	 * the bean's {@link Class type}.
+	 * @return an {@link Optional} {@link Class} specifying the resolved type of the bean.
+	 * @see org.springframework.beans.factory.config.BeanDefinition
+	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
+	 * @see #resolveBeanClassLoader(BeanDefinitionRegistry)
+	 * @see #resolveBeanClass(BeanDefinition, ClassLoader)
+	 */
+	protected Optional<Class<?>> resolveBeanClass(BeanDefinition beanDefinition, BeanDefinitionRegistry registry) {
+		return resolveBeanClass(beanDefinition, resolveBeanClassLoader(registry));
+	}
+
+	/**
+	 * Resolves the {@link Class type} of the bean defined by the given {@link BeanDefinition}.
+	 *
+	 * @param beanDefinition {@link BeanDefinition} defining the bean from which the {@link Class type} is resolved.
+	 * @param classLoader {@link ClassLoader} used to resolve the bean's {@link Class type}.
+	 * @return an {@link Optional} resolved {@link Class type} of the bean.
+	 * @see java.lang.ClassLoader
+	 * @see org.springframework.beans.factory.config.BeanDefinition
+	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#resolveBeanClass(ClassLoader)
+	 * @see org.springframework.util.ClassUtils#forName(String, ClassLoader)
+	 * @see #resolveBeanClassName(BeanDefinition)
+	 */
+	private Optional<Class<?>> resolveBeanClass(BeanDefinition beanDefinition, ClassLoader classLoader) {
+
+		Class<?> beanClass = (beanDefinition instanceof AbstractBeanDefinition
+			? safeResolveType(() -> ((AbstractBeanDefinition) beanDefinition).resolveBeanClass(classLoader)) : null);
+
+		if (beanClass == null) {
+			beanClass = resolveBeanClassName(beanDefinition).map(beanClassName ->
+				safeResolveType(() -> ClassUtils.forName(beanClassName, classLoader))).orElse(null);
+		}
+
+		return Optional.ofNullable(beanClass);
+	}
+
+	/**
+	 * Attempts to resolve the {@link ClassLoader} used by the {@link BeanDefinitionRegistry}
+	 * to load {@link Class} definitions of the beans defined in the registry.
+	 *
+	 * @param registry {@link BeanDefinitionRegistry} from which to resolve the {@link ClassLoader}.
+	 * @return the resolved {@link ClassLoader} from the {@link BeanDefinitionRegistry}
+	 * or the {@link Thread#currentThread() current Thread's} {@link Thread#getContextClassLoader() context ClassLoader}.
+	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#getBeanClassLoader()
+	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
+	 * @see java.lang.Thread#currentThread()
+	 * @see java.lang.Thread#getContextClassLoader()
+	 */
+	protected ClassLoader resolveBeanClassLoader(BeanDefinitionRegistry registry) {
+
+		return Optional.ofNullable(registry)
+			.filter(it -> it instanceof ConfigurableBeanFactory)
+			.map(it -> ((ConfigurableBeanFactory) it).getBeanClassLoader())
+			.orElseGet(() -> Thread.currentThread().getContextClassLoader());
+	}
+
+	/**
+	 * Resolves the class type name of the bean defined by the given {@link BeanDefinition}.
+	 *
+	 * @param beanDefinition {@link BeanDefinition} defining the bean from which to resolve the class type name.
+	 * @return an {@link Optional} {@link String} containing the resolved class type name of the bean defined
+	 * by the given {@link BeanDefinition}.
+	 * @see org.springframework.beans.factory.config.BeanDefinition#getBeanClassName()
+	 */
+	protected Optional<String> resolveBeanClassName(BeanDefinition beanDefinition) {
+
+		Optional<String> beanClassName =
+			Optional.ofNullable(beanDefinition).map(BeanDefinition::getBeanClassName).filter(StringUtils::hasText);
+
+		if (!beanClassName.isPresent()) {
+			beanClassName = Optional.ofNullable(beanDefinition)
+				.filter(it -> it instanceof AnnotatedBeanDefinition)
+				.filter(it -> StringUtils.hasText(it.getFactoryMethodName()))
+				.map(it -> ((AnnotatedBeanDefinition) it).getFactoryMethodMetadata())
+				.map(MethodMetadata::getReturnTypeName);
+		}
+
+		return beanClassName;
+	}
+
+	/**
 	 * Attempts to resolve the property with the given {@link String name} from the Spring {@link Environment}
 	 * as a {@link Boolean}.
 	 *
@@ -785,5 +1044,40 @@ public abstract class AbstractAnnotationConfigSupport
 			.map(environment -> environment.getProperty(environment.resolveRequiredPlaceholders(propertyName),
 				targetType, defaultValue))
 			.orElse(defaultValue);
+	}
+
+	/**
+	 * Safely resolves a {@link Class type} returned by the supplied {@link TypeResolver} where the {@link Class type}
+	 * resolution might result in a {@link ClassNotFoundException}, or possibly, {@link NoClassDefFoundError}.
+	 *
+	 * @param <T> {@link Class} of the type being resolved.
+	 * @param typeResolver {@link TypeResolver} used to resolve a specific {@link Class type}.
+	 * @return the resolved {@link Class type} or {@literal null} if the {@link Class type} returned by
+	 * the {@link TypeResolver} could not be resolved.
+	 * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport.TypeResolver
+	 * @see java.lang.Class
+	 */
+	protected <T> Class<T> safeResolveType(TypeResolver<T> typeResolver) {
+
+		try {
+			return typeResolver.resolve();
+		}
+		catch (ClassNotFoundException cause) {
+			return null;
+		}
+	}
+
+	/**
+	 * {@link TypeResolver} is a {@link FunctionalInterface} defining a contract to encapsulated the logic
+	 * to resolve a particular {@link Class type}.
+	 *
+	 * Implementations are free to decide on how a {@link Class type} gets resolved, such as
+	 * with {@link Class#forName(String)} or perhaps using {@link ClassLoader#defineClass(String, byte[], int, int)}.
+	 *
+	 * @param <T> {@link Class} of the type to resolve.
+	 */
+	@FunctionalInterface
+	protected interface TypeResolver<T> {
+		Class<T> resolve() throws ClassNotFoundException;
 	}
 }

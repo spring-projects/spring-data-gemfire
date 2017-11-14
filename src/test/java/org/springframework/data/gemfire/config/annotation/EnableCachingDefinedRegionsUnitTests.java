@@ -25,33 +25,27 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.core.SpringVersion;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.type.MethodMetadata;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.test.support.MapBuilder;
 import org.springframework.stereotype.Service;
 
@@ -73,7 +67,12 @@ import org.springframework.stereotype.Service;
 public class EnableCachingDefinedRegionsUnitTests {
 
 	// Subject Under Test (SUT)
-	private CachingDefinedRegionsConfiguration configuration = new CachingDefinedRegionsConfiguration();
+	private CachingDefinedRegionsConfiguration configuration;
+
+	@Before
+	public void setup() {
+		this.configuration = new CachingDefinedRegionsConfiguration();
+	}
 
 	@SuppressWarnings("unchecked")
 	private BeanDefinition mockBeanDefinition(Class<?> beanClass) {
@@ -113,6 +112,99 @@ public class EnableCachingDefinedRegionsUnitTests {
 	}
 
 	@Test
+	public void setGetAndResolveClientRegionShortcut() {
+
+		assertThat(this.configuration.getClientRegionShortcut().orElse(null))
+			.isEqualTo(ClientRegionShortcut.PROXY);
+		assertThat(this.configuration.resolveClientRegionShortcut()).isEqualTo(ClientRegionShortcut.PROXY);
+
+		this.configuration.setClientRegionShortcut(ClientRegionShortcut.LOCAL);
+
+		assertThat(this.configuration.getClientRegionShortcut().orElse(null))
+			.isEqualTo(ClientRegionShortcut.LOCAL);
+		assertThat(this.configuration.resolveClientRegionShortcut()).isEqualTo(ClientRegionShortcut.LOCAL);
+
+		this.configuration.setClientRegionShortcut(null);
+
+		assertThat(this.configuration.getClientRegionShortcut().orElse(null)).isNull();
+		assertThat(this.configuration.resolveClientRegionShortcut()).isEqualTo(ClientRegionShortcut.PROXY);
+
+		this.configuration.setClientRegionShortcut(ClientRegionShortcut.CACHING_PROXY);
+
+		assertThat(this.configuration.getClientRegionShortcut().orElse(null))
+			.isEqualTo(ClientRegionShortcut.CACHING_PROXY);
+		assertThat(this.configuration.resolveClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
+	}
+
+	@Test
+	public void setGetAndResolvePoolName() {
+
+		assertThat(this.configuration.getPoolName().orElse(null))
+			.isEqualTo(ClientRegionFactoryBean.DEFAULT_POOL_NAME);
+		assertThat(this.configuration.resolvePoolName()).isEqualTo(ClientRegionFactoryBean.DEFAULT_POOL_NAME);
+
+		this.configuration.setPoolName(null);
+
+		assertThat(this.configuration.getPoolName().orElse(null)).isNull();
+		assertThat(this.configuration.resolvePoolName()).isEqualTo(ClientRegionFactoryBean.DEFAULT_POOL_NAME);
+
+		this.configuration.setPoolName("TestPool");
+
+		assertThat(this.configuration.getPoolName().orElse(null)).isEqualTo("TestPool");
+		assertThat(this.configuration.resolvePoolName()).isEqualTo("TestPool");
+	}
+
+	@Test
+	public void setGetAndResolveServerRegionShortcut() {
+
+		assertThat(this.configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.PARTITION);
+		assertThat(this.configuration.resolveServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION);
+
+		this.configuration.setServerRegionShortcut(RegionShortcut.LOCAL);
+
+		assertThat(this.configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.LOCAL);
+		assertThat(this.configuration.resolveServerRegionShortcut()).isEqualTo(RegionShortcut.LOCAL);
+
+		this.configuration.setServerRegionShortcut(null);
+
+		assertThat(this.configuration.getServerRegionShortcut().orElse(null)).isNull();
+		assertThat(this.configuration.resolveServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION);
+
+		this.configuration.setServerRegionShortcut(RegionShortcut.REPLICATE);
+
+		assertThat(this.configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.REPLICATE);
+		assertThat(this.configuration.resolveServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
+	}
+
+	@Test
+	public void setImportMetadataConfiguresClientRegionShortcutPoolNameAndServerRegionShortcut() {
+
+		AnnotationMetadata mockAnnotationMetadata = mock(AnnotationMetadata.class);
+
+		Map<String, Object> annotationAttributes = MapBuilder.<String, Object>newMapBuilder()
+			.put("clientRegionShortcut", ClientRegionShortcut.LOCAL_PERSISTENT)
+			.put("poolName", "SwimmingPool")
+			.put("serverRegionShortcut", RegionShortcut.PARTITION_PERSISTENT)
+			.build();
+
+		when(mockAnnotationMetadata.hasAnnotation(eq(EnableCachingDefinedRegions.class.getName()))).thenReturn(true);
+		when(mockAnnotationMetadata.getAnnotationAttributes(eq(EnableCachingDefinedRegions.class.getName())))
+			.thenReturn(annotationAttributes);
+
+		this.configuration.setImportMetadata(mockAnnotationMetadata);
+
+		assertThat(this.configuration.resolveClientRegionShortcut()).isEqualTo(ClientRegionShortcut.LOCAL_PERSISTENT);
+		assertThat(this.configuration.resolvePoolName()).isEqualTo("SwimmingPool");
+		assertThat(this.configuration.resolveServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION_PERSISTENT);
+
+		verify(mockAnnotationMetadata, times(1))
+			.hasAnnotation(eq(EnableCachingDefinedRegions.class.getName()));
+
+		verify(mockAnnotationMetadata, times(1))
+			.getAnnotationAttributes(eq(EnableCachingDefinedRegions.class.getName()));
+	}
+
+	@Test
 	public void cacheableServiceOneRegistersRegionsOneAndTwo() {
 
 		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
@@ -127,9 +219,6 @@ public class EnableCachingDefinedRegionsUnitTests {
 
 		verify(mockBeanDefinitionRegistry, times(1))
 			.getBeanDefinition(eq("cacheableServiceOne"));
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.containsBeanDefinition(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 
 		verify(mockBeanDefinitionRegistry, times(2))
 			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
@@ -159,9 +248,6 @@ public class EnableCachingDefinedRegionsUnitTests {
 
 		verify(mockBeanDefinitionRegistry, times(1))
 			.getBeanDefinition(eq("cacheableServiceTwo"));
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.containsBeanDefinition(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 
 		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
 			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
@@ -195,9 +281,6 @@ public class EnableCachingDefinedRegionsUnitTests {
 		verify(mockBeanDefinitionRegistry, times(1))
 			.getBeanDefinition(eq("cacheableServiceThree"));
 
-		verify(mockBeanDefinitionRegistry, times(1))
-			.containsBeanDefinition(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
-
 		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
 			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
 
@@ -229,9 +312,6 @@ public class EnableCachingDefinedRegionsUnitTests {
 
 		verify(mockBeanDefinitionRegistry, times(1))
 			.getBeanDefinition(eq("cacheableServiceFour"));
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.containsBeanDefinition(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
 
 		verify(mockBeanDefinitionRegistry, never())
 			.registerBeanDefinition(eq("RegionTwentyFive"), any(BeanDefinition.class));
@@ -274,9 +354,6 @@ public class EnableCachingDefinedRegionsUnitTests {
 		verify(mockBeanDefinitionRegistry, times(1))
 			.getBeanDefinition(eq("cacheableServiceThree"));
 
-		verify(mockBeanDefinitionRegistry, times(3))
-			.containsBeanDefinition(eq(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME));
-
 		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
 			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
 
@@ -307,329 +384,6 @@ public class EnableCachingDefinedRegionsUnitTests {
 
 		assertThat(this.configuration.collectCacheNames(CacheableServiceThree.class, CachePut.class))
 			.containsExactly("RegionSixteen", "RegionSeventeen");
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void resolveBeanClassFromBeanClassName() throws ClassNotFoundException {
-
-		AbstractBeanDefinition mockBeanDefinition = mock(AbstractBeanDefinition.class);
-
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mock(BeanDefinitionRegistry.class);
-
-		when(mockBeanDefinition.resolveBeanClass(any(ClassLoader.class))).thenReturn((Class) CacheableServiceOne.class);
-
-		assertThat(this.configuration.resolveBeanClass(mockBeanDefinition, mockBeanDefinitionRegistry).orElse(null))
-			.isEqualTo(CacheableServiceOne.class);
-
-		verify(mockBeanDefinition, times(1))
-			.resolveBeanClass(eq(Thread.currentThread().getContextClassLoader()));
-
-		verifyNoMoreInteractions(mockBeanDefinition);
-
-		verifyZeroInteractions(mockBeanDefinitionRegistry);
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void resolveBeanClassFromFactoryMethodReturnType() throws ClassNotFoundException {
-
-		AnnotatedBeanDefinition mockBeanDefinition = mock(AnnotatedBeanDefinition.class);
-
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mock(BeanDefinitionRegistry.class);
-
-		MethodMetadata mockMethodMetadata = mock(MethodMetadata.class);
-
-		when(mockBeanDefinition.getBeanClassName()).thenReturn("  ");
-		when(mockBeanDefinition.getFactoryMethodName()).thenReturn("testFactoryMethod");
-		when(mockBeanDefinition.getFactoryMethodMetadata()).thenReturn(mockMethodMetadata);
-		when(mockMethodMetadata.getReturnTypeName()).thenReturn(CacheableServiceTwo.class.getName());
-
-		assertThat(this.configuration.resolveBeanClass(mockBeanDefinition, mockBeanDefinitionRegistry).orElse(null))
-			.isEqualTo(CacheableServiceTwo.class);
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verify(mockBeanDefinition, times(1)).getFactoryMethodName();
-		verify(mockBeanDefinition, times(1)).getFactoryMethodMetadata();
-		verify(mockMethodMetadata, times(1)).getReturnTypeName();
-
-		verifyNoMoreInteractions(mockBeanDefinition);
-		verifyNoMoreInteractions(mockMethodMetadata);
-
-		verifyZeroInteractions(mockBeanDefinitionRegistry);
-	}
-
-	@Test
-	public void isNotInfrastructureBeanIsTrue() {
-
-		BeanDefinition mockBeanDefinition = mockBeanDefinition(CacheableServiceOne.class);
-
-		assertThat(this.configuration.isNotInfrastructureBean(mockBeanDefinition)).isTrue();
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verify(mockBeanDefinition, times(1)).getRole();
-	}
-
-	@Test
-	public void isNotInfrastructureBeanWithInfrastructureClassIsFalse() {
-
-		BeanDefinition mockBeanDefinition = mockBeanDefinition(SpringVersion.class);
-
-		assertThat(this.configuration.isNotInfrastructureBean(mockBeanDefinition)).isFalse();
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verify(mockBeanDefinition, times(1)).getRole();
-	}
-
-	@Test
-	public void isNotInfrastructureBeanWithInfrastructureRoleIsFalse() {
-
-		BeanDefinition mockBeanDefinition = mockBeanDefinition(CacheableServiceOne.class);
-
-		when(mockBeanDefinition.getRole()).thenReturn(BeanDefinition.ROLE_INFRASTRUCTURE);
-
-		assertThat(this.configuration.isNotInfrastructureBean(mockBeanDefinition)).isFalse();
-
-		verify(mockBeanDefinition, never()).getBeanClassName();
-		verify(mockBeanDefinition, times(1)).getRole();
-	}
-
-	@Test
-	public void isNotInfrastructureClassWithBeanDefinitionIsTrue() {
-
-		BeanDefinition mockBeanDefinition = mockBeanDefinition(CacheableServiceOne.class);
-
-		assertThat(this.configuration.isNotInfrastructureClass(mockBeanDefinition)).isTrue();
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-	}
-
-	@Test
-	public void isNotInfrastructureClassWithBeanDefinitionIsFalse() {
-
-		BeanDefinition mockBeanDefinition = mockBeanDefinition(SpringVersion.class);
-
-		assertThat(this.configuration.isNotInfrastructureClass(mockBeanDefinition)).isFalse();
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-	}
-
-	@Test
-	public void isNotInfrastructureClassIsTrue() {
-		assertThat(this.configuration.isNotInfrastructureClass(CacheableServiceOne.class.getName())).isTrue();
-		assertThat(this.configuration.isNotInfrastructureClass("org.example.app.MyClass")).isTrue();
-	}
-
-	@Test
-	public void isNotInfrastructureClassIsFalse() {
-		assertThat(this.configuration.isNotInfrastructureClass("org.springframework.SomeType")).isFalse();
-		assertThat(this.configuration.isNotInfrastructureClass("org.springframework.core.type.SomeType"))
-			.isFalse();
-	}
-
-	@Test
-	public void isNotInfrastructureRoleIsTrue() {
-
-		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
-
-		when(mockBeanDefinition.getRole()).thenReturn(BeanDefinition.ROLE_APPLICATION).thenReturn(Integer.MAX_VALUE);
-
-		assertThat(this.configuration.isNotInfrastructureRole(mockBeanDefinition)).isTrue();
-		assertThat(this.configuration.isNotInfrastructureRole(mockBeanDefinition)).isTrue();
-
-		verify(mockBeanDefinition, times(2)).getRole();
-	}
-
-	@Test
-	public void isNotInfrastructureRoleIsFalse() {
-
-		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
-
-		when(mockBeanDefinition.getRole()).thenReturn(BeanDefinition.ROLE_INFRASTRUCTURE)
-			.thenReturn(BeanDefinition.ROLE_SUPPORT);
-
-		assertThat(this.configuration.isNotInfrastructureRole(mockBeanDefinition)).isFalse();
-		assertThat(this.configuration.isNotInfrastructureRole(mockBeanDefinition)).isFalse();
-
-		verify(mockBeanDefinition, times(2)).getRole();
-	}
-
-	@Test
-	public void isUserLevelMethodWithNullMethodReturnsFalse() {
-		assertThat(this.configuration.isUserLevelMethod(null)).isFalse();
-	}
-
-	@Test
-	public void isUserLevelMethodWithObjectMethodReturnsFalse() throws NoSuchMethodException {
-		assertThat(this.configuration.isUserLevelMethod(Object.class.getMethod("equals", Object.class)))
-			.isFalse();
-	}
-
-	@Test
-	public void isUserLevelMethodWithUserMethodReturnsTrue() throws NoSuchMethodException {
-		assertThat(this.configuration.isUserLevelMethod(CacheableServiceOne.class.getMethod("cacheableMethodOne")))
-			.isTrue();
-	}
-
-	@Test
-	public void resolveAnnotationFromClass() {
-
-		Annotation cacheable = this.configuration.resolveAnnotation(CacheableServiceFour.class, Cacheable.class);
-
-		assertThat(cacheable).isNotNull();
-		assertThat(AnnotationUtils.getAnnotationAttributes(cacheable).get("cacheNames"))
-			.isEqualTo(asArray("RegionFifteen"));
-	}
-
-	@Test
-	public void resolveAnnotationFromMethod() throws NoSuchMethodException {
-
-		Method cacheableMethodFour = CacheableServiceFour.class.getMethod("cacheableMethodFour");
-
-		Annotation cachePut = this.configuration.resolveAnnotation(cacheableMethodFour, CachePut.class);
-
-		assertThat(cachePut).isNotNull();
-		assertThat(AnnotationUtils.getAnnotationAttributes(cachePut).get("cacheNames"))
-			.isEqualTo(asArray("RegionTwentyOne", "RegionTwentyTwo"));
-	}
-
-	@Test
-	public void resolveAnnotationIsUnresolvable() throws NoSuchMethodException {
-
-		Method cacheableMethodFive = CacheableServiceFour.class.getMethod("cacheableMethodFive");
-
-		assertThat(this.configuration.resolveAnnotation(cacheableMethodFive, Cacheable.class)).isNull();
-	}
-
-	@Test
-	public void resolveBeanClassIsUnresolvable() throws ClassNotFoundException {
-
-		AbstractBeanDefinition mockBeanDefinition = mock(AbstractBeanDefinition.class);
-
-		when(mockBeanDefinition.getBeanClassName()).thenReturn("non.existing.bean.Class");
-		when(mockBeanDefinition.resolveBeanClass(any(ClassLoader.class))).thenThrow(new ClassNotFoundException("TEST"));
-
-		assertThat(this.configuration.resolveBeanClass(mockBeanDefinition, null).orElse(null)).isNull();
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verify(mockBeanDefinition, times(1))
-			.resolveBeanClass(eq(Thread.currentThread().getContextClassLoader()));
-
-		verifyNoMoreInteractions(mockBeanDefinition);
-	}
-
-	@Test
-	public void resolveBeanClassLoaderReturnsRegistryClassLoader() {
-
-		ClassLoader mockClassLoader = mock(ClassLoader.class);
-
-		DefaultListableBeanFactory mockBeanDefinitionRegistry = mock(DefaultListableBeanFactory.class);
-
-		when(mockBeanDefinitionRegistry.getBeanClassLoader()).thenReturn(mockClassLoader);
-
-		assertThat(this.configuration.resolveBeanClassLoader(mockBeanDefinitionRegistry)).isEqualTo(mockClassLoader);
-
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanClassLoader();
-	}
-
-	@Test
-	public void resolveBeanClassLoaderReturnsThreadContextClassLoader() {
-
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mock(BeanDefinitionRegistry.class);
-
-		assertThat(this.configuration.resolveBeanClassLoader(mockBeanDefinitionRegistry))
-			.isEqualTo(Thread.currentThread().getContextClassLoader());
-
-		verifyZeroInteractions(mockBeanDefinitionRegistry);
-	}
-
-	@Test
-	public void resolveBeanClassNameReturnsBeanDefinitionBeanClassName() {
-
-		BeanDefinition mockBeanDefinition = mockBeanDefinition(CacheableServiceOne.class);
-
-		assertThat(this.configuration.resolveBeanClassName(mockBeanDefinition).orElse(null))
-			.isEqualTo(CacheableServiceOne.class.getName());
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verifyNoMoreInteractions(mockBeanDefinition);
-	}
-
-	@Test
-	public void resolveBeanClassNameReturnsFactoryMethodReturnType() {
-
-		AnnotatedBeanDefinition mockBeanDefinition = mock(AnnotatedBeanDefinition.class);
-
-		MethodMetadata mockMethodMetadata = mock(MethodMetadata.class);
-
-		when(mockBeanDefinition.getBeanClassName()).thenReturn(null);
-		when(mockBeanDefinition.getFactoryMethodName()).thenReturn("testFactoryMethod");
-		when(mockBeanDefinition.getFactoryMethodMetadata()).thenReturn(mockMethodMetadata);
-		when(mockMethodMetadata.getReturnTypeName()).thenReturn(CacheableServiceTwo.class.getName());
-
-		assertThat(this.configuration.resolveBeanClassName(mockBeanDefinition).orElse(null))
-			.isEqualTo(CacheableServiceTwo.class.getName());
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verify(mockBeanDefinition, times(1)).getFactoryMethodName();
-		verify(mockBeanDefinition, times(1)).getFactoryMethodMetadata();
-	}
-
-	@Test
-	public void resolveBeanClassNameWithNoFactoryMethodMetadataReturnsEmpty() {
-
-		AnnotatedBeanDefinition mockBeanDefinition = mock(AnnotatedBeanDefinition.class);
-
-		when(mockBeanDefinition.getBeanClassName()).thenReturn(null);
-		when(mockBeanDefinition.getFactoryMethodName()).thenReturn("testFactoryMethod");
-		when(mockBeanDefinition.getFactoryMethodMetadata()).thenReturn(null);
-
-		assertThat(this.configuration.resolveBeanClassName(mockBeanDefinition).orElse(null)).isNull();
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verify(mockBeanDefinition, times(1)).getFactoryMethodName();
-		verify(mockBeanDefinition, times(1)).getFactoryMethodMetadata();
-		verifyNoMoreInteractions(mockBeanDefinition);
-	}
-
-	@Test
-	public void resolveBeanClassNameWithNonAnnotatedBeanDefinitionReturnsEmpty() {
-
-		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
-
-		when(mockBeanDefinition.getBeanClassName()).thenReturn(null);
-		when(mockBeanDefinition.getFactoryMethodName()).thenReturn("testFactoryMethod");
-
-		assertThat(this.configuration.resolveBeanClassName(mockBeanDefinition).orElse(null)).isNull();
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verify(mockBeanDefinition, times(1)).getFactoryMethodName();
-		verifyNoMoreInteractions(mockBeanDefinition);
-	}
-
-	@Test
-	public void resolveBeanClassNameWithNoFactoryMethodNameReturnsEmpty() {
-
-		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
-
-		when(mockBeanDefinition.getBeanClassName()).thenReturn(null);
-		when(mockBeanDefinition.getFactoryMethodName()).thenReturn("  ");
-
-		assertThat(this.configuration.resolveBeanClassName(mockBeanDefinition).orElse(null)).isNull();
-
-		verify(mockBeanDefinition, times(1)).getBeanClassName();
-		verify(mockBeanDefinition, times(1)).getFactoryMethodName();
-		verifyNoMoreInteractions(mockBeanDefinition);
-	}
-
-	@Test
-	public void safeResolveTypeReturnsType() {
-		assertThat(this.configuration.safeResolveType(() -> Object.class)).isEqualTo(Object.class);
-	}
-
-	@Test
-	public void safeResolveTypeThrowingClassNotFoundExceptionReturnsNull() {
-		assertThat(this.configuration.safeResolveType(() -> { throw new ClassNotFoundException("TEST"); })).isNull();
 	}
 
 	@Service

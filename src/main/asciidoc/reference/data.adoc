@@ -517,7 +517,8 @@ _Spring Data GemFire_ provides an implementation of the _Spring_
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[Cache Abstraction]
 to position Pivotal GemFire as a _caching provider_ in Spring's caching infrastructure.
 
-To use Pivotal GemFire as a backing implementation, simply add `GemfireCacheManager` to your configuration:
+To use Pivotal GemFire as a backing implementation, a "_caching provider_" _in Spring's Cache Abstraction_,
+simply add `GemfireCacheManager` to your configuration:
 
 [source,xml]
 ----
@@ -543,7 +544,7 @@ To use Pivotal GemFire as a backing implementation, simply add `GemfireCacheMana
 ----
 
 NOTE: The `cache-ref` attribute on the `CacheManager` bean definition is not necessary if the default cache bean name
-is used (i.e. "gemfireCache"), that is, `<gfe:cache>` without an explicit ID.
+is used (i.e. "gemfireCache"), i.e. `<gfe:cache>` without an explicit ID.
 
 When the `GemfireCacheManager` (Singleton) bean instance is declared and declarative caching is enabled
 (either in XML with `<cache:annotation-driven/>` or in JavaConfig with _Spring's_ `@EnableCaching` annotation),
@@ -553,7 +554,7 @@ using GemFire Regions.
 These caches (i.e. Regions) must exist before the caching annotations that use them otherwise an error will occur.
 
 By way of example, suppose you have a Customer Service application with a `CustomerService` application component
-that does caching...
+that performs caching...
 
 [source,java]
 ----
@@ -588,7 +589,7 @@ XML:
 
   <gfe:cache/>
 
-  <gfe:partitioned-region id="accontsRegion" name="Accounts" persistent="true" ...>
+  <gfe:partitioned-region id="accountsRegion" name="Accounts" persistent="true" ...>
     ...
   </gfe:partitioned-region>
 </beans>
@@ -609,7 +610,9 @@ class ApplicationConfiguration {
 
   @Bean
   GemfireCacheManager cacheManager() {
-    return new GemfireCacheManager(gemfireCache());
+    GemfireCacheManager cacheManager = GemfireCacheManager();
+    cacheManager.setCache(gemfireCache());
+    return cacheManager;
   }
 
   @Bean("Accounts")

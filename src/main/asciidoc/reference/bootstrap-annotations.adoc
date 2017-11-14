@@ -1572,11 +1572,11 @@ the following CQ...
 [source, java]
 ----
 @SpringBootApplication
-@ClientCacheApplication(subcriptionEnabled = true);
+@ClientCacheApplication(subcriptionEnabled = true)
 @EnableContinuousQueries
 class PublisherPrintApplication {
 
-    @ContinuousQuery(name = "DemandExceedsSupply" query =
+    @ContinuousQuery(name = "DemandExceedsSupply", query =
        "SELECT book.* FROM /Books book, /Inventory inventory
         WHERE book.title = 'How to crush it in the Book business like Amazon"
         AND inventory.isbn = book.isbn
