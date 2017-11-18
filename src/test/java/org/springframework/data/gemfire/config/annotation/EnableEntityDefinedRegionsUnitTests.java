@@ -24,8 +24,8 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.data.gemfire.util.CacheUtils.toRegionPath;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+import static org.springframework.data.gemfire.util.RegionUtils.toRegionPath;
 
 import java.util.HashSet;
 import java.util.List;
@@ -51,7 +51,6 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -344,14 +343,11 @@ public class EnableEntityDefinedRegionsUnitTests {
 	}
 
 	protected static <K, V> ClientCache mockClientCache() {
+
 		ClientCache mockClientCache = mock(ClientCache.class, mockName("ClientCache"));
 
-		Answer<ClientRegionFactory<K, V>> createClientRegionFactory = new Answer<ClientRegionFactory<K, V>>() {
-			@Override @SuppressWarnings("unchecked")
-			public ClientRegionFactory<K, V> answer(InvocationOnMock invocation) throws Throwable {
-				return mockClientRegionFactory(invocation.getArgument(0));
-			}
-		};
+		Answer<ClientRegionFactory<K, V>> createClientRegionFactory =
+			invocation -> mockClientRegionFactory(invocation.getArgument(0));
 
 		when(mockClientCache.createClientRegionFactory(any(ClientRegionShortcut.class)))
 			.thenAnswer(createClientRegionFactory);
@@ -525,6 +521,7 @@ public class EnableEntityDefinedRegionsUnitTests {
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("unused")
 	protected static <T, R> Answer<R> newSetter(Class<T> parameterType, AtomicReference<T> argument, R returnValue) {
 
 		return invocation -> {

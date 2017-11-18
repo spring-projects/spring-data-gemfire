@@ -68,7 +68,7 @@ public @interface EnableLocator {
 	 *
 	 * Defaults to {@literal 10334}.
 	 *
-	 * Use the {@literal spring.data.gemfire.locator.host} property in {@literal application.properties}.
+	 * Use the {@literal spring.data.gemfire.locator.port} property in {@literal application.properties}.
 	 */
 	int port() default LocatorConfiguration.DEFAULT_LOCATOR_PORT;
 

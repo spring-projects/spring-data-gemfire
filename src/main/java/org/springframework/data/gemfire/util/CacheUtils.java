@@ -23,7 +23,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
@@ -67,13 +66,16 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 	/* (non-Javadoc) */
 	public static boolean isDurable(ClientCache clientCache) {
 
-		DistributedSystem distributedSystem = getDistributedSystem(clientCache);
-
 		// NOTE technically the following code snippet would be more useful/valuable but is not "testable"!
 		//((InternalDistributedSystem) distributedSystem).getConfig().getDurableClientId();
 
-		return (isConnected(distributedSystem) && StringUtils.hasText(distributedSystem.getProperties()
-			.getProperty(DURABLE_CLIENT_ID_PROPERTY_NAME, null)));
+		return Optional.ofNullable(clientCache)
+			.<DistributedSystem>map(CacheUtils::getDistributedSystem)
+			.filter(DistributedSystem::isConnected)
+			.map(DistributedSystem::getProperties)
+			.map(properties -> properties.getProperty(DURABLE_CLIENT_ID_PROPERTY_NAME, null))
+			.filter(StringUtils::hasText)
+			.isPresent();
 	}
 
 	/* (non-Javadoc) */
@@ -91,6 +93,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 
 	/* (non-Javadoc) */
 	public static boolean closeCache() {
+
 		try {
 			CacheFactory.getAnyInstance().close();
 			return true;
@@ -102,6 +105,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 
 	/* (non-Javadoc) */
 	public static boolean closeClientCache() {
+
 		try {
 			ClientCacheFactory.getAnyInstance().close();
 			return true;
@@ -113,6 +117,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 
 	/* (non-Javadoc) */
 	public static Cache getCache() {
+
 		try {
 			return CacheFactory.getAnyInstance();
 		}
@@ -123,6 +128,7 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 
 	/* (non-Javadoc) */
 	public static ClientCache getClientCache() {
+
 		try {
 			return ClientCacheFactory.getAnyInstance();
 		}
@@ -134,10 +140,5 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 	/* (non-Javadoc) */
 	public static GemFireCache resolveGemFireCache() {
 		return Optional.<GemFireCache>ofNullable(getClientCache()).orElseGet(CacheUtils::getCache);
-	}
-
-	/* (non-Javadoc) */
-	public static String toRegionPath(String regionName) {
-		return String.format("%1$s%2$s", Region.SEPARATOR, regionName);
 	}
 }

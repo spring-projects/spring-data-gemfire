@@ -44,6 +44,7 @@ import org.junit.rules.ExpectedException;
  * Unit tests for {@link CollectionUtils}.
  *
  * @author John Blum
+ * @see java.lang.Iterable
  * @see java.util.Collection
  * @see java.util.Collections
  * @see java.util.Enumeration
@@ -63,6 +64,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void addAllIterableElementsToList() {
+
 		List<Integer> target = new ArrayList<>(Arrays.asList(1, 2, 3));
 		Set<Integer> source = new HashSet<>(Arrays.asList(1, 2, 3));
 
@@ -75,6 +77,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void addAllIterableElementsToSet() {
+
 		Set<Integer> target = new HashSet<>(Arrays.asList(1, 2, 3));
 		Set<Integer> source = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5));
 
@@ -87,15 +90,17 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void addIterableToNullCollection() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Collection must not be null");
+		exception.expectMessage("Collection is required");
 
 		CollectionUtils.addAll(null, Collections.emptySet());
 	}
 
 	@Test
 	public void addEmptyIterableToCollection() {
+
 		Collection<Integer> target = new ArrayList<>(Arrays.asList(1, 2, 3));
 
 		target = CollectionUtils.addAll(target, Collections.emptyList());
@@ -107,6 +112,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void addNullIterableToCollection() {
+
 		Collection<Integer> target = new ArrayList<>(Arrays.asList(1, 2, 3));
 
 		target = CollectionUtils.addAll(target, null);
@@ -118,6 +124,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void asSetContainsAllArrayElements() {
+
 		Object[] elements = { "a", "b", "c" };
 
 		Set<?> set = CollectionUtils.asSet(elements);
@@ -129,6 +136,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void asSetContainsUniqueArrayElements() {
+
 		Object[] elements = { 1, 2, 1 };
 
 		Set<?> set = CollectionUtils.asSet(elements);
@@ -140,6 +148,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void asSetReturnsUnmodifiableSet() {
+
 		Set<Integer> set = CollectionUtils.asSet(1, 2, 3);
 
 		assertThat(set).isNotNull();
@@ -177,35 +186,8 @@ public class CollectionUtilsUnitTests {
 	}
 
 	@Test
-	public void defaultIfEmptyWithNonNullNonEmptyIterableReturnsIterable() {
-		Iterable<Object> iterable = Collections.singleton(1);
-		Iterable<Object> defaultIterable = Collections.singleton(2);
-
-		assertThat(CollectionUtils.defaultIfEmpty(iterable, defaultIterable)).isSameAs(iterable);
-	}
-
-	@Test
-	public void defaultIfEmptyWithEmptyIterableReturnsDefault() {
-		Iterable<Object> iterable = Collections.emptySet();
-		Iterable<Object> defaultIterable = Collections.singleton(2);
-
-		assertThat(CollectionUtils.defaultIfEmpty(iterable, defaultIterable)).isSameAs(defaultIterable);
-	}
-
-	@Test
-	public void defaultIfEmptyWithNullIterableReturnsDefault() {
-		Iterable<?> defaultIterable = Collections.singleton(2);
-
-		assertThat(CollectionUtils.defaultIfEmpty(null, defaultIterable)).isSameAs(defaultIterable);
-	}
-
-	@Test
-	public void defaultIfEmptyWithNullIterableAndNullDefaultReturnsNull() {
-		assertThat(CollectionUtils.defaultIfEmpty((Iterable<?>) null, null)).isNull();
-	}
-
-	@Test
 	public void emptyIterableReturnsEmptyIterable() {
+
 		Iterable<?> iterable = CollectionUtils.emptyIterable();
 
 		assertThat(iterable).isNotNull();
@@ -216,6 +198,7 @@ public class CollectionUtilsUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void iterableEnumeration() {
+
 		Enumeration<String> mockEnumeration = mock(Enumeration.class, "MockEnumeration");
 
 		when(mockEnumeration.hasMoreElements()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -241,6 +224,7 @@ public class CollectionUtilsUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void iterableIterator() {
+
 		Iterator<String> mockIterator = mock(Iterator.class, "MockIterator");
 
 		when(mockIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -265,6 +249,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void nullSafeCollectionWithNonNullCollection() {
+
 		Collection<?> mockCollection = mock(Collection.class);
 
 		assertThat(CollectionUtils.nullSafeCollection(mockCollection)).isSameAs(mockCollection);
@@ -272,6 +257,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void nullSafeCollectionWithNullCollection() {
+
 		Collection collection = CollectionUtils.nullSafeCollection(null);
 
 		assertThat(collection).isNotNull();
@@ -281,6 +267,7 @@ public class CollectionUtilsUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void nullSafeIterableWithNonNullIterable() {
+
 		Iterable<Object> mockIterable = mock(Iterable.class);
 
 		assertThat(CollectionUtils.nullSafeIterable(mockIterable)).isSameAs(mockIterable);
@@ -288,6 +275,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void nullSafeIterableWithNullIterable() {
+
 		Iterable<Object> iterable = CollectionUtils.nullSafeIterable(null);
 
 		assertThat(iterable).isNotNull();
@@ -295,8 +283,10 @@ public class CollectionUtilsUnitTests {
 		assertThat(iterable.iterator().hasNext()).isFalse();
 	}
 
+	@SuppressWarnings("all")
 	@Test(expected = IllegalStateException.class)
 	public void nullSafeIterableIterator() {
+
 		Iterable<Object> iterable = CollectionUtils.nullSafeIterable(null);
 
 		assertThat(iterable).isNotNull();
@@ -324,7 +314,39 @@ public class CollectionUtilsUnitTests {
 	}
 
 	@Test
+	public void nullSafeIterableWithNonNullNonEmptyIterableReturnsIterable() {
+
+		Iterable<Object> iterable = Collections.singleton(1);
+		Iterable<Object> defaultIterable = Collections.singleton(2);
+
+		assertThat(CollectionUtils.nullSafeIterable(iterable, defaultIterable)).isSameAs(iterable);
+	}
+
+	@Test
+	public void nullSafeIterableWithEmptyIterableReturnsDefault() {
+
+		Iterable<Object> iterable = Collections.emptySet();
+		Iterable<Object> defaultIterable = Collections.singleton(2);
+
+		assertThat(CollectionUtils.nullSafeIterable(iterable, defaultIterable)).isSameAs(defaultIterable);
+	}
+
+	@Test
+	public void nullSafeIterableWithNullIterableReturnsDefault() {
+
+		Iterable<?> defaultIterable = Collections.singleton(2);
+
+		assertThat(CollectionUtils.nullSafeIterable(null, defaultIterable)).isSameAs(defaultIterable);
+	}
+
+	@Test
+	public void nullSafeIterableWithNullIterableAndNullDefaultReturnsNull() {
+		assertThat(CollectionUtils.nullSafeIterable((Iterable<?>) null, null)).isNull();
+	}
+
+	@Test
 	public void nullSafeListWithNonNullList() {
+
 		List<?> mockList = mock(List.class);
 
 		assertThat(CollectionUtils.nullSafeList(mockList)).isSameAs(mockList);
@@ -332,6 +354,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void nullSafeListWithNullList() {
+
 		List<?> list = CollectionUtils.nullSafeList(null);
 
 		assertThat(list).isNotNull();
@@ -340,6 +363,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void nullSafeMapWithNonNullMap() {
+
 		Map<?, ?> mockMap = mock(Map.class);
 
 		assertThat(CollectionUtils.nullSafeMap(mockMap)).isSameAs(mockMap);
@@ -347,6 +371,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void nullSafeMapWithNullMap() {
+
 		Map<?, ?> map = CollectionUtils.nullSafeMap(null);
 
 		assertThat(map).isNotNull();
@@ -355,6 +380,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void nullSafeSetWithNonNullSet() {
+
 		Set<?> mockSet = mock(Set.class);
 
 		assertThat(CollectionUtils.nullSafeSet(mockSet)).isSameAs(mockSet);
@@ -362,6 +388,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void nullSafeSetWithNullSet() {
+
 		Set<?> set = CollectionUtils.nullSafeSet(null);
 
 		assertThat(set).isNotNull();
@@ -370,6 +397,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void sortIsSuccessful() {
+
 		List<Integer> list = new ArrayList<Integer>(Arrays.asList(2, 3, 1));
 		List<Integer> sortedList = CollectionUtils.sort(list);
 
@@ -379,6 +407,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void subListFromListWithIndexesReturnsSubList() {
+
 		List<Integer> list = Arrays.asList(0, 1, 2, 3);
 		List<Integer> subList = CollectionUtils.subList(list, 1, 3);
 
@@ -390,6 +419,7 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void subListFromListWithNoIndexesReturnsEmptyList() {
+
 		List<Integer> subList = CollectionUtils.subList(Arrays.asList(0, 1, 2));
 
 		assertThat(subList).isNotNull();
@@ -403,9 +433,10 @@ public class CollectionUtilsUnitTests {
 
 	@Test
 	public void subListWithNullSourceListThrowsIllegalArgumentException() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("List must not be null");
+		exception.expectMessage("List is required");
 
 		CollectionUtils.subList(null, 1, 2, 3);
 	}

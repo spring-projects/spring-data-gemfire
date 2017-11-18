@@ -26,8 +26,13 @@ import org.springframework.data.gemfire.cache.GemfireCacheManager;
  * The {@link GemfireCachingConfiguration} class is a Spring {@link Configuration @Configuration} class
  * used to configure Pivotal GemFire or Apache Geode as the caching provider in Spring's Cache Abstraction.
  *
- * Additionally, this Spring {@link Configuration} class also enables the Spring Cache Abstraction
- * with {@link EnableCaching}.
+ * This {@link Configuration @Configuration} class is specifically responsible for declaring and registering
+ * Spring Data GemFire/Geode's {@link GemfireCacheManager} implementation to properly enable either Pivotal GemFire
+ * or Apache Geode as the caching provider used with Springs Cache Abstraction.
+ *
+ * Additionally, this Spring {@link Configuration @Configuration} class also enables the Spring Cache Abstraction
+ * by declaring Spring's {@link EnableCaching} annotation for the user extending or importing this class using
+ * the SDG provided {@link EnableGemfireCaching} annotation.
  *
  * @author John Blum
  * @see org.apache.geode.cache.GemFireCache

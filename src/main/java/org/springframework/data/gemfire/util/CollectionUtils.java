@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.util;
 
+import static java.util.stream.StreamSupport.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -61,11 +63,10 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Collection
 	 */
 	public static <E, T extends Collection<E>> T addAll(T collection, Iterable<E> iterable) {
-		Assert.notNull(collection, "Collection must not be null");
 
-		for (E element : nullSafeIterable(iterable)) {
-			collection.add(element);
-		}
+		Assert.notNull(collection, "Collection is required");
+
+		stream(nullSafeIterable(iterable).spliterator(), false).forEach(collection::add);
 
 		return collection;
 	}
@@ -79,8 +80,11 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 */
 	@SafeVarargs
 	public static <T> Set<T> asSet(T... elements) {
+
 		Set<T> set = new HashSet<>(elements.length);
+
 		Collections.addAll(set, elements);
+
 		return Collections.unmodifiableSet(set);
 	}
 
@@ -93,6 +97,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Collection#contains(Object)
 	 */
 	public static boolean containsAny(Collection<?> collection, Object... elements) {
+
 		if (collection != null) {
 			for (Object element : nullSafeArray(elements, Object.class)) {
 				if (collection.contains(element)) {
@@ -102,20 +107,6 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 		}
 
 		return false;
-	}
-
-	/**
-	 * Returns the given {@link Iterable} if not {@literal null} or empty, otherwise returns the {@code defaultIterable}.
-	 *
-	 * @param <T> concrete {@link Class} type of the {@link Iterable}.
-	 * @param <E> {@link Class} type of the elements in the {@link Iterable Iterables}.
-	 * @param iterable {@link Iterable} to evaluate.
-	 * @param defaultIterable {@link Iterable} to return if the given {@code iterable} is {@literal null} or empty.
-	 * @return {@code iterable} if not {@literal null} or empty otherwise return {@code defaultIterable}.
-	 * @see java.lang.Iterable
-	 */
-	public static <E, T extends Iterable<E>> T defaultIfEmpty(T iterable, T defaultIterable) {
-		return (iterable != null && iterable.iterator().hasNext() ? iterable : defaultIterable);
 	}
 
 	/**
@@ -168,7 +159,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Collection
 	 */
 	public static <T> Collection<T> nullSafeCollection(Collection<T> collection) {
-		return (collection != null ? collection : Collections.emptyList());
+		return collection != null ? collection : Collections.emptyList();
 	}
 
 	/**
@@ -182,7 +173,21 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Iterator
 	 */
 	public static <T> Iterable<T> nullSafeIterable(Iterable<T> iterable) {
-		return (iterable != null ? iterable : Collections::emptyIterator);
+		return iterable != null ? iterable : Collections::emptyIterator;
+	}
+
+	/**
+	 * Returns the given {@link Iterable} if not {@literal null} or empty, otherwise returns the {@code defaultIterable}.
+	 *
+	 * @param <T> concrete {@link Class} type of the {@link Iterable}.
+	 * @param <E> {@link Class} type of the elements in the {@link Iterable Iterables}.
+	 * @param iterable {@link Iterable} to evaluate.
+	 * @param defaultIterable {@link Iterable} to return if the given {@code iterable} is {@literal null} or empty.
+	 * @return {@code iterable} if not {@literal null} or empty otherwise return {@code defaultIterable}.
+	 * @see java.lang.Iterable
+	 */
+	public static <E, T extends Iterable<E>> T nullSafeIterable(T iterable, T defaultIterable) {
+		return Optional.ofNullable(iterable).filter(it -> it.iterator().hasNext()).orElse(defaultIterable);
 	}
 
 	/**
@@ -196,7 +201,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.List
 	 */
 	public static <T> List<T> nullSafeList(List<T> list) {
-		return (list != null ? list : Collections.emptyList());
+		return list != null ? list : Collections.emptyList();
 	}
 
 	/**
@@ -212,7 +217,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 */
 	@SuppressWarnings("all")
 	public static <K, V> Map<K, V> nullSafeMap(Map<K, V> map) {
-		return (map != null ? map : Collections.emptyMap());
+		return map != null ? map : Collections.<K, V>emptyMap();
 	}
 
 	/**
@@ -226,7 +231,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.Set
 	 */
 	public static <T> Set<T> nullSafeSet(Set<T> set) {
-		return (set != null ? set : Collections.emptySet());
+		return set != null ? set : Collections.emptySet();
 	}
 
 	/**
@@ -239,7 +244,9 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.List
 	 */
 	public static <T extends Comparable<T>> List<T> sort(List<T> list) {
+
 		Collections.sort(list);
+
 		return list;
 	}
 
@@ -257,7 +264,8 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	 * @see java.util.List
 	 */
 	public static <T> List<T> subList(List<T> source, int... indices) {
-		Assert.notNull(source, "List must not be null");
+
+		Assert.notNull(source, "List is required");
 
 		List<T> result = new ArrayList<>(indices.length);
 
@@ -270,6 +278,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 
 	/* (non-Javadoc) */
 	public static String toString(Map<?, ?> map) {
+
 		StringBuilder builder = new StringBuilder("{\n");
 
 		int count = 0;
