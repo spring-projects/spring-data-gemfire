@@ -57,7 +57,8 @@ public abstract class DistributedSystemUtils extends SpringUtils {
 			String durableClientId, Integer durableClientTimeout) {
 
 		if (StringUtils.hasText(durableClientId)) {
-			Assert.notNull(gemfireProperties, "gemfireProperties must not be null");
+
+			Assert.notNull(gemfireProperties, "gemfireProperties are required");
 
 			gemfireProperties.setProperty(DURABLE_CLIENT_ID_PROPERTY_NAME, durableClientId);
 
@@ -71,7 +72,7 @@ public abstract class DistributedSystemUtils extends SpringUtils {
 
 	/* (non-Javadoc) */
 	public static boolean isConnected(DistributedSystem distributedSystem) {
-		return (distributedSystem != null && distributedSystem.isConnected());
+		return Optional.ofNullable(distributedSystem).filter(DistributedSystem::isConnected).isPresent();
 	}
 
 	/* (non-Javadoc) */

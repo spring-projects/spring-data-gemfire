@@ -45,6 +45,7 @@ public class GemfireUtilsTest {
 
 	@Test
 	public void isClientWithClientIsTrue() {
+
 		ClientCache mockClient = mock(ClientCache.class);
 
 		assertThat(GemfireUtils.isClient(mockClient), is(true));
@@ -54,6 +55,7 @@ public class GemfireUtilsTest {
 
 	@Test
 	public void isClientWithNonClientIsFalse() {
+
 		Cache mockCache = mock(Cache.class);
 
 		assertThat(GemfireUtils.isClient(mockCache), is(false));
@@ -63,7 +65,9 @@ public class GemfireUtilsTest {
 
 	@Test
 	public void isDurableWithDurableClientIsTrue() {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		Properties gemfireProperties = new Properties();
@@ -83,7 +87,9 @@ public class GemfireUtilsTest {
 
 	@Test
 	public void isDurableWhenNotDurableClientIsFalse() {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		Properties gemfireProperties = new Properties();
@@ -103,7 +109,9 @@ public class GemfireUtilsTest {
 
 	@Test
 	public void isDurableWhenDistributedSystemIsNotConnectedIsFalse() {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
+
 		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
 
 		when(mockClientCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
@@ -118,6 +126,7 @@ public class GemfireUtilsTest {
 
 	@Test
 	public void isPeerWithPeerIsTrue() {
+
 		Cache mockCache = mock(Cache.class);
 
 		assertThat(GemfireUtils.isPeer(mockCache), is(true));
@@ -127,6 +136,7 @@ public class GemfireUtilsTest {
 
 	@Test
 	public void isPeerWithNonPeerIsFalse() {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		assertThat(GemfireUtils.isPeer(mockClientCache), is(false));

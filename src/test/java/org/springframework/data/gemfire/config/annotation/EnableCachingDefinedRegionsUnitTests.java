@@ -33,6 +33,11 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import javax.cache.annotation.CacheDefaults;
+import javax.cache.annotation.CacheRemove;
+import javax.cache.annotation.CacheRemoveAll;
+import javax.cache.annotation.CacheResult;
+
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Before;
@@ -88,7 +93,7 @@ public class EnableCachingDefinedRegionsUnitTests {
 			return mockBeanDefinition;
 		}
 		catch (ClassNotFoundException cause) {
-			throw newRuntimeException(cause, "Mock for class [%s] failed", beanClass.getName());
+			throw newRuntimeException(cause, "Creating a mock for class [%s] failed", beanClass.getName());
 		}
 	}
 
@@ -109,6 +114,16 @@ public class EnableCachingDefinedRegionsUnitTests {
 			.when(mockBeanDefinitionRegistry).registerBeanDefinition(anyString(), any(BeanDefinition.class));
 
 		return mockBeanDefinitionRegistry;
+	}
+
+	@Test
+	public void annotationTypeIsEnableCachingDefinedRegions() {
+		assertThat(this.configuration.getAnnotationType()).isEqualTo(EnableCachingDefinedRegions.class);
+	}
+
+	@Test
+	public void getCacheNameResolverIsConfiguredProperly() {
+		assertThat(this.configuration.getCacheNameResolver()).isNotNull();
 	}
 
 	@Test
@@ -319,13 +334,15 @@ public class EnableCachingDefinedRegionsUnitTests {
 		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
 			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
 
-		registeredRegionBeanNames.forEach(beanName ->
+		registeredRegionBeanNames.forEach(beanName -> {
+			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
 			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class)));
+				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+		});
 	}
 
 	@Test
-	public void cacheableServiceOneTwoThreeRegistersTwentyTwoRegionBeans() {
+	public void cacheableServiceOneTwoAndThreeRegistersTwentyTwoRegionBeans() {
 
 		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
 			.put("cacheableServiceOne", mockBeanDefinition(CacheableServiceOne.class))
@@ -345,45 +362,110 @@ public class EnableCachingDefinedRegionsUnitTests {
 
 		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
 
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceOne"));
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceTwo"));
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceThree"));
+		Arrays.asList("cacheableServiceOne", "cacheableServiceTwo", "cacheableServiceThree").forEach(beanName ->
+			verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinition(eq(beanName)));
 
 		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
 			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
 
-		registeredRegionBeanNames.forEach(beanName ->
+		registeredRegionBeanNames.forEach(beanName -> {
+
+			int wantedNumberOfInvocations = "RegionSix".equals(beanName) || "RegionTwo".equals(beanName) ? 2 : 1;
+
+			verify(mockBeanDefinitionRegistry, times(wantedNumberOfInvocations)).containsBeanDefinition(eq(beanName));
+
 			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class)));
+				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+		});
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
-	public void collectCacheNamesForCacheableAndCachePutOnCacheableServiceThreeRegistersRegionFifteenSixteenSeventeen() {
+	public void cacheableServiceFiveRegistersRegionOneTwoThreeFourFiveSixAndSeven() {
 
-		assertThat(this.configuration.collectCacheNames(CacheableServiceThree.class, Cacheable.class, CachePut.class))
-			.containsExactly("RegionFifteen", "RegionSixteen", "RegionSeventeen");
+		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
+			.put("cacheableServiceFive", mockBeanDefinition(CacheableServiceFive.class))
+			.build();
+
+		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+
+		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+
+		Set<String> registeredRegionBeanNames =
+			asSet("RegionOne", "RegionTwo", "RegionThree", "RegionFour", "RegionFive",
+				"RegionSix", "RegionSeven");
+
+		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
+
+		verify(mockBeanDefinitionRegistry, times(1))
+			.getBeanDefinition(eq("cacheableServiceFive"));
+
+		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
+			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
+
+		registeredRegionBeanNames.forEach(beanName -> {
+			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
+			verify(mockBeanDefinitionRegistry, times(1))
+				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+		});
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
-	public void collectCacheNamesForCacheableOnCacheableServiceThreeRegistersRegionFifteen() {
+	public void cacheableServiceSixRegistersRegionOneTwoThreeFourAndFive() {
 
-		assertThat(this.configuration.collectCacheNames(CacheableServiceThree.class, Cacheable.class))
-			.containsExactly("RegionFifteen");
+		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
+			.put("cacheableServiceSix", mockBeanDefinition(CacheableServiceSix.class))
+			.build();
+
+		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+
+		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+
+		Set<String> registeredRegionBeanNames =
+			asSet("RegionOne", "RegionTwo", "RegionThree", "RegionFour", "RegionFive");
+
+		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
+
+		verify(mockBeanDefinitionRegistry, times(1))
+			.getBeanDefinition(eq("cacheableServiceSix"));
+
+		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
+			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
+
+		registeredRegionBeanNames.forEach(beanName -> {
+			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
+			verify(mockBeanDefinitionRegistry, times(1))
+				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+		});
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
-	public void collectCacheNamesForCachePutOnCacheableServiceThreeRegistersRegionSixteenSeventeen() {
+	public void cacheableServiceSevenRegistersRegionOneThroughEleven() {
 
-		assertThat(this.configuration.collectCacheNames(CacheableServiceThree.class, CachePut.class))
-			.containsExactly("RegionSixteen", "RegionSeventeen");
+		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
+			.put("cacheableServiceSeven", mockBeanDefinition(CacheableServiceSeven.class))
+			.build();
+
+		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+
+		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+
+		Set<String> registeredRegionBeanNames =
+			asSet("RegionOne", "RegionTwo", "RegionThree", "RegionFour", "RegionFive", "RegionSix",
+				"RegionSeven", "RegionEight", "RegionNine", "RegionTen", "RegionEleven");
+
+		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
+
+		verify(mockBeanDefinitionRegistry, times(1))
+			.getBeanDefinition(eq("cacheableServiceSeven"));
+
+		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
+			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
+
+		registeredRegionBeanNames.forEach(beanName -> {
+			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
+			verify(mockBeanDefinitionRegistry, times(1))
+				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+		});
 	}
 
 	@Service
@@ -448,6 +530,65 @@ public class EnableCachingDefinedRegionsUnitTests {
 		public void cacheableMethodFour() {}
 
 		public void cacheableMethodFive() {}
+
+	}
+
+	@CacheDefaults(cacheName = "RegionOne")
+	@CacheRemoveAll(cacheName = "RegionSix")
+	@CacheResult(cacheName = "RegionSeven")
+	@SuppressWarnings("unused")
+	static class CacheableServiceFive {
+
+		@javax.cache.annotation.CachePut(cacheName = "RegionTwo")
+		public void cacheableMethodOne() {}
+
+		@CacheRemove(cacheName = "RegionThree")
+		public void cacheableMethodTwo() {}
+
+		@CacheRemoveAll(cacheName = "RegionFour")
+		public void cacheableMethodThree() {}
+
+		@CacheResult(cacheName = "RegionFive")
+		public void cacheableMethodFour() {}
+
+	}
+
+	@CacheDefaults(cacheName = "RegionOne")
+	@javax.cache.annotation.CachePut(cacheName = "RegionOne")
+	@CacheRemoveAll(cacheName = "RegionFive")
+	@SuppressWarnings("unused")
+	static class CacheableServiceSix {
+
+		@javax.cache.annotation.CachePut(cacheName = "RegionTwo")
+		@javax.cache.annotation.CacheResult(cacheName = "RegionOne")
+		public void cacheableMethodOne() {}
+
+		@CacheRemove(cacheName = "RegionThree")
+		public void cacheableMethodTwo() {}
+
+		@CacheRemoveAll(cacheName = "RegionThree")
+		public void cacheableMethodThree() {}
+
+		@CacheResult(cacheName = "RegionFour")
+		@CacheRemove(cacheName = "RegionFive")
+		public void cacheableMethodFour() {}
+
+	}
+
+	@Caching(
+		cacheable = { @Cacheable({ "RegionSix", "RegionSeven", "RegionEight" }), @Cacheable("RegionNine")},
+		put = @CachePut("RegionTwo")
+	)
+	@CacheDefaults(cacheName = "RegionOne")
+	static class CacheableServiceSeven extends CacheableServiceSix {
+
+		@CachePut("RegionTen")
+		@CacheRemove(cacheName = "RegionFive")
+		@CacheResult(cacheName = "RegionEleven")
+		public void cacheableMethodFive() {}
+
+		@Cacheable("RegionThree")
+		public void cacheableMethodSix() {}
 
 	}
 }

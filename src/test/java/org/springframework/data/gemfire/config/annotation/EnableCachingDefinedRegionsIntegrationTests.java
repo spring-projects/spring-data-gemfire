@@ -20,11 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.cache.annotation.CacheDefaults;
+import javax.cache.annotation.CacheRemoveAll;
+import javax.cache.annotation.CacheResult;
+
 import org.apache.geode.cache.GemFireCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
@@ -48,44 +53,58 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private CacheableEchoService echoService;
+	private JCacheEchoService jcacheEchoService;
+
+	@Autowired
+	private SpringCacheableEchoService springEchoService;
 
 	@Autowired
 	private GemFireCache gemfireCache;
 
 	@Before
 	public void setup() {
-
-		//System.err.printf("@Cacheable Beans [%s]%n",
-		//	Arrays.toString(applicationContext.getBeanNamesForAnnotation(Cacheable.class)));
-
 		assertThat(this.gemfireCache).isNotNull();
-
-		//System.err.printf("Cache Regions [%s]%n", this.gemfireCache.rootRegions().stream()
-		//	.map(Region::getFullPath).collect(Collectors.toSet()));
 	}
 
 	@Test
 	public void cacheRegionsExists() {
 
-		assertThat(gemfireCache.getRegion("/Example")).isNotNull();
 		assertThat(gemfireCache.getRegion("/Echo")).isNotNull();
+		assertThat(gemfireCache.getRegion("/JCacheOne")).isNotNull();
+		assertThat(gemfireCache.getRegion("/JCacheTwo")).isNotNull();
+		assertThat(gemfireCache.getRegion("/SpringOne")).isNotNull();
 	}
 
 	@Test
-	public void echoServiceOperationsAreSuccessful() {
+	public void echoServiceCachingWithJCacheIsSuccessful() {
 
-		assertThat(echoService.isCacheMiss()).isFalse();
-		assertThat(echoService.echo("one")).isEqualTo("one");
-		assertThat(echoService.isCacheMiss()).isTrue();
-		assertThat(echoService.echo("two")).isEqualTo("two");
-		assertThat(echoService.isCacheMiss()).isTrue();
-		assertThat(echoService.echo("one")).isEqualTo("one");
-		assertThat(echoService.isCacheMiss()).isFalse();
-		assertThat(echoService.echo("three")).isEqualTo("three");
-		assertThat(echoService.isCacheMiss()).isTrue();
-		assertThat(echoService.echo("two")).isEqualTo("two");
-		assertThat(echoService.isCacheMiss()).isFalse();
+		assertThat(jcacheEchoService.isCacheMiss()).isFalse();
+		assertThat(jcacheEchoService.echo("four")).isEqualTo("four");
+		assertThat(jcacheEchoService.isCacheMiss()).isTrue();
+		assertThat(jcacheEchoService.echo("five")).isEqualTo("five");
+		assertThat(jcacheEchoService.isCacheMiss()).isTrue();
+		assertThat(jcacheEchoService.echo("four")).isEqualTo("four");
+		assertThat(jcacheEchoService.isCacheMiss()).isFalse();
+		assertThat(jcacheEchoService.echo("six")).isEqualTo("six");
+		assertThat(jcacheEchoService.isCacheMiss()).isTrue();
+		assertThat(jcacheEchoService.echo("five")).isEqualTo("five");
+		assertThat(jcacheEchoService.isCacheMiss()).isFalse();
+	}
+
+	@Test
+	public void echoServiceCachingWithSpringIsSuccessful() {
+
+		assertThat(springEchoService.isCacheMiss()).isFalse();
+		assertThat(springEchoService.echo("one")).isEqualTo("one");
+		assertThat(springEchoService.isCacheMiss()).isTrue();
+		assertThat(springEchoService.echo("two")).isEqualTo("two");
+		assertThat(springEchoService.isCacheMiss()).isTrue();
+		assertThat(springEchoService.echo("one")).isEqualTo("one");
+		assertThat(springEchoService.isCacheMiss()).isFalse();
+		assertThat(springEchoService.echo("three")).isEqualTo("three");
+		assertThat(springEchoService.isCacheMiss()).isTrue();
+		assertThat(springEchoService.echo("two")).isEqualTo("two");
+		assertThat(springEchoService.isCacheMiss()).isFalse();
 	}
 
 	@PeerCacheApplication(name = "EnableCachingDefinedRegionsIntegrationTests", logLevel = "warning")
@@ -93,18 +112,28 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 	static class TestConfiguration {
 
 		@Bean
-		CacheableEchoService echoService() {
-			return new CacheableEchoService();
+		JCacheEchoService jcacheEchoService() {
+			return new JCacheEchoService();
 		}
 
 		@Bean
-		TestService testService() {
-			return new CachingTestService();
+		@Qualifier("Spring")
+		SpringCacheableEchoService springEchoService() {
+			return new SpringCacheableEchoService();
+		}
+
+		@Bean
+		TestService testServiceOne() {
+			return new SpringCachingTestService();
+		}
+
+		@Bean
+		TestService testServiceTwo() {
+			return new Jsr107CachingTestService();
 		}
 	}
 
-	@Service
-	static class CacheableEchoService {
+	static abstract class AbstractCacheableService {
 
 		private final AtomicBoolean cacheMiss = new AtomicBoolean(false);
 
@@ -112,9 +141,27 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 			return this.cacheMiss.compareAndSet(true, false);
 		}
 
+		public void setCacheMiss() {
+			this.cacheMiss.set(true);
+		}
+	}
+
+	@Service
+	static class JCacheEchoService extends AbstractCacheableService {
+
+		@CacheResult(cacheName = "Echo")
+		public Object echo(String key) {
+			setCacheMiss();
+			return key;
+		}
+	}
+
+	@Service
+	static class SpringCacheableEchoService extends AbstractCacheableService {
+
 		@Cacheable("Echo")
 		public Object echo(String key) {
-			this.cacheMiss.set(true);
+			setCacheMiss();
 			return key;
 		}
 	}
@@ -123,9 +170,19 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 		Object testMethod(String key);
 	}
 
-	static class CachingTestService implements TestService {
+	@CacheDefaults(cacheName = "JCacheOne")
+	@CacheRemoveAll(cacheName = "SpringOne")
+	static class Jsr107CachingTestService implements TestService {
 
-		@CachePut("Example")
+		@CacheResult(cacheName = "JCacheTwo")
+		public Object testMethod(String key) {
+			return null;
+		}
+	}
+
+	static class SpringCachingTestService implements TestService {
+
+		@CachePut("SpringOne")
 		public Object testMethod(String key) {
 			return "test";
 		}

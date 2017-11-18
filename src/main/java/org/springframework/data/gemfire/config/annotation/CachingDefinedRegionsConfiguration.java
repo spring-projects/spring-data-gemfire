@@ -16,14 +16,17 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.StreamUtils.concat;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +34,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.cache.annotation.CacheDefaults;
+import javax.cache.annotation.CacheRemove;
+import javax.cache.annotation.CacheRemoveAll;
+import javax.cache.annotation.CacheResult;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
@@ -45,7 +53,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -105,21 +112,10 @@ import org.springframework.util.StringUtils;
 @Configuration
 public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfigSupport implements ImportAware {
 
-	private static final Class[] CLASS_CACHE_ANNOTATION_TYPES;
-
-	private static final Class[] METHOD_CACHE_ANNOTATION_TYPES =
-		asArray(Cacheable.class, CacheEvict.class, CachePut.class);
-
-	static {
-
-		List<Class> annotationTypes = new ArrayList<>();
-
-		Collections.addAll(annotationTypes, METHOD_CACHE_ANNOTATION_TYPES);
-		annotationTypes.add(CacheConfig.class);
-
-		CLASS_CACHE_ANNOTATION_TYPES = annotationTypes.toArray(new Class[annotationTypes.size()]);
-
-	}
+	private final CacheNameResolver composableCacheNameResolver = type ->
+		asList(new Jsr107CacheAnnotationsCacheNameResolver(), new SpringCacheAnnotationsCacheNameResolver()).stream()
+			.flatMap(cacheNameResolver -> cacheNameResolver.resolveCacheNames(type).stream())
+			.collect(Collectors.toSet());
 
 	private ClientRegionShortcut clientRegionShortcut = ClientRegionShortcut.PROXY;
 
@@ -140,6 +136,17 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 	@Override
 	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableCachingDefinedRegions.class;
+	}
+
+	/**
+	 * Returns the configured {@link CacheNameResolver} to resolve all the declared cache name on Spring application
+	 * beans/components declared and registered in the Spring container (context).
+	 *
+	 * @return the configured {@link CacheNameResolver} to resolve all teh caches used by the Spring application.
+	 * @see org.springframework.data.gemfire.config.annotation.CachingDefinedRegionsConfiguration.CacheNameResolver
+	 */
+	protected CacheNameResolver getCacheNameResolver() {
+		return this.composableCacheNameResolver;
 	}
 
 	/**
@@ -273,31 +280,13 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 
 	@Bean
 	@SuppressWarnings("all")
-	public BeanDefinitionRegistryPostProcessor cacheAbstractionAnnotationsRegionBeanDefinitionRegistrar() {
+	public BeanDefinitionRegistryPostProcessor cachingAnnotationsRegionBeanDefinitionRegistrar() {
 
 		return new BeanDefinitionRegistryPostProcessorSupport() {
 
 			@Override
 			public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 				registerBeanDefinitions(registry);
-			}
-		};
-	}
-
-	@Bean
-	@SuppressWarnings("all")
-	public BeanPostProcessor cacheAbstractionAnnotationsRegionBeanRegistrar(ConfigurableBeanFactory beanFactory) {
-
-		return new BeanPostProcessor() {
-
-			@Nullable @Override
-			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-
-				if (isNotInfrastructureBean(bean)) {
-					registerRegionBeans(collectCacheNames(bean.getClass()), beanFactory);
-				}
-
-				return bean;
 			}
 		};
 	}
@@ -310,71 +299,9 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 
 			if (isNotInfrastructureBean(beanDefinition)) {
 				resolveBeanClass(beanDefinition, registry).ifPresent(beanClass ->
-					registerRegionBeanDefinitions(collectCacheNames(beanClass), registry));
+					registerRegionBeanDefinitions(getCacheNameResolver().resolveCacheNames(beanClass), registry));
 			}
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private Set<String> collectCacheNames(Class<?> type) {
-
-		Set<String> cacheNames = new HashSet<>();
-
-		cacheNames.addAll(collectCachingCacheNames(type));
-		cacheNames.addAll(collectCacheNames(type, CLASS_CACHE_ANNOTATION_TYPES));
-
-		stream(type.getMethods()).forEach(method -> {
-			if (isUserLevelMethod(method)) {
-				cacheNames.addAll(collectCachingCacheNames(method));
-				cacheNames.addAll(collectCacheNames(method, METHOD_CACHE_ANNOTATION_TYPES));
-			}
-		});
-
-		return cacheNames;
-	}
-
-	@SuppressWarnings("all")
-	Set<String> collectCacheNames(AnnotatedElement annotatedElement,
-			Class<? extends Annotation>... annotationTypes) {
-
-		Stream<String> cacheNames = stream(nullSafeArray(annotationTypes, Class.class))
-			.map(annotationType -> resolveAnnotation(annotatedElement, annotationType))
-			.flatMap(annotation -> collectCacheNames((Annotation) annotation).stream());
-
-		return cacheNames.collect(Collectors.toSet());
-	}
-
-	private Set<String> collectCacheNames(Annotation annotation) {
-
-		return Optional.ofNullable(annotation)
-			.map(this::getAnnotationAttributes)
-			.map(annotationAttributes -> annotationAttributes.getStringArray("cacheNames"))
-			.map(CollectionUtils::asSet)
-			.orElse(Collections.emptySet());
-	}
-
-	private Set<String> collectCachingCacheNames(AnnotatedElement annotatedElement) {
-
-		Set<String> cacheNames = new HashSet<>();
-
-		Optional.ofNullable(resolveAnnotation(annotatedElement, Caching.class))
-			.ifPresent(caching -> {
-
-				cacheNames.addAll(stream(nullSafeArray(caching.cacheable(), Cacheable.class))
-					.flatMap(cacheable -> collectCacheNames(cacheable).stream())
-					.collect(Collectors.toSet()));
-
-				cacheNames.addAll(stream(nullSafeArray(caching.evict(), CacheEvict.class))
-					.flatMap(cacheEvict -> collectCacheNames(cacheEvict).stream())
-					.collect(Collectors.toSet()));
-
-				cacheNames.addAll(stream(nullSafeArray(caching.put(), CachePut.class))
-					.flatMap(cachePut -> collectCacheNames(cachePut).stream())
-					.collect(Collectors.toSet()));
-
-			});
-
-		return cacheNames;
 	}
 
 	private BeanDefinitionRegistry registerRegionBeanDefinitions(Set<String> cacheNames,
@@ -398,6 +325,24 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 		});
 
 		return registry;
+	}
+
+	@Bean
+	@SuppressWarnings("all")
+	public BeanPostProcessor cachingAnnotationsRegionBeanRegistrar(ConfigurableBeanFactory beanFactory) {
+
+		return new BeanPostProcessor() {
+
+			@Nullable @Override
+			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
+				if (isNotInfrastructureBean(bean)) {
+					registerRegionBeans(getCacheNameResolver().resolveCacheNames(bean.getClass()), beanFactory);
+				}
+
+				return bean;
+			}
+		};
 	}
 
 	private ConfigurableBeanFactory registerRegionBeans(Set<String> cacheNames, ConfigurableBeanFactory beanFactory) {
@@ -431,5 +376,149 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 		});
 
 		return beanFactory;
+	}
+
+	/**
+	 * {@link CacheNameResolver} is a {@link FunctionalInterface} declaring a contract for all implementations
+	 * used to resolve all cache names declared and used by a Spring application.  A resolver typically inspects
+	 * all the application beans/components declared and registered in the Spring container (context) setup by
+	 * the application to determine whether the application components require caching behavior.
+	 *
+	 * @see org.springframework.data.gemfire.config.annotation.CachingDefinedRegionsConfiguration.Jsr107CacheAnnotationsCacheNameResolver
+	 * @see org.springframework.data.gemfire.config.annotation.CachingDefinedRegionsConfiguration.SpringCacheAnnotationsCacheNameResolver
+	 */
+	@FunctionalInterface
+	protected interface CacheNameResolver {
+		Set<String> resolveCacheNames(Class<?> type);
+	}
+
+	/**
+	 * {@link AbstractCacheNameResolver} is an abstract base class encapsulating reusable functionality common
+	 * to all {@link CacheNameResolver} implementations.
+	 *
+	 * Current implementations support inlude JSR-107, JCache API annotation and Spring's Cache Abstraction annotations.
+	 *
+	 * @see org.springframework.data.gemfire.config.annotation.CachingDefinedRegionsConfiguration.CacheNameResolver
+	 */
+	protected abstract class AbstractCacheNameResolver implements CacheNameResolver {
+
+		private final String JSR_107_CACHE_NAME_ATTRIBUTE_NAME = "cacheName";
+		private final String SPRING_CACHE_NAMES_ATTRIBUTE_NAME = "cacheNames";
+
+		private final String[] EMPTY_ARRAY = new String[0];
+
+		protected abstract Class<? extends Annotation>[] getClassCacheAnnotationTypes();
+
+		protected abstract Class<? extends Annotation>[] getMethodCacheAnnotationTypes();
+
+		@SuppressWarnings("unchecked")
+		protected Class[] append(Class[] annotationTypes, Class... additionalAnnotationTypes) {
+
+			List<Class> annotationTypeList = new ArrayList<>(Arrays.asList(annotationTypes));
+
+			Collections.addAll(annotationTypeList, additionalAnnotationTypes);
+
+			return annotationTypeList.toArray(new Class[annotationTypeList.size()]);
+		}
+
+		protected Set<String> resolveCacheNames(Annotation annotation) {
+
+			return Optional.ofNullable(annotation)
+				.map(it -> getAnnotationAttributes(it))
+				.map(annotationAttributes -> {
+
+					String attributeName = annotationAttributes.containsKey(SPRING_CACHE_NAMES_ATTRIBUTE_NAME)
+						? SPRING_CACHE_NAMES_ATTRIBUTE_NAME : JSR_107_CACHE_NAME_ATTRIBUTE_NAME;
+
+					return annotationAttributes.containsKey(attributeName)
+						? annotationAttributes.getStringArray(attributeName)
+						: EMPTY_ARRAY;
+
+				})
+				.map(CollectionUtils::asSet)
+				.orElse(Collections.emptySet());
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public Set<String> resolveCacheNames(Class<?> type) {
+
+			Set<String> cacheNames = new HashSet<>();
+
+			cacheNames.addAll(resolveCacheNames(type, getClassCacheAnnotationTypes()));
+
+			stream(type.getMethods())
+				.filter(method -> isUserLevelMethod(method))
+				.forEach(method -> cacheNames.addAll(resolveCacheNames(method, getMethodCacheAnnotationTypes())));
+
+			return cacheNames;
+		}
+
+		@SuppressWarnings("all")
+		protected Set<String> resolveCacheNames(AnnotatedElement annotatedElement,
+				Class<? extends Annotation>... annotationTypes) {
+
+			Stream<String> cacheNames = stream(nullSafeArray(annotationTypes, Class.class))
+				.map(annotationType -> resolveAnnotation(annotatedElement, annotationType))
+				.flatMap(annotation -> resolveCacheNames((Annotation) annotation).stream());
+
+			return cacheNames.collect(Collectors.toSet());
+		}
+	}
+
+	protected class Jsr107CacheAnnotationsCacheNameResolver extends AbstractCacheNameResolver {
+
+		@Override
+		@SuppressWarnings("unchecked")
+		protected Class<? extends Annotation>[] getClassCacheAnnotationTypes() {
+			return append(getMethodCacheAnnotationTypes(), CacheDefaults.class);
+		}
+
+		@Override
+		protected Class<? extends Annotation>[] getMethodCacheAnnotationTypes() {
+			return asArray(javax.cache.annotation.CachePut.class, CacheRemove.class,
+				CacheRemoveAll.class, CacheResult.class);
+		}
+	}
+
+	protected class SpringCacheAnnotationsCacheNameResolver extends AbstractCacheNameResolver {
+
+		@Override
+		@SuppressWarnings("unchecked")
+		protected Class<? extends Annotation>[] getClassCacheAnnotationTypes() {
+			return append(getMethodCacheAnnotationTypes(), Caching.class);
+		}
+
+		@Override
+		protected Class<? extends Annotation>[] getMethodCacheAnnotationTypes() {
+			return asArray(Cacheable.class, CacheEvict.class, CachePut.class);
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public Set<String> resolveCacheNames(Class<?> type) {
+
+			Set<String> cacheNames = super.resolveCacheNames(type);
+
+			cacheNames.addAll(resolveCachingCacheNames(type));
+
+			stream(type.getMethods()).filter(method -> isUserLevelMethod(method))
+				.forEach(method -> cacheNames.addAll(resolveCachingCacheNames(method)));
+
+			return cacheNames;
+		}
+
+		@SuppressWarnings("unchecked")
+		private Set<String> resolveCachingCacheNames(AnnotatedElement annotatedElement) {
+
+			Set<String> cacheNames = new HashSet<>();
+
+			Optional.ofNullable(resolveAnnotation(annotatedElement, Caching.class)).ifPresent(caching ->
+				concat(stream(caching.cacheable()), stream(caching.evict()), stream(caching.put()))
+					.flatMap(cacheAnnotation -> resolveCacheNames(cacheAnnotation).stream())
+					.collect(Collectors.toCollection(() -> cacheNames)));
+
+			return cacheNames;
+		}
 	}
 }

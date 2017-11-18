@@ -49,7 +49,7 @@ public abstract class ArrayUtils {
 	 * @return the given {@code array} if not {@literal null} or empty otherwise return the {@code defaultArray}.
 	 */
 	public static <T> T[] defaultIfEmpty(T[] array, T[] defaultArray) {
-		return (!ObjectUtils.isEmpty(array) ? array : defaultArray);
+		return !ObjectUtils.isEmpty(array) ? array : defaultArray;
 	}
 
 	/**
@@ -76,7 +76,7 @@ public abstract class ArrayUtils {
 	 * @see #getFirst(Object[], Object)
 	 */
 	public static <T> T getFirst(T[] array, T defaultValue) {
-		return (isEmpty(array) ? defaultValue : array[0]);
+		return isEmpty(array) ? defaultValue : array[0];
 	}
 
 	/**
@@ -91,8 +91,9 @@ public abstract class ArrayUtils {
 	 * @see java.lang.reflect.Array#newInstance(Class, int)
 	 */
 	public static Object[] insert(Object[] originalArray, int position, Object element) {
-		Object[] newArray = (Object[]) Array.newInstance(originalArray.getClass().getComponentType(),
-			originalArray.length + 1);
+
+		Object[] newArray =
+			(Object[]) Array.newInstance(originalArray.getClass().getComponentType(), originalArray.length + 1);
 
 
 		// copy all elements before the given position (here, position refers to the length, or number of elements
@@ -106,7 +107,8 @@ public abstract class ArrayUtils {
 
 		// copy remaining elements from originalArray, starting at position, to new array
 		if (position < originalArray.length) {
-			System.arraycopy(originalArray, position, newArray, position + 1, originalArray.length - position);
+			System.arraycopy(originalArray, position, newArray, position + 1,
+				originalArray.length - position);
 		}
 
 		return newArray;
@@ -120,7 +122,7 @@ public abstract class ArrayUtils {
 	 * @see #length(Object...)
 	 */
 	public static boolean isEmpty(Object[] array) {
-		return (length(array) == 0);
+		return length(array) == 0;
 	}
 
 	/**
@@ -130,7 +132,7 @@ public abstract class ArrayUtils {
 	 * @return the length of the given array or 0 if the array reference is null.
 	 */
 	public static int length(Object[] array) {
-		return (array != null ? array.length : 0);
+		return array != null ? array.length : 0;
 	}
 
 	/**
@@ -145,7 +147,7 @@ public abstract class ArrayUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T[] nullSafeArray(T[] array, Class<T> componentType) {
-		return (array != null ? array : (T[]) Array.newInstance(componentType, 0));
+		return array != null ? array : (T[]) Array.newInstance(componentType, 0);
 	}
 
 	/**
@@ -159,8 +161,9 @@ public abstract class ArrayUtils {
 	 * @see java.lang.reflect.Array#newInstance(Class, int)
 	 */
 	public static Object[] remove(Object[] originalArray, int position) {
-		Object[] newArray = (Object[]) Array.newInstance(originalArray.getClass().getComponentType(),
-			originalArray.length - 1);
+
+		Object[] newArray =
+			(Object[]) Array.newInstance(originalArray.getClass().getComponentType(), originalArray.length - 1);
 
 		// copy all elements before position (here, position refers to the length, or number of elements to be copied
 		if (position > 0) {
@@ -169,7 +172,8 @@ public abstract class ArrayUtils {
 
 		// copy remaining elements after position from the originalArray
 		if (position < originalArray.length - 1) {
-			System.arraycopy(originalArray, position + 1, newArray, position, originalArray.length - 1 - position);
+			System.arraycopy(originalArray, position + 1, newArray, position,
+				originalArray.length - 1 - position);
 		}
 
 		return newArray;
@@ -184,7 +188,9 @@ public abstract class ArrayUtils {
 	 * @see java.util.Arrays#sort(Object[])
 	 */
 	public static <T extends Comparable<T>> T[] sort(T[] array) {
+
 		Arrays.sort(array);
+
 		return array;
 	}
 }

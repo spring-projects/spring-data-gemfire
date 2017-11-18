@@ -23,10 +23,12 @@ import org.apache.geode.cache.RegionAttributes;
 import org.springframework.util.StringUtils;
 
 /**
- * The RegionUtils class...
+ * The {@link RegionUtils} class is an abstract utility class for working with {@link Region Regions}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionAttributes
+ * @since 2.0.0
  */
 public abstract class RegionUtils extends CacheUtils {
 
@@ -37,5 +39,10 @@ public abstract class RegionUtils extends CacheUtils {
 			.map(RegionAttributes::getPoolName)
 			.filter(StringUtils::hasText)
 			.isPresent();
+	}
+
+	/* (non-Javadoc) */
+	public static String toRegionPath(String regionName) {
+		return String.format("%1$s%2$s", Region.SEPARATOR, regionName);
 	}
 }
