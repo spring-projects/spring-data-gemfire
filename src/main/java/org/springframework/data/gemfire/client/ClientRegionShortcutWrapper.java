@@ -47,6 +47,7 @@ public enum ClientRegionShortcutWrapper {
 	private final DataPolicy dataPolicy;
 
 	public static ClientRegionShortcutWrapper valueOf(ClientRegionShortcut clientRegionShortcut) {
+
 		for (ClientRegionShortcutWrapper wrapper : values()) {
 			if (ObjectUtils.nullSafeEquals(wrapper.getClientRegionShortcut(), clientRegionShortcut)) {
 				return wrapper;

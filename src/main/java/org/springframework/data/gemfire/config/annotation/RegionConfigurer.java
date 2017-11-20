@@ -20,6 +20,7 @@ import org.apache.geode.cache.Region;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean;
 
 /**
  * The {@link RegionConfigurer} interface defines a contract for implementations to customize the configuration
@@ -31,7 +32,7 @@ import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
  * @see org.springframework.data.gemfire.RegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions
- * @see org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean
+ * @see CacheTypeAwareRegionFactoryBean
  * @since 1.1.0
  */
 public interface RegionConfigurer {

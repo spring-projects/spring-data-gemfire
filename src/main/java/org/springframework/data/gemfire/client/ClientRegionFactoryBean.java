@@ -278,7 +278,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 				else {
 					// NOTE the DataPolicy validation is based on the ClientRegionShortcut initialization logic
 					// in org.apache.geode.internal.cache.GemFireCacheImpl.initializeClientRegionShortcuts
-					throw newIllegalArgumentException("Data Policy [%s] is not valid for the client Region", dataPolicy);
+					throw newIllegalArgumentException("Data Policy [%s] is not valid for a client Region", dataPolicy);
 				}
 			}
 			else {

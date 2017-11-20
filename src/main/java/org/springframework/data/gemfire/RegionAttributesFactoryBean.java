@@ -35,35 +35,23 @@ import org.springframework.beans.factory.InitializingBean;
 public class RegionAttributesFactoryBean extends AttributesFactory
 		implements FactoryBean<RegionAttributes>, InitializingBean {
 
-	private RegionAttributes attributes;
+	private RegionAttributes regionAttributes;
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		attributes = super.create();
+		this.regionAttributes = super.create();
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public RegionAttributes getObject() throws Exception {
-		return attributes;
+		return this.regionAttributes;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public Class<?> getObjectType() {
-		return (attributes != null ? attributes.getClass() : RegionAttributes.class);
+		return this.regionAttributes != null ? this.regionAttributes.getClass() : RegionAttributes.class;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public boolean isSingleton() {
 		return true;

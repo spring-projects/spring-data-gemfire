@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.test.mock;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,11 +47,11 @@ public abstract class MockObjectsSupport {
 
 	private static final String DEFAULT_MOCK_OBJECT_NAME = "MockObject";
 
-	protected static String mockObjectIdentifier() {
+	public static String mockObjectIdentifier() {
 		return mockObjectIdentifier(DEFAULT_MOCK_OBJECT_NAME);
 	}
 
-	protected static String mockObjectIdentifier(String mockObjectName) {
+	public static String mockObjectIdentifier(String mockObjectName) {
 		return String.format("%s%d", Optional.ofNullable(mockObjectName).filter(StringUtils::hasText)
 			.orElse(DEFAULT_MOCK_OBJECT_NAME), mockObjectIdentifier.incrementAndGet());
 	}
@@ -88,6 +89,14 @@ public abstract class MockObjectsSupport {
 	/* (non-Javadoc) */
 	protected static <R, S> Answer<S> newGetter(Supplier<R> returnValue, Function<R, S> converter) {
 		return invocation -> converter.apply(returnValue.get());
+	}
+
+	/* (non-Javadoc) */
+	protected static <E, C extends Collection<E>, R> Answer<R> newAdder(C collection, R returnValue) {
+		return invocation -> {
+			collection.add(invocation.getArgument(0));
+			return returnValue;
+		};
 	}
 
 	/* (non-Javadoc) */

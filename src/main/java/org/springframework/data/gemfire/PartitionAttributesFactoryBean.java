@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire;
 
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+
 import java.util.List;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
@@ -25,7 +27,7 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 
 /**
  * Spring {@link FactoryBean} for creating {@link PartitionAttributes}.
@@ -35,101 +37,81 @@ import org.springframework.data.gemfire.util.CollectionUtils;
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
- * @see org.springframework.beans.factory.FactoryBean
- * @see org.springframework.beans.factory.InitializingBean
  * @see org.apache.geode.cache.FixedPartitionAttributes
  * @see org.apache.geode.cache.PartitionAttributes
  * @see org.apache.geode.cache.PartitionAttributesFactory
  * @see org.apache.geode.cache.PartitionResolver
  * @see org.apache.geode.cache.partition.PartitionListener
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  */
-@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
-public class PartitionAttributesFactoryBean<K, V> implements FactoryBean<PartitionAttributes<K, V>>, InitializingBean {
+@SuppressWarnings("unused")
+public class PartitionAttributesFactoryBean<K, V> extends AbstractFactoryBeanSupport<PartitionAttributes<K, V>>
+		implements InitializingBean {
 
 	private List<PartitionListener> partitionListeners;
 
 	private PartitionAttributes<K, V> partitionAttributes;
 
-	private final PartitionAttributesFactory<K, V> partitionAttributesFactory =
-		new PartitionAttributesFactory<>();
+	private final PartitionAttributesFactory<K, V> partitionAttributesFactory = new PartitionAttributesFactory<>();
 
 	/**
 	 * @inheritDoc
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		for (PartitionListener listener : CollectionUtils.nullSafeList(partitionListeners)) {
-			partitionAttributesFactory.addPartitionListener(listener);
-		}
-
+		nullSafeList(partitionListeners).forEach(partitionAttributesFactory::addPartitionListener);
 		this.partitionAttributes = partitionAttributesFactory.create();
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
-	public PartitionAttributes getObject() throws Exception {
+	public PartitionAttributes<K, V> getObject() throws Exception {
 		return this.partitionAttributes;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public Class<?> getObjectType() {
 		return (this.partitionAttributes != null ? this.partitionAttributes.getClass() : PartitionAttributes.class);
 	}
 
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public boolean isSingleton() {
-		return false;
-	}
-
 	public void setColocatedWith(String collocatedWith) {
-		partitionAttributesFactory.setColocatedWith(collocatedWith);
+		this.partitionAttributesFactory.setColocatedWith(collocatedWith);
 	}
 
 	public void setFixedPartitionAttributes(List<FixedPartitionAttributes> fixedPartitionAttributes) {
-		for (FixedPartitionAttributes fixedPartitionAttributesElement :
-				CollectionUtils.nullSafeList(fixedPartitionAttributes)) {
-
-			partitionAttributesFactory.addFixedPartitionAttributes(fixedPartitionAttributesElement);
-		}
+		nullSafeList(fixedPartitionAttributes).forEach(this.partitionAttributesFactory::addFixedPartitionAttributes);
 	}
 
 	public void setLocalMaxMemory(int mb) {
-		partitionAttributesFactory.setLocalMaxMemory(mb);
+		this.partitionAttributesFactory.setLocalMaxMemory(mb);
 	}
 
 	public void setPartitionListeners(List<PartitionListener> partitionListeners) {
 		this.partitionListeners = partitionListeners;
 	}
 
-	public void setPartitionResolver(PartitionResolver resolver) {
-		partitionAttributesFactory.setPartitionResolver(resolver);
+	public void setPartitionResolver(PartitionResolver<K, V> resolver) {
+		this.partitionAttributesFactory.setPartitionResolver(resolver);
 	}
 
 	public void setRecoveryDelay(long recoveryDelay) {
-		partitionAttributesFactory.setRecoveryDelay(recoveryDelay);
+		this.partitionAttributesFactory.setRecoveryDelay(recoveryDelay);
 	}
 
 	public void setRedundantCopies(int redundantCopies) {
-		partitionAttributesFactory.setRedundantCopies(redundantCopies);
+		this.partitionAttributesFactory.setRedundantCopies(redundantCopies);
 	}
 
 	public void setStartupRecoveryDelay(long startupRecoveryDelay) {
-		partitionAttributesFactory.setStartupRecoveryDelay(startupRecoveryDelay);
+		this.partitionAttributesFactory.setStartupRecoveryDelay(startupRecoveryDelay);
 	}
 
-	public void setTotalMaxMemory(long mb) {
-		partitionAttributesFactory.setTotalMaxMemory(mb);
+	public void setTotalMaxMemory(long megabytes) {
+		this.partitionAttributesFactory.setTotalMaxMemory(megabytes);
 	}
 
 	public void setTotalNumBuckets(int numBuckets) {
-		partitionAttributesFactory.setTotalNumBuckets(numBuckets);
+		this.partitionAttributesFactory.setTotalNumBuckets(numBuckets);
 	}
 }
