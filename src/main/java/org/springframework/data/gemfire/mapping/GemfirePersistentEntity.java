@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.mapping;
 
-import static org.springframework.data.gemfire.util.SpringUtils.defaultIfEmpty;
-
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
@@ -30,6 +28,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link PersistentEntity} implementation adding custom GemFire persistent entity related metadata, such as the
@@ -50,9 +49,11 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 
 	/* (non-Javadoc) */
 	protected static Annotation resolveRegionAnnotation(Class<?> persistentEntityType) {
+
 		for (Class<? extends Annotation> regionAnnotationType : Region.REGION_ANNOTATION_TYPES) {
-			Annotation regionAnnotation = AnnotatedElementUtils.getMergedAnnotation(
-				persistentEntityType, regionAnnotationType);
+
+			Annotation regionAnnotation =
+				AnnotatedElementUtils.getMergedAnnotation(persistentEntityType, regionAnnotationType);
 
 			if (regionAnnotation != null) {
 				return regionAnnotation;
@@ -64,11 +65,11 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 
 	/* (non-Javadoc) */
 	protected static String resolveRegionName(Class<?> persistentEntityType, Annotation regionAnnotation) {
-		String regionName = Optional.ofNullable(regionAnnotation)
-			.map((annotation) ->  getAnnotationAttributeStringValue(annotation, "value"))
-				.orElse(null);
 
-		return defaultIfEmpty(regionName, persistentEntityType.getSimpleName());
+		Optional<String> regionName = Optional.ofNullable(regionAnnotation)
+			.map((annotation) ->  getAnnotationAttributeStringValue(annotation, "value"));
+
+		return regionName.filter(StringUtils::hasText).orElse(persistentEntityType.getSimpleName());
 	}
 
 	/* (non-Javadoc) */
@@ -86,6 +87,7 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	 * @see org.springframework.data.util.TypeInformation
 	 */
 	public GemfirePersistentEntity(TypeInformation<T> information) {
+
 		super(information);
 
 		Class<T> rawType = information.getType();

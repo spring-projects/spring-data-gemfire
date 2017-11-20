@@ -23,7 +23,6 @@ import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIter
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -277,10 +276,11 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	protected RegionFactory<K, V> createRegionFactory(Cache cache) {
 
 		if (this.shortcut != null) {
+
 			RegionFactory<K, V> regionFactory =
 				mergeRegionAttributes(cache.createRegionFactory(this.shortcut), this.attributes);
 
-			setDataPolicy(getDataPolicy(regionFactory));
+			setDataPolicy(getDataPolicy(regionFactory, this.shortcut));
 
 			return regionFactory;
 		}
@@ -310,7 +310,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		Optional.ofNullable(this.cacheWriter).ifPresent(regionFactory::setCacheWriter);
 
-		resolveDataPolicy(regionFactory, persistent, dataPolicy);
+		resolveDataPolicy(regionFactory, this.persistent, this.dataPolicy);
 
 		Optional.ofNullable(this.diskStoreName)
 			.filter(name -> isDiskStoreConfigurationAllowed())
@@ -323,7 +323,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		Optional.ofNullable(this.keyConstraint).ifPresent(regionFactory::setKeyConstraint);
 
-		Optional.ofNullable(this.scope).ifPresent(regionFactory::setScope);
+		Optional.ofNullable(getScope()).ifPresent(regionFactory::setScope);
 
 		Optional.ofNullable(this.valueConstraint).ifPresent(regionFactory::setValueConstraint);
 
@@ -375,17 +375,26 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	@SuppressWarnings({ "deprecation", "unchecked" })
-	DataPolicy getDataPolicy(RegionFactory regionFactory) {
-		return ((RegionAttributes) getFieldValue(getFieldValue(regionFactory, "attrsFactory",
-			AttributesFactory.class), "regionAttributes", null)).getDataPolicy();
+	DataPolicy getDataPolicy(RegionFactory regionFactory, RegionShortcut regionShortcut) {
+
+		return getFieldValue(regionFactory, "attrsFactory", AttributesFactory.class)
+			.flatMap(attributesFactory -> getFieldValue(attributesFactory,"regionAttributes", null))
+			.map(regionAttributes -> ((RegionAttributes<K, V>) regionAttributes).getDataPolicy())
+			.orElseGet(() -> RegionShortcutToDataPolicyConverter.INSTANCE.convert(regionShortcut));
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
-	private <T> T getFieldValue(Object source, String fieldName, Class<T> targetType) {
-		Field field = ReflectionUtils.findField(source.getClass(), fieldName, targetType);
-		ReflectionUtils.makeAccessible(field);
-		return (T) ReflectionUtils.getField(field, source);
+	private <T> Optional<T> getFieldValue(Object source, String fieldName, Class<T> targetType) {
+
+		return Optional.ofNullable(source)
+			.map(Object::getClass)
+			.map(type -> ReflectionUtils.findField(type, fieldName, targetType))
+			.map(field -> {
+				ReflectionUtils.makeAccessible(field);
+				return field;
+			})
+			.map(field -> (T) ReflectionUtils.getField(field, source));
 	}
 
 	/**
@@ -412,8 +421,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			RegionAttributes<K, V> regionAttributes) {
 
 		if (regionAttributes != null) {
-			// NOTE this validation may not be strictly required depending on how the RegionAttributes were "created",
-			// but...
+
+			// NOTE: this validation may not be strictly necessary depending on how the RegionAttributes were "created",
 			validateRegionAttributes(regionAttributes);
 
 			regionFactory.setCloningEnabled(regionAttributes.getCloningEnabled());
@@ -428,7 +437,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			regionFactory.setEntryIdleTimeout(regionAttributes.getEntryIdleTimeout());
 			regionFactory.setEntryTimeToLive(regionAttributes.getEntryTimeToLive());
 
-			// NOTE EvictionAttributes are created by certain RegionShortcuts; need the null check!
+			// NOTE: EvictionAttributes are created by certain RegionShortcuts; need the null check!
 			if (isUserSpecifiedEvictionAttributes(regionAttributes)) {
 				regionFactory.setEvictionAttributes(regionAttributes.getEvictionAttributes());
 			}
@@ -464,9 +473,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	protected <K, V> void mergePartitionAttributes(RegionFactory<K, V> regionFactory,
 			RegionAttributes<K, V> regionAttributes) {
 
-		// NOTE PartitionAttributes are created by certain RegionShortcuts; need the null check since RegionAttributes
+		// NOTE: PartitionAttributes are created by certain RegionShortcuts; need the null check since RegionAttributes
 		// can technically return null!
-		// NOTE most likely, the PartitionAttributes will never be null since the PartitionRegionFactoryBean always
+		// NOTE: most likely, the PartitionAttributes will never be null since the PartitionRegionFactoryBean always
 		// sets a PartitionAttributesFactoryBean BeanBuilder on the RegionAttributesFactoryBean "partitionAttributes"
 		// property.
 		if (regionAttributes.getPartitionAttributes() != null) {
@@ -582,12 +591,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		if (resolvedDataPolicy.withPersistence()) {
 			Assert.isTrue(isPersistentUnspecified() || isPersistent(), String.format(
-				"Data Policy [%1$s] is invalid when persistent is false.", resolvedDataPolicy));
+				"Data Policy [%s] is invalid when persistent is false.", resolvedDataPolicy));
 		}
 		else {
 			// NOTE otherwise, the Data Policy is not persistent, so...
 			Assert.isTrue(isPersistentUnspecified() || isNotPersistent(), String.format(
-				"Data Policy [%1$s] is invalid when persistent is true.", resolvedDataPolicy));
+				"Data Policy [%s] is invalid when persistent is true.", resolvedDataPolicy));
 		}
 	}
 
@@ -630,15 +639,17 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
 
 		if (dataPolicy != null) {
+
 			DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
 
-			Assert.notNull(resolvedDataPolicy, String.format("Data Policy [%1$s] is invalid.", dataPolicy));
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy [%s] is invalid.", dataPolicy));
 			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
 
 			regionFactory.setDataPolicy(resolvedDataPolicy);
 			setDataPolicy(resolvedDataPolicy);
 		}
 		else {
+
 			DataPolicy regionAttributesDataPolicy = getDataPolicy(getAttributes(), DataPolicy.DEFAULT);
 			DataPolicy resolvedDataPolicy = (isPersistent() && DataPolicy.DEFAULT.equals(regionAttributesDataPolicy)
 				? DataPolicy.PERSISTENT_REPLICATE : regionAttributesDataPolicy);

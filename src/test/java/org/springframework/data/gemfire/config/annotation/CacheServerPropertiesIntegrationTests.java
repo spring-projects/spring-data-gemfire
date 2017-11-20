@@ -58,7 +58,7 @@ public class CacheServerPropertiesIntegrationTests {
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(PropertySource<?> testPropertySource,
-		Class<?>... annotatedClasses) {
+			Class<?>... annotatedClasses) {
 
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 

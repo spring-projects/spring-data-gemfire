@@ -30,10 +30,11 @@ import org.springframework.util.ObjectUtils;
  */
 @SuppressWarnings("unused")
 public enum RegionShortcutWrapper {
+
 	LOCAL(RegionShortcut.LOCAL, DataPolicy.NORMAL),
 	LOCAL_HEAP_LRU(RegionShortcut.LOCAL_HEAP_LRU, DataPolicy.NORMAL),
 	LOCAL_OVERFLOW(RegionShortcut.LOCAL_OVERFLOW, DataPolicy.NORMAL),
-	LOCAL_PERSISTENT(RegionShortcut.LOCAL_PERSISTENT, DataPolicy.NORMAL),
+	LOCAL_PERSISTENT(RegionShortcut.LOCAL_PERSISTENT, DataPolicy.PERSISTENT_REPLICATE),
 	LOCAL_PERSISTENT_OVERFLOW(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW, DataPolicy.PERSISTENT_REPLICATE),
 	PARTITION(RegionShortcut.PARTITION, DataPolicy.PARTITION),
 	PARTITION_HEAP_LRU(RegionShortcut.PARTITION_HEAP_LRU, DataPolicy.PARTITION),
@@ -65,6 +66,7 @@ public enum RegionShortcutWrapper {
 	}
 
 	public static RegionShortcutWrapper valueOf(RegionShortcut regionShortcut) {
+
 		for (RegionShortcutWrapper wrapper : values()) {
 			if (ObjectUtils.nullSafeEquals(wrapper.getRegionShortcut(), regionShortcut)) {
 				return wrapper;

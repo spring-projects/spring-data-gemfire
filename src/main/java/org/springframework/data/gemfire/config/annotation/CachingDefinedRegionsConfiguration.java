@@ -65,7 +65,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.annotation.support.BeanDefinitionRegistryPostProcessorSupport;
-import org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.lang.Nullable;
@@ -106,7 +106,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.config.annotation.EnableCachingDefinedRegions
  * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
  * @see org.springframework.data.gemfire.config.annotation.support.BeanDefinitionRegistryPostProcessorSupport
- * @see org.springframework.data.gemfire.config.annotation.support.GemFireCacheTypeAwareRegionFactoryBean
+ * @see CacheTypeAwareRegionFactoryBean
  * @since 2.0.0
  */
 @Configuration
@@ -312,7 +312,7 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 			if (!registry.containsBeanDefinition(cacheName)) {
 
 				BeanDefinitionBuilder builder =
-					BeanDefinitionBuilder.genericBeanDefinition(GemFireCacheTypeAwareRegionFactoryBean.class);
+					BeanDefinitionBuilder.genericBeanDefinition(CacheTypeAwareRegionFactoryBean.class);
 
 				builder.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 				builder.addPropertyValue("clientRegionShortcut", resolveClientRegionShortcut());
@@ -352,8 +352,8 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 			if (!beanFactory.containsBean(cacheName)) {
 				try {
 
-					GemFireCacheTypeAwareRegionFactoryBean<?, ?> regionFactoryBean =
-						new GemFireCacheTypeAwareRegionFactoryBean<>();
+					CacheTypeAwareRegionFactoryBean<?, ?> regionFactoryBean =
+						new CacheTypeAwareRegionFactoryBean<>();
 
 					GemFireCache gemfireCache =
 						beanFactory.getBean(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME, GemFireCache.class);
