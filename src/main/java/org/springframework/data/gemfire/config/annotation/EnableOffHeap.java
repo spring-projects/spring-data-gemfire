@@ -29,9 +29,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableOffHeap} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
- * to configure and enable Pivotal GemFire/Apache Geode Off-Heap Memory support and data storage
- * in cache {@link org.apache.geode.cache.Region Regions}.
+ * The {@link EnableOffHeap} annotation marks a Spring {@link Configuration @Configuration} annotated application
+ * {@link Class} to configure and enable Off-Heap Memory data storage in cache {@link Region Regions}.
  *
  * @author John Blum
  * @see java.lang.annotation.Annotation
@@ -62,16 +61,16 @@ public @interface EnableOffHeap {
 	 *
 	 * Defaults to unset.
 	 *
-	 * Use the {@literal spring.data.gemfire.cache.off-heap-memory-size} property in {@literal application.properties}.
+	 * Use the {@literal spring.data.gemfire.cache.off-heap.memory-size} property in {@literal application.properties}.
 	 */
 	String memorySize();
 
 	/**
-	 * Identifies all the {@link Region Regions} by name in which the off-heap memory setting will be applied.
+	 * Identifies all the {@link Region Regions} by name in which the Off-Heap Memory settings will be applied.
 	 *
-	 * Defaults to all Regions.
+	 * Defaults to all {@link Region Regions}.
 	 *
-	 * Use the {@literal spring.data.gemfire.cache.region-names} property in {@literal application.properties}.
+	 * Use the {@literal spring.data.gemfire.cache.off-heap.region-names} property in {@literal application.properties}.
 	 */
 	String[] regionNames() default {};
 

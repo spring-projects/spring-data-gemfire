@@ -683,6 +683,16 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/* (non-Javadoc) */
+	protected String cacheCompressionProperty(String propertyNameSuffix) {
+		return String.format("%1$s%2$s", propertyName("cache.compression."), propertyNameSuffix);
+	}
+
+	/* (non-Javadoc) */
+	protected String cacheOffHeapProperty(String propertyNameSuffix) {
+		return String.format("%1$s%2$s", propertyName("cache.off-heap."), propertyNameSuffix);
+	}
+
+	/* (non-Javadoc) */
 	protected String cachePeerProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("cache.peer."), propertyNameSuffix);
 	}
@@ -871,7 +881,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @see org.springframework.util.ClassUtils#forName(String, ClassLoader)
 	 * @see #resolveBeanClassName(BeanDefinition)
 	 */
-	private Optional<Class<?>> resolveBeanClass(BeanDefinition beanDefinition, ClassLoader classLoader) {
+	protected Optional<Class<?>> resolveBeanClass(BeanDefinition beanDefinition, ClassLoader classLoader) {
 
 		Class<?> beanClass = (beanDefinition instanceof AbstractBeanDefinition
 			? safeResolveType(() -> ((AbstractBeanDefinition) beanDefinition).resolveBeanClass(classLoader)) : null);
