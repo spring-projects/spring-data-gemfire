@@ -13,6 +13,8 @@
 package org.springframework.data.gemfire.function.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.TimeUnit;
@@ -48,19 +50,24 @@ public class FunctionExecutionClientCacheTests {
 	@Test
 	public void contextCreated() throws Exception {
 
-		ClientCache cache = applicationContext.getBean("gemfireCache", ClientCache.class);
-		Pool pool = applicationContext.getBean("gemfirePool", Pool.class);
+		ClientCache cache = this.applicationContext.getBean("gemfireCache", ClientCache.class);
+
+		Pool pool = this.applicationContext.getBean("gemfirePool", Pool.class);
 
 		assertEquals("gemfirePool", pool.getName());
 		assertTrue(cache.getDefaultPool().getLocators().isEmpty());
 		assertEquals(1, cache.getDefaultPool().getServers().size());
+		assertTrue(pool.getLocators().isEmpty());
+		assertEquals(1, pool.getServers().size());
 		assertEquals(pool.getServers().get(0), cache.getDefaultPool().getServers().get(0));
 
-		Region region = applicationContext.getBean("r1", Region.class);
+		Region region = this.applicationContext.getBean("r1", Region.class);
 
-		assertEquals("gemfirePool", region.getAttributes().getPoolName());
+		assertEquals("r1", region.getName());
+		assertNotNull(region.getAttributes());
+		assertNull(region.getAttributes().getPoolName());
 
-		GemfireOnServerFunctionTemplate template = applicationContext.getBean(GemfireOnServerFunctionTemplate.class);
+		GemfireOnServerFunctionTemplate template = this.applicationContext.getBean(GemfireOnServerFunctionTemplate.class);
 
 		assertTrue(template.getResultCollector() instanceof MyResultCollector);
 	}

@@ -131,10 +131,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 		applyRegionConfigurers(regionName);
 
-		ClientCache cache = resolveCache(gemfireCache);
+		ClientCache clientCache = resolveCache(gemfireCache);
 
 		ClientRegionFactory<K, V> clientRegionFactory =
-			postProcess(configure(createClientRegionFactory(cache, resolveClientRegionShortcut())));
+			postProcess(configure(createClientRegionFactory(clientCache, resolveClientRegionShortcut())));
 
 		@SuppressWarnings("all")
 		Region<K, V> region = newRegion(clientRegionFactory, getParent(), regionName);
@@ -295,17 +295,22 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	/* (non-Javadoc) */
 	private String resolvePoolName() {
-		return Optional.of(getPoolName()).filter(this::isPoolResolvable).orElse(null);
+
+		return getPoolName()
+			.filter(StringUtils::hasText)
+			.filter(this::isNotDefaultPool)
+			.filter(this::isPoolResolvable)
+			.orElse(null);
 	}
 
 	/* (non-Javadoc) */
-	private String getPoolName() {
-		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText).orElse(GEMFIRE_POOL_NAME);
+	boolean isPoolResolvable(String poolName) {
+		return getBeanFactory().containsBean(poolName) || (PoolManager.find(poolName) != null);
 	}
 
 	/* (non-Javadoc) */
-	private boolean isPoolResolvable(String poolName) {
-		return (getBeanFactory().containsBean(poolName) || (PoolManager.find(poolName) != null));
+	boolean isNotDefaultPool(String poolName) {
+		return !DEFAULT_POOL_NAME.equals(poolName);
 	}
 
 	/* (non-Javadoc) */
@@ -328,15 +333,17 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 * Constructs a new instance of {@link ClientRegionFactory} using the given {@link ClientCache}
 	 * and {@link ClientRegionShortcut}.
 	 *
-	 * @param cache reference to the {@link ClientCache}.
+	 * @param clientCache reference to the {@link ClientCache}.
 	 * @param shortcut {@link ClientRegionShortcut} used to specify the client {@link Region} {@link DataPolicy}.
 	 * @return a new instance of {@link ClientRegionFactory}.
 	 * @see org.apache.geode.cache.client.ClientCache#createClientRegionFactory(ClientRegionShortcut)
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 * @see org.apache.geode.cache.client.ClientRegionFactory
 	 */
-	protected ClientRegionFactory<K, V> createClientRegionFactory(ClientCache cache, ClientRegionShortcut shortcut) {
-		return cache.createClientRegionFactory(shortcut);
+	protected ClientRegionFactory<K, V> createClientRegionFactory(ClientCache clientCache,
+			ClientRegionShortcut shortcut) {
+
+		return clientCache.createClientRegionFactory(shortcut);
 	}
 
 	/**
@@ -368,11 +375,18 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			clientRegionFactory.setInitialCapacity(attributes.getInitialCapacity());
 			clientRegionFactory.setKeyConstraint(attributes.getKeyConstraint());
 			clientRegionFactory.setLoadFactor(attributes.getLoadFactor());
-			clientRegionFactory.setPoolName(attributes.getPoolName());
 			clientRegionFactory.setRegionIdleTimeout(attributes.getRegionIdleTimeout());
 			clientRegionFactory.setRegionTimeToLive(attributes.getRegionTimeToLive());
 			clientRegionFactory.setStatisticsEnabled(attributes.getStatisticsEnabled());
 			clientRegionFactory.setValueConstraint(attributes.getValueConstraint());
+
+			Optional.ofNullable(attributes.getPoolName())
+				.filter(StringUtils::hasText)
+				.filter(this::isNotDefaultPool)
+				.filter(this::isPoolResolvable)
+				.map(this::eagerlyInitializePool)
+				.ifPresent(clientRegionFactory::setPoolName);
+
 		});
 
 		stream(nullSafeArray(this.cacheListeners, CacheListener.class)).forEach(clientRegionFactory::addCacheListener);
@@ -384,8 +398,9 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 		Optional.ofNullable(this.keyConstraint).ifPresent(clientRegionFactory::setKeyConstraint);
 
-		Optional.ofNullable(resolvePoolName()).filter(StringUtils::hasText)
-			.ifPresent(poolName -> clientRegionFactory.setPoolName(eagerlyInitializePool(poolName)));
+		Optional.ofNullable(resolvePoolName())
+			.map(this::eagerlyInitializePool)
+			.ifPresent(clientRegionFactory::setPoolName);
 
 		Optional.ofNullable(this.valueConstraint).ifPresent(clientRegionFactory::setValueConstraint);
 
@@ -639,22 +654,34 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	/**
 	 * Sets the {@link Pool} used by this client {@link Region}.
 	 *
-	 * @param pool GemFire client {@link Pool}.
+	 * @param pool client {@link Pool} to be used by this client {@link Region}.
 	 * @see org.apache.geode.cache.client.Pool
+	 * @see #setPoolName(String)
 	 */
 	public void setPool(Pool pool) {
-		setPoolName(Optional.ofNullable(pool).map(Pool::getName)
-			.orElseThrow(() -> newIllegalArgumentException("Pool cannot be null")));
+		setPoolName(Optional.ofNullable(pool).map(Pool::getName).orElse(null));
 	}
 
 	/**
-	 * Sets the {@link Pool} name used by this client {@link Region}.
+	 * Sets the {@link String name} of the {@link Pool} used by this client {@link Region}.
 	 *
-	 * @param poolName String specifying the name of the GemFire client {@link Pool}.
+	 * @param poolName {@link String} containing the name of the client {@link Pool} used by this client {@link Region}.
+	 * @see #getPoolName()
+	 * @see #setPool(Pool)
 	 */
 	public void setPoolName(String poolName) {
-		this.poolName = Optional.ofNullable(poolName).filter(StringUtils::hasText)
-			.orElseThrow(() -> newIllegalArgumentException("Pool name is required"));
+		this.poolName = poolName;
+	}
+
+	/**
+	 * Returns the {@link String name} of the configured {@link Pool} to use with this client {@link Region}.
+	 *
+	 * @return the {@link Optional} {@link String name} of the configured {@link Pool} to use
+	 * with this client {@link Region}.
+	 * @see #setPoolName(String)
+	 */
+	public Optional<String> getPoolName() {
+		return Optional.ofNullable(this.poolName);
 	}
 
 	/**
@@ -683,14 +710,21 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	}
 
 	/**
-	 * Initializes the client {@link Region} using a GemFire {@link ClientRegionShortcut}.
+	 * Initializes the client {@link Region} using the given {@link ClientRegionShortcut}.
 	 *
 	 * @param shortcut {@link ClientRegionShortcut} used to initialize this client {@link Region}.
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
 	public void setShortcut(ClientRegionShortcut shortcut) {
 		this.shortcut = shortcut;
 	}
 
+	/**
+	 * Sets a {@link Class type} constraint on this {@link Region Region's} values.
+	 *
+	 * @param valueConstraint {@link Class type} of this client {@link Region Region's} values.
+	 * @see java.lang.Class
+	 */
 	public void setValueConstraint(Class<V> valueConstraint) {
 		this.valueConstraint = valueConstraint;
 	}
