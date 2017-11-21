@@ -20,6 +20,7 @@ package org.springframework.data.gemfire.config.annotation;
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,11 +40,8 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.GenericRegionFactoryBean;
-import org.springframework.data.gemfire.LocalRegionFactoryBean;
-import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
-import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
-import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
@@ -67,7 +65,7 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 	 * @see org.springframework.data.gemfire.config.annotation.EnableOffHeap
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableOffHeap.class;
 	}
 
@@ -79,7 +77,7 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 		BeanDefinitionBuilder builder =
 			BeanDefinitionBuilder.genericBeanDefinition(OffHeapBeanFactoryPostProcessor.class);
 
-		builder.addConstructorArgValue(resolveProperty(cacheProperty("region-names"),
+		builder.addConstructorArgValue(resolveProperty(cacheOffHeapProperty("region-names"),
 			String[].class, (String[]) annotationAttributes.get("regionNames")));
 
 		registry.registerBeanDefinition(generateBeanName(OffHeapBeanFactoryPostProcessor.class),
@@ -92,63 +90,58 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 
 		return PropertiesBuilder.create()
 			.setProperty("off-heap-memory-size",
-				resolveProperty(cacheProperty("off-heap-memory-size"),
+				resolveProperty(cacheOffHeapProperty("memory-size"),
 					(String) annotationAttributes.get("memorySize")))
 			.build();
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unused")
-	protected static class OffHeapBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
-
-		protected static final Set<String> REGION_FACTORY_BEAN_TYPES = new HashSet<>(5);
-
-		static {
-			REGION_FACTORY_BEAN_TYPES.add(ClientRegionFactoryBean.class.getName());
-			REGION_FACTORY_BEAN_TYPES.add(GenericRegionFactoryBean.class.getName());
-			REGION_FACTORY_BEAN_TYPES.add(LocalRegionFactoryBean.class.getName());
-			REGION_FACTORY_BEAN_TYPES.add(PartitionedRegionFactoryBean.class.getName());
-			REGION_FACTORY_BEAN_TYPES.add(ReplicatedRegionFactoryBean.class.getName());
-		}
+	protected static class OffHeapBeanFactoryPostProcessor extends AbstractAnnotationConfigSupport
+			implements BeanFactoryPostProcessor {
 
 		private final Set<String> regionNames;
-
-		protected OffHeapBeanFactoryPostProcessor(String[] regionNames) {
-			this(CollectionUtils.asSet(nullSafeArray(regionNames, String.class)));
-		}
 
 		protected OffHeapBeanFactoryPostProcessor(Set<String> regionNames) {
 			this.regionNames = CollectionUtils.nullSafeSet(regionNames);
 		}
 
 		@Override
+		protected Class<? extends Annotation> getAnnotationType() {
+			throw new UnsupportedOperationException("Not Implemented");
+		}
+
+		@Override
 		public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
-			stream(nullSafeArray(beanFactory.getBeanDefinitionNames(), String.class)).forEach(beanName -> {
-
-				Optional.ofNullable(beanFactory.getBeanDefinition(beanName))
-					.filter(bean -> isTargetedRegionBean(beanName, bean, beanFactory))
-					.ifPresent(bean ->
-						bean.getPropertyValues().addPropertyValue("offHeap", true));
-			});
+			stream(nullSafeArray(beanFactory.getBeanDefinitionNames(), String.class)).forEach(beanName ->
+				Optional.of(beanFactory.getBeanDefinition(beanName))
+					.filter(beanDefinition -> isTargetedRegionBean(beanName, beanDefinition, beanFactory))
+					.ifPresent(beanDefinition -> beanDefinition.getPropertyValues()
+						.addPropertyValue("offHeap", true)));
 		}
 
-		boolean isTargetedRegionBean(String beanName, BeanDefinition bean,
+		boolean isTargetedRegionBean(String beanName, BeanDefinition beanDefinition,
 				ConfigurableListableBeanFactory beanFactory) {
 
-			return (isRegionBean(bean) && isNamedRegion(beanName, bean, beanFactory));
+			return isNamedRegion(beanName, beanDefinition, beanFactory) && isRegionBean(beanDefinition, beanFactory);
 		}
 
-		boolean isRegionBean(BeanDefinition bean) {
-			return (bean != null && REGION_FACTORY_BEAN_TYPES.contains(bean.getBeanClassName()));
+		boolean isRegionBean(BeanDefinition beanDefinition, ConfigurableListableBeanFactory beanFactory) {
+
+			return Optional.ofNullable(beanDefinition)
+				.flatMap(it -> resolveBeanClass(it, beanFactory.getBeanClassLoader()))
+				.filter(beanClass -> RegionLookupFactoryBean.class.isAssignableFrom(beanClass))
+				.isPresent();
 		}
 
-		boolean isNamedRegion(String beanName, BeanDefinition bean, ConfigurableListableBeanFactory beanFactory) {
-			return (CollectionUtils.isEmpty(regionNames) || CollectionUtils.containsAny(regionNames,
-				getBeanNames(beanName, bean, beanFactory)));
+		boolean isNamedRegion(String beanName, BeanDefinition beanDefinition, BeanFactory beanFactory) {
+
+			return CollectionUtils.isEmpty(regionNames)
+				|| CollectionUtils.containsAny(regionNames, getBeanNames(beanName, beanDefinition, beanFactory));
 		}
 
-		Collection<String> getBeanNames(String beanName, BeanDefinition bean, BeanFactory beanFactory) {
+		Collection<String> getBeanNames(String beanName, BeanDefinition beanDefinition, BeanFactory beanFactory) {
 
 			Collection<String> beanNames = new HashSet<>();
 
@@ -156,7 +149,7 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 
 			Collections.addAll(beanNames, beanFactory.getAliases(beanName));
 
-			PropertyValue regionName = bean.getPropertyValues().getPropertyValue("regionName");
+			PropertyValue regionName = beanDefinition.getPropertyValues().getPropertyValue("regionName");
 
 			if (regionName != null) {
 

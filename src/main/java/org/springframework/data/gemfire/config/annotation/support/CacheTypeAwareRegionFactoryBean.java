@@ -77,6 +77,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 	private GemFireCache gemfireCache;
 
 	private Boolean close = false;
+	private Boolean offHeap = false;
 
 	private Class<K> keyConstraint;
 	private Class<V> valueConstraint;
@@ -181,6 +182,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 		serverRegionFactory.setDiskStoreName(getDiskStoreName());
 		serverRegionFactory.setKeyConstraint(getKeyConstraint());
 		serverRegionFactory.setLookupEnabled(getLookupEnabled());
+		serverRegionFactory.setOffHeap(getOffHeap());
 		serverRegionFactory.setRegionConfigurers(this.regionConfigurers);
 		serverRegionFactory.setRegionName(regionName);
 		serverRegionFactory.setShortcut(getServerRegionShortcut());
@@ -274,6 +276,14 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 
 	protected Class<K> getKeyConstraint() {
 		return this.keyConstraint;
+	}
+
+	public void setOffHeap(Boolean offHeap) {
+		this.offHeap = offHeap;
+	}
+
+	protected Boolean getOffHeap() {
+		return this.offHeap;
 	}
 
 	public void setPoolName(String poolName) {
