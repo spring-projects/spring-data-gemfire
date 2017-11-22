@@ -29,6 +29,8 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.QueryService;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
@@ -45,17 +47,19 @@ import org.springframework.data.gemfire.listener.ContinuousQueryDefinition;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 import org.springframework.data.gemfire.listener.annotation.ContinuousQuery;
 import org.springframework.data.gemfire.util.CacheUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ErrorHandler;
 import org.springframework.util.StringUtils;
 
 /**
  * The {@link ContinuousQueryConfiguration} class is a Spring {@link Configuration @Configuration} class enabling
- * Continuous Query (CQ) GemFire/Geode capabilities in this cache client application.
+ * Continuous Query (CQ) Pivotal GemFire/Apache Geode capabilities in this cache client application.
  *
  * @author John Blum
+ * @see java.util.concurrent.Executor
  * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.query.CqQuery
+ * @see org.apache.geode.cache.query.QueryService
  * @see org.springframework.beans.factory.config.BeanPostProcessor
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
@@ -67,6 +71,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListener
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
  * @see org.springframework.data.gemfire.listener.annotation.ContinuousQuery
+ * @see org.springframework.util.ErrorHandler
  * @since 2.0.0
  */
 @Configuration
@@ -83,24 +88,36 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 
 	private String errorHandlerBeanName;
 	private String poolName;
+	private String queryServiceBeanName;
 	private String taskExecutorBeanName;
 
+	/**
+	 * Returns the {@link Annotation} {@link Class type} that configures and creates {@link CqQuery Continuous Queries}
+	 * for application {@link ContinuousQuery} annotated POJO service methods.
+	 *
+	 * @return the {@link Annotation} {@link Class type} that configures and creates {@link CqQuery Continuous Queries}
+	 * for application {@link ContinuousQuery} annotated POJO service methods.
+	 * @see org.springframework.data.gemfire.config.annotation.EnableContinuousQueries
+	 * @see org.springframework.data.gemfire.listener.annotation.ContinuousQuery
+	 * @see java.lang.annotation.Annotation
+	 * @see java.lang.Class
+	 */
 	@Override
 	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableContinuousQueries.class;
 	}
 
 	@Override
-	public void setImportMetadata(AnnotationMetadata importMetadata) {
+	public void setImportMetadata(AnnotationMetadata importingClassMetadata) {
 
-		if (importMetadata.hasAnnotation(getAnnotationType().getName())) {
+		if (isAnnotationPresent(importingClassMetadata)) {
 
-			AnnotationAttributes enableContinuousQueriesAttributes =
-				AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(getAnnotationType().getName()));
+			AnnotationAttributes enableContinuousQueriesAttributes = getAnnotationAttributes(importingClassMetadata);
 
 			setErrorHandlerBeanName(enableContinuousQueriesAttributes.getString("errorHandlerBeanName"));
 			setPhase(enableContinuousQueriesAttributes.<Integer>getNumber("phase"));
 			setPoolName(enableContinuousQueriesAttributes.getString("poolName"));
+			setQueryServiceBeanName(enableContinuousQueriesAttributes.getString("queryServiceBeanName"));
 			setTaskExecutorBeanName(enableContinuousQueriesAttributes.getString("taskExecutorBeanName"));
 		}
 	}
@@ -114,7 +131,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 
 			private List<ContinuousQueryDefinition> continuousQueryDefinitions = new ArrayList<>();
 
-			@Nullable @Override
+			@Override
 			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
 				if (bean instanceof ContinuousQueryListenerContainer) {
@@ -190,6 +207,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 		resolveErrorHandler().ifPresent(container::setErrorHandler);
 		resolvePhase().ifPresent(container::setPhase);
 		resolvePoolName().ifPresent(container::setPoolName);
+		resolveQueryService().ifPresent(container::setQueryService);
 		resolveTaskExecutor().ifPresent(container::setTaskExecutor);
 
 		return container;
@@ -230,6 +248,13 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 		return Optional.ofNullable(getPoolName()).filter(StringUtils::hasText);
 	}
 
+	protected Optional<QueryService> resolveQueryService() {
+
+		return Optional.ofNullable(getQueryServiceBeanName())
+			.filter(StringUtils::hasText)
+			.map(queryServiceBeanName -> getBeanFactory().getBean(queryServiceBeanName, QueryService.class));
+	}
+
 	protected Optional<Executor> resolveTaskExecutor() {
 
 		return Optional.ofNullable(getTaskExecutorBeanName())
@@ -242,7 +267,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 	}
 
 	protected String getErrorHandlerBeanName() {
-		return errorHandlerBeanName;
+		return this.errorHandlerBeanName;
 	}
 
 	public void setPhase(int phase) {
@@ -250,7 +275,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 	}
 
 	protected int getPhase() {
-		return phase;
+		return this.phase;
 	}
 
 	public void setPoolName(String poolName) {
@@ -258,7 +283,15 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 	}
 
 	protected String getPoolName() {
-		return poolName;
+		return this.poolName;
+	}
+
+	public void setQueryServiceBeanName(String queryServiceBeanName) {
+		this.queryServiceBeanName = queryServiceBeanName;
+	}
+
+	protected String getQueryServiceBeanName() {
+		return this.queryServiceBeanName;
 	}
 
 	public void setTaskExecutorBeanName(String taskExecutorBeanName) {
@@ -266,6 +299,6 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 	}
 
 	protected String getTaskExecutorBeanName() {
-		return taskExecutorBeanName;
+		return this.taskExecutorBeanName;
 	}
 }

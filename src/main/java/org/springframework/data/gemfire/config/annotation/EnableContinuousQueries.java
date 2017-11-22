@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 import java.util.concurrent.Executor;
 
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.query.QueryService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
@@ -41,6 +42,7 @@ import org.springframework.util.ErrorHandler;
  * @see java.lang.annotation.Target
  * @see java.util.concurrent.Executor
  * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.query.QueryService
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.ContinuousQueryConfiguration
@@ -77,6 +79,13 @@ public @interface EnableContinuousQueries {
 	 * Defaults to unset.
 	 */
 	String poolName() default "";
+
+	/**
+	 * Refers to the name of the {@link QueryService} bean used to define CQs.
+	 *
+	 * Defaults to unset.
+	 */
+	String queryServiceBeanName() default "";
 
 	/**
 	 * Refers to the name of the {@link Executor} bean used to process CQ events asynchronously.
