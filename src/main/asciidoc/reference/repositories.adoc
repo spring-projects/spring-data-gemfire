@@ -7,13 +7,13 @@ _Spring Data GemFire_ provides support to use the _Spring Data Repository_ abstr
 into GemFire along with execute queries.  A general introduction to the _Repository programming model_ is provided
 http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
 
-[[gemfire-repositories.spring-configuration]]
-== Spring Configuration
+[[gemfire-repositories.spring-configuration-xml]]
+== Spring XML Configuration
 
 To bootstrap _Spring Data Repositories_, you use the `<repositories/>` element from the _Spring Data GemFire_
 Data namespace:
 
-.Bootstrap Spring Data GemFire Repositories
+.Bootstrap Spring Data GemFire Repositories in XML
 ====
 [source,xml]
 ----
@@ -30,11 +30,68 @@ Data namespace:
 ----
 ====
 
-This configuration snippet looks for interfaces below the configured base package and creates Repository instances
+This configuration snippet looks for interfaces below the configured base package and creates _Repository_ instances
 for those interfaces backed by a `SimpleGemFireRepository`.
 
 IMPORTANT: You must have your application domain classes correctly mapped to configured Regions
 or the bootstrap process will fail otherwise.
+
+[[gemfire-repositories.spring-configuration-java]]
+== Spring Java-based Configuration
+
+Alternatively, many users prefer to use _Spring's_
+https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-java[Java-based container configuration].
+
+Using this approach, it is a simple matter to bootstrap _Spring Data Repositories_ using the SDG `@EnableGemfireRepositories`
+annotation:
+
+.Bootstrap _Spring Data Geode Repositories_ with `@EnableGemfireRepositories`
+====
+[source, java]
+----
+@SpringBootApplication
+@EnableGemfireRepositories(basePackages = "com.example.acme.repository")
+class SpringDataApplication {
+  ...
+}
+----
+====
+
+Rather than use the `basePackages` attribute, you may prefer to use the type-safe `basePackageClasses` attribute instead.
+The `basePackageClasses` allows you to specify the package containing all your application _Repository_ classes
+by specifying just one of your application _Repository_ interface types.  Consider creating a special no-op marker class
+or interface in each package that serves no other purpose than to identify the location of application _Repositories_
+referenced by this attribute.
+
+In addition to the `basePackage[sClasses]` attributes, like _Spring's_
+https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.html[`@ComponentScan`] annotation,
+the `@EnableGemfireRepositories` annotation provides _include_ and _exclude_ filters, based on _Spring's_
+https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.Filter.html[`ComponentScan.Filter`] type.
+You can use the `filterType` attribute to filter by different aspects, such as whether an application _Repository_ type
+is annotated with a particular `Annotation` or extends a particular class type, and so on.  See the
+https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/FilterType.html[`FilterType` _Javadoc_]
+for more details.
+
+The `@EnableGemfireRepositories` annotation also provides the ability to specify the location of named OQL queries,
+which reside in a Java `Properties` file, using the `namedQueriesLocation` attribute.  The property name must match
+the name of a _Repository_ query method and the property value is the OQL query you want executed when
+the _Repository_ query method is called.
+
+The `repositoryImplementationPostfix` attribute can be set to an alternate value (defaults to "_Impl_") if your
+application requires 1 or more https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.custom-implementations[custom _Repository_ implementations].
+This feature is commonly used to extend the _Spring Data Repository_ infrastructure in order to implement a feature
+not provided out-of-the-box (OOTB) by the data store (e.g. SDG).
+
+One example of where custom _Repository_ implementations are needed with Pivotal GemFire is when performing _Joins_.
+_Joins_ are not supported by SDG _Repositories_ OOTB.  With a Pivotal GemFire `PARTITION` Region, the _Join_ must be
+performed on collocated `PARTITION` Regions even, since Pivotal GemFire does not support "distributed" _Joins_.
+In addition, the _Equi-Join_ OQL Query must be performed inside a GemFire Function.
+See http://gemfire91.docs.pivotal.io/geode/developing/partitioned_regions/join_query_partitioned_regions.html[here]
+for more details on Pivotal GemFire _Equi-Join Queries_.
+
+Many other aspects of the SDG's _Repository_ infrastructure extension maybe customized as well.  See the
+https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/repository/config/EnableGemfireRepositories.html[`@EnableGemfireRepositories` _Javadoc_]
+for more details on all configuration settings.
 
 [[gemfire-repositories.executing-queries]]
 == Executing OQL Queries
