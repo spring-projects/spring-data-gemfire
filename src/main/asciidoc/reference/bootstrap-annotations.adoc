@@ -1259,18 +1259,18 @@ http://gemfire.docs.pivotal.io/geode/developing/expiration/chapter_overview.html
 [[bootstrap-annotation-config-region-off-heap]]
 === Configuring Off-Heap
 
-Another effective means for reducing pressure on the JVM's Heap memory and minimize GC activity is to use Pivotal GemFire's
-_Off-Heap_ memory support.  Rather than storing Region entries on the JVM Heap, entries are stored in the system's
-main memory.
+Another effective means for reducing pressure on the JVM's Heap memory and minimize GC activity is to use
+Pivotal GemFire's _Off-Heap_ memory support.  Rather than storing Region entries on the JVM Heap, entries are stored
+in the system's main memory.
 
-To enable Off-Heap support, simple annotate the application class with `@EnableOffHeap`...
+To enable _Off-Heap_ support, simple annotate the application class with `@EnableOffHeap`...
 
 .Spring application with Off-Heap enabled
 [source, java]
 ----
 @SpringBootApplication
 @PeerCacheApplication
-@EnableOffHeap(memorySize = 8192m regionNames = { "Customers", "Order" })
+@EnableOffHeap(memorySize = 8192m regionNames = { "Customers", "Orders" })
 class ServerApplication { .. }
 ----
 
@@ -1279,6 +1279,10 @@ a Region is allowed to use in either megabytes (`m`) or gigabytes (`g`).
 
 The `regionNames` attribute is an array of Region names specifying the Regions that will store entries in main memory.
 By default, all Regions will use main memory if the `regionNames` attribute is not explicitly set.
+
+TIP: Alternatively, a user may use the `spring.data.gemfire.cache.off-heap.memory-size`
+and `spring.data.gemfire.cache.off-heap.region-names` properties in the `application.properties` file
+to set and configure the values of these `@EnableOffHeap` annotation attributes.
 
 See the `@EnableOffHeap` annotation _Javadoc_ for more details.
 
