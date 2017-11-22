@@ -1256,6 +1256,47 @@ See the `@EnableExpiration` annotation _Javadoc_ for a complete list of Expirati
 More details on Pivotal GemFire Expiration can be found
 http://gemfire.docs.pivotal.io/geode/developing/expiration/chapter_overview.html[here].
 
+[[bootstrap-annotation-config-region-compression]]
+=== Configuring Compression
+
+In addition to <<bootstrap-annotation-config-region-expiration,_Eviction_>>
+and <<bootstrap-annotation-config-region-expiration,_Expiration_>> a user may also configure her data Regions
+to use Compression in order to reduce memory consumption.
+
+Pivotal GemFire allows users to compress in-memory Region values using pluggable
+http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/Compressor.html[`Compressors`],
+or different compression codecs.  Out-of-the-box, Pivotal GemFire uses Google's http://google.github.io/snappy/[Snappy]
+library.
+
+To enable Compression support, simply annotate the application class with `@EnableCompression`...
+
+.Spring application with Compression enabled
+[source, java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableCompression(compressorBeanName = "MyCompressor", regionNames = { "Customers", "Orders" })
+class ClientApplication { .. }
+----
+
+NOTE: Neither the `compressorBeanName` nor the `regionNames` attributes are required.
+
+The `compressorBeanName` defaults to "`SnappyCompressor`" enabling Pivotal GemFire's provided
+http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/SnappyCompressor.html[`SnappyCompressor`]
+by default.
+
+The `regionNames` attribute is an array of Region names specifying the Regions that will have compression enabled.
+By default, all Regions will compress values if the `regionNames` attribute is not explicitly set.
+
+TIP: Alternatively, a user may use the `spring.data.gemfire.cache.compression.compressor-bean-name`
+and `spring.data.gemfire.cache.compression.region-names` properties in the `application.properties` file
+to set and configure the values of these `@EnableCompression` annotation attributes.
+
+See the `@EnableCompression` annotation _Javadoc_ for more details.
+
+More details on Pivotal GemFire Compression can be found
+http://gemfire91.docs.pivotal.io/geode/managing/region_compression.html[here].
+
 [[bootstrap-annotation-config-region-off-heap]]
 === Configuring Off-Heap
 
